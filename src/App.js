@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import React,{Component} from "react";
+import './App.css'
+import DOC_AIOButton from "./documents/aio-button/doc-aio-button";
+export default class AIOComponents extends Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      part:'aio-button',
+      parts:{
+        'aio-button':{name:'aio-button',Render:DOC_AIOButton}
+      }
+    }
+  }
+  part(){
+    let {parts,part} = this.state;
+    let {Render} = parts[part]
+    let props = {
+      goToHome:()=>this.setState({part:false})
+    }
+    return <Render {...props}/>
+  }
+  render(){
+    let {part,parts} = this.state;
+    if(part){return this.part()}
+    return (
+      <div className='aio-components'>
+        {
+          Object.keys(parts).map((o)=>{
+            return (<div className='aio-component' onClick={()=>this.setState({part:o})}>{o}</div>)
+          })
+        }
+      </div>
+    )
+  }
 }
-
-export default App;

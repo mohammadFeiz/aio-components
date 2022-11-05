@@ -1,0 +1,16 @@
+.react-slider-dots{
+    height:24px;
+    width:100%;
+    display:flex;
+    align-items: center;
+}
+.react-slider-dots-item{
+    width:5px;
+    height:5px;
+    margin:0 2px;
+    border-radius:100%;
+    background:#ddd;
+}
+.react-slider-dots-item.active{
+    background:dodgerblue;
+}
