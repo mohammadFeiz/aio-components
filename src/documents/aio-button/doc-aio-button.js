@@ -26,6 +26,21 @@ export default class DOC_AIOButton extends Component{
             },
             {
                 props:'options',type:'array',description:'selectable options'
+            },
+            {
+                props:'optionText',type:'string or function',description:'set option text'
+            },
+            {
+                props:'optionValue',type:'string or function',description:'set option value'
+            },
+            {
+                props:'optionSubtext',type:'string or function',description:'set option subtext'
+            },
+            {
+                props:'optionBefore',type:'string or function',description:'set option before'
+            },
+            {
+                props:'optionAfter',type:'string or function',description:'set option after'
             }
         ]
         this.state = {}
@@ -52,6 +67,7 @@ export default class DOC_AIOButton extends Component{
                     {text:'optionSubtext',id:'optionSubtext'},
                     {text:'optionBefore',id:'optionBefore'},
                     {text:'optionAfter',id:'optionAfter'},
+                    {text:'optionStyle',id:'optionStyle'},
                     
                 ]}
                 navId='props'
@@ -72,6 +88,7 @@ export default class DOC_AIOButton extends Component{
                     if(navId === 'optionSubtext'){return <OptionSubtext/>}
                     if(navId === 'optionBefore'){return <OptionBefore/>}
                     if(navId === 'optionAfter'){return <OptionAfter/>}
+                    if(navId === 'optionStyle'){return <OptionStyle/>}
                 }}
                 navHeader={()=><div className='part-title'>{'aio-button'}</div>}
                 getActions={(obj)=>this.setState(obj)}
@@ -1047,6 +1064,125 @@ let options = [
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+}
+
+class OptionStyle extends Component{
+    render(){
+        let options = [
+            {text:'option1',value:'1'},
+            {text:'option2',value:'2'},
+            {text:'option3',value:'3'}
+        ]
+        return (
+            <div style={{padding:12,width:'100%',overflowY:'auto'}}>
+                <div className="aio-component-label">tabs</div>
+                <AIOButton type='tabs' text='text example' options={options} value={'1'} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='tabs' 
+    text='text example' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]} 
+    value={'1'} 
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">select</div>
+                <AIOButton type='select' value='2' options={options} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='select' 
+    value='2' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]}
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">multiselect</div>
+                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='multiselect' 
+    text='text example' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]} 
+    value={['1','3']} 
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">radio</div>
+                <AIOButton type='radio' text='text example' options={options} value={'2'} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='radio' 
+    text='text example' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]} 
+    value={'2'} 
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">checklist</div>
+                <AIOButton type='checklist' options={options} value={'2'} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='checklist' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]} 
+    value={'2'} 
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+    
+                <div className="aio-component-label">checklist</div>
+                <AIOButton type='checklist' options={options} value={'2'} optionStyle={{color:'red'}}/>
+                <pre>
+                    {`
+<AIOButton 
+    type='checklist' 
+    options={[
+        {text:'option1',value:'1'},
+        {text:'option2',value:'2'},
+        {text:'option3',value:'3'}
+    ]}
+    value={'2'} 
+    optionStyle={{color:'red'}}
+/>
+                    `}    
+                </pre>
+                
             </div>
         )
     }

@@ -609,7 +609,7 @@ class Tags extends Component{
     let {tagsContainerClassName:tcc,tagsContainerStyle:tcs,rtl} = this.context;
     let {tags} = this.props;
     let Tags = tags.map((tag,i)=>{
-      return <Tag {...tag} attrs={tag.tagAttrs}/>
+      return <Tag key={i} {...tag} attrs={tag.tagAttrs}/>
     });
     return (<div className={'aio-button-tags' + (rtl?' rtl':'') + (tcc?' ' + tcc:'')} style={tcs}>{Tags}</div>)
   }
