@@ -62,6 +62,7 @@ export default class DOC_AIOButton extends Component{
                     {text:'option property(bfore)',id:'option property(before)'},
                     {text:'option property(after)',id:'option property(after)'},
                     {text:'option property(style)',id:'option property(style)'},
+                    {text:'option property(onClick)',id:'option property(onClick)'},
                     
                     {text:'optionText optionValue',id:'optionText-optionValue'},
                     {text:'optionSubtext',id:'optionSubtext'},
@@ -70,7 +71,7 @@ export default class DOC_AIOButton extends Component{
                     {text:'optionStyle',id:'optionStyle'},
                     
                 ]}
-                navId='props'
+                navId='option property(onClick)'
                 body={({navId})=>{
                     if(navId === 'props'){return <PropsList props={this.propsList}/>}
                     if(navId === 'text'){return <Text/>}
@@ -83,6 +84,7 @@ export default class DOC_AIOButton extends Component{
                     if(navId === 'option property(before)'){return <OptionProperty_before/>}
                     if(navId === 'option property(after)'){return <OptionProperty_after/>}
                     if(navId === 'option property(style)'){return <OptionProperty_style/>}
+                    if(navId === 'option property(onClick)'){return <OptionProperty_onClick/>}
                     
                     if(navId === 'optionText-optionValue'){return <OptionTextOptionValue/>}
                     if(navId === 'optionSubtext'){return <OptionSubtext/>}
@@ -720,6 +722,159 @@ class OptionProperty_style extends Component{
     value={'2'} 
 />
                     `}    
+                </pre>
+                
+            </div>
+        )
+    }
+}
+
+class OptionProperty_onClick extends Component{
+    state = {tab:'2',select:'2',multiselect:['1','2'],radio:'2'}
+    render(){
+        let {tab,select,multiselect,radio} = this.state;
+        let options = [
+            {text:'option1',value:'1'},
+            {text:'option2',value:'2'},
+            {text:'option3',value:'3',onClick:()=>alert()},
+        ]
+        return (
+            <div style={{padding:12,width:'100%',overflowY:'auto'}}>
+                <div className="aio-component-label">tabs</div>
+                <AIOButton type='tabs' text='text example' options={options} value={tab} onChange={(tab)=>this.setState({tab})}/>
+                <pre>
+                    {`
+class App extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            tab:'2'
+        }
+    }
+    render(){
+        let {tab} = this.state;
+
+        return (
+            <AIOButton 
+                type='tabs' 
+                text='text example' 
+                options={[
+                    {text:'option1',value:'1'},
+                    {text:'option2',value:'2'},
+                    {text:'option3',value:'3',onClick:()=>alert()}
+                ]} 
+                value={tab}
+                onChange={(tab)=>this.setState({tab})}
+            />
+        )
+    }
+}
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">select</div>
+                <AIOButton type='select' value={select} options={options} onChange={(select)=>this.setState({select})}/>
+                <pre>
+                    {`
+class App extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            value:'2'
+        }
+    }
+    render(){
+        let {value} = this.state;
+
+        return (
+            <AIOButton 
+                type='select' 
+                value={value} 
+                options={[
+                    {text:'option1',value:'1'},
+                    {text:'option2',value:'2'},
+                    {text:'option3',value:'3',onClick:()=>alert()}
+                ]} 
+                onChange={(value)=>this.setState({value})}
+            />
+        )
+    }
+}
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">multiselect</div>
+                <AIOButton type='multiselect' text='text example' options={options} value={multiselect} onChange={(multiselect)=>this.setState({multiselect})}/>
+                <pre>
+                    {`
+class App extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            selected:['1','2'];
+        }
+    }
+    render(){
+        let {selected} = this.state;
+    
+        return (
+            <AIOButton 
+                type='multiselect' 
+                text='text example' 
+                options={[
+                    {text:'option1',value:'1'},
+                    {text:'option2',value:'2'},
+                    {text:'option3',value:'3',onClick:()=>alert()}
+                ]} 
+                value={selected} 
+                onChange={(selected)=>this.setState({selected})}
+            />
+        )
+    }
+}
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">radio</div>
+                <AIOButton type='radio' text='text example' options={options} value={radio} onChange={(radio)=>this.setState({radio})}/>
+                <pre>
+                    {`
+class App extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            value:'2';
+        }
+    }
+    render(){
+        let {value} = this.state;
+    
+        return (
+            <AIOButton 
+                type='radio' 
+                text='text example' 
+                options={[
+                    {text:'option1',value:'1'},
+                    {text:'option2',value:'2'},
+                    {text:'option3',value:'3',onClick:()=>alert()}
+                ]} 
+                value={value} 
+                onChange={(value)=>this.setState({value})}
+            />
+        )
+    }
+}
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                
+                <div className="aio-component-label">checklist</div>
+                <AIOButton type='checklist' options={options} value={'2'}/>
+                <pre>
+                    {"<AIOButton type='checklist' text='text example' options={options}/>"}    
                 </pre>
                 
             </div>
