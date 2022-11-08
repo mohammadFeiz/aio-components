@@ -6,7 +6,7 @@ let aioButtonContext = createContext();
 class Radio extends Component {
   static contextType = aioButtonContext;
   render(){
-    let {className,justify,rtl,style,gap} = this.context;
+    let {className,justify,rtl,style,gap,type} = this.context;
     var {options = [],attrs = {}} = this.props;
     return (
       <div 
@@ -15,7 +15,7 @@ class Radio extends Component {
       >
         {
           options.map((option,i)=>{
-            return <Option key={i} {...option} renderIndex={i} gap={gap} rtl={rtl}/>
+            return <Option key={i} {...option} renderIndex={i} gap={gap} rtl={rtl} type={type}/>
           })
         }
       </div>
@@ -166,7 +166,7 @@ export default class AIOButton extends Component {
     }
     showPopup(open,options){
       let {popOver,type} = this.props;
-      if(type === 'radio' || type === 'checkbox' || type === 'checklist'){return false}
+      if(type === 'radio' || type === 'checkbox'){return false}
       if(!open){return false;}
       if(popOver){return true;}
       if(options && options.length){return true}
@@ -201,14 +201,13 @@ export default class AIOButton extends Component {
         let option = options[realIndex];
         let value = this.getProp({option,index:realIndex,field:'value',def:undefined})
         let text = this.getProp({option,index:realIndex,field:'text',def:undefined});
-        let checked,tagAttrs,className,round,before,after,close,tagBefore,active;
+        let checked,tagAttrs,className,before,after,close,tagBefore,active;
         if(type === 'select'){
           className = 'aio-button-option';
           checked = this.getProp({option,index:realIndex,field:'checked',def:undefined});
           if(value !== undefined && value === this.props.value && this.text === undefined){this.text = text}
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
-          round = false;
           close = this.getProp({option,index:realIndex,field:'close',def:checked === undefined});
         }
         else if(type === 'multiselect'){
@@ -218,14 +217,13 @@ export default class AIOButton extends Component {
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           tagBefore = this.getProp({option,index:realIndex,field:'tagBefore',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
-          round = false;
           close = this.getProp({option,index:realIndex,field:'close',def:checked === undefined});
         }
         else if(type === 'radio'){
           className = 'aio-button-radio-option';
+          before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
           checked = this.props.value === value;
-          round = true;
           close = false;
         }
         else if(type === 'tabs'){
@@ -235,17 +233,9 @@ export default class AIOButton extends Component {
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
           close = false;
         }
-        else if(type === 'checklist'){
-          className = 'aio-button-radio-option';
-          checked = value === true;
-          round = false;
-          close = false;
-        }
         let show = this.getProp({option,index:realIndex,field:'show',def:true})
         if(!show){continue}
         let checkIcon = this.getProp({option,index:realIndex,field:'checkIcon',def:undefined}); 
-        let iconColor = this.getProp({option,index:realIndex,field:'iconColor',def:undefined});
-        let iconSize = this.getProp({option,index:realIndex,field:'iconSize',def:undefined});
         let subtext = this.getProp({option,index:realIndex,field:'subtext',def:undefined});
         
         let disabled = this.getProp({option,index:realIndex,field:'disabled',def:false}) || this.props.disabled;
@@ -258,7 +248,7 @@ export default class AIOButton extends Component {
         let optionStyle = this.getProp({option,index:realIndex,field:'style',readFrom:'option',def:{}});
         let propsStyle = this.getProp({option,index:realIndex,field:'style',readFrom:'props',def:{}});
         let style = {...propsStyle,...optionStyle};
-        let props = {option,value,show,text,subtext,checked,close,before,after,disabled,attrs,className,style,realIndex,tagAttrs,iconColor,iconSize,checkIcon,round,tagBefore};
+        let props = {option,value,show,text,subtext,checked,close,before,after,disabled,attrs,className,style,realIndex,tagAttrs,checkIcon,tagBefore};
         props.onClick = ()=>{
           if(props.disabled){return}
           if(option.onClick){option.onClick(props)}
@@ -332,10 +322,10 @@ export default class AIOButton extends Component {
             {type === 'multiselect' && <Multiselect dom={this.dom} dataUniqId={dataUniqId} tags={this.tags} text={text} subtext={subtext} caret={caret === undefined?true:caret} style={style}/>}
             {type === 'button' && <Button dom={this.dom} dataUniqId={dataUniqId} text={text} subtext={subtext} caret={caret === undefined?(popOver?true:false):caret}/>}
             {type === 'select' && <Button dom={this.dom} dataUniqId={dataUniqId} text={text} subtext={subtext} caret={caret === undefined?true:caret}/>}
-            {(type === 'radio' || type === 'checklist') && <Radio dom={this.dom} options={options}/>}
+            {(type === 'radio') && <Radio dom={this.dom} options={options}/>}
             {(type === 'tabs') && <Tabs dom={this.dom} options={options}/>}
             {type === 'checkbox' && <Checkbox dom={this.dom} {...this.props}/>}
-            {this.showPopup(open,options) && <Popup dataUniqId={dataUniqId} options={options}/>}
+            {this.showPopup(open,options) && <Popup dataUniqId={dataUniqId} options={options} type={type}/>}
         </aioButtonContext.Provider>
       );
     }    
@@ -371,7 +361,6 @@ class Checkbox extends Component{
         className={'aio-button-radio-option aio-button-checkbox' + (disabled?' disabled': '') + (className?' ' + className:'')}
         checked={!!value}
         onClick={()=>{if(!disabled){onChange(!!value,this.props)}}}
-        round={false}
       />
     )
   }
@@ -527,7 +516,7 @@ class Popup extends Component{
   getOptions(){
     let {searchValue} = this.state;
     let {gap,dragStart,dragOver,drop,rtl,onSwap} = this.context;
-    let {options} = this.props;
+    let {options,type} = this.props;
     let result = [];
     let exact = false;
     let renderIndex = 0;
@@ -536,7 +525,7 @@ class Popup extends Component{
       if(option.text === undefined){continue}
       if(searchValue && option.text.indexOf(searchValue) === -1){continue}
       if(option.text === searchValue){exact = true}
-      result.push(<Option key={i} {...option} renderIndex={renderIndex} gap={gap} dragStart={dragStart} dragOver={dragOver} drop={drop} rtl={rtl} onSwap={onSwap}/>)
+      result.push(<Option key={i} {...option} renderIndex={renderIndex} gap={gap} dragStart={dragStart} dragOver={dragOver} drop={drop} rtl={rtl} onSwap={onSwap} type={type}/>)
       renderIndex++;
     }
     this.exact = exact;
@@ -636,22 +625,23 @@ function Tag(props){
 }
 
 function CheckIcon(props){
-  let {checked,iconColor,iconSize,checkIcon,round,gap} = props;
+  let {checked,checkIcon = {},gap,type} = props;
   if(checked === undefined){return null} 
-  if(checkIcon !== undefined){
+  if(Array.isArray(checkIcon)){
     return (
       <>
-        {checkIcon}
+        {checkIcon[checked?1:0]}
         <div className='aio-button-gap' style={{width:gap}}></div>
       </>
     )
   }
-  if(!Array.isArray(iconColor)){iconColor = [iconColor]}
-  let [outerColor,innerColor = outerColor] = iconColor;
-  iconColor = [outerColor,innerColor];
-  if(!Array.isArray(iconSize)){iconSize = []}
-  let [outerSize,innerSize,stroke] = iconSize;
-  iconSize = [outerSize,innerSize,stroke]; 
+  let {size = [],color = [],round = type === 'radio'} = checkIcon;
+  if(!Array.isArray(color)){color = [color]}
+  let [outerColor = 'dodgerblue',innerColor = outerColor] = color;
+  let iconColor = [outerColor,innerColor];
+  if(!Array.isArray(size)){size = [14,12,1]}
+  let [outerSize = 14,innerSize = 12,stroke = 1] = size;
+  let iconSize = [outerSize,innerSize,stroke]; 
   return (
     <>
     <div 
@@ -666,9 +656,9 @@ function CheckIcon(props){
 }
 class Option extends Component{
   render(){
-    let {option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,title,round = true,iconSize,iconColor,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs} = this.props;
+    let {type,option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,title,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs} = this.props;
     let props = {className,title,style,onClick,datarenderindex:renderIndex,datarealindex:realIndex,tabIndex:0,...attrs}
-    let checkIconProps = {checked,iconColor,iconSize,checkIcon,round,gap:!before && !text?0:gap}
+    let checkIconProps = {checked,checkIcon,gap:!before && !text?0:gap,type}
     if(onSwap){
       props.onDragStart = dragStart;
       props.onDragOver = dragOver;

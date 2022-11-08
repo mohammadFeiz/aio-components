@@ -1,7 +1,7 @@
 import React,{Component,createRef} from 'react';
 import AIOButton from './../../npm/aio-button/aio-button';
 import {Icon} from '@mdi/react';
-import {mdiMenu,mdiClose,mdiChevronRight,mdiChevronLeft,mdiCheckCircleOutline,mdiAlertOutline,mdiInformationOutline} from '@mdi/js';
+import {mdiMenu,mdiClose,mdiChevronRight,mdiChevronLeft,mdiCheckCircleOutline,mdiAlertOutline,mdiInformationOutline, mdiChevronDown} from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';
@@ -59,16 +59,16 @@ export default class ReactSuperApp extends Component {
       let {navs,navId} = this.props;
       if(!navs){return false}
       if(navId){
-        let res = navs.filter(({id})=>id === navId)
-        if(res.length){return navId}
+        let res = this.getNavById(navId);
+        if(res !== false){return navId}
       }
       return navs[0].id;
     }
     navigation_layout() {
-      let {navs = [],navHeader} = this.props;
+      let {navs = [],navHeader,rtl} = this.props;
       if(!navs.length){return false}
       let {touch,navId} = this.state;
-      let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),touch}
+      let props = {navs,navHeader,navId,onChange:(navId)=>this.setState({navId}),touch,rtl}
       return {html: (<Navigation {...props}/>)};
     }
     page_layout(nav){
@@ -88,10 +88,25 @@ export default class ReactSuperApp extends Component {
           ]
         }
     }
+    getNavById(id){
+      let {navs} = this.props;
+      this.res = false;
+      this.getNavById_req(navs,id);
+      return this.res;
+    }
+    getNavById_req(navs,id){
+        if(this.res){return;}
+        for(let i = 0; i < navs.length; i++){
+            if(this.res){return;}
+            let nav = navs[i];
+            if(nav.id === id){this.res = nav; break;}
+            if(nav.navs){this.getNavById_req(nav.navs,id);}
+        }
+    }
     render() {
       let {confirm,popups,removePopup,touch,sideOpen,navId} = this.state;
       let {navs,sides = [],sideId,rtl,sideHeader,style} = this.props;
-      let nav = navs?navs.find((o)=>o.id === navId):false;
+      let nav = navs?this.getNavById(navId):false;
       return (
         <>
           {touch && <RVD layout={{style,className: 'rsa' + (rtl?' rtl':' ltr') + (popups.length?' has-opened-popup':''),column: [this.page_layout(nav),this.navigation_layout()]}}/>}
@@ -105,26 +120,45 @@ export default class ReactSuperApp extends Component {
     }
   }
   class Navigation extends Component {
+    state = {openDic:{}}
     header_layout() {
       let {navHeader} = this.props;
       if(!navHeader){return {size:12}}
       return {html: navHeader()};
     }
-    items_layout(){
-      let {navs,onChange,navId} = this.props;
+    items_layout(navs,level){
       return {
-        gap:12,
-        column:navs.map(({icon,text,id},i)=>{
-          let active = id === navId;
-          return {
-            size:36,className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
-            row:[
-              {show:!!icon,size:48,html:()=>icon(active),align:'vh'},
-              {show:!!!icon,size:12},
-              {html:text,align:'v'}
-            ]
+        gap:12,flex:1,scroll:'v',
+        column:navs.map((o,i)=>{
+          if(o.navs){
+            let {openDic} = this.state;
+            let open = openDic[o.id] === undefined?true:openDic[o.id]
+            let column = [this.item_layout(o,level)]
+            if(open){column.push(this.items_layout(o.navs,level + 1))}
+            return {gap:12,column}
           }
+          return this.item_layout(o,level)
         })
+      }
+    }
+    toggle(id){
+      let {openDic} = this.state;
+      let open = openDic[id] === undefined?true:openDic[id]
+      this.setState({openDic:{...openDic,[id]:!open}})
+    }
+    item_layout({id,icon,text,navs},level = 0){
+      let {onChange,navId,rtl} = this.props;
+      let {openDic} = this.state;
+      let open = openDic[id] === undefined?true:openDic[id]
+      let active = id === navId;
+      return {
+        size:36,className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>navs?this.toggle(id):onChange(id)},
+        row:[
+          {size:level * 16},
+          {size:24,html:navs?<Icon path={open?mdiChevronDown:(rtl?mdiChevronLeft:mdiChevronRight)} size={1}/>:'',align:'vh'},
+          {show:!!icon,size:48,html:()=>icon(active),align:'vh'},
+          {html:text,align:'v'}
+        ]
       }
     }
     bottomMenu_layout({icon,text,id}){
@@ -145,7 +179,7 @@ export default class ReactSuperApp extends Component {
       if(touch){
         return (<RVD layout={{className: 'rsa-bottom-menu',row: navs.map((o)=>this.bottomMenu_layout(o))}}/>)
       }
-      return (<RVD layout={{className: 'rsa-navigation',column: [this.header_layout(),this.items_layout()]}}/>);
+      return (<RVD layout={{className: 'rsa-navigation',column: [this.header_layout(),this.items_layout(navs,0)]}}/>);
     }
   }
   class SideMenu extends Component {

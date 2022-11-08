@@ -58,3 +58,29 @@
           display: none !important;
       }
   }
+    /* custom scrollbar */
+    .r-layout-parent::-webkit-scrollbar {
+        width: 10px !important;
+        height: 10px !important;
+      }
+      
+ 
+      
+      .r-layout-parent::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+      
+      .r-layout-parent::-webkit-scrollbar-thumb {
+        background-color: #cdd4e0;
+        border-radius: 20px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+      }
+      
+      .r-layout-parent::-webkit-scrollbar-thumb {
+        background-color: #b1b9ca;
+      }
+      
+      .r-layout-parent::-webkit-scrollbar-thumb:hover {
+        background-color: #6f7888;
+      }
