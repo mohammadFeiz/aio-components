@@ -11,6 +11,7 @@ export default class DOC_AIOValidation extends Component{
     render(){
         return (
             <DOC
+                {...this.props}
                 navs={[
                     {text:'try it',id:'try it',COMPONENT:()=><TryIt/>}
                 ]}

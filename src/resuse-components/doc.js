@@ -23,7 +23,7 @@ export default class DOC extends Component{
         }
     }
     render(){
-        let {title,navs,goToHome,navId} = this.props;
+        let {name,navs,goToHome,navId} = this.props;
         return (
             <RSA
                 navs={navs}
@@ -33,7 +33,7 @@ export default class DOC extends Component{
                     let nav = this.getNavById(navId);
                     return nav.COMPONENT()
                 }}
-                navHeader={()=><div className='part-title'>{title}</div>}
+                navHeader={()=><div className='part-title'>{name}</div>}
                 getActions={(obj)=>this.setState(obj)}
                 header={()=><button onClick={()=>goToHome()}>Home</button>}
             />

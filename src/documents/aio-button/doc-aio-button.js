@@ -5,11 +5,9 @@ import {Icon} from '@mdi/react';
 import {mdiAccount,mdiAccountBox,mdiCheckboxBlankOutline } from '@mdi/js';
 export default class DOC_AIOButton extends Component{
     render(){
-        let {goToHome} = this.props;
         return (
             <DOC
-                goToHome={goToHome}
-                title='aio-button'
+                {...this.props}
                 navId='optionStyle'
                 propsList={[
                     {

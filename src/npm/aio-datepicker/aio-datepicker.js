@@ -119,7 +119,7 @@ export default class AIODatepicker extends Component{
     else{return <GAHBase {...this.props} years={years}/>}
   }
 }
-GAH.defaultProps = {
+AIODatepicker.defaultProps = {
   size:180,calendarType:'gregorian',disabled:false,
   startYear:'-10',endYear:'+20',unit:'day',translate:(text)=>text,
   setDisabled:()=>false,getDateStyle:()=>{return {}}

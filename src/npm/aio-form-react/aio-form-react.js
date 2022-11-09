@@ -3,7 +3,7 @@ import {Icon} from '@mdi/react';
 import {mdiPrinter,mdiClose,mdiChevronLeft,mdiChevronRight,mdiPlusThick,mdiAttachment} from '@mdi/js';
 import AIOSlider from './../../npm/aio-slider/aio-slider';
 import AIOButton from './../../npm/aio-button/aio-button';
-import GAH from './../../npm/gah-datepicker/gah-datepicker';
+import GAH from './../../npm/aio-datepicker/aio-datepicker';
 import AIOValidation from './../../npm/aio-validation/aio-validation';
 import AIOTable from './../../npm/aio-table/aio-table';
 import ReactVirtualDom from './../../npm/react-virtual-dom/react-virtual-dom';
