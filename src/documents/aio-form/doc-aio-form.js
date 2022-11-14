@@ -21,15 +21,32 @@ class InputDatepicker extends Component{
     }
     render(){
         let {model} = this.state;
+        let input = {
+            type:'datepicker',field:'model.date',calendarType:model.calendarType,unit:model.unit,prefix:model.prefix,affix:model.affix,startYear:model.startYear,
+            endYear:model.endYear
+        }
         return (
             <Form
                 model={model}
+                inlineLabel={true}
+                labelStyle={{justifyContent:'flex-end'}}
                 onChange={(model)=>this.setState({model})}
                 inputs={[
-                    {type:'text',field:'model.date',label:'Date'},
-                    {type:'radio',options:[{text:'jalali',value:'jalali'},{text:'gregorian',value:'gregorian'}],field:'model.calendarType',label:'Calendar Type'},
-                    {type:'radio',options:[{text:'month',value:'month'},{text:'day',value:'day'},{text:'hour',value:'hour'}],field:'model.unit',label:'Calendar Unit'},
-                    {type:'datepicker',field:'model.date',calendarType:model.calendarType,unit:model.unit},
+                    {type:'radio',options:[{text:'jalali',value:'jalali'},{text:'gregorian',value:'gregorian'}],field:'model.calendarType',optionStyle:{width:'fit-content'},rowKey:'1'},
+                    {type:'radio',options:[{text:'month',value:'month'},{text:'day',value:'day'},{text:'hour',value:'hour'}],field:'model.unit',optionStyle:{width:'fit-content'},rowKey:'1'},
+                    {type:'text',field:'model.date',label:'Date',rowKey:'2'},
+                    {type:'text',field:'model.prefix',label:'prefix',rowKey:'2'},
+                    {type:'text',field:'model.affix',label:'affix',rowKey:'2'},
+                    {type:'text',field:'model.startYear',label:'startYear',rowKey:'2'},
+                    {type:'text',field:'model.endYear',label:'endYear',rowKey:'2'},
+                    {...input},
+                    {type:'html',html:()=>{
+                        return (
+                            <pre>
+                                {JSON.stringify(input,null,4)}
+                            </pre>
+                        )
+                    }}
                 ]}
             
             />            

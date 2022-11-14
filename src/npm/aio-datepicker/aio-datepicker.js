@@ -4,14 +4,14 @@ import './index.css';
 export default class AIODatepicker extends Component{
   constructor(props){
     super(props);
-    let {startYear,endYear} = this.props;
+    let {startYear,endYear,calendarType} = this.props;
     this.fn = new RDATE({
       getProps:()=>{
         let {years} = this.state;
         return {...this.props,years}
       }
     })
-    this.state = {years:this.getYears(),prevStartYear:startYear,prevEndYear:endYear};
+    this.state = {years:this.getYears(),prevStartYear:startYear,prevEndYear:endYear,prevCalendarType:calendarType};
   }
   getYears(){
     let start,end;
@@ -54,9 +54,9 @@ export default class AIODatepicker extends Component{
     return false
   }
   render(){
-    let {type,startYear,endYear} = this.props;
-    let {years,prevStartYear,prevEndYear} = this.state;
-    if(startYear !== prevStartYear || endYear !== prevEndYear){
+    let {type,startYear,endYear,calendarType} = this.props;
+    let {years,prevStartYear,prevEndYear,prevCalendarType} = this.state;
+    if(startYear !== prevStartYear || endYear !== prevEndYear || calendarType !== prevCalendarType){
       setTimeout(()=>this.setState({years:this.getYears(),prevStartYear:startYear,prevEndYear:endYear}),0)
     }
     if(type === 'range'){
@@ -394,7 +394,7 @@ export function RDATE({getState,getProps,setState}){
     getDateDetails_hour(o){
       return $$.getDateDetails_day(o,true);
     },
-    getDateDetails_day([year,month,day,hour],hourType){
+    getDateDetails_day([year,month,day = 1,hour = 0],hourType){
       let {years} = getProps();
       let {splitter} = getState();
       var {calendarType,unit} = getProps();

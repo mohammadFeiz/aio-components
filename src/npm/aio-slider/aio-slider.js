@@ -222,13 +222,13 @@ RRangeSlider.defaultProps = {
   direction:'right',editLabel:(a)=>a,labelStyle:()=>{return {}},labelRotate:()=>{return 0},
   points:[0],scaleStyle:()=>{return {}},getPointHTML:()=>'',style:()=>{},
   start:0,end:100,step:1,activegetPointStyle:{},getText:()=>{return ''},attrs:{},
-  pointStyle:()=>{return {}},lineStyle:()=>{return {}},fillStyle:()=>{return {}},valueStyle:()=>{return {}},textStyle:{},editValue:(value,index)=>value,textStyle:()=>{}
+  pointStyle:{},lineStyle:{},fillStyle:{},valueStyle:()=>{return {}},textStyle:{},editValue:(value,index)=>value,textStyle:()=>{}
 }
 class RRangeSliderLine extends Component{
   static contextType = RRangeSliderContext;
   render(){
     var {lineStyle} = this.context;
-    return (<div className='r-range-slider-line' style={lineStyle(this.context)}></div>)
+    return (<div className='r-range-slider-line' style={typeof lineStyle === 'function'?lineStyle(this.context):lineStyle}></div>)
   }
 }
 
@@ -244,7 +244,7 @@ class RRangeSliderFill extends Component{
   }
    
   render(){
-    var {mouseDown,rangeEvents = {},fillStyle,getText,textStyle,touch} = this.context;
+    var {mouseDown,rangeEvents = {},fillStyle,getText,textStyle,touch,points} = this.context;
     var {index} = this.props;
     var containerProps = {
       'data-index':index,className:'r-range-slider-fill-container',
@@ -257,9 +257,23 @@ class RRangeSliderFill extends Component{
       containerProps[prop] = ()=>rangeEvents[prop](index)
     }
     let text = getText(index,this.context);
+    let style;
+    if(typeof fillStyle === 'function'){
+      style = fillStyle(index,this.context);
+    }
+    else{
+      if(points.length === 1 && index === 0){
+        style = fillStyle;
+      }
+      if(points.length > 1 && index !== 0 && index !== points.length - 1){
+        style = fillStyle;
+      }
+    }
+    
+
     return (
       <div {...containerProps}> 
-        <div className='r-range-slider-fill' style={fillStyle(index,this.context)} data-index={index}></div>
+        <div className='r-range-slider-fill' style={style} data-index={index}></div>
         {text !== undefined && <div className='r-range-slider-text' style={textStyle(index)}>{text}</div>}
       </div>
     );
@@ -294,7 +308,7 @@ class RRangeSliderPoint extends Component{
     for(let prop in pointEvents){
       props[prop] = ()=>pointEvents[prop](index)
     }
-    var pointProps = {className:'r-range-slider-point',style:pointStyle(index,this.context),'data-index':index};
+    var pointProps = {className:'r-range-slider-point',style:typeof pointStyle === 'function'?pointStyle(index,this.context):pointStyle,'data-index':index};
     var valueProps = {
       style:this.getValueStyle(),
       className:'r-range-slider-value'
@@ -305,7 +319,6 @@ class RRangeSliderPoint extends Component{
         <div {...pointProps}>{html}</div>
         <div {...valueProps}>{editValue(fix(point),index)}</div>
       </div>
-      
     );
   }
 }

@@ -3,15 +3,17 @@ import './App.css'
 import DOC_AIOButton from "./documents/aio-button/doc-aio-button";
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOForm from './documents/aio-form/doc-aio-form';
+import DOC_AIODatepicker from './documents/aio-datepicker/doc-aio-datepicker';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-form',
+      part:'aio-datepicker',
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
-        'aio-form':{name:'aio-form',Render:DOC_AIOForm}
+        'aio-form':{name:'aio-form',Render:DOC_AIOForm},
+        'aio-datepicker':{name:'aio-datepicker',Render:DOC_AIODatepicker}
       }
     }
   }
