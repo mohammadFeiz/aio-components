@@ -17,7 +17,7 @@ export default class DOC_AIOForm extends Component{
 class InputDatepicker extends Component{
     constructor(props){
         super(props);
-        this.state = {model:{}}
+        this.state = {model:{calendarType:'gregorian',unit:'day',date:''}}
     }
     render(){
         let {model} = this.state;
@@ -26,7 +26,10 @@ class InputDatepicker extends Component{
                 model={model}
                 onChange={(model)=>this.setState({model})}
                 inputs={[
-                    {type:'datepicker',field:'model.date',calendarType:'jalali',unit:'hour'}
+                    {type:'text',field:'model.date',label:'Date'},
+                    {type:'radio',options:[{text:'jalali',value:'jalali'},{text:'gregorian',value:'gregorian'}],field:'model.calendarType',label:'Calendar Type'},
+                    {type:'radio',options:[{text:'month',value:'month'},{text:'day',value:'day'},{text:'hour',value:'hour'}],field:'model.unit',label:'Calendar Unit'},
+                    {type:'datepicker',field:'model.date',calendarType:model.calendarType,unit:model.unit},
                 ]}
             
             />            

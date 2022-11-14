@@ -66,7 +66,8 @@ export default class DOC_AIOButton extends Component{
                         ]
                     },
                     {text:'popOver',id:'popOver',COMPONENT:()=><PopOver/>},
-                    {text:'animate',id:'animate',COMPONENT:()=><Animate/>}
+                    {text:'animate',id:'animate',COMPONENT:()=><Animate/>},
+                    {text:'search',id:'search',COMPONENT:()=><Search/>},
                     
                 ]}
 
@@ -2053,6 +2054,128 @@ class Animate extends Component{
     }}}
     onChange={(select)=>this.setState({select})}
 />    
+                    `}    
+                </pre>
+            </div>
+            
+        )
+    }
+}
+
+
+class Search extends Component{
+    constructor(props){
+        super(props);
+        this.state = {select:'2'}
+    }
+    render(){
+        let {select} = this.state;
+        return (
+            <div className='example'>
+                <div className="aio-component-label">{`search={true} or search={undefined}`}</div>
+                <AIOButton
+                    type='select'
+                    options={[
+                        {text:'Option 1',value:'1'},
+                        {text:'Option 2',value:'2'},
+                        {text:'Option 3',value:'3'},
+                        {text:'Option 3',value:'4'},
+                        {text:'Option 3',value:'5'},
+                        {text:'Option 3',value:'6'},
+                        {text:'Option 3',value:'7'},
+                        {text:'Option 3',value:'8'},
+                        {text:'Option 3',value:'9'},
+                        {text:'Option 3',value:'10'},
+                        {text:'Option 3',value:'11'},
+                        {text:'Option 3',value:'12'},
+                        {text:'Option 3',value:'13'},
+                        {text:'Option 3',value:'14'},
+                        {text:'Option 3',value:'15'},
+                        {text:'Option 3',value:'16'}
+                    ]}
+                    value={select}
+                    onChange={(select)=>this.setState({select})}
+                />
+                <pre>
+                    {`
+<AIOButton
+type='select'
+options={[
+    {text:'Option 1',value:'1'},
+    {text:'Option 2',value:'2'},
+    {text:'Option 3',value:'3'},
+    {text:'Option 3',value:'4'},
+    {text:'Option 3',value:'5'},
+    {text:'Option 3',value:'6'},
+    {text:'Option 3',value:'7'},
+    {text:'Option 3',value:'8'},
+    {text:'Option 3',value:'9'},
+    {text:'Option 3',value:'10'},
+    {text:'Option 3',value:'11'},
+    {text:'Option 3',value:'12'},
+    {text:'Option 3',value:'13'},
+    {text:'Option 3',value:'14'},
+    {text:'Option 3',value:'15'},
+    {text:'Option 3',value:'16'}
+]}
+value={select}
+onChange={(select)=>this.setState({select})}
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+    
+                <div className="aio-component-label">{`search={false}`}</div>
+                <AIOButton
+                    type='select'
+                    options={[
+                        {text:'Option 1',value:'1'},
+                        {text:'Option 2',value:'2'},
+                        {text:'Option 3',value:'3'},
+                        {text:'Option 3',value:'4'},
+                        {text:'Option 3',value:'5'},
+                        {text:'Option 3',value:'6'},
+                        {text:'Option 3',value:'7'},
+                        {text:'Option 3',value:'8'},
+                        {text:'Option 3',value:'9'},
+                        {text:'Option 3',value:'10'},
+                        {text:'Option 3',value:'11'},
+                        {text:'Option 3',value:'12'},
+                        {text:'Option 3',value:'13'},
+                        {text:'Option 3',value:'14'},
+                        {text:'Option 3',value:'15'},
+                        {text:'Option 3',value:'16'}
+                    ]}
+                    value={select}
+                    search={false}
+                    onChange={(select)=>this.setState({select})}
+                />
+                <pre>
+                    {`
+<AIOButton
+type='select'
+options={[
+    {text:'Option 1',value:'1'},
+    {text:'Option 2',value:'2'},
+    {text:'Option 3',value:'3'},
+    {text:'Option 3',value:'4'},
+    {text:'Option 3',value:'5'},
+    {text:'Option 3',value:'6'},
+    {text:'Option 3',value:'7'},
+    {text:'Option 3',value:'8'},
+    {text:'Option 3',value:'9'},
+    {text:'Option 3',value:'10'},
+    {text:'Option 3',value:'11'},
+    {text:'Option 3',value:'12'},
+    {text:'Option 3',value:'13'},
+    {text:'Option 3',value:'14'},
+    {text:'Option 3',value:'15'},
+    {text:'Option 3',value:'16'}
+]}
+value={select}
+search={false}
+onChange={(select)=>this.setState({select})}
+/>
                     `}    
                 </pre>
             </div>

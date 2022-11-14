@@ -680,6 +680,10 @@ export function RDATE({getState,getProps,setState}){
       var {calendarType,unit,theme = [],size,years,translate} = getProps();
       let D = '';
       let M = '';
+      let props = {
+        type:'select',caret:false,popupAttrs:{style:{maxHeight:size * 1.2}},search:false,
+        style:{background:'none',color:'inherit',fontSize:'inherit',padding:'0 3px'}
+      }
       if(unit === 'hour'){
         let daysLength = $$.calc.getMonthDaysLength(activeYear,activeMonth,calendarType);
         let options = [];
@@ -687,28 +691,22 @@ export function RDATE({getState,getProps,setState}){
           options.push({text:i + 1,value:i + 1,style:{height:size / 6,background:theme[1],color:theme[0]}})
         }
         D = (
-          <AIOButton caret={false}
-          type='select' value={activeDay} style={{background:'none',color:'inherit',fontSize:'inherit',padding:'0 3px'}}
-          options={options} popupStyle={{maxHeight:size * 1.2}}
-          onChange={(value)=>{onChange({activeDay:value})}}
-        />
+          <AIOButton {...props} value={activeDay} options={options} onChange={(value)=>{onChange({activeDay:value})}}/>
         )
       }
       if(unit === 'day' || unit === 'hour'){
         let months = $$.calc.getMonths(calendarType);
         if(calendarType === 'gregorian'){months = months.map((o)=>o.slice(0,3))}
         M = (
-          <AIOButton caret={false}
-          type='select' value={activeMonth} style={{background:'none',color:'inherit',fontSize:'inherit',padding:'0 3px'}}
-          options={months.map((o,i)=>{return {text:translate(o),value:i + 1,style:{height:size / 6,background:theme[1],color:theme[0]}}})} popupStyle={{maxHeight:size * 1.2}}
-          onChange={(value)=>{onChange({activeMonth:value})}}
-        />
+          <AIOButton {...props} value={activeMonth}
+            options={months.map((o,i)=>{return {text:translate(o),value:i + 1,style:{height:size / 6,background:theme[1],color:theme[0]}}})}
+            onChange={(value)=>{onChange({activeMonth:value})}}
+          />
         )
       }
       let Y = (
-        <AIOButton caret={false}
-          type='select' value={activeYear} style={{background:'none',color:'inherit',fontSize:'inherit',padding:'0 3px'}}
-          options={years.map((o,i)=>{return {text:o,value:o,style:{height:size / 6,background:theme[1],color:theme[0]}}})} popupStyle={{maxHeight:size * 1.2}}
+        <AIOButton {...props} value={activeYear}
+          options={years.map((o,i)=>{return {text:o,value:o,style:{height:size / 6,background:theme[1],color:theme[0]}}})}
           onChange={(value)=>{onChange({activeYear:value})}}
         />
       );
