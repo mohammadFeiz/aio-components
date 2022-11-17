@@ -366,7 +366,7 @@ class GAHCell extends Component{
     let isToday = isEqual(dateArray,getToday(calendarType))
     let isDisabled = isMatch(dateArray,disabled)
     let attrs = {}
-    if(dateAttrs){attrs = dateAttrs({...getDateDetails(dateArray),isToday,isDisabled,isActive}) || {}}
+    if(dateAttrs){attrs = dateAttrs({...getDateDetails(dateArray),isToday,isDisabled,isActive,isMatch:(o)=>isMatch(dateArray,o)}) || {}}
     let className = this.getClassName(isActive,isToday,isDisabled,attrs.className);
     let onClick = isDisabled || !onChange?undefined:()=>{SetState({year:dateArray[0],month:dateArray[1],day:dateArray[2],hour:dateArray[3]},true)};
     let style = {} 

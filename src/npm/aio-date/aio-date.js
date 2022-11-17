@@ -2,7 +2,8 @@ export default function AIODate(){
     let $$ = {
       isMatch(dateArray,matchers,calendarType = 'gregorian'){
         if(matchers === true){return true}
-        if(matchers === false || !Array.isArray(matchers)){return false}
+        if(matchers === false){return false}
+        dateArray = $$.convertToArray(dateArray)
         let {isLess,isGreater,isEqual} = $$;
         for(let i = 0; i < matchers.length; i++){
           let matcher = matchers[i],type,targets;
@@ -51,10 +52,13 @@ export default function AIODate(){
               if(!isEqual(dateArray,start) && !isEqual(dateArray,end) && (isLess(dateArray,start) || isGreater(dateArray,end))){return true}
             }
           }
-          else if(type[0] === 'w'){
+          else if(type === 'w'){
             let w = $$.getWeekDay(dateArray,calendarType).index;
-            if(type === 'w='){for(let i = 0; i < targets.length; i++){if(w === targets[i]){return true}}}
-            else if(type === 'w!='){for(let i = 0; i < targets.length; i++){if(w !== targets[i]){return true}}} 
+            for(let i = 0; i < targets.length; i++){if(w === +targets[i]){return true}}
+          }
+          else if(type === '!w'){
+            let w = $$.getWeekDay(dateArray,calendarType).index;
+            for(let i = 0; i < targets.length; i++){if(w !== +targets[i]){return true}}
           }
         }
         return false

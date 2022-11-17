@@ -8,7 +8,7 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='disabled'
+                navId='onClear'
                 navs={[
                     {text:'calendarType',id:'calendarType',COMPONENT:()=><CalendarType/>},
                     {text:'unit',id:'unit',COMPONENT:()=><Unit/>},
@@ -17,6 +17,8 @@ export default class DOC_AIOForm extends Component{
                     {text:'justCalendar',id:'justCalendar',COMPONENT:()=><JustCalendar/>},
                     {text:'startYear,endYear',id:'startYear-endYear',COMPONENT:()=><StartYearEndYear/>},
                     {text:'disabled',id:'disabled',COMPONENT:()=><Disabled/>},
+                    {text:'dateAttrs',id:'dateAttrs',COMPONENT:()=><DateAttrs/>},
+                    {text:'onClear',id:'onClear',COMPONENT:()=><OnClear/>},
                 ]}
             />
         )
@@ -466,7 +468,7 @@ class Disabled extends Component{
     constructor(props){
         super(props);
         this.state = {
-            date1:'',date2:''
+            date:''
         }
     }
     render(){
@@ -538,7 +540,7 @@ class Disabled extends Component{
                 <DatePicker
                     value={date}
                     justCalendar={true}
-                    disabled={['<=>,2022,2024']}
+                    disabled={['!<=>,2022,2024']}
                     onChange={({dateString})=>this.setState({date:dateString})}
                 />
                 <pre>
@@ -553,6 +555,256 @@ class Disabled extends Component{
                 </pre>
                 <div className='aio-component-splitter'></div>
 
+                <div className="aio-component-label">{`equal ( = )`}</div>
+                
+                <DatePicker
+                    value={date}
+                    justCalendar={true}
+                    disabled={['=,2022/4/5,2022/6/7,2022/8/12']}
+                    onChange={({dateString})=>this.setState({date:dateString})}
+                />
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['=,2022/4/5,2022/6/7,2022/8/12']}
+    ...
+/>
+
+                `}
+                </pre>
+
+                <div className='aio-component-splitter'></div>
+
+                <div className="aio-component-label">{`not equal ( != )`}</div>
+                <DatePicker
+                    value={'2022/4/1'}
+                    justCalendar={true}
+                    disabled={['!=,2022/4/5']}
+                />
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['!=,2022/4/5']}
+    ...
+/>
+                `}
+                </pre>
+
+
+                <div className="aio-component-label">{`greater ( > )`}</div>
+                
+                <DatePicker
+                    value={'2022/4/1'}
+                    justCalendar={true}
+                    disabled={['>,2022/4/5']}
+                />
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['>,2022/4/5']}
+    ...
+/>
+
+                `}
+                </pre>
+                
+                <div className='aio-component-splitter'></div>
+                <div className="aio-component-label">{`greater equal ( >= )`}</div>
+                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['>=,2022/4/5']}/>
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['>=,2022/4/5']}
+    ...
+/>
+                `}
+                </pre>
+
+                <div className="aio-component-label">{`less ( < )`}</div>
+                
+                <DatePicker
+                    value={'2022/4/1'}
+                    justCalendar={true}
+                    disabled={['<,2022/4/5']}
+                />
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['<,2022/4/5']}
+    ...
+/>
+
+                `}
+                </pre>
+                
+                <div className='aio-component-splitter'></div>
+                <div className="aio-component-label">{`less equal ( <= )`}</div>
+                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['<=,2022/4/5']}/>
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['<=,2022/4/5']}
+    ...
+/>
+                `}
+                </pre>
+
+
+                <div className="aio-component-label">{`weekday is ( w )`}</div>
+                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['w,6,4']}/>
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['w,6,4']}
+    ...
+/>
+                `}
+                </pre>
+
+
+                <div className="aio-component-label">{`weekday is not ( !w )`}</div>
+                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['!w,6']}/>
+                <pre>
+                {`
+<DatePicker
+    ...
+    disabled={['!w,6']}
+    ...
+/>
+                `}
+                </pre>
+
+            </div>
+        )
+    }
+}
+
+class DateAttrs extends Component{
+    render(){
+        return (
+            <div className='example'>
+                <div className="aio-component-label">example 1</div>
+                <DatePicker
+                    value={'2022/4/14'}
+                    justCalendar={true}
+                    dateAttrs={({isMatch,isActive,isToday})=>{
+                        if(isActive){
+                            return {
+                                style:{
+                                    background:'dodgerblue',
+                                    color:'#fff' 
+                                }
+                            }
+                        }
+                        if(isToday){
+                            return {
+                                style:{
+                                    color:'red',fontSize:14,fontWeight:'bold',border:'1px solid',borderRadius:'100%'
+                                }
+                            }
+                        }
+                        let matchers = [
+                            '<>,2022/4/5,2022/4/18'
+                        ];
+                        if(isMatch(matchers)){
+                            return {
+                                style:{
+                                    background:'orange'
+                                }
+                            }
+                        }
+                    }}
+                />
+                <pre>
+                {`
+<DatePicker
+    ...
+    dateAttrs={({isMatch,isActive,isToday})=>{
+        if(isActive){
+            return {
+                style:{
+                    background:'dodgerblue',
+                    color:'#fff' 
+                }
+            }
+        }
+        if(isToday){
+            return {
+                style:{
+                    color:'red',fontSize:14,fontWeight:'bold',border:'1px solid',borderRadius:'100%'
+                }
+            }
+        }
+        let matchers = [
+            '<>,2022/4/5,2022/4/18'
+        ];
+        if(isMatch(matchers)){
+            return {
+                style:{
+                    background:'orange'
+                }
+            }
+        }
+    }}
+    ...
+/>
+
+                `}
+                </pre>
+                <div className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+}
+
+class OnClear extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            date:'2022/5/5'
+        }
+    }
+    render(){
+        let {date} = this.state;
+        return (
+            <div className='example'>
+                <div className="aio-component-label">example 1</div>
+                <DatePicker
+                    value={date}
+                    onClear={()=>this.setState({date:''})}
+                    onChange={({dateString})=>this.setState({date:dateString})}
+                />
+                <pre>
+                {`
+class App extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            date:''
+        }
+    }
+    render(){
+        let {date} = this.state;
+        return (
+            <DatePicker
+                value={date}
+                onClear={()=>this.setState({date:''})}
+                onChange={({dateString})=>this.setState({date:dateString})}
+            />
+        )
+    }
+}
+
+                `}
+                </pre>
+                <div className='aio-component-splitter'></div>
             </div>
         )
     }
