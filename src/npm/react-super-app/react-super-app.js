@@ -62,6 +62,7 @@ export default class ReactSuperApp extends Component {
         let res = this.getNavById(navId);
         if(res !== false){return navId}
       }
+      if(!navs.length){return false}
       return navs[0].id;
     }
     navigation_layout() {
@@ -99,6 +100,8 @@ export default class ReactSuperApp extends Component {
         for(let i = 0; i < navs.length; i++){
             if(this.res){return;}
             let nav = navs[i];
+            let {show = ()=>true} = nav;
+            if(!show()){continue}
             if(nav.id === id){this.res = nav; break;}
             if(nav.navs){this.getNavById_req(nav.navs,id);}
         }
@@ -129,7 +132,7 @@ export default class ReactSuperApp extends Component {
     items_layout(navs,level){
       return {
         gap:12,flex:1,scroll:'v',
-        column:navs.map((o,i)=>{
+        column:navs.filter(({show = ()=>true})=>show()).map((o,i)=>{
           if(o.navs){
             let {openDic} = this.state;
             let open = openDic[o.id] === undefined?true:openDic[o.id]
