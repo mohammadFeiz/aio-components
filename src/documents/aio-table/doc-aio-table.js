@@ -3,6 +3,8 @@ import Table from './../../npm/aio-table/aio-table';
 import DOC from '../../resuse-components/doc';
 import model from './model';
 import tree_model from './tree-model';
+import {mdiHumanFemale,mdiHumanMale} from '@mdi/js';
+import {Icon} from '@mdi/react';
 import AIOButton from './../../npm/aio-button/aio-button';
 import Slider from './../../npm/aio-slider/aio-slider';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
@@ -12,7 +14,7 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='column minWidth'
+                navId='column template'
                 navs={[
                     {text:'simple',id:'simple',COMPONENT:()=><Simple/>},
                     {text:'showHeader',id:'showHeader',COMPONENT:()=><ShowHeader/>},
@@ -30,6 +32,9 @@ export default class DOC_AIOForm extends Component{
                         {text:'column.minWidth',id:'column minWidth',COMPONENT:()=><ColumnMinWidth/>},  
                         {text:'column.justify',id:'column justify',COMPONENT:()=><ColumnJustify/>},
                         {text:'column.titleJustify',id:'column titleJustify',COMPONENT:()=><ColumnTitleJustify/>},   
+                        {text:'column.cellAttrs',id:'column cellAttrs',COMPONENT:()=><ColumnCellAttrs/>},
+                        {text:'column.titleAttrs',id:'column titleAttrs',COMPONENT:()=><ColumnTitleAttrs/>}, 
+                        {text:'column.template',id:'column template',COMPONENT:()=><ColumnTemplate/>}, 
                       ]
                     }
                 ]}
@@ -849,6 +854,248 @@ class App extends Component {
           {title:'Gender',field:'row.gender',titleJustify:false},
           {title:'Date',field:'row.date',titleJustify:false},
           {title:'Age',field:'row.age',titleJustify:false}
+        ]}
+      />
+    );
+  }
+}          
+            `}
+          </pre>
+        </div>
+      );
+    }
+  }
+
+  class ColumnCellAttrs extends Component {
+    constructor(props){
+      super(props);
+      this.state = {
+        model
+      }
+    }
+    render(){
+      let {model} = this.state;
+      let {rtl = false} = this.props;
+      return (
+        <div className='example doc-aio-table'>
+          <Table
+            rtl={rtl}
+            model={model}
+            columns={[
+              {
+                title:'Name',field:'row.name',width:100,minWidth:100,
+                cellAttrs:()=>{return {className:'hover'}}
+              },
+              {
+                title:'Gender',field:'row.gender',minWidth:100,
+                cellAttrs:(row)=>{
+                  return {
+                    style:{boxShadow:'inset 0 0 8px'},
+                    onClick:(row)=>alert(row.gender)
+                  }
+                }
+              },
+              {
+                title:'Date',field:'row.date'
+              },
+              {
+                title:'Age',field:'row.age',width:50,
+                cellAttrs:(row)=>{
+                  if(row.age < 25){return {className:'cell-green'}}
+                  if(row.age < 35){return {className:'cell-yellow'}}
+                  if(row.age < 45){return {className:'cell-orange'}}
+                  return {className:'cell-red'}
+                }
+              }
+            ]}
+          />
+          <pre>
+            {`
+import model from './model';
+
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
+    }
+  }
+  render(){
+    let {model} = this.state;
+    return (
+      <Table
+        rtl={${rtl}}
+        model={model}
+        columns={[
+          {
+            title:'Name',field:'row.name',width:100,minWidth:100,
+            cellAttrs:()=>{return {className:'hover'}}
+          },
+          {
+            title:'Gender',field:'row.gender',minWidth:100,
+            cellAttrs:(row)=>{
+              return {
+                style:{boxShadow:'inset 0 0 8px'},
+                onClick:(row)=>alert(row.gender)
+              }
+            }
+          },
+          {
+            title:'Date',field:'row.date'
+          },
+          {
+            title:'Age',field:'row.age',width:50,
+            cellAttrs:(row)=>{
+              if(row.age < 25){return {className:'cell-green'}}
+              if(row.age < 35){return {className:'cell-yellow'}}
+              if(row.age < 45){return {className:'cell-orange'}}
+              return {className:'cell-red'}
+            }
+          }
+        ]}
+      />
+    );
+  }
+}          
+            `}
+          </pre>
+        </div>
+      );
+    }
+  }
+
+
+  class ColumnTitleAttrs extends Component {
+    constructor(props){
+      super(props);
+      this.state = {
+        model
+      }
+    }
+    render(){
+      let {model} = this.state;
+      let {rtl = false} = this.props;
+      return (
+        <div className='example doc-aio-table'>
+          <Table
+            rtl={rtl}
+            model={model}
+            columns={[
+              {title:'Name',field:'row.name',titleAttrs:{className:'hover'}},
+              {title:'Gender',field:'row.gender',titleAttrs:{className:'hover'}},
+              {title:'Date',field:'row.date',titleAttrs:{className:'hover'}},
+              {title:'Age',field:'row.age',titleAttrs:{className:'hover'}}
+            ]}
+          />
+          <pre>
+            {`
+import model from './model';
+
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
+    }
+  }
+  render(){
+    let {model} = this.state;
+    return (
+      <Table
+        rtl={${rtl}}
+        model={model}
+        columns={[
+          {title:'Name',field:'row.name',titleAttrs:{className:'hover'}},
+          {title:'Gender',field:'row.gender',titleAttrs:{className:'hover'}},
+          {title:'Date',field:'row.date',titleAttrs:{className:'hover'}},
+          {title:'Age',field:'row.age',titleAttrs:{className:'hover'}}
+        ]}
+      />
+    );
+  }
+}          
+            `}
+          </pre>
+        </div>
+      );
+    }
+  }
+
+
+  class ColumnTemplate extends Component {
+    constructor(props){
+      super(props);
+      this.state = {
+        model
+      }
+    }
+    render(){
+      let {model} = this.state;
+      let {rtl = false} = this.props;
+      return (
+        <div className='example doc-aio-table'>
+          <Table
+            rtl={rtl}
+            model={model}
+            templates={{
+              checkbox:(row)=>{
+                return <input type='checkbox' value={row.active} onChange={(e)=>{
+                  row.active = e.target.checked;
+                  this.setState({model})
+                }}/>
+              },
+              age:(row)=>{
+                return <input type='range' value={row.age}/> 
+              },
+              gender:(row)=>{
+                return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
+              }
+            }}
+            columns={[
+              {template:'checkbox',width:48,justify:true},
+              {title:'Name',field:'row.name'},
+              {title:'Gender',field:'row.gender',template:'gender'},
+              {title:'Date',field:'row.date'},
+              {title:'Age',field:'row.age',template:'age'}
+            ]}
+          />
+          <pre>
+            {`
+import model from './model';
+
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
+    }
+  }
+  render(){
+    let {model} = this.state;
+    return (
+      <Table
+        rtl={${rtl}}
+        model={model}
+        templates={{
+          checkbox:(row)=>{
+            return <input type='checkbox' value={row.active} onChange={(e)=>{
+              row.active = e.target.checked;
+              this.setState({model})
+            }}/>
+          },
+          age:(row)=>{
+            return <input type='range' value={row.age}/> 
+          },
+          gender:(row)=>{
+            return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
+          }
+        }}
+        columns={[
+          {template:'checkbox',width:48,justify:true},
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender',template:'gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age',template:'age'}
         ]}
       />
     );

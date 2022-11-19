@@ -10,3 +10,21 @@
     border:1px solid #ddd;
     margin:0;
 }
+.cell-green{
+    background:lightgreen; 
+  }
+  .cell-yellow{
+    background:yellow !important; 
+  }
+  .cell-orange{
+    background:orange !important; 
+    color:#fff;
+  }
+  .cell-red{
+    background:red !important; 
+    color:#fff;
+  }
+  .hover:hover{
+    background:dodgerblue !important;
+    color:#fff;
+  }
