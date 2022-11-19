@@ -57,6 +57,71 @@ export default class AIOLoading extends Component {
       }}/>
     )
   }
+  spin4(){
+    let {config} = this.props;
+    var {size = 80,thickness = [6,18],count = 12,fill = '#000',duration = 1.0,round = 3} = config;
+    return (
+      <div style={{
+        position:'relative',
+        display:'inline-block',
+        width:size,height:size,
+      }}>
+        {
+          Array(count).fill(0).map((o,i)=>{
+            return (
+              <>
+                <div style={{
+                  transformOrigin:`${size/2}px ${size/2}px`,
+                  webkitAnimation: `${duration}s lds-spinner linear infinite`,
+                  animation: `${duration}s lds-spinner linear infinite`,
+                  transform:`rotate(${i * 360 / count}deg)`,
+                  animationDelay:(duration/count*i) + 's'
+                }}>
+                  <div style={{
+                  display:'block',
+                  position:'absolute',
+                  top:3,
+                  left:(size - thickness[0]) / 2,
+                  width:thickness[0],
+                  height:thickness[1],
+                  borderRadius:round,
+                  background:fill
+                }}></div>
+                </div>
+                
+              </>
+            )
+          })
+        }
+      </div>
+    )
+  }
+  spin5(){
+    let {config} = this.props;
+    var {size = 60,thickness = 3,fill = '#000',duration = 0.8} = config;
+    let instyle = {
+      boxSizing:'border-box',display:'block',position:'absolute',
+      width: size,height: size,border:`${thickness}px solid #000`,borderRadius: '100%',
+      animation: `lds-ring ${duration}s cubic-bezier(0.5, 0, 0.5, 1) infinite`,
+      borderColor: `${fill} transparent transparent transparent`
+    }
+    return (
+      <div style={{
+        position:'relative',
+        display:'inline-block',
+        width:size,height:size
+      }}>
+        {
+          Array(4).fill(0).map((o,i)=>{
+            return (
+              <div style={{...instyle,animationDelay:`${(duration - 0.5 * duration) / 4 * i}s`}}></div>
+            )
+          })
+        }
+        
+      </div>
+    )
+  }
   dots1(){
     let {config} = this.props;
     var {gap = 2,thickness = 12,fill = '#000',duration = 1,count = 3} = config;
@@ -123,30 +188,6 @@ export default class AIOLoading extends Component {
       <div style={{position:'relative',width:size,height:size,display:'flex',alignItems:'center'}}>{items}</div>
     )
   }
-  dots3(){
-    let {config} = this.props;
-    var {size = 100,thickness = 20,borderRadius = 20,fill = '#000',duration = 3,style} = config;
-    let colors = Array.isArray(fill)?fill:[fill]
-    var getStyle1 = (i)=>{
-      return {
-        width:thickness,height:thickness,position:'absolute',background:colors[i % colors.length],borderRadius:borderRadius + 'px',margin:thickness / -2,
-        webkitAnimation: `${duration}s mesh ease-in-out infinite ${duration / -2}s`,
-        animation: `${duration}s mesh ease-in-out infinite ${duration / -2}s`,
-      }
-    }
-    return (
-      <div class="mesh-loader" style={{overflow:'hidden',width:size,height:size,display:'flex',position:'relative',alignItems:'center',justifyContent:'center'}}>
-              <div class="set-one">
-                <div class="circle" style={getStyle1(0)}/>
-                <div class="circle" style={{...getStyle1(2),animationDelay:'0s',webkitAnimationDelay:'0s'}} />
-              </div>
-              <div class="set-two" style={{transform:'rotate(90deg)'}}>
-                <div class="circle" style={getStyle1(1)} />
-                <div class="circle" style={{...getStyle1(3),animationDelay:'0s',webkitAnimationDelay:'0s'}} />
-              </div>
-            </div>
-    )
-  }
   cubes1(){
     let {config} = this.props;
     var {size = 60,delays = [0.2,0.3,0.4,0.1,0.2,0.3,0,0.1,0.2],borderRadius = 0,fill = '#000',duration = 1.3,gap = 0,style} = config;
@@ -189,6 +230,80 @@ export default class AIOLoading extends Component {
         {items}
       </div>
     )
+  }
+  cubes3(){
+    let {config} = this.props;
+    let {duration = 1,type = 1,fill = '#000',size = 68,gap = 1,count = 3} = config;
+    let unit = duration / ((count * count) - ((count - 2) * (count - 2)));
+    let delays;
+    if(count === 3){
+      delays = [1,2,3,8,9,4,7,6,5];
+    }
+    else if(count === 4){
+      delays = [
+        1,2,3,4,
+        12,0,0,5,
+        11,0,0,6,
+        10,9,8,7
+      ];
+    }
+    else if(count === 5){
+      delays = [
+        1,2,3,4,5,
+        16,0,0,0,6,
+        15,0,0,0,7,
+        14,0,0,0,8,
+        13,12,11,10,9
+      ];
+    }
+    else if(count === 6){
+      delays = [
+        1,2,3,4,5,6,
+        20,0,0,0,0,7,
+        19,0,0,0,0,8,
+        18,0,0,0,0,9,
+        17,0,0,0,0,10,
+        16,15,14,13,12,11
+      ];
+    }
+    else if(count === 7){
+      delays = [
+        1,2,3,4,5,6,7,
+        24,0,0,0,0,0,8,
+        23,0,0,0,0,0,9,
+        22,0,0,0,0,0,10,
+        21,0,0,0,0,0,11,
+        20,0,0,0,0,0,12,
+        19,18,17,16,15,14,13
+      ];
+    }
+    return (
+      <div
+        style={{
+          width:size,height:size,
+          display:'grid',
+          gridTemplateColumns:Array(count).fill('auto').join(' '),
+          gridGap:gap
+        }}
+      >
+        {
+          Array(count * count).fill(0).map((o,i)=>{
+            let x = i % count;
+            let y = Math.floor(i / count);
+            let isCenter = x > 0 && x < count - 1 && y > 0 && y < count - 1
+            return (
+              <div
+                style={{
+                  animation:isCenter?'none': `${duration}s cubes3-${type} infinite ease-in-out ${delays[i] * unit}s`,
+                  background:isCenter?'none':fill
+                }}
+              ></div>
+            )
+          })
+        }    
+      </div>
+    )
+    
   }
   getSameCenterCircles({count,thickness,gap,fill}){
     var getStyle1 = (i)=>{
