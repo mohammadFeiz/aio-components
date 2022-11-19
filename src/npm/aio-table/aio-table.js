@@ -9,7 +9,7 @@ import './index.css';
 let TableContext = createContext();
 let TableCLS = {
   row:'row',header:'table-header',title:'table-title',resizeHandle:'title-resize-handle',rows:'rows',table:'table',toolbarIconButton:'toolbar-icon',searchBox:'aio-table-search',
-  toolbar:'table-toolbar',rowToggle:'table-toggle',cellBefore:'cell-before',cellAfter:'cell-after',cellContent:'cell-content',cellSubtext:'cell-subtext',cell:'cell',
+  toolbar:'table-toolbar',rowToggle:'table-toggle',cellBefore:'cell-before',cellAfter:'cell-after',cellContent:'cell-content',cellSubtext:'cell-subtext',cell:'aio-table-cell',
   filterPopup:'table-filter-popup',loading:'table-loading',addFilter:'table-filter-add',filterOperator:'table-filter-operator',filterItem:'table-filter-item',
   filterValue:'table-filter-value',filterRemove:'table-filter-remove',groupRow:'table-group-row',inlineEditInput:'table-inline-edit-input',
   freezeContainer:'table-freeze-container',unfreezeContainer:'table-unfreeze-container',splitter:'table-splitter',paging:'table-paging',
@@ -822,11 +822,9 @@ class Toolbar extends Component{
     )
   }
   getToolbarItems(){
-    var {toolbarItems = []} = this.context;
-    return toolbarItems.map((o)=>{
-      return <AIOButton {...o} className={TableCLS.toolbarItem + (o.className?' ' +o.className:'')}/>
-    })
-
+    var {toolbar} = this.context;
+    if(!toolbar){return []}
+    return [toolbar()]
   }
   getItems(){
     let {excel} = this.context;
