@@ -1353,7 +1353,7 @@ function Excel(getProps){
       return result;
     },
     export(rows) {
-      let {translate} = getProps();
+      let {translate = (o)=>o} = getProps();
       let name = window.prompt(translate('Inter Excel File Name'));
       if (!name || name === null || !name.length) return;
       var data = this.getJSON(rows);

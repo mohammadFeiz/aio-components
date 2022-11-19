@@ -1,0 +1,12 @@
+.doc-aio-table{
+    display:flex;
+}
+.doc-aio-table .table{
+    flex:3 !important;
+}
+.doc-aio-table pre{
+    flex:1;
+    overflow:auto;
+    border:1px solid #ddd;
+    margin:0;
+}
