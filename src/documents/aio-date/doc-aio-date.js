@@ -10,11 +10,13 @@ export default class DOC_AIODate extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='isMatch'
+                navId='getWeekDay'
                 navs={[
                     {text:'gregorianToJalali',id:'gregorianToJalali',COMPONENT:()=><GregorianToJalali/>},
                     {text:'jalaliToGregorian',id:'jalaliToGregorian',COMPONENT:()=><JalaliToGregorian/>},
                     {text:'isMatch',id:'isMatch',COMPONENT:()=><IsMatch/>},
+                    {text:'getToday',id:'getToday',COMPONENT:()=><GetToday/>},
+                    {text:'getWeekDay',id:'getWeekDay',COMPONENT:()=><GetWeekDay/>},
                 ]}
             />
         )
@@ -117,6 +119,73 @@ let result = AIODate().isMatch('${date}',['${operator},${matcher}']);
                     `}
                 </pre>
                 
+            </div>
+        )
+    }
+}
+
+
+class GetToday extends Component{
+    constructor(props){
+        super(props);
+        this.state = {calendarType:'gregorian'}
+    }
+    render(){
+        let {calendarType} = this.state;
+        let today = AIODate().getToday(calendarType);
+        return (
+            <div className='example'>
+                <AIOButton
+                    type='radio'
+                    options={[
+                        {text:'gregorian',value:'gregorian'},
+                        {text:'jalali',value:'jalali'}
+                    ]}
+                    value={calendarType}
+                    onChange={(calendarType)=>this.setState({calendarType})}
+                />
+                <div className="aio-component-label">{`today is : ${today[0]}/${today[1]}/${today[2]} ${today[3]}:${today[4]}`}</div>
+                <pre>
+                    {`
+let res = AIODate().getToday('${calendarType}');
+let text = "today is : " + today[0] + "/" + today[1] + "/" + today[2] + " " + today[3] + " : " + today[4]
+                    `}
+                </pre>
+            </div>
+        )
+    }
+}
+
+class GetWeekDay extends Component{
+    constructor(props){
+        super(props);
+        this.state = {calendarType:'gregorian',date:'1401/8/30'}
+    }
+    render(){
+        let {calendarType,date} = this.state;
+        let {weekDay,index} = AIODate().getWeekDay(date,calendarType);
+        return (
+            <div className='example'>
+                <AIOButton
+                    type='radio'
+                    options={[
+                        {text:'gregorian',value:'gregorian'},
+                        {text:'jalali',value:'jalali'}
+                    ]}
+                    value={calendarType}
+                    onChange={(calendarType)=>this.setState({calendarType})}
+                />
+                <div className="aio-component-label">Inter Date</div>
+                <input type='text' value={date} onChange={(e)=>this.setState({date:e.target.value})}/>
+                <div className="aio-component-label">{`weekDay is : ${weekDay}`}</div>
+                <div className="aio-component-label">{`weekDay index is : ${index}`}</div>
+                <pre>
+                    {`
+let {weekDay,index} = AIODate().getToday('${calendarType}',${date});
+let text1 = "weekday is : " + weekDay;
+let text2 = "weekday index is : " + index;
+                    `}
+                </pre>
             </div>
         )
     }

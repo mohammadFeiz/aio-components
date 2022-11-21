@@ -71,13 +71,10 @@ export default class Table extends Component {
       if(!storageKey){continue}
       let storageObj = localStorage.getItem('tablecolumnstorage' + storageKey) || '{}';
       storageObj = JSON.parse(storageObj);
-      storageObj = {
-        ...storageObj,
-        group:column.group?storageObj.group:undefined,
-        sort:column.sort?storageObj.sort:undefined,
-        show:column.toggleShow?storageObj.show:column.show,//اگر تاگل نداشت از استوریج نمی خونیم چون ممکنه تاگل حذف شده باشه و دیگه نشه ستون رو ویزیبل کرد
-        width:column.resizable !== false?storageObj.width:column.width,//اگر ریسایزبل نبود از استوریج نمی خونیم چون ممکنه ریسایزبل فالس شده باشه و دیگه نشه اندازه ستون رو کنترل کرد
-      }
+      if(!column.group){storageObj.group = undefined}
+      if(!column.sort){storageObj.sort = undefined}
+      if(!column.toggle){storageObj.show = undefined}
+      if(!column.resizable){storageObj.width = undefined}
       localStorage.setItem('tablecolumnstorage' + storageKey,JSON.stringify(storageObj));
       this.setColumn(column,{_storageObj:storageObj})
       for(let prop in storageObj){column[prop] = storageObj[prop]}
@@ -1098,7 +1095,7 @@ class AIOTableFilterPopup extends Component{
       {text:translate('Not Equal'),value:'notEqual',show:operators.indexOf('notEqual') !== -1},
       {text:translate('Greater Than'),value:'greater',show:(type === 'date' || type === 'number') && operators.indexOf('greater') !== -1},
       {text:translate('Less Than'),value:'less',show:(type === 'date' || type === 'number') && operators.indexOf('less') !== -1}
-    ]
+    ].filter(({show})=>show)
   }
   boolean_layout(index){
     let {items,translate = (text)=>text,booleanType,onChangeBooleanType} = this.props;
@@ -1461,7 +1458,8 @@ let functions = {
     let {columns = []} = this.state;
     for(let i = 0; i < columns.length; i++){
       let column = columns[i];
-      let {filter,dataColumnId} = column;
+      let {filter,dataColumnId,show = true} = column;
+      if(!show){continue}
       if(!filter){continue}
       if(filter === true){filter = {}; column.filter = {}}
       let {items = [],booleanType = 'or'} = filter;

@@ -205,7 +205,7 @@ export default function AIODate(){
           return {weekDay:weekDays[offset],index:offset};
         }
       },
-      getWeekDay(date,calendarType = 'gregorian'){return $$.GetWeekDay[calendarType](date)},
+      getWeekDay(date,calendarType = 'gregorian'){return $$.GetWeekDay[calendarType]($$.convertToArray(date))},
       getWeekDays(calendarType){
         return {
           jalali:['شنبه','یکشنبه','دوشنبه','سه شنبه','چهارشنبه','پنجشنبه','جمعه'],
