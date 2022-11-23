@@ -7,11 +7,12 @@ import DOC_AIODatepicker from './documents/aio-datepicker/doc-aio-datepicker';
 import DOC_AIODate from './documents/aio-date/doc-aio-date';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
 import DOC_AIOTable from './documents/aio-table/doc-aio-table';
+import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-table',
+      part:'aio-form',
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
@@ -20,6 +21,7 @@ export default class AIOComponents extends Component{
         'aio-date':{name:'aio-date',Render:DOC_AIODate},
         'aio-loading':{name:'aio-loading',Render:DOC_AIOLoading},
         'aio-table':{name:'aio-table',Render:DOC_AIOTable},
+        'aio-content-slider':{name:'aio-content-slider',Render:DOC_AIOContentSlider},
       }
     }
   }

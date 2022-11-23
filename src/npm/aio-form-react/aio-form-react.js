@@ -163,8 +163,8 @@ export default class AIOForm extends Component {
     return (<AIOButton {...props} type="multiselect" popupAttrs={{ style:{maxHeight: 400 }}}/>);
   }
   getInput_table({className,value,onChange,disabled,style,columns,theme}, input){
-    let props = {attrs:input.attrs,className,value,onChange,columns,addable:input.addable,rowNumber:input.rowNumber,disabled,style,theme}
-    let {defaults = {}} = this.props;
+    let {defaults = {},inputStyle} = this.props;
+    let props = {attrs:input.attrs,className,value,onChange,columns,addable:input.addable,rowNumber:input.rowNumber,disabled,style,inputStyle}
     let table = defaults.table || {};
     this.setByDefaults(table,props);
     return <Table {...props} getValue={this.getValue.bind(this)}/>
@@ -226,6 +226,11 @@ export default class AIOForm extends Component {
   getLabelLayout(label,theme,input){
     let {inputs} = this.props;
     let {inlineLabel = this.props.inlineLabel,labelStyle = this.props.labelStyle || {}} = input;
+    labelStyle = this.getValue({field:labelStyle,def:{},input})
+    if(typeof labelStyle === 'string'){
+      try{labelStyle = JSON.parse(labelStyle)}
+      catch{labelStyle = {}}
+    }
     let props = {align:'v',show: label !== undefined,style:{...labelStyle,width:'fit-content',height:'fit-content'},className:'aio-form-label'}
     props.size = inlineLabel?labelStyle.width:(labelStyle.height || 24);
     let {onChangeInputs} = this.props;
@@ -307,9 +312,7 @@ export default class AIOForm extends Component {
     let res = {};
     let result = [];
     for(let i = 0; i < inputs.length; i++){
-      let {type,show} = inputs[i];
-      if(!type){continue}
-      if(this.getValue({field:show,def:true,input:inputs[i]}) === false){continue}
+      let {type} = inputs[i];
       inputs[i]._index = i;
       if(type === 'group'){
         let a = 'a' + Math.random()
@@ -333,7 +336,13 @@ export default class AIOForm extends Component {
     let {groupDic} = this.state;
     for(let i = 0; i < inputs.length; i++){
       let input = inputs[i];
-      if(input.type === 'group'){
+      let {type,show} = input;
+      if(!type){
+        console.error(`AIOFormReact => missing input type`);
+        continue
+      }
+      if(this.getValue({field:show,def:true,input}) === false){continue}
+      if(type === 'group'){
         if(input.text !== undefined){this.res.push({...input,type:'group'})}
         if(input.id === undefined || groupDic[input.id] !== false){
           this.handleGroupsReq(input.inputs,input.id)
@@ -370,10 +379,22 @@ export default class AIOForm extends Component {
     let {lang = 'en'} = this.props;
     let {validations = []} = o
     if(!validations.length){return ''}
+    
     let a = { 
       value,title:o.label,lang,
       validations:validations.map((a)=>{
-        return [a[0],typeof a[1] === 'function'?a[1]:this.getValue({field:a[1],def:''}),a[2]]
+        let params = a[2] || {};
+        let target = typeof a[1] === 'function'?a[1]:this.getValue({field:a[1],def:''});
+        if(o.type === 'select' || o.type === 'radio'){
+          try{
+            let trg = options.find((o)=>o.value === target)
+            params.target = trg.text;
+          }
+          catch{let a = ''}
+          
+        }
+        let operator = a[0];
+        return [operator,target,params]
       })  
     }
     let error = AIOValidation(a);
@@ -660,7 +681,6 @@ class Table extends Component{
     for(let i = 0; i < columns.length; i++){
       let {field,type} = columns[i];
       if(!field){continue}
-      if(typeof field === 'string' && field.indexOf('calc ') === 0){continue}
       let val;
       if(type === 'text'){val = ''}
       else if(type === 'number'){val = 0}
@@ -677,17 +697,18 @@ class Table extends Component{
     value.push(obj); 
     onChange(value)
   }
-  getToolbarItems(){
+  getToolbar(){
     let {item,addable = true,disabled} = this.props;
-    if(disabled){return}
-    let toolbarItems = []
-    if(addable){toolbarItems.push({
-      text:'+',type:'button',
-      onClick:()=>this.add(),
-      className:'aio-form-input aio-form-input-table-add',
-      style:{background:'none',color:'inherit',padding:0,width:'100%'},
-    })}
-    return toolbarItems;
+    if(disabled || !addable){return}
+    return ()=>{
+      return (
+        <AIOButton key='toolbar'
+          text = '+' type = 'button' onClick = {()=>this.add()}
+          className = 'aio-form-input aio-form-input-table-add'
+          style = {{background:'none',color:'inherit',padding:0,width:'100%'}}    
+        />
+      )
+    }
   }
   getColumnOptions(column){ 
     let {getValue} = this.props;
@@ -716,13 +737,26 @@ class Table extends Component{
     })
   }
   getColumns(){ 
-    let {onChange,addable = true,disabled,columns,value,rowNumber,theme = {}} = this.props; 
-    let {input = {}} = theme;
-    let cellAttrs = {className:'aio-form-input',style:{height:input.height,borderColor:input.borderColor,background:'none',boxShadow:'none'}};
-    let titleAttrs = {className:'aio-form-input',style:{height:input.height,borderColor:input.borderColor,background:'none',boxShadow:'none'}}
+    let {onChange,addable = true,disabled,columns,value,rowNumber,inputStyle = {}} = this.props; 
+    let cellAttrs = ()=>{
+      return {
+        className:'aio-form-input',
+        style:{
+          height:inputStyle.height,
+          border:inputStyle.border,
+          fontSize:inputStyle.fontSize,
+          borderRadius:0,
+          background:inputStyle.background,
+          boxShadow:'none',
+          color:inputStyle.color
+        }
+      }
+    };
+    let titleAttrs = {className:'aio-form-input',style:{height:inputStyle.height,border:inputStyle.border,borderRadius:0,background:inputStyle.background,boxShadow:'none'}}
     let result = columns.map((column)=>{
     let a = {
       ...column,
+      field:`row.${column.field}`,
       cellAttrs,
       titleAttrs,
       getValue:column.field
@@ -742,41 +776,22 @@ class Table extends Component{
         return option?option.text:''
       }
     }
-    if(typeof column.type === 'function'){
-      a.inlineEdit = (row)=>{
-        let type = column.type(row)
-        return {
-          type, 
-          onChange:(row,val)=>{
-            if(!value[row._index]){value[row._index] = {}}
-            this.setValueByField(value[row._index],column.field,val)
-            onChange(value)
-          },
-          disabled:()=>{
-            if(column.disabled){return true}
-            return false
-          },
-          options:type === 'select'?this.getColumnOptions(column):undefined
-        }
-      }
-    }
-    else if(['text','number','select','checkbox'].indexOf(column.type) !== -1 && !disabled){
+    if(['text','number','select','checkbox'].indexOf(column.type) !== -1 && !disabled){
       a.inlineEdit = {
         type:column.type,disabled:column.disabled, 
         onChange:(row,val)=>{
-          if(!value[row._index]){value[row._index] = {}}
-          this.setValueByField(value[row._index],column.field,val)
+          this.setValueByField(row,column.field,val)
           onChange(value)
         },
-        disabled:()=>disabled
+        //disabled:()=>disabled
       }
       if(column.type === 'select'){
         a.inlineEdit.options = this.getColumnOptions(column);
       }
-      a.inlineEdit.disabled = (row)=>{
-        if(column.disabled){return true}
-        return false
-      }
+      // a.inlineEdit.disabled = (row)=>{
+      //   if(column.disabled){return true}
+      //   return false
+      // }
     }
     return a
     })
@@ -786,21 +801,14 @@ class Table extends Component{
     if(addable && !disabled){
       result.push({
         title:'',width:36,cellAttrs,titleAttrs,
-        template:(row)=>{
-          return <div onClick={()=>{
-            let {value} = this.props;
-            value.splice(row._index,1);
-            onChange(value)
-          }}>X</div>
-        }
+        template:'remove'
       })
     }
     return result;
   }
   render(){
-    let {value = [],disabled,className,style,attrs,theme = {}} = this.props;
+    let {value = [],disabled,className,style,attrs,inputStyle = {}} = this.props;
     let model;
-    let {input = {}} = theme
     try{model = JSON.parse(JSON.stringify(value));}
     catch{model = []}
 
@@ -810,7 +818,7 @@ class Table extends Component{
         <div 
           className='aio-form-table-add aio-form-input' 
           onClick={()=>this.add()}
-          style={{fontSize:input.fontSize,background:input.background,borderWidth:input.borderWidth,borderColor:input.borderColor,height:input.height}}
+          style={{...inputStyle}}
         >+</div>
       )
     }
@@ -821,18 +829,29 @@ class Table extends Component{
       },
       titleStyle:style,
       disabled,className,columns,
-      toolbarItems:this.getToolbarItems(),columns,
+      toolbar:this.getToolbar(),columns,
       model:value,
       style:attrs?attrs.style:undefined
     }
     return (
       <AIOTable 
+        templates={{
+          remove:(row)=>{
+            return (
+              <div onClick={()=>{
+                let {value,onChange} = this.props;
+                value = value.filter((o)=>o._id !== row._id)
+                onChange(value)
+              }}><Icon path={mdiClose} size={0.6}/></div>
+            )
+          }
+        }}
         columns={props.columns} 
         model={props.model} 
-        rowGap={0} 
-        toolbarItems={props.toolbarItems} 
-        toolbarAttrs={{className:'aio-form-input',style:{...theme.input,border:'none',display:disabled?'none':undefined,borderRadius:0}}}
-        style={{borderColor:input.borderColor,borderWidth:input.borderWidth,borderRadius:input.borderRadius,fontSize:input.fontSize,color:input.color,background:input.background}}
+        rowGap={1} 
+        toolbar={props.toolbar} 
+        toolbarAttrs={{className:'aio-form-input',style:{...inputStyle,border:'none',display:disabled?'none':undefined,borderRadius:0,marginBottom:1}}}
+        style={{border:inputStyle.border,borderRadius:inputStyle.borderRadius,fontSize:inputStyle.fontSize,color:inputStyle.color,background:'none',padding:0}}
       />
     )
   }

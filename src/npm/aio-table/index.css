@@ -1,4 +1,4 @@
-.table {
+.aio-table {
     background: #eee;
     overflow: hidden;
     flex: 1;
@@ -175,9 +175,10 @@
     border: none;
     background: none;
     outline: none;
+    color:inherit;
     font-family: inherit;
     min-height: 16px;
-  
+    font-size:inherit;
   }
   
   .table-inline-edit-input:focus {

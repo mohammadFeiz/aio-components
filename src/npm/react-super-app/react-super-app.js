@@ -171,7 +171,7 @@ export default class ReactSuperApp extends Component {
           flex:1,className:'rsa-bottom-menu-item' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
           column:[
             {flex:1},
-            {html:icon(active),align:'vh'},
+            {show:!!icon,html:()=>icon(active),align:'vh'},
             {html:text,align:'vh',className:'rsa-bottom-menu-item-text'},
             {flex:1}
           ]

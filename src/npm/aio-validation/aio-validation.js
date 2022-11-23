@@ -25,8 +25,9 @@ export default function AIOValidation(props) {
       },
       getMessage(target,{be,validation,unit = ''}){
         if(validation.message){return validation.message}
-        let {targetPresentation = JSON.stringify(target),title = props.title} = validation;
-        return `${title} ${this.translate(be)} ${targetPresentation} ${unit}` + (props.lang === 'fa'?' باشد':'')
+        let [a,b,params = {}] = validation;
+        let {title = props.title,target:targetPresentation = target} = params;
+        return `${title} ${this.translate(be)} ${JSON.stringify(targetPresentation)} ${unit}` + (props.lang === 'fa'?' باشد':'')
       },
       contain(target,validation,value){
         let config = {be:'should be contain',validation};

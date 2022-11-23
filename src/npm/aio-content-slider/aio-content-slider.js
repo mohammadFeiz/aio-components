@@ -109,11 +109,12 @@ export default class ReactHTMLSlider extends Component {
     if(type === 'left'){
       style = {left:0};
       html = (
-        <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.5rem',height: '1.5rem'}}>
+        <svg key={type} viewBox="0 0 24 24" role="presentation" style={{width: '1.5rem',height: '1.5rem'}}>
           <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" style={{fill: 'currentcolor'}}></path>
         </svg>
       );
       onClick = ()=>{
+        if(this.state.moving){return}
         let width = this.getWidth()
         this.setState({moving:true,left:-width,lastLeft:-width},()=>this.startScroll(-1))
       }
@@ -121,11 +122,12 @@ export default class ReactHTMLSlider extends Component {
     else {
       style = {right:0};
       html = (
-        <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.5rem',height: '1.5rem'}}>
+        <svg key={type} viewBox="0 0 24 24" role="presentation" style={{width: '1.5rem',height: '1.5rem'}}>
           <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" style={{fill: 'currentcolor'}}></path>
         </svg>
       );
       onClick = ()=>{
+        if(this.state.moving){return}
         let width = this.getWidth()
         this.setState({moving:true,left:-width,lastLeft:-width},()=>this.startScroll(1))
       }
@@ -135,8 +137,11 @@ export default class ReactHTMLSlider extends Component {
     )
   }
   getClient(e){
-    let touch = 'ontouchstart' in document.documentElement;
-    return touch?{x: e.changedTouches[0].clientX,y:e.changedTouches[0].clientY }:{x:e.clientX,y:e.clientY}
+    if('ontouchstart' in document.documentElement){
+      if(!e.changedTouches){return {x:0,y:0}}
+      return {x: e.changedTouches[0].clientX,y:e.changedTouches[0].clientY }
+    }
+    return {x:e.clientX,y:e.clientY}
   }
   eventHandler(selector, event, action,type = 'bind'){
     var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" }; 

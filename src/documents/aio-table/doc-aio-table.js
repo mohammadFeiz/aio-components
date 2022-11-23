@@ -14,7 +14,7 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='rowTemplate'
+                navId='toolbarAttrs'
                 navs={[
                     {text:'simple',id:'simple',COMPONENT:()=><Simple/>},
                     {text:'showHeader',id:'showHeader',COMPONENT:()=><ShowHeader/>},
@@ -24,6 +24,7 @@ export default class DOC_AIOForm extends Component{
                     {text:'paging with onChange',id:'pagingonchange',COMPONENT:()=><PagingOnChange/>},
                     {text:'striped',id:'striped',COMPONENT:()=><Striped/>},
                     {text:'toolbar',id:'toolbar',COMPONENT:()=><Toolbar/>},
+                    {text:'toolbarAttrs',id:'toolbarAttrs',COMPONENT:()=><ToolbarAttrs/>},
                     {text:'rowGap,columnGap',id:'rowGapColumnGap',COMPONENT:()=><RowGapColumnGap/>},
                     {text:'rowTemplate',id:'rowTemplate',COMPONENT:()=><RowTemplate/>},
                     {
@@ -74,103 +75,77 @@ class Simple extends Component {
       );
     }
   }
-  class ShowHeader extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model
-      }
+class ShowHeader extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
     }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-            showHeader={false}
-          />
-          <pre>
-            {`
+  }
+  render(){
+    let {model} = this.state;
+    let {rtl = false} = this.props;
+    return (
+      <div className='example doc-aio-table'>
+        <Table
+          rtl={rtl}
+          model={model}
+          columns={[
+            {title:'Name',field:'row.name'},
+            {title:'Gender',field:'row.gender'},
+            {title:'Date',field:'row.date'},
+            {title:'Age',field:'row.age'}
+          ]}
+          showHeader={false}
+        />
+        <pre>
+          {`
 import model from './model';
 
 class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
+constructor(props){
+  super(props);
+  this.state = {
+    model
   }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
-        columns={[
-          {title:'Name',field:'row.name'},
-          {title:'Gender',field:'row.gender'},
-          {title:'Date',field:'row.date'},
-          {title:'Age',field:'row.age'}
-        ]}
-        showHeader={false}
-      />
+}
+render(){
+  let {model} = this.state;
+  return (
+    <Table
+      rtl={${rtl}}
+      model={model}
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+      showHeader={false}
+    />
+  );
+}
+}          
+          `}
+        </pre>
+      </div>
     );
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
-    }
-  }
+}
   
-  class Excel extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model
-      }
-    }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-            excel={true}
-          />
-          <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
+class Excel extends Component {
   constructor(props){
     super(props);
     this.state = {
       model
     }
   }
-  render(){
+  preview(){
     let {model} = this.state;
+    let {rtl = false} = this.props;
     return (
       <Table
-        rtl={${rtl}}
+        rtl={rtl}
         model={model}
         columns={[
           {title:'Name',field:'row.name'},
@@ -180,57 +155,42 @@ class App extends Component {
         ]}
         excel={true}
       />
-    );
+    )
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
-    }
+  code(){
+    return (`
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+      excel={true}
+    `)
   }
+  render(){
+    return (
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
 
-  class Tree extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model:tree_model
-      }
-    }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            rowChilds='row.childs'
-            indent={20}
-            rowHeight={36}
-            columns={[
-              {title:'Name',field:'row.name',treeMode:true},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-          />
-          <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
+class Tree extends Component {
   constructor(props){
     super(props);
     this.state = {
       model:tree_model
     }
   }
-  render(){
+  preview(){
     let {model} = this.state;
+    let {rtl = false} = this.props;
     return (
       <Table
-        rtl={${rtl}}
+        rtl={rtl}
         model={model}
         rowChilds='row.childs'
         indent={20}
@@ -242,59 +202,44 @@ class App extends Component {
           {title:'Age',field:'row.age'}
         ]}
       />
-    );
+    )
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
-    }
+  code(){
+    return (`
+    rowChilds='row.childs'
+    indent={20}
+    rowHeight={36}
+    columns={[
+      {title:'Name',field:'row.name',treeMode:true},
+      {title:'Gender',field:'row.gender'},
+      {title:'Date',field:'row.date'},
+      {title:'Age',field:'row.age'}
+    ]}
+    `)
   }
+  render(){
+    return (
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
   
-  class Paging extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model
-      }
-    }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-            paging={{
-              number:1,
-              size:10,
-              sizes:[1,5,10,15,20,30,50]
-            }}
-          />
-          <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
+class Paging extends Component {
   constructor(props){
     super(props);
     this.state = {
       model
     }
   }
-  render(){
+  preview(){
     let {model} = this.state;
+    let {rtl = false} = this.props;
     return (
       <Table
-        rtl={${rtl}}
+        rtl={rtl}
         model={model}
         columns={[
           {title:'Name',field:'row.name'},
@@ -308,137 +253,36 @@ class App extends Component {
           sizes:[1,5,10,15,20,30,50]
         }}
       />
-    );
+    )
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
-    }
-  }
-
-  class PagingOnChange extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model
-      }
-    }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-            paging={{
-              number:1,
-              size:10,
-              sizes:[1,5,10,15,20,30,50],
-              count:100,
-              onChange:(obj)=>{
-                alert(JSON.stringify(obj))
-                return false 
-              }
-            }}
-          />
-          <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
+  code(){
+    let {model} = this.state;
+    let {rtl = false} = this.props;
+    return (`
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+      paging={{
+        number:1,
+        size:10,
+        sizes:[1,5,10,15,20,30,50]
+      }}
+    `)
   }
   render(){
-    let {model} = this.state;
     return (
-      <Table
-        rtl={${rtl}}
-        model={model}
-        columns={[
-          {title:'Name',field:'row.name'},
-          {title:'Gender',field:'row.gender'},
-          {title:'Date',field:'row.date'},
-          {title:'Age',field:'row.age'}
-        ]}
-        paging={{
-          number:1,
-          size:10,
-          sizes:[1,5,10,15,20,30,50],
-          count:100,
-          onChange:(obj)=>{
-            alert(JSON.stringify(obj))
-            return false 
-          }
-        }}
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
       />
-    );
+    )
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
-    }
-  }
+}
 
-  class Striped extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model,
-        striped:'',
-        striped_type:false
-      }
-    }
-    render(){
-      let {model,striped,striped_type} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <div style={{
-            position: 'fixed',left: 358,top: 13,display: 'flex',alignItems: 'center'
-          }}>
-            <AIOButton 
-              type='radio'
-              options={[
-                {text:'false',value:false},
-                {text:'true',value:true},
-                {text:'color',value:'color'}
-              ]}
-              value={striped_type}
-              onChange={(striped_type)=>this.setState({striped_type})}
-            />
-            { striped_type === 'color' && <input type='color' value={striped} onChange={(e)=>this.setState({striped:e.target.value})}/>}
-          </div>
-          <Table
-            rtl={rtl}
-            model={model}
-            striped={striped_type === 'color'?striped:striped_type}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
-            ]}
-          />
-          <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
+class PagingOnChange extends Component {
   constructor(props){
     super(props);
     this.state = {
@@ -447,71 +291,176 @@ class App extends Component {
   }
   render(){
     let {model} = this.state;
+    let {rtl = false} = this.props;
     return (
-      <Table
-        rtl={${rtl}}
-        striped={${striped_type === 'color'?striped:striped_type}}
-        model={model}
-        columns={[
-          {title:'Name',field:'row.name'},
-          {title:'Gender',field:'row.gender'},
-          {title:'Date',field:'row.date'},
-          {title:'Age',field:'row.age'}
-        ]}
-      />
+      <div className='example doc-aio-table'>
+        <Table
+          rtl={rtl}
+          model={model}
+          columns={[
+            {title:'Name',field:'row.name'},
+            {title:'Gender',field:'row.gender'},
+            {title:'Date',field:'row.date'},
+            {title:'Age',field:'row.age'}
+          ]}
+          paging={{
+            number:1,
+            size:10,
+            sizes:[1,5,10,15,20,30,50],
+            count:100,
+            onChange:(obj)=>{
+              alert(JSON.stringify(obj))
+              return false 
+            }
+          }}
+        />
+        <pre>
+          {`
+import model from './model';
+
+class App extends Component {
+constructor(props){
+  super(props);
+  this.state = {
+    model
+  }
+}
+render(){
+  let {model} = this.state;
+  return (
+    <Table
+      rtl={${rtl}}
+      model={model}
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+      paging={{
+        number:1,
+        size:10,
+        sizes:[1,5,10,15,20,30,50],
+        count:100,
+        onChange:(obj)=>{
+          alert(JSON.stringify(obj))
+          return false 
+        }
+      }}
+    />
+  );
+}
+}          
+          `}
+        </pre>
+      </div>
     );
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
+}
+
+class Striped extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model,
+      striped:'',
+      striped_type:false
     }
   }
-
-  class Toolbar extends Component {
-    constructor(props){
-      super(props);
-      this.state = {
-        model
-      }
-    }
-    render(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <div className='example doc-aio-table'>
-          <Table
-            rtl={rtl}
-            model={model}
-            columns={[
-              {title:'Name',field:'row.name'},
-              {title:'Gender',field:'row.gender'},
-              {title:'Date',field:'row.date'},
-              {title:'Age',field:'row.age'}
+  render(){
+    let {model,striped,striped_type} = this.state;
+    let {rtl = false} = this.props;
+    return (
+      <div className='example doc-aio-table'>
+        <div style={{
+          position: 'fixed',left: 358,top: 13,display: 'flex',alignItems: 'center'
+        }}>
+          <AIOButton 
+            type='radio'
+            options={[
+              {text:'false',value:false},
+              {text:'true',value:true},
+              {text:'color',value:'color'}
             ]}
-            toolbar={()=>{
-              return (
-                <button>Click Here</button>
-              )
-            }}
+            value={striped_type}
+            onChange={(striped_type)=>this.setState({striped_type})}
           />
-          <pre>
-            {`
+          { striped_type === 'color' && <input type='color' value={striped} onChange={(e)=>this.setState({striped:e.target.value})}/>}
+        </div>
+        <Table
+          rtl={rtl}
+          model={model}
+          striped={striped_type === 'color'?striped:striped_type}
+          columns={[
+            {title:'Name',field:'row.name'},
+            {title:'Gender',field:'row.gender'},
+            {title:'Date',field:'row.date'},
+            {title:'Age',field:'row.age'}
+          ]}
+        />
+        <pre>
+          {`
 import model from './model';
- 
+
 class App extends Component {
+constructor(props){
+  super(props);
+  this.state = {
+    model
+  }
+}
+render(){
+  let {model} = this.state;
+  return (
+    <Table
+      rtl={${rtl}}
+      striped={${striped_type === 'color'?striped:striped_type}}
+      model={model}
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+    />
+  );
+}
+}          
+          `}
+        </pre>
+      </div>
+    );
+  }
+}
+
+class Toolbar extends Component {
   constructor(props){
     super(props);
     this.state = {
       model
     }
   }
-  render(){
+  code(){
+    return (`
+      columns={[
+        {title:'Name',field:'row.name'},
+        {title:'Gender',field:'row.gender'},
+        {title:'Date',field:'row.date'},
+        {title:'Age',field:'row.age'}
+      ]}
+      toolbar={()=>{
+        return (
+          <button>Click Here</button>
+        )
+      }}
+    `)
+  }
+  preview(){
     let {model} = this.state;
+    let {rtl = false} = this.props;
     return (
       <Table
-        rtl={${rtl}}
+        rtl={rtl}
         model={model}
         columns={[
           {title:'Name',field:'row.name'},
@@ -525,15 +474,76 @@ class App extends Component {
           )
         }}
       />
-    );
+    )
   }
-}          
-            `}
-          </pre>
-        </div>
-      );
+  render(){
+    return (
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
+
+class ToolbarAttrs extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
     }
   }
+  code(){
+    return (`
+        columns={[
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
+        ]}
+        toolbar={()=>{
+          return (
+            <button>Click Here</button>
+          )
+        }}
+        toolbarAttrs={{
+          style:{background:'#fff',borderBottom:'1px solid #ddd'}
+        }}
+    `)
+  }
+  preview(){
+    let {model} = this.state;
+    let {rtl = false} = this.props;
+    return (
+      <Table
+        rtl={rtl}
+        model={model}
+        columns={[
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
+        ]}
+        toolbar={()=>{
+          return (
+            <button>Click Here</button>
+          )
+        }}
+        toolbarAttrs={{
+          style:{background:'#fff',borderBottom:'1px solid #ddd'}
+        }}
+      />
+    )
+  }
+  render(){
+    return (
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
 
 
 
@@ -546,15 +556,41 @@ class App extends Component {
         columnGap:1
       }
     }
-    render(){
+    preview(){
       let {model,rowGap,columnGap} = this.state;
       let {rtl = false} = this.props;
       return (
-          <RVD
+        <Table
+          rtl={rtl}
+          model={model}
+          rowGap={rowGap}
+          columnGap={columnGap}
+          columns={[
+            {title:'Name',field:'row.name'},
+            {title:'Gender',field:'row.gender'},
+            {title:'Date',field:'row.date'},
+            {title:'Age',field:'row.age'}
+          ]}
+        />
+      )
+    }
+    code(){
+      let {model,rowGap,columnGap} = this.state;
+      let {rtl = false} = this.props;
+      return (`
+        rowGap={${rowGap}}
+        columnGap={${columnGap}}
+      `)
+    }
+    toolbar(){
+      let {model,rowGap,columnGap} = this.state;
+      let {rtl = false} = this.props;
+      return (
+        <RVD
             layout={{
-              column:[
+              row:[
                 {
-                  align:'v',
+                  flex:1,align:'v',
                   row:[
                     {size:12},
                     {html:'rowGap'},
@@ -562,15 +598,15 @@ class App extends Component {
                       flex:1,html:(
                         <Slider 
                           points={[rowGap]} start={0} end={24} onChange={(points)=>this.setState({rowGap:points[0]})} showValue={true}
-                            fillStyle={{height:8,background:'dodgerblue'}}
-                            lineStyle={{height:12}}
+                            fillStyle={{height:3,background:'dodgerblue'}}
+                            lineStyle={{height:3}}
                         />
                       )
                     }
                   ]
                 },
                 {
-                  align:'v',
+                  flex:1,align:'v',
                   row:[
                     {size:12},
                     {html:'columnGap'},
@@ -578,64 +614,9 @@ class App extends Component {
                       flex:1,html:(
                         <Slider 
                           points={[columnGap]} start={0} end={24} onChange={(points)=>this.setState({columnGap:points[0]})} showValue={true}
-                            fillStyle={{height:8,background:'dodgerblue'}}
-                            lineStyle={{height:12}}
+                            fillStyle={{height:3,background:'dodgerblue'}}
+                            lineStyle={{height:3}}
                         />
-                      )
-                    }
-                  ]
-                },
-                {
-                  flex:3,row:[
-                    {
-                      flex:3,html:(
-                        <Table
-                          rtl={rtl}
-                          model={model}
-                          rowGap={rowGap}
-                          columnGap={columnGap}
-                          columns={[
-                            {title:'Name',field:'row.name'},
-                            {title:'Gender',field:'row.gender'},
-                            {title:'Date',field:'row.date'},
-                            {title:'Age',field:'row.age'}
-                          ]}
-                        />
-                      )
-                    },
-                    {
-                      scroll:'h',flex:1,html:(
-                        <pre>
-            {`
-import model from './model';
- 
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
-        columns={[
-          {title:'Name',field:'row.name'},
-          {title:'Gender',field:'row.gender'},
-          {title:'Date',field:'row.date'},
-          {title:'Age',field:'row.age'}
-        ]}
-        rowGap={${rowGap}}
-        columnGap={${columnGap}}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
                       )
                     }
                   ]
@@ -643,7 +624,16 @@ class App extends Component {
               ]
             }}
           />
-      );
+      )
+    }
+    render(){
+      return (
+        <TableExample
+          preview={()=>this.preview()}
+          code={()=>this.code()}
+          toolbar={()=>this.toolbar()}
+        />
+      )
     }
   }
 
@@ -690,38 +680,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',toggle:true},
           {title:'Gender',field:'row.gender',toggle:true,show:false},
           {title:'Date',field:'row.date',toggle:true},
           {title:'Age',field:'row.age',toggle:true}
         ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+      `)
     }
     render(){
       return (
@@ -756,38 +722,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name'},
           {title:'Gender',field:'row.gender'},
           {title:'Date',field:'row.date'},
           {title:'Age',field:'row.age',width:50}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -824,38 +766,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name'},
           {title:'Gender',field:'row.gender',justify:true},
           {title:'Date',field:'row.date'},
           {title:'Age',field:'row.age',width:50}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -892,38 +810,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',titleJustify:false},
           {title:'Gender',field:'row.gender',titleJustify:false},
           {title:'Date',field:'row.date',titleJustify:false},
           {title:'Age',field:'row.age',titleJustify:false}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -960,38 +854,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',width:100,minWidth:100},
           {title:'Gender',field:'row.gender',minWidth:100},
           {title:'Date',field:'row.date',},
           {title:'Age',field:'row.age',width:50}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1048,25 +918,7 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {
             title:'Name',field:'row.name',width:100,minWidth:100,
@@ -1093,14 +945,8 @@ class App extends Component {
               return {className:'cell-red'}
             }
           }
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1137,38 +983,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',titleAttrs:{className:'hover'}},
           {title:'Gender',field:'row.gender',titleAttrs:{className:'hover'}},
           {title:'Date',field:'row.date',titleAttrs:{className:'hover'}},
           {title:'Age',field:'row.age',titleAttrs:{className:'hover'}}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1220,53 +1042,15 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
-        templates={{
-          checkbox:(row)=>{
-            return <input type='checkbox' value={row.active} onChange={(e)=>{
-              row.active = e.target.checked;
-              this.setState({model})
-            }}/>
-          },
-          age:(row)=>{
-            return <input type='range' value={row.age}/> 
-          },
-          gender:(row)=>{
-            return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
-          }
-        }}
+      return (`
         columns={[
           {template:'checkbox',width:48,justify:true},
           {title:'Name',field:'row.name'},
           {title:'Gender',field:'row.gender',template:'gender'},
           {title:'Date',field:'row.date'},
           {title:'Age',field:'row.age',template:'age'}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1318,40 +1102,14 @@ class App extends Component {
       )
     }
     code(){
-      let {model} = this.state;
-      let {rtl = false} = this.props;
-      return (
-        <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',sort:true},
           {title:'Gender',field:'row.gender',sort:true},
           {title:'Date',field:'row.date',sort:true},
           {title:'Age',field:'row.age',sort:true}
-        ]}
-        setModel={(model)=>this.setState({model})}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1396,25 +1154,7 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-<pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name'},
           {title:'Gender',field:'row.gender',group:true},
@@ -1428,14 +1168,8 @@ class App extends Component {
               return 'Low Age'
             }
           }
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-      )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1483,47 +1217,23 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',filter:true},
-            {
-              title:'Gender',field:'row.gender',
-              filter:{
-                valueOptions:[
-                  {text:'Male',value:'male'},
-                  {text:'Female',value:'female'},
-                ],
-                operators:['equal']
-              }
-            },
-            {type:'date',title:'Date',field:'row.date',filter:true},
-            {type:'number',title:'Age',field:'row.age',filter:true}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+          {
+            title:'Gender',field:'row.gender',
+            filter:{
+              valueOptions:[
+                {text:'Male',value:'male'},
+                {text:'Female',value:'female'},
+              ],
+              operators:['equal']
+            }
+          },
+          {type:'date',title:'Date',field:'row.date',filter:true},
+          {type:'number',title:'Age',field:'row.age',filter:true}
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1574,24 +1284,7 @@ class App extends Component {
     }
     code(){
       let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',inlineEdit:true},
           {
@@ -1611,14 +1304,8 @@ class App extends Component {
             field:'row.active',
             inlineEdit:{type:'checkbox',text:'Active'}
           }
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1663,25 +1350,7 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {
             title:'Name',field:'row.name',before:'row.gender === "male"?"Mr":"Mrs"',
@@ -1694,14 +1363,8 @@ class App extends Component {
           },
           {title:'Date',field:'row.date'},
           {title:'Age',field:'row.age'}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+        ]}         
+            `)
     }
     render(){
       return (
@@ -1738,38 +1401,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return (`
         columns={[
           {title:'Name',field:'row.name',toggle:true},
           {title:'Gender',field:'row.gender',toggle:true,show:false},
           {title:'Date',field:'row.date',toggle:true},
           {title:'Age',field:'row.age',toggle:true}
-        ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+        ]}          
+            `)
     }
     render(){
       return (
@@ -1807,38 +1446,14 @@ class App extends Component {
       )
     }
     code(){
-      let {rtl = false} = this.props;
-      return (
-          <pre>
-            {`
-import model from './model';
-
-class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      model
-    }
-  }
-  render(){
-    let {model} = this.state;
-    return (
-      <Table
-        rtl={${rtl}}
-        model={model}
+      return `
         columns={[
           {type:'text',title:'Name',field:'row.name',filter:true,sort:true,toggle:true,width:200,storageKey:'tcsk-name'},
           {type:'text',title:'Gender',field:'row.gender',filter:true,sort:true,toggle:true,group:true,storageKey:'tcsk-gender'},
           {type:'date',title:'Date',field:'row.date',filter:true,sort:true,toggle:true,storageKey:'tcsk-date'},
           {type:'number',title:'Age',field:'row.age',filter:true,sort:true,toggle:true,storageKey:'tcsk-age'}
         ]}
-      />
-    );
-  }
-}          
-            `}
-          </pre>
-        )
+            `
     }
     render(){
       return (
@@ -1855,7 +1470,7 @@ class App extends Component {
     constructor(props){
       super(props);
       this.state = {
-        tab:'preview',
+        tab:'code',
         tabs:[
           {text:'Preview',value:'preview'},
           {text:'Code',value:'code'}
@@ -1871,20 +1486,62 @@ class App extends Component {
       }
     }
     body_layout(){
-      let {preview,code} = this.props;
       let {tab} = this.state;
+      return tab === 'preview'?this.preview_layout():this.code_layout()
+    }
+    preview_layout(){
+      let {preview} = this.props;
       return {
         flex:1,
-        html:tab === 'preview'?preview():code()
+        html:preview()
       }
     }
+    code_layout(){
+      let {code,rtl = false} = this.props;
+      return {
+        flex:1,
+        html:(
+          <div style={{display:'flex',flexDirection:'column',width:'100%',height:'100%',overflow:'auto'}}>
+            <pre>{`
+import model from './model';
 
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      model
+    }
+  }
+  render(){
+    let {model} = this.state;
+    return (
+      <Table
+        rtl={${rtl}}
+        model={model}          
+        ${code()}
+      />
+    );
+  }
+}            
+            `}</pre>
+          </div>
+        )
+      }
+    }
+    toolbar_layout(){
+      let {toolbar} = this.props;
+      if(!toolbar){return false}
+      return {
+        html:toolbar()
+      }
+    }
     render(){
       return (
         <RVD
           layout={{
             column:[
               this.tabs_layout(),
+              this.toolbar_layout(),
               this.body_layout()
             ]
           }}
@@ -1892,3 +1549,7 @@ class App extends Component {
       )
     }
   }
+
+
+
+

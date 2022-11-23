@@ -8,7 +8,7 @@ import $ from 'jquery';
 import './index.css';
 let TableContext = createContext();
 let TableCLS = {
-  row:'row',header:'table-header',title:'table-title',resizeHandle:'title-resize-handle',rows:'rows',table:'table',toolbarIconButton:'toolbar-icon',searchBox:'aio-table-search',
+  row:'row',header:'table-header',title:'table-title',resizeHandle:'title-resize-handle',rows:'rows',table:'aio-table',toolbarIconButton:'toolbar-icon',searchBox:'aio-table-search',
   toolbar:'table-toolbar',rowToggle:'table-toggle',cellBefore:'cell-before',cellAfter:'cell-after',cellContent:'cell-content',cellSubtext:'cell-subtext',cell:'aio-table-cell',
   filterPopup:'table-filter-popup',loading:'table-loading',addFilter:'table-filter-add',filterOperator:'table-filter-operator',filterItem:'table-filter-item',
   filterValue:'table-filter-value',filterRemove:'table-filter-remove',groupRow:'table-group-row',inlineEditInput:'table-inline-edit-input',
@@ -840,10 +840,12 @@ class Toolbar extends Component{
     return items;
   }
   render(){
+    let {toolbarAttrs = {}} = this.context;
+    let {className} = toolbarAttrs;
     let items = this.getItems();
     if(!items.length){return null}
     return (
-      <div className={TableCLS.toolbar}>
+      <div {...toolbarAttrs} className={TableCLS.toolbar + (className?' ' + className:'')}>
         {items}
       </div>
     )
@@ -871,9 +873,9 @@ class Cell extends Component{
         return (
           <AIOButton
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
-            {...this.inlineEdit} className={TableCLS.inlineEditInput}
+            {...{popupAttrs:{style:{maxHeight:360}},...this.inlineEdit}} className={TableCLS.inlineEditInput}
             onChange={(value)=>this.onChange(value)}
-            text={value}
+            value={value}
           />
         )
       }
