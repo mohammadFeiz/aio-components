@@ -77,7 +77,7 @@ export default class RGauger extends Component{
         offset = this.getValueByField(offset,value)
         color = this.getValueByField(color,value);
         fontSize = this.getValueByField(fontSize,value);
-        let pivot = offset?-offset:-(radius - height - thickness / 2);
+        let pivot = offset?-offset:-(radius - thickness / 2);
         if(!labels[value]){
           let angle = this.getAngleByValue(value);
           

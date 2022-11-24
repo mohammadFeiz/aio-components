@@ -412,10 +412,10 @@ export default class AIOJson extends Component {
           column:[
             this.getHeader(mode),
             {
-              flex:1,show:mode === 'builder',attrs:{style:{overflowY:'auto',padding:12}},
-              html:<RVD layout={{attrs:{style:{fontSize}},column}}/>
+              flex:1,show:mode === 'builder',attrs:{style:{padding:12}},
+              html:<RVD layout={{attrs:{style:{fontSize}},scroll:'v',column}}/>
             },
-            {show:mode === 'preview',flex:1,html:<pre>{generated}</pre>,style:{padding:12}}
+            {show:mode === 'preview',flex:1,scroll:'v',html:<pre>{generated}</pre>,style:{padding:12}}
           ]
         }}
       />

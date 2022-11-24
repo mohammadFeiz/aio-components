@@ -8,11 +8,12 @@ import DOC_AIODate from './documents/aio-date/doc-aio-date';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
 import DOC_AIOTable from './documents/aio-table/doc-aio-table';
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider';
+import DOC_AIOGauge from './documents/aio-gauge/doc-aio-gauge';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-form',
+      part:'aio-gauge',
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
@@ -22,6 +23,7 @@ export default class AIOComponents extends Component{
         'aio-loading':{name:'aio-loading',Render:DOC_AIOLoading},
         'aio-table':{name:'aio-table',Render:DOC_AIOTable},
         'aio-content-slider':{name:'aio-content-slider',Render:DOC_AIOContentSlider},
+        'aio-gauge':{name:'aio-gauge',Render:DOC_AIOGauge},
       }
     }
   }

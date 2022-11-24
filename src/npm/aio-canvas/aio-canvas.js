@@ -353,7 +353,7 @@ export default class Canvas extends Component {
       updatedItem.points = [[x + width / 2, -y],[x + width, -y, c1],[x + width, -y + height, c2],[x, -y + height, c3],[x, -y, c0],[x + width / 2, -y, c1]];
     }  
     else if (type === 'Triangle') {
-      let { corner = [] } = updatedItem;
+      let { corner = [],trianglePoints,triangleWidth } = updatedItem;
       var [p1, p2] = trianglePoints;
       var width = triangleWidth;
       var t1 = this.getPrependicularPointFromLine(p1, p2, "start", width / 2);
