@@ -94,7 +94,7 @@ export default class ReactVirtualDom extends Component {
         this.eventHandler('mouseup',$.proxy(this.mouseUp,this));
       }
     }
-    if(swapId){
+    if(swapId !== undefined){
       attrs.draggable = true;
       attrs.onDragStart = (e)=>{
         let {swapHandleClassName} = this.props;

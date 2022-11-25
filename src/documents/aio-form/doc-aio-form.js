@@ -191,11 +191,11 @@ class Input extends Component{
         let {inputs} = this.state;
         return {
             size:240,
-            column:inputs.map((input)=>{
+            column:inputs.map((input,i)=>{
                 let {type,name} = input;
                 let active = this.state.input && input.id === this.state.input.id;
                 return {
-                    align:'v',
+                    align:'v',swapId:i,
                     style:{
                         height:36,padding:'0 12px',
                         background:active?'#2e577f':'rgb(138 166 216 / 10%)',
@@ -286,6 +286,15 @@ class Input extends Component{
     render(){
         return (
             <RVD
+                onSwap={(from,to)=>{
+                    debugger;
+                    let {inputs} = this.state;
+                    let a = {...inputs[from]};
+                    inputs[from] = false;
+                    inputs.splice(to,0,a);
+                    inputs = inputs.filter((o)=>o !== false)
+                    this.setState({inputs})
+                }}
                 layout={{
                     style:{position:'fixed',height:'100%',flex:'none',width:'100%',left:0,top:0,background:'#1d292c'},
                     column:[

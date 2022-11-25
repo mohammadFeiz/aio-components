@@ -8,7 +8,7 @@ import { mdiDelete ,mdiPlusThick,mdiClose} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOButton from './../../npm/aio-button/aio-button';
 import './index.css';
-export default class DOC_AIOForm extends Component{
+export default class DOC_AIOGauge extends Component{
     render(){
         return (
             <Input {...this.props}/>

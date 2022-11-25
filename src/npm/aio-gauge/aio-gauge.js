@@ -60,6 +60,7 @@ export default class RGauger extends Component{
   getLabels(){
     var {start,end,label,radius,thickness,angle:mainAngle} = this.props;
     if(!Array.isArray(label)){label = [label]}
+    if(!label.length){return []}
     var labels = {};
     for(let i = 0; i < label.length; i++){
       if(!label[i].step){continue}

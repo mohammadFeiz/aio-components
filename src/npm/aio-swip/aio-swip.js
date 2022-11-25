@@ -1,5 +1,5 @@
 import $ from 'jquery';
-export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1}){
+export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,parameter}){
   let a = {
     init(){
       this.eventHandler(dom,'mousedown',$.proxy(this.mouseDown,this))
@@ -19,7 +19,14 @@ export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},s
       this.so = {
         client:this.getClient(e)
       };
-      if(start(this.so.client.x,this.so.client.y) === false){return}
+      let res = start({mousePosition:{x:this.so.client.x,y:this.so.client.y,parameter}});
+      if(res === false){return}
+      if(Array.isArray(res)){
+        let x = res[0];
+        let y = res[1]
+        this.so.x = x;
+        this.so.y = y;
+      }
       this.eventHandler('window','mousemove',$.proxy(this.mouseMove,this));
       this.eventHandler('window','mouseup',$.proxy(this.mouseUp,this))
     },
@@ -36,12 +43,17 @@ export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},s
       this.dy = dy;
       let dist = Math.round(Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)))
       this.dist = dist;
-      move(dx,dy,dist);
+      let x,y;
+      if(this.so.x !== undefined && this.so.y !== undefined){
+        x = this.so.x + dx;
+        y = this.so.y + dy;
+      }
+      move({dx,dy,dist,x,y,parameter});
     },
     mouseUp(){
       this.eventHandler('window','mousemove',this.mouseMove,'unbind');
       this.eventHandler('window','mouseup',this.mouseUp,'unbind');
-      end(this.dx,this.dy,this.dist)
+      end({dx:this.dx,dy:this.dy,dist:this.dist,parameter})
     }
   }
   a.init();
