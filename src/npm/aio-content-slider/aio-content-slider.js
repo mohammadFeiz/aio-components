@@ -1,6 +1,5 @@
 import React,{Component,createRef} from 'react';
 import $ from 'jquery';
-import ReactSliderDots from '../react-slider-dots/react-slider-dots';
 import "./index.css";
 export default class ReactHTMLSlider extends Component {
   constructor(props){
@@ -178,4 +177,20 @@ ReactHTMLSlider.defaultProps = {
   speed:96,
   arrow:true,
   autoSlide:4000,
+}
+
+
+function ReactSliderDots(props) {
+  let {attrs = {},rtl,index,length,size,gap,activeColor,deactiveColor} = props;
+  return (
+    <div {...attrs} className={'react-slider-dots' + (attrs.className?' ' + attrs.className:'')} style={{direction:rtl?'rtl':'ltr',...attrs.style}}>
+      <div style={{flex:1}}></div>
+      {new Array(length).fill(0).map((o,i) => {
+        let active = i === index;
+        let style = {width:size,height:size,background:active?activeColor:deactiveColor,margin:gap?`0 ${gap}px`:undefined}
+        return (<div key={i} className={'react-slider-dots-item' + (active?' active':'')} style={style}></div>)
+      })}
+      <div style={{flex:1}}></div>
+    </div>
+  )
 }

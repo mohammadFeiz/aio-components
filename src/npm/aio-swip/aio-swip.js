@@ -15,11 +15,28 @@ export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},s
       element.unbind(event, action); 
       if(type === 'bind'){element.bind(event, action)}
     },
+    getPercentByValue(value,start,end){
+      return 100 * (value - start) / (end - start)
+    },
+    getMousePosition(e){
+        let client = this.getClient(e);
+        var x = client.x - this.left;
+        var y = client.y - this.top;
+        var xp = this.getPercentByValue(x,0,this.width);
+        var yp = this.getPercentByValue(y,0,this.height);
+        return {xp,yp,clientX:client.x,clientY:client.y,x,y}
+    },
     mouseDown(e){
+      var offset = dom.offset();
+      this.width = dom.width();
+      this.height = dom.height(); 
+      this.left = offset.left;
+      this.top = offset.top;
+      let mp = this.getMousePosition(e)
       this.so = {
-        client:this.getClient(e)
+        client:{x:mp.clientX,y:mp.clientY}
       };
-      let res = start({mousePosition:{x:this.so.client.x,y:this.so.client.y,parameter}});
+      let res = start({mousePosition:{...mp},parameter,e});
       if(res === false){return}
       if(Array.isArray(res)){
         let x = res[0];
@@ -48,12 +65,12 @@ export default function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},s
         x = this.so.x + dx;
         y = this.so.y + dy;
       }
-      move({dx,dy,dist,x,y,parameter});
+      move({dx,dy,dist,x,y,parameter,mousePosition:{...this.getMousePosition(e)},e});
     },
-    mouseUp(){
+    mouseUp(e){
       this.eventHandler('window','mousemove',this.mouseMove,'unbind');
       this.eventHandler('window','mouseup',this.mouseUp,'unbind');
-      end({dx:this.dx,dy:this.dy,dist:this.dist,parameter})
+      end({dx:this.dx,dy:this.dy,dist:this.dist,parameter,e})
     }
   }
   a.init();

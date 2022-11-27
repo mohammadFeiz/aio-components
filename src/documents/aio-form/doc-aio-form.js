@@ -287,7 +287,6 @@ class Input extends Component{
         return (
             <RVD
                 onSwap={(from,to)=>{
-                    debugger;
                     let {inputs} = this.state;
                     let a = {...inputs[from]};
                     inputs[from] = false;

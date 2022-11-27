@@ -11,11 +11,12 @@ import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content
 import DOC_AIOGauge from './documents/aio-gauge/doc-aio-gauge';
 import DOC_AIOStorage from './documents/aio-storage/doc-aio-storage';
 import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip';
+import DOC_AIOColorpicker from './documents/aio-colorpicker/doc-aio-colorpicker';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-swip',
+      part:false,
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
@@ -28,6 +29,7 @@ export default class AIOComponents extends Component{
         'aio-gauge':{name:'aio-gauge',Render:DOC_AIOGauge},
         'aio-storage':{name:'aio-storage',Render:DOC_AIOStorage},
         'aio-swip':{name:'aio-swip',Render:DOC_AIOSwip},
+        'aio-colorpicker':{name:'aio-colorpicker',Render:DOC_AIOColorpicker},
       }
     }
   }
