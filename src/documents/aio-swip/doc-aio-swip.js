@@ -21,6 +21,7 @@ export default class DOC_AIOValidation extends Component{
                     {text:'disabled',id:'disabled',COMPONENT:()=><Disabled/>},
                     {text:'start return array',id:'startreturn',COMPONENT:()=><StartReturn/>},
                     {text:'parameter',id:'parameter',COMPONENT:()=><Parameter/>},
+                    {text:'mousePopsition',id:'mousePostion',COMPONENT:()=><MousePosition/>},
                     {text:'input number',id:'input number',COMPONENT:()=><InputNumber/>},
                 ]}
             />
@@ -884,6 +885,82 @@ class Example1 extends Component{
                     )
                 })}
             </div>
+        )
+    }
+}                    
+                    `}</pre>
+                }
+            </div>
+        )
+    }
+}
+class MousePosition extends Component{
+    state = {mousePosition:{},view:'preview'}
+    componentDidMount(){
+        AIOSwip({
+            dom:$('.parent'),
+            start:({mousePosition})=>{
+                this.setState({mousePosition})
+            },
+            move:({mousePosition})=>{
+                this.setState({mousePosition})
+            }
+        })
+    }
+    render(){
+        let {view,mousePosition} = this.state;
+        return (
+            <div className='example' style={{display:'flex',flexDirection:'column'}}>
+                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                {
+                    view === 'preview' && 
+                    (
+                        <>
+                            <div className='parent' style={{border:'1px solid',width:500,height:500,flex:1,position:'relative'}}></div>
+                            <p>{`x : ${mousePosition.x}`}</p>
+                            <p>{`y : ${mousePosition.x}`}</p>
+                            <p>{`clientX : ${mousePosition.clientY}`}</p>
+                            <p>{`clientY : ${mousePosition.clientX}`}</p>
+                            <p>{`xp : ${mousePosition.xp} %`}</p>
+                            <p>{`yp : ${mousePosition.yp} %`}</p>
+                        </>
+                    )
+                    
+                }
+                {
+                    view === 'code' && 
+                    <pre style={{flex:1,overflowY:'auto'}}>{`
+import React,{Component} from 'react';
+import AIOSwip from 'aio-swip';
+
+class Example1 extends Component{
+    constructor(props){
+        super(props);
+        this.state = {mousePosition:{}}
+    }
+    componentDidMount(){
+        AIOSwip({
+            dom:$('.parent'),
+            start:({mousePosition})=>{
+                this.setState({mousePosition})
+            },
+            move:({mousePosition})=>{
+                this.setState({mousePosition})
+            }
+        })
+    }
+    render(){
+        let {left,top,view} = this.state;
+        return (
+            <>
+                <div className='parent' style={{border:'1px solid',width:500,height:500,flex:1,position:'relative'}}></div>
+                <p>{'x : ' + mousePosition.x}</p>
+                <p>{'y : ' + mousePosition.x}</p>
+                <p>{'clientX : ' + mousePosition.clientY}</p>
+                <p>{'clientY : ' + mousePosition.clientX}</p>
+                <p>{'xp : ' + mousePosition.xp + ' %'}</p>
+                <p>{'yp : ' + mousePosition.yp + ' %'}</p>
+            </>
         )
     }
 }                    
