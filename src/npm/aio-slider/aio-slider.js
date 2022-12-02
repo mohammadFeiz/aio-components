@@ -291,7 +291,7 @@ class RRangeSliderPoint extends Component{
     var {showValue,isDown,valueStyle} = this.context;
     var {index} = this.props;
     if(showValue === false){return {display:'none'}}
-    if(showValue === true || isDown){return valueStyle(index,this.context);}
+    if(showValue === true || isDown){return typeof valueStyle === 'function'?valueStyle(index,this.context):valueStyle;}
     return {display:'none'};
   }
   render(){

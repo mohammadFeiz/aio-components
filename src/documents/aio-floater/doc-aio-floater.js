@@ -8,10 +8,12 @@ export default class DOC_AIOFloater extends Component{
       return (
         <DOC
           {...this.props}
-          navId='example2'
+          navId='example4'
           navs={[
-            {text:'example',id:'example',COMPONENT:()=><Example/>},
-            {text:'example2',id:'example2',COMPONENT:()=><Example2/>}
+            {text:'Basic',id:'example',COMPONENT:()=><Example/>},
+            {text:'relations',id:'example2',COMPONENT:()=><Example2/>},
+            {text:'group',id:'example3',COMPONENT:()=><Example3/>},
+            {text:'snap',id:'example4',COMPONENT:()=><Example4/>}
           ]}
         />
       )
@@ -22,21 +24,24 @@ export default class DOC_AIOFloater extends Component{
 class Example extends Component{
   state = {screen:[0,0],zoom:1,
     items:[
-      this.getItem('1','this is my text 1 and will show in Floater',100,100),
-      this.getItem('2','text2',100,300),
-      this.getItem('3','text3',300,200)
+      {template:'box',id:'1',text:'this is my text 1 and will show in Floater',left:100,top:100,title:'title1'},
+      {template:'box',id:'2',text:'text2',left:100,top:300,title:'title2'},
+      {template:'box',id:'3',text:'text3',left:360,top:200,title:'title3'}
     ]
-  }
-  getItem(id,text,left,top){
-    return {
-      template:(<Box text={text} onRemove={()=>this.setState({items:this.state.items.filter((o)=>o.id !== id)})}/>),
-      left,top,id
-    }
   }
   render(){
     let {items} = this.state;
     return (
       <Floater
+        templates={{
+          box:(item)=>{
+            let {items} = this.state;
+            let {text,id,title} = item;
+            return (
+              <Box text={text} title={title} onRemove={()=>this.setState({items:items.filter((o)=>o.id !== id)})}/>
+            )
+          }
+        }}
         items={items}
         moveHandleClassName='handle'
       />
@@ -47,21 +52,80 @@ class Example extends Component{
 class Example2 extends Component{
   state = {screen:[0,0],zoom:1,
     items:[
-      this.getItem('1','this is my text 1 and will show in Floater',100,100),
-      this.getItem('2','text2',100,300),
-      this.getItem('3','text3',360,200,[{to:'1',text:'rel1'},{to:'2',text:'rel2'}])
+      {template:'box',id:'1',text:'this is my text 1 and will show in Floater',left:100,top:100,title:'title1'},
+      {template:'box',id:'2',text:'text2',left:100,top:300,title:'title2'},
+      {template:'box',id:'3',text:'text3',left:360,top:200,title:'title3',relations:[{to:'1',text:'rel1'},{to:'2',text:'rel2'}]}
     ]
-  }
-  getItem(id,text,left,top,relations){
-    return {
-      template:(<Box text={text} onRemove={()=>this.setState({items:this.state.items.filter((o)=>o.id !== id)})}/>),
-      left,top,id,relations
-    }
   }
   render(){
     let {items} = this.state;
     return (
       <Floater
+        templates={{
+          box:(item)=>{
+            let {items} = this.state;
+            let {text,id,title} = item;
+            return (
+              <Box text={text} title={title} onRemove={()=>this.setState({items:items.filter((o)=>o.id !== id)})}/>
+            )
+          }
+        }}
+        items={items}
+        moveHandleClassName='handle'
+      />
+    )
+  }
+}
+class Example3 extends Component{
+  state = {screen:[0,0],zoom:1,
+    items:[
+      {template:'box',id:'1',text:'this is my text 1 and will show in Floater',left:100,top:100,title:'title1',group:'1'},
+      {template:'box',id:'2',text:'text2',left:100,top:300,title:'title2',group:'1'},
+      {template:'box',id:'3',text:'text3',left:360,top:200,title:'title3',relations:[{to:'1',text:'rel1'},{to:'2',text:'rel2'}],group:'1'}
+    ]
+  }
+  render(){
+    let {items} = this.state;
+    return (
+      <Floater
+        templates={{
+          box:(item)=>{
+            let {items} = this.state;
+            let {text,id,title} = item;
+            return (
+              <Box text={text} title={title} onRemove={()=>this.setState({items:items.filter((o)=>o.id !== id)})}/>
+            )
+          }
+        }}
+        items={items}
+        moveHandleClassName='handle'
+      />
+    )
+  }
+}
+
+class Example4 extends Component{
+  state = {screen:[0,0],zoom:1,
+    items:[
+      {template:'box',id:'1',text:'this is my text 1 and will show in Floater',left:100,top:100,title:'title1'},
+      {template:'box',id:'2',text:'text2',left:100,top:300,title:'title2'},
+      {template:'box',id:'3',text:'text3',left:360,top:200,title:'title3'}
+    ]
+  }
+  render(){
+    let {items} = this.state;
+    return (
+      <Floater
+        templates={{
+          box:(item)=>{
+            let {items} = this.state;
+            let {text,id,title} = item;
+            return (
+              <Box text={text} title={title} onRemove={()=>this.setState({items:items.filter((o)=>o.id !== id)})}/>
+            )
+          }
+        }}
+        snap={[90,90,'#ddd']}
         items={items}
         moveHandleClassName='handle'
       />

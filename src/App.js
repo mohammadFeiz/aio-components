@@ -14,11 +14,12 @@ import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip';
 import DOC_AIOColorpicker from './documents/aio-colorpicker/doc-aio-colorpicker';
 import DOC_AIOChart from './documents/aio-chart/doc-aio-chart';
 import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater';
+import Puzzle from './documents/puzzle/index';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-floater',
+      part:false,
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
@@ -34,6 +35,7 @@ export default class AIOComponents extends Component{
         'aio-colorpicker':{name:'aio-colorpicker',Render:DOC_AIOColorpicker},
         'aio-chart':{name:'aio-chart',Render:DOC_AIOChart},
         'aio-floater':{name:'aio-floater',Render:DOC_AIOFloater},
+        'puzzle':{name:'puzzle',Render:Puzzle},
       }
     }
   }

@@ -1200,26 +1200,41 @@ function Sort(getProps,getState,setColumns){
           let column = columns[i];
           setColumn(column,{sort:{}})
         }
-        let {sort,type = 'text',field,dataColumnId,title} = columns[i];
-        let {dir = 'inc',order,active = true,toggle = true} = sort;
+        let {sort,field,dataColumnId,title} = columns[i];
+        let {dir = 'inc',order,active = true} = sort;
+        let type = sort.type || columns[i].type || 'text';
         if(order === undefined){
           let newOrder = 0;
           let orders = columns.filter(({sort})=>sort && sort.order!== undefined).map(({sort})=>sort.order)
           while(orders.indexOf(newOrder) !== -1){newOrder++;}
           sort.order = newOrder;
         }
-        sorts.push({dir,order:sort.order,type,field,active,toggle,dataColumnId,title})
+        sorts.push({dir,order:sort.order,type,field,active,dataColumnId,title})
       }
       sorts = sorts.sort(({order:a},{order:b})=>a - b)
       return sorts;
+    },
+    getDateNumber(value){
+      let splitter;
+      if(!value || typeof value !== 'string'){return Infinity}
+      for(let i = 0; i < value.length; i++){
+        if(isNaN(parseInt(value[i]))){splitter = value[i]; break}
+      }
+      let [year,month = '01',day = '01'] = value.split(splitter);
+      let list = [year,month,day];
+      return parseInt(list.map((o)=>o.length === 1?('0' + o):o).join(''))
     },
     sort(model,sorts){
       let {getValueByField} = getState();
       return model.sort((a,b)=>{
         for (let i = 0; i < sorts.length; i++){
-          let {field,dir,active} = sorts[i];
+          let {field,dir,active,type} = sorts[i];
           if(!active){continue}
           let aValue = getValueByField(a,undefined,field),bValue = getValueByField(b,undefined,field);
+          if(type === 'date'){
+            aValue = this.getDateNumber(aValue);
+            bValue = this.getDateNumber(bValue);
+          }
           if ( aValue < bValue ){return -1 * (dir === 'dec'?-1:1);}
           if ( aValue > bValue ){return 1 * (dir === 'dec'?-1:1);}
           if(i === sorts.length - 1){return 0;}

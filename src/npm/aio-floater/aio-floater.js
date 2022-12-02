@@ -717,7 +717,7 @@ export default class AIOFloater extends Component {
         })
       })
     }
-    var {items,events = {},id,className,style,selectedColor,onAddRelation} = this.props;
+    var {items,events = {},id,className,style,selectedColor,onAddRelation,templates} = this.props;
     this.itemsDictionary = this.getItemsDictionary(items)
     var {selected} = this.state,screen = this.getScreen();
     var Items = items.filter((item)=>this.isVisible(item)).map((item,i)=>{  
@@ -736,7 +736,7 @@ export default class AIOFloater extends Component {
       }
       return (
         <div {...props}>
-          {item.template}
+          {templates[item.template](item)}
           {
             onAddRelation && item.connect !== false && 
             <div className='r-floater-origin-icon'></div>

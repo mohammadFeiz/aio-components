@@ -14,7 +14,7 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='toolbarAttrs'
+                navId='simple'
                 navs={[
                     {text:'simple',id:'simple',COMPONENT:()=><Simple/>},
                     {text:'showHeader',id:'showHeader',COMPONENT:()=><ShowHeader/>},
@@ -289,71 +289,58 @@ class PagingOnChange extends Component {
       model
     }
   }
-  render(){
+  preview(){
     let {model} = this.state;
     let {rtl = false} = this.props;
     return (
-      <div className='example doc-aio-table'>
-        <Table
-          rtl={rtl}
-          model={model}
-          columns={[
-            {title:'Name',field:'row.name'},
-            {title:'Gender',field:'row.gender'},
-            {title:'Date',field:'row.date'},
-            {title:'Age',field:'row.age'}
-          ]}
-          paging={{
-            number:1,
-            size:10,
-            sizes:[1,5,10,15,20,30,50],
-            count:100,
-            onChange:(obj)=>{
-              alert(JSON.stringify(obj))
-              return false 
-            }
-          }}
-        />
-        <pre>
-          {`
-import model from './model';
-
-class App extends Component {
-constructor(props){
-  super(props);
-  this.state = {
-    model
+      <Table
+        rtl={rtl}
+        model={model}
+        columns={[
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
+        ]}
+        paging={{
+          number:1,
+          size:10,
+          sizes:[1,5,10,15,20,30,50],
+          count:100,
+          onChange:(obj)=>{
+            alert(JSON.stringify(obj))
+            return false 
+          }
+        }}
+      />
+    )
   }
-}
-render(){
-  let {model} = this.state;
-  return (
-    <Table
-      rtl={${rtl}}
-      model={model}
-      columns={[
-        {title:'Name',field:'row.name'},
-        {title:'Gender',field:'row.gender'},
-        {title:'Date',field:'row.date'},
-        {title:'Age',field:'row.age'}
-      ]}
-      paging={{
-        number:1,
-        size:10,
-        sizes:[1,5,10,15,20,30,50],
-        count:100,
-        onChange:(obj)=>{
-          alert(JSON.stringify(obj))
-          return false 
-        }
-      }}
-    />
-  );
-}
-}          
-          `}
-        </pre>
-      </div>
+  code(){
+    return (`
+        columns={[
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
+        ]}
+        paging={{
+          number:1,
+          size:10,
+          sizes:[1,5,10,15,20,30,50],
+          count:100,
+          onChange:(obj)=>{
+            alert(JSON.stringify(obj))
+            return false 
+          }
+        }}
+    `)
+  }
+  render(){
+    return (
+      <TableExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
     );
   }
 }
@@ -668,10 +655,10 @@ class ToolbarAttrs extends Component {
           rtl={rtl}
           model={model}
           columns={[
-            {title:'Name',field:'row.name',toggle:true},
-            {title:'Gender',field:'row.gender',toggle:true,show:false},
-            {title:'Date',field:'row.date',toggle:true},
-            {title:'Age',field:'row.age',toggle:true}
+            {title:'Name',field:'row.name',sort:{active:false}},
+            {title:'Gender',field:'row.gender'},
+            {title:'Date',field:'row.date'},
+            {title:'Age',field:'row.age'}
           ]}
           rowHeight={100}
           rowGap={12}
@@ -682,11 +669,12 @@ class ToolbarAttrs extends Component {
     code(){
       return (`
         columns={[
-          {title:'Name',field:'row.name',toggle:true},
-          {title:'Gender',field:'row.gender',toggle:true,show:false},
-          {title:'Date',field:'row.date',toggle:true},
-          {title:'Age',field:'row.age',toggle:true}
+          {title:'Name',field:'row.name'},
+          {title:'Gender',field:'row.gender'},
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
         ]}
+        rowTemplate={(row,detail)=><Card row={row}/>}
       `)
     }
     render(){
@@ -1094,8 +1082,8 @@ class ToolbarAttrs extends Component {
             columns={[
               {title:'Name',field:'row.name',sort:true},
               {title:'Gender',field:'row.gender',sort:true},
-              {title:'Date',field:'row.date',sort:true},
-              {title:'Age',field:'row.age',sort:true}
+              {title:'Date',field:'row.date'},
+              {title:'Age',field:'row.age'}
             ]}
             setModel={(model)=>this.setState({model})}
           />
@@ -1106,9 +1094,10 @@ class ToolbarAttrs extends Component {
         columns={[
           {title:'Name',field:'row.name',sort:true},
           {title:'Gender',field:'row.gender',sort:true},
-          {title:'Date',field:'row.date',sort:true},
-          {title:'Age',field:'row.age',sort:true}
-        ]}          
+          {title:'Date',field:'row.date'},
+          {title:'Age',field:'row.age'}
+        ]}
+        setModel={(model)=>this.setState({model})}        
             `)
     }
     render(){
@@ -1120,6 +1109,7 @@ class ToolbarAttrs extends Component {
       );
     }
   }
+
 
   class ColumnGroup extends Component {
     constructor(props){
@@ -1470,7 +1460,7 @@ class ToolbarAttrs extends Component {
     constructor(props){
       super(props);
       this.state = {
-        tab:'code',
+        tab:'preview',
         tabs:[
           {text:'Preview',value:'preview'},
           {text:'Code',value:'code'}
@@ -1502,7 +1492,7 @@ class ToolbarAttrs extends Component {
         flex:1,
         html:(
           <div style={{display:'flex',flexDirection:'column',width:'100%',height:'100%',overflow:'auto'}}>
-            <pre>{`
+            <pre style={{padding:12}}>{`
 import model from './model';
 
 class App extends Component {
