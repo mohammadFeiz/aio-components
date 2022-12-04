@@ -73,7 +73,7 @@ export default class ReactSuperApp extends Component {
       return {html: (<Navigation {...props}/>)};
     }
     page_layout(nav){
-      let {body} = this.props;
+      let {body = ()=>''} = this.props;
       return {flex:1,column:[this.header_layout(nav),{flex:1,html:<div className='rsa-body'>{body(this.state)}</div>}]} 
     }
     header_layout(nav){
