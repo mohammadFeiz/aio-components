@@ -131,7 +131,7 @@ export default class ReactSuperApp extends Component {
     }
     items_layout(navs,level){
       return {
-        gap:12,flex:1,scroll:'v',
+        flex:1,scroll:'v',
         column:navs.filter(({show = ()=>true})=>show()).map((o,i)=>{
           if(o.navs){
             let {openDic} = this.state;
@@ -155,7 +155,7 @@ export default class ReactSuperApp extends Component {
       let open = openDic[id] === undefined?true:openDic[id]
       let active = id === navId;
       return {
-        size:36,className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>navs?this.toggle(id):onChange(id)},
+        className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>navs?this.toggle(id):onChange(id)},
         row:[
           {size:level * 16},
           {size:24,html:navs?<Icon path={open?mdiChevronDown:(rtl?mdiChevronLeft:mdiChevronRight)} size={1}/>:'',align:'vh'},
