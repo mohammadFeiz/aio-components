@@ -22,9 +22,10 @@ export default class DOC_AIOForm extends Component{
       return (
         <DOC
           {...this.props}
-          navId='editLabel'
+          navId='MultiData'
           navs={[
             {text:'data',id:'data',COMPONENT:()=><Data points={points} keys={keys}/>},
+            {text:'MultiData',id:'MultiData',COMPONENT:()=><MultiData points={points} keys={keys}/>},
             {text:'data.color',id:'data.color',COMPONENT:()=><Data_color points={points} keys={keys}/>},
             {text:'data.title',id:'data.title',COMPONENT:()=><Data_title points={points} keys={keys}/>},
             {text:'data.pointRadius',id:'data.pointRadius',COMPONENT:()=><Data_pointRadius points={points} keys={keys}/>},
@@ -70,6 +71,63 @@ class Data extends Component {
         data={[
           {
             points,
+          }
+        ]}
+        keys={keys}
+      />
+    )
+  }
+  code(){
+    return (`
+      <Chart
+        data={[
+          {
+            points
+          }
+        ]}
+        keys={keys}
+      />
+    `)
+  }
+  render(){
+    return (
+      <ChartExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
+class MultiData extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      points:props.points,
+      keys:props.keys
+    }
+  }
+  preview(){
+    let {points,keys} = this.state;
+    return (
+      <Chart
+        data={[
+          {
+            points,
+          },
+          {
+            color:'dodgerblue',
+            points:[
+              {x:'January',y:10 + (Math.round(Math.random() * 100))},
+              {x:'February',y:20 + (Math.round(Math.random() * 100))},
+              {x:'March',y:40 + (Math.round(Math.random() * 100))},
+              {x:'April',y:55 + (Math.round(Math.random() * 100))},
+              {x:'May',y:50 + (Math.round(Math.random() * 100))},
+              {x:'June',y:60 + (Math.round(Math.random() * 100))},
+              {x:'July',y:65 + (Math.round(Math.random() * 100))},
+              {x:'August',y:50 + (Math.round(Math.random() * 100))},
+              {x:'September',y:45 + (Math.round(Math.random() * 100))},
+              {x:'October',y:35 + (Math.round(Math.random() * 100))},
+            ]
           }
         ]}
         keys={keys}

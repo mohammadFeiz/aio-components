@@ -17,12 +17,14 @@ export default class ReactSuperApp extends Component {
         popups:[],
         sideOpen:false,
         addPopup:(o)=>this.setState({popups:this.state.popups.concat(o)}),
-        removePopup:()=>{
+        removePopup:(id)=>{
           let {popups} = this.state;
-          popups.pop();
+          if(id === undefined){popups.pop();}
+          else{popups = popups.filter((o)=>o.id !== id);}
           this.setState({popups})
         },
         setConfirm:this.setConfirm.bind(this),
+        setNavId:(navId)=>this.setState({navId})
       }
       if(props.getActions){props.getActions({...this.state})}
     }
@@ -108,16 +110,19 @@ export default class ReactSuperApp extends Component {
     }
     render() {
       let {confirm,popups,removePopup,touch,sideOpen,navId} = this.state;
-      let {navs,sides = [],sideId,rtl,sideHeader,style} = this.props;
+      let {navs,sides = [],sideId,rtl,sideHeader,style,popupConfig = {}} = this.props;
       let nav = navs?this.getNavById(navId):false;
       return (
         <>
           {touch && <RVD layout={{style,className: 'rsa' + (rtl?' rtl':' ltr') + (popups.length?' has-opened-popup':''),column: [this.page_layout(nav),this.navigation_layout()]}}/>}
           {!touch && <RVD layout={{style,className: 'rsa' + (rtl?' rtl':' ltr') + (popups.length?' has-opened-popup':''),row: [this.navigation_layout(),this.page_layout(nav)]}}/>}
-          {popups.length && popups.map((o,i)=><Popup key={i} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>)}
+          {
+            popups.length && 
+            popups.map((o,i)=>{
+              return <Popup key={i} {...popupConfig} {...o} index={i} removePopup={()=>removePopup()} rtl={rtl}/>
+            })}
           {confirm && <Confirm {...confirm} onClose={()=>this.setState({confirm:false})}/>}
           {sides.length && sideOpen && <SideMenu sideHeader={sideHeader} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={()=>this.setState({sideOpen:false})}/>}
-          <Loading />
         </>
       );
     }
@@ -149,11 +154,13 @@ export default class ReactSuperApp extends Component {
       let open = openDic[id] === undefined?true:openDic[id]
       this.setState({openDic:{...openDic,[id]:!open}})
     }
-    item_layout({id,icon,text,navs},level = 0){
+    item_layout(o,level = 0){
       let {onChange,navId,rtl} = this.props;
       let {openDic} = this.state;
-      let open = openDic[id] === undefined?true:openDic[id]
+      let {id,icon,navs} = o;
+      let text = typeof o.text === 'function'?o.text():o.text;
       let active = id === navId;
+      let open = openDic[id] === undefined?true:openDic[id]
       return {
         className:'rsa-navigation-item' + (active?' active':''),attrs:{onClick:()=>navs?this.toggle(id):onChange(id)},
         row:[
@@ -228,38 +235,6 @@ export default class ReactSuperApp extends Component {
       );
     }
   }
-
-  class Loading extends Component{
-    cubes2(obj = {}){
-      var {count = 5,thickness = [5,16],delay = 0.1,borderRadius = 0,colors = ['dodgerblue'],duration = 1,gap = 3} = obj;
-      let Thickness = Array.isArray(thickness)?thickness:[thickness,thickness];
-      let getStyle1 = (i)=>{
-        return {
-          width:Thickness[0],height:Thickness[1],background:colors[i % colors.length],margin:`0 ${gap/2}px`,
-          animation: `${duration}s loadingScaleY infinite ease-in-out ${i * delay + 1}s`,
-          borderRadius:borderRadius + 'px'
-        }
-      }
-      let chars = ['B','U','R','U','X']
-      let items = [];
-      for(var i = 0; i < count; i++){
-        items.push(<div key={i} className='cube' style={getStyle1(i)}>{chars[i]}</div>)
-      }
-      return (
-        <div className="rect" style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'transparent'}}>
-          {items}
-        </div>
-      )
-    }
-    
-    render(){
-      return (
-        <div className='loading'>
-          {this.cubes2({thickness:[12,90],colors:['transparent']})}
-        </div>
-      );
-    }
-  }
   export function splitNumber(price,count = 3,splitter = ','){
     if(!price){return price}
     let str = price.toString()
@@ -298,15 +273,15 @@ class Popup extends Component{
       else{removePopup()}
     }
     header_layout(){
-      let {onClose = ()=>this.onClose(),title,header,onBack,rtl} = this.props;
+      let {onClose = ()=>this.onClose(),title,header,rtl,closeType = 'close button'} = this.props;
       if(header === false){return false}
       return {
         size:48,className:'rsa-popup-header',
         row:[
-          {show:!!onBack,size:36,html:<Icon path={rtl?mdiChevronRight:mdiChevronLeft} size={1}/>,align:'vh',attrs:{onClick:()=>onBack()}},
+          {show:closeType === 'back button' && onClose !== false,size:36,html:<Icon path={rtl?mdiChevronRight:mdiChevronLeft} size={1}/>,align:'vh',attrs:{onClick:()=>onClose()}},
           {flex:1,html:title,align:'v',className:'rsa-popup-title'},
           {show:!!header,html:()=><div style={{display:'flex',alignItems:'center'}}>{header()}</div>},
-          {show:onClose !== false,size:36,html:<Icon path={mdiClose} size={0.8}/>,align:'vh',attrs:{onClick:()=>onClose()}}
+          {show:closeType === 'close button' && onClose !== false,size:36,html:<Icon path={mdiClose} size={0.8}/>,align:'vh',attrs:{onClick:()=>onClose()}}
         ]
       }
     }
