@@ -14,12 +14,14 @@
   font-size:20px;
   font-weight:bold;
   margin-bottom:12px;
+  margin-top:24px;
 }
 .aio-component-splitter{
   height:2px;
   width:100%;
   background:#ddd;
   margin-bottom:12px;
+  
 }
 .part-title{
   padding:12px;

@@ -8,7 +8,7 @@ export default class DOC_AIOButton extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='optionStyle'
+                navId='flip button'
                 propsList={[
                     {
                         props:'type',type:'"button" | "select" | "multiselect" | "radio" | "checkbox" | "checklist" | "tabs"',
@@ -68,7 +68,12 @@ export default class DOC_AIOButton extends Component{
                     {text:'popOver',id:'popOver',COMPONENT:()=><PopOver/>},
                     {text:'animate',id:'animate',COMPONENT:()=><Animate/>},
                     {text:'search',id:'search',COMPONENT:()=><Search/>},
-                    
+                    {
+                        text:'button types',id:'button types',
+                        navs:[
+                            {text:'flip button',id:'flip button',COMPONENT:()=><FlipButton/>}
+                        ]
+                    },
                 ]}
 
             />
@@ -2180,6 +2185,26 @@ onChange={(select)=>this.setState({select})}
                 </pre>
             </div>
             
+        )
+    }
+}
+
+class FlipButton extends Component{
+    state = {value:true}
+    render(){
+        let {value} = this.state;
+        return (
+            <div className="example">
+                <AIOButton
+                    type='flip-button'
+                    options={[
+                        {text:'ON',value:true},
+                        {text:'OFF',value:false}
+                    ]}
+                    value={value}
+                    onClick={(value)=>this.setState({value})}
+                />
+            </div>
         )
     }
 }

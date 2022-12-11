@@ -2,7 +2,29 @@ import React,{Component,createRef,createContext} from 'react';
 import $ from 'jquery'
 import './index.css';
 let aioButtonContext = createContext();
-
+export default class Main extends Component{
+  render(){
+    let {type} = this.props;
+    if(type === 'flip-button'){return <FlipButton {...this.props}/>}
+    return <AIOButton {...this.props}/>
+  }
+}
+class FlipButton extends Component{
+  async click(){
+    let {value,options} = this.props;
+    let {onClick = ()=>{}} = this.props;
+    onClick(value === options[0].value?options[1].value:options[0].value);
+  }
+  render(){
+    let {value,options = [{text:'OFF',value:false},{text:'ON',value:true}],colors = ['#e3e3e3','#323232']} = this.props;
+    return (
+      <button onClick={()=>this.click()} href="#" class={"flip-button" + (value === options[1].value?' flip-button-hover':'')}>
+        <div className='flip-button-before' style={{color:colors[0],background:colors[1],...options[0].style}}>{options[0].text}</div>
+        <div className='flip-button-after' style={{color:colors[1],background:colors[0],...options[1].style}}>{options[1].text}</div>
+      </button>
+    )
+  }
+}
 class Radio extends Component {
   static contextType = aioButtonContext;
   render(){
@@ -46,7 +68,7 @@ class Tabs extends Component {
 }
 
 
-export default class AIOButton extends Component {
+class AIOButton extends Component {
     constructor(props){
       super(props);
       this.dom = createRef()

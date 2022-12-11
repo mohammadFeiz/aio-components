@@ -11,11 +11,25 @@ body.aio-button-open{
     position:relative;
     justify-content: center;
     width:fit-content;
-    padding:3px 8px;
     user-select:none;
     -webkit-user-select:none;
     font-size:12px;
     font-family:inherit;
+    background: #FAFBFC;
+    border: 1px solid rgba(27, 31, 35, 0.15);
+    border-radius: 5px;
+    box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+    color: #24292E;
+    font-family: inherit;
+    padding: 4px 12px;
+    transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .aio-button:hover {
+    background-color: #F3F4F6;
+    text-decoration: none;
+    transition-duration: 0.1s;
   }
   .aio-button:disabled{
     cursor:not-allowed !important;  
@@ -34,13 +48,15 @@ body.aio-button-open{
     width:100%;
     border:0;
     background:none;
-    padding:12px 16px;
+    padding:6px 16px;
     outline:0;
     box-sizing:border-box;
     cursor:pointer;
     display:flex;
-    color:#666;
+    color:#111;
+    font-size:14px;
     align-items:center;
+    min-width: 120px;;
   }
   .aio-button-add{
     height:36px;
@@ -133,7 +149,9 @@ body.aio-button-open{
     width:fit-content;
     flex-direction: column;
     background : #fff;
-    box-shadow : 3px 3px 8px 0px rgba(0,0,0,.2);
+    box-shadow : 0 10px 15px -3px rgb(0 0 0 / 0.1),0 4px 6px -4px rgb(0 0 0 / 0.1);
+    border-radius:6px;
+    border:1px solid #d1d3d6;
     user-select:none;
     -webkit-user-select:none;
     outline:none;
@@ -440,4 +458,53 @@ body.aio-button-open{
   }
   .aio-button-radio-badge div{
   flex:1;
+  }
+
+
+  
+
+  .flip-button {
+    opacity: 1;
+    outline: 0;
+    position: relative;
+    font-family: "Open Sans",inherit;
+    font-weight:bold;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    height:36px;
+  }
+  .flip-button.flip-button-hover .flip-button-after {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+  .flip-button.flip-button-hover .flip-button-before {
+    opacity: 0;
+    transform: translateY(50%) rotateX(90deg);
+  }
+  .flip-button .flip-button-after {
+    top: 0;
+    left: 0;
+    opacity: 0;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    transition: 0.4s;
+    position: absolute;
+    height:100%;
+    transform: translateY(-50%) rotateX(90deg);
+  }
+  .flip-button .flip-button-before {
+    top: 0;
+    left: 0;
+    opacity: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 30px;
+    height:100%;
+    transition: 0.4s;
+    position: relative;
+    transform: translateY(0) rotateX(0);
   }
