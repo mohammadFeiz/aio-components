@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import Form from './../../npm/aio-form-react/aio-form-react';
-import DOC from '../../resuse-components/doc';
 import AIOJson from './../../npm/aio-json/aio-json';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import {Icon} from '@mdi/react';
 import { mdiDelete ,mdiPlusThick} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
@@ -15,31 +15,23 @@ export default class DOC_AIOForm extends Component{
     }
 }
 class Input extends Component{
-    state = {
-        input:false,model:{},
-        inputs:[
-            {
-                "type": "select",
-                "name": "input1448",
-                "id": "a85279",
-                "_index": 0,
-                "field": "model.gender",
-                "label": "gender",
-                "options": [
-                    {
-                        "text": "Male",
-                        "value": "1",
-                        "_id": "row0.7765310038338205"
-                    },
-                    {
-                        "text": "Female",
-                        "value": "2",
-                        "_id": "row0.6515422090064036"
-                    }
-                ]
+    constructor(props){
+        super(props);
+        this.state = {
+            input:false,model:{},
+            inputs:[],
+            mode:'preview',
+            theme:{
+                labelStyle:{},
+                inputStyle:{},
+                rowStyle:{},
+                bodyStyle:{},
+                labelStyle:{}
             }
-        ],
-        mode:'preview'
+        }
+    }
+    SetState(obj){
+        this.setState(obj)
     }
     show(type,field){
         if(field === 'text'){
@@ -60,8 +52,6 @@ class Input extends Component{
             {type:'text',field:'model.field',label:'field'},
             {type:'text',field:'model.label',label:'label'},
             {type:'checkbox',field:'model.inlineLabel',label:'inlineLabel'},
-            //{type:'textarea',autoHeight:true,field:'model.labelStyle',label:'labelStyle'},
-            //{type:'textarea',autoHeight:true,field:'model.inputStyle',label:'inputStyle'},
             {type:'text',field:'model.rowKey',label:'rowKey'},
             {type:'number',field:'model.rowWidth',label:'rowWidth'},
             {type:'text',field:'model.prefix',label:'prefix'},
@@ -96,7 +86,7 @@ class Input extends Component{
                         return [operator,Target]
                     })
                     input.Validations = value;
-                    this.setState({input})
+                    this.SetState({input})
                 },
                 columns:[
                     {
@@ -128,26 +118,90 @@ class Input extends Component{
         ]
     }
     activeInputForm_layout(){
-        let {input} = this.state;
-        if(!input){return false}
+        let {input,mode} = this.state;
+        if(!input || mode === 'theme'){return false}
         return {
             html:(
                 <Form
                     header={{
-                        onClose:()=>this.setState({input:false}),
+                        onClose:()=>this.SetState({input:false}),
                         style:{background:'none',height:36,borderBottom:'1px solid #2c3d37'},
                         title:`${input.name} (${input.type})`
                     }}
                     key={input.id}
                     inlineLabel={true}
                     rowStyle={{marginBottom:2}}
-                    inputStyle={{height:24,background:'rgba(138, 166, 216, 0.1)',border:'none',color:'#fff',borderRadius:0,fontSize:10}}
-                    labelStyle={{width:80,justifyContent:'end'}}
-                    bodyStyle={{padding:12}}
+                    theme={{
+                        inputStyle:{height:24,background:'rgba(138, 166, 216, 0.1)',border:'none',color:'#fff',borderRadius:0,fontSize:10},
+                        labelStyle:{width:80,justifyContent:'end'},
+                        bodyStyle:{padding:12}
+                    }}
                     model={input}
                     style={{width:280,height:'100%',background:'none',color:'#8f9b9d'}}
                     inputs={this.getInputs(input.type)}
-                    onChange={(input)=>this.setState({input})}
+                    onChange={(input)=>this.SetState({input})}
+                />
+            )
+        }
+    }
+    theme_layout(){
+        let {theme,mode} = this.state;
+        if(mode !== 'theme'){return false}
+        return {
+            html:(
+                <Form
+                    header={{
+                        onClose:()=>this.SetState({input:false,mode:'preview'}),
+                        style:{background:'none',height:36,borderBottom:'1px solid #2c3d37'},
+                        title:'Theme'
+                    }}
+                    key={'theme'}
+                    inlineLabel={true}
+                    rowStyle={{marginBottom:2}}
+                    theme={{
+                        inputStyle:{height:24,background:'rgba(138, 166, 216, 0.1)',border:'none',color:'#fff',borderRadius:0,fontSize:9},
+                        labelStyle:{width:86,justifyContent:'end'},
+                        bodyStyle:{padding:12}
+                    }}
+                    model={theme}
+                    style={{width:280,height:'100%',background:'none',color:'#8f9b9d'}}
+                    inputs={[
+                        {
+                            type:'group',text:'body style',id:'body',
+                            inputs:[
+                                {type:'text',field:'model.bodyStyle.padding',label:'padding'},
+                                {type:'color',field:'model.bodyStyle.background',label:'background'},
+                            ]
+                        },
+                        {
+                            type:'group',text:'input style',id:'input',
+                            inputs:[
+                                {type:'text',field:'model.inputStyle.padding',label:'padding'},
+                                {type:'color',field:'model.inputStyle.background',label:'background'},
+                                {type:'color',field:'model.inputStyle.color',label:'color'},
+                                {type:'color',field:'model.inputStyle.borderColor',label:'border color'},
+                                {type:'text',field:'model.inputStyle.border',label:'border'},
+                                {type:'text',field:'model.inputStyle.fontSize',label:'font size'},
+                            ]
+                        },
+                        {
+                            type:'group',text:'row style',id:'row',
+                            inputs:[
+                                {type:'text',field:'model.rowStyle.marginBottom',label:'margin bottom'},
+                                {type:'text',field:'model.rowStyle.borderTop',label:'border top'},
+                                {type:'text',field:'model.rowStyle.borderBottom',label:'border bottom'}
+                            ]
+                        },
+                        {
+                            type:'group',text:'label style',id:'label',
+                            inputs:[
+                                {type:'text',field:'model.labelStyle.padding',label:'padding'},
+                                {type:'color',field:'model.labelStyle.color',label:'color'},
+                                {type:'text',field:'model.labelStyle.fontSize',label:'font size'},
+                            ]
+                        },
+                    ]}
+                    onChange={(theme)=>this.SetState({theme})}
                 />
             )
         }
@@ -160,32 +214,35 @@ class Input extends Component{
         }
     }
     preview_preview(){
-        let {model,inputs} = this.state;
+        let {model,inputs,theme} = this.state;
         return (
             <Form
-                model={model} inputs={inputs}
-                onChange={(model)=>this.setState({model})}
+                model={model} inputs={inputs} theme={theme}
+                onChange={(model)=>this.SetState({model})}
             />
         )
     }
     preview_model(){
         let {model} = this.state;
         return (
-            <AIOJson json={model} onChange={(model)=>this.setState({model})}/>
+            <AIOJson json={model} onChange={(model)=>this.SetState({model})}/>
         )
     }
     preview_inputs(){
         let {inputs} = this.state;
         return (
-            <AIOJson json={inputs} onChange={(inputs)=>this.setState({inputs})}/>
+            <AIOJson json={inputs} onChange={(inputs)=>this.SetState({inputs})}/>
         )
     }
     preview_selectedInput(){
         let {input} = this.state;
         if(!input){return null}
         return (
-            <AIOJson json={input} onChange={(input)=>this.setState({input})}/>
+            <AIOJson json={input} onChange={(input)=>this.SetState({input})}/>
         )
+    }
+    preview_theme(){
+        return this.preview_preview()
     }
     inputs_layout(){
         let {inputs} = this.state;
@@ -209,13 +266,13 @@ class Input extends Component{
                             html:`${name} (${type})`,
                             attrs:{
                                 onClick:()=>{
-                                    if(active){this.setState({input:false})}
-                                    else {this.setState({input})}
+                                    if(active){this.SetState({input:false})}
+                                    else {this.SetState({input})}
                                 }
                             }      
                         },
                         {html:<Icon path={mdiDelete} size={0.7} />,align:'vh',attrs:{onClick:()=>{
-                            this.setState({inputs:inputs.filter((o)=>input.id !== o.id)})
+                            this.SetState({inputs:inputs.filter((o)=>input.id !== o.id)})
                         }}}
                     ]
                 }
@@ -243,10 +300,11 @@ class Input extends Component{
                                 {text:'textarea',value:'textarea'},
                                 {text:'color',value:'color'},
                                 {text:'select',value:'select'},
+                                {text:'radio',value:'radio'},
                                 {text:'datepicker',value:'datepicker'}
                             ]}
                             onChange={(type)=>{
-                                this.setState({inputs:inputs.concat({type,name:'input' + Math.round(Math.random() * 100000),id:'a' + Math.round(Math.random() * 100000)})})
+                                this.SetState({inputs:inputs.concat({type,name:'input' + Math.round(Math.random() * 100000),id:'a' + Math.round(Math.random() * 100000)})})
                             }}
                         />
                     )
@@ -263,10 +321,9 @@ class Input extends Component{
                                 {text:'Model',value:'model'},
                                 {text:'Inputs',value:'inputs'},
                                 {text:'Selected Input',value:'selectedInput'},
+                                {text:'Theme',value:'theme'}
                             ]}
-                            onChange={(mode)=>{
-                                this.setState({mode})
-                            }}
+                            onChange={(mode)=>this.SetState({mode})}
                         />
                     )
                 },
@@ -292,7 +349,7 @@ class Input extends Component{
                     inputs[from] = false;
                     inputs.splice(to,0,a);
                     inputs = inputs.filter((o)=>o !== false)
-                    this.setState({inputs})
+                    this.SetState({inputs})
                 }}
                 layout={{
                     style:{position:'fixed',height:'100%',flex:'none',width:'100%',left:0,top:0,background:'#1d292c'},
@@ -303,7 +360,8 @@ class Input extends Component{
                             row:[
                                 this.inputs_layout(),
                                 this.preview_layout(),
-                                this.activeInputForm_layout()
+                                this.activeInputForm_layout(),
+                                this.theme_layout()
                             ]
                         }
                     ]

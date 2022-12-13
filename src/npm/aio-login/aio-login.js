@@ -298,9 +298,10 @@ export class OTPLogin extends Component{
     }
     submit_layout(){
       let {onSubmit} = this.props;
+      let {code} = this.state;
       return {
         style:{padding:'0 12px'},
-        html: (<SubmitButton className='otp-login-submit' onClick={async () => await onSubmit()}/>)
+        html: (<SubmitButton disabled={isNaN(+code) || code.length !== 4} onClick={async () => await onSubmit(code)}/>)
       }
     }
     update(){
