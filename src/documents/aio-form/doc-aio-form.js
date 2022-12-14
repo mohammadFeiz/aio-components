@@ -3,7 +3,7 @@ import Form from './../../npm/aio-form-react/aio-form-react';
 import AIOJson from './../../npm/aio-json/aio-json';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import {Icon} from '@mdi/react';
-import { mdiDelete ,mdiPlusThick} from '@mdi/js';
+import { mdiDelete ,mdiPlusThick,mdiContentSave, mdiMenu} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
 import AIOButton from './../../npm/aio-button/aio-button';
 import './index.css';
@@ -17,7 +17,11 @@ export default class DOC_AIOForm extends Component{
 class Input extends Component{
     constructor(props){
         super(props);
+        //let Storage = AIOStorage('formgenerator')
+        //let state = Storage.load('projects',[])
         this.state = {
+            projects:[],
+            project:false,
             input:false,model:{},
             inputs:[],
             mode:'preview',
@@ -32,6 +36,9 @@ class Input extends Component{
     }
     SetState(obj){
         this.setState(obj)
+    }
+    saveTheme(){
+
     }
     show(type,field){
         if(field === 'text'){
@@ -153,7 +160,10 @@ class Input extends Component{
                     header={{
                         onClose:()=>this.SetState({input:false,mode:'preview'}),
                         style:{background:'none',height:36,borderBottom:'1px solid #2c3d37'},
-                        title:'Theme'
+                        title:'Theme',
+                        html:()=>{
+                            return <Icon path={mdiContentSave} size={0.8} onClick={()=>this.saveTheme()}/>
+                        }
                     }}
                     key={'theme'}
                     inlineLabel={true}
@@ -245,53 +255,18 @@ class Input extends Component{
         return this.preview_preview()
     }
     inputs_layout(){
-        let {inputs} = this.state;
+        let {inputs,project} = this.state;
+        if(!project){return false}
         return {
             size:240,
-            column:inputs.map((input,i)=>{
-                let {type,name} = input;
-                let active = this.state.input && input.id === this.state.input.id;
-                return {
-                    align:'v',swapId:i,
-                    style:{
-                        height:36,padding:'0 12px',
-                        background:active?'#2e577f':'rgb(138 166 216 / 10%)',
-                        color:'#fff',
-                        fontSize:12,
-                        marginBottom:1
-                    },
-                    row:[
-                        {
-                            flex:1,align:'v',style:{height:'100%'},
-                            html:`${name} (${type})`,
-                            attrs:{
-                                onClick:()=>{
-                                    if(active){this.SetState({input:false})}
-                                    else {this.SetState({input})}
-                                }
-                            }      
-                        },
-                        {html:<Icon path={mdiDelete} size={0.7} />,align:'vh',attrs:{onClick:()=>{
-                            this.SetState({inputs:inputs.filter((o)=>input.id !== o.id)})
-                        }}}
-                    ]
-                }
-            })
-        }
-    }
-    toolbar_layout(){
-        let {inputs,mode} = this.state;
-        return {
-            size:48,align:'v',gap:1,
-            row:[
+            column:[
                 {
-                    size:240,
                     html:(
                         <AIOButton 
                             before={<Icon path={mdiPlusThick} size={0.7}/>}
                             caretAttrs={{style:{width:24}}}
                             text='Add Input'
-                            style={{background:'#2a59545c',color:'#fff',width:'100%',height:48}}
+                            style={{background:'dodgerblue',color:'#fff',width:'100%',height:48}}
                             type='select'
                             popupWidth='fit'
                             options={[
@@ -310,7 +285,70 @@ class Input extends Component{
                     )
                 },
                 {
-                    flex:1,
+                    flex:1,scroll:'v',
+                    column:inputs.map((input,i)=>{
+                        let {type,name} = input;
+                        let active = this.state.input && input.id === this.state.input.id;
+                        return {
+                            align:'v',swapId:i,
+                            style:{
+                                height:36,padding:'0 12px',
+                                background:active?'#2e577f':'rgb(138 166 216 / 10%)',
+                                color:'#fff',
+                                fontSize:12,
+                                marginBottom:1
+                            },
+                            row:[
+                                {
+                                    flex:1,align:'v',style:{height:'100%'},
+                                    html:`${name} (${type})`,
+                                    attrs:{
+                                        onClick:()=>{
+                                            if(active){this.SetState({input:false})}
+                                            else {this.SetState({input})}
+                                        }
+                                    }      
+                                },
+                                {html:<Icon path={mdiDelete} size={0.7} />,align:'vh',attrs:{onClick:()=>{
+                                    this.SetState({inputs:inputs.filter((o)=>input.id !== o.id)})
+                                }}}
+                            ]
+                        }
+                    })
+                }
+            ]
+        }
+    }
+    addProject(){
+        
+    }
+    toolbar_layout(){
+        let {inputs,mode,project,projects} = this.state;
+        return {
+            size:48,align:'v',gap:1,
+            row:[
+                {
+                    size:38,align:'vh',style:{background:'#2a59545c',height:48,color:'#fff'},
+                    html:<Icon path={mdiPlusThick} size={0.7} onClick={()=>this.addProject()}/>
+                },
+                {
+                    size:200,
+                    html:(
+                        <AIOButton 
+                            caretAttrs={{style:{width:24}}}
+                            style={{background:'#2a59545c',color:'#fff',width:'100%',height:48,border:'none',borderRadius:0,boxShadow:'none'}}
+                            text={!project?'Select Project':undefined}
+                            type='select'
+                            popupWidth='fit'
+                            options={projects.map((o)=>{return {text:o,value:o}})}
+                            onChange={(type)=>{
+                                this.SetState({inputs:inputs.concat({type,name:'input' + Math.round(Math.random() * 100000),id:'a' + Math.round(Math.random() * 100000)})})
+                            }}
+                        />
+                    )
+                },
+                {
+                    flex:1,show:!!project,
                     html:(
                         <AIOButton 
                             style={{background:'#2a59545c',color:'#fff',height:48}}
@@ -327,6 +365,7 @@ class Input extends Component{
                         />
                     )
                 },
+                {show:!!!project,flex:1,style:{background:'#2a59545c',height:'100%'}},
                 {
                     html:(
                         <AIOButton

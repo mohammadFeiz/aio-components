@@ -227,9 +227,8 @@ export default class AIOForm extends Component {
     let {theme:inputTheme = {}} = input;
     return {...stateTheme,...inputTheme,label:{...stateTheme.label,...inputTheme.label},input:{...stateTheme.input,...inputTheme.input}} 
   }
-  getLabelLayout(label,input){
+  getLabelLayout(label,input,inlineLabel){
     let {inputs} = this.props;
-    let inlineLabel = this.getTheme(input,'inlineLabel');
     let labelStyle = this.getTheme(input,'labelStyle');
     labelStyle = this.getValue({field:labelStyle,def:{},input})
     if(typeof labelStyle === 'string'){
@@ -253,7 +252,7 @@ export default class AIOForm extends Component {
   }
   getInput(input){
     let {rtl} = this.props;
-    let { label,affix,prefix,inlineLabel = this.props.inlineLabel} = input;
+    let { label,affix,prefix} = input;
     let theme = this.getInputTheme(input);
     let value = this.getValue({field:input.field});
     let options = this.getValue({field:input.options,def:[]});
@@ -272,12 +271,13 @@ export default class AIOForm extends Component {
     let className = `aio-form-input aio-form-input-${input.type}` + (disabled === true?' disabled':'') + (input.className ? ' ' + input.className : '') + (affix?' has-affix':'') + (prefix?' has-prefix':'') + (rtl?' rtl':' ltr')
     let error = this.getError(input,value,options)
     let props = {value,options,step,disabled:disabled === true,onChange,className,style,placeholder,text,subtext,start,end,theme,columns,min,max}
-    let {label:themeLabel = {},error:themeError = {}} = theme;
+    let {error:themeError = {}} = theme;
+    let inlineLabel = this.getTheme(input,'inlineLabel');
     if (inlineLabel) {
       return {
         className: 'aio-form-item',style:{overflow:'visible'},
         row: [
-          this.getLabelLayout(label,input),
+          this.getLabelLayout(label,input,inlineLabel),
           {size:6,show: label !== undefined},
           {
             flex:1,style:{overflow:'visible'},
@@ -300,7 +300,7 @@ export default class AIOForm extends Component {
         className: 'aio-form-item',
         style:{overflow:'visible'},
         column: [
-          this.getLabelLayout(label,input),
+          this.getLabelLayout(label,input,inlineLabel),
           {
             row:[
               {show:!!input.prefix,html:()=>this.getFix(input,rtl,'prefix')},
@@ -474,7 +474,7 @@ export default class AIOForm extends Component {
 }
 class AIOFormHeader extends Component {
   render() {
-    let {title,onClose,print,onBack,justify,onForward,rtl,style,className,getValue} = this.props;
+    let {title,onClose,print,onBack,justify,onForward,rtl,style,className,getValue,html} = this.props;
     let subtitle = getValue({field:this.props.subtitle})
     return (
       <ReactVirtualDom
@@ -492,6 +492,7 @@ class AIOFormHeader extends Component {
               ],
             },
             { flex: 1 },
+            {show:typeof html === 'function',html:()=>html()},
             {show:onForward !== undefined,html:<Icon path={rtl?mdiChevronLeft:mdiChevronRight} size={0.9}/>,align:'vh',size:36,attrs:{onClick:onForward}},
             {show:print !== undefined,html:<Icon path={mdiPrinter} size={0.9}/>,align:'vh',size:36},
             {show:onClose !== undefined,html:<Icon path={mdiClose} size={0.8}/>,align:'vh',size:36,attrs:{onClick:onClose}}
