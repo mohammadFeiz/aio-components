@@ -478,7 +478,7 @@ export default class Table extends Component {
   }
 }
 Table.defaultProps = {
-  indent:16,columnGap:1,rowGap:1
+  indent:16,columnGap:1,rowGap:1,headerHeight:48
 }
 class TableUnit extends Component{
   static contextType = TableContext;
@@ -527,7 +527,7 @@ class TableUnit extends Component{
 
       row:[
         this.resize_layout(column,resizable,'start'),
-        {html:column.title || '',flex:1,align:column.titleJustify?'h':undefined},
+        {html:column.title || '',flex:1,align:column.titleJustify !== false?'h':undefined},
         this.filter_layout(column),
         this.resize_layout(column,resizable,'end')
       ]

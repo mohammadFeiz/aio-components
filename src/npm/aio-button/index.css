@@ -45,7 +45,6 @@ body.aio-button-open {
   color: #111;
   font-size: 14px;
   align-items: center;
-  min-width: 120px;
 }
 
 .aio-button-add {
@@ -63,7 +62,6 @@ body.aio-button-open {
   background: #fff;
   box-sizing: border-box;
   top: 0;
-  min-width: 200px;
   width: 100%;
   display: flex;
   border-bottom: 1px solid #ddd;
