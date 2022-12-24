@@ -13,6 +13,8 @@ import './index.css';
 export default class AIOForm extends Component {
   constructor(props){
     super(props);
+    this.dom = createRef();
+    this.errors = {};
     let {theme = {}} = this.props;
     this.state = {initialModel:JSON.stringify(props.model),theme,groupDic:{}}
   }
@@ -53,7 +55,9 @@ export default class AIOForm extends Component {
   async onChange(input, value) {
     let {onChange} = this.props;
     if (input.onChange) {return await input.onChange(value);} 
-    else if(onChange){onChange(this.setValue(input.field,value,{model:this.getModel()}).model)}
+    else if(onChange){
+      onChange(this.setValue(input.field,value,{model:this.getModel()}).model)
+    }
   }
   getInput_text({className,value,onChange,options,disabled,style,placeholder,min,max}, input){
     let props = {min,max,...input.attrs,autoHeight:input.autoHeight,type:input.type,value,className,onChange,options,disabled,style,placeholder,options,optionText:input.optionText,optionValue:input.optionValue};
@@ -77,10 +81,20 @@ export default class AIOForm extends Component {
     this.setByDefaults(checkbox,props);
     return (<AIOButton {...props} type='checkbox'/>);
   }
-  getTheme(input,key){
-    let {theme:themeProps = {}} = this.props;
-    let {theme:themeInput = {}} = input;
-    return {...themeProps[key],...themeInput[key]}
+  getTheme(input,key,type = 'object'){
+    if(type === 'object'){
+      let {theme:themeProps = {}} = this.props;
+      let {theme:themeInput = {}} = input;
+      return {...themeProps[key],...themeInput[key]}
+    }
+    if(type === 'boolean'){
+      let {theme:themeProps = {}} = this.props;
+      let {theme:themeInput = {}} = input;
+      let p = !!themeProps[key];
+      let i = !!themeInput[key];
+      return p || i;
+    }
+    
   }
   getInput_checklist({className,options:Options,disabled,style,theme}, input) {
     let options = Options.map((o)=>{
@@ -251,7 +265,7 @@ export default class AIOForm extends Component {
     return props;
   }
   getInput(input){
-    let {rtl} = this.props;
+    let {rtl,showErrors} = this.props;
     let { label,affix,prefix} = input;
     let theme = this.getInputTheme(input);
     let value = this.getValue({field:input.field});
@@ -272,7 +286,7 @@ export default class AIOForm extends Component {
     let error = this.getError(input,value,options)
     let props = {value,options,step,disabled:disabled === true,onChange,className,style,placeholder,text,subtext,start,end,theme,columns,min,max}
     let {error:themeError = {}} = theme;
-    let inlineLabel = this.getTheme(input,'inlineLabel');
+    let inlineLabel = this.getTheme(input,'inlineLabel','boolean');
     if (inlineLabel) {
       return {
         className: 'aio-form-item',style:{overflow:'visible'},
@@ -289,7 +303,7 @@ export default class AIOForm extends Component {
                   {show:!!input.affix,html:()=>this.getFix(input,rtl,'affix')}
                 ]
               },
-              {align:'v',show:error !== '',html:error,className:'aio-form-error',style:themeError}
+              {align:'v',show:showErrors !== false && error !== '',html:error,className:'aio-form-error',style:themeError}
             ]
           },
           
@@ -308,7 +322,7 @@ export default class AIOForm extends Component {
               {show:!!input.affix,html:()=>this.getFix(input,rtl,'affix')}
             ]
           },
-          {size:themeError.height,show:error !== '',html:error,className:'aio-form-error',style:themeError}
+          {size:themeError.height,show:showErrors !== false && error !== '',html:error,className:'aio-form-error',style:themeError}
         ],
       };
     }
@@ -381,7 +395,7 @@ export default class AIOForm extends Component {
     })
   }
   getError(o,value,options){
-    let {lang = 'en'} = this.props;
+    let {lang = 'en',getErrors = ()=>{}} = this.props;
     let {validations = []} = o
     if(!validations.length){return ''}
     
@@ -403,7 +417,24 @@ export default class AIOForm extends Component {
       })  
     }
     let error = AIOValidation(a);
-    if(!this.isThereError && error){this.isThereError = true}
+    if(error){
+      if(!this.isThereError){this.isThereError = true}
+      this.errors['a' + o._index] = error;
+    }
+    else{
+      let newErrors = {};
+      for(let prop in this.errors){
+        if(prop !== 'a' + o._index){
+          newErrors[prop] = this.errors[prop];
+        }
+      }
+      this.errors = newErrors;
+      if(JSON.stringify(this.lastErrors) !== JSON.stringify(this.errors)){
+        this.lastErrors = this.errors
+        getErrors(Object.keys(this.errors).map((o)=>this.errors[o]))
+      }
+      
+    }
     return error;
   } 
   async reset(){
@@ -459,6 +490,7 @@ export default class AIOForm extends Component {
     return (
       <ReactVirtualDom
         layout={{
+          attrs:{ref:this.dom},
           className: 'aio-form' + (className?' ' + className:''),
           style,
           column: [
