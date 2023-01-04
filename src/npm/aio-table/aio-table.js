@@ -290,8 +290,7 @@ export default class Table extends Component {
       return pathes
     }
     return {
-      size:detail._level * indent,
-      style:{height:'100%',overflow:'visible'},
+      size:detail._level * indent,style:{height:'100%'},className:'of-visible',
       html:(
         <div style={{width:detail._level * indent,height:'100%',position:'relative'}}>
           <svg width={20} height={20} style={{height:`calc(100% + ${rowGap}px)`,width:'100%',position:'absolute',top:-rowGap}}>
@@ -627,11 +626,11 @@ class TableUnit extends Component{
       let row = getRowById(rowId);
       if(rowChilds){
         return {
-          style:{overflow:'visible'},size:rowHeight,
+          className:'of-visible',size:rowHeight,
           row:[
             indent_layout(rowId),
             toggle_layout(rowId,false),
-            {flex:1,html:rowTemplate(row,rowDetail),className:TableCLS.rowTemplate,style:{overflow:'visible'}},
+            {flex:1,html:rowTemplate(row,rowDetail),className:TableCLS.rowTemplate + ' of-visible'},
             {size:6}
           ]
         }
@@ -644,9 +643,8 @@ class TableUnit extends Component{
     let cells = rowDetail['_' + cellsType];
     let isThereAnyFlex = false;
     return {
-      className:TableCLS.row + (rowDetail._show === 'relative'?' row-relative-filter':''),
+      className:TableCLS.row + ' of-visible' + (rowDetail._show === 'relative'?' row-relative-filter':''),
       gap:columnGap,
-      style:{overflow:'visible'},
       row:cells.map((cell,i)=>{
         let res = cell(striped);
         let {html,size,flex,minWidth = 3,attrs} = res;
@@ -655,7 +653,7 @@ class TableUnit extends Component{
         if(i === cells.length - 1 && !isThereAnyFlex){
           size = undefined; flex = 1
         }
-        return {style:{height:'100%',minWidth,overflow:'visible'},html,size,flex,attrs}
+        return {style:{height:'100%',minWidth},html,size,flex,attrs,className:'of-visible'}
       })
     }
   }
@@ -667,6 +665,7 @@ class TableUnit extends Component{
     let headerLayout = this.header_layout();
     let rowsLayout = this.rows_layout()
     let className = TableCLS.rows;
+    className += 'of-auto';
     if(cellsType === 'freezeCells'){className += ' ' + TableCLS.freezeContainer}
     else if(cellsType === 'unfreezeCells'){className += ' ' + TableCLS.unfreezeContainer}
     return (
@@ -675,7 +674,7 @@ class TableUnit extends Component{
         layout={{
           className,
           column:[headerLayout,...rowsLayout],
-          scroll:'vh',gap:rowGap,flex:1,
+          gap:rowGap,flex:1,
           attrs:{onScroll:()=>onScroll(),ref:this.rowsRef}
         }}
       />
@@ -928,7 +927,7 @@ class Cell extends Component{
     let {getRowById,rowHeight} = this.context;
     let {column,rowId,value,striped} = this.props;
     let row = getRowById(rowId);
-    let attrs = {},style = {overflow:'visible'};
+    let attrs = {},style = {};
     if(column.cellAttrs){
       attrs = column.cellAttrs(row) || {}
       if(attrs.style){style = attrs.style}
@@ -948,7 +947,7 @@ class Cell extends Component{
     return (
       <RVD
         layout={{
-            className:TableCLS.cell + (attrs.className?' ' + attrs.className:'') + (striped === true?' striped':''),
+            className:TableCLS.cell + ' of-visible' + (attrs.className?' ' + attrs.className:'') + (striped === true?' striped':''),
             attrs:{
               ...attrs,'data-uniq-id':this.dataUniqId,style:undefined,className:undefined,
               onClick:attrs.onClick?()=>attrs.onClick(row):undefined,
@@ -988,7 +987,7 @@ class Cell extends Component{
       return {
         className:TableCLS.cellContent,style:{height:'100%'},align:'v',flex:1,
         column:[
-          {html:this.getContent(row,column,value),align:column.justify?'vh':'v',style:{overflow:'visible'}},
+          {html:this.getContent(row,column,value),align:column.justify?'vh':'v',className:'of-visible'},
           {size:3},
           {html:subtext,className:TableCLS.cellSubtext,align:column.justify?'vh':'v'},
         ]
