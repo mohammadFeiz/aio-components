@@ -353,3 +353,13 @@
   width:100%;
   height:100%;
 }
+
+.rvd-rotate-card{
+  transform:rotateX(180deg);
+  opacity:0;
+}
+.rvd-rotate-card.mounted{
+  transform: rotateX(0deg) !important;
+  opacity:1;
+  transition: 0.8s;
+}
