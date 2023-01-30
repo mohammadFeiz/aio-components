@@ -246,10 +246,10 @@ export default class ReactSuperApp extends Component {
       let {navId,onChange} = this.props;
       let active = id === navId;
       return {
-          flex:1,className:'rsa-bottom-menu-item' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
+          flex:1,className:'rsa-bottom-menu-item of-visible' + (active?' active':''),attrs:{onClick:()=>onChange(id)},
           column:[
             {flex:2},
-            {show:!!icon,html:()=>icon(active),align:'vh'},
+            {show:!!icon,html:()=>icon(active),align:'vh',className:'of-visible'},
             {flex:1},
             {html:text,align:'vh',className:'rsa-bottom-menu-item-text'},
             {flex:1}
