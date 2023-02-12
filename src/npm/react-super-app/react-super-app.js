@@ -12,6 +12,11 @@ export default class ReactSuperApp extends Component {
       super(props);
       let {touch = 'ontouchstart' in document.documentElement,splash,splashTime = 7000} = props;
       this.storage = AIOStorage('rsa-cache')
+      window.oncontextmenu = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      };
       this.state = {
         navId:this.getNavId(),
         splash,
@@ -69,6 +74,7 @@ export default class ReactSuperApp extends Component {
       if(splash){setTimeout(()=>this.setState({splash:false}),splashTime)}
       if(props.getActions){props.getActions({...this.state})}
     }
+    
     setConfirm(obj){
       let confirm;
       let {type} = obj;
