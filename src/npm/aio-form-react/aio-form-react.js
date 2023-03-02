@@ -90,9 +90,9 @@ export default class AIOForm extends Component {
     if(type === 'boolean'){
       let {theme:themeProps = {}} = this.props;
       let {theme:themeInput = {}} = input;
-      let p = !!themeProps[key];
-      let i = !!themeInput[key];
-      return p || i;
+      let p = themeProps[key];
+      let i = themeInput[key];
+      return i === undefined?p:i;
     }
     
   }
