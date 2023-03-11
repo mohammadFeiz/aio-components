@@ -12,8 +12,11 @@ export default class DOC_AIOValidation extends Component{
         return (
             <DOC
                 {...this.props}
+                navId='!='
                 navs={[
-                    {text:'try it',id:'try it',COMPONENT:()=><TryIt/>}
+                    {text:'try it',id:'try it',COMPONENT:()=><TryIt/>},
+                    {text:'=',id:'=',COMPONENT:()=><Equal/>},
+                    {text:'!=',id:'!=',COMPONENT:()=><NotEqual/>}
                 ]}
             />
         )
@@ -118,6 +121,144 @@ class TryIt extends Component{
                     } 
                     disabled
                 />
+            </div>
+        )
+    }
+}
+class Equal extends Component{
+    render(){
+        return (
+            <div className='example'>
+                <pre>{`
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',10]
+    ],
+    value:10
+})
+// res is ${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',10]
+    ],
+    value:10
+})}
+
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',11]
+    ],
+    value:10
+})
+// res is '${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',11]
+    ],
+    value:10
+})}'
+
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',11,{message:'مقدار وارد شده صحیح نیست'}]
+    ],
+    value:10
+})
+// res is '${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['=',11,{message:'مقدار وارد شده صحیح نیست'}]
+    ],
+    value:10
+})}'
+                `}</pre>
+            </div>
+        )
+    }
+}
+
+class NotEqual extends Component{
+    render(){
+        return (
+            <div className='example'>
+                <pre>{`
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10]
+    ],
+    value:10
+})
+// res is ${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10]
+    ],
+    value:10
+})}
+
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',11]
+    ],
+    value:10
+})
+// res is '${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',11]
+    ],
+    value:10
+})}'
+
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10,{message:'مقدار وارد شده صحیح نیست'}]
+    ],
+    value:10
+})
+// res is '${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10,{message:'مقدار وارد شده صحیح نیست'}]
+    ],
+    value:10
+})}'
+
+let res = AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10,{target:'عدد قبلی'}]
+    ],
+    value:10
+})
+// res is '${AIOValidation({
+    lang:'fa',
+    title:'مقدار',
+    validations:[
+        ['!=',10,{target:'عدد قبلی'}]
+    ],
+    value:10
+})}'
+                `}</pre>
             </div>
         )
     }
