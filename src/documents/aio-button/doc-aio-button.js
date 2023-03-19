@@ -8,7 +8,7 @@ export default class DOC_AIOButton extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='flip button'
+                navId='file'
                 propsList={[
                     {
                         props:'type',type:'"button" | "select" | "multiselect" | "radio" | "checkbox" | "checklist" | "tabs"',
@@ -28,6 +28,7 @@ export default class DOC_AIOButton extends Component{
                 ]}
                 navs={[
                     {text:'Props',id:'props'},
+                    {text:'file',id:'file',COMPONENT:()=><File/>},
                     {text:'text',id:'text',COMPONENT:()=><Text/>},
                     {text:'before',id:'before',COMPONENT:()=><Before/>},
                     {text:'after',id:'after',COMPONENT:()=><After/>},
@@ -249,43 +250,58 @@ class App extends React.Component{
         )
     }
 }
-
+class File extends Component{
+    render(){
+        return (
+            <AIOButton type='file' text='select file'/>
+        )
+    }
+}
 class Text extends Component{
     state = {select:'2',multiselect:['1','2'],checkbox:false}
     render(){
         let {select,multiselect,checkbox} = this.state;
-        let options = [
-            {text:'option1',value:'1'},
-            {text:'option2',value:'2'},
-            {text:'option3',value:'3'},
-        ]
+        
         return (
             <div className='example'>
+                <div className='aio-component-label'>text props in button type</div>
                 <AIOButton 
                     type='button' 
-                    text='text example' 
+                    text='button' 
                     onClick={()=>alert()}
                 />
                 <pre>
                     {`
-class App extends React.Component{
-    render(){
-        return (
-            <AIOButton 
-                type='button' 
-                text='text example'
-                onClick={()=>alert()}
-            />
-        )
-    }
-}
+<AIOButton 
+    ...    
+    type='button' 
+    text='button' 
+    ...
+/>
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>text props in file type</div>
+                <AIOButton 
+                    type='file' 
+                    text='file'
+                />
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='file' 
+    text='file' 
+    ...
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>text props in select type</div>
                 <AIOButton 
                     type='select' 
                     value={select} 
-                    text='text example' 
+                    text='select' 
                     options={[
                         {text:'option1',value:'1'},
                         {text:'option2',value:'2'},
@@ -295,34 +311,16 @@ class App extends React.Component{
                 />
                 <pre>
                     {`
-class App extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            select:'2'
-        }
-    }
-    render(){
-        let {select} = this.state;
-
-        return (
-            <AIOButton 
-                type='select' 
-                text='text example'
-                value={select}
-                options={[
-                    {text:'option1',value:'1'},
-                    {text:'option2',value:'2'},
-                    {text:'option3',value:'3'}
-                ]}
-                onChange={(select)=>this.setState({select})}
-            />
-        )
-    }
-}
+<AIOButton 
+    ...    
+    type='select' 
+    text='select' 
+    ...
+/>
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>text props in multiselect type</div>
                 <AIOButton 
                     type='multiselect' 
                     text='text example' 
@@ -336,58 +334,25 @@ class App extends React.Component{
                 />
                 <pre>
                     {`
-class App extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            multiselect:['1','2']
-        }
-    }
-    render(){
-        let {multiselect} = this.state;
-
-        return (
-            <AIOButton 
-                type='multiselect' 
-                text='text example' 
-                options={[
-                    {text:'option1',value:'1'},
-                    {text:'option2',value:'2'},
-                    {text:'option3',value:'3'}
-                ]} 
-                value={multiselect}
-                onChange={(multiselect)=>this.setState({multiselect})}
-            />
-        )
-    }
-}
-
+<AIOButton 
+    ...    
+    type='multiselect' 
+    text='multiselect' 
+    ...
+/>
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>text props in checkbox type</div>
                 <AIOButton type='checkbox' text='text example' value={checkbox} onChange={(checkbox)=>this.setState({checkbox:!checkbox})}/>
                 <pre>
                     {`
-class App extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            value:false
-        }
-    }
-    render(){
-        let {value} = this.state;
-
-        return (
-            <AIOButton 
-                type='checkbox'
-                value={value} 
-                text='text example'
-                onChange={(value)=>this.setState({!value})}
-            />
-        )
-    }
-}
+<AIOButton 
+    ...    
+    type='checkbox' 
+    text='checkbox' 
+    ...
+/>
                     `}    
                 </pre>
             </div>
@@ -405,128 +370,153 @@ class Before extends Component{
         let before = <Icon path={mdiAccount} size={0.7} />
         return (
             <div className='example'>
-                <AIOButton type='button' text='text example' before={before}/>
-                <pre>
-                    {`
-class App extends React.Component{
-    render(){
-        return (
-            <AIOButton 
-                type='button' 
-                text='text example'
-                onClick={()=>alert()}
-                before={<Icon path={mdiAccount} size={0.7} />}
-            />
-        )
-    }
-}
-                    `}    
-                </pre>
-                <div className='aio-component-splitter'></div>
-                <AIOButton type='select' value='2' options={options} before={before}/>
+                <div className='aio-component-label'>before props in button type</div>
+                <AIOButton type='button' text='button' before={before}/>
                 <pre>
                     {`
 <AIOButton 
-    type='select' 
-    value='2' 
-    options={[
-        {text:'option1',value:'1'},
-        {text:'option2',value:'2'},
-        {text:'option3',value:'3'}
-    ]} 
-    before={before}
+    ...    
+    type='button' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
 />
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} before={before}/>
+                <div className='aio-component-label'>before props in file type</div>
+                <AIOButton type='file' text='file' before={before}/>
                 <pre>
-                    {`<AIOButton type='multiselect' text='text example' options={options} value={['1','3']} before={before}/>`}    
+                    {`
+<AIOButton 
+    ...    
+    type='file' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
+                
+                <div className='aio-component-label'>before props in select type</div>
+                <AIOButton type='select' value='2' options={options} before={before}/>
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='select' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>before props in multiselect type</div>
+                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} before={before}/>
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='multiselect' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>before props in checkbox type</div>
                 <AIOButton type='checkbox' text='text example' before={before}/>
                 <pre>
-                    {"<AIOButton type='checkbox' text='text example' before={before}/>"}    
+                    {`
+<AIOButton 
+    ...    
+    type='checkbox' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
                 </pre>
+                
             </div>
         )
     }
 }
 
 class After extends Component{
-    state = {select:'2',multiselect:['1','2'],radio:'2',checkbox:false}
     render(){
-        let {select,multiselect,radio,checkbox} = this.state;
         let options = [
             {text:'option1',value:'1'},
             {text:'option2',value:'2'},
             {text:'option3',value:'3'},
         ]
-        let after = <div style={{background:'dodgerblue',color:'#fff',borderRadius:'100%',padding:'0 3px'}}>3</div>
-        let afterText = `<div style={{background:'dodgerblue',color:'#fff',borderRadius:'100%',padding:'0 3px'}}>3</div>`
+        let after = <div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>
         return (
             <div className='example'>
-                <div className="aio-component-label">button</div>
-                <AIOButton 
-                    type='button' 
-                    text='text example' 
-                    after={after}
-                />
-                <pre>
-                    {`
-class App extends React.Component{
-    render(){
-        return (
-            <AIOButton 
-                type='button' 
-                text='text example'
-                after={${afterText}}
-            />
-        )
-    }
-}
-                    `}    
-                </pre>
-                <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">select</div>
-                <AIOButton 
-                    type='select' 
-                    value={select}
-                    onChange={()=>this.setState({select})}
-                    options={[
-                        {text:'option1',value:'1'},
-                        {text:'option2',value:'2'},
-                        {text:'option3',value:'3'}
-                    ]} 
-                    after={after}
-                />
+                <div className='aio-component-label'>after props in button type</div>
+                <AIOButton type='button' text='button' after={after}/>
                 <pre>
                     {`
 <AIOButton 
-    type='select' 
-    value={select}
-    onChange={()=>this.setState({select})}
-    options={[
-        {text:'option1',value:'1'},
-        {text:'option2',value:'2'},
-        {text:'option3',value:'3'}
-    ]} 
-    after={${afterText}}
+    ...    
+    type='button' 
+    after={<Icon path={mdiAccount} size={0.7} />}
+    ...
 />
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">multiselect</div>
-                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} after={after}/>
+                <div className='aio-component-label'>after props in file type</div>
+                <AIOButton type='file' text='file' after={after}/>
                 <pre>
-                    {`<AIOButton type='multiselect' text='text example' options={options} value={['1','3']} after={<div style={{background:'dodgerblue',color:'#fff',borderRadius:'100%',padding:'0 3px'}}>3</div>}/>`}    
+                    {`
+<AIOButton 
+    ...    
+    type='file' 
+    after={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">checkbox</div>
+                
+                <div className='aio-component-label'>after props in select type</div>
+                <AIOButton type='select' value='2' options={options} after={after}/>
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='select' 
+    after={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>after props in multiselect type</div>
+                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} after={after}/>
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='multiselect' 
+    before={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
+                </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>after props in checkbox type</div>
                 <AIOButton type='checkbox' text='text example' after={after}/>
                 <pre>
-                    {"<AIOButton type='checkbox' text='text example' after={<div style={{background:'dodgerblue',color:'#fff',borderRadius:'100%',padding:'0 3px'}}>3</div>}/>"}    
+                    {`
+<AIOButton 
+    ...    
+    type='checkbox' 
+    after={<Icon path={mdiAccount} size={0.7} />}
+    ...
+/>
+                    `}    
                 </pre>
+                
             </div>
         )
     }
@@ -539,55 +529,75 @@ class Subtext extends Component{
             {text:'option2',value:'2'},
             {text:'option3',value:'3'},
         ]
-        let subtext = 'my subtext';
+        let after = <div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>
         return (
-            <div style={{padding:12,width:'100%'}}>
+            <div className='example'>
+                <div className='aio-component-label'>subtext props in button type</div>
+                <AIOButton type='button' text='button' subtext={'my subtext'}/>
                 <pre>
                     {`
-let options = [
-    {text:'option1',value:'1'},
-    {text:'option2',value:'2'},
-    {text:'option3',value:'3'},
-];
-let subtext = 'my subtext';
-                    `}
-                </pre>
-                <div className="aio-component-label">button</div>
-                <AIOButton type='button' text='text example' subtext={subtext}/>
-                <pre>
-                    {`
-class App extends React.Component{
-    render(){
-        return (
-            <AIOButton 
-                type='button' 
-                text='text example'
-                onClick={()=>alert()}
-                subtext='my subtext'
-            />
-        )
-    }
-}
+<AIOButton 
+    ...    
+    type='button' 
+    subtext='my subtext'
+    ...
+/>
                     `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">select</div>
-                <AIOButton type='select' value='2' options={options} subtext={subtext}/>
+                <div className='aio-component-label'>subtext props in file type</div>
+                <AIOButton type='file' text='file' subtext='my subtext'/>
                 <pre>
-                    {`<AIOButton type='select' value='2' options={options} subtext={subtext}/>`}    
+                    {`
+<AIOButton 
+    ...    
+    type='file' 
+    subtext='my subtext'
+    ...
+/>
+                    `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">multiselect</div>
-                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} subtext={subtext}/>
+                
+                <div className='aio-component-label'>subtext props in select type</div>
+                <AIOButton type='select' value='2' options={options}subtext='my subtext'/>
                 <pre>
-                    {`<AIOButton type='multiselect' text='text example' options={options} value={['1','3']} subtext={subtext}/>`}    
+                    {`
+<AIOButton 
+    ...    
+    type='select' 
+    subtext='my subtext'
+    ...
+/>
+                    `}    
                 </pre>
                 <div className='aio-component-splitter'></div>
-                <div className="aio-component-label">checkbox</div>
-                <AIOButton type='checkbox' text='text example' subtext={subtext}/>
+                <div className='aio-component-label'>subtext props in multiselect type</div>
+                <AIOButton type='multiselect' text='text example' options={options} value={['1','3']} subtext='my subtext'/>
                 <pre>
-                    {"<AIOButton type='checkbox' text='text example' subtext={subtext}/>"}    
+                    {`
+<AIOButton 
+    ...    
+    type='multiselect' 
+    subtext='my subtext'
+    ...
+/>
+                    `}    
                 </pre>
+                <div className='aio-component-splitter'></div>
+                <div className='aio-component-label'>subtext props in checkbox type</div>
+                <AIOButton type='checkbox' text='text example' subtext='my subtext'/>
+                <pre>
+                    {`
+<AIOButton 
+    ...    
+    type='checkbox' 
+    subtext='my subtext'
+    ...
+/>
+                    `}    
+                </pre>
+                
             </div>
         )
     }

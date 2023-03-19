@@ -305,7 +305,7 @@ class Input extends Component{
                 <Form
                     onChange={(gauge)=>{
                     let {fileName} = this.state;
-                    Storage.save(gauge,fileName)
+                    Storage.save({value:gauge,name:fileName})
                     this.setState({gauge})
                     }}
                     defaults={{
@@ -367,7 +367,7 @@ class Input extends Component{
                             html:name,
                             attrs:{
                                 onClick:()=>{
-                                    let res = Storage.load(name);
+                                    let res = Storage.load({name});
                                     this.setState({gauge:res,fileName:name})
                                 }
                             }      
@@ -375,7 +375,7 @@ class Input extends Component{
                         {html:<Icon path={mdiDelete} size={0.7} />,align:'vh',attrs:{onClick:()=>{
                             let {fileName} = this.state;
                             if(name === fileName){fileName = false;}
-                            Storage.remove(name);
+                            Storage.remove({name});
                             this.setState({fileName,gauges:Storage.getList()})
                         }}}
                     ]
@@ -397,7 +397,7 @@ class Input extends Component{
                             style={{background:'#2a59545c',color:'#fff',width:'100%',height:48}}
                             type='button'
                             onClick={()=>{
-                                Storage.save(gauge);
+                                Storage.save({value:gauge});
                                 this.setState({gauges:Storage.getList()})
                             }}
                         />

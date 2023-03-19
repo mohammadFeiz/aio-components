@@ -1,6 +1,6 @@
 import React,{Component,createContext} from 'react';
 import AIOButton from './../../npm/aio-button/aio-button';
-import dateCalculator from './../../npm/aio-date/aio-date';
+import dateCalculator from 'aio-date';
 import './index.css';
 export default class GAH extends Component{
   constructor(props){

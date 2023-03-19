@@ -1,102 +1,80 @@
 import React,{Component} from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
+import RVD,{RVDRemoveV} from './../../npm/react-virtual-dom/react-virtual-dom';
+import $ from 'jquery';
 import './index.css';
 export default class DOC_AIOStorage extends Component{
     constructor(props){
         super(props);
-        let Storage = AIOStorage('aiostorageexample');
-        let name = Storage.load('name','');
-        let age = Storage.load('age','');
-        let phone = Storage.load('phone','');
-        this.state = {Storage,name,age,phone}
+        let Storage = AIOStorage('my storage');
+        this.Storage = Storage;
+        let list = Storage.load({name:'list',def:[]});
+        this.state = {list,name:'',age:''}
+    }
+    componentDidMount(){
+        //$('.msf').animate({height:0},1000)
+    }
+    item_layout({name,age,id}){
+        return {
+            style:{background:'lightblue',padding:12,borderRadius:6},
+            attrs:{id:'a' + id,key:id},
+            row:[
+                {
+                    column:[
+                        {flex:1,html:`name:${name}`},
+                        {flex:1,html:`age:${age}`},
+                    ]
+                },
+                {flex:1},
+                {size:48,html:'X',onClick:()=>this.remove(id),align:'vh'}
+            ]
+        }
+    }
+    add(){
+        let {list,name,age} = this.state;
+        list.push({name,age,id:Math.round(Math.random() * 1000000)});
+        this.Storage.save({name:'list',value:list});
+        this.setState({list})
+    }
+    remove(id){
+        RVDRemoveV('#a' + id,()=>{
+            let {list} = this.state;
+            let newList = list.filter((o)=>o.id !== id);
+            this.Storage.save({name:'list',value:newList});
+            this.setState({list:newList});
+        })
     }
     render(){
-        let {goToHome} = this.props;
-        let {Storage,name,age,phone} = this.state;
+        let {list,name,age} = this.state;
+        
         return (
-            <div className='example'>
-                <button className='button'
-                    onClick={()=>goToHome()}
-                >Go To Home</button>
-                <div className="aio-components-label">Name</div>
-                <input type='text' value={name} onChange={(e)=>this.setState({name:e.target.value})}/>
-                <div className="aio-components-label">Age</div>
-                <input type='text' value={age} onChange={(e)=>this.setState({age:e.target.value})}/>
-                <div className="aio-components-label">Phone</div>
-                <input type='text' value={phone} onChange={(e)=>this.setState({phone:e.target.value})}/>
-                <br/>
-                <button className='button' 
-                    onClick={()=>{
-                        Storage.save(name,'name');
-                        Storage.save(age,'age');
-                        Storage.save(phone,'phone');
-                    }}
-                >Save</button>
-                <button className='button'
-                    onClick={()=>Storage.export()}
-                >export</button>
-                <label className='button'>
-                    import
-                    <input style={{display:'none'}} type='file' onChange={(e)=>{
-                        Storage.import(e.target.files[0],()=>{
-                            let name = Storage.load('name');
-                            let age = Storage.load('age');
-                            let phone = Storage.load('phone');
-                            this.setState({name,age,phone})
-                        })
-                    }}/>
-                </label>
-                <pre>{`
-import React,{Component} from "react";
-import AIOStorage from 'aio-storage';
-import './index.css';
-export default class App extends Component{
-    constructor(props){
-        super(props);
-        let Storage = AIOStorage('aiostorageexample');
-        let name = Storage.load('name','');
-        let age = Storage.load('age','');
-        let phone = Storage.load('phone','');
-        this.state = {Storage,name,age,phone}
-    }
-    render(){
-        let {Storage,name,age,phone} = this.state;
-        return (
-            <div className='example'>
-                <div className="aio-components-label">Name</div>
-                <input type='text' value={name} onChange={(e)=>this.setState({name:e.target.value})}/>
-                <div className="aio-components-label">Age</div>
-                <input type='text' value={age} onChange={(e)=>this.setState({age:e.target.value})}/>
-                <div className="aio-components-label">Phone</div>
-                <input type='text' value={phone} onChange={(e)=>this.setState({phone:e.target.value})}/>
-                <br/>
-                <button className='button' 
-                    onClick={()=>{
-                        Storage.save(name,'name');
-                        Storage.save(age,'age');
-                        Storage.save(phone,'phone');
-                    }}
-                >Save</button>
-                <button className='button'
-                    onClick={()=>Storage.export()}
-                >export</button>
-                <label className='button'>
-                    import
-                    <input style={{display:'none'}} type='file' onChange={(e)=>{
-                        Storage.import(e.target.files[0],()=>{
-                            let name = Storage.load('name');
-                            let age = Storage.load('age');
-                            let phone = Storage.load('phone');
-                            this.setState({name,age,phone})
-                        })
-                    }}/>
-                </label>
-            </div>
-        )
-    }
-}
-                `}</pre>
-            </div>
+            <RVD
+                layout={{
+                    style:{width:'50%',marginLeft:'25%',border:'1px solid',padding:12},
+                    column:[
+                        {html:'Add Member',align:'v',size:48},
+                        {html:'name',align:'v'},               
+                        {
+                            row:[
+                                {html:<input type='text' value={name} onChange={(e)=>this.setState({name:e.target.value})}/>,align:'v'},
+                            ]
+                        },
+                        {html:'age',align:'v'},               
+                        {
+                            row:[
+                                {html:<input type='text' value={age} onChange={(e)=>this.setState({age:e.target.value})}/>},
+                            ]
+                        },
+                        {size:12},
+                        {html:<button onClick={()=>this.add()}>Add</button>},
+                        {html:<button onClick={()=>this.Storage.export()}>Export</button>},
+                        {html:<button onClick={()=>this.Storage.import()}>Import</button>},
+                        {size:12},
+                        {html:'Members',align:'v',size:48},
+                        {gap:12,column:list.map((o)=>this.item_layout(o))}
+                    ]
+                }}
+            />
         )
     }
 }

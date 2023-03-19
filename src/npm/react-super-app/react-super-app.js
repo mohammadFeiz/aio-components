@@ -47,7 +47,7 @@ export default class ReactSuperApp extends Component {
         let { themes } = props;
         this.theme = this.theme || 0;
         if (index === 'init') {
-          this.theme = this.storage.load('theme', 0);
+          this.theme = this.storage.load({name:'theme', value:0});
         }
         else if (typeof (index) === 'number') {
           this.theme = index;
@@ -55,7 +55,7 @@ export default class ReactSuperApp extends Component {
         else {
           this.theme++;
         }
-        this.storage.save(this.theme, 'theme');
+        this.storage.save({value:this.theme, name:'theme'});
         if (this.theme > themes.length - 1) { this.theme = 0 }
         let target;
         try {

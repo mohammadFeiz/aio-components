@@ -1,5 +1,5 @@
 import Axios from "axios";
-import AIODate from "./../../npm/aio-date/aio-date";
+import AIODate from "aio-date";
 import './index.css';
 import $ from "jquery";
 function AIOServiceShowAlert(obj = {}){
@@ -47,17 +47,9 @@ function AIOServiceShowAlert(obj = {}){
 }
 export default function services({getState,apis,token,loader,baseUrl}) {
   function getDateAndTime(value){
-    let dateCalculator = AIODate();
-    let adate,atime;
-    try {
-      if (value.indexOf("T") !== -1) {atime = value.split("T")[1].split(".")[0];} 
-      else {atime = value.split(" ")[1];}
-    } 
-    catch {atime = undefined;}
-    try {adate = dateCalculator.toJalali({date:value}).join("/");
-    } 
-    catch {adate = "";}
-    return {date:adate,time:atime}
+    let res = AIODate().toJalali(value);
+    let {year,month,day,hour,minute} = res;
+    return {date:`${year}/${month}/${day}`,time:`${hour}:${minute}`}
   }
   function arabicToFarsi(value){
     try{return value.replace(/ك/g, "ک").replace(/ي/g, "ی");}

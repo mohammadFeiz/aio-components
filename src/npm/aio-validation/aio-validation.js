@@ -1,4 +1,4 @@
-import AIODate from './../../npm/aio-date/aio-date';
+import AIODate from 'aio-date';
 export default function AIOValidation(props) {
     let dateCalc = AIODate();
     let $$ = {

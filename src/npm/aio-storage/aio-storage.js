@@ -21,7 +21,7 @@ export default function StorageClass(key){
         }
         return {parent,target};
       },
-      save(value,name,confirm){
+      save({value,name,confirm}){
         value = JSON.parse(JSON.stringify(value))
         if(!this.obj){this.init()}
         if(!name){name = window.prompt('Save As');}
@@ -29,14 +29,14 @@ export default function StorageClass(key){
         let {parent,target} = this.getParentAndTarget(name);
         if(confirm && parent[target] !== undefined){
           let res = window.confirm('Replace ' + target + ' ?');
-          if(!res){this.save(value); return;}
+          if(!res){this.save({value}); return;}
         }
         parent[target] = value;
         this.obj.time = this.obj.time || {}
         this.obj.time[name] = new Date().getTime()
         this.set();
       },
-      remove(name){
+      remove({name}){
         let list = {};
         let time = {};
         for(let prop in this.obj.list){if(prop !== name){list[prop] = this.obj.list[prop]}}
@@ -50,14 +50,14 @@ export default function StorageClass(key){
         let {parent} = this.getParentAndTarget(name)
         return Object.keys(parent)
       },
-      getTime(name){return this.obj.time[name]},
-      load(name,def){
+      getTime(name){return this.obj.time[name] || new Date().getTime()},
+      load({name,def,time}){
         if(!this.obj){this.init()}
         let {parent,target} = this.getParentAndTarget(name)
-        let res = parent[target];
+        let res = time && Math.abs(new Date().getTime() - this.getTime(name)) > time?undefined:parent[target];
         if(res === undefined && def !== undefined){
-          this.save(def,name);
-          res = def;
+          res = typeof def === 'function'?def():def;
+          this.save({value:def,name});
         }
         return res;
       },
@@ -88,7 +88,7 @@ export default function StorageClass(key){
         } 
         fr.readAsText(file);
       },
-      import(file,callback = ()=>{}){
+      import({file,callback = ()=>{}}){
         this.read(file,(obj)=>{
           if(obj === undefined){return;}
           this.set({list:obj,time:{}});

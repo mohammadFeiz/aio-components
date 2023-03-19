@@ -1,7 +1,6 @@
 import React,{Component} from 'react';
 import Form from './../../npm/aio-form-react/aio-form-react';
 import AIOJson from './../../npm/aio-json/aio-json';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
 import {Icon} from '@mdi/react';
 import { mdiDelete ,mdiPlusThick,mdiContentSave, mdiMenu} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
@@ -17,8 +16,6 @@ export default class DOC_AIOForm extends Component{
 class Input extends Component{
     constructor(props){
         super(props);
-        //let Storage = AIOStorage('formgenerator')
-        //let state = Storage.load('projects',[])
         this.state = {
             projects:[],
             project:false,
