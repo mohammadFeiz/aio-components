@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import Form from './../../npm/aio-form-react/aio-form-react';
 import Gauge from './../../npm/aio-gauge/aio-gauge';
-import StorageClass from './../../npm/aio-storage/aio-storage';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOJson from './../../npm/aio-json/aio-json';
 import {Icon} from '@mdi/react';
 import { mdiDelete ,mdiPlusThick,mdiClose} from '@mdi/js';
@@ -18,7 +18,7 @@ export default class DOC_AIOGauge extends Component{
 class Input extends Component{
     constructor(props) {
         super(props);
-        let Storage = StorageClass('gaugegenerator')
+        let Storage = AIOStorage('gaugegenerator')
         this.state = { 
             mode:'preview',
             Storage,

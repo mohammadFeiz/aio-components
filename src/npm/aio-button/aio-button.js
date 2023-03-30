@@ -374,7 +374,7 @@ class Checkbox extends Component{
 class Button extends Component{
   static contextType = aioButtonContext;
   render(){
-    let {type,onButtonClick,before,gap,attrs = {},rtl,caretAttrs,badge,badgeAttrs,after,disabled,className,style} = this.context;
+    let {type,onButtonClick,before,gap,attrs = {},rtl,caretAttrs,badge,badgeAttrs,after,disabled,className,style,onChange} = this.context;
     let {dataUniqId,text,subtext,caret,dom} = this.props;
     let props = {
       tabIndex:0,...attrs,style,onClick:onButtonClick,'data-uniq-id':dataUniqId,disabled,ref:dom,
@@ -389,15 +389,14 @@ class Button extends Component{
         {badge !== undefined && <Badge badge={badge} attrs={badgeAttrs}/>}
       </>
     )
-    if(type === 'button'){return (<button {...props}>{inside}</button>)}
     if(type === 'file'){
       return (
         <label {...props}>
-          <input type='file' style={{display:'none'}}/>
+          <input type='file' style={{display:'none'}} multiple onChange={(e)=>onChange(e.target.files)}/>
           {inside}
         </label>)
     }
-    
+    return (<button {...props}>{inside}</button>)
   }
 }
 function Text(props){

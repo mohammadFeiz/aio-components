@@ -21,7 +21,7 @@ export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-button',
+      part:'aio-storage',
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},

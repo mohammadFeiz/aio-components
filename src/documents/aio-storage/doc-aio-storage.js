@@ -1,6 +1,7 @@
 import React,{Component} from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import RVD,{RVDRemoveV} from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOButton from './../../npm/aio-button/aio-button';
 import $ from 'jquery';
 import './index.css';
 export default class DOC_AIOStorage extends Component{
@@ -8,7 +9,7 @@ export default class DOC_AIOStorage extends Component{
         super(props);
         let Storage = AIOStorage('my storage');
         this.Storage = Storage;
-        let list = Storage.load({name:'list',def:[]});
+        let list = Storage.load({name:'list',def:[],time: 60 * 1000});
         this.state = {list,name:'',age:''}
     }
     componentDidMount(){
@@ -68,7 +69,12 @@ export default class DOC_AIOStorage extends Component{
                         {size:12},
                         {html:<button onClick={()=>this.add()}>Add</button>},
                         {html:<button onClick={()=>this.Storage.export()}>Export</button>},
-                        {html:<button onClick={()=>this.Storage.import()}>Import</button>},
+                        {html:<AIOButton text='Import' type='file' onChange={(files)=>{
+                            this.Storage.import({file:files[0],callback:()=>{
+                                let list = this.Storage.load({name:'list',def:[]});
+                                this.setState({list,name:'',age:''})
+                            }});
+                        }}/>},
                         {size:12},
                         {html:'Members',align:'v',size:48},
                         {gap:12,column:list.map((o)=>this.item_layout(o))}

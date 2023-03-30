@@ -1,5 +1,6 @@
 import Axios from "axios";
-import AIODate from "aio-date";
+import AIODate from "./../../npm/aio-date/aio-date";
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
 import $ from "jquery";
 function AIOServiceShowAlert(obj = {}){
@@ -45,10 +46,11 @@ function AIOServiceShowAlert(obj = {}){
       $('.' + dui).remove()
   }})
 }
-export default function services({getState,apis,token,loader,baseUrl}) {
+export default function services({getState,apis,token,loader,baseUrl,id}) {
+  if(typeof id !== 'string'){console.error('aio-storage => id should be an string, but id is:',id); return;}
   function getDateAndTime(value){
-    let res = AIODate().toJalali(value);
-    let {year,month,day,hour,minute} = res;
+    let res = AIODate().toJalali({date:value});
+    let [year,month,day,hour,minute] = res;
     return {date:`${year}/${month}/${day}`,time:`${hour}:${minute}`}
   }
   function arabicToFarsi(value){
@@ -58,7 +60,7 @@ export default function services({getState,apis,token,loader,baseUrl}) {
   if(token){
     Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
-  return Service(apis({Axios,getState,getDateAndTime,arabicToFarsi,token,AIOServiceShowAlert,baseUrl}),loader)
+  return Service(apis({Axios,getState,getDateAndTime,arabicToFarsi,token,AIOServiceShowAlert,baseUrl}),loader,id)
 }
 
 function AIOServiceLoading(id){
@@ -77,70 +79,55 @@ function AIOServiceLoading(id){
   `)
 }
 
-function Service(services,loader) {
-  function getFromCache(key, minutes) {
-    if (minutes === true) { minutes = Infinity }
-    let storage = localStorage.getItem(key);
-    if (storage === undefined || storage === null) { return false }
-    let { time, data } = JSON.parse(storage);
-    if ((new Date().getTime() / 60000) - (time / 60000) > minutes) { return false }
-    return data;
-  }
-  function setToCache(key, data) {
-    let time = new Date().getTime();
-    localStorage.setItem(key, JSON.stringify({ time, data }))
-  }
-  function removeLoading(id){
-    if(!id){return}
-    let loading = $('#' + id);
-    if(!loading.length){loading = $('.aio-service-loading')}
-    loading.remove()
-  }
-  return async (obj) => {
-    let { api,callback, parameter, loading = true, cache, cacheName,def,validation,loadingParent = 'body',errorMessage,successMessage} = obj
-    let loadingId;
-    if (loading) {
-      loadingId = 'b' + Math.random()
-      $(loadingParent).append(typeof loader === 'function'?loader():AIOServiceLoading(loadingId)); 
-    }
-    if (cache) {
-      let a = getFromCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, cache);
-      if (a !== false) {
-        removeLoading(loadingId);
-        return a
-      }
-      if (!services[api]) {debugger;}
-      let result = await services[api](parameter);
-      removeLoading(loadingId);
-      setToCache(cacheName ? 'storage-' + cacheName : 'storage-' + api, result);
-      return result;
-    }
-    if (!services[api]) {alert('services.' + api + ' is not define')}
-    let result;
-    try{
-      result = await services[api](parameter);
-    }
-    catch(err){
-      AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:err.message});
-    }
-    removeLoading(loadingId);
+function Service(services,loader,id) {
+  function validate(result,{validation,api,def,errorMessage,successMessage}){
     if(validation){
       let message = JSONValidator(result,validation);
       if(typeof message === 'string'){
         AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:message});
-        result = def === undefined?result:def;
+        return def;
       }
     }
-    if(callback && result !== undefined && typeof result !== 'string'){callback(result)}
-    if(typeof result === 'string' && errorMessage){
-      AIOServiceShowAlert({type:'error',text:typeof errorMessage === 'function'?errorMessage():errorMessage,subtext:result});
-      return def;
+    if(typeof result === 'string'){
+      if(errorMessage){
+        AIOServiceShowAlert({type:'error',text:typeof errorMessage === 'function'?errorMessage():errorMessage,subtext:result});
+      }
+      return def
     }
     if(successMessage && result !== undefined){
       successMessage = typeof successMessage === 'function'?successMessage():successMessage
       if(!Array.isArray(successMessage)){successMessage = [successMessage]}
       AIOServiceShowAlert({type:'success',text:successMessage[0],subtext:successMessage[1]});
     }
+    return result;
+  }
+  
+  async function fetchData(obj){
+    let {api,parameter,cache,loading,loadingParent,cacheName,def} = obj;
+    if (!services[api]) {alert('services.' + api + ' is not define'); return;}
+    let result;
+    if (cache) {
+      if(isNaN(cache)){console.error('aio-storage => cache should be a number, but cache is:',cache); return;}
+      let storage = AIOStorage(id);
+      let result = storage.load({name:cacheName ? 'storage-' + cacheName : 'storage-' + api,time:cache})
+      if(result !== undefined){return result}
+    }
+    if(loading){$(loadingParent).append(typeof loader === 'function'?loader():AIOServiceLoading(api));}  
+    try{result = await services[api](parameter);}
+    catch(err){AIOServiceShowAlert({type:'error',text:`apis().${api}`,subtext:err.message});}
+    if(loading){
+      let loadingDom = $('#' + api);
+      if(!loading.length){loadingDom = $('.aio-service-loading')}
+      loadingDom.remove()
+    }
+    return result === undefined?def:result;
+  }
+  return async (obj) => {
+    let { callback = ()=>{},cache,cacheName,api} = obj;
+    let result = await fetchData(obj);
+    result = validate(result,obj);
+    if (cache) {AIOStorage(id).save({name:cacheName ? 'storage-' + cacheName : 'storage-' + api,value:result})}
+    callback(result);
     return result;
   }
 }

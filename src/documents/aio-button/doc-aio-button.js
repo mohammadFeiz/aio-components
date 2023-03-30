@@ -8,7 +8,7 @@ export default class DOC_AIOButton extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='file'
+                navId='subtext'
                 propsList={[
                     {
                         props:'type',type:'"button" | "select" | "multiselect" | "radio" | "checkbox" | "checklist" | "tabs"',
@@ -458,7 +458,7 @@ class After extends Component{
 <AIOButton 
     ...    
     type='button' 
-    after={<Icon path={mdiAccount} size={0.7} />}
+    after={<div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>}
     ...
 />
                     `}    
@@ -471,7 +471,7 @@ class After extends Component{
 <AIOButton 
     ...    
     type='file' 
-    after={<Icon path={mdiAccount} size={0.7} />}
+    after={<div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>}
     ...
 />
                     `}    
@@ -485,7 +485,7 @@ class After extends Component{
 <AIOButton 
     ...    
     type='select' 
-    after={<Icon path={mdiAccount} size={0.7} />}
+    after={<div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>}
     ...
 />
                     `}    
@@ -498,7 +498,7 @@ class After extends Component{
 <AIOButton 
     ...    
     type='multiselect' 
-    before={<Icon path={mdiAccount} size={0.7} />}
+    before={<div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>}
     ...
 />
                     `}    
@@ -511,7 +511,7 @@ class After extends Component{
 <AIOButton 
     ...    
     type='checkbox' 
-    after={<Icon path={mdiAccount} size={0.7} />}
+    after={<div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>}
     ...
 />
                     `}    
@@ -529,7 +529,6 @@ class Subtext extends Component{
             {text:'option2',value:'2'},
             {text:'option3',value:'3'},
         ]
-        let after = <div style={{background:'dodgerblue',padding:'0 6px',color:'#fff',borderRadius:'12px'}}>3</div>
         return (
             <div className='example'>
                 <div className='aio-component-label'>subtext props in button type</div>
@@ -560,7 +559,7 @@ class Subtext extends Component{
                 <div className='aio-component-splitter'></div>
                 
                 <div className='aio-component-label'>subtext props in select type</div>
-                <AIOButton type='select' value='2' options={options}subtext='my subtext'/>
+                <AIOButton type='select' value='2' options={options}/>
                 <pre>
                     {`
 <AIOButton 
