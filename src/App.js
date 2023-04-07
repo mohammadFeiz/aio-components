@@ -16,12 +16,13 @@ import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater';
 import Puzzle from './documents/puzzle/index';
 import DOC_AIODragList from './documents/aio-drag-list/doc-aio-drag-list';
 import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
+import DOC_AIOService from './documents/aio-service/doc-aio-service';
 
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-storage',
+      part:'aio-service',
       parts:{
         'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
@@ -39,6 +40,7 @@ export default class AIOComponents extends Component{
         'puzzle':{name:'puzzle',Render:Puzzle},
         'aio-drag-list':{name:'aio-drag-list',Render:DOC_AIODragList},
         'react-super-app':{name:'react-super-app',Render:DOC_ReactSuperApp},
+        'aio-service':{name:'aio-service',Render:DOC_AIOService},
 
 
       }
