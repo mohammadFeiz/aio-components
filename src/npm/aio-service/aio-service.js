@@ -33,14 +33,19 @@ export let helper = {
     }})
   },
   getDateAndTime(value){
-    let res = AIODate().toJalali({date:value});
-    let [year,month,day,hour,minute] = res;
-    let date = `${year}/${month}/${day}`;
-    let time = `${hour}:${minute}`;
-    let delta = AIODate().getDelta({date:value});
-    let remainingTime = delta.type === 'passed'?{day:0,hour:0,minute:0,second:0}:delta;
-    let passedTime = delta.type === 'remaining'?{day:0,hour:0,minute:0,second:0}:delta;
-    return {date,time,dateAndTime:`${date} ${time}`,remainingTime,passedTime}
+    try{
+      let res = AIODate().toJalali({date:value});
+      let [year,month,day,hour,minute] = res;
+      let date = `${year}/${month}/${day}`;
+      let time = `${hour}:${minute}`;
+      let delta = AIODate().getDelta({date:value});
+      let remainingTime = delta.type === 'passed'?{day:0,hour:0,minute:0,second:0}:delta;
+      let passedTime = delta.type === 'remaining'?{day:0,hour:0,minute:0,second:0}:delta;
+      return {date,time,dateAndTime:`${date} ${time}`,remainingTime,passedTime}
+    }
+    catch{
+      return {date:'',time:'',dateAndTime:'',remainingTime:0,passedTime:0}
+    }
   },
   arabicToFarsi(value){
     try{return value.replace(/ك/g, "ک").replace(/ي/g, "ی");}
@@ -97,7 +102,7 @@ function Service(services,loader,id,getResponses,getError) {
   }
   
   async function fetchData(obj){
-    let {api,parameter,cache,loading,loadingParent,cacheName,def,getResult} = obj;
+    let {api,parameter,cache,loading = true,loadingParent = 'body',cacheName,def,getResult} = obj;
     let result;
     if (cache) {
       if(isNaN(cache)){console.error('aio-storage => cache should be a number, but cache is:',cache); return;}
