@@ -52,10 +52,10 @@ export let helper = {
     catch{return value}
   }
 }
-export default function services({getState,apis,token,loader,id,getResponses = ()=>{return {}},getError = ()=>{}}) {
+export default function services({getState,apis = ()=>{return {}},token,loader,id,getResponses = ()=>{return {}},onCatch = ()=>{},getError = ()=>{}}) {
   if(typeof id !== 'string'){console.error('aio-storage => id should be an string, but id is:',id); return;}
   if(token){Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;}
-  return Service(apis({Axios,getState,token}),loader,id,getResponses(),getError)
+  return Service(apis({Axios,getState,token}),loader,id,getResponses(),onCatch,getError)
 }
 
 
@@ -76,7 +76,7 @@ function AIOServiceLoading(id){
   `)
 }
 
-function Service(services,loader,id,getResponses,getError) {
+function Service(services = ()=>{return {}},loader,id,getResponses,onCatch,getError) {
   function validate(result,{validation,api,def,errorMessage,name,successMessage}){
     if(validation){
       let message = JSONValidator(result,validation);
@@ -114,13 +114,14 @@ function Service(services,loader,id,getResponses,getError) {
     try{
       let response;
       if(getResponses[api]){
-        response = await getResponses[api](parameter);
         try{
-          response = getError(response,api) || response;
+          response = await getResponses[api](parameter);
+          response = getError(err,api) || response;
         }
         catch(err){
-          response = err.message
+          response = onCatch(err,api) || response;
         }
+        
       }
       if(typeof response === 'string'){result = response;}
       else{
