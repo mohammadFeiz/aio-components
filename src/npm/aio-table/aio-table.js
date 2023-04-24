@@ -107,6 +107,7 @@ export default class Table extends Component {
     let unfreezeCells = [];
     let values = {};
     let json = {}
+    this.freezeMode = false;
     for(let j = 0; j < columns.length; j++){
       let column = columns[j];
       if(column.show === false){continue}
@@ -675,7 +676,7 @@ class TableUnit extends Component{
     let headerLayout = this.header_layout();
     let rowsLayout = this.rows_layout()
     let className = TableCLS.rows;
-    className += ' of-auto';
+    className += ' of-auto table-unit';
     if(cellsType === 'freezeCells'){className += ' ' + TableCLS.freezeContainer}
     else if(cellsType === 'unfreezeCells'){className += ' ' + TableCLS.unfreezeContainer}
     return (
@@ -872,8 +873,10 @@ class Cell extends Component{
     let {rowId,colId} = this.props;
     if(this.inlineEdit){
       if(this.inlineEdit.type === 'text' || this.inlineEdit.type === 'number'){
+        let className = TableCLS.inlineEditInput;
+        if(this.inlineEdit.spinButton === false){className += ' spin-button-off'}
         let props = {
-          type:column.type,className:TableCLS.inlineEditInput,defaultValue:value,tabIndex:verticalTabIndex?colId:0,
+          type:column.type,className,defaultValue:value,tabIndex:verticalTabIndex?colId:0,
           style:{textAlign:column.justify?'center':undefined},'data-col-id':colId,'data-row-id':rowId,
           onBlur:(e)=>this.onChange(e.target.value)
         }
