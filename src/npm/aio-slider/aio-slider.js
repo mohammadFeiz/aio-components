@@ -311,7 +311,7 @@ class RRangeSliderPoint extends Component{
     var pointProps = {className:'r-range-slider-point',style:typeof pointStyle === 'function'?pointStyle(index,this.context):pointStyle,'data-index':index};
     var valueProps = {
       style:this.getValueStyle(),
-      className:'r-range-slider-value'
+      className:`r-range-slider-value ${'r-range-slider-value-' + index}`
     };
     let html = getPointHTML(index,this.context);
     return (
