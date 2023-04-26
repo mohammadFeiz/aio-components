@@ -71,6 +71,7 @@ export default class AIOButton extends Component {
   getProp({option,index,field,def,type,readFrom}){
     if(readFrom !== 'props'){
       let optionResult = option[field];
+      optionResult = typeof option[field] === 'function'?option[field](option):option[field];
       if(optionResult !== undefined){
         if(type){
           if(this.getType(optionResult) === type){return optionResult;}
