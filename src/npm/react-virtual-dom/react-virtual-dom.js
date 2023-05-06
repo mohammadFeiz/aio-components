@@ -95,7 +95,7 @@ export default class ReactVirtualDom extends Component {
       }
       obj.column = [...childs]
     }
-    if(parent.gapAttrs && parent.gapAttrs.style){gapStyle = {...gapStyle,...obj.gapAttrs.style}}
+    if(parent.gapAttrs && parent.gapAttrs.style){gapStyle = {...gapStyle,...parent.gapAttrs.style}}
     let {className,gapClassName} = this.getClassName(pointer,isRoot,parent,props);
     let gapAttrs = {className:gapClassName,style:gapStyle,draggable:false,onDragStart:(e)=>{e.preventDefault(); return false}};
     if(size && onResize){

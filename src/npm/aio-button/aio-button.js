@@ -472,7 +472,7 @@ class Popup extends Component{
   }
   update(popup){
       let {dataUniqId} = this.props;
-      var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},popupPosition} = this.context;
+      var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},popupPosition,fixPopupPosition = (o)=>o} = this.context;
       var button = $(`.${ABCLS.button}[data-uniq-id = ${dataUniqId}]`);
       var parent = openRelatedTo?popup.parents(openRelatedTo):undefined;
       parent = Array.isArray(parent) && parent.length === 0?undefined:parent;
@@ -483,7 +483,13 @@ class Popup extends Component{
       if(parentLimit.right > bodyWidth){parentLimit.right = bodyWidth;}
       if(parentLimit.top < 0){parentLimit.top = 0;}
       if(parentLimit.bottom > bodyHeight){parentLimit.bottom = bodyHeight;}
-      
+      // $('body').append(`
+      //   <div class="test-msf" style="position:fixed;left:0;top:0;width:${parentLimit.width}px;height:${parentLimit.height}px;background:#ff000030">
+      //   </div>
+      // `)
+      // setTimeout(()=>{
+      //   $('.test-msf').remove();
+      // },3000)
       var buttonLimit = this.getLimit(button);
       var popupLimit = this.getLimit(popup); 
       var left,right,top,bottom,style = {};
@@ -519,12 +525,12 @@ class Popup extends Component{
           obj = {top:afterTop,opacity:1}
         }
         else{obj = animate}
-        popup.css(a)
+        popup.css(fixPopupPosition(a))
         popup.animate(obj,{duration:100})
       }
       else{
         let a = {...style,...attrsStyle};
-        popup.css(a)
+        popup.css(fixPopupPosition(a))
       }
       popup.focus();
     }
