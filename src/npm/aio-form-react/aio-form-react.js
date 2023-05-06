@@ -60,7 +60,8 @@ export default class AIOForm extends Component {
     }
   }
   getInput_text({className,value,onChange,options,disabled,style,placeholder,min,max}, input){
-    let props = {justNumber:input.justNumber,min,max,...input.attrs,maxLength:input.maxLength,autoHeight:input.autoHeight,type:input.type,value,className,onChange,options,disabled,style,placeholder,options,optionText:input.optionText,optionValue:input.optionValue};
+    let {delay = true} = this.props;
+    let props = {delay,justNumber:input.justNumber,min,max,...input.attrs,maxLength:input.maxLength,autoHeight:input.autoHeight,type:input.type,value,className,onChange,options,disabled,style,placeholder,options,optionText:input.optionText,optionValue:input.optionValue};
     let {defaults = {}} = this.props;
     let def = defaults[input.type]
     def = def === undefined?{}:def;
@@ -294,7 +295,7 @@ export default class AIOForm extends Component {
     let max = this.getValue({field:input.max});
     let subtext = this.getValue({field:input.subtext});
     let columns = this.getValue({field:input.columns,def:[]});
-    let placeholder = this.getValue({field:input.placeholder,def:false});
+    let placeholder = this.getValue({field:input.placeholder,def:''});
     let onChange = (value) => this.onChange(input, value);
     let style = this.getTheme(input,'inputStyle')
     let className = this.getInputClassName(input,disabled,prefix,affix);
@@ -410,10 +411,25 @@ export default class AIOForm extends Component {
       }
     })
   }
+  changeErrors(newErrors){
+    let {getErrors = ()=>{}} = this.props;
+    this.errors = {...newErrors}
+    if(!this.lastErrors){
+      getErrors(Object.keys(newErrors).map((o)=>newErrors[o]))
+      this.lastErrors = {...newErrors};
+    }
+    else{
+      let isDif = JSON.stringify(newErrors) !== JSON.stringify(this.lastErrors);
+      if(isDif){
+        getErrors(Object.keys(newErrors).map((o)=>newErrors[o]));
+        this.lastErrors = {...newErrors}
+      }
+    }
+  }
   getError(o,value,options){
     let {lang = 'en',getErrors = ()=>{}} = this.props;
-    let {validations = []} = o
-    if(!validations.length){return ''}
+    let {validations = [],type} = o
+    if(!validations.length || type === 'html'){return ''}
     
     let a = { 
       value,title:o.label,lang,
@@ -435,7 +451,9 @@ export default class AIOForm extends Component {
     let error = AIOValidation(a);
     if(error){
       if(!this.isThereError){this.isThereError = true}
-      this.errors['a' + o._index] = error;
+      let newErrors = {...this.errors}
+      newErrors['a' + o._index] = error;
+      this.changeErrors(newErrors)
     }
     else{
       let newErrors = {};
@@ -444,11 +462,11 @@ export default class AIOForm extends Component {
           newErrors[prop] = this.errors[prop];
         }
       }
-      this.errors = newErrors;
-      if(JSON.stringify(this.lastErrors) !== JSON.stringify(this.errors)){
-        this.lastErrors = this.errors
-        getErrors(Object.keys(this.errors).map((o)=>this.errors[o]))
-      }
+      this.changeErrors(newErrors)
+      // if(JSON.stringify(this.lastErrors) !== JSON.stringify(this.errors)){
+      //   this.lastErrors = this.errors
+      //   getErrors(Object.keys(this.errors).map((o)=>this.errors[o]))
+      // }
       
     }
     return error;
@@ -587,7 +605,7 @@ class Input extends Component{
     }
   }
   onChange(value){
-    let {type,onChange,maxLength = Infinity,justNumber} = this.props;
+    let {type,onChange,maxLength = Infinity,justNumber,delay} = this.props;
     if (type === 'number') {
       if(value){
         value = +value;
@@ -610,7 +628,7 @@ class Input extends Component{
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       onChange(value)
-    }, 400);
+    }, delay?400:0);
   }
   getOptions(uid){
     let {optionText,options} = this.props;
@@ -673,12 +691,21 @@ class Input extends Component{
       return <div className='aio-form-inline-error aio-form-input' onClick={()=>this.setState({error:false})}>{error}</div>
     }
     let props = { ...this.props, onChange: (e) => this.onChange(e.target.value) ,ref:this.dom};
+    let attrs = {};
+    for(let prop in props){
+      if(prop ==='optionValue'){continue}
+      if(prop ==='optionText'){continue}
+      if(prop ==='autoHeight'){continue}
+      if(prop ==='justNumber'){continue}
+      if(prop ==='delay'){continue}
+      attrs[prop] = props[prop]
+    }
     let uid = 'a' + Math.random();
     return type === 'textarea' ? (
-      <textarea {...props} value={value === undefined?'':value}/>
+      <textarea {...attrs} value={value === undefined?'':value}/>
     ) : (
       <>
-        <input {...props} value={value === undefined?'':value} list={uid}/>
+        <input {...attrs} value={value === undefined?'':value} list={uid}/>
         {Array.isArray(options) && options.length !== 0 && this.getOptions(uid)}
       </>
     );
