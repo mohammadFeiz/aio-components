@@ -137,9 +137,9 @@ export default class ReactSuperApp extends Component {
   }
   render() {
     let { sideOpen, splash } = this.state;
-    let { sides = [], sideId, rtl, sideHeader, sideFooter, sideClassName } = this.props;
+    let { sides = [], sideId, rtl, sideHeader, sideFooter, sideClassName,style,className } = this.props;
     return (
-      <div className='rsa-container'>
+      <div className={`rsa-container` + (className?' ' + className:'')} style={style}>
         <div className='rsa'>
           {this.renderMain()},
           <AIOPopup getActions={(o)=>this.setState({popupActions:{...o}})} onChange={({popups,confirm})=>this.setState({isThereOpenedPopup:!!confirm || !!popups.length})}/>
@@ -211,7 +211,7 @@ class Navigation extends Component {
   render() {
     let { type, navs } = this.props;
     if (type === 'bottom') {
-      return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navs.map((o) => this.bottomMenu_layout(o)) }} />)
+      return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navs.filter(({show = ()=>true})=>show()).map((o) => this.bottomMenu_layout(o)) }} />)
     }
     return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navs, 0)] }} />);
   }
