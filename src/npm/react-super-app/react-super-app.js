@@ -67,7 +67,7 @@ export default class ReactSuperApp extends Component {
       if (res !== false) { return navId }
     }
     if (!navs.length) { return false }
-    return navs[0].id;
+    return navs.filter(({show = ()=>true})=>show())[0].id;
   }
   header_layout(nav) {
     let { header, sides = [], title = () => nav.text } = this.props;
