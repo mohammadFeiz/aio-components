@@ -14,7 +14,7 @@ let ABCLS = {
 class Radio extends Component {
   static contextType = aioButtonContext;
   render(){
-    let {className,justify,rtl,style,gap,type} = this.context;
+    let {className,justify,rtl,style,gap,type,multiple} = this.context;
     var {options = [],attrs = {}} = this.props;
     return (
       <div 
@@ -23,7 +23,7 @@ class Radio extends Component {
       >
         {
           options.map((option,i)=>{
-            return <Option key={i} {...option} renderIndex={i} gap={gap} rtl={rtl} type={type}/>
+            return <Option key={i} {...option} renderIndex={i} gap={gap} rtl={rtl} type={type} multiple={multiple}/>
           })
         }
       </div>
@@ -61,13 +61,21 @@ export default class AIOButton extends Component {
       this.state = {open:this.props.open || false,touch:'ontouchstart' in document.documentElement}
     }
     getPropfromProps({option,index,field}){
-    let prop = this.props['option' + field[0].toUpperCase() + field.slice(1,field.length)];
-    let value;
-    if(typeof prop === 'string'){try{ eval('value = ' + prop)} catch{value = undefined}}
-    else if(typeof prop === 'function'){value = prop(option,index)}
-    else if(prop !== undefined){value = prop}
-    return value; 
-  }
+      
+      let props = this.props;
+      let prop = this.props['option' + field[0].toUpperCase() + field.slice(1,field.length)];
+      let value;
+      if(typeof prop === 'string'){
+        try{ 
+          let evalText = 'value = ' + prop;
+          eval(evalText);
+        } 
+        catch{value = undefined}
+      }
+      else if(typeof prop === 'function'){value = prop(option,index)}
+      else if(prop !== undefined){value = prop}
+      return value; 
+    }
   getProp({option,index,field,def,type,readFrom}){
     if(readFrom !== 'props'){
       let optionResult = option[field];
@@ -227,10 +235,12 @@ export default class AIOButton extends Component {
           close = this.getProp({option,index:realIndex,field:'close',def:checked === undefined});
         }
         else if(type === 'radio'){
+          let {multiple} = this.props;
           className = ABCLS.radioOption;
           before = this.getProp({option,index:realIndex,field:'before',def:undefined});
           after = this.getProp({option,index:realIndex,field:'after',def:undefined});
-          checked = this.props.value === value;
+          if(multiple){checked = (this.props.value || []).indexOf(value) !== -1;}
+          else {checked = this.props.value === value;}
           close = false;
         }
         else if(type === 'tabs'){
@@ -260,7 +270,22 @@ export default class AIOButton extends Component {
           if(props.disabled){return}
           if(option.onClick){option.onClick(props)}
           else if(option.onChange){option.onChange(value,props)}
-          else if(type === 'select' || type === 'radio' || type === 'tabs'){this.props.onChange(value,props)}
+          else if(type === 'select' || type === 'tabs'){this.props.onChange(value,props)}
+          else if(type === 'radio'){
+            let {multiple} = this.props;
+            if(multiple){
+              let {value:propsValue = []} = this.props;
+              if(propsValue.indexOf(value) === -1){
+                this.props.onChange(propsValue.concat(value),value,'add')
+              }
+              else{
+                this.props.onChange(propsValue.filter((o)=>o !== value),value,'remove')
+              }
+            }
+            else {
+              this.props.onChange(value,props)
+            }
+          }
           else if(type === 'multiselect'){
             if(this.props.value.indexOf(value) === -1){
               this.props.onChange(this.props.value.concat(value),value,'add')
@@ -647,7 +672,7 @@ function Tag(props){
 }
 
 function CheckIcon(props){
-  let {checked,checkIcon = {},gap,type} = props;
+  let {checked,checkIcon = {},gap,type,multiple} = props;
   if(checked === undefined){return null} 
   if(Array.isArray(checkIcon)){
     return (
@@ -657,7 +682,7 @@ function CheckIcon(props){
       </>
     )
   }
-  let {size = [],color = [],round = type === 'radio'} = checkIcon;
+  let {size = [],color = [],round = type === 'radio' && !multiple} = checkIcon;
   if(!Array.isArray(color)){color = [color]}
   let [outerColor = 'dodgerblue',innerColor = outerColor] = color;
   let iconColor = [outerColor,innerColor];
@@ -678,9 +703,9 @@ function CheckIcon(props){
 }
 class Option extends Component{
   render(){
-    let {type,option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,title,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs} = this.props;
+    let {type,option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,title,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs,multiple} = this.props;
     let props = {className,title,style,onClick,datarenderindex:renderIndex,datarealindex:realIndex,tabIndex:0,...attrs}
-    let checkIconProps = {checked,checkIcon,gap:!before && !text?0:gap,type}
+    let checkIconProps = {checked,checkIcon,gap:!before && !text?0:gap,type,multiple}
     if(onSwap){
       props.onDragStart = dragStart;
       props.onDragOver = dragOver;
