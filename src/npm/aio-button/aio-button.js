@@ -1,4 +1,5 @@
 import React,{Component,createRef,createContext} from 'react';
+import {Align} from './../aio-functions/aio-functions';
 import $ from 'jquery'
 import './index.css';
 let aioButtonContext = createContext();
@@ -51,8 +52,6 @@ class Tabs extends Component {
     );
   }
 }
-
-
 export default class AIOButton extends Component {
     constructor(props){
       super(props);
@@ -485,81 +484,13 @@ class Popup extends Component{
   componentDidMount(){
     this.update($(this.dom.current));
   }
-  getLimit(dom){
-    var offset = dom.offset();
-    var left = offset.left - window.pageXOffset;
-    var top = offset.top - window.pageYOffset;
-    var width = dom.outerWidth();
-    var height = dom.outerHeight();
-    var right = left + width;
-    var bottom = top + height;
-    return {left,top,right,bottom,width,height};
-  }
   update(popup){
-      let {dataUniqId} = this.props;
-      var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},popupPosition,fixPopupPosition = (o)=>o} = this.context;
-      var button = $(`.${ABCLS.button}[data-uniq-id = ${dataUniqId}]`);
-      var parent = openRelatedTo?popup.parents(openRelatedTo):undefined;
-      parent = Array.isArray(parent) && parent.length === 0?undefined:parent;
-      var bodyWidth = window.innerWidth;
-      var bodyHeight = window.innerHeight;
-      var parentLimit = parent?this.getLimit(parent):{left:0,top:0,right:bodyWidth,bottom:bodyHeight};
-      if(parentLimit.left < 0){parentLimit.left = 0;}
-      if(parentLimit.right > bodyWidth){parentLimit.right = bodyWidth;}
-      if(parentLimit.top < 0){parentLimit.top = 0;}
-      if(parentLimit.bottom > bodyHeight){parentLimit.bottom = bodyHeight;}
-      // $('body').append(`
-      //   <div class="test-msf" style="position:fixed;left:0;top:0;width:${parentLimit.width}px;height:${parentLimit.height}px;background:#ff000030">
-      //   </div>
-      // `)
-      // setTimeout(()=>{
-      //   $('.test-msf').remove();
-      // },3000)
-      var buttonLimit = this.getLimit(button);
-      var popupLimit = this.getLimit(popup); 
-      var left,right,top,bottom,style = {};
-      top = buttonLimit.bottom;
-      bottom = top + popupLimit.height;  
-      if(popupWidth){
-        style.left = buttonLimit.left;
-        style.width = popupWidth === 'fit'?buttonLimit.width:popupWidth;
-      }
-      else if(rtl){
-        right = buttonLimit.right;
-        left = right - popupLimit.width;
-        if(left < parentLimit.left){style.left = parentLimit.left;}
-        else{style.left = left;}
-      }
-      else{
-        left = buttonLimit.left; 
-        right = left + popupLimit.width;
-        if(right > parentLimit.right){style.left = parentLimit.right - popupLimit.width;}
-        else{style.left = left}
-      }
-      if(bottom > parentLimit.bottom){
-        if(popupLimit.height > buttonLimit.top - parentLimit.top){style.top = parentLimit.bottom - popupLimit.height;}  
-        else{style.top = buttonLimit.top - popupLimit.height;}
-      }
-      else{style.top = buttonLimit.bottom;}
-      let attrsStyle = popupAttrs.style;
-      if(animate){
-        let a = {...style,...attrsStyle}
-        let beforeTop = a.top + 90,afterTop = a.top,obj;
-        if(animate === true){
-          a.top = beforeTop; a.opacity = 0;
-          obj = {top:afterTop,opacity:1}
-        }
-        else{obj = animate}
-        popup.css(fixPopupPosition(a))
-        popup.animate(obj,{duration:100})
-      }
-      else{
-        let a = {...style,...attrsStyle};
-        popup.css(fixPopupPosition(a))
-      }
-      popup.focus();
-    }
-  
+    let {dataUniqId} = this.props;
+    var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},fixPopupPosition = (o)=>o} = this.context;
+    var button = $(`.${ABCLS.button}[data-uniq-id = ${dataUniqId}]`);
+    Align(popup,button,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal:popupWidth === 'fit',style:popupAttrs.style,rtl})
+    popup.focus();
+  }
   getOptions(){
     let {searchValue} = this.state;
     let {gap,dragStart,dragOver,drop,rtl,onSwap} = this.context;

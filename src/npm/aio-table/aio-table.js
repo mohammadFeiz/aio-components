@@ -4,6 +4,7 @@ import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
 import AIOButton from './../../npm/aio-button/aio-button';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import { ExportToExcel,GetClient } from '../aio-functions/aio-functions';
 import $ from 'jquery';
 import './index.css';
 let TableContext = createContext();
@@ -38,7 +39,6 @@ export default class Table extends Component {
       openDictionary,filters:[],searchText:'',touch:'ontouchstart' in document.documentElement,
       groupsOpen:{},rowHeight:props.rowHeight,freezeSize:240,paging:props.paging,
       getValueByField:functions.getValueByField,
-      Excel:Excel(()=>this.props),
       Sort:Sort(()=>this.props,()=>this.state,this.setColumns.bind(this)),
       Group:Group(()=>this.props,()=>this.state,this.setColumns.bind(this)),
       columns:(props.columns || []).map((c)=>{return {...c}}),
@@ -493,7 +493,6 @@ class TableUnit extends Component{
     this.resizeDown = functions.resizeDown;
     this.resizeMove = functions.resizeMove;
     this.resizeUp = functions.resizeUp;
-    this.getClient = functions.getClient;
   }
   
   title_layout(column,setFlex){
@@ -799,12 +798,15 @@ class Toolbar extends Component{
     )
   }
   getExcelButton(){
-    let {state,rows_array,getRowDetailById} = this.context;
+    let {rows_array,getRowDetailById,translate} = this.context;
     return (
       <AIOButton
         key='excelbutton' caret={false} type='button' className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiFileExcel} size={0.7}/>}
-        onClick={()=>state.Excel.export(rows_array.filter(({_isGroup_})=>!_isGroup_).map(({_id})=>getRowDetailById(_id)._json))}
+        onClick={()=>{
+          let list = rows_array.filter(({_isGroup_})=>!_isGroup_).map(({_id})=>getRowDetailById(_id)._json)
+          ExportToExcel(list,translate('Inter Excel File Name'))
+        }}
       />
     )
   }
@@ -873,14 +875,12 @@ class Cell extends Component{
     let {rowId,colId} = this.props;
     if(this.inlineEdit){
       if(this.inlineEdit.type === 'text' || this.inlineEdit.type === 'number'){
-        let className = TableCLS.inlineEditInput;
-        if(this.inlineEdit.spinButton === false){className += ' spin-button-off'}
         let props = {
-          type:column.type,className,defaultValue:value,tabIndex:verticalTabIndex?colId:0,
+          type:column.type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,
           style:{textAlign:column.justify?'center':undefined},'data-col-id':colId,'data-row-id':rowId,
-          onBlur:(e)=>this.onChange(e.target.value)
+          onChange:(value)=>this.onChange(value)
         }
-        return <input {...props}/>
+        return <TableInput {...props}/>
       }
       if(this.inlineEdit.type === 'select'){
         return (
@@ -1014,6 +1014,33 @@ class Cell extends Component{
     let {state} = this.context;
     let html = state.getValueByField(row,undefined,column.after)
     return {row:[{className:TableCLS.cellAfter,html}]}
+  }
+}
+
+class TableInput extends Component{
+  constructor(props){
+    super(props);
+    this.state = {value:props.value}
+  }
+  handlePropsChange(){
+    let {value} = this.props;
+    if(this.state.value !== value){
+      clearTimeout(this.changeTimeout)
+      this.changeTimeout = setTimeout(()=>this.setState({value}),800)
+    }
+  }
+  change(value){
+    this.setState({value});
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(()=>{
+      let {onChange} = this.props;
+      onChange(value)
+    },800)
+  }
+  render(){
+    this.handlePropsChange();
+    let {value} = this.state;
+    return <input {...this.props} value={value} onChange={(e)=>this.change(e.target.value)}/>
   }
 }
 function FilterResult(items = [],booleanType = 'or',value,reverse){
@@ -1360,60 +1387,6 @@ function Group (getProps,getState,setColumns){
   }
   return {get:o.get.bind(o),set:o.set.bind(o),groupBy:o.groupBy.bind(o)}
 }
-function Excel(getProps){
-  let o = {
-    fixPersianAndArabicNumbers (str){
-      if(typeof srt !== 'string'){return str}
-      var persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
-      arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
-      for(var i=0; i<10; i++){str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);}
-      return str;
-    },
-    getJSON(rows){
-      let result = [];
-      for (let i = 0; i < rows.length; i++) {
-        let json = rows[i],fixedJson = {};
-        for(let prop in json){fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} 
-        result.push(fixedJson);
-      }
-      return result;
-    },
-    export(rows) {
-      let {translate = (o)=>o} = getProps();
-      let name = window.prompt(translate('Inter Excel File Name'));
-      if (!name || name === null || !name.length) return;
-      var data = this.getJSON(rows);
-      var arrData = typeof data != "object" ? JSON.parse(data) : data;
-      var CSV = "";
-      // CSV += 'title';
-      CSV += '\r\n\n';
-      if (true) {
-          let row = "";
-          for (let index in arrData[0]) { row += index + ","; }
-          row = row.slice(0, -1);
-          CSV += row + "\r\n";
-      }
-      for (var i = 0; i < arrData.length; i++) {
-          let row = "";
-          for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; }
-          row.slice(0, row.length - 1);
-          CSV += row + "\r\n";
-      }
-      if (CSV === "") { alert("Invalid data"); return; }
-      var fileName = name.replace(/ /g, "_");
-      var universalBOM = "\uFEFF";
-      var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV);
-      var link = document.createElement("a");
-      link.href = uri;
-      link.style = "visibility:hidden";
-      link.download = fileName + ".csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
-  return {export:o.export.bind(o)}
-}
 let functions = {   
   async onScroll(index){
     let {lazyLoad = {}} = this.props;
@@ -1512,8 +1485,6 @@ let functions = {
   },
   
   ///ok
-  getClient(e){return this.context.touch?[e.changedTouches[0].clientX,e.changedTouches[0].clientY]:[e.clientX,e.clientY];},
-  ///ok
   resizeDown(e,column,type){
     e.stopPropagation();
     this.downOnResizeHandle = true;
@@ -1523,7 +1494,7 @@ let functions = {
     $(window).bind(touch?'touchmove':'mousemove',$.proxy(this.resizeMove,this));
     $(window).bind(touch?'touchend':'mouseup',$.proxy(this.resizeUp,this));
     this.resizeDetails = {
-      client:this.getClient(e),
+      client:GetClient(e),
       width:column.width,
       column,type
     }
@@ -1532,7 +1503,7 @@ let functions = {
   resizeMove(e){
     this.resized =true;
     var {rtl} = this.props;
-    var Client = this.getClient(e);
+    var Client = GetClient(e);
     var {client,width,column,type} = this.resizeDetails;
     var offset = (Client[0] - client[0]) * (type === 'start'?-1:1);
     let newWidth = (width + offset * (rtl?-1:1));

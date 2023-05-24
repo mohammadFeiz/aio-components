@@ -2,6 +2,7 @@ import Axios from "axios";
 import AIODate from "./../../npm/aio-date/aio-date";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOMessage from "../aio-message/aio-message";
+import {SplitNumber} from '../aio-functions/aio-functions';
 import './index.css';
 import $ from "jquery";
 export let helper = {
@@ -25,6 +26,9 @@ export let helper = {
   arabicToFarsi(value){
     try{return value.replace(/ك/g, "ک").replace(/ي/g, "ی");}
     catch{return value}
+  },
+  splitNumber(number,count,splitter){
+    return SplitNumber(number,count,splitter)
   }
 }
 export default function services(obj = {}) {
