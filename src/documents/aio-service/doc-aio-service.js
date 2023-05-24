@@ -29,38 +29,6 @@ import AIOService from 'aio-service';
                 {Titr('Create Instance')}
                 {
                     Code(`
-let Services = AIOService({
-    getResponse, //function - required - a function that returns an object contain api functions
-    token,//string - required - this token will set in header of all requests
-    id,//string - required - you should set an uniq id for this instance(use in cache manager)
-    getState,//function - optional - use in apis function (access api functions to application data)
-    loader,//function - optional - this function should returns customized loading (html),
-    getError,//function - optional - this function will check all apis for handle error messages
-    baseUrl//string base of all urls
-});
-                    `)
-                }
-                {Titr('getError property example')}
-                {
-                    Code(`
-getError: (response) => { if (!response.data.IsSuccess) { return response.data.Message } },
-                    `)
-                }
-                {Desc(`
-                    this function will call for all responses to handle api error messages
-                `)}
-                <h3>getResponse</h3>
-                {DescList([
-                    ['getResponse','is a function that returns an object contains api functions'],
-                    ['getResponse','get an object as parameter contain:']
-                ])}
-                {DescList([
-                    ['getState','a function that returns application state for use in api functions, we sent it in create instance'],
-                    ['helper','is an object contains functions for help manipulating data'],
-                    ['baseUrl','base of all urls'],
-                ])} 
-                {
-                    Code(`
 let getResponse = function(obj){
     let {getState,helper,baseUrl} = obj;
     //baseUrl is 'https://10.10.10.22:8080'
@@ -121,18 +89,46 @@ let getResponse = function(obj){
         ...
     }
 }
-                    
-                                        `)
+function getError(response){ 
+    if (!response.data.IsSuccess) { return response.data.Message } 
+}
+function getState(){
+    //return application data required in api function
+}
+let Services = AIOService({
+    getResponse, //function - required - a function that returns an object contain api functions
+    getError,//function - optional - this function will check all apis for handle error messages
+    getState,//function - optional - use in apis function (access api functions to application data)
+    token,//string - required - this token will set in header of all requests
+    id,//string - required - you should set an uniq id for this instance(use in cache manager)
+    loader,//function - optional - this function should returns customized loading (html),
+    baseUrl//string base of all urls
+});
+//Services is instance of aio-service. Services is a function. for all requests in application we will call Services.
+                    `)
                 }
-                {Titr('use helper functions in api functions')}
-                {DescList([['splitNumber']])}
+                <h3>getResponse</h3>
+                {DescList([
+                    ['getResponse','is a function that returns an object contains api functions'],
+                    ['getResponse','get an object as parameter contain:']
+                ])}
+                {DescList([
+                    ['getState','a function that returns application state for use in api functions, we sent it in create instance'],
+                    ['helper','is an object contains functions for help manipulating data'],
+                    ['baseUrl','base of all urls'],
+                ])} 
+                {Titr('helper')}
+                {Desc(`
+                    is an object contain some functions for manupulating data
+                `)}
+                {DescList([['helper.splitNumber(number,count)']])}
                 {
                     Code(`
 let result = helper.splitNumber(12345678,3);
 //result is "12,345,678"
                     `)
                 }
-                {DescList([['getDateAndTime']])}
+                {DescList([['helper.getDateAndTime(date)']])}
                 {
                     Code(`
 let result = helper.getDateAndTime('2015-03-25T12:00:00Z');
@@ -141,14 +137,14 @@ let {date,time} = result;
 //time is "12:0"
                     `)
                 }
-                {DescList([['arabicToFarsi']])}
+                {DescList([['helper.arabicToFarsi(text)']])}
                 {
                     Code(`
 let result = helper.arabicToFarsi('یك متن تستي');
 //result is 'یک متن تستی'
                     `)
                 }
-                {DescList([['showAlert']])}
+                {DescList([['helper.showAlert({type,text,subtext})']])}
                 <table>
                     <tr>
                         <td>
@@ -206,7 +202,20 @@ showAlert({
                             <img src={warningsrc} height={164}/>
                         </td>
                     </tr>
-                </table>                
+                </table>        
+                {Titr('getError (function) (optional)')}
+                {
+                    Code(`
+function getError(response){ 
+    if (!response.data.IsSuccess) { return response.data.Message } 
+}
+                    `)
+                }
+                {Desc(`
+                    this function will call for all responses to handle api error messages.
+                    if this function returns an string , user will see an alert by this string.
+                `)}
+                        
                 {Titr('Use api functions in your application')}
                 {DescList([
                     ['Services','function is instance of aio-service that we call it in our application'],

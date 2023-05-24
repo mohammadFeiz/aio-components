@@ -13,7 +13,7 @@ export default function AIODoc(){
             return <div className='titr'>{text}</div>
         },
         Desc(text){
-            return <p className='aio-doc-description'>{text}</p>
+            return <p className='aio-doc-description' style={{fontSize:12}}>{text}</p>
         }
     }
     return {
