@@ -264,8 +264,8 @@ export default class AIOPopup extends Component{
     let {getTarget} = this.props;
     let target = getTarget();
     if(!target ||!target.length){return}
-    var {rtl,openRelatedTo,animate,popupWidth,popupAttrs = {},fixPopupPosition = (o)=>o} = this.props;
-    Align(popup,target,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal:popupWidth === 'fit',style:popupAttrs.style,rtl})
+    var {rtl,openRelatedTo,animate,fitHorizontal,attrs = {},fixPopupPosition = (o)=>o} = this.props;
+    Align(popup,target,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal,style:attrs.style,rtl})
     popup.focus();
   }
   getClassName(){
@@ -285,8 +285,7 @@ export default class AIOPopup extends Component{
   }
   //start
   render(){
-    var {attrs = {},body,backdropAttrs = {},backdrop} = this.props;
-    let {id,onClose} = this.props;
+    var {attrs = {},body,backdropAttrs = {},backdrop,id,onClose} = this.props;
     let props = {
       className:this.getBackClassName(),
       style:backdropAttrs.style,

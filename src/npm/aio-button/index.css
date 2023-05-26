@@ -20,7 +20,7 @@ body.aio-button-open {
   background:#eee;
 }
 
-.aio-button:disabled {
+.aio-button:disabled,.aio-button.disabled,.aio-button-tabs.disabled,.aio-button-tabs-option.disabled {
   cursor: not-allowed !important;
   opacity: 0.3;
 }
@@ -561,4 +561,28 @@ a.aio-button-option {
   transition: 0.4s;
   position: relative;
   transform: translateY(0) rotateX(0);
+}
+.aio-button-files{
+  border:1px solid #ddd;
+  padding:6px;
+  box-sizing: border-box;
+}
+.aio-button-file{
+  display:flex;
+  font-size:10px;
+  box-sizing: border-box;
+  align-items: center;
+}
+.aio-button-file:hover{
+  background:#f4f4f4;
+}
+.aio-button-file-name{
+  flex:1;
+}
+.aio-button-file-icon{
+  width:24px;
+  height:24px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
 }
