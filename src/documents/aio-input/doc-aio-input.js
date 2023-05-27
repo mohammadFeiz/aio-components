@@ -16,6 +16,7 @@ export default class DOC_AIOInput extends Component {
         let { Titr, Code } = AIODoc();
         return (
             <div className='example'>
+                <button onClick={()=>this.props.goToHome()} style={{margin:24}}>Go To Home</button>
                 <Input
                     type='number'
                     label='input type number'

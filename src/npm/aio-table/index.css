@@ -178,6 +178,10 @@
   min-height: 16px;
   font-size: inherit;
 }
+.aio-table .aio-input:hover {
+  border:none;
+  box-shadow:none;
+}
 
 .table-inline-edit-input:focus {
   border-bottom: 2px solid dodgerblue;

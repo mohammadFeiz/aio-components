@@ -4,6 +4,7 @@ import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
 import AIOButton from './../../npm/aio-button/aio-button';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOInput from './../../npm/aio-input/aio-input';
 import { ExportToExcel,GetClient } from '../aio-functions/aio-functions';
 import $ from 'jquery';
 import './index.css';
@@ -874,13 +875,14 @@ class Cell extends Component{
     let {rows_object,details_object,verticalTabIndex} = this.context;
     let {rowId,colId} = this.props;
     if(this.inlineEdit){
+      let {spinButton = false} = this.inlineEdit;
       if(this.inlineEdit.type === 'text' || this.inlineEdit.type === 'number'){
         let props = {
-          type:column.type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,
+          type:column.type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,spin:spinButton,
           style:{textAlign:column.justify?'center':undefined},'data-col-id':colId,'data-row-id':rowId,
           onChange:(value)=>this.onChange(value)
         }
-        return <TableInput {...props}/>
+        return <AIOInput {...props}/>
       }
       if(this.inlineEdit.type === 'select'){
         return (
@@ -1017,32 +1019,7 @@ class Cell extends Component{
   }
 }
 
-class TableInput extends Component{
-  constructor(props){
-    super(props);
-    this.state = {value:props.value}
-  }
-  handlePropsChange(){
-    let {value} = this.props;
-    if(this.state.value !== value){
-      clearTimeout(this.changeTimeout)
-      this.changeTimeout = setTimeout(()=>this.setState({value}),800)
-    }
-  }
-  change(value){
-    this.setState({value});
-    clearTimeout(this.timeout);
-    this.timeout = setTimeout(()=>{
-      let {onChange} = this.props;
-      onChange(value)
-    },800)
-  }
-  render(){
-    this.handlePropsChange();
-    let {value} = this.state;
-    return <input {...this.props} value={value} onChange={(e)=>this.change(e.target.value)}/>
-  }
-}
+
 function FilterResult(items = [],booleanType = 'or',value,reverse){
   let fn = {
     and(){ 

@@ -105,7 +105,7 @@ export default class Input extends Component{
     }
   }
   getInput(){
-    let {attrs = {},type,options,spin} = this.props;
+    let {attrs = {},type,spin} = this.props;
     let {error,value} = this.state;   
     if(error !== false){
       return <div className='aio-form-inline-error aio-form-input' onClick={()=>this.setState({error:false})}>{error}</div>
@@ -174,11 +174,12 @@ export default class Input extends Component{
     )
   }
   render(){
-    let {type,label,className} = this.props;
+    let {type,label,className,style} = this.props;
     return (
       <>
         <div 
           ref={this.container} 
+          style={style}
           data-uniq-id={this.dataUniqId}
           className={`aio-input aio-input-${type}${className?' ' + className:''}`} 
           data-label={label?label:undefined}
