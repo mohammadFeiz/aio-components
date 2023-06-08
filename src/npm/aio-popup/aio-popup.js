@@ -252,7 +252,7 @@ export default class AIOPopup extends Component{
     }
   }
 
-  export class Popupover extends Component{
+  export class Popover extends Component{
   constructor(props){
     super(props);
     this.dom = createRef();

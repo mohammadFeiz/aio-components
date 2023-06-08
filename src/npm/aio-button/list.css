@@ -1,0 +1,68 @@
+.aio-input-list{
+    background:#ddd;
+    padding:1px;
+    box-sizing:border-box;
+    border-radius:4px;
+    font-size:12px;
+    overflow:hidden;
+  }
+  .aio-input-list-header{
+    display:flex;
+    margin-bottom:1px;
+  }
+  .aio-input-list-title{
+    margin-right:1px;
+    background:#fff;
+    padding:12px;
+    font-weight:bold;
+    box-sizing: border-box;
+  }
+  .aio-input-list-title:last-child{
+    margin-right:0
+  }
+  .aio-input-list-row{
+    display:flex;
+    margin-bottom:1px;
+  }
+  .aio-input-list-row:last-child{
+    margin-bottom:0
+  }
+  .aio-input-list-cell{
+    margin-right:1px;
+  }
+  .aio-input-list-cell:last-child{
+    margin-right:0
+  }
+  .aio-input-list .aio-input{
+    border:none;
+    border-radius:0;
+    background:#fff;
+  }
+  .aio-input-list-toolbar{
+    display:flex;
+    height:36px;
+    align-items: center;
+    margin-bottom:1px;
+  }
+  .aio-input-list-toolbar-title{
+    flex:1;
+    font-weight:bold;
+    background:#fff;
+    padding:0 12px;
+    height:100%;
+    display:flex;
+    align-items: center;
+  }
+  .aio-input-list-toolbar-add{
+    background:#fff;
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:36px;
+  }
+  .aio-input-list-remove{
+    background:#fff;
+    border:none;
+    width:36px;
+  }

@@ -1,0 +1,135 @@
+.aio-input-container{
+    display:flex;
+    flex-direction:column;
+  }
+  .aio-input{
+    position:relative;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:4px;
+    height:36px;
+    font-family:inherit;
+    display:flex;
+    align-items: center;
+    font-size:inherit;
+  }
+  .aio-input:hover{
+    border: 1px solid #70c0ff;
+      box-shadow: 0 0 5px 0 #70c0ff;
+  }
+  .aio-input:before{
+    content:attr(data-label);
+    background:#fff;
+    position:absolute;
+    top:-8px;
+    left:16px;
+    padding:0 3px;
+    box-sizing: border-box;
+    font-size:11px;
+    height:fit-content;
+  }
+  .aio-input-textarea{
+    height:fit-content;
+  }
+  .aio-input-textarea textarea{
+    border:none;
+    width:100%;
+    padding:12px;
+    box-sizing: border-box;
+    resize:vertical;
+    outline:none;
+    font-family:inherit;
+    flex:1;
+  }
+  .aio-input input{
+    border:none;
+    background:none;
+    width:100%;
+    margin:0;
+    box-sizing: border-box;
+    padding:0 12px;
+    height:100%;
+    outline:none;
+    flex:1;
+    font-family:inherit;
+    font-size:inherit;
+  }
+  .aio-input-before{
+    width:fit-content;
+    display:flex;
+    align-items:center;
+    height:100%;
+    flex:1;
+    max-width: fit-content;
+    justify-content: center;
+  }
+  .aio-input-after{
+    width:fit-content;
+    display:flex;
+    align-items:center;
+    height:100%;
+    justify-content: center;
+  }
+  .aio-input-option{
+    height:36px;
+    display:flex;
+    align-items: center;
+    padding:0 12px;
+    cursor:pointer;
+  }
+  .aio-input-option:hover{
+    background:#f2f2f2;
+  }
+  .aio-input-caret{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+  }
+  /* Chrome, Safari, Edge, Opera */
+  input.no-spin::-webkit-outer-spin-button,
+  input.no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox */
+  input.no-spin[type=number] {
+    -moz-appearance: textfield;
+  }
+  
+  .aio-input-list-items{
+    border:1px solid #ddd;
+    border-radius:0 0 4px 4px;
+    transform:translateY(-1px);
+    max-height:300px;
+    overflow-y:auto;
+  }
+  .aio-input-list-item{
+    min-height:36px;
+    display:flex;
+    align-items: center;
+    border-bottom:1px solid #ddd;
+  }
+  .aio-input-list-item-text{
+    display:flex;
+    padding:6px 12px;
+    flex:1;
+    align-items:center;
+  }
+  .aio-input-icon-button{
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:36px;
+    background:none;
+    border:none;
+    cursor:pointer;
+  }
+  .aio-input-icon-button:disabled{
+    cursor:not-allowed;
+    opacity:0.4;
+  }
+  

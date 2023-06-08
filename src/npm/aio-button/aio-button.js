@@ -1,10 +1,13 @@
 import React,{Component,createRef,createContext} from 'react';
 import {Icon} from '@mdi/react';
-import {mdiAttachment, mdiClose,mdiDownload} from '@mdi/js';
+import {mdiAttachment, mdiClose} from '@mdi/js';
+import Input from './input';
+import List from './list';
 import DownloadUrl from '../aio-functions/download-url';
-import { Popupover } from '../aio-popup/aio-popup';
+import { Popover } from '../aio-popup/aio-popup';
 import $ from 'jquery'
 import './index.css';
+
 let aioButtonContext = createContext();
 let ABCLS = {
   button:'aio-button',radio:'aio-button-radio',tabs:'aio-button-tabs',option:'aio-button-option',options:'aio-button-options',
@@ -323,6 +326,8 @@ export default class AIOButton extends Component {
     }
     render(){
       let {type,show,subtext,value} = this.props;
+      if(type === 'list'){return <List {...this.props}/>}
+      if(['text','number','textarea','color','password'].indexOf(type) !== -1){return <Input {...this.props}/>}
       let {open,touch} = this.state;
       let context = {
         ...this.props,touch,
@@ -611,7 +616,7 @@ class Popup extends Component{
     } = this.context;
     let {dataUniqId,parentDom,type} = this.props;
     return (
-      <Popupover
+      <Popover
         rtl={rtl} animate={animate} fitHorizontal={popupWidth === 'fit' || type === 'multiselect'}
         openRelatedTo={openRelatedTo} fixPopupPosition={fixPopupPosition}
         getTarget={()=>$(parentDom.current)}
