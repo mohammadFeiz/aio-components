@@ -19,7 +19,45 @@ body.aio-button-open {
   font-family: inherit;
   background:#eee;
 }
-
+.aio-button.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
+.aio-button-radio.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
+.aio-button-checkbox.has-label:before{
+  content:attr(data-label);
+  background:#fff;
+  color:#888;
+  white-space: nowrap;
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 3px;
+  box-sizing: border-box;
+  font-size:11px;
+  height:fit-content;
+}
 .aio-button:disabled,.aio-button.disabled,.aio-button-tabs.disabled,.aio-button-tabs-option.disabled {
   cursor: not-allowed !important;
   opacity: 0.3;
@@ -367,7 +405,6 @@ a.aio-button-option {
   align-items: center;
   cursor: pointer;
   padding: 12px;
-  overflow: hidden;
   max-width: 100%;
   min-width: fit-content;
   box-sizing: border-box;
@@ -376,6 +413,7 @@ a.aio-button-option {
 }
 
 .aio-button-checkbox {
+  position:relative;
   padding: 0;
   width: fit-content;
 }

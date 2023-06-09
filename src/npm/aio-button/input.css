@@ -3,6 +3,7 @@
     flex-direction:column;
   }
   .aio-input{
+    box-sizing: border-box;
     position:relative;
     background:#fff;
     border:1px solid #ddd;
@@ -13,9 +14,13 @@
     align-items: center;
     font-size:inherit;
   }
+  .aio-input-color{
+    padding:0 !important;
+    margin:0 !important;
+  }
   .aio-input:hover{
     border: 1px solid #70c0ff;
-      box-shadow: 0 0 5px 0 #70c0ff;
+    box-shadow: 0 0 5px 0 #70c0ff;
   }
   .aio-input:before{
     content:attr(data-label);
@@ -27,6 +32,7 @@
     box-sizing: border-box;
     font-size:11px;
     height:fit-content;
+    color:#888;
   }
   .aio-input-textarea{
     height:fit-content;
@@ -41,18 +47,45 @@
     font-family:inherit;
     flex:1;
   }
+  .aio-input-value-container{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+  }
   .aio-input input{
     border:none;
     background:none;
     width:100%;
     margin:0;
-    box-sizing: border-box;
     padding:0 12px;
+    box-sizing: border-box;
     height:100%;
     outline:none;
+    display:flex;
+    align-items: center;
     flex:1;
     font-family:inherit;
     font-size:inherit;
+  }
+  .aio-input .aio-input-value{
+    border:none;
+    background:none;
+    width:100%;
+    margin:0;
+    box-sizing: border-box;
+    height:100%;
+    outline:none;
+    display:flex;
+    align-items: center;
+    flex:1;
+    font-family:inherit;
+    font-size:inherit;
+  }
+  .aio-input-subtext{
+    box-sizing: border-box;
+    font-size:90%;
+    color:#999;
   }
   .aio-input-before{
     width:fit-content;
@@ -97,26 +130,6 @@
   /* Firefox */
   input.no-spin[type=number] {
     -moz-appearance: textfield;
-  }
-  
-  .aio-input-list-items{
-    border:1px solid #ddd;
-    border-radius:0 0 4px 4px;
-    transform:translateY(-1px);
-    max-height:300px;
-    overflow-y:auto;
-  }
-  .aio-input-list-item{
-    min-height:36px;
-    display:flex;
-    align-items: center;
-    border-bottom:1px solid #ddd;
-  }
-  .aio-input-list-item-text{
-    display:flex;
-    padding:6px 12px;
-    flex:1;
-    align-items:center;
   }
   .aio-input-icon-button{
     height:100%;

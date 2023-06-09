@@ -1,0 +1,91 @@
+.aio-input-table{
+    background:#ddd;
+    padding:1px;
+    box-sizing:border-box;
+    border-radius:4px;
+    font-size:12px;
+    overflow:hidden;
+  }
+  .aio-input-table-header{
+    display:flex;
+    margin-bottom:1px;
+  }
+  .aio-input-table-title{
+    margin-right:1px;
+    background:#fff;
+    padding:0 12px;
+    font-weight:bold;
+    height:36px;
+    display:flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  .aio-input-table-title-justify{
+    padding:0;
+    justify-content: center;
+  }
+  .aio-input-table-title:last-child{
+    margin-right:0
+  }
+  .aio-input-table-row{
+    display:flex;
+    margin-bottom:1px;
+  }
+  .aio-input-table-row:last-child{
+    margin-bottom:0
+  }
+  .aio-input-table-cell{
+    margin-right:1px;
+    padding:0 12px;
+    box-sizing: border-box;
+    background:#fff;
+    display:flex;
+    align-items: center;
+  }
+  .aio-input-table-cell .aio-input-container{
+    width:100%;
+  }
+  .aio-input-table .aio-input{
+    border:1px solid transparent;
+    border-radius:0;
+    background:none;
+  }
+  .aio-input-table .aio-input input{
+    padding:0;
+    background:none;
+  }
+  .aio-input-table-cell-justify .aio-input input{
+    text-align: center;
+  }
+  .aio-input-table-cell:last-child{
+    margin-right:0
+  }
+  
+  .aio-input-table-toolbar{
+    display:flex;
+    height:36px;
+    align-items: center;
+    margin-bottom:1px;
+  }
+  .aio-input-table-toolbar-header{
+    flex:1;
+    font-weight:bold;
+    background:#fff;
+    padding:0 12px;
+    height:100%;
+    display:flex;
+    align-items: center;
+  }
+  .aio-input-table-toolbar-add{
+    background:#fff;
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:36px;
+  }
+  .aio-input-table-remove{
+    background:#fff;
+    border:none;
+    width:36px;
+  }

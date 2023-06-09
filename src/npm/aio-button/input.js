@@ -28,7 +28,9 @@ export default class Input extends Component{
       this.setState({open:false})
     }
     change(value){
-      let {type,onChange = ()=>{},maxLength = Infinity,justNumber,delay = 400,filter = []} = this.props;
+      let {onChange} = this.props;
+      if(!onChange){return}
+      let {type,maxLength = Infinity,justNumber,delay = 400,filter = []} = this.props;
       if (type === 'number') {
         if(value){value = +value;}
       }
@@ -92,7 +94,7 @@ export default class Input extends Component{
       }
     }
     componentDidUpdate(){
-      let {type,autoHeight,delay = 400,list} = this.props;
+      let {type,autoHeight,delay = 400} = this.props;
       if(type === 'textarea' && autoHeight){
         let dom = this.dom.current;
         dom.style.height = 'fit-content';
@@ -102,12 +104,12 @@ export default class Input extends Component{
         dom.style.resize = 'none';
       }
       clearTimeout(this.rrt)
-      if(!list && this.state.value !== this.props.value){
+      if(this.state.value !== this.props.value){
         this.rrt = setTimeout(()=>this.setState({value:this.props.value}),delay + 10)
       }
     }
     getInput(){
-      let {attrs = {},type,options,spin} = this.props;
+      let {attrs = {},type,onChange,spin} = this.props;
       let {error,value} = this.state;   
       if(error !== false){
         return <div className='aio-form-inline-error aio-form-input' onClick={()=>this.setState({error:false})}>{error}</div>
@@ -117,7 +119,8 @@ export default class Input extends Component{
          className:spin === false?'no-spin':'',
          onChange:(e)=>this.change(e.target.value)
       }
-      if(type === 'textarea'){return <textarea {...props}/>}
+      if(typeof onChange !== 'function'){return <div className='aio-input-value'>{value}</div>}
+      else if(type === 'textarea'){return <textarea {...props}/>}
       else {return (<input {...props}/>)}
     }
     getBefore(){
@@ -133,6 +136,14 @@ export default class Input extends Component{
       return (
         <div className='aio-input-after'>
           {after}
+        </div>
+      )
+    }
+    getSubtext(){
+      let {subtext} = this.props;
+      return (
+        <div className='aio-input-subtext'>
+          {subtext}
         </div>
       )
     }
@@ -175,41 +186,11 @@ export default class Input extends Component{
         </div>
       )
     }
-    getList(){
-      let {list = [],onRemove} = this.props;
-      if(!list.length){return false}
-      return (
-        <div className='aio-input-list-items'>
-          {
-            list.map((o,i)=>{
-              return (
-                <div className='aio-input-list-item'>
-                  <div className='aio-input-list-item-text'>{o}</div>
-                  {!!onRemove && <button className='aio-input-icon-button' onClick={()=>onRemove(o,i)}><Icon path={mdiClose} size={0.7}/></button>}
-                </div>
-              )
-            })
-          }
-        </div>
-      )
-    }
-    getAddButton(){
-      let {list,onAdd} = this.props;
-      if(!list || !onAdd){return null}
-      let {value} = this.state;
-      return (
-        <button className={'aio-input-icon-button'} disabled={!value && value !== 0} onClick={()=>{onAdd(value); this.setState({value:''})}}>
-          <Icon path={mdiPlusThick} size={0.7}/>
-        </button>
-      )
-    }
     render(){
       let {type,label,className} = this.props;
-      let list = this.getList();
       return (
         <div className='aio-input-container'>
           <div 
-            style={{borderBottomLeftRadius:list !== false?0:undefined,borderBottomRightRadius:list !== false?0:undefined}}
             ref={this.container} 
             data-uniq-id={this.dataUniqId}
             className={`aio-input aio-input-${type}${className?' ' + className:''}`} 
@@ -217,13 +198,14 @@ export default class Input extends Component{
             onClick={()=>this.setState({open:!this.state.open})}
           >
             {this.getBefore()}
-            {this.getInput()}
+            <div className='aio-input-value-container'>
+              {this.getInput()}
+              {this.getSubtext()}
+            </div>
             {this.getAfter()}
             {this.getCaret()}
-            {this.getAddButton()}
           </div>
           {this.getPopup()}
-          {list}
         </div>
       )
     }

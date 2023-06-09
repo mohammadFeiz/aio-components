@@ -2,7 +2,7 @@ import React,{Component,createRef,createContext} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiAttachment, mdiClose} from '@mdi/js';
 import Input from './input';
-import List from './list';
+import Table from './table';
 import DownloadUrl from '../aio-functions/download-url';
 import { Popover } from '../aio-popup/aio-popup';
 import $ from 'jquery'
@@ -21,11 +21,11 @@ let ABCLS = {
 class Radio extends Component {
   static contextType = aioButtonContext;
   render(){
-    let {className,justify,rtl,style,gap,type,multiple} = this.context;
+    let {className,justify,rtl,style,gap,type,multiple,label} = this.context;
     var {options = [],attrs = {}} = this.props;
     return (
       <div 
-        {...attrs} className={ABCLS.radio + (rtl?' rtl':'') + (className?' ' + className:'')} 
+        {...attrs} className={ABCLS.radio + (rtl?' rtl':'') + (className?' ' + className:'') + (label?' has-label':'')} data-label={label}
         style={{justifyContent:justify?'center':undefined,...style}}
       >
         {
@@ -53,7 +53,7 @@ class Tabs extends Component {
             return <Option key={i} {...option} renderIndex={i} gap={gap} rtl={rtl}/>
           })
         }
-        {after !== undefined && after}
+        {after !== undefined && <><div style={{flex:1}}></div>{after}</>}
       </div>
     );
   }
@@ -276,7 +276,9 @@ export default class AIOButton extends Component {
           if(props.disabled){return}
           if(option.onClick){option.onClick(props)}
           else if(option.onChange){option.onChange(value,props)}
-          else if(type === 'select' || type === 'tabs'){this.props.onChange(value,props)}
+          else if(type === 'select' || type === 'tabs'){
+            if(this.props.onChange){this.props.onChange(value,props)}
+          }
           else if(type === 'radio'){
             let {multiple} = this.props;
             if(multiple){
@@ -326,7 +328,7 @@ export default class AIOButton extends Component {
     }
     render(){
       let {type,show,subtext,value} = this.props;
-      if(type === 'list'){return <List {...this.props}/>}
+      if(type === 'table'){return <Table {...this.props}/>}
       if(['text','number','textarea','color','password'].indexOf(type) !== -1){return <Input {...this.props}/>}
       let {open,touch} = this.state;
       let context = {
@@ -374,10 +376,11 @@ class Checkbox extends Component{
     }
   }
   render(){
-    let {className,disabled,onChange,value,gap,rtl,before,after} = this.context;
+    let {className,disabled,onChange,value,gap,rtl,before,after,label} = this.context;
     return (
       <Option
         {...this.props}
+        data-label={label}
         attrs={{onKeyDown:(e)=>this.keyDown(e),...this.props.attrs}}
         onKeyDown={(e)=>this.keyDown(e)}
         gap={gap}
@@ -386,7 +389,7 @@ class Checkbox extends Component{
         rtl={rtl}
         text={this.getText()}
         subtext={this.getSubtext()}
-        className={ABCLS.radioOption + ' ' + ABCLS.checkbox + (disabled?' disabled': '') + (className?' ' + className:'')}
+        className={ABCLS.radioOption + ' ' + ABCLS.checkbox + (disabled?' disabled': '') + (className?' ' + className:'') + (label?' has-label':'')}
         checked={!!value}
         onClick={()=>{if(!disabled){onChange(!!value,this.props)}}}
       />
@@ -488,12 +491,13 @@ class Button extends Component{
     this.setState({files})
   }
   render(){
-    let {type,onButtonClick,before,gap,attrs = {},rtl,showFiles = true,badge,badgeAttrs,after,disabled,className,style} = this.context;
+    let {type,onButtonClick,before,gap,attrs = {},rtl,showFiles = true,badge,badgeAttrs,after,disabled,className,style,label} = this.context;
     let {dataUniqId,text,subtext,caret,dom} = this.props;
     let {files} = this.state;
     let props = {
+      'data-label':label,
       tabIndex:0,...attrs,style,onClick:onButtonClick,'data-uniq-id':dataUniqId,disabled,ref:dom,
-      className:`${ABCLS.button} ${rtl?'rtl':'ltr'}${className?' ' + className:''}`,
+      className:`${ABCLS.button} ${rtl?'rtl':'ltr'}${className?' ' + className:''}${label?' has-label':''}`,
     }
     let inside = (
       <>
@@ -712,8 +716,11 @@ function CheckIcon(props){
 }
 class Option extends Component{
   render(){
-    let {type,option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,title,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs,multiple} = this.props;
-    let props = {className,title,style,onClick,datarenderindex:renderIndex,datarealindex:realIndex,tabIndex:0,...attrs}
+    let {
+      type,option,realIndex,renderIndex,checked,before,after,text,subtext,className,style,onClick,
+      title,checkIcon,gap = 6,dragStart,dragOver,drop,rtl,onSwap,attrs,multiple,
+    } = this.props;
+    let props = {className,title,style,onClick,datarenderindex:renderIndex,datarealindex:realIndex,tabIndex:0,...attrs,'data-label':this.props['data-label']}
     let checkIconProps = {checked,checkIcon,gap:!before && !text?0:gap,type,multiple}
     if(onSwap){
       props.onDragStart = dragStart;

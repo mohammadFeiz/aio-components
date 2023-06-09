@@ -30,7 +30,7 @@ class PrismCode extends Component{
     render(){
       let { code, language = 'javascript' } = this.props;
       return (
-        <div className="Code" style={{overflowY:'auto',width:'100%',height:'100%'}}>
+        <div className="Code">
           <pre>
             <code className={`language-${language}`}>{code}</code>
           </pre>
