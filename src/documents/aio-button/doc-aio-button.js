@@ -2564,7 +2564,7 @@ optionDisabled='option.value === "2"'
                         header='this is my header'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
-                            {title:'Family',value:'row.lastname'},
+                            {title:'Family',value:'row.lastname',minSize:90},
                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
                             {title:'Salary',size:96,value:'row.salary'}
                         ]}

@@ -98,7 +98,27 @@ export default class Table extends Component{
       }
       return context
     }
-    getRows(rows,columns){
+    
+    render(){
+      let {columns,rows,header} = this.props;
+      let Toolbar = <TableToolbar header={header}/>;
+      let Header = <TableHeader columns={columns}/>;
+      let Rows = <TableRows rows={rows} columns={columns}/>;
+      return (
+        <AITableContext.Provider value={this.getContext()}>
+          <div className='aio-input-table'>
+            <div className='aio-input-table-topfix'>
+              {Toolbar}{Header}
+            </div>
+            {Rows}
+          </div>  
+        </AITableContext.Provider>
+      )
+    }
+  }
+  class TableRows extends Component{
+    getRows(){
+      let {rows,columns} = this.props;
       return rows.map((o,i)=>{
         let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
         o.id = id;
@@ -106,17 +126,8 @@ export default class Table extends Component{
       })
     }
     render(){
-      let {columns,rows,header} = this.props;
-      let Toolbar = <TableToolbar header={header}/>;
-      let Header = <TableHeader columns={columns}/>;
-      let Rows = this.getRows(rows,columns)
-      return (
-        <AITableContext.Provider value={this.getContext()}>
-          <div className='aio-input-table'>
-            {Toolbar}{Header}{Rows}
-          </div>  
-        </AITableContext.Provider>
-      )
+      let Rows = this.getRows()
+      return <div className='aio-input-table-rows'>{Rows}</div>
     }
   }
   class TableToolbar extends Component{
@@ -144,7 +155,7 @@ export default class Table extends Component{
       return columns.map((o,i)=>{
         let {id = 'ailc' + Math.round(Math.random() * 10000000)} = o;
         o.id = id;
-        return <TableTitle key={id} {...o}/>
+        return <TableTitle key={id} column={o}/>
       })
     }
     getRemoveTitle(remove){
@@ -162,12 +173,19 @@ export default class Table extends Component{
     }
   }
   class TableTitle extends Component{
+    static contextType = AITableContext;
     render(){
-      let {size,title,justify} = this.props;
+      let {getDynamics} = this.context;
+      let {column} = this.props;
+      let size = getDynamics(column.size);
+      let title = getDynamics(column.title,undefined,undefined,'');
+      let justify = getDynamics(column.justify);
+      let minSize = getDynamics(column.minSize);
       return (
-        <div className={'aio-input-table-title' + (justify?' aio-input-table-title-justify':'')} style={{width:size?size:undefined,flex:size?undefined:1}}>
-          {title}
-        </div>
+        <div 
+          className={'aio-input-table-title' + (justify?' aio-input-table-title-justify':'')} 
+          style={{width:size?size:undefined,flex:size?undefined:1,minWidth:minSize}}
+        >{title}</div>
       )
     }
   }
@@ -176,7 +194,7 @@ export default class Table extends Component{
     getCells(columns,row){
       let {change,getDynamics} = this.context;
       return columns.map((column,i)=>{
-        let {size,cellAttrs,justify,template,subtext,before,after,type} = column;
+        let {size,minSize,cellAttrs,justify,template,subtext,before,after,type} = column;
         let GetDynamics = (key,def)=>getDynamics(key,row,column,def);
         let value = GetDynamics(column.value);
         let onChange;
@@ -185,6 +203,7 @@ export default class Table extends Component{
         return (
           <TableCell 
             size={GetDynamics(size)}
+            minSize={GetDynamics(minSize)}
             type={GetDynamics(type,'text')}
             attrs={GetDynamics(cellAttrs,{})}
             justify={GetDynamics(justify)}
@@ -231,14 +250,14 @@ export default class Table extends Component{
   class TableCell extends Component{
     static contextType = AITableContext;
     getProps(){
-      let {size,attrs,justify} = this.props;
+      let {size,minSize,attrs,justify} = this.props;
       return {
         ...attrs,
         className:'aio-input-table-cell' + (justify?' aio-input-table-cell-justify':'') + (attrs.className?' ' + attrs.className:''),
-        style:{width:size?size:undefined,flex:size?undefined:1,...attrs.style},
+        style:{width:size?size:undefined,flex:size?undefined:1,...attrs.style,minWidth:minSize},
       }
     }
-    getInputProps(column){
+    getInputProps(){
       let {value,onChange,subtext,before,after,type} = this.props;
       return {
         subtext,before,after,type,value,onChange
