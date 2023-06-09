@@ -9,8 +9,6 @@
     overflow:auto;
   }
   .aio-input-table-topfix{
-    position:sticky;
-    position:-webkit-sticky;
     top:0;
     z-index:10;
     width:fit-content;

@@ -107,8 +107,9 @@ export default class Table extends Component{
       return (
         <AITableContext.Provider value={this.getContext()}>
           <div className='aio-input-table'>
+            {Toolbar}
             <div className='aio-input-table-topfix'>
-              {Toolbar}{Header}
+              {Header}
             </div>
             {Rows}
           </div>  
