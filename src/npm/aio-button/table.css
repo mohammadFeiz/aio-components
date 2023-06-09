@@ -5,20 +5,25 @@
     border-radius:4px;
     font-size:12px;
     height:fit-content;
+    display:flex;
+    flex-direction: column;
     height:160px;
+  }
+  .aio-input-table-unit{
+    width:100%;
+    flex:1;
     overflow:auto;
   }
-  .aio-input-table-topfix{
-    top:0;
-    z-index:10;
-    width:fit-content;
-  }
   .aio-input-table-header{
+    top:0;
     display:flex;
+    position:sticky;
+    position: -webkit-sticky;
     border-bottom:1px solid #ddd;
+    z-index:10;
   }
   .aio-input-table-title{
-    margin-right:1px;
+    border-right:1px solid #ddd;
     background:#fff;
     padding:0 12px;
     font-weight:bold;
@@ -34,17 +39,17 @@
     justify-content: center;
   }
   .aio-input-table-title:last-child{
-    margin-right:0
+    border-right:0
   }
   .aio-input-table-row{
     display:flex;
-    margin-bottom:1px;
+    border-bottom:1px solid #ddd;
   }
   .aio-input-table-row:last-child{
-    margin-bottom:0
+    border-bottom:0
   }
   .aio-input-table-cell{
-    margin-right:1px;
+    border-right:1px solid #ddd;
     padding:0 12px;
     box-sizing: border-box;
     background:#fff;
@@ -68,12 +73,10 @@
     text-align: center;
   }
   .aio-input-table-cell:last-child{
-    margin-right:0
+    border-right:0
   }
   
   .aio-input-table-toolbar{
-    position:sticky;
-    position: -webkit-sticky;
     left:0;
     display:flex;
     height:36px;
@@ -106,26 +109,26 @@
     width:36px;
   }
 
-  .aio-input-table::-webkit-scrollbar {
+  .aio-input-table-unit::-webkit-scrollbar {
     width: 6px !important;
     height: 6px !important;
   }
   
-  .aio-input-table::-webkit-scrollbar-track {
+  .aio-input-table-unit::-webkit-scrollbar-track {
     background-color: transparent;
   }
   
-  .aio-input-table::-webkit-scrollbar-thumb {
+  .aio-input-table-unit::-webkit-scrollbar-thumb {
     background-color: #cdd4e0;
     border-radius: 20px;
     border: 1px solid transparent;
     background-clip: content-box;
   }
   
-  .aio-input-table::-webkit-scrollbar-thumb {
+  .aio-input-table-unit::-webkit-scrollbar-thumb {
     background-color: #b1b9ca;
   }
   
-  .aio-input-table::-webkit-scrollbar-thumb:hover {
+  .aio-input-table-unit::-webkit-scrollbar-thumb:hover {
     background-color: #6f7888;
   }
