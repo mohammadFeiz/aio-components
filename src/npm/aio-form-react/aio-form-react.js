@@ -159,9 +159,10 @@ export default class AIOForm extends Component {
     return (<Slider {...props}/>);
   }
   getInput_select({className,value,onChange,options,disabled,style,text}, input) {
+    let {fixPopupPosition} = this.props;
     let props = {
       options,value,onChange,className,search:input.search,disabled,style,optionText:input.optionText,optionValue:input.optionValue,
-      optionBefore:input.optionBefore,optionAfter:input.optionAfter,optionStyle:input.optionStyle,
+      optionBefore:input.optionBefore,optionAfter:input.optionAfter,optionStyle:input.optionStyle,fixPopupPosition,
       text,before:input.before,optionSubtext:input.optionSubtext
     }
     let {defaults = {},rtl} = this.props;
@@ -170,7 +171,8 @@ export default class AIOForm extends Component {
     return (<AIOButton {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}} rtl={rtl}/>);
   }
   getInput_multiselect({className,value,onChange,options,disabled,style,text,subtext,theme}, input) {
-    let props = {className,value,onChange,options,text,subtext,disabled,search:input.search,style,popupWidth:'fit',
+    let {fixPopupPosition} = this.props;
+    let props = {className,value,onChange,options,text,subtext,disabled,search:input.search,style,popupWidth:'fit',fixPopupPosition,
       optionText:input.optionText,optionValue:input.optionValue,optionBefore:input.optionBefore,optionAfter:input.optionAfter,
       text,before:input.before,optionSubtext:input.optionSubtext,optionStyle:input.optionStyle,
       optionIconSize:theme.checkIconSize,optionIconColor:theme.checkIconColor,optionTagAttrs:{style:{...theme.tag}}
@@ -398,7 +400,8 @@ export default class AIOForm extends Component {
     let {rowStyle = {}} = theme;
     let rows = this.sortByRows(this.handleGroups(inputs));
     return rows.map((row,i)=>{
-      let style = {...rowStyle};
+      let {rowKey} = row[0];
+      let style = {...(typeof rowStyle === 'function'?rowStyle(rowKey):rowStyle)};
       if(i === rows.length - 1){style.marginBottom = 0}
       return {
         swapId:onSwap?row._index.toString():undefined,
@@ -502,13 +505,16 @@ export default class AIOForm extends Component {
     ]}
   }
   footer_layout(){
-    let {onSubmit,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',onClose,footerAttrs,reset} = this.props;
-    if(!onSubmit && !reset && !onClose){return false}
+    let {onSubmit,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',onClose,footerAttrs,reset,footer} = this.props;
+    if(!onSubmit && !reset && !onClose && !footer){return false}
+    let isModelChanged = this.state.initialModel !== JSON.stringify(this.props.model)
     return {
       html:()=>(
         <AIOFormFooter 
+          footer={footer}
           isThereError={this.isThereError}
-          isModelChanged={this.state.initialModel === JSON.stringify(this.props.model)}
+          errors={this.errors}
+          isModelChanged={isModelChanged}
           onClose={onClose} 
           onSubmit={onSubmit?()=>onSubmit(this.getModel()):undefined} 
           closeText={closeText} submitText={submitText} resetText={resetText}
@@ -570,7 +576,15 @@ class AIOFormHeader extends Component {
 }
 class AIOFormFooter extends Component{
   render(){
-    let {onClose,onSubmit,closeText,submitText,footerAttrs = {},onReset,resetText,isThereError,isModelChanged} = this.props;
+    let {onClose,onSubmit,closeText,submitText,footerAttrs = {},onReset,resetText,isThereError,isModelChanged,footer,errors} = this.props;
+    if(footer){
+      return footer({
+        onReset,
+        isModelChanged,
+        isThereError,
+        errors
+      })
+    }
     return (
       <ReactVirtualDom
         layout={{
@@ -583,7 +597,7 @@ class AIOFormFooter extends Component{
             { size: 12, show:onSubmit !== undefined },
             {
               show: onSubmit !== undefined,
-              html: () => (<button className="aio-form-footer-button aio-form-submit-button" disabled={isThereError || isModelChanged} onClick={() => onSubmit()}>{submitText}</button>)
+              html: () => (<button className="aio-form-footer-button aio-form-submit-button" disabled={isThereError || !isModelChanged} onClick={() => onSubmit()}>{submitText}</button>)
             },
             { size: 12, show:onSubmit !== undefined },
             {

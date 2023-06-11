@@ -7,7 +7,6 @@
     height:fit-content;
     display:flex;
     flex-direction: column;
-    height:160px;
   }
   .aio-input-table-unit{
     width:100%;

@@ -313,7 +313,7 @@ export default class AIOButton extends Component {
       let {type,value,text} = this.props;
       if(type === 'select'){
         if(text === undefined){return this.options_dic[JSON.stringify(value)] || '';}
-        if(typeof text === 'function'){return text(this.options_dic[value] || '')}
+        return (typeof text === 'function'?text(this.options_dic[value]):text) || '';
       }
       else if(['checkbox','multiselect','button','file'].indexOf(type) !== -1){
         return typeof text === 'function'?text():text;
