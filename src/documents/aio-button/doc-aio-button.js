@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOButton from './../../npm/aio-button/aio-button';
 import { Icon } from '@mdi/react';
-import { mdiAccount, mdiAttachment, mdiMagnify, mdiCodeJson, mdiFile, mdiLanguageCss3, mdiLanguageHtml5 } from '@mdi/js';
+import { mdiAccount, mdiAttachment, mdiMagnify, mdiCodeJson, mdiFile, mdiLanguageCss3, mdiLanguageHtml5, mdiCalendar, mdiLoading, mdiChevronDoubleDown } from '@mdi/js';
 import AIODoc from './../../npm/aio-documentation/aio-documentation';
 import './doc-aio-button.css';
 export default class DOC_AIOButton extends Component {
@@ -16,7 +16,11 @@ export default class DOC_AIOButton extends Component {
         options: [],
         active: false,
         name: '',
-        rows: [],
+        rows: [
+        ],
+        date:undefined,
+        datej:undefined,
+        dateg:undefined,
         age: '',
         desc: '',
         color:'',
@@ -24,47 +28,57 @@ export default class DOC_AIOButton extends Component {
             type: 'button',
             prop: 'text',
             types: [
-                'button', 
-                'file', 
-                'select', 
-                'multiselect', 
-                'tabs', 
-                'radio', 
-                'checkbox',
-                'text', 
-                'number', 
-                'textarea', 
-                'color', 
-                'password',
-                'table'
+                'all','button', 'file', 'select', 'multiselect', 'tabs', 
+                'radio', 'checkbox','text', 'number', 
+                'textarea', 'color', 'password','table','datepicker'
             ],
             props: [
-                'all',
-                'text',
-                'onClick',
-                'multiple',
-                'options',
-                'label',
-                'rows',
-                'header',
-                'columns',
-                'add',
-                'remove',
-                'filter',
-                'optionText',
-                'optionValue',
-                'optionStyle',
-                'optionDisabled',
-                'optionSubtext',
-                'optionBefore',
-                'optionAfter',
-                'optionClassName',
-                'optionAttrs',
-                'optionChacked',
-                'optionClose',
-                'after',
-                'before',
-                'style',
+                ['all'],
+                ['text',['button','file','select','multiselect','checkbox','datepicker']],
+                ['value',['file','select','multiselect','tabs','radio','checkbox','datepicker','text','number','textarea']],
+                ['onChange',['file','select','multiselect','tabs','radio','checkbox','datepicker','text','number','textarea']],
+                ['onClick',['button']],
+                ['label'],
+                ['subtext',['button','file','select','multiselect','checkbox','datepicker']],
+                ['multiple',['file','radio']],
+                ['options',['select','multiselect','radio','tabs','text','number']],
+                ['rows',['table']],
+                ['header',['table']],
+                ['columns',['table']],
+                ['add',['table']],
+                ['remove',['table']],
+                ['filter',['text']],
+                ['optionText',['select','multiselect','radio','tabs','text','number']],
+                ['optionValue',['select','multiselect','radio','tabs','text','number']],
+                ['optionStyle',['select','multiselect','radio','tabs','text','number']],
+                ['optionDisabled',['select','multiselect','radio','tabs','text','number']],
+                ['optionSubtext',['select','multiselect','radio','tabs','text','number']],
+                ['optionBefore',['select','multiselect','radio','tabs','text','number']],
+                ['optionAfter',['select','multiselect','radio','tabs','text','number']],
+                ['optionClassName',['select','multiselect','radio','tabs','text','number']],
+                ['optionAttrs',['select','multiselect','radio','tabs','text','number']],
+                ['optionChacked',['select','multiselect','radio','tabs','text','number']],
+                ['optionClose',['select','multiselect','radio','tabs','text','number']],
+                [
+                    'after',
+                    [
+                        'all','button', 'file', 'select', 'multiselect', 'tabs', 
+                        'checkbox','text', 'number', 
+                        'textarea', 'color', 'password','table','datepicker'
+                    ]
+                ],
+                [
+                    'before',
+                    [
+                        'all','button', 'file', 'select', 'multiselect', 'tabs', 
+                        'checkbox','text', 'number', 
+                        'textarea', 'color', 'password','table','datepicker'
+                    ]
+                ],
+                ['style'],
+                ['popupSide',['select','multiselect','radio','tabs','text','number','datepicker']],
+                ['unit',['datepicker']],
+                ['calendarType',['datepicker']],
                
             ]
 
@@ -77,17 +91,128 @@ export default class DOC_AIOButton extends Component {
         this.setState({ show });
     }
     render() {
-        let { files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show } = this.state
+        let { date,datej,dateg,files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show } = this.state
         let { Titr, Code } = AIODoc();
         let ex = [
             //button
             {
-                type: 'button', props: ['text', 'onClick'],
+                type: 'button', props: ['popOver'],
                 html: () => (
-                    <AIOButton type='button' text='click here' onClick={() => alert()} />
+                    <AIOButton 
+                        type='button' 
+                        text='click here'
+                        popOver={({toggle})=>{
+                            return (
+                                <div style={{padding:12}}>
+                                    this is my popOver. you can place html here
+                                    <br/>
+                                    <button onClick={()=>toggle()}>click here to close</button>
+                                </div>
+                            )
+                        }}
+                    />
                 ),
                 code: `
-<AIOButton type='button' text='click here' onClick={() => alert()}/>                    
+<AIOButton 
+    type='button' 
+    text='click here'
+    popOver={({toggle})=>{
+        return (
+            <div style={{padding:12}}>
+                this is my popOver. you can place html here
+                <br/>
+                <button onClick={()=>toggle()}>click here to close</button>
+            </div>
+        )
+    }}
+/>              
+                `
+            },
+            {
+                type: 'button', props: ['caret'],
+                html: () => (
+                    <AIOButton 
+                        type='button' 
+                        text='click here'
+                        caret={false}
+                        popOver={({toggle})=>{
+                            return (
+                                <div style={{padding:12}}>
+                                    this is my popOver. you can place html here
+                                    <br/>
+                                    <button onClick={()=>toggle()}>click here to close</button>
+                                </div>
+                            )
+                        }}
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='button' 
+    text='click here'
+    caret={false}
+    popOver={({toggle})=>{
+        return (
+            <div style={{padding:12}}>
+                this is my popOver. you can place html here
+                <br/>
+                <button onClick={()=>toggle()}>click here to close</button>
+            </div>
+        )
+    }}
+/>              
+                `
+            },
+            {
+                type: 'button', props: ['caret'],
+                html: () => (
+                    <AIOButton 
+                        type='button' 
+                        text='click here'
+                        caret={<Icon path={mdiChevronDoubleDown} size={0.7}/>}
+                        popOver={({toggle})=>{
+                            return (
+                                <div style={{padding:12}}>
+                                    this is my popOver. you can place html here
+                                    <br/>
+                                    <button onClick={()=>toggle()}>click here to close</button>
+                                </div>
+                            )
+                        }}
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='button' 
+    text='click here'
+    caret={<Icon path={mdiChevronDoubleDown} size={0.7}/>}
+    popOver={({toggle})=>{
+        return (
+            <div style={{padding:12}}>
+                this is my popOver. you can place html here
+                <br/>
+                <button onClick={()=>toggle()}>click here to close</button>
+            </div>
+        )
+    }}
+/>   
+                `
+            },
+            {
+                type: 'button', props: ['subtext'],
+                html: () => (
+                    <AIOButton 
+                        type='button' 
+                        text='click here' 
+                        subtext='my subtext' 
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='button' 
+    text='click here' 
+    subtext='my subtext' 
+/>
                 `
             },
             {
@@ -96,7 +221,6 @@ export default class DOC_AIOButton extends Component {
                     <AIOButton
                         type='button'
                         text='click here'
-                        onClick={() => alert()}
                         before={<Icon path={mdiAccount} size={0.8} />}
                     />
                 ),
@@ -104,7 +228,6 @@ export default class DOC_AIOButton extends Component {
                 <AIOButton
                     type='button'
                     text='click here'
-                    onClick={() => alert()}
                     before={<Icon path={mdiAccount} size={0.8} />}
                 />
                 `
@@ -115,16 +238,31 @@ export default class DOC_AIOButton extends Component {
                     <AIOButton
                         type='button'
                         text='click here'
-                        onClick={() => alert()}
-                        after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>5</div>}
+                        after={<Icon path={mdiLoading} size={0.8} spin={0.5}/>}
                     />
                 ),
                 code: `
 <AIOButton
     type='button'
     text='click here'
+    after={<Icon path={mdiLoading} size={0.8} spin={0.5}/>}
+/>
+                `
+            },
+            {
+                type: 'button', props: ['className'],
+                html: () => (
+                    <AIOButton
+                        type='button' text='click here'
+                        onClick={() => alert()}
+                        className='my-button'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='button' text='click here'
     onClick={() => alert()}
-    after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>5</div>}
+    className='my-button'
 />
                 `
             },
@@ -167,7 +305,6 @@ export default class DOC_AIOButton extends Component {
                 html: () => (
                     <AIOButton 
                         type='button' text='click here' 
-                        onClick={() => alert()} 
                         className='dabs1'
                         label='this is my label'
                     />
@@ -175,7 +312,6 @@ export default class DOC_AIOButton extends Component {
                 code: `
 <AIOButton 
     type='button' text='click here' 
-    onClick={() => alert()}
     label='this is my label'
     className='dabs1'
 />                    
@@ -183,30 +319,221 @@ export default class DOC_AIOButton extends Component {
             },
             //file
             {
-                type: 'file', props: ['text'],
+                type: 'file', props: ['text','multiple','onChange'],
                 html: () => (
                     <AIOButton
-                        type='file' text='select file' value={files}
-                        onChange={(files) => this.setState({ files })}
-                        onAdd={(filesToAdd) => true}
-                        onRemove={(filename) => true}
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => {
+                            let fileNames = files.map((file)=>file.name);
+                            alert('you selected files : ' + fileNames)
+                        }}
                     />
                 ),
                 code: `
-<AIOButton 
-    type='file' text='select file' value={files} 
-    onChange={(files) => this.setState({ files })} 
-    onAdd={(filesToAdd) => true} 
-    onRemove={(filename) => true}
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => {
+        let fileNames = files.map((file)=>file.name);
+        alert('you selected files : ' + fileNames)
+    }}
+/>
+                `
+            },
+            {
+                type: 'file', props: ['value'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+/>
+                `
+            },
+            {
+                type: 'file', props: ['before'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        before={<Icon path={mdiAccount} size={0.8} />}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    before={<Icon path={mdiAccount} size={0.8} />}
+/>
+                `
+            },
+            {
+                type: 'file', props: ['after'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>{files.length}</div>}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>5</div>}
+/>
+                `
+            },
+            {
+                type: 'file', props: ['label'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        className='dabs1'
+                        label='this is my label'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    className='dabs1'
+    label='this is my label'
+/>
+                `
+            },
+            {
+                type: 'file', props: ['subtext'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        subtext='my subtext'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    subtext='my subtext'
+/>
+                `
+            },
+            {
+                type: 'file', props: ['disabled'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        disabled={true}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    disabled={true}
+/>
+                `
+            },
+            {
+                type: 'file', props: ['style'],
+                html: () => (
+                    <AIOButton
+                        type='file' text='select file' multiple={true}
+                        onChange={(files) => this.setState({files})}
+                        value={files} 
+                        style={{background:'lightblue'}}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='file' text='select file' multiple={true}
+    onChange={(files) => this.setState({files})}
+    value={files} 
+    style={{background:'lightblue'}}
 />
                 `
             },
             //select
             {
-                type: 'select', props: ['options'],
+                type: 'select', props: ['options','value'],
                 html: () => (
                     <AIOButton
                         type='select' value={gender}
+                        options={[
+                            { text: 'not selected', value: null },
+                            { text: 'Male', value: 'male' },
+                            { text: 'Female', value: 'female' }
+                        ]}
+                        onChange={(gender) => this.setState({ gender })}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='select' value={gender}
+    options={[
+        { text: 'not selected', value: null },
+        { text: 'Male', value: 'male' },
+        { text: 'Female', value: 'female' }
+    ]}
+    onChange={(gender) => this.setState({ gender })}
+/>
+                `
+            },
+            {
+                type: 'select', props: ['subtext'],
+                html: () => (
+                    <AIOButton
+                        type='select' 
+                        value={gender}
+                        options={[
+                            { text: 'not selected', value: null },
+                            { text: 'Male', value: 'male' },
+                            { text: 'Female', value: 'female' }
+                        ]}
+                        onChange={(gender) => this.setState({ gender })}
+                        subtext='my subtext'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='select' 
+    value={gender}
+    options={[
+        { text: 'not selected', value: null },
+        { text: 'Male', value: 'male' },
+        { text: 'Female', value: 'female' }
+    ]}
+    onChange={(gender) => this.setState({ gender })}
+    subtext='my subtext'
+/>
+                `
+            },
+            {
+                type: 'select', props: ['text'],
+                html: () => (
+                    <AIOButton
+                        type='select' 
+                        value={gender}
+                        text='my select text'
                         options={[
                             { text: 'not selected', value: null },
                             { text: 'Male', value: 'male' },
@@ -656,6 +983,33 @@ optionDisabled='option.value === "2"'
         { text: 'HTML', value: 'html' }
     ]}
     onChange={(skills) => this.setState({ skills })}
+/>
+                `
+            },
+            {
+                type: 'multiselect', props: ['subtext'],
+                html: () => (
+                    <AIOButton
+                        type='multiselect' text='skills' value={skills}
+                        options={[
+                            { text: 'JS', value: 'js' },
+                            { text: 'CSS', value: 'css' },
+                            { text: 'HTML', value: 'html' }
+                        ]}
+                        onChange={(skills) => this.setState({ skills })}
+                        subtext='my subtext'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='multiselect' text='skills' value={skills}
+    options={[
+        { text: 'JS', value: 'js' },
+        { text: 'CSS', value: 'css' },
+        { text: 'HTML', value: 'html' }
+    ]}
+    onChange={(skills) => this.setState({ skills })}
+    subtext='my subtext'
 />
                 `
             },
@@ -1900,6 +2254,23 @@ optionDisabled='option.value === "2"'
                 `
             },
             {
+                type: 'checkbox', props: ['subtext'],
+                html: () => (
+                    <AIOButton
+                        text='Is Active' type='checkbox' value={active}
+                        onChange={(active) => this.setState({ active: !active })}
+                        subtext='my subtext'
+                    />
+                ),
+                code: `
+<AIOButton
+    text='Is Active' type='checkbox' value={active}
+    onChange={(active) => this.setState({ active: !active })}
+    subtext='my subtext'
+/>
+                `
+            },
+            {
                 type: 'checkbox', props: ['before'],
                 html: () => (
                     <AIOButton
@@ -2623,6 +2994,10 @@ optionDisabled='option.value === "2"'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
                             {title:'Family',value:'row.lastname'},
+                            {
+                                title:'Gender',value:'row.gender',type:'select',size:100,
+                                options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+                            },
                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
                             {title:'Salary',size:96,value:'row.salary'}
                         ]}
@@ -2637,6 +3012,10 @@ optionDisabled='option.value === "2"'
     columns={[
         {title:'Name',value:'row.firstname',size:100},
         {title:'Family',value:'row.lastname'},
+        {
+            title:'Gender',value:'row.gender',type:'select',size:100,
+            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+        },
         {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
         {title:'Salary',size:96,value:'row.salary'}
     ]}
@@ -2657,6 +3036,10 @@ optionDisabled='option.value === "2"'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
                             {title:'Family',value:'row.lastname'},
+                            {
+                                title:'Gender',value:'row.gender',type:'select',size:100,
+                                options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+                            },
                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
                             {title:'Salary',size:96,value:'row.salary'}
                         ]}
@@ -2674,6 +3057,10 @@ optionDisabled='option.value === "2"'
     columns={[
         {title:'Name',value:'row.firstname',size:100},
         {title:'Family',value:'row.lastname'},
+        {
+            title:'Gender',value:'row.gender',type:'select',size:100,
+            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+        },
         {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
         {title:'Salary',size:96,value:'row.salary'}
     ]}
@@ -2683,7 +3070,7 @@ optionDisabled='option.value === "2"'
                 `
             },
             {
-                type:'table',props:['header','columns','rows','add','remove'],
+                type:'table',props:['remove'],
                 html:()=>(
                     <AIOButton 
                         type='table'
@@ -2696,6 +3083,10 @@ optionDisabled='option.value === "2"'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
                             {title:'Family',value:'row.lastname'},
+                            {
+                                title:'Gender',value:'row.gender',type:'select',size:100,
+                                options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+                            },
                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
                             {title:'Salary',size:96,value:'row.salary'}
                         ]}
@@ -2714,6 +3105,10 @@ optionDisabled='option.value === "2"'
     columns={[
         {title:'Name',value:'row.firstname',size:100},
         {title:'Family',value:'row.lastname'},
+        {
+            title:'Gender',value:'row.gender',type:'select',size:100,
+            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+        },
         {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
         {title:'Salary',size:96,value:'row.salary'}
     ]}
@@ -2723,7 +3118,7 @@ optionDisabled='option.value === "2"'
                 `
             },
             {
-                type:'table',props:['header','columns','rows','add','remove'],
+                type:'table',props:['remove'],
                 html:()=>(
                     <AIOButton 
                         type='table'
@@ -2738,6 +3133,11 @@ optionDisabled='option.value === "2"'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
                             {title:'Family',value:'row.lastname'},
+                            {
+                                title:'Gender',value:'row.gender',type:'select',size:100,
+                                options:[{name:'Male',id:'male'},{name:'Female',id:'female'}],
+                                optionText:'option.name',optionValue:'option.id'
+                            },
                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
                             {title:'Salary',size:96,value:'row.salary'}
                         ]}
@@ -2756,6 +3156,10 @@ optionDisabled='option.value === "2"'
     columns={[
         {title:'Name',value:'row.firstname',size:100},
         {title:'Family',value:'row.lastname'},
+        {
+            title:'Gender',value:'row.gender',type:'select',size:100,
+            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+        },
         {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
         {title:'Salary',size:96,value:'row.salary'}
     ]}
@@ -2763,7 +3167,439 @@ optionDisabled='option.value === "2"'
     onChange={(rows)=>this.setState({rows})}
 />
                 `
-            }
+            },
+            //datepicker
+            {
+                type: 'datepicker', props: ['value'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['text'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        text='please select date'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['before'],
+                html: () => (
+                    <AIOButton
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        before={<Icon path={mdiCalendar} size={0.8} />}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    before={<Icon path={mdiCalendar} size={0.8} />}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['after'],
+                html: () => (
+                    <AIOButton
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>5</div>}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    after={<div style={{ background: 'dodgerblue', color: '#fff', padding: '0 6px', borderRadius: '100%' }}>5</div>}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['style'],
+                html: () => (
+                    <AIOButton
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        style={{ background: 'lightblue' }}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    style={{ background: 'lightblue' }}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['disabled'],
+                html: () => (
+                    <AIOButton
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        disabled={true}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    disabled={true}
+/>
+                `
+            },
+            {
+                type: 'datepicker', props: ['label'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        className='dabs1'
+                        label='this is my label'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    className='dabs1'
+    label='this is my label'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['subtext'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        subtext='my subtext'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    label='this is my label'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='center'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='center'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='left'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='left'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='right'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='right'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='top'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='top'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='bottom'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='bottom'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='top left'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='top left'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='top right'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='top right'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='bottom right'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='bottom right'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['popupSide'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        popoverSide='bottom left'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    popoverSide='bottom left'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['unit'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        unit='month'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    unit='month'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['unit'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        unit='day'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    unit='day'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['unit'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        unit='hour'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+    unit='hour'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['calendarType'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={dateg}
+                        onChange={({dateString})=>this.setState({dateg:dateString})}
+                        calendarType='gregorian'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={dateg}
+    onChange={({dateString})=>this.setState({dateg:dateString})}
+    calendarType='gregorian'
+/>                    
+                `
+            },
+            {
+                type: 'datepicker', props: ['calendarType'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={datej}
+                        onChange={({dateString})=>this.setState({datej:dateString})}
+                        calendarType='jalali'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={datej}
+    onChange={({dateString})=>this.setState({datej:dateString})}
+    calendarType='jalali'
+/>                    
+                `
+            },
         ]
         return (
             <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -2785,35 +3621,32 @@ optionDisabled='option.value === "2"'
                     <AIOButton
                         type='select' multiple={true} value={show.prop}
                         options={show.props}
-                        optionText='option' optionValue='option'
+                        optionText='option[0]' optionValue='option[0]'
+                        optionShow={(option)=>{
+                            if(show.type === 'all'){return true}
+                            let list = option[1];
+                            if(!list){return true}
+                            return list.indexOf(show.type) !== -1
+                        }}
                         onChange={(value) => { this.changeControl('prop',value) }}
                     />
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
                     {
                         ex.map(({ type, props, html, code }) => {
-                            if(type !== show.type){return ''}
+                            if(show.type !== 'all' && type !== show.type){return ''}
                             if(show.prop !== 'all' && props.indexOf(show.prop) === -1){return ''}
                             return (
                                 <>
-                                    {Titr(`${type} (${props.toString()} props)`)}
+                                    {Titr(`${type} (${(show.prop === 'all'?props:[show.prop]).toString()} props)`)}
                                     {html()}
                                     {Code(code)}
                                 </>
                             )
                         })
                     }
-
-
-
-
-
-
-
-
                 </div>
             </div>
-
         )
     }
 }

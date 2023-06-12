@@ -196,7 +196,7 @@ export default class Table extends Component{
     getCells(columns,row){
       let {change,getDynamics} = this.context;
       return columns.map((column,i)=>{
-        let {size,minSize,cellAttrs,justify,template,subtext,before,after,type} = column;
+        let {size,minSize,cellAttrs,justify,template,subtext,before,after,type,options} = column;
         let GetDynamics = (key,def)=>getDynamics(key,row,column,def);
         let value = GetDynamics(column.value);
         let onChange;
@@ -204,6 +204,8 @@ export default class Table extends Component{
         else if(change){onChange = (value)=>change(value,column.value,row)}
         return (
           <TableCell 
+            {...column}
+            options={GetDynamics(options)}
             size={GetDynamics(size)}
             minSize={GetDynamics(minSize)}
             type={GetDynamics(type,'text')}
@@ -260,9 +262,10 @@ export default class Table extends Component{
       }
     }
     getInputProps(){
-      let {value,onChange,subtext,before,after,type} = this.props;
+      let {value,onChange,subtext,before,after,type,options} = this.props;
       return {
-        subtext,before,after,type,value,onChange
+        ...this.props,
+        subtext,before,after,type,value,onChange,options
       }
     }
     getContent(){

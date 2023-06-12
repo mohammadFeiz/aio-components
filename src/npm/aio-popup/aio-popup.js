@@ -261,26 +261,37 @@ export default class AIOPopup extends Component{
     this.update($(this.dom.current));
   }
   update(popup){
-    let {getTarget} = this.props;
+    let {getTarget,popoverSide} = this.props;
+    if(popoverSide){return}
     let target = getTarget();
     if(!target ||!target.length){return}
     var {rtl,openRelatedTo,animate,fitHorizontal,attrs = {},fixPopupPosition = (o)=>o} = this.props;
     Align(popup,target,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal,style:attrs.style,rtl})
     popup.focus();
   }
+
   getClassName(){
-    let {attrs = {}} = this.props;
+    let {attrs = {},className} = this.props;
     let {className:popupClassName} = attrs;
-    let className = 'aio-popover';
-    
-    if(popupClassName){className += ' ' + popupClassName}
-    return className;
+    let cls = 'aio-popover'; 
+    if(popupClassName){cls += ' ' + popupClassName}
+    else if(className){cls += ' ' + className}
+    return cls;
   }
   getBackClassName(){
-    let {backdropAttrs = {}} = this.props;
+    let {backdropAttrs = {},popoverSide} = this.props;
     let {className:backdropClassName} = backdropAttrs;
     let className = 'aio-popover-backdrop';
     if(backdropClassName){className += ' ' + backdropClassName}
+    if(popoverSide === 'center'){className += ' aio-popover-center'}
+    if(popoverSide === 'left'){className += ' aio-popover-left'}
+    if(popoverSide === 'right'){className += ' aio-popover-right'}
+    if(popoverSide === 'top'){className += ' aio-popover-top'}
+    if(popoverSide === 'bottom'){className += ' aio-popover-bottom'}
+    if(popoverSide === 'top right'){className += ' aio-popover-topright'}
+    if(popoverSide === 'top left'){className += ' aio-popover-topleft'}
+    if(popoverSide === 'bottom right'){className += ' aio-popover-bottomright'}
+    if(popoverSide === 'bottom left'){className += ' aio-popover-bottomleft'}
     return className;
   }
   //start

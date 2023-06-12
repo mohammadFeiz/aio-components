@@ -59,6 +59,10 @@
   .aio-input-table-cell .aio-input-container{
     width:100%;
   }
+  .aio-input-table-cell .aio-button{
+    width:100%;
+    background:none;
+  }
   .aio-input-table .aio-input{
     border:1px solid transparent;
     border-radius:0;

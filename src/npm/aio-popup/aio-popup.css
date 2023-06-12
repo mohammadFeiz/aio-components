@@ -80,3 +80,48 @@
     z-index:1000000000000;
     box-shadow:0 0 8px 0 rgba(0,0,0,0.2)
   }
+  .aio-popover-center{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .aio-popover-left{
+    display:flex;
+    align-items: center;
+    justify-content:left;
+  }
+  .aio-popover-right{
+    display:flex;
+    align-items: center;
+    justify-content:right;
+  }
+  .aio-popover-top{
+    display:flex;
+    align-items: top;
+    justify-content:center;
+  }
+  .aio-popover-bottom{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .aio-popover-topright{
+    display:flex;
+    align-items: flex-start;
+    justify-content:right;
+  }
+  .aio-popover-topleft{
+    display:flex;
+    align-items: flex-start;
+    justify-content:left;
+  }
+  .aio-popover-bottomright{
+    display:flex;
+    align-items: flex-end;
+    justify-content:right;
+  }
+  .aio-popover-bottomleft{
+    display:flex;
+    align-items: flex-end;
+    justify-content:left;
+  }
