@@ -6,6 +6,11 @@ import AITableContext from './table-context';
 import './table.css';
 
 export default class Table extends Component{
+    constructor(props){
+      super(props);
+      let {columns = []} = props;
+      this.state = {columns:columns.map((o)=>{return {...o,_id:'aitc' + Math.round(Math.random() * 1000000)}})}
+    }
     getDynamics(key,row,column,def){
       if(key === undefined){return def}
       if(typeof key === 'function'){return key(row,column)}
@@ -82,8 +87,9 @@ export default class Table extends Component{
     }
     getContext(){
       let {onChange} = this.props;
+      let {columns} = this.state;
       let context = {
-        getDynamics:this.getDynamics.bind(this)
+        columns,getDynamics:this.getDynamics.bind(this)
       }
       if(this.isAddable()){context.add = this.add.bind(this) }
       if(this.isRemovable()){context.remove = this.remove.bind(this)}
@@ -100,13 +106,13 @@ export default class Table extends Component{
     }
     
     render(){
-      let {columns,rows,header} = this.props;
+      let {rows,header,style} = this.props;
       let Toolbar = <TableToolbar header={header}/>;
-      let Header = <TableHeader columns={columns}/>;
-      let Rows = <TableRows rows={rows} columns={columns}/>;
+      let Header = <TableHeader/>;
+      let Rows = <TableRows rows={rows}/>;
       return (
         <AITableContext.Provider value={this.getContext()}>
-          <div className='aio-input-table'>
+          <div className='aio-input-table' style={style}>
             {Toolbar}
             <div className='aio-input-table-unit'>
               {Header}
@@ -119,12 +125,13 @@ export default class Table extends Component{
     }
   }
   class TableRows extends Component{
+    static contextType = AITableContext;
     getRows(){
-      let {rows,columns} = this.props;
+      let {rows} = this.props;
       return rows.map((o,i)=>{
         let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
         o.id = id;
-        return <TableRow key={id} row={o} columns={columns} rowIndex={i}/>
+        return <TableRow key={id} row={o} rowIndex={i}/>
       })
     }
     render(){
@@ -165,8 +172,7 @@ export default class Table extends Component{
       return <button className='aio-input-table-remove'></button>
     }
     render(){
-      let {columns} = this.props;
-      let {remove} = this.context;
+      let {remove,columns} = this.context;
       let Titles = this.getTitles(columns);
       let RemoveTitle = this.getRemoveTitle(remove);
       return (
@@ -202,6 +208,7 @@ export default class Table extends Component{
         let onChange;
         if(column.onChange){onChange = (value)=>column.onChange({value,row,column})}
         else if(change){onChange = (value)=>change(value,column.value,row)}
+        let key = row.id + ' ' + column.id;
         return (
           <TableCell 
             {...column}
@@ -216,7 +223,7 @@ export default class Table extends Component{
             before={GetDynamics(before)}
             after={GetDynamics(after)}
             onChange={onChange}
-            key={row.id + ' ' + column.id}  
+            key={key}  
             row={row} column={column} value={value}
           />
         )
@@ -244,7 +251,8 @@ export default class Table extends Component{
       return props;
     }
     render(){
-      let {row,columns} = this.props;
+      let {columns} = this.context;
+      let {row} = this.props;
       let cells = this.getCells(columns,row);
       let removeCell = this.getRemoveCell(row);
       let props = this.getProps(row);
@@ -262,7 +270,7 @@ export default class Table extends Component{
       }
     }
     getInputProps(){
-      let {value,onChange,subtext,before,after,type,options} = this.props;
+      let {value,onChange,subtext,before,after,type,options,row} = this.props;
       return {
         ...this.props,
         subtext,before,after,type,value,onChange,options

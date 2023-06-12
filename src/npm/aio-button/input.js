@@ -18,11 +18,9 @@ export default class Input extends Component{
     handleClick(e){
       let target = $(e.target);
       if(target.attr('data-uniq-id') === this.dataUniqId){
-        console.log('ai 1')
         return
       }
       if(target.parents(`[data-uniq-id=${this.dataUniqId}]`).length){
-        console.log('ai 2')
         return
       }
       this.setState({open:false})

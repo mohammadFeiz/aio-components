@@ -265,8 +265,8 @@ export default class AIOPopup extends Component{
     if(popoverSide){return}
     let target = getTarget();
     if(!target ||!target.length){return}
-    var {rtl,openRelatedTo,animate,fitHorizontal,attrs = {},fixPopupPosition = (o)=>o} = this.props;
-    Align(popup,target,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal,style:attrs.style,rtl})
+    var {rtl,openRelatedTo,animate,fitHorizontal,attrs = {},fixPopupPosition = (o)=>o,popupWidth} = this.props;
+    Align(popup,target,{fixStyle:fixPopupPosition,pageSelector:openRelatedTo,animate,fitHorizontal,style:attrs.style,rtl,fitHorizontal:popupWidth === 'fit'})
     popup.focus();
   }
 

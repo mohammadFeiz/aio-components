@@ -21,6 +21,7 @@ export default class DOC_AIOButton extends Component {
         date:undefined,
         datej:undefined,
         dateg:undefined,
+        searchValue:'',
         age: '',
         desc: '',
         color:'',
@@ -29,7 +30,7 @@ export default class DOC_AIOButton extends Component {
             prop: 'text',
             types: [
                 'all','button', 'file', 'select', 'multiselect', 'tabs', 
-                'radio', 'checkbox','text', 'number', 
+                'radio', 'checkbox','text', 'number', 'search',
                 'textarea', 'color', 'password','table','datepicker'
             ],
             props: [
@@ -79,6 +80,7 @@ export default class DOC_AIOButton extends Component {
                 ['popupSide',['select','multiselect','radio','tabs','text','number','datepicker']],
                 ['unit',['datepicker']],
                 ['calendarType',['datepicker']],
+                ['onClear',['datepicker']]
                
             ]
 
@@ -91,10 +93,77 @@ export default class DOC_AIOButton extends Component {
         this.setState({ show });
     }
     render() {
-        let { date,datej,dateg,files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show } = this.state
+        let { date,datej,dateg,files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show,searchValue } = this.state
         let { Titr, Code } = AIODoc();
         let ex = [
-            //button
+            /////////////////////////////////button
+            //text
+            {
+                type: 'button', props: ['text'],
+                html: () => (
+                    <AIOButton
+                        type='button' 
+                        text='click here'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='button' 
+    text='click here'
+/>
+                `
+            },
+            //onClick
+            {
+                type: 'button', props: ['onClick'],
+                html: () => (
+                    <AIOButton
+                        type='button' text='click here'
+                        onClick={() => alert()}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='button' text='click here'
+    onClick={() => alert()}
+/>
+                `
+            },
+            //className
+            {
+                type: 'button', props: ['className'],
+                html: () => (
+                    <AIOButton
+                        type='button' text='click here'
+                        className='my-button'
+                    />
+                ),
+                code: `
+<AIOButton
+    type='button' text='click here'
+    className='my-button'
+/>
+                `
+            },
+            //style
+            {
+                type: 'button', props: ['style'],
+                html: () => (
+                    <AIOButton
+                        type='button' text='click here'
+                        onClick={() => alert()}
+                        style={{ background: 'lightblue' }}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='button' text='click here'
+    onClick={() => alert()}
+    style={{ background: 'lightblue' }}
+/>
+                `
+            },
+            //popOver
             {
                 type: 'button', props: ['popOver'],
                 html: () => (
@@ -128,6 +197,7 @@ export default class DOC_AIOButton extends Component {
 />              
                 `
             },
+            //caret
             {
                 type: 'button', props: ['caret'],
                 html: () => (
@@ -163,6 +233,7 @@ export default class DOC_AIOButton extends Component {
 />              
                 `
             },
+            //caret
             {
                 type: 'button', props: ['caret'],
                 html: () => (
@@ -198,6 +269,7 @@ export default class DOC_AIOButton extends Component {
 />   
                 `
             },
+            //subtext
             {
                 type: 'button', props: ['subtext'],
                 html: () => (
@@ -215,6 +287,7 @@ export default class DOC_AIOButton extends Component {
 />
                 `
             },
+            //before
             {
                 type: 'button', props: ['before'],
                 html: () => (
@@ -232,6 +305,7 @@ export default class DOC_AIOButton extends Component {
                 />
                 `
             },
+            //after
             {
                 type: 'button', props: ['after'],
                 html: () => (
@@ -248,41 +322,8 @@ export default class DOC_AIOButton extends Component {
     after={<Icon path={mdiLoading} size={0.8} spin={0.5}/>}
 />
                 `
-            },
-            {
-                type: 'button', props: ['className'],
-                html: () => (
-                    <AIOButton
-                        type='button' text='click here'
-                        onClick={() => alert()}
-                        className='my-button'
-                    />
-                ),
-                code: `
-<AIOButton
-    type='button' text='click here'
-    onClick={() => alert()}
-    className='my-button'
-/>
-                `
-            },
-            {
-                type: 'button', props: ['style'],
-                html: () => (
-                    <AIOButton
-                        type='button' text='click here'
-                        onClick={() => alert()}
-                        style={{ background: 'lightblue' }}
-                    />
-                ),
-                code: `
-<AIOButton
-    type='button' text='click here'
-    onClick={() => alert()}
-    style={{ background: 'lightblue' }}
-/>
-                `
-            },
+            },    
+            //disabled
             {
                 type: 'button', props: ['disabled'],
                 html: () => (
@@ -300,6 +341,7 @@ export default class DOC_AIOButton extends Component {
 />
                 `
             },
+            //label
             {
                 type: 'button', props: ['label'],
                 html: () => (
@@ -317,7 +359,7 @@ export default class DOC_AIOButton extends Component {
 />                    
                 `
             },
-            //file
+            /////////////////////////////////file
             {
                 type: 'file', props: ['text','multiple','onChange'],
                 html: () => (
@@ -472,7 +514,7 @@ export default class DOC_AIOButton extends Component {
 />
                 `
             },
-            //select
+            /////////////////////////////////select
             {
                 type: 'select', props: ['options','value'],
                 html: () => (
@@ -960,7 +1002,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //multiselect
+            /////////////////////////////////multiselect
             {
                 type: 'multiselect', props: ['options', 'text'],
                 html: () => (
@@ -1433,7 +1475,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //tabs
+            /////////////////////////////////tabs
             {
                 type: 'tabs', props: ['options'],
                 html: () => (
@@ -1836,7 +1878,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //radio
+            /////////////////////////////////radio
             {
                 type: 'radio', props: ['options'],
                 html: () => (
@@ -2237,7 +2279,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //checkbox
+            /////////////////////////////////checkbox
             {
                 type: 'checkbox', props: ['text'],
                 html: () => (
@@ -2365,7 +2407,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //text
+            /////////////////////////////////text
             {
                 type: 'text', props: ['label'],
                 html: () => (
@@ -2529,7 +2571,31 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //number
+            /////////////////////////////////search
+            {
+                type: 'search', props: ['onChange'],
+                html: () => (
+                    <AIOButton
+                        type='search'
+                        value={searchValue}
+                        onChange={(searchValue) => {
+                            this.setState({ searchValue })
+                        }}
+                        history={['history1','history2','history3']}
+                    />
+                ),
+                code: `
+<AIOButton
+    type='text'
+    value={name}
+    onChange={(name) => {
+        this.setState({ name })
+    }}
+    label='this is my label'
+/>
+                `
+            },
+            /////////////////////////////////number
             {
                 type: 'number', props: ['label'],
                 html: () => (
@@ -2655,7 +2721,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //textarea
+            /////////////////////////////////textarea
             {
                 type: 'textarea', props: ['label'],
                 html: () => (
@@ -2748,7 +2814,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //color
+            /////////////////////////////////color
             {
                 type:'color',props:['label'],
                 html:()=>(
@@ -2766,7 +2832,66 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            //table
+            /////////////////////////////////table
+            //style
+            {
+                type:'table',props:['style'],
+                html:()=>(
+                    <AIOButton 
+                        type='table'
+                        columns={[
+                            {title:'Name',value:'row.firstname',size:100},
+                            {title:'Family',value:'row.lastname'},
+                            {
+                                title:'Gender',value:'row.gender',type:'select',size:100,
+                                options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+                            },
+                            {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
+                            {title:'Salary',size:96,value:'row.salary'}
+                        ]}
+                        rows={[
+                            {
+                                firstname:'john',lastname:'doe',age:18,gender:'male',salary:14000,
+                            },
+                            {
+                                firstname:'martin',lastname:'graham',age:26,gender:'male',salary:2500000,
+                            },
+                            {
+                                firstname:'alexa',lastname:'mills',age:32,gender:'female',salary:3600000,
+                            },
+                        ]}
+                        style={{background:'lightblue',color:'orange'}}
+                    />
+                ),
+                code:`
+<AIOButton 
+    type='table'
+    columns={[
+        {title:'Name',value:'row.firstname',size:100},
+        {title:'Family',value:'row.lastname'},
+        {
+            title:'Gender',value:'row.gender',type:'select',size:100,
+            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+        },
+        {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
+        {title:'Salary',size:96,value:'row.salary'}
+    ]}
+    rows={[
+        {
+            firstname:'john',lastname:'doe',age:18,gender:'male',salary:14000,
+        },
+        {
+            firstname:'martin',lastname:'graham',age:26,gender:'male',salary:2500000,
+        },
+        {
+            firstname:'alexa',lastname:'mills',age:32,gender:'female',salary:3600000,
+        },
+    ]}
+    style={{background:'lightblue',color:'orange'}}
+/>
+                `
+            },
+            //getValue
             {
                 type:'table',props:['getValue'],
                 html:()=>(
@@ -2850,6 +2975,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
+            //columns , rows
             {
                 type:'table',props:['columns','rows'],
                 html:()=>(
@@ -2927,6 +3053,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
+            //header
             {
                 type:'table',props:['header'],
                 html:()=>(
@@ -2985,6 +3112,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
+            //add
             {
                 type:'table',props:['add'],
                 html:()=>(
@@ -3024,6 +3152,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
+            //add
             {
                 type:'table',props:['add'],
                 html:()=>(
@@ -3069,6 +3198,7 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
+            //remove
             {
                 type:'table',props:['remove'],
                 html:()=>(
@@ -3082,13 +3212,13 @@ optionDisabled='option.value === "2"'
                         header='this is my header'
                         columns={[
                             {title:'Name',value:'row.firstname',size:100},
-                            {title:'Family',value:'row.lastname'},
-                            {
-                                title:'Gender',value:'row.gender',type:'select',size:100,
-                                options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
-                            },
-                            {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
-                            {title:'Salary',size:96,value:'row.salary'}
+                            // {title:'Family',value:'row.lastname'},
+                            // {
+                            //     title:'Gender',value:'row.gender',type:'select',size:100,
+                            //     options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+                            // },
+                            // {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
+                            // {title:'Salary',size:96,value:'row.salary'}
                         ]}
                         rows={rows}
                         onChange={(rows)=>this.setState({rows})}
@@ -3117,58 +3247,60 @@ optionDisabled='option.value === "2"'
 />
                 `
             },
-            {
-                type:'table',props:['remove'],
-                html:()=>(
-                    <AIOButton 
-                        type='table'
-                        add={()=>{
-                            let newRows = [{firstname:'',lastname:'',age:'',gender:'',salary:''},...rows];
-                            this.setState({rows:newRows})
-                        }}
-                        remove={(row)=>{
-                            this.setState({rows:rows.filter((o)=>o.id !== row.id)})
-                        }}
-                        header='this is my header'
-                        columns={[
-                            {title:'Name',value:'row.firstname',size:100},
-                            {title:'Family',value:'row.lastname'},
-                            {
-                                title:'Gender',value:'row.gender',type:'select',size:100,
-                                options:[{name:'Male',id:'male'},{name:'Female',id:'female'}],
-                                optionText:'option.name',optionValue:'option.id'
-                            },
-                            {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
-                            {title:'Salary',size:96,value:'row.salary'}
-                        ]}
-                        rows={rows}
-                        onChange={(rows)=>this.setState({rows})}
-                    />
-                ),
-                code:`
-<AIOButton 
-    type='table'
-    add={()=>{
-        let newRows = [{firstname:'',lastname:'',age:'',gender:'',salary:''},...rows];
-        this.setState({rows:newRows})
-    }}
-    header='this is my header'
-    columns={[
-        {title:'Name',value:'row.firstname',size:100},
-        {title:'Family',value:'row.lastname'},
-        {
-            title:'Gender',value:'row.gender',type:'select',size:100,
-            options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
-        },
-        {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
-        {title:'Salary',size:96,value:'row.salary'}
-    ]}
-    rows={rows}
-    onChange={(rows)=>this.setState({rows})}
-/>
-                `
-            },
-            //datepicker
+            //remove
+//             {
+//                 type:'table',props:['remove'],
+//                 html:()=>(
+//                     <AIOButton 
+//                         type='table'
+//                         add={()=>{
+//                             let newRows = [{firstname:'',lastname:'',age:'',gender:'',salary:''},...rows];
+//                             this.setState({rows:newRows})
+//                         }}
+//                         remove={(row)=>{
+//                             this.setState({rows:rows.filter((o)=>o.id !== row.id)})
+//                         }}
+//                         header='this is my header'
+//                         columns={[
+//                             {title:'Name',value:'row.firstname',size:100},
+//                             {title:'Family',value:'row.lastname'},
+//                             {
+//                                 title:'Gender',value:'row.gender',type:'select',size:100,
+//                                 options:[{name:'Male',id:'male'},{name:'Female',id:'female'}],
+//                                 optionText:'option.name',optionValue:'option.id'
+//                             },
+//                             {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
+//                             {title:'Salary',size:96,value:'row.salary'}
+//                         ]}
+//                         rows={rows}
+//                         onChange={(rows)=>this.setState({rows})}
+//                     />
+//                 ),
+//                 code:`
+// <AIOButton 
+//     type='table'
+//     add={()=>{
+//         let newRows = [{firstname:'',lastname:'',age:'',gender:'',salary:''},...rows];
+//         this.setState({rows:newRows})
+//     }}
+//     header='this is my header'
+//     columns={[
+//         {title:'Name',value:'row.firstname',size:100},
+//         {title:'Family',value:'row.lastname'},
+//         {
+//             title:'Gender',value:'row.gender',type:'select',size:100,
+//             options:[{text:'Male',value:'male'},{text:'Female',value:'female'}]
+//         },
+//         {title:'Age',value:'row.age',size:68,justify:true,type:'number'},
+//         {title:'Salary',size:96,value:'row.salary'}
+//     ]}
+//     rows={rows}
+//     onChange={(rows)=>this.setState({rows})}
+// />
+//                 `
+//             },
+            /////////////////////////////////datepicker
+            //value
             {
                 type: 'datepicker', props: ['value'],
                 html: () => (
@@ -3176,6 +3308,25 @@ optionDisabled='option.value === "2"'
                         type='datepicker'
                         value={date}
                         onChange={({dateString})=>this.setState({date:dateString})}
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    value={date}
+    onChange={({dateString})=>this.setState({date:dateString})}
+/>
+                `
+            },
+            //onClear
+            {
+                type: 'datepicker', props: ['onClear'],
+                html: () => (
+                    <AIOButton 
+                        type='datepicker'
+                        value={date}
+                        onChange={({dateString})=>this.setState({date:dateString})}
+                        onClear={()=>this.setState({date:false})}
                     />
                 ),
                 code: `
@@ -3601,11 +3752,12 @@ optionDisabled='option.value === "2"'
                 `
             },
         ]
+        let {goToHome} = this.props;
         return (
             <div style={{ position: 'fixed', left: 0, top: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: '90px auto',
+                    gridTemplateColumns: '90px 120px 90px 120px auto 120px',
                     background: 'lightblue',
                     padding: 12,
                     boxSizing: 'border-box'
@@ -3630,6 +3782,8 @@ optionDisabled='option.value === "2"'
                         }}
                         onChange={(value) => { this.changeControl('prop',value) }}
                     />
+                    <div></div>
+                    <button onClick={()=>goToHome()}>Exit</button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
                     {
