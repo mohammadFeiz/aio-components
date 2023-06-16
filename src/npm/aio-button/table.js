@@ -13,11 +13,11 @@ export default class Table extends Component{
     }
     getDynamics(key,row,column,def){
       if(key === undefined){return def}
-      if(typeof key === 'function'){return key(row,column)}
+      if(typeof key === 'function'){return key({row,column})}
       let result = key;
       if(typeof key === 'string'){
         let {getValue = {}} = this.props;
-        if(getValue[key]){result = getValue[key](row,column)}
+        if(getValue[key]){result = getValue[key]({row,column})}
         else if(key.indexOf('row.') !== -1){
           try {
             let evalText = `result = ${key}`;
@@ -39,7 +39,7 @@ export default class Table extends Component{
       if(typeof remove === 'function'){remove(row);}
       else if(remove === true){onChange(rows.filter((o,i)=>{
         if(Array.isArray(o)){return i !== index}
-        if(typeof o === 'object'){return o.id !== row.id}
+        if(typeof o === 'object'){return o._id !== row._id}
         return row !== o
       }));} 
     }
@@ -62,7 +62,7 @@ export default class Table extends Component{
       row = JSON.parse(JSON.stringify(row));
       let evalText = `${field} = value`;
       eval(evalText);
-      onChange(rows.map((o)=>o.id !== row.id?o:row))
+      onChange(rows.map((o)=>o._id !== row._id?o:row))
     }
     dragStart(e,row){
       this.start = row;
@@ -73,15 +73,15 @@ export default class Table extends Component{
     getIndexById(id){
       let {rows} = this.props;
       for(let i = 0; i < rows.length; i++){
-        if(rows[i].id === id){return i}
+        if(rows[i]._id === id){return i}
       }
     }
     drop(e,row){
       if(this.start.id === undefined){return}
-      if(this.start.id === row.id){return}
+      if(this.start.id === row._id){return}
       let {onChange,rows} = this.props;
-      let newRows = rows.filter((o)=>o.id !== this.start.id);
-      let placeIndex = this.getIndexById(row.id);
+      let newRows = rows.filter((o)=>o._id !== this.start.id);
+      let placeIndex = this.getIndexById(row._id);
       newRows.splice(placeIndex,0,this.start)
       onChange(newRows)
     }
@@ -129,9 +129,10 @@ export default class Table extends Component{
     getRows(){
       let {rows} = this.props;
       return rows.map((o,i)=>{
-        let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
-        o.id = id;
-        return <TableRow key={id} row={o} rowIndex={i}/>
+        let {_id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
+        o._id = _id;
+        let isLast = i === rows.length - 1;
+        return <TableRow key={_id} row={o} rowIndex={i} isLast={isLast}/>
       })
     }
     render(){
@@ -146,26 +147,25 @@ export default class Table extends Component{
       let {header} = this.props;
       if(!add && !header){return null}
       return (
-        <div className='aio-input-table-toolbar'>
-          <div className='aio-input-table-toolbar-header'>{header}</div>
-          {
-            !!add &&
-            <div className='aio-input-table-toolbar-add' onClick={()=>add()}>
-              <Icon path={mdiPlusThick} size={0.8}/>
-            </div>
-          }  
-        </div>
+        <>
+          <div className='aio-input-table-toolbar'>
+            <div className='aio-input-table-toolbar-header'>{header}</div>
+            {
+              !!add &&
+              <div className='aio-input-table-toolbar-add' onClick={()=>add()}>
+                <Icon path={mdiPlusThick} size={0.8}/>
+              </div>
+            }  
+          </div>
+          <div className='aio-input-table-border-h'></div>
+        </>
       )
     }
   }
   class TableHeader extends Component{
     static contextType = AITableContext;
     getTitles(columns){
-      return columns.map((o,i)=>{
-        let {id = 'ailc' + Math.round(Math.random() * 10000000)} = o;
-        o.id = id;
-        return <TableTitle key={id} column={o}/>
-      })
+      return columns.map((o,i)=><TableTitle key={o._id} column={o} isLast={i === columns.length - 1}/>)
     }
     getRemoveTitle(remove){
       if(!remove){return null}
@@ -176,7 +176,10 @@ export default class Table extends Component{
       let Titles = this.getTitles(columns);
       let RemoveTitle = this.getRemoveTitle(remove);
       return (
-        <div className='aio-input-table-header'>{Titles}{RemoveTitle}</div>
+        <>
+          <div className='aio-input-table-header'>{Titles}{RemoveTitle}</div>
+          <div className='aio-input-table-border-h'></div>
+        </>
       )
     }
   }
@@ -184,16 +187,19 @@ export default class Table extends Component{
     static contextType = AITableContext;
     render(){
       let {getDynamics} = this.context;
-      let {column} = this.props;
+      let {column,isLast} = this.props;
       let size = getDynamics(column.size);
       let title = getDynamics(column.title,undefined,undefined,'');
       let justify = getDynamics(column.justify);
       let minSize = getDynamics(column.minSize);
       return (
-        <div 
-          className={'aio-input-table-title' + (justify?' aio-input-table-title-justify':'')} 
-          style={{width:size?size:undefined,flex:size?undefined:1,minWidth:minSize}}
-        >{title}</div>
+        <>
+          <div 
+            className={'aio-input-table-title' + (justify?' aio-input-table-title-justify':'')} 
+            style={{width:size?size:undefined,flex:size?undefined:1,minWidth:minSize}}
+          >{title}</div>
+          {!isLast && <div className='aio-input-table-border-v'></div>}
+        </>
       )
     }
   }
@@ -208,7 +214,7 @@ export default class Table extends Component{
         let onChange;
         if(column.onChange){onChange = (value)=>column.onChange({value,row,column})}
         else if(change){onChange = (value)=>change(value,column.value,row)}
-        let key = row.id + ' ' + column.id;
+        let key = row._id + ' ' + column._id;
         return (
           <TableCell 
             {...column}
@@ -225,6 +231,7 @@ export default class Table extends Component{
             onChange={onChange}
             key={key}  
             row={row} column={column} value={value}
+            isLast={i === columns.length - 1}
           />
         )
       })
@@ -252,19 +259,24 @@ export default class Table extends Component{
     }
     render(){
       let {columns} = this.context;
-      let {row} = this.props;
+      let {row,isLast} = this.props;
       let cells = this.getCells(columns,row);
       let removeCell = this.getRemoveCell(row);
       let props = this.getProps(row);
-      return (<div {...props}>{cells}{removeCell}</div>)
+      return (
+        <>
+          <div {...props}>{cells}{removeCell}</div>
+          {!isLast && <div className='aio-input-table-border-h'></div>}
+        </>
+      )
     }
   }
   class TableCell extends Component{
     static contextType = AITableContext;
     getProps(){
-      let {size,minSize,attrs,justify} = this.props;
+      let {size,minSize,attrs,justify,isLast} = this.props;
       return {
-        ...attrs,
+        ...attrs,isLast,
         className:'aio-input-table-cell' + (justify?' aio-input-table-cell-justify':'') + (attrs.className?' ' + attrs.className:''),
         style:{width:size?size:undefined,flex:size?undefined:1,...attrs.style,minWidth:minSize},
       }
@@ -285,9 +297,12 @@ export default class Table extends Component{
     render(){
       let props = this.getProps();
       return (
-        <div {...props} >
-          {this.getContent()}    
-        </div>
+        <>
+          <div {...props} >
+            {this.getContent()}    
+          </div>
+          {!props.isLast && <div className='aio-input-table-border-v'></div>}
+        </>
       )
     }
   }

@@ -187,7 +187,7 @@ export default class Input extends Component{
     render(){
       let {type,label,className} = this.props;
       return (
-        <div className='aio-input-container'>
+        <>
           <div 
             ref={this.container} 
             data-uniq-id={this.dataUniqId}
@@ -204,7 +204,7 @@ export default class Input extends Component{
             {this.getCaret()}
           </div>
           {this.getPopup()}
-        </div>
+        </>
       )
     }
   }

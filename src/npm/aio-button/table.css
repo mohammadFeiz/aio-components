@@ -23,11 +23,9 @@
     display:flex;
     position:sticky;
     position: -webkit-sticky;
-    border-bottom:1px solid #ddd;
     z-index:10;
   }
   .aio-input-table-title{
-    border-right:1px solid #ddd;
     padding:0 12px;
     font-weight:bold;
     height:36px;
@@ -41,18 +39,10 @@
     padding:0;
     justify-content: center;
   }
-  .aio-input-table-title:last-child{
-    border-right:0
-  }
   .aio-input-table-row{
     display:flex;
-    border-bottom:1px solid #ddd;
-  }
-  .aio-input-table-row:last-child{
-    border-bottom:0
   }
   .aio-input-table-cell{
-    border-right:1px solid #ddd;
     padding:0 12px;
     box-sizing: border-box;
     display:flex;
@@ -78,18 +68,13 @@
   .aio-input-table-cell-justify .aio-input input{
     text-align: center;
   }
-  .aio-input-table-cell:last-child{
-    border-right:0
-  }
-  
+
   .aio-input-table-toolbar{
     left:0;
     display:flex;
     height:36px;
     width:100%;
     align-items: center;
-    border-bottom:1px solid #ddd;
-
   }
   .aio-input-table-toolbar-header{
     flex:1;
@@ -135,4 +120,13 @@
   
   .aio-input-table-unit::-webkit-scrollbar-thumb:hover {
     background-color: #6f7888;
+  }
+
+  .aio-input-table-border-h{
+    height:1px;
+    background:#ddd;
+  }
+  .aio-input-table-border-v{
+    width:1px;
+    background:#ddd;
   }

@@ -75,6 +75,8 @@
     border:1px solid #ddd;
     background:#fff;
     border-radius:4px;
+    display:flex;
+    flex-direction: column;
     position:fixed;
     box-sizing:border-box;
     z-index:1000000000000;
