@@ -3,6 +3,7 @@ import { Icon } from '@mdi/react';
 import { mdiAttachment, mdiClose } from '@mdi/js';
 import Input from './input';
 import Table from './table';
+import Form from './form';
 import DatePicker from './datepicker';
 import DownloadUrl from '../aio-functions/download-url';
 import AIODate from './../aio-date/aio-date';
@@ -357,6 +358,7 @@ export default class AIOButton extends Component {
   render() {
     let { type, show, subtext, value } = this.props;
     if (type === 'table') { return <Table {...this.props} /> }
+    if (type === 'form') { return <Form {...this.props} /> }
     if (['text', 'number', 'textarea', 'color', 'password'].indexOf(type) !== -1) { return <Input {...this.props} /> }
     let { open, touch } = this.state;
     let context = {

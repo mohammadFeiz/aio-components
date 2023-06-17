@@ -1,0 +1,10 @@
+.aio-input-form{
+    width:100%;
+    border:1px solid #ddd;
+}
+.aio-input-form-body{
+    padding:12px;
+}
+.aio-input-form .aio-input{
+    width:100%;
+}

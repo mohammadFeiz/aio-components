@@ -18,6 +18,11 @@ export default class DOC_AIOButton extends Component {
         name: '',
         rows: [
         ],
+        model:{
+            firstname:'mohammad',
+            lastname:'feiz',
+            age:37
+        },
         date:undefined,
         datej:undefined,
         dateg:undefined,
@@ -31,7 +36,7 @@ export default class DOC_AIOButton extends Component {
             types: [
                 'all','button', 'file', 'select', 'multiselect', 'tabs', 
                 'radio', 'checkbox','text', 'number', 'search',
-                'textarea', 'color', 'password','table','datepicker'
+                'textarea', 'color', 'password','table','datepicker','form'
             ],
             props: [
                 ['all'],
@@ -40,6 +45,7 @@ export default class DOC_AIOButton extends Component {
                 ['onChange',['file','select','multiselect','tabs','radio','checkbox','datepicker','text','number','textarea']],
                 ['onClick',['button']],
                 ['label'],
+                ['inputs','form'],
                 ['subtext',['button','file','select','multiselect','checkbox','datepicker']],
                 ['multiple',['file','radio']],
                 ['options',['select','multiselect','radio','tabs','text','number']],
@@ -93,7 +99,7 @@ export default class DOC_AIOButton extends Component {
         this.setState({ show });
     }
     render() {
-        let { date,datej,dateg,files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show,searchValue } = this.state
+        let { date,datej,dateg,files, gender, skills, tab, option, options, active, name, rows, age, desc, color, show,searchValue,model } = this.state
         let { Titr, Code } = AIODoc();
         let ex = [
             /////////////////////////////////button
@@ -3739,6 +3745,42 @@ optionDisabled='option.value === "2"'
                         value={datej}
                         onChange={({dateString})=>this.setState({datej:dateString})}
                         calendarType='jalali'
+                    />
+                ),
+                code: `
+<AIOButton 
+    type='datepicker'
+    open={true}
+    value={datej}
+    onChange={({dateString})=>this.setState({datej:dateString})}
+    calendarType='jalali'
+/>                    
+                `
+            },
+            ///////////////////////form
+            {
+                type: 'form', props: ['inputs'],
+                html: () => (
+                    <AIOButton 
+                        type='form'
+                        model={model}
+                        inputs={{
+                            column:[
+                                {
+                                    row:[
+                                        {input:{type:'text',field:'firstname'},header:'first name',flex:1},
+                                        {input:{type:'text',field:'lastname'},header:'last name',size:120},
+                                        {input:{type:'number',field:'age'},header:'age',size:60}, 
+                                    ]
+                                },
+                                {
+                                    row:[
+                                        {input:{type:'text',field:'firstname'},header:'first name'},
+                                        {input:{type:'text',field:'lastname'},header:'last name'}
+                                    ]
+                                }
+                            ]
+                        }}
                     />
                 ),
                 code: `

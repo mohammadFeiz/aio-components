@@ -54,6 +54,7 @@ export default class ReactVirtualDom extends Component {
     return {className,gapClassName};
   }
   getProps(obj,index,parent = {},isRoot){
+    let {htmls = {}} = this.props;
     let {childsProps = ()=>{return {}}} = parent;
     let Props = (typeof childsProps === 'function'?childsProps(obj,index):childsProps) || {};
     let props = {...Props,...obj}
@@ -62,19 +63,22 @@ export default class ReactVirtualDom extends Component {
     let pointer =  !!onClick || !!attrs.onClick;
     let childs = [];
     html = typeof html === 'function'?html():html;
+    if(typeof html === 'string' && htmls[html]){
+      html = htmls[html](obj)
+    }
     let dataId = 'a' + Math.random();
     style = {...attrs.style,...style}
     let axis;
     let gapStyle = {}
     if(parent.row){
       if(size !== undefined){style.width = size; flex = undefined}
-      gapStyle.width = parent.gap;
+      gapStyle.width = parent.gap || this.props.gap;
       if(size && onResize){gapStyle.cursor = 'col-resize';}
       axis = 'x';
     }
     else if(parent.column || parent.grid){
       if(size !== undefined){style.height = size; flex = undefined}
-      gapStyle.height = parent.gap;
+      gapStyle.height = parent.gap || this.props.gap;
       if(size && onResize){gapStyle.cursor = 'row-resize';}
       axis = 'y';
     }
@@ -149,6 +153,8 @@ export default class ReactVirtualDom extends Component {
   }
   getClient(e){return 'ontouchstart' in document.documentElement?{x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}:{x:e.clientX,y:e.clientY}}
   getLayout(obj,index,parent,isRoot){
+    let {getLayout} = this.props;
+    if(getLayout){obj = getLayout(obj)}
     if(!obj || obj === null || (typeof obj.show === 'function'?obj.show():obj.show) === false){return ''}
     let {childs,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
     return (
@@ -156,7 +162,7 @@ export default class ReactVirtualDom extends Component {
         <div {...attrs}>
           {childs.length?childs.map((o,i)=><Fragment key={i}>{this.getLayout(o,i,obj,false)}</Fragment>):html}
         </div>
-        {parent && parent.gap !== undefined && <div {...gapAttrs}></div>}
+        {parent && (parent.gap !== undefined || this.props.gap !== undefined) && <div {...gapAttrs}></div>}
       </Fragment>
     ) 
   }
