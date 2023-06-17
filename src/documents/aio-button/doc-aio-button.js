@@ -3765,18 +3765,21 @@ optionDisabled='option.value === "2"'
                         type='form'
                         model={model}
                         inputs={{
+                            gap:12,
                             column:[
                                 {
+                                    gap:12,
                                     row:[
-                                        {input:{type:'text',field:'firstname'},header:'first name',flex:1},
-                                        {input:{type:'text',field:'lastname'},header:'last name',size:120},
-                                        {input:{type:'number',field:'age'},header:'age',size:60}, 
+                                        {input:{type:'text',field:'firstname'},label:'first name'},
+                                        {input:{type:'text',field:'lastname'},label:'last name',size:120},
+                                        {input:{type:'number',field:'age'},label:'age',size:60}, 
                                     ]
                                 },
                                 {
+                                    gap:12,
                                     row:[
-                                        {input:{type:'text',field:'firstname'},header:'first name'},
-                                        {input:{type:'text',field:'lastname'},header:'last name'}
+                                        {input:{type:'datepicker',field:'startdate'},label:'start date'},
+                                        {input:{type:'datepicker',field:'enddate'},label:'end date'}
                                     ]
                                 }
                             ]

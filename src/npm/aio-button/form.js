@@ -52,7 +52,7 @@ export default class Form extends Component{
         return model[field]
     }
     input_layout(obj){
-        let {header,footer,inlineLabel,input,flex,size} = obj;
+        let {label,footer,inlineLabel,input,flex,size} = obj;
         return {
             flex,size,
             className:'aio-input-form-item',
@@ -61,7 +61,7 @@ export default class Form extends Component{
                 {
                     flex:1,
                     column:[
-                        {show:!!header,html:header},
+                        {show:!!label,html:label,className:'aio-input-form-label'},
                         {html:<AIOButton {...input} value={this.getValue(input.field)}/>},
                         {show:!!footer,html:footer} 
                     ]
@@ -73,7 +73,7 @@ export default class Form extends Component{
         return (
             <RVD
                 getLayout={(obj)=>{
-                    if(obj.input){return this.input_layout(obj)}
+                    if(obj.input){return this.input_layout({...obj,flex:obj.size?undefined:1})}
                     return obj
                     
                 }}
