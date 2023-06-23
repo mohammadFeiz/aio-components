@@ -1,3 +1,4 @@
+/*
 body.aio-button-open {
   overflow: hidden;
 }
@@ -457,17 +458,13 @@ a.aio-button-option {
   align-items: center;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .aio-button-tabs::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .aio-button-tabs {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .aio-button-tabs-option {
@@ -630,3 +627,4 @@ a.aio-button-option {
   display:flex;
   flex-direction: column;
 }
+*/

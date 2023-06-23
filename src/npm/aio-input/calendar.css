@@ -1,4 +1,4 @@
-/* .aio-input-datepicker-today {
+.aio-input-datepicker-today {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -93,6 +93,7 @@
     overflow-x: hidden;
 }
 
+/* custom scrollbar */
 .aio-input-datepicker-calendar select::-webkit-scrollbar {
     width: 10px !important;
     height: 10px !important;
@@ -144,14 +145,7 @@
     font-size: 110%;
 }
 
-.aio-input-datepicker {
-    width: fit-content;
-    height: fit-content;
-    background: #fff;
-    box-shadow: 1px 1px 6px 0 rgba(0, 0, 0, .1)
-}
-
-.aio-input-datepicker button {
+.aio-input-datepicker-container button {
     width: unset !important;
     border: none !important;
     background: none !important;
@@ -163,4 +157,4 @@
     box-shadow: 2px 2px 5px 0 rgba(0, 0, 0, .3);
     cursor: pointer;
     z-index: 100;
-} */
+}
