@@ -12,6 +12,7 @@
     border:1px solid #ddd;
     width:100%;
     border-radius:4px;
+    min-height:36px;
 }
 .aio-input-rtl{
     direction:rtl;

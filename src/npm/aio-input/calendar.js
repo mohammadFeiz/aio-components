@@ -81,7 +81,7 @@ export default class Calendar extends Component {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
-                onChange(props)
+                onChange(dateString,props)
             }
         }
     }

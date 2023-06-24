@@ -134,16 +134,45 @@ export default class DOC_AIOInput extends Component {
                             {
                                 gap:12,
                                 row:[
-                                    {input:{type:'text',field:'firstname'},label:'first name'},
-                                    {input:{type:'text',field:'lastname'},label:'last name',size:120},
-                                    {input:{type:'number',field:'age'},label:'age',size:60}, 
+                                    {
+                                        label:'first name',
+                                        input:{type:'text',field:'value.firstname'}
+                                    },
+                                    {
+                                        label:'last name',size:120,
+                                        input:{type:'text',field:'value.lastname'}
+                                    },
+                                    {
+                                        label:'age',size:60,
+                                        input:{type:'number',field:'value.age'}
+                                    }, 
                                 ]
+                            },
+                            {
+                                label:'Gender',
+                                input:{
+                                    type:'radio',field:'value.gender',
+                                    options:[
+                                        {text:'Male',value:'male'},
+                                        {text:'Female',value:'female'}
+                                    ]
+                                }
+                            },
+                            {
+                                label:'Military Service Stuation',
+                                input:{
+                                    type:'select',field:'value.militarySetrvice',
+                                    options:[
+                                        {text:'Exempt',value:'exm'},
+                                        {text:'End Of Service',value:'eos'}
+                                    ]
+                                }
                             },
                             {
                                 gap:12,
                                 row:[
-                                    {input:{type:'datepicker',field:'startdate'},label:'start date'},
-                                    {input:{type:'datepicker',field:'enddate'},label:'end date'}
+                                    {input:{type:'datepicker',field:'value.startdate'},label:'start date'},
+                                    {input:{type:'datepicker',field:'value.enddate'},label:'end date'}
                                 ]
                             }
                         ]
