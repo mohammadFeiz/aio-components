@@ -159,9 +159,10 @@ export default class DOC_AIOInput extends Component {
                                 }
                             },
                             {
-                                label:'Military Service Stuation',
+                                show:'value.gender === "male"',
+                                label:'Military Service Situation',
                                 input:{
-                                    type:'select',field:'value.militarySetrvice',
+                                    type:'select',field:'value.militaryService',
                                     options:[
                                         {text:'Exempt',value:'exm'},
                                         {text:'End Of Service',value:'eos'}
