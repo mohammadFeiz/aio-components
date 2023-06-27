@@ -102,7 +102,7 @@ export default class Form extends Component {
             show:this.getValueByField(show,true),
             className: 'aio-input-form-item',
             row: [
-                { show: !!inlineLabel, html: inlineLabel },
+                { show: !!inlineLabel, html: inlineLabel,align:'v' },
                 {
                     flex: 1,
                     column: [

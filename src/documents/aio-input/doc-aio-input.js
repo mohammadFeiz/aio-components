@@ -175,6 +175,45 @@ export default class DOC_AIOInput extends Component {
                                     {input:{type:'datepicker',field:'value.startdate'},label:'start date'},
                                     {input:{type:'datepicker',field:'value.enddate'},label:'end date'}
                                 ]
+                            },
+                            {
+                                column:[
+                                    {
+                                        inlineLabel:'first name',
+                                        input:{type:'text',field:'value.firstname'}
+                                    },
+                                    {
+                                        inlineLabel:'last name',
+                                        input:{type:'text',field:'value.lastname'}
+                                    },
+                                    {
+                                        inlineLabel:'age',
+                                        input:{type:'number',field:'value.age'}
+                                    }, 
+                                    {
+                                        inlineLabel:'Gender',
+                                        input:{
+                                            type:'radio',field:'value.gender',
+                                            options:[
+                                                {text:'Male',value:'male'},
+                                                {text:'Female',value:'female'}
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        show:'value.gender === "male"',
+                                        inlineLabel:'Military Service Situation',
+                                        input:{
+                                            type:'select',field:'value.militaryService',
+                                            options:[
+                                                {text:'Exempt',value:'exm'},
+                                                {text:'End Of Service',value:'eos'}
+                                            ]
+                                        }
+                                    },
+                                    {input:{type:'datepicker',field:'value.startdate'},inlineLabel:'start date'},
+                                    {input:{type:'datepicker',field:'value.enddate'},inlineLabel:'end date'}   
+                                ]
                             }
                         ]
                     },
