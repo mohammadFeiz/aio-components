@@ -129,10 +129,9 @@ export default class DOC_AIOInput extends Component {
                 },
                 'inputs':{
                     value:{
-                        gap:12,
+                        props:{gap:12},
                         column:[
                             {
-                                gap:12,
                                 row:[
                                     {
                                         label:'first name',
@@ -160,7 +159,7 @@ export default class DOC_AIOInput extends Component {
                             },
                             {
                                 show:'value.gender === "male"',
-                                label:'Military Service Situation',
+                                label:'Military Service',
                                 input:{
                                     type:'select',field:'value.militaryService',
                                     options:[
@@ -170,13 +169,13 @@ export default class DOC_AIOInput extends Component {
                                 }
                             },
                             {
-                                gap:12,
                                 row:[
                                     {input:{type:'datepicker',field:'value.startdate'},label:'start date'},
                                     {input:{type:'datepicker',field:'value.enddate'},label:'end date'}
                                 ]
                             },
                             {
+                                props:{inlineLabelAttrs:{style:{width:120}}},
                                 column:[
                                     {
                                         inlineLabel:'first name',
@@ -201,8 +200,12 @@ export default class DOC_AIOInput extends Component {
                                         }
                                     },
                                     {
+                                        inlineLabel:'address',
+                                        input:{type:'textarea',field:'value.address'}
+                                    },
+                                    {
                                         show:'value.gender === "male"',
-                                        inlineLabel:'Military Service Situation',
+                                        inlineLabel:'Military Service',
                                         input:{
                                             type:'select',field:'value.militaryService',
                                             options:[
@@ -313,6 +316,7 @@ export default class DOC_AIOInput extends Component {
                     <option value={'datepicker'}>datepicker</option>
                     <option value={'text'}>text</option>
                     <option value={'number'}>number</option>
+                    <option value={'textarea'}>textarea</option>
                     <option value={'form'}>form</option>
                     <option value={'table'}>table</option>
                 </select>

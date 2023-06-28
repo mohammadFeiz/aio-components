@@ -96,13 +96,13 @@ export default class Form extends Component {
         onChange(this.setValueByField(value,input.field,v))
     }
     input_layout(obj) {
-        let { label, footer, inlineLabel, input, flex, size,show } = obj;
+        let { label, footer, inlineLabel, input, flex, size,show,props = {} } = obj;
         return {
             flex, size,
             show:this.getValueByField(show,true),
             className: 'aio-input-form-item',
             row: [
-                { show: !!inlineLabel, html: inlineLabel,align:'v' },
+                { show: !!inlineLabel, html: inlineLabel,align:'v',attrs:props.inlineLabelAttrs },
                 {
                     flex: 1,
                     column: [
@@ -117,9 +117,11 @@ export default class Form extends Component {
     render() {
         return (
             <RVD
-                getLayout={(obj) => {
-                    if (obj.input) { return this.input_layout({ ...obj, flex: obj.size ? undefined : 1 }) }
-                    return obj
+                getLayout={(obj,parent = {}) => {
+                    if (obj.input) { 
+                        return this.input_layout({ ...obj, flex: obj.size ? undefined : 1 }) 
+                    }
+                    return {...obj}
 
                 }}
                 layout={{

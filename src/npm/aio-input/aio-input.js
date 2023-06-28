@@ -174,6 +174,7 @@ export default class AIOInput extends Component {
     render_datepicker() { return <Layout /> }
     render_table() { return <Table {...this.props} /> }
     render_text() { return <Layout text={<Input value={this.getProp('value')}/>} /> }
+    render_textarea() { return <Layout text={<Input value={this.getProp('value')}/>} /> }
     render_number() { return <Layout text={<Input value={this.getProp('value')} />} /> }
     render_form() { return <Form {...this.props} /> }
     render() {
