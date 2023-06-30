@@ -472,7 +472,6 @@ class Toolbar extends Component {
     )
   }
 }
-
 class ToolbarAttrs extends Component {
   constructor(props){
     super(props);
@@ -531,9 +530,6 @@ class ToolbarAttrs extends Component {
     )
   }
 }
-
-
-
   class RowGapColumnGap extends Component {
     constructor(props){
       super(props);
@@ -623,7 +619,6 @@ class ToolbarAttrs extends Component {
       )
     }
   }
-
   class RowTemplate extends Component {
     constructor(props){
       super(props);
@@ -728,8 +723,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnJustify extends Component {
     constructor(props){
       super(props);
@@ -772,8 +765,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnTitleJustify extends Component {
     constructor(props){
       super(props);
@@ -816,8 +807,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnMinWidth extends Component {
     constructor(props){
       super(props);
@@ -860,7 +849,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
   class ColumnCellAttrs extends Component {
     constructor(props){
       super(props);
@@ -945,8 +933,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnTitleAttrs extends Component {
     constructor(props){
       super(props);
@@ -989,8 +975,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnTemplate extends Component {
     constructor(props){
       super(props);
@@ -1049,8 +1033,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnSort extends Component {
     constructor(props){
       super(props);
@@ -1109,8 +1091,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnGroup extends Component {
     constructor(props){
       super(props);
@@ -1170,8 +1150,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnFilter extends Component {
     constructor(props){
       super(props);
@@ -1234,8 +1212,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
-
   class ColumnInlineEdit extends Component {
     constructor(props){
       super(props);
@@ -1260,7 +1236,7 @@ class ToolbarAttrs extends Component {
                 {text:'Female',value:'female'} 
               ]
             }},
-            {type:'date',title:'Date',field:'row.date'},
+            {type:'date',title:'Date',field:'row.date',inlineEdit:true,minWidth:110},
             {type:'number',title:'Age',field:'row.age',inlineEdit:true},
             {
               title:'Activity',justify:true,
@@ -1306,7 +1282,6 @@ class ToolbarAttrs extends Component {
       );
     }
   }
-
   class ColumnBeforeAfterSubtext extends Component {
     constructor(props){
       super(props);

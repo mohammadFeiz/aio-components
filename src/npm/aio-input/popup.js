@@ -10,14 +10,11 @@ export default class Popup extends Component {
     }
     renderPopOver(content) {
         let {
-            toggle, popupAttrs = {}, keyDown, openRelatedTo, type, datauniqid,getProp,
-            rtl, animate, fixPopupPosition, popoverSide, popupHeader, popupFooter,isInput
+            toggle, openRelatedTo, datauniqid,fitHorizontal,rtl, animate, fixPopupPosition, popoverSide, popupHeader, popupFooter,backdrop
         } = this.context;
-        let popupWidth = getProp('popupWidth')
-        let fitHorizontal = isInput || popupWidth === 'fit' || type === 'multiselect';
         let { parentDom } = this.props;
         let props = {
-            backdrop:!isInput,
+            backdrop,
             popoverSide, rtl, animate, openRelatedTo, fixPopupPosition, className: `aio-input-popover${rtl ? ' aio-input-popover-rtl' : ''}`, id: datauniqid,
             fitHorizontal,
             getTarget: () => $(parentDom.current),

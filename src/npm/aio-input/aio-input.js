@@ -4,6 +4,7 @@ import Layout from './layout';
 import Tags from './tags';
 import Table from './table';
 import Form from './form';
+import Slider from './../aio-slider/aio-slider';
 import AIOSwip from '../aio-swip/aio-swip';
 import Options from './options';
 import DatePicker from './datepicker';
@@ -15,10 +16,10 @@ export default class AIOInput extends Component {
         super(props);
         this.dom = createRef();
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
-        let isInput = props.type && ['text','number','textarea','password'].indexOf(props.type) !== -1;
         this.state = {
+            fitHorizontal:['text','number','textarea','password'].indexOf(props.type) !== -1 || props.popupWidth === 'fit' || props.type === 'multiselect',
+            backdrop:['text','number','textarea','password'].indexOf(props.type) === -1,
             open: props.open || false,
-            isInput,
         }
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
@@ -84,17 +85,19 @@ export default class AIOInput extends Component {
     }
     getProp(key, def) {
         let { type, popOver, caret,options } = this.props;
-        let {isInput} = this.state;
+        if(key === 'attrs'){
+            if(['text','textarea','number','password','color'].indexOf(type) !== -1){return {}}
+        }
         if (key === 'popOver') {
             if(['table','form','radio','tabs','checkbox','file'].indexOf(type) !== -1){return}
             if (type === 'button') { return popOver }
             if (type === 'datepicker') { return () => <DatePicker {...this.props} /> }
             if (type === 'select' || type === 'multiselect') { return () => <Options /> }
-            if(isInput && options){return ()=><Options type={type}/>}
+            if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){return ()=><Options type={type}/>}
         }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
-        if (key === 'caret') { return this.getProp('popOver') ? (caret || true) : false }
-        if (key === 'multiple') { return type === 'multiselect' || (type === 'radio' && !!propsResult) }
+        if (key === 'caret') { return caret === false?false:(this.getProp('popOver') ? (caret || true) : false )}
+        if (key === 'multiple') { return type === 'multiselect' || (type === 'radio' && !!propsResult)}
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }
             if (type === 'datepicker') { return this.getDatepickerText() }
@@ -110,6 +113,7 @@ export default class AIOInput extends Component {
         return propsResult;
     }
     getOptionProp(option, key, def) {
+        if(key === 'onClick'){return option.onClick}
         let optionResult = typeof option[key] === 'function' ? option[key](option) : option[key]
         if (optionResult !== undefined) { return optionResult }
         let prop = this.props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
@@ -137,12 +141,11 @@ export default class AIOInput extends Component {
         else if (onClick) { onClick(); }
     }
     optionClick(option) {
-        let { onChange = () => { } } = this.props;
-        let {isInput} = this.state;
+        let { onChange = () => { },type } = this.props;
         let Value = this.getProp('value');
         let { value, onClick, close,text } = option;
         if (onClick) { onClick(value, option); }
-        else if(isInput){onChange(text)}
+        else if(type && ['text','number','textarea','password'].indexOf(type) !== -1){onChange(text)}
         else if (this.getProp('multiple')) {
             if (Value.indexOf(value) === -1) { onChange(Value.concat(value), value, 'add') }
             else { onChange(Value.filter((o) => o !== value), value, 'remove') }
@@ -151,9 +154,12 @@ export default class AIOInput extends Component {
         if (close) { this.toggle(false) }
     }
     getContext() {
-        let { open,isInput } = this.state;
+        let { open,fitHorizontal,backdrop } = this.state;
         return {
             ...this.props,
+            dragStart:this.dragStart.bind(this),
+            dragOver:this.dragOver.bind(this),
+            drop:this.drop.bind(this),
             click: this.click.bind(this),
             optionClick: this.optionClick.bind(this),
             datauniqid: this.datauniqid,
@@ -161,7 +167,7 @@ export default class AIOInput extends Component {
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
             toggle: this.toggle.bind(this),
-            open,isInput
+            open,fitHorizontal,backdrop
         }
     }
     render_button() { return <Layout /> }
@@ -174,8 +180,11 @@ export default class AIOInput extends Component {
     render_datepicker() { return <Layout /> }
     render_table() { return <Table {...this.props} /> }
     render_text() { return <Layout text={<Input value={this.getProp('value')}/>} /> }
+    render_password() { return <Layout text={<Input value={this.getProp('value')}/>} /> }
     render_textarea() { return <Layout text={<Input value={this.getProp('value')}/>} /> }
     render_number() { return <Layout text={<Input value={this.getProp('value')} />} /> }
+    render_color() { return <Layout text={<Input value={this.getProp('value')} />} /> }
+    render_slider() { return <Layout text={<InputSlider value={this.getProp('value')}/>} /> }
     render_form() { return <Form {...this.props} /> }
     render() {
         let { type } = this.props;
@@ -188,7 +197,28 @@ export default class AIOInput extends Component {
     }
 }
 AIOInput.defaultProps = { showTags: true }
-
+class InputSlider extends Component{
+    static contextType = AIContext;
+    change(value){
+        let {onChange} = this.context;
+        if(value.length === 1){onChange(value[0])}
+        else {onChange([value[0],value[1]])}
+    }
+    render(){
+        let {getProp} = this.context;
+        let value = getProp('value');
+        let rtl = getProp('rtl');
+        if(!Array.isArray(value)){value = [value]}
+        return (
+            <Slider
+                direction={rtl?'left':'right'}
+                showValue={true}
+                value={value}
+                onChange={this.change.bind(this)}
+            />
+        )
+    }
+}
 class Multiselect extends Component {
     static contextType = AIContext;
     getTagByValue(v) {
@@ -266,7 +296,7 @@ class Input extends Component {
     }
     change(value) {
         let { type,getProp } = this.context;
-        let onChange = getProp('onChange', Infinity);
+        let onChange = getProp('onChange');
         if(!onChange){return}
         let maxLength = getProp('maxLength', Infinity);
         let justNumber = getProp('justNumber');
@@ -300,7 +330,7 @@ class Input extends Component {
     render() {
         let { getProp, type } = this.context;
         let { value } = this.state;
-        let attrs = getProp('value', {});
+        let attrs = getProp('attrs', {});
         let disabled = getProp('disabled', false);
         let spin = getProp('spin');
         this.onChange = getProp('onChange');

@@ -17,26 +17,23 @@ export default class Options extends Component {
 
     }
     getOptions() {
-        let { getProp, getOptionProp, type,isInput } = this.context;
+        let { getProp, getOptionProp, type} = this.context;
         let options = getProp('options', []);
         let result = [];
         let renderIndex = 0;
+        let isInput = ['text','number','textarea','password'].indexOf(type) !== -1;
         let Value = getProp('value')
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
             let show = getOptionProp(option, 'show')
             if (show === false) { continue }
             let text = getOptionProp(option, 'text');
-            if(isInput){
-                let value = getProp('value');
-                if(value && text.indexOf(value) !== 0){
-                    continue
-                }
-            }
+            if(isInput && Value && text.indexOf(Value) !== 0){continue}
             let value = getOptionProp(option, 'value')
             let obj = {
                 text,
                 value,
+                attrs: getOptionProp(option, 'attrs',{}),
                 checkIcon: getOptionProp(option, 'checkIcon'),
                 checked: getOptionProp(option, 'checked', this.getDefaultOptionChecked(type, value)),
                 before: getOptionProp(option, 'before'),

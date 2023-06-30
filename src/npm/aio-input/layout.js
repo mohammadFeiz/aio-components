@@ -2,9 +2,8 @@ import React, { Component, createRef } from 'react';
 import Popup from './popup';
 import { InputFile, Files } from './file';
 import { Icon } from '@mdi/react';
-import { mdiChevronDown } from '@mdi/js';
+import { mdiChevronDown, mdiLoading } from '@mdi/js';
 import AIContext from './context';
-import $ from 'jquery';
 export default class Layout extends Component {
     static contextType = AIContext;
     constructor(props) {
@@ -29,7 +28,6 @@ export default class Layout extends Component {
             if (rtl) { cls += ' aio-input-rtl' }
 
         }
-        if (className) { cls += ' ' + className }
         cls += label ? ' has-label' : '';
         cls += className ? ' ' + className : '';
         return cls;
@@ -37,11 +35,12 @@ export default class Layout extends Component {
     getProps() {
         let { onSwap, dragStart, dragOver, drop, datauniqid, click, optionClick } = this.context;
         let { option, realIndex, renderIndex } = this.props;
-        let { label, disabled, style } = this.properties;
+        let { label, disabled, style,center,loading,attrs } = this.properties;
         let props = {
+            ...attrs,
             className: this.getClassName(label, disabled),
-            onClick: option === undefined ? (e) => click(e) : () => optionClick(option),
-            ref: this.dom, disabled, style, datauniqid, 'data-label': label
+            onClick: loading?undefined:(option === undefined ? (e) => click(e) : () => optionClick(option)),
+            ref: this.dom, disabled, style:{justifyContent:center?'center':undefined,...style}, datauniqid, 'data-label': label
         }
         if (option && onSwap) {
             props.datarealindex = realIndex;
@@ -63,6 +62,8 @@ export default class Layout extends Component {
             let { getProp } = this.context;
             let properties = {
                 label: getProp('label'),
+                tabIndex: getProp('tabIndex'),
+                attrs: getProp('attrs',{}),
                 caret: getProp('caret'),
                 className: getProp('className'),
                 disabled: getProp('disabled'),
@@ -74,6 +75,8 @@ export default class Layout extends Component {
                 after: getProp('after'),
                 subtext: getProp('subtext'),
                 onClick: getProp('onClick'),
+                center:getProp('center'),
+                loading:getProp('loading')
             }
             return properties
         }
@@ -92,16 +95,17 @@ export default class Layout extends Component {
         let { type } = this.context;
         let { option } = this.props;
         this.properties = this.getProperties()
-        let { checked, checkIcon, before, text, subtext, after, caret } = this.properties;
+        let { checked, checkIcon, before, text, subtext, after, caret,center,loading } = this.properties;
         let content = (
             <>
                 <CheckIcon {...{ checked, checkIcon, type, option }} />
                 <Before before={before} type={type} option={option} />
-                <div className={`aio-input-content aio-input-${type}-content`}>
+                <div className={`aio-input-content aio-input-${type}-content`} style={{flex:center?'none':undefined}}>
                     <Text text={text} type={type} option={option} />
                     <Subtext subtext={subtext} type={type} option={option} />
                 </div>
                 <After after={after} type={type} option={option} />
+                <Loading loading={loading} type={type} option={option} />
                 <Caret caret={caret} type={type} option={option} />
             </>
         )
@@ -116,7 +120,7 @@ export default class Layout extends Component {
         }
         return (
             <>
-                <button {...props}>{content}</button>
+                <div {...props}>{content}</div>
                 {this.renderPopup()}
             </>
         )
@@ -181,6 +185,18 @@ class After extends Component {
         if (after === undefined) { return null }
         return (
             <div className={`aio-input-after aio-input-${option ? `${type}-option` : type}-after`}>{after}</div>
+        )
+    }
+}
+class Loading extends Component {
+    render() {
+        let { loading, type, option } = this.props;
+        if (!loading) { return null }
+        if(loading === true){
+            loading = <Icon path={mdiLoading} spin={0.3} size={.8}/>
+        }
+        return (
+            <div className={`aio-input-loading aio-input-${option ? `${type}-option` : type}-loading`}>{loading}</div>
         )
     }
 }

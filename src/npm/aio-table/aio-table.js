@@ -2,7 +2,6 @@ import React,{Component,createContext,createRef} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye,mdiFilter,mdiFilterMenu,mdiSort,mdiArrowDown,mdiArrowUp,mdiFileTree,mdiFileExcel,
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
-import AIOButton from './../../npm/aio-button/aio-button';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from './../../npm/aio-input/aio-input';
 import { ExportToExcel,GetClient } from '../aio-functions/aio-functions';
@@ -435,7 +434,7 @@ export default class Table extends Component {
         },
         {
           html:(
-            <AIOButton 
+            <AIOInput center={true}
               className={TableCLS.toolbarIconButton} type='select' options={sizes} optionValue='option' optionText='option' search={false} caret={false} text={size} optionStyle='{height:24}'
               onChange={(value)=>this.changePaging('size',value)}
             />
@@ -560,8 +559,8 @@ class TableUnit extends Component{
     let title = column.title || column.label || '';
     return {
       html:(
-        <AIOButton
-          style={{background:'none',color:'inherit'}}
+        <AIOInput
+          style={{background:'none',color:'inherit',border:'none'}}
           type='button' rtl={rtl} caret={false} text={<Icon path={items.length?mdiFilterMenu:mdiFilter} size={0.6}/>}
           popOver={()=>{
             let {columns} = this.props;
@@ -746,23 +745,24 @@ class Toolbar extends Component{
     if(!columns || !columns.length){return false}
     let options = columns.filter(({toggle})=>toggle).map((column)=>{
       let title = column.title || column.label || '';
-      return {column,text:title,checked:column.show !== false}
+      return {
+        text:title,checked:column.show !== false,close:false,
+        onClick:()=>{
+          let {state,setColumns} = this.context;
+          let {columns} = state;
+          let {show = true} = column;
+          setColumn(column,{show:!show})
+          state.saveColumnInStorage(column,'show',column.show)
+          setColumns(columns)
+        }
+      }
     })
     if(!options.length){return false}
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Show Columns')}</div>}
         key='togglebutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiEye} size={0.7}/>}
-        onChange={(value,obj)=>{
-          let {state,setColumns} = this.context;
-          let {columns} = state;
-          let {column} = obj.option;
-          let {show = true} = column;
-          setColumn(column,{show:!show})
-          state.saveColumnInStorage(column,'show',obj.option.column.show)
-          setColumns(columns)
-        }}
       />
     )
   }
@@ -772,7 +772,7 @@ class Toolbar extends Component{
     if(!sorts.length || !model.length){return false}
     let options = sorts.map((sort,i)=>{
       return {
-        text:sort.title,checked:!!sort.active,
+        text:sort.title,checked:!!sort.active,close:false,
         after:(
           <Icon 
             path={sort.dir === 'dec'?mdiArrowDown:mdiArrowUp} size={0.8}
@@ -782,18 +782,18 @@ class Toolbar extends Component{
               state.Sort.set(sorts)
             }} 
           />
-        )
+        ),
+        onClick:()=>{
+          sorts[i].active = !sorts[i].active;
+          state.Sort.set(sorts)
+        }
       }
     })
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Sort By')}</div>}
         key='sortbutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiSort} size={0.7}/>}
-        onChange={(value,obj)=>{
-          sorts[obj.realIndex].active = !sorts[obj.realIndex].active;
-          state.Sort.set(sorts)
-        }}
         onSwap={(from,to,swap)=>state.Sort.set(swap(sorts,from,to))}
       />
     )
@@ -801,7 +801,7 @@ class Toolbar extends Component{
   getExcelButton(){
     let {rows_array,getRowDetailById,translate} = this.context;
     return (
-      <AIOButton
+      <AIOInput
         key='excelbutton' caret={false} type='button' className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiFileExcel} size={0.7}/>}
         onClick={()=>{
@@ -814,20 +814,20 @@ class Toolbar extends Component{
   getGroupButton(){
     var {model,state,groups,translate} = this.context;
     if(!groups.length || !model.length){return false}
-    let options = groups.map((group)=>{
+    let options = groups.map((group,i)=>{
       return {
-        text:group.title,checked:!!group.active
+        text:group.title,checked:!!group.active,close:false,
+        onClick:()=>{
+          groups[i].active = !groups[i].active;
+          state.Group.set(groups)
+        }
       }
     })
     return (
-      <AIOButton
+      <AIOInput
         popupHeader={<div className={TableCLS.toolbarPopupHeader}>{translate('Group By')}</div>}
         key='groupbutton' caret={false} type='select' options={options} className={TableCLS.toolbarIconButton}
         text={<Icon path={mdiFileTree} size={0.7}/>}
-        onChange={(value,obj)=>{
-          groups[obj.realIndex].active = !groups[obj.realIndex].active;
-          state.Group.set(groups)
-        }}
         onSwap={(from,to,swap)=>state.Group.set(swap(groups,from,to))}
       />
     )
@@ -875,10 +875,10 @@ class Cell extends Component{
     let {rows_object,details_object,verticalTabIndex} = this.context;
     let {rowId,colId} = this.props;
     if(this.inlineEdit){
-      let {spinButton = false} = this.inlineEdit;
+      let {spin = false,type} = this.inlineEdit;
       if(this.inlineEdit.type === 'text' || this.inlineEdit.type === 'number'){
         let props = {
-          type:column.type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,spin:spinButton,
+          type,className:TableCLS.inlineEditInput,value,tabIndex:verticalTabIndex?colId:0,spin,
           style:{textAlign:column.justify?'center':undefined},'data-col-id':colId,'data-row-id':rowId,
           onChange:(value)=>this.onChange(value)
         }
@@ -886,7 +886,7 @@ class Cell extends Component{
       }
       if(this.inlineEdit.type === 'select'){
         return (
-          <AIOButton
+          <AIOInput
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
             {...{popupAttrs:{style:{maxHeight:360}},...this.inlineEdit}} className={TableCLS.inlineEditInput}
             onChange={(value)=>this.onChange(value)}
@@ -896,12 +896,21 @@ class Cell extends Component{
       }
       if(this.inlineEdit.type === 'checkbox'){
         return (
-          <AIOButton
+          <AIOInput
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
             {...this.inlineEdit} className={TableCLS.inlineEditInput}
             value={value}
-            style={{padding:0}}
-            onChange={(value)=>this.onChange(!value)}
+            onChange={(value)=>this.onChange(value)}
+          />
+        )
+      }
+      if(this.inlineEdit.type === 'datepicker'){
+        return (
+          <AIOInput
+            attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
+            {...this.inlineEdit} className={TableCLS.inlineEditInput}
+            value={value}
+            onChange={(value)=>this.onChange(value)}
           />
         )
       }
@@ -936,6 +945,7 @@ class Cell extends Component{
     if(!inlineEdit){return false}
     if(inlineEdit === true){inlineEdit = {}}
     let {disabled = ()=>false,type = column.type || 'text'} = inlineEdit;
+    if(type === 'date'){type = 'datepicker'}
     if(disabled(row)){return false}
     return {...inlineEdit,type};
   }
@@ -1152,7 +1162,7 @@ class AIOfilterItem extends Component{
       return {
         size:90,
         html:(
-          <AIOButton 
+          <AIOInput 
             style={{width:'100%'}}
             type='button' className={TableCLS.filterOperator} text={operators[0].text}
           />
@@ -1162,7 +1172,7 @@ class AIOfilterItem extends Component{
     return {
       size:90,
       html:(
-        <AIOButton 
+        <AIOInput 
           style={{width:'100%'}}
           type='select' className={TableCLS.filterOperator} value={operator} options={operatorOptions} onChange={(value)=>onChange('operator',value)}
         />

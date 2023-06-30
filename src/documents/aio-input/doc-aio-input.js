@@ -11,26 +11,61 @@ export default class DOC_AIOInput extends Component {
         this.Storage = AIOStorage('aitest');
         this.state = {
             props:{
+                'loading':{
+                    value:true,code:`loading={true}`,
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','form','textarea','color','password','slider'],
+                },
+                'center':{
+                    value:true,code:`center={true}`,
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','form','textarea','color','password'],
+                },
+                'start':{
+                    value:0,code:`start={0}`,
+                    types:['slider'],
+                },
+                'end':{
+                    value:100,code:`start={100}`,
+                    types:['slider'],
+                },
+                'step':{
+                    value:5,code:`step={5}`,
+                    types:['slider'],
+                },
                 'rtl':{
                     value:true,code:`rtl={true}`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','form','textarea','color','password','slider'],
+                },
+                'lang':{
+                    value:'fa',code:`lang="fa"`,types:['form']
+                },
+                'onSubmit':{
+                    value:(value,errors)=>{debugger; this.setState({value,errors})},code:`onSubmit={(value,errors)=>this.setState({value,errors})}`,types:['form']
+                },
+                'onClose':{
+                    value:()=>{debugger;},code:`onClose={()=>{}}`,types:['form']
+                },
+                'title':{
+                    value:'My Title',code:`title="My Title"`,types:['form']
+                },
+                'subtitle':{
+                    value:'My subTitle',code:`subtitle="My Subtitle"`,types:['form']
                 },
                 'className':{
                     value:"aio-input-button-style-1",code:`className="aio-input-button-style-1"`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'style':{
                     value:{ background: 'orange' },code:`style={{background:"orange"}}`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','table','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','table','text','number','textarea','color','password','slider']
                 },
                 'popupWidth':{value:'fit',code:`popupWidth="fit"`,types:['select', 'datepicker']},
                 'optionText':{
                     value:'option.text',code:`optionText='option.text'`,
-                    types:['select', 'multiselect','radio','tabs','text','number','textarea','color']
+                    types:['select', 'multiselect','radio','tabs','text','number','textarea']
                 },
                 'optionValue':{
                     value:'option.value',code:`optionValue='option.value'`,
-                    types:['select', 'multiselect','radio','tabs','text','number','textarea','color']
+                    types:['select', 'multiselect','radio','tabs','text','number','textarea']
                 },
                 'optionClose':{value:true,code:`optionClose={true}`,types:['select', 'multiselect']},
                 'optionChecked':{value:'props.value === option.value',code:`optionChecked="props.value === option.value"`,types:['select', 'tabs']},
@@ -67,18 +102,18 @@ export default class DOC_AIOInput extends Component {
                     code:`optionStyle='option.value ==="3"?{background:"orange"}:undefined'`,
                     types:['select', 'multiselect', 'radio', 'tabs']
                 },
-                'header':{value:'this is my header',code:`header='this is my header'`,types:['table']},
+                'header':{value:'this is my header',code:`header='this is my header'`,types:['table','form']},
                 'filter':{
                     value:['!','@','#','$','%','^','&','*','(',',',')','_','+','-','='],
                     code:`filter={['!','@','#','$','%','^','&','*','(',',',')','_','+','-','=']}`,
-                    types:['text','textarea']
+                    types:['text','password']
                 },
                 'options':{
                     value:[{text:'mohammad'},{text:'ali'},{text:'mohsen'}],
                     code:`options={[{text:'mohammad'},{text:'ali'},{text:'mohsen'}]}`,
-                    types:['text','textarea','number']
+                    types:['text','textarea','number','password']
                 },
-                'justNumber':{value:true,code:`justNumber={true}`,types:['text']},
+                'justNumber':{value:true,code:`justNumber={true}`,types:['text','password']},
                 'spin':{value:true,code:`spin={true}`,types:['number']},
                 'swip':{value:true,code:`swip={true}`,types:['number']},
                 'multiple':{value:true,code:`multiple={true}`,types:['file', 'radio', 'tabs']},
@@ -86,24 +121,24 @@ export default class DOC_AIOInput extends Component {
                 'before':{
                     value:<Icon path={mdiAccount} size={0.8} />,
                     code:`before={<Icon path={mdiAccount} size={0.8} />}`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'after':{
                     value:<Icon path={mdiArrowLeftRight} size={0.8} />,
                     code:`after={<Icon path={mdiArrowLeftRight} size={0.8} />}`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'subtext':{
                     value:'my subtext',code:`subtext='my subtext'`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'label':{
                     value:'my label',code:`label='my label'`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'disabled':{
                     value:true,code:`disabled={true}`,
-                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number']
+                    types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 
                 'popOver':{
@@ -134,7 +169,7 @@ export default class DOC_AIOInput extends Component {
                             {
                                 row:[
                                     {
-                                        label:'first name',
+                                        label:'first name',validations:[['required']],
                                         input:{type:'text',field:'value.firstname'}
                                     },
                                     {
@@ -145,6 +180,18 @@ export default class DOC_AIOInput extends Component {
                                         label:'age',size:60,
                                         input:{type:'number',field:'value.age'}
                                     }, 
+                                ]
+                            },
+                            {
+                                row:[
+                                    {
+                                        label:'range',
+                                        input:{type:'slider',start:50,end:100,field:'value.range'}
+                                    },
+                                    {
+                                        label:'color',
+                                        input:{type:'color',field:'value.color'}
+                                    }
                                 ]
                             },
                             {
@@ -175,29 +222,42 @@ export default class DOC_AIOInput extends Component {
                                 ]
                             },
                             {
-                                props:{inlineLabelAttrs:{style:{width:120}}},
+                                props:{
+                                    inlineLabelAttrs:{
+                                        style:{width:120,justifyContent:'end',padding:'0 12px'}
+                                    }
+                                },
                                 column:[
                                     {
-                                        inlineLabel:'first name',
-                                        input:{type:'text',field:'value.firstname'}
+                                        row:[
+                                            {
+                                                inlineLabel:'first name',validations:[['required']],
+                                                input:{type:'text',field:'value.firstname'}
+                                            },
+                                            {
+                                                inlineLabel:'last name',
+                                                input:{type:'text',field:'value.lastname'}
+                                            },
+                                        ]
                                     },
                                     {
-                                        inlineLabel:'last name',
-                                        input:{type:'text',field:'value.lastname'}
-                                    },
-                                    {
-                                        inlineLabel:'age',
-                                        input:{type:'number',field:'value.age'}
-                                    }, 
-                                    {
-                                        inlineLabel:'Gender',
-                                        input:{
-                                            type:'radio',field:'value.gender',
-                                            options:[
-                                                {text:'Male',value:'male'},
-                                                {text:'Female',value:'female'}
-                                            ]
-                                        }
+                                        row:[
+                                            {
+                                                inlineLabel:'age',
+                                                input:{type:'number',field:'value.age'}
+                                            }, 
+                                            {
+                                                inlineLabel:'Gender',
+                                                input:{
+                                                    type:'radio',field:'value.gender',
+                                                    optionStyle:{width:"100%"},
+                                                    options:[
+                                                        {text:'Male',value:'male'},
+                                                        {text:'Female',value:'female'}
+                                                    ]
+                                                }
+                                            },
+                                        ]
                                     },
                                     {
                                         inlineLabel:'address',
@@ -317,6 +377,9 @@ export default class DOC_AIOInput extends Component {
                     <option value={'text'}>text</option>
                     <option value={'number'}>number</option>
                     <option value={'textarea'}>textarea</option>
+                    <option value={'password'}>password</option>
+                    <option value={'color'}>color</option>
+                    <option value={'slider'}>slider</option>
                     <option value={'form'}>form</option>
                     <option value={'table'}>table</option>
                 </select>
@@ -358,15 +421,19 @@ export default class DOC_AIOInput extends Component {
         return Props
     }
     render() {
+        let {goToHome} = this.props;
         let { type,props} = this.state;
         return (
-            <div className='example'>
-                {this.renderToolbar()}
-                <div style={{ height: 36 }}></div>
-                <AIOInput key={type} {...this.getProps()} />
-                {type !== 'table' && renderCode(type,props)}
-                {type === 'table' && TableCode(this.state)}
-            </div>
+            <>
+                <button onClick={()=>goToHome()}>Back To Home</button>
+                <div className='example'>
+                    {this.renderToolbar()}
+                    <div style={{ height: 36 }}></div>
+                    <AIOInput key={type} {...this.getProps()} />
+                    {type !== 'table' && renderCode(type,props)}
+                    {type === 'table' && TableCode(this.state)}
+                </div>
+            </>
         );
     }
 }

@@ -1,6 +1,5 @@
 import React,{Component} from "react";
 import './App.css'
-//import DOC_AIOButton from "./documents/aio-button/doc-aio-button";
 import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOForm from './documents/aio-form/doc-aio-form';
@@ -25,7 +24,6 @@ export default class AIOComponents extends Component{
     this.state = {
       part:'aio-input',
       parts:{
-        //'aio-button':{name:'aio-button',Render:DOC_AIOButton},
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
         'aio-form':{name:'aio-form',Render:DOC_AIOForm},

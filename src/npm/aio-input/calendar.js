@@ -323,7 +323,7 @@ class DPHeaderDropdown extends Component {
         let { size, theme = [] } = this.context;
         let props = {
             caret: false, type: 'select', popupAttrs: { style: { maxHeight: size * 1.2 } },
-            style: { background: 'none', color: 'inherit', fontSize: 'inherit', padding: '0 3px' },
+            className:'aio-input-datepicker-dropdown',
             optionStyle: { height: size / 6, background: theme[1], color: theme[0] }
         }
         return (<AIOInput {...this.props} {...props} />)

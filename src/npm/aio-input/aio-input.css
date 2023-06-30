@@ -3,19 +3,18 @@
     position: relative;
     align-items: center;
     cursor: pointer;
-    font-size: 14px;
-    padding:6px;
     box-sizing: border-box;
     background: none;
-    border: none;
-    font-family: roboto;
-    border:1px solid #ddd;
-    width:100%;
     border-radius:4px;
-    min-height:36px;
+    color:inherit;
+    flex-shrink:0;
+    padding:6px;
 }
 .aio-input-rtl{
     direction:rtl;
+}
+.aio-input-popover{
+    font-size:12px;
 }
 .aio-input-popover-rtl {
     direction: rtl;
@@ -30,7 +29,6 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    height: 100%;
     justify-content: center;
 }
 
@@ -61,6 +59,13 @@
     height: 100%;
     margin-inline-start: 6px;
 }
+.aio-input-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin-inline-start: 6px;
+}
 
 .aio-input-caret {
     display: flex;
@@ -74,7 +79,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, .1);
+    background: rgba(0, 0, 0, .7);
 }
 
 .aio-input-options {
@@ -174,7 +179,6 @@
 .aio-input.has-label:before {
     content: attr(data-label);
     background: #fff;
-    color: #888;
     white-space: nowrap;
     position: absolute;
     top: -8px;
@@ -197,14 +201,12 @@
     display: flex;
     align-items: center;
     background:none;
+    color:inherit;
+    cursor:pointer;
 }
 
 .aio-input-options {
     border-radius: 4px;
-}
-
-.aio-input-option:hover {
-    background: rgb(240, 244, 245);
 }
 
 .aio-input-check-out {
@@ -221,6 +223,8 @@
 }
 .aio-input-tabs{
     padding-bottom:0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 .aio-input-radio-option:not(.aio-input-radio-multiple-option) .aio-input-check-out {
     border-radius: 100%;
@@ -311,10 +315,12 @@
 }
 
 .aio-input-tabs-options {
+    display:flex;
     flex-wrap: nowrap;
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .aio-input-tabs-content {
@@ -324,14 +330,6 @@
 
 .aio-input-tabs::-webkit-scrollbar {
     display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.aio-input-tabs {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
 }
 
 .aio-input-tabs-option {
@@ -383,6 +381,15 @@
     background:none;
     outline:none;
     width:100%;
+    color:inherit;
+}
+.aio-input-password input{
+    border:none;
+    width:100%;
+    background:none;
+    outline:none;
+    width:100%;
+    color:inherit;
 }
 .aio-input-number input{
     border:none;
@@ -390,6 +397,31 @@
     background:none;
     outline:none;
     width:100%;
+    color:inherit;
+}
+.aio-input-text{
+    height:36px;
+}
+.aio-input-datepicker{
+    height:36px;
+}
+.aio-input-color{
+    height:36px;
+}
+.aio-input-select{
+    height:36px;
+}
+.aio-input-slider{
+    height:36px;
+}
+.aio-input-number{
+    height:36px;
+}
+.aio-input-textarea{
+    height:60px;
+}
+.aio-input-radio{
+    height:unset;
 }
 .aio-input-textarea textarea{
     border:none;
@@ -398,6 +430,9 @@
     outline:none;
     width:100%;
     height:60px;
+    padding:6px 0;
+    color:inherit;
+    box-sizing: border-box;
 }
 .aio-input-text input:disabled,.aio-input-number input:disabled{
     border:none;
@@ -407,11 +442,50 @@
     cursor:not-allowed;
     opacity:0.5;
 }
-.aio-input-text-subtext{
+.aio-input-text-subtext,.aio-input-password-subtext,.aio-input-number-subtext,.aio-input-textarea-subtext,.aio-input-slider-subtext{
     position: absolute;
     top:100%;
 }
-.aio-input-number-subtext{
-    position: absolute;
-    top:100%;
+.aio-input-text,.aio-input-password,.aio-input-number,.aio-input-textarea,.aio-input-slider{
+    padding:0 6px;
+}
+.aio-input-color input{
+    width:100%;
+    padding:0;
+    margin:0;
+    border:none;
+    outline:none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.aio-input-color img{
+    display:none;
+}
+.aio-input-color input::-webkit-color-swatch{
+    border:none;
+    padding:0;
+}
+.aio-input-slider .r-range-slider{
+    padding:0 12px;
+}
+.aio-input-slider .r-range-slider-value{
+    height:24px;
+    top:calc(50% - 12px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px;
+    box-sizing:border-box;
+    position:absolute;
+    white-space:nowrap;
+    background:dodgerblue;
+    color:#fff;
+    border-radius:3px;
+}
+.aio-input-slider .r-range-slider-point{
+    display:none;
+}
+.aio-input-slider-value{
+    height:100%;
 }

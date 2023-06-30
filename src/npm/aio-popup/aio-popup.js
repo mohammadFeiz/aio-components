@@ -260,8 +260,9 @@ export class Popover extends Component {
   handleClose(e) {
     let { id,onClose = ()=>{} } = this.props;
     let target = $(e.target);
-    if (target.attr('datauniqid') === id) {return}
-    if (target.parents(`[datauniqid=${id}]`).length) {return}
+    let datauniqid = target.attr('datauniqid')
+    if (datauniqid === id) {return}
+    if (target.parents(`[data-uniq-id=${id}]`).length) {return}
     onClose()
   }
   componentDidMount() {
@@ -311,7 +312,7 @@ export class Popover extends Component {
     let props = {
       className: this.getBackClassName(),
       style: backdropAttrs.style,
-      onClick: (e) => this.handleClose(e)
+      onClick: (e) => this.handleClose(e),
     }
     let popOver = (
       <div {...attrs} ref={this.dom} data-uniq-id={id} className={this.getClassName()}>
