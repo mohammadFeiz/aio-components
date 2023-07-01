@@ -12,6 +12,7 @@ export default class Form extends Component {
         if(!onChange){
             this.state = {value}
         }
+        this.errors = {}
     }
     getValue(){
         let {onChange} = this.props;
@@ -24,12 +25,16 @@ export default class Form extends Component {
             return value;
         }
     }
-    setValue(v,input){
+    setValue(v,field,obj){
         let { onChange } = this.props;
         let value = this.getValue();
-        let newValue = this.setValueByField(value, input.field, v);
-        if(onChange){onChange(newValue,this.errors)}
+        let newValue = this.setValueByField(value, field, v);
+        let error = this.getError(obj,v)
+        if(error){this.errors[field] = error}
+        else {this.errors[field] = undefined}
+        if(onChange){onChange(newValue,[...Object.keys(this.errors).filter((o)=>!!this.errors[o]).map((o)=>this.errors[o])])}
         else{this.setState({value:newValue})} 
+        
     }
     header_layout() {
         let { header, title, subtitle, headerAttrs = {}, onClose, onBack } = this.props;
@@ -47,8 +52,8 @@ export default class Form extends Component {
                         { flex: 1 }
                     ]
                 },
-                {flex:1},
-                { show:!!header,flex: !!title ? undefined : 1, html: ()=>typeof header === 'function'?header():header },
+                {flex:1,show:!!title},
+                { show:!!header,flex: !!title ? undefined : 1, html: ()=>typeof header === 'function'?header():header,align:'vh' },
                 { show: !!onClose, html: <Icon path={mdiClose} size={.8} />, onClick: () => onClose(),className:'aio-input-form-close-icon' }
             ]
         }
@@ -67,11 +72,12 @@ export default class Form extends Component {
         let { footer, onSubmit, onClose, footerAttrs = {}, closeText = 'Close', submitText = 'submit' } = this.props;
         if (footer === false) { return false }
         if (!footer && !onSubmit && !onClose) { return false }
+        let disabled = !!Object.keys(this.errors).length
         return {
             className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
             row: [
                 { show: !!onClose, html: <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button> },
-                { show: !!onSubmit, html: <button onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> },
+                { show: !!onSubmit, html: <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> },
             ]
         }
     }
@@ -135,7 +141,7 @@ export default class Form extends Component {
     }
     error_layout(error,props){
         if(!error){return false}
-        let { errorAttrs = {} } = props;
+        let { errorAttrs = {} } = this.props;
         let { className } = errorAttrs;
         return { 
             html: error,attrs:errorAttrs,
@@ -143,11 +149,12 @@ export default class Form extends Component {
         }
     }
     input_layout(obj) {
-        let {rtl} = this.props;
-        let { label, footer, inlineLabel, input, flex, size, show, props = {} } = obj;
-        let value = this.getValueByField(input.field, this.getDefault(input));
+        let {rtl,inputAttrs} = this.props;
+        let { label, footer, inlineLabel, input, flex, size, show, props = {},field } = obj;
+        let value = this.getValueByField(field, this.getDefault(input));
         let error = this.getError(obj,value)
-        if(error){this.errors.push(error)}
+        if(error){this.errors[field] = error}
+        else {this.errors[field] = undefined}
         return {
             flex, size,
             show: this.getValueByField(show, true),
@@ -160,7 +167,7 @@ export default class Form extends Component {
                             flex: 1,className:'of-visible',
                             column: [
                                 this.label_layout(label, props),
-                                { html: <AIOInput {...input} rtl={rtl} value={value} onChange={(value) => this.setValue(value, input)} /> },
+                                { html: <AIOInput {...inputAttrs} {...input} rtl={rtl} value={value} onChange={(value) => this.setValue(value, field,obj)} /> },
                                 { show: !!footer, html: footer },
                             ]
                         }
@@ -188,13 +195,12 @@ export default class Form extends Component {
         return error;
     }
     render() {
-        let {rtl} = this.props;
-        this.errors = []
+        let {rtl,style} = this.props;
         return (
             <RVD
                 getLayout={(obj, parent = {}) => {
                     if (obj.input) {
-                        return this.input_layout({ ...obj, flex: obj.size ? undefined : 1 })
+                        return this.input_layout({ ...obj })
                     }
                     if(parent.input){
                         obj.className = 'of-visible'
@@ -203,6 +209,7 @@ export default class Form extends Component {
 
                 }}
                 layout={{
+                    style,
                     className: 'aio-input-form' + (rtl?' aio-input-form-rtl':''),
                     column: [
                         this.header_layout(),

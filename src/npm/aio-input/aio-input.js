@@ -332,10 +332,11 @@ class Input extends Component {
         let { value } = this.state;
         let attrs = getProp('attrs', {});
         let disabled = getProp('disabled', false);
+        let placeholder = getProp('placeholder');
         let spin = getProp('spin');
         this.onChange = getProp('onChange');
         let props = {
-            ...attrs, value, type, disabled, ref: this.dom,
+            ...attrs, value, type, disabled, ref: this.dom,placeholder,
             className: spin === false ? 'no-spin' : '',
             onChange: (e) => this.change(e.target.value)
         }

@@ -2,13 +2,13 @@
     width:100%;
     border:1px solid #ddd;
     font-size:14px;
-    color:#666;
 }
 .aio-input-form-rtl{
     direction:rtl;
 }
 .aio-input-form-label{
     font-size:85%;
+    margin-bottom:6px;
 }
 .aio-input-form-body{
     padding:12px;
@@ -40,6 +40,10 @@
     color:dodgerblue;
     border-radius:6px;
     background:none;
+}
+.aio-input-form-footer-button:disabled{
+    cursor:not-allowed;
+    opacity:0.3;
 }
 .aio-input-form-submit-button{
     background:dodgerblue;
@@ -73,4 +77,8 @@
     font-size:90%;
     opacity:0.5;
     font-weight:bold;
+}
+.aio-input-form .aio-input{
+    border:1px solid #ddd;
+    min-height:36px;
 }
