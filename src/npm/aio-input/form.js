@@ -200,7 +200,7 @@ export default class Form extends Component {
             <RVD
                 getLayout={(obj, parent = {}) => {
                     if (obj.input) {
-                        return this.input_layout({ ...obj })
+                        return this.input_layout({ ...obj,flex:parent.row && !obj.size && !obj.flex?1:undefined })
                     }
                     if(parent.input){
                         obj.className = 'of-visible'

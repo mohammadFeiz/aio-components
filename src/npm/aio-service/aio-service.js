@@ -62,7 +62,7 @@ function AIOServiceLoading(id){
   `)
 }
 function Service(config) {
-  function validate(result,{validation,api,def,name,errorMessage,successMessage}){
+  function validate(result,{validation,api,def,name,errorMessage,successMessage,messageTime}){
     name = typeof name === 'function'?name():name;
     name = name || api;
     if(typeof result === 'string'){
@@ -81,9 +81,9 @@ function Service(config) {
         }
       }
       if(successMessage){
-        successMessage = typeof successMessage === 'function'?successMessage():successMessage
+        successMessage = typeof successMessage === 'function'?successMessage(result):successMessage
         if(successMessage === true){successMessage = ''}
-        helper.showAlert({type:'success',text:`${name} با موفقیت انجام شد`,subtext:successMessage});
+        helper.showAlert({type:'success',text:`${name} با موفقیت انجام شد`,subtext:successMessage,time:messageTime});
       }
     }
     return result;
