@@ -5,7 +5,7 @@ import model from './model';
 import tree_model from './tree-model';
 import {mdiHumanFemale,mdiHumanMale} from '@mdi/js';
 import {Icon} from '@mdi/react';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import Slider from './../../npm/aio-slider/aio-slider';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import './index.css';
@@ -362,7 +362,7 @@ class Striped extends Component {
         <div style={{
           position: 'fixed',left: 358,top: 13,display: 'flex',alignItems: 'center'
         }}>
-          <AIOButton 
+          <AIOInput 
             type='radio'
             options={[
               {text:'false',value:false},
@@ -1446,7 +1446,7 @@ class ToolbarAttrs extends Component {
       let {tab,tabs} = this.state;
       return {
         html:(
-          <AIOButton type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
+          <AIOInput type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
         )
       }
     }

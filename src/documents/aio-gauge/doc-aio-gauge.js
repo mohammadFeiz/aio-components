@@ -6,7 +6,7 @@ import AIOJson from './../../npm/aio-json/aio-json';
 import {Icon} from '@mdi/react';
 import { mdiDelete ,mdiPlusThick,mdiClose} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 export default class DOC_AIOGauge extends Component{
     render(){
@@ -391,7 +391,7 @@ class Input extends Component{
                 {
                     size:240,
                     html:(
-                        <AIOButton 
+                        <AIOInput 
                             before={<Icon path={mdiPlusThick} size={0.7}/>}
                             text='Add Gauge'
                             style={{background:'#2a59545c',color:'#fff',width:'100%',height:48}}
@@ -406,7 +406,7 @@ class Input extends Component{
                 {
                     flex:1,
                     html:(
-                        <AIOButton 
+                        <AIOInput 
                             style={{background:'#2a59545c',color:'#fff',height:48}}
                             type='tabs'
                             value={mode}
@@ -422,7 +422,7 @@ class Input extends Component{
                 },
                 {
                     html:(
-                        <AIOButton
+                        <AIOInput
                             style={{background:'#2a59545c',color:'#fff',height:48}}
                             type='button'
                             text='Exit'

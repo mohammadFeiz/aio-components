@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import AIOSwip from './../../npm/aio-swip/aio-swip';
 import DOC from '../../resuse-components/doc';
 import $ from 'jquery';
-import AIOButton from '../../npm/aio-button/aio-button';
+import AIOInput from '../../npm/aio-input/aio-input';
 export default class DOC_AIOValidation extends Component{
     constructor(props){
         super(props);
@@ -63,7 +63,7 @@ class StartMoveEnd extends Component{
         let {left,top,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',position:'relative',left:0,top:0}}>
@@ -172,7 +172,7 @@ class StepXStepY extends Component{
         let {left,top,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',position:'relative',left:0,top:0}}>
@@ -285,7 +285,7 @@ class SpeedXSpeedY extends Component{
         let {left,top,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',position:'relative',left:0,top:0}}>
@@ -406,7 +406,7 @@ class MultiUse extends Component{
         let {boxes,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',flex:1,position:'relative'}}>
@@ -537,7 +537,7 @@ class Disabled extends Component{
         let {boxes,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',flex:1,position:'relative'}}>
@@ -670,7 +670,7 @@ class StartReturn extends Component{
         let {boxes,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',flex:1,position:'relative'}}>
@@ -803,7 +803,7 @@ class Parameter extends Component{
         let {boxes,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <div className='parent' style={{background:'yellow',width:'100%',height:'100%',flex:1,position:'relative'}}>
@@ -911,7 +911,7 @@ class MousePosition extends Component{
         let {view,mousePosition} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     (
@@ -999,7 +999,7 @@ class InputNumber extends Component{
         let {value,view} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOButton type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
                 {
                     view === 'preview' && 
                     <input className='input' type='number' value={value} onChange={(e)=>this.changeValue(e.target.value)}/>

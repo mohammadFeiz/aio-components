@@ -2,8 +2,7 @@ import React,{Component,createRef} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiPrinter,mdiClose,mdiChevronLeft,mdiChevronRight,mdiPlusThick,mdiAttachment} from '@mdi/js';
 import AIOSlider from './../../npm/aio-slider/aio-slider';
-import AIOButton from './../../npm/aio-button/aio-button';
-import GAH from './../../npm/aio-datepicker/aio-datepicker';
+import AIOInput from './../../npm/aio-input/aio-input';
 import AIOValidation from './../../npm/aio-validation/aio-validation';
 import AIOTable from './../../npm/aio-table/aio-table';
 import ReactVirtualDom from './../../npm/react-virtual-dom/react-virtual-dom';
@@ -80,7 +79,7 @@ export default class AIOForm extends Component {
     let {defaults = {}} = this.props;
     let checkbox = defaults.checkbox || {};
     this.setByDefaults(checkbox,props);
-    return (<AIOButton {...props} type='checkbox'/>);
+    return (<AIOInput {...props} type='checkbox'/>);
   }
   getTheme(input,key,type = 'object'){
     if(type === 'object'){
@@ -110,7 +109,7 @@ export default class AIOForm extends Component {
     let {defaults = {}} = this.props;
     let checklist = defaults.checklist || {};
     this.setByDefaults(checklist,props);
-    return (<AIOButton {...props} type='checklist'/>);
+    return (<AIOInput {...props} type='checklist'/>);
   }
   getInput_radio({value,onChange,options,disabled,style,className,theme}, input) {
     let props = {
@@ -122,17 +121,17 @@ export default class AIOForm extends Component {
     let {defaults = {}} = this.props;
     let radio = defaults.radio || {};
     this.setByDefaults(radio,props);
-    return (<AIOButton {...props} type='radio'/>); 
+    return (<AIOInput {...props} type='radio'/>); 
   }
   getInput_datepicker({value,onChange,disabled,style,className,placeholder}, input) {
     let props = {
-      value,onChange:({dateString})=>onChange(dateString),disabled,style,placeHolder:placeholder,theme:input.colors,
+      type:'datepicker',value,onChange:({dateString})=>onChange(dateString),disabled,style,placeHolder:placeholder,theme:input.colors,
       className,calendarType:input.calendarType,unit:input.unit,onClear:input.onClear?()=>onChange(false):undefined
     }
     let {defaults = {}} = this.props;
     let datepicker = defaults.datepicker || {};
     this.setByDefaults(datepicker,props);
-    return (<GAH {...props}/>);
+    return (<AIOInput {...props}/>);
   }
   setByDefaults(defaults = {},obj = {}){
     for(let prop in obj){
@@ -168,7 +167,7 @@ export default class AIOForm extends Component {
     let {defaults = {},rtl} = this.props;
     let select = defaults.select || {};
     this.setByDefaults(select,props);
-    return (<AIOButton {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}} rtl={rtl}/>);
+    return (<AIOInput {...props} type='select' popupWidth='fit' popupAttrs={{style:{maxHeight: 400 }}} rtl={rtl}/>);
   }
   getInput_multiselect({className,value,onChange,options,disabled,style,text,subtext,theme}, input) {
     let {fixPopupPosition} = this.props;
@@ -180,7 +179,7 @@ export default class AIOForm extends Component {
     let {defaults = {}} = this.props;
     let multiselect = defaults.multiselect || {};
     this.setByDefaults(multiselect,props);
-    return (<AIOButton {...props} type="multiselect" popupAttrs={{ style:{maxHeight: 400 }}}/>);
+    return (<AIOInput {...props} type="multiselect" popupAttrs={{ style:{maxHeight: 400 }}}/>);
   }
   getInput_table({className,value,onChange,disabled,style,columns}, input){
     let {defaults = {}} = this.props;
@@ -258,7 +257,7 @@ export default class AIOForm extends Component {
     props.size = inlineLabel?labelStyle.width:(labelStyle.height || 24);
     let {onChangeInputs} = this.props;
     if(onChangeInputs){
-      props.html = (<AIOButton style={{padding:0,fontSize:'inherit'}} text={label} type='button' popOver={()=>{
+      props.html = (<AIOInput style={{padding:0,fontSize:'inherit'}} text={label} type='button' popOver={()=>{
         return (
           <FormGenerator input={input} onChange={()=>{
             onChangeInputs(inputs)
@@ -804,7 +803,7 @@ class Table extends Component{
     if(disabled || !addable){return}
     return ()=>{
       return (
-        <AIOButton key='toolbar'
+        <AIOInput key='toolbar'
           text = '+' type = 'button' onClick = {()=>this.add()}
           className = 'aio-form-input aio-form-input-table-add'
           style = {{background:'none',color:'inherit',padding:0,width:'100%'}}    

@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import DOC from '../../resuse-components/doc';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Chart from './../../npm/aio-chart/aio-chart';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 export default class DOC_AIOForm extends Component{
     render(){
@@ -1121,7 +1121,7 @@ class ChartExample extends Component{
     let {tab,tabs} = this.state;
     return {
       html:(
-        <AIOButton type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
+        <AIOInput type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
       )
     }
   }

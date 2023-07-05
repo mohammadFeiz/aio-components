@@ -1,9 +1,9 @@
 import React,{Component} from "react";
 import DOC from './../../resuse-components/doc';
 import ACS from './../../npm/aio-content-slider/aio-content-slider';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-export default class DOC_AIOButton extends Component{
+export default class DOC_AIOContentSlider extends Component{
     render(){
         return (
             <DOC
@@ -97,7 +97,7 @@ class Example extends Component{
       let {tab,tabs} = this.state;
       return {
         html:(
-          <AIOButton type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
+          <AIOInput type='tabs' options={tabs} value={tab} onChange={(tab)=>this.setState({tab})}/>
         )
       }
     }

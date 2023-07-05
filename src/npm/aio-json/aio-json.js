@@ -2,7 +2,7 @@ import React,{Component,createRef} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import {Icon} from '@mdi/react';
 import {mdiClose,mdiPlusThick,mdiCog,mdiChevronRight,mdiChevronDown,mdiContentCopy} from '@mdi/js';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import Slider from './../../npm/aio-slider/aio-slider'; 
 import $ from 'jquery';
 import "./index.css";
@@ -97,7 +97,7 @@ export default class AIOJson extends Component {
     return {
       size:space,align:'vh',
       html:(
-        <AIOButton 
+        <AIOInput 
           caret={false} type='select' className='json-builder-add' text={<Icon path={mdiPlusThick} size={0.5}/>}
           options={[
             {text:'text',value:'text',style:{height:24,display:init?'none':undefined}},
@@ -116,7 +116,7 @@ export default class AIOJson extends Component {
     return { 
       size:space,align:'vh',
       html:(
-        <AIOButton 
+        <AIOInput 
           type='button' caret={false} className='json-builder-button' text={<Icon path={mdiClose} size={0.6}/>}
           onClick={()=>{
             if(isRoot){this.setState({variables:false,json:false},()=>this.changeVariables())}
@@ -131,7 +131,7 @@ export default class AIOJson extends Component {
     return { 
       size:space,align:'vh',
       html:(
-        <AIOButton 
+        <AIOInput 
           type='button' caret={false} className='json-builder-button' text={<Icon path={mdiContentCopy} size={0.5}/>}
           onClick={()=>{
             parent.splice(index + 1,0,JSON.parse(JSON.stringify(o))); 
@@ -145,7 +145,7 @@ export default class AIOJson extends Component {
     let {_open = true} = o;
     let {space} = this.state;
     return {size:space,align:'vh',html:(
-      <AIOButton 
+      <AIOInput 
         type='button' caret={false} className='json-builder-button'
         text={<Icon path={!_open?mdiChevronRight:mdiChevronDown} size={0.5}/>}
         onClick={()=>{o._open = !_open; this.setState({})}}
@@ -155,7 +155,7 @@ export default class AIOJson extends Component {
   getSettingButton(){
     let {indent,height,fontSize,space} = this.state;
     return {size:space,align:'vh',html:(
-      <AIOButton 
+      <AIOInput 
         type='button' caret={false} className='json-builder-button' text={<Icon path={mdiCog} size={0.5}/>} style={{padding:0}}
         popOver={()=>{
           return (
@@ -272,7 +272,7 @@ export default class AIOJson extends Component {
         {show:name !== undefined,html:()=><TextField canEmpty={false} color={variableColor} value={name} canSpace={false} onChange={(v)=>{o.name = v; this.changeVariables()}}/>},
         {show:name !== undefined,html:':',attrs:{style:{color:variableColor}}},
         {attrs:{style:{overflow:'hidden'}},html:(
-          <AIOButton style={{background:'none',fontSize:'inherit',color:booleanColor}}
+          <AIOInput style={{background:'none',fontSize:'inherit',color:booleanColor}}
             type='select' value={value} caret={false} 
             options={[{text:'false',value:false,style:{height:24}},{text:'true',value:true,style:{height:24}}]} 
             onChange={(v)=>{o.value = v; this.setState({variables},()=>this.changeVariables())}}
@@ -349,7 +349,7 @@ export default class AIOJson extends Component {
       row:[
         {
           flex:1,html:(
-            <AIOButton 
+            <AIOInput 
               optionIconSize={[14,12 ,1]}
               optionIconColor={'#fff'}
               style={{color:'inherit',fontSize:'inherit'}}

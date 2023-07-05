@@ -2,7 +2,6 @@ import React,{Component} from 'react';
 import DOC from '../../resuse-components/doc';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Floater from './../../npm/aio-floater/aio-floater';
-import AIOButton from './../../npm/aio-button/aio-button';
 export default class DOC_AIOFloater extends Component{
     render(){
       return (

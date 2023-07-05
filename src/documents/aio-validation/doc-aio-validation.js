@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import AIOValidation from './../../npm/aio-validation/aio-validation';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import DOC from '../../resuse-components/doc';
 export default class DOC_AIOValidation extends Component{
     constructor(props){
@@ -44,7 +44,7 @@ class TryIt extends Component{
             <div className='example' style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
                 label is :
                 <input type='text' value={label} onChange={(e)=>this.setState({label:e.target.value})}/>
-                <AIOButton 
+                <AIOInput 
                     type='select' 
                     before='Language is : '
                     value={lang}
@@ -60,7 +60,7 @@ class TryIt extends Component{
                 
                 value is :
                 <input type='text' value={value} onChange={(e)=>this.setState({value:e.target.value})}/>
-                <AIOButton 
+                <AIOInput 
                     type='select' 
                     before='Operator is : '
                     value={operator}

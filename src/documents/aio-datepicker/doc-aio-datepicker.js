@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
-import DatePicker from './../../npm/aio-datepicker/aio-datepicker';
-import AIOButton from './../../npm/aio-button/aio-button';
+import AIOInput from './../../npm/aio-input/aio-input';
 import Slider from './../../npm/aio-slider/aio-slider';
 import DOC from '../../resuse-components/doc';
 export default class DOC_AIOForm extends Component{
@@ -8,13 +7,12 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='onClear'
+                navId='calendarType'
                 navs={[
                     {text:'calendarType',id:'calendarType',COMPONENT:()=><CalendarType/>},
                     {text:'unit',id:'unit',COMPONENT:()=><Unit/>},
                     {text:'theme',id:'theme',COMPONENT:()=><Theme/>},
                     {text:'size',id:'size',COMPONENT:()=><Size/>},
-                    {text:'justCalendar',id:'justCalendar',COMPONENT:()=><JustCalendar/>},
                     {text:'startYear,endYear',id:'startYear-endYear',COMPONENT:()=><StartYearEndYear/>},
                     {text:'disabled',id:'disabled',COMPONENT:()=><Disabled/>},
                     {text:'dateAttrs',id:'dateAttrs',COMPONENT:()=><DateAttrs/>},
@@ -34,13 +32,12 @@ class CalendarType extends Component{
         let {date_j,date_g} = this.state;
         return (
             <div className='example'>
-                
                 <div className="aio-component-label">calendarType='gregorian'</div>
-                
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     calendarType='gregorian'
                     value={date_g}
-                    onChange={({dateString})=>this.setState({date_g:dateString})}
+                    onChange={(dateString)=>this.setState({date_g:dateString})}
                 />
                 <pre>
                 {`
@@ -52,10 +49,11 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 calendarType='gregorian'
-                value={date}
-                onChange={({dateString})=>this.setState({date:dateString})}
+                value={date_g}
+                onChange={(dateString)=>this.setState({date_g:dateString})}
             />
         )
     }
@@ -67,10 +65,11 @@ class App extends Component{
 
                 <div className="aio-component-label">calendarType='jalali'</div>
 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     calendarType='jalali'
                     value={date_j}
-                    onChange={({dateString})=>this.setState({date_j:dateString})}
+                    onChange={(dateString)=>this.setState({date_j:dateString})}
                 />
                 <pre>
                 {`
@@ -82,10 +81,11 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 calendarType='jalali'
-                value={date}
-                onChange={({dateString})=>this.setState({date:dateString})}
+                value={date_j}
+                onChange={(dateString)=>this.setState({date_j:dateString})}
             />
         )
     }
@@ -116,7 +116,7 @@ class Unit extends Component{
         return (
             <div className='example'>
 
-                <AIOButton
+                <AIOInput
                     type='radio'
                     value={calendarType}
                     options={[{text:'gregorian',value:'gregorian'},{text:'jalali',value:'jalali'}]}
@@ -135,11 +135,12 @@ class Unit extends Component{
 
                 <div className="aio-component-label">unit='month'</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     calendarType={calendarType}
                     value={this.state[`date_${calendarType}_month`]}
                     unit='month'
-                    onChange={({dateString})=>this.setState({[`date_${calendarType}_month`]:dateString})}
+                    onChange={(dateString)=>this.setState({[`date_${calendarType}_month`]:dateString})}
                 />
                 <pre>
                 {`
@@ -151,11 +152,12 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 calendarType='${calendarType}'
                 value={date}
                 unit='month'
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -167,11 +169,12 @@ class App extends Component{
 
                 <div className="aio-component-label">unit='day'</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     calendarType={calendarType}
                     value={this.state[`date_${calendarType}_day`]}
                     unit='day'
-                    onChange={({dateString})=>this.setState({[`date_${calendarType}_day`]:dateString})}
+                    onChange={(dateString)=>this.setState({[`date_${calendarType}_day`]:dateString})}
                 />
                 <pre>
                 {`
@@ -183,11 +186,12 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 calendarType='${calendarType}'
                 value={date}
                 unit='day'
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -199,11 +203,12 @@ class App extends Component{
 
                 <div className="aio-component-label">unit='hour'</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     calendarType={calendarType}
                     value={this.state[`date_${calendarType}_hour`]}
                     unit='hour'
-                    onChange={({dateString})=>this.setState({[`date_${calendarType}_hour`]:dateString})}
+                    onChange={(dateString)=>this.setState({[`date_${calendarType}_hour`]:dateString})}
                 />
                 <pre>
                 {`
@@ -215,11 +220,12 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
-                calendarType='${calendarType}'
+            <AIOInput
+                type='datepicker'
+                calendarType={calendarType}
                 value={date}
                 unit='hour'
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -258,11 +264,12 @@ class Theme extends Component{
                 <input type='color' value={color2} onChange={(e)=>this.setState({color2:e.target.value})}/>
                 <div className="aio-component-label">{`theme=['${color1}','${color2}']`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     theme={[color1,color2]}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
@@ -274,10 +281,11 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 value={date}
                 theme={['${color1}','${color2}']}
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -309,11 +317,12 @@ class Size extends Component{
                 />
                 <div className="aio-component-label">{`size={${size}}`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     size={size}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
@@ -325,10 +334,11 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 value={date}
                 size={${size}}
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -341,50 +351,6 @@ class App extends Component{
 }
 
 
-class JustCalendar extends Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            date:'',
-            justCalendar:true
-        }
-    }
-    render(){
-        let {date,justCalendar} = this.state;
-        return (
-            <div className='example'>
-                <button onClick={()=>this.setState({justCalendar:!justCalendar})}>{`justCalnder:${justCalendar}`}</button>
-                <div className="aio-component-label">{`justCalendar={${justCalendar}}`}</div>
-                
-                <DatePicker
-                    value={date}
-                    justCalendar={justCalendar}
-                    onChange={({dateString})=>this.setState({date:dateString})}
-                />
-                <pre>
-                {`
-class App extends Component{
-    constructor(props){
-        super(props);
-        this.state = {date:'${date}'}
-    }
-    render(){
-        let {date} = this.state;
-        return (
-            <DatePicker
-                value={${date}}
-                justCalendar={${justCalendar}}
-                onChange={({dateString})=>this.setState({date:dateString})}
-            />
-        )
-    }
-}
-                `}
-                </pre>
-            </div>
-        )
-    }
-}
 
 
 class StartYearEndYear extends Component{
@@ -400,11 +366,12 @@ class StartYearEndYear extends Component{
             <div className='example'>
                 <div className="aio-component-label">{'exact years'}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date1}
                     startYear='2012'
                     endYear='2030'
-                    onChange={({dateString})=>this.setState({date1:dateString})}
+                    onChange={(dateString)=>this.setState({date1:dateString})}
                 />
                 <pre>
                 {`
@@ -416,11 +383,12 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 value={${date1}}
                 startYear='2012'
                 endYear='2030'
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -432,11 +400,12 @@ class App extends Component{
 
                 <div className="aio-component-label">{'offset years from this year'}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date2}
                     startYear='-10'
                     endYear='+5'
-                    onChange={({dateString})=>this.setState({date2:dateString})}
+                    onChange={(dateString)=>this.setState({date2:dateString})}
                 />
                 <pre>
                 {`
@@ -448,11 +417,12 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 value={${date2}}
                 startYear='-10'
                 endYear='+5'
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
@@ -477,16 +447,18 @@ class Disabled extends Component{
             <div className='example'>
                 <div className="aio-component-label">{`between ( <> )`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     disabled={['<>,2022,2024']}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['<>,2022,2024']}
     ...
 />
@@ -497,16 +469,18 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`between equal ( <=> )`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     disabled={['<=>,2022,2024']}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['<=>,2022,2024']}
     ...
 />
@@ -517,16 +491,18 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`not between ( !<> )`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     disabled={['!<>,2022,2024']}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['!<>,2022,2024']}
     ...
 />
@@ -537,16 +513,18 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`not between equal ( !<=> )`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     disabled={['!<=>,2022,2024']}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['!<=>,2022,2024']}
     ...
 />
@@ -557,16 +535,18 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`equal ( = )`}</div>
                 
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     justCalendar={true}
                     disabled={['=,2022/4/5,2022/6/7,2022/8/12']}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['=,2022/4/5,2022/6/7,2022/8/12']}
     ...
 />
@@ -577,15 +557,16 @@ class Disabled extends Component{
                 <div className='aio-component-splitter'></div>
 
                 <div className="aio-component-label">{`not equal ( != )`}</div>
-                <DatePicker
+                <AIOInput
                     value={'2022/4/1'}
                     justCalendar={true}
                     disabled={['!=,2022/4/5']}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['!=,2022/4/5']}
     ...
 />
@@ -595,15 +576,16 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`greater ( > )`}</div>
                 
-                <DatePicker
+                <AIOInput
                     value={'2022/4/1'}
                     justCalendar={true}
                     disabled={['>,2022/4/5']}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['>,2022/4/5']}
     ...
 />
@@ -613,11 +595,12 @@ class Disabled extends Component{
                 
                 <div className='aio-component-splitter'></div>
                 <div className="aio-component-label">{`greater equal ( >= )`}</div>
-                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['>=,2022/4/5']}/>
+                <AIOInput value={'2022/4/1'} justCalendar={true} disabled={['>=,2022/4/5']}/>
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['>=,2022/4/5']}
     ...
 />
@@ -626,15 +609,16 @@ class Disabled extends Component{
 
                 <div className="aio-component-label">{`less ( < )`}</div>
                 
-                <DatePicker
+                <AIOInput
                     value={'2022/4/1'}
                     justCalendar={true}
                     disabled={['<,2022/4/5']}
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['<,2022/4/5']}
     ...
 />
@@ -644,11 +628,12 @@ class Disabled extends Component{
                 
                 <div className='aio-component-splitter'></div>
                 <div className="aio-component-label">{`less equal ( <= )`}</div>
-                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['<=,2022/4/5']}/>
+                <AIOInput value={'2022/4/1'} justCalendar={true} disabled={['<=,2022/4/5']}/>
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['<=,2022/4/5']}
     ...
 />
@@ -657,11 +642,12 @@ class Disabled extends Component{
 
 
                 <div className="aio-component-label">{`weekday is ( w )`}</div>
-                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['w,6,4']}/>
+                <AIOInput value={'2022/4/1'} justCalendar={true} disabled={['w,6,4']}/>
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['w,6,4']}
     ...
 />
@@ -670,11 +656,12 @@ class Disabled extends Component{
 
 
                 <div className="aio-component-label">{`weekday is not ( !w )`}</div>
-                <DatePicker value={'2022/4/1'} justCalendar={true} disabled={['!w,6']}/>
+                <AIOInput value={'2022/4/1'} justCalendar={true} disabled={['!w,6']}/>
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     disabled={['!w,6']}
     ...
 />
@@ -691,7 +678,8 @@ class DateAttrs extends Component{
         return (
             <div className='example'>
                 <div className="aio-component-label">example 1</div>
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={'2022/4/14'}
                     justCalendar={true}
                     dateAttrs={({isMatch,isActive,isToday})=>{
@@ -724,8 +712,9 @@ class DateAttrs extends Component{
                 />
                 <pre>
                 {`
-<DatePicker
+<AIOInput
     ...
+    type='datepicker'
     dateAttrs={({isMatch,isActive,isToday})=>{
         if(isActive){
             return {
@@ -776,10 +765,11 @@ class OnClear extends Component{
         return (
             <div className='example'>
                 <div className="aio-component-label">example 1</div>
-                <DatePicker
+                <AIOInput
+                    type='datepicker'
                     value={date}
                     onClear={()=>this.setState({date:''})}
-                    onChange={({dateString})=>this.setState({date:dateString})}
+                    onChange={(dateString)=>this.setState({date:dateString})}
                 />
                 <pre>
                 {`
@@ -793,10 +783,11 @@ class App extends Component{
     render(){
         let {date} = this.state;
         return (
-            <DatePicker
+            <AIOInput
+                type='datepicker'
                 value={date}
                 onClear={()=>this.setState({date:''})}
-                onChange={({dateString})=>this.setState({date:dateString})}
+                onChange={(dateString)=>this.setState({date:dateString})}
             />
         )
     }
