@@ -2,6 +2,7 @@ import React,{Component} from "react";
 import './App.css'
 import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
+import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
 import DOC_AIODatepicker from './documents/aio-datepicker/doc-aio-datepicker';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
 import DOC_AIOTable from './documents/aio-table/doc-aio-table';
@@ -21,9 +22,10 @@ export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-input',
+      part:'aio-highlighter',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
+        'aio-highlighter':{name:'aio-highlighter',Render:DOC_AIOHighlighter},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
         'aio-datepicker':{name:'aio-datepicker',Render:DOC_AIODatepicker},
         'aio-loading':{name:'aio-loading',Render:DOC_AIOLoading},

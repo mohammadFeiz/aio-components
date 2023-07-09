@@ -203,6 +203,7 @@
     background:none;
     color:inherit;
     cursor:pointer;
+    flex-shrink: 0;
 }
 
 .aio-input-options {

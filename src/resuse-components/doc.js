@@ -35,7 +35,7 @@ export default class DOC extends Component{
                 }}
                 navHeader={()=><div className='part-title'>{name}</div>}
                 getActions={(obj)=>this.setState(obj)}
-                header={()=><button onClick={()=>goToHome()}>Home</button>}
+                header={()=><button id='go-to-home' onClick={()=>goToHome()}>Home</button>}
             />
         )
     }
