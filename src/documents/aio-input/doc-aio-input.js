@@ -169,35 +169,35 @@ export default class DOC_AIOInput extends Component {
                             {
                                 row:[
                                     {
-                                        label:'first name',validations:[['required']],
-                                        input:{type:'text',field:'value.firstname'}
+                                        field:'value.firstname',label:'first name',validations:[['required']],
+                                        input:{type:'text'}
                                     },
                                     {
-                                        label:'last name',size:120,
-                                        input:{type:'text',field:'value.lastname'}
+                                        field:'value.lastname',label:'last name',size:120,
+                                        input:{type:'text'}
                                     },
                                     {
-                                        label:'age',size:60,
-                                        input:{type:'number',field:'value.age'}
+                                        field:'value.age',label:'age',size:60,
+                                        input:{type:'number'}
                                     }, 
                                 ]
                             },
                             {
                                 row:[
                                     {
-                                        label:'range',
-                                        input:{type:'slider',start:50,end:100,field:'value.range'}
+                                        field:'value.range',label:'range',
+                                        input:{type:'slider',start:50,end:100}
                                     },
                                     {
-                                        label:'color',
-                                        input:{type:'color',field:'value.color'}
+                                        field:'value.color',label:'color',
+                                        input:{type:'color'}
                                     }
                                 ]
                             },
                             {
-                                label:'Gender',
+                                field:'value.gender',label:'Gender',
                                 input:{
-                                    type:'radio',field:'value.gender',
+                                    type:'radio',
                                     options:[
                                         {text:'Male',value:'male'},
                                         {text:'Female',value:'female'}
@@ -206,9 +206,10 @@ export default class DOC_AIOInput extends Component {
                             },
                             {
                                 show:'value.gender === "male"',
+                                field:'value.militaryService',
                                 label:'Military Service',
                                 input:{
-                                    type:'select',field:'value.militaryService',
+                                    type:'select',
                                     options:[
                                         {text:'Exempt',value:'exm'},
                                         {text:'End Of Service',value:'eos'}
@@ -217,8 +218,8 @@ export default class DOC_AIOInput extends Component {
                             },
                             {
                                 row:[
-                                    {input:{type:'datepicker',field:'value.startdate'},label:'start date'},
-                                    {input:{type:'datepicker',field:'value.enddate'},label:'end date'}
+                                    {input:{type:'datepicker'},label:'start date',field:'value.startdate'},
+                                    {input:{type:'datepicker'},label:'end date',field:'value.enddate'}
                                 ]
                             },
                             {
@@ -231,26 +232,25 @@ export default class DOC_AIOInput extends Component {
                                     {
                                         row:[
                                             {
-                                                inlineLabel:'first name',validations:[['required']],
-                                                input:{type:'text',field:'value.firstname'}
+                                                field:'value.firstname',inlineLabel:'first name',validations:[['required']],
+                                                input:{type:'text'}
                                             },
                                             {
-                                                inlineLabel:'last name',
-                                                input:{type:'text',field:'value.lastname'}
+                                                field:'value.lastname',inlineLabel:'last name',
+                                                input:{type:'text'}
                                             },
                                         ]
                                     },
                                     {
                                         row:[
                                             {
-                                                inlineLabel:'age',
-                                                input:{type:'number',field:'value.age'}
+                                                field:'value.age',inlineLabel:'age',
+                                                input:{type:'number'}
                                             }, 
                                             {
-                                                inlineLabel:'Gender',
+                                                inlineLabel:'Gender',field:'value.gender',
                                                 input:{
-                                                    type:'radio',field:'value.gender',
-                                                    optionStyle:{width:"100%"},
+                                                    type:'radio',optionStyle:{width:"100%"},
                                                     options:[
                                                         {text:'Male',value:'male'},
                                                         {text:'Female',value:'female'}
@@ -260,22 +260,23 @@ export default class DOC_AIOInput extends Component {
                                         ]
                                     },
                                     {
-                                        inlineLabel:'address',
-                                        input:{type:'textarea',field:'value.address'}
+                                        field:'value.address',inlineLabel:'address',
+                                        input:{type:'textarea'}
                                     },
                                     {
                                         show:'value.gender === "male"',
+                                        field:'value.militaryService',
                                         inlineLabel:'Military Service',
                                         input:{
-                                            type:'select',field:'value.militaryService',
+                                            type:'select',
                                             options:[
                                                 {text:'Exempt',value:'exm'},
                                                 {text:'End Of Service',value:'eos'}
                                             ]
                                         }
                                     },
-                                    {input:{type:'datepicker',field:'value.startdate'},inlineLabel:'start date'},
-                                    {input:{type:'datepicker',field:'value.enddate'},inlineLabel:'end date'}   
+                                    {input:{type:'datepicker'},inlineLabel:'start date',field:'value.startdate'},
+                                    {input:{type:'datepicker'},inlineLabel:'end date',field:'value.enddate'}   
                                 ]
                             }
                         ]

@@ -171,14 +171,13 @@ export default class Form extends Component {
     }
     input_layout(obj) {
         let {rtl,inputAttrs} = this.props;
-        let { label, footer, inlineLabel, input, flex, size, show, props = {},field } = obj;
+        let { label, footer, inlineLabel, input, flex, size, props = {},field } = obj;
         let value = this.getValueByField(field, this.getDefault(input));
         let error = this.getError(obj,value)
         if(error){this.errors[field] = error}
         else {this.errors[field] = undefined}
         return {
             flex, size,
-            show: this.getValueByField(show, true),
             className: 'aio-input-form-item',
             column:[
                 {
@@ -220,6 +219,8 @@ export default class Form extends Component {
         return (
             <RVD
                 getLayout={(obj, parent = {}) => {
+                    let show = this.getValueByField(obj.show, true);
+                    if(show === false){return false}
                     if (obj.input) {
                         return this.input_layout({ ...obj,flex:parent.row && !obj.size && !obj.flex?1:undefined })
                     }
