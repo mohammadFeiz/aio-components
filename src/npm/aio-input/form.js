@@ -29,13 +29,22 @@ export default class Form extends Component {
     getErrors(){
         return [...Object.keys(this.errors).filter((o)=>!!this.errors[o]).map((o)=>this.errors[o])]
     }
+    removeError(field){
+        let newErrors = {}
+        for(let prop in this.errors){
+            if(prop !== field){newErrors[prop] = this.errors[prop]}
+        }
+        this.errors = newErrors
+    }
     setValue(v,field,obj){
         let { onChange } = this.props;
         let value = this.getValue();
         let newValue = this.setValueByField(value, field, v);
         let error = this.getError(obj,v)
         if(error){this.errors[field] = error}
-        else {this.errors[field] = undefined}
+        else {
+            this.removeError(field)
+        }
         if(onChange){onChange(newValue,this.getErrors())}
         else{this.setState({value:newValue})} 
         
@@ -85,7 +94,7 @@ export default class Form extends Component {
         let {initialValue} = this.state;
         if (footer === false) { return false }
         if (!footer && !onSubmit && !onClose && !reset) { return false }
-        let disabled = !!Object.keys(this.errors).length || initialValue === JSON.stringify(this.getValue())
+        let disabled = !!this.getErrors().length || initialValue === JSON.stringify(this.getValue())
         if(footer){
             let html = typeof footer === 'function'?footer({onReset:()=>this.reset(),disabled,errors:this.getErrors()}):footer
             return {
