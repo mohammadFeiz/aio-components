@@ -1,16 +1,25 @@
 import React ,{Component}from "react";
 import RVD from './../react-virtual-dom/react-virtual-dom';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import anime from "animejs/lib/anime.es.js";
 import "./aio-highlighter.css";
+import $ from 'jquery';
 export default class AIOHighlighter extends Component {
   constructor(props){
     super(props);
-    let {target} = props;
+    let {target,storageKey} = props;
+    if(storageKey){
+      this.Storage = AIOStorage('aio-highlighter' + storageKey);
+      this.isFirst = this.Storage.load({name:'isfirst',def:true})
+      this.Storage.save({name:'isfirst',value:false})
+    }
+    this.index = 0;
     this.state = {
-      limit:{Left:0,Top:0,Width:0,Height:0,TopSpace:0,BottomSpace:0},prevTarget:target,background:'rgba(0,0,0,0.8)',index:-1,
+      limit:{Left:0,Top:0,Width:0,Height:0,TopSpace:0,BottomSpace:0},prevTarget:target,background:'rgba(0,0,0,0.8)',
     }
   }
   componentDidMount(){
+    if(this.isFirst === false){return}
     this.update()
   }
   getArrowIcon(props){
@@ -37,19 +46,19 @@ export default class AIOHighlighter extends Component {
     }
   }
   getHtml(index,limit,dir){
-    let {html = ()=>{}} = this.props;
+    let {html = ()=>{},list} = this.props;
     let column
     if(dir === 'top'){
       column = [
         {flex:1},
-        {align:'vh',html:html(index,limit),className:'aio-highlighter-html'},
+        {align:'vh',html:html(list.eq(index),limit),className:'aio-highlighter-html'},
         this.getArrow(dir,limit.Left,limit.Width)
       ]
     }
     else {
       column = [
         this.getArrow(dir,limit.Left,limit.Width),
-        {align:'vh',html:html(index,limit),className:'aio-highlighter-html'},
+        {align:'vh',html:html(list.eq(index),limit),className:'aio-highlighter-html'},
         {flex:1}
       ]
     }
@@ -85,8 +94,8 @@ export default class AIOHighlighter extends Component {
     }
   }
   update(){
-    let {limit} = this.state,{target} = this.props; 
-    if(typeof target !== 'object'){
+    let {limit} = this.state,{target,list} = this.props; 
+    if(!list && typeof target !== 'object'){
       console.error('aio-highlighter error => target props should be a document object model(DOM)');
       return false
     }
@@ -95,7 +104,7 @@ export default class AIOHighlighter extends Component {
       'easeOutCirc','easeOutBack','easeInBounce','easeInOutQuad','easeInOutCubic','easeInOutQuart','easeInOutQuint','easeInOutSine','easeInOutExpo','easeInOutCirc','easeInOutBack','easeInOutBounce',
       'easeOutBounce','easeOutInQuad','easeOutInCubic','easeOutInQuart','easeOutInQuint','easeOutInSine','easeOutInExpo','easeOutInCirc','easeOutInBack','easeOutInBounce',
     ]
-    let newLimit = this.getDomLimit(target)
+    let newLimit = this.getDomLimit(list?list.eq(this.index):target)
     anime({
       targets: [limit],Top: newLimit.Top,Left: newLimit.Left,Width: newLimit.Width,Height: newLimit.Height,TopSpace:newLimit.TopSpace,
       BottomSpace:newLimit.BottomSpace,duration: 700,count: 1,loop: false,easing: easingNames[23],update: () => this.setState({})
@@ -103,23 +112,33 @@ export default class AIOHighlighter extends Component {
     this.setState({prevTarget:target})
   }
   click(){
-    let {onClick = ()=>{}} = this.props;
+    let {onClick = ()=>{},list,onClose = ()=>{}} = this.props;
+    if(list){
+      this.index++;
+      if(this.index >= list.length){
+        onClose()
+      }
+      else{
+        this.update()
+      }
+    }
     onClick();
   }
   
   render(){
-    let {limit,index} = this.state;
-    let {mouseAccess} = this.props;
+    if(this.isFirst === false){return null}
+    let {limit} = this.state;
+    let {mouseAccess,style} = this.props;
     this.handleTargetChange();
     return (
     <RVD
       layout={{
         className:'fullscreen aio-highlighter',
-        style:{pointerEvents:mouseAccess?'none':'all'},
+        style:{pointerEvents:mouseAccess?'none':'all',...style},
         column:[
           {
             size:limit.Top,align:'vh',className:'aio-highlighter-mask',
-            html:limit.TopSpace > limit.BottomSpace?this.getHtml(index,limit,'top'):undefined,
+            html:limit.TopSpace > limit.BottomSpace?this.getHtml(this.index,limit,'top'):undefined,
             onClick:()=>this.click(),
           },
           {
@@ -142,7 +161,7 @@ export default class AIOHighlighter extends Component {
           {
             flex:1,align:'vh',className:'aio-highlighter-mask',
             onClick:()=>this.click(),
-            html:limit.TopSpace <= limit.BottomSpace?this.getHtml(index,limit,'bottom'):undefined
+            html:limit.TopSpace <= limit.BottomSpace?this.getHtml(this.index,limit,'bottom'):undefined
           },
         ]
       }}

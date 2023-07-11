@@ -1,7 +1,9 @@
 .aio-highlighter {
-    font-family: roboto;
     font-size: 24px;
     pointer-events: none;
+    direction:ltr;
+    color: rgba(255, 255, 255, 0.5);
+
 }
 
 .aio-highlighter-mask {
@@ -18,7 +20,6 @@
 }
 .aio-highlighter-html{
     background:rgba(0,0,0,0.2);
-    color: rgba(255, 255, 255, 0.5);
     padding:12px;
     box-sizing: border-box;
 }
