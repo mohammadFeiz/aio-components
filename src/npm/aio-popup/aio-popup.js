@@ -83,9 +83,9 @@ export default class AIOPopup extends Component {
     let { popups, confirm } = this.state;
     let { popupConfig = {} } = this.props;
     if (!popups.length) { return null }
-    return popups.map(({ className, blur, type, rtl = this.props.rtl, style, onClose = () => { }, removePopup, title, header, closeType, body, _popupId }, i) => {
+    return popups.map(({ className, blur, type, rtl = this.props.rtl, style, onClose = () => { }, removePopup, title, header, closeType, body, _popupId, animate }, i) => {
       let props = {
-        _popupId,
+        _popupId, animate,
         key: i, blur: confirm || i === popups.length - 2,
         ...popupConfig,
         className, blur, type, rtl, style, onClose, removePopup, title, header, closeType, body,
@@ -152,23 +152,37 @@ class Popup extends Component {
     onClose();
   }
   componentDidMount() {
-    $(this.dom.current).animate({ height: '100%', width: '100%', left: '0%', top: '0%', opacity: 1 }, 300);
+    let { animate } = this.props;
+    if (animate !== false) {
+      $(this.dom.current).animate({ height: '100%', width: '100%', left: '0%', top: '0%', opacity: 1 }, 300);
+    }
+
   }
   render() {
-    let { rtl, style, body, _popupId } = this.props;
+    let { rtl, style, body, _popupId, animate } = this.props;
     let props = {
       className: this.getClassName(),
       onClick: (e) => this.backClick(e),
       'data-popup-id': _popupId,
     }
+    let Style;
+    if (animate === false) {
+      Style = {
+        position: 'absolute', left: '0%', top: '0%', height: '100%', width: '100%',
+        opacity: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }
+    }
+    else {
+      Style = {
+        position: 'absolute', left: '50%', top: '100%', height: '0%', width: '0%',
+        opacity: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }
+    }
     return (
       <div {...props}>
         <div
           ref={this.dom}
-          style={{
-            position: 'absolute', left: '50%', top: '100%', height: '0%', width: '0%',
-            opacity: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
+          style={Style}
         >
           <RVD
             layout={{
@@ -258,11 +272,11 @@ export class Popover extends Component {
     this.dom = createRef();
   }
   handleClose(e) {
-    let { id,onClose = ()=>{} } = this.props;
+    let { id, onClose = () => { } } = this.props;
     let target = $(e.target);
     let datauniqid = target.attr('datauniqid')
-    if (datauniqid === id) {return}
-    if (target.parents(`[data-uniq-id=${id}]`).length) {return}
+    if (datauniqid === id) { return }
+    if (target.parents(`[data-uniq-id=${id}]`).length) { return }
     onClose()
   }
   componentDidMount() {
@@ -280,7 +294,6 @@ export class Popover extends Component {
     Align(popup, target, { fixStyle: fixPopupPosition, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
     popup.focus();
   }
-
   getClassName() {
     let { attrs = {}, className } = this.props;
     let { className: popupClassName } = attrs;
@@ -306,7 +319,6 @@ export class Popover extends Component {
     return className;
   }
   //start
-
   render() {
     var { attrs = {}, body, backdropAttrs = {}, backdrop, id } = this.props;
     let props = {
