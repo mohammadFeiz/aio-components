@@ -53,6 +53,15 @@ export default class ReactSuperApp extends Component {
         }
 
       },
+      print: (callback = ()=>{})=>{
+        $('body').removeClass('aio-button-open');
+        $('.rsa').addClass('print-mode');
+        setTimeout(()=>{
+          window.print();
+          $('.rsa').removeClass('print-mode');
+          callback()
+        },20)
+      },
       setNavId: (navId) => this.setState({ navId })
     }
     if (props.themes) { this.state.changeTheme('init') }
