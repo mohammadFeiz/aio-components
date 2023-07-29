@@ -90,11 +90,10 @@ function Service(config) {
       }
     }
   }
-  function getFromCache({cache,cacheName,api}){
+  function getFromCache({cache}){
     if (cache) {
-      if(isNaN(cache)){console.error('aio-storage => cache should be a number, but cache is:',cache); return;}
       let storage = AIOStorage(config.id);
-      return storage.load({name:cacheName ? 'storage-' + cacheName : 'storage-' + api,time:cache})
+      return storage.load({name:cache.name,time:cache.time})
     }
   }
   async function getResultByResponse(obj,getMock){//return undefined(getResponse not set) or string(error) or response
@@ -155,16 +154,27 @@ function Service(config) {
     return res;
   }
   return async (obj) => {
-    let { callback,cache,cacheName,api,onError} = obj;
+    let { callback,cache,api,onError} = obj;
     if(!api){
       helper.showAlert({type:'error',text:`aio-service error => missing api property`});
       return;
     }
     let result = await fetchData(obj);
     result = validate(result,obj);
-    if (cache) {AIOStorage(config.id).save({name:cacheName ? 'storage-' + cacheName : 'storage-' + api,value:result})}
+    if(cache){AIOStorage(config.id).save({name:cache.name,value:result})}
     if(callback && typeof result !== 'string'){callback(result);}
     if(onError && typeof result === 'string'){onError(result);}
     return result;
   }
+}
+
+export function RemoveCache(id,name){
+  if(id === undefined){return}
+  let storage = AIOStorage(id);
+  storage.remove({name})
+}
+export function GetCache(id){
+  if(id === undefined){return}
+  let storage = AIOStorage(id);
+  return storage.getModel()
 }
