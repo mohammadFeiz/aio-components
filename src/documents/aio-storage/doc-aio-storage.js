@@ -9,7 +9,7 @@ export default class DOC_AIOStorage extends Component{
         super(props);
         let Storage = AIOStorage('my storage');
         this.Storage = Storage;
-        let list = Storage.load({name:'list',def:[],time: 60 * 1000});
+        let list = Storage.load({name:'list',def:[],time: 6000 * 1000});
         this.state = {list,name:'',age:''}
     }
     componentDidMount(){
@@ -45,6 +45,10 @@ export default class DOC_AIOStorage extends Component{
             this.setState({list:newList});
         })
     }
+    removeAll(){
+        this.Storage.remove({name:'list'})
+        this.setState({list:this.Storage.load({name:'list',def:[]})})
+    }
     render(){
         let {list,name,age} = this.state;
         
@@ -68,6 +72,7 @@ export default class DOC_AIOStorage extends Component{
                         },
                         {size:12},
                         {html:<button onClick={()=>this.add()}>Add</button>},
+                        {html:<button onClick={()=>this.removeAll()}>Remove All</button>},
                         {html:<button onClick={()=>this.Storage.export()}>Export</button>},
                         {html:<AIOInput text='Import' type='file' onChange={(files)=>{
                             this.Storage.import({file:files[0],callback:()=>{
