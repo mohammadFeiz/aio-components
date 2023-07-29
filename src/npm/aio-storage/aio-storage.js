@@ -1,6 +1,3 @@
-
-
-
 export default function StorageClass(key){
   if(!key){return}
   let a = {
@@ -18,7 +15,6 @@ export default function StorageClass(key){
       return fields[fields.length - 1]
     },
     removeValueByField(field){
-      debugger
       let fields = field.split('.')
       let parent = this.getParent(field)
       let lastField = fields[fields.length - 1]
@@ -167,10 +163,14 @@ export default function StorageClass(key){
         this.saveStorage();
         callback()
       }})
+    },
+    getModel(){
+      return JSON.parse(JSON.stringify(this.model))
     }
   }
   a.init();
   return {
+    getModel:a.getModel.bind(a),
     save:a.save.bind(a),
     load:a.load.bind(a),
     reset:a.reset.bind(a),
@@ -182,6 +182,3 @@ export default function StorageClass(key){
     import:a.import.bind(a)
   }
 }
-
-
-
