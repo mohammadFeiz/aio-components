@@ -10,6 +10,9 @@
     flex-shrink:0;
     padding:6px;
 }
+.aio-input input,.aio-input textarea{
+    font-weight:inherit;
+}
 .aio-input-rtl{
     direction:rtl;
 }
