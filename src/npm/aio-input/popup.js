@@ -10,7 +10,7 @@ export default class Popup extends Component {
     }
     renderPopOver(content) {
         let {
-            toggle, openRelatedTo, datauniqid,fitHorizontal,rtl, animate, fixPopupPosition, popoverSide, popupHeader, popupFooter,backdrop
+            toggle, openRelatedTo, datauniqid,fitHorizontal,rtl, animate, fixPopupPosition, popoverSide, popupHeader, popupFooter,backdrop,popoverAttrs,backdropAttrs = {}
         } = this.context;
         let { parentDom } = this.props;
         let props = {
@@ -19,8 +19,9 @@ export default class Popup extends Component {
             fitHorizontal,
             getTarget: () => $(parentDom.current),
             onClose: () => toggle(false),
-            backdropAttrs: { className: 'aio-input-popup-container' },
+            backdropAttrs: { ...backdropAttrs,className: 'aio-input-popup-container' + (backdropAttrs.className?' ' + backdropAttrs.className:'') },
             attrs: {
+                ...popoverAttrs
                 //onKeyDown: (e) => keyDown(e, $(this.dom.current)),...popupAttrs
             },
             body: () => (
