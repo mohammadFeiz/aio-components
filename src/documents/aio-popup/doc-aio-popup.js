@@ -19,6 +19,7 @@ export default class DOC_AIOForm extends Component {
                     { text: 'modal', id: 'modal', COMPONENT: () => <Modal /> },
                     { text: 'modal type', id: 'modaltype', COMPONENT: () => <ModalType /> },
                     { text: 'confirm', id: 'confirm', COMPONENT: () => <Confirm /> },
+                    { text: 'prompt', id: 'prompt', COMPONENT: () => <Prompt /> },
                     { text: 'alert', id: 'alert', COMPONENT: () => <Alert /> },
                     { text: 'snakebar', id: 'snakebar', COMPONENT: () => <Snakebar /> },
                 ]}
@@ -762,6 +763,46 @@ this.popup.confirm({
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addConfirm()}>Open confirm</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                {this.popup.render()}
+            </div>
+        )
+    }
+    render() {
+        return (
+            <Example
+                preview={() => this.preview()}
+            />
+        )
+    }
+}
+
+class Prompt extends Component {
+    constructor(props){
+        super(props);
+        this.popup = new AIOPopup()
+    }
+    addPrompt(){
+        this.popup.addPrompt({
+            title:'my propmpt title',
+            text:'this is the text of my prompt . please select your action by footer buttons',
+            onSubmit:(value)=>console.log('you intered' , value)
+        })
+    }
+    preview() {
+        return (
+            <div className='example'>
+                <h3>addPrompt</h3>
+                {
+                    AIODoc().Code(`
+instance.confirm({
+    title:'my confirm title',
+    text:'this is the text of my confirm . please select your action by footer buttons',
+    onSubmit:(value)=>console.log('you intered' , value)
+})
+`)
+                }
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addPrompt()}>Open prompt</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 {this.popup.render()}
             </div>

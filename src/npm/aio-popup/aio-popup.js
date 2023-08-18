@@ -1,7 +1,6 @@
 import React, { Component, createRef } from 'react';
-import { Align } from './../aio-functions/aio-functions';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiChevronRight, mdiChevronLeft, mdiCheckCircleOutline, mdiAlertOutline, mdiInformationOutline, mdiChevronDown } from '@mdi/js';
+import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './aio-popup.css';
@@ -44,6 +43,22 @@ export default class AIOPopup {
       footerButtons:obj.footerButtons,
       onClose:obj.onClose,
       animate:obj.animate
+    })
+  }
+  addPrompt = (obj = {})=>{
+    this.addModal({
+      id:obj.id,
+      attrs:obj.attrs,
+      type:'prompt',
+      title:obj.title,
+      text:obj.text,
+      onClose:obj.onClose,
+      backClose:obj.backClose,
+      backdropAttrs:obj.backdropAttrs,
+      footerButtons:obj.footerButtons,
+      onClose:obj.onClose,
+      animate:obj.animate,
+      onSubmit:obj.onSubmit
     })
   }
   addAlert = (obj = {}) => {
@@ -91,9 +106,9 @@ class Popups extends Component {
     let { modalConfig = {} } = this.props;
     if (!modals.length) { return null }
     return modals.map(({ 
-      blur, type, rtl = this.props.rtl, attrs = {}, onClose,backClose, title,subtitle, headerButtons,footerButtons, closeType, body, id, animate }, i) => {
+      blur, type,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backClose, title,subtitle, headerButtons,footerButtons, closeType, body, id, animate }, i) => {
       let props = {
-        id, animate,backClose,footerButtons,
+        id, animate,backClose,footerButtons,text,onSubmit,
         key: i, blur:i === modals.length - 2,
         ...modalConfig,
         blur, type, rtl, attrs, onClose, title,subtitle, headerButtons, closeType, body,index: i,rtl,
@@ -116,7 +131,7 @@ class Popup extends Component {
     super(props);
     this.dom = createRef();
     this.dui = 'a' + Math.random();
-    this.state = {mounted:props.animate === false}
+    this.state = {mounted:props.animate === false,promptValue:''}
   }
   async onClose() {
     let { onClose } = this.props;
@@ -149,15 +164,28 @@ class Popup extends Component {
           row:()=>headerButtons.map(([text,attrs = {}])=>{
             let {onClick = ()=>{}} = attrs;
             attrs.onClick = ()=> onClick({close:this.onClose.bind(this)})
-            return {attrs,html:text,align:'vh',style:{padding:'0 6px'}}
+            return {attrs,html:text,align:'vh',className:'aio-popup-header-button' + (attrs.className?' ' + attrs.className:''),style:attrs.style}
           })
         },
         { show: closeType === 'close button' && this.props.onClose !== false, size: 48, html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: () => this.onClose() }
       ]
     }
   }
+  getFooterButtons(){
+    let { type,footerButtons,closeText = 'close',submitText = 'submit'} = this.props;
+    if(type === 'prompt'){
+      let {promptValue} = this.state;
+      let {onSubmit} = this.props;
+      if(typeof onSubmit !== 'function'){console.error('aio-popup => addPrompt => onSubmit props is not a function')}
+      return [
+        [closeText,{onClick:()=>this.onClose(),className:'aio-popup-prompt-close-button'}],
+        [submitText,{onClick:onSubmit?()=>onSubmit(promptValue):undefined,disabled:!promptValue,className:'aio-popup-prompt-submit-button'}]
+      ]
+    }
+    return footerButtons
+  }
   footer_layout() {
-    let { footerButtons} = this.props;
+    let footerButtons = this.getFooterButtons()
     if (!footerButtons) { return false }
     return {
       className: 'aio-popup-footer',
@@ -166,8 +194,11 @@ class Popup extends Component {
           gap:6,align:'vh',
           row:()=>footerButtons.map(([text,attrs = {}])=>{
             let {onClick = ()=>{}} = attrs;
+            let className = 'aio-popup-footer-button' + (attrs.className?' ' + attrs.className:'');
             attrs.onClick = ()=> onClick({close:this.onClose.bind(this)})
-            return {attrs,html:text,align:'vh',className:'aio-popup-footer-button'}
+            return {html:(
+              <button {...{...attrs,className}}>{text}</button>
+            ),align:'vh'}
           })
         }
       ]
@@ -188,8 +219,18 @@ class Popup extends Component {
     if(!target.hasClass('aio-popup-backdrop')){return}
     this.onClose()
   }
+  getBody(){
+    let {body,type = 'fullscreen',text} = this.props;
+    if(type === 'prompt'){
+      let {promptValue} = this.state;
+      return (
+        <textarea placeholder={text} type='text' value={promptValue} onChange={(e)=>this.setState({promptValue:e.target.value})}/>
+      )
+    }
+    return body({close:this.onClose.bind(this)})
+  }
   render() {
-    let { rtl, attrs = {}, body, id } = this.props;
+    let { rtl, attrs = {}, id } = this.props;
     let {mounted} = this.state
     let backdropProps = {
       className: this.getBackDropClassName(),
@@ -206,7 +247,7 @@ class Popup extends Component {
             className,style,
             column: [
               this.header_layout(),
-              { flex: 1, html: <div className='aio-popup-body'>{body({close:this.onClose.bind(this)})}</div> },
+              { flex: 1, html: <div className='aio-popup-body'>{this.getBody()}</div> },
               this.footer_layout()
             ]
           }}
@@ -428,4 +469,87 @@ export class Popover extends Component {
     if (backdrop === false) { return popOver; }
     return <div {...props}>{popOver}</div>;
   }
+}
+
+function Align(dom,target,config = {}){
+  let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,animate,rtl} = config;
+  let $$ = {
+    getDomLimit(dom){
+      let offset = dom.offset();
+      let left = offset.left - window.pageXOffset;
+      let top = offset.top - window.pageYOffset;
+      let width = dom.outerWidth();
+      let height = dom.outerHeight();
+      let right = left + width;
+      let bottom = top + height;
+      return {left,top,right,bottom,width,height};
+    },
+    getPageLimit(dom,pageSelector){
+      let page = pageSelector?dom.parents(pageSelector):undefined;
+      page = Array.isArray(page) && page.length === 0?undefined:page;
+      let bodyWidth = window.innerWidth;
+      let bodyHeight = window.innerHeight;
+      let pageLimit = page?$$.getLimit(page):{left:0,top:0,right:bodyWidth,bottom:bodyHeight};
+      if(pageLimit.left < 0){pageLimit.left = 0;}
+      if(pageLimit.right > bodyWidth){pageLimit.right = bodyWidth;}
+      if(pageLimit.top < 0){pageLimit.top = 0;}
+      if(pageLimit.bottom > bodyHeight){pageLimit.bottom = bodyHeight;}
+      return pageLimit;
+    },
+    align(){
+      let pageLimit = $$.getPageLimit(dom,pageSelector);
+      let targetLimit = $$.getDomLimit(target);
+      let domLimit = $$.getDomLimit(dom); 
+      domLimit.top = targetLimit.bottom
+      domLimit.bottom = domLimit.top + domLimit.height;  
+      if(fitHorizontal){domLimit.width = targetLimit.width}
+      //اگر راست به چپ باید باشد
+      if(rtl){
+        //راست المان را با راست هدف ست کن
+        domLimit.right = targetLimit.right;
+        //چپ المان را بروز رسانی کن
+        domLimit.left = domLimit.right - domLimit.width;
+        //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
+        if(domLimit.left < pageLimit.left){domLimit.left = pageLimit.left;}
+      }
+      //اگر چپ به راست باید باشد
+      else{
+        //چپ المان را با چپ هدف ست کن
+        domLimit.left = targetLimit.left; 
+        //راست المان را بروز رسانی کن
+        domLimit.right = domLimit.left + domLimit.width;
+        //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
+        if(domLimit.right > pageLimit.right){domLimit.left = pageLimit.right - domLimit.width;}
+      }
+      //اگر المان از سمت پایین صفحه بیرون زد
+      if(domLimit.bottom > pageLimit.bottom){
+        if(domLimit.height > targetLimit.top - pageLimit.top){domLimit.top = pageLimit.bottom - domLimit.height;}  
+        else{domLimit.top = targetLimit.top - domLimit.height;}
+      }
+      else{domLimit.top = targetLimit.bottom;}
+      let overflowY;
+      if(domLimit.height > pageLimit.bottom - pageLimit.top){
+        domLimit.top = 6;
+        domLimit.bottom = undefined;
+        domLimit.height = pageLimit.bottom - pageLimit.top - 12;
+        overflowY = 'auto';
+      }
+      let finalStyle = {left:domLimit.left,top:domLimit.top,width:domLimit.width,overflowY,...style}
+        console.log(finalStyle)
+      if(animate){
+        let beforeTop = finalStyle.top + 90,afterTop = finalStyle.top,obj;
+        if(animate === true){
+          finalStyle.top = beforeTop; finalStyle.opacity = 0;
+          obj = {top:afterTop,opacity:1}
+        }
+        else{obj = animate}
+        dom.css(fixStyle(finalStyle,{targetLimit,pageLimit}))
+        dom.animate(obj,{duration:100})
+      }
+      else{
+        dom.css(fixStyle(finalStyle,{targetLimit,pageLimit}))
+      }
+    }
+  }
+  $$.align();
 }
