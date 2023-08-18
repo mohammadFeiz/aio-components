@@ -11,7 +11,11 @@ export default class ReactSuperApp extends Component {
   constructor(props) {
     super(props);
     let { touch = 'ontouchstart' in document.documentElement, splash, splashTime = 7000 } = props;
-    this.storage = AIOStorage('rsa-cache')
+    this.storage = AIOStorage('rsa-cache');
+    let popup = new AIOPopup({
+      onChange:({modals,confirm})=>this.setState({isThereOpenedPopup:!!confirm || !!modals.length})
+    });
+    this.popup = popup;
     window.oncontextmenu = function (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -19,16 +23,14 @@ export default class ReactSuperApp extends Component {
     };
     this.state = {
       navId: this.getNavId(),
-      popupActions:{},
       isThereOpenedPopup:false,
       splash,
       showSplash: true,
-      confirm: false,
       touch,
       sideOpen: false,
-      addPopup: (o)=>this.state.popupActions.addPopup(o),
-      removePopup: (id)=>this.state.popupActions.removePopup(id),
-      setConfirm: (obj)=>this.state.popupActions.setConfirm(obj),
+      addModal: (o)=>popup.addModal(o),
+      removeModal: (id)=>popup.removeModal(id),
+      setConfirm: (obj)=>popup.setConfirm(obj),
       
       changeTheme: (index) => {
         let { themes } = props;
@@ -152,7 +154,7 @@ export default class ReactSuperApp extends Component {
       <div className={`rsa-container` + (className?' ' + className:'')} style={style}>
         <div className='rsa'>
           {this.renderMain()},
-          <AIOPopup getActions={(o)=>this.setState({popupActions:{...o}})} onChange={({popups,confirm})=>this.setState({isThereOpenedPopup:!!confirm || !!popups.length})}/>
+          {this.popup.render()}
           {sides.length && <SideMenu className={sideClassName} sideHeader={sideHeader} sideFooter={sideFooter} sides={sides} sideId={sideId} sideOpen={sideOpen} rtl={rtl} onClose={() => this.setState({ sideOpen: false })} />}
           {splash && splash()}
         </div>

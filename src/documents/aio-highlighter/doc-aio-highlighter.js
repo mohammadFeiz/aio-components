@@ -13,12 +13,11 @@ export default class DOC_AIOForm extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='basic'
+                navId='testFocus'
                 navs={[
                     { text: 'basic', id: 'basic', COMPONENT: () => <Basic /> },
                     { text: 'mouse access', id: 'mouseAccess', COMPONENT: () => <MouseAccess /> },
-                    { text: 'padding', id: 'padding', COMPONENT: () => <Padding /> },
-
+                    { text: 'test focus', id: 'testFocus', COMPONENT: () => <TestFocus /> }
 
                 ]}
             />
@@ -31,44 +30,33 @@ class Basic extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            index: false
+            show: true
         }
     }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show basic usage of aio-highlighter component' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter mouseAccess Props' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
-    }
     preview() {
-        let { index } = this.state;
+        let { show } = this.state;
         return (
             <>
                 {
-                    index !== false &&
+                    show &&
                     <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
+                        onClose={()=>this.setState({show:false})}
+                        padding={12}
+                        targets={[
+                            ()=>$('.rsa-navigation-item').eq(0),
+                            ()=>$('.rsa-navigation-item').eq(1),
+                            ()=>$('.rsa-header-title'),
+                            ()=>$('#go-to-home')
+                        ]}
+                        htmls={[
+                            ()=>'this tab show basic usage of aio-highlighter component',
+                            ()=>'this tab show usage of aio-highlighter mouseAccess Props',
+                            ()=>'this is title of page',
+                            ()=>'this button is for exit to home page'
+                        ]}
                     />
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.setState({show:true})}>start</button>
             </>
         )
     }
@@ -78,46 +66,29 @@ class Example extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            index: false
+            show: true
         }
     }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show usage of aio-highlighter component width target props with string type' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter component width target props with array type' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
-
-    }
     render() {
-        let { index } = this.state;
+        let { show } = this.state;
+        if(!show){return false}
         return (
-            <>
-                {
-                    index !== false &&
-                    <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
-                    />
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
-            </>
+            <AIOHighlighter
+                onClose={()=>this.setState({show:false})}
+                padding={12}
+                targets={[
+                    ()=>$('.rsa-navigation-item').eq(0),
+                    ()=>$('.rsa-navigation-item').eq(1),
+                    ()=>$('.rsa-header-title'),
+                    ()=>$('#go-to-home')
+                ]}
+                htmls={[
+                    ()=>'this tab show basic usage of aio-highlighter component',
+                    ()=>'this tab show usage of aio-highlighter mouseAccess Props',
+                    ()=>'this is title of page',
+                    ()=>'this button is for exit to home page'
+                ]}
+            />
         )
     }
 }
@@ -142,45 +113,23 @@ class MouseAccess extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            index: false
+            show: true
         }
     }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show basic usage of aio-highlighter component' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter mouseAccess Props' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
+    componentDidMount(){
+        $('.aio-input-tabs-option').eq(1).on('click',()=>{
+            let {highlightByIndex} = this.state;
+            highlightByIndex(1)
+        })
+        $('.aio-input-tabs-option').eq(0).on('click',()=>{
+            this.setState({show:false})
+        })
     }
     preview() {
-        let { index } = this.state;
         return (
             <>
-                {
-                    index !== false &&
-                    <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
-                        mouseAccess={true}
-                    />
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
+                
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.setState({show:true})}>start</button>
             </>
         )
     }
@@ -190,47 +139,141 @@ class Example extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            index: false
+            show: true
         }
     }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show usage of aio-highlighter component width target props with string type' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter component width target props with array type' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
-
+    componentDidMount(){
+        $('.aio-input-tabs-option').eq(1).on('click',()=>{
+            let {highlightByIndex} = this.state;
+            highlightByIndex(1)
+        })
+        $('.aio-input-tabs-option').eq(0).on('click',()=>{
+            this.setState({show:false})
+        })
     }
     render() {
-        let { index } = this.state;
+        let { show } = this.state;
+        if(!show){return false}
+        return (
+            <AIOHighlighter
+                getActions={({highlightByIndex})=>this.setState({highlightByIndex})}
+                targets={[
+                    ()=>$('.aio-input-tabs-option').eq(1),
+                    ()=>$('.aio-input-tabs-option').eq(0)
+                ]}
+                htmls={[
+                    ()=>'click here to show code',
+                    ()=><div style={{background:'dodgerblue'}}>click here to show preview</div>
+                ]}
+                mouseAccess={true}
+            />
+        )
+    }
+}
+      `)
+    }
+    toolbar() {
+        return ('')
+    }
+    render() {
+        let {show} = this.state
         return (
             <>
+                <Example
+                    preview={() => this.preview()}
+                    code={() => this.code()}
+                    toolbar={() => this.toolbar()}
+                />
                 {
-                    index !== false &&
+                    show !== false &&
                     <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
+                        getActions={({highlightByIndex})=>this.setState({highlightByIndex})}
+                        targets={[
+                            ()=>$('.aio-input-tabs-option').eq(1),
+                            ()=>$('.aio-input-tabs-option').eq(0)
+                        ]}
+                        htmls={[
+                            ()=>'click here to show code',
+                            ()=><div style={{background:'dodgerblue'}}>click here to show preview</div>
+                        ]}
                         mouseAccess={true}
                     />
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
             </>
+            
+        )
+    }
+}
+
+
+class TestFocus extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: true
+        }
+    }
+    preview() {
+        let { show } = this.state;
+        return (
+            <>
+                {
+                    show &&
+                    <AIOHighlighter
+                        onClose={()=>this.setState({show:false})}
+                        padding={12}
+                        targets={[
+                            ()=>$('.my-test').eq(0),
+                            ()=>$('.my-test').eq(11)
+                        ]}
+                        htmls={[
+                            ()=>'test0',
+                            ()=>'test11',
+                            
+                        ]}
+                    />
+                }
+                <div className='h-100 ofy-auto w-100'>
+                {
+                    new Array(12).fill(0).map((o,i)=>{
+                        return (
+                            <div className='my-test' style={{width:'100%',padding:48,fontSize:20}}>{`this is my text ${i}`}</div>
+                        )
+                    })
+                }
+                </div>
+            </>
+        )
+    }
+    code() {
+        return (`
+class Example extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: true
+        }
+    }
+    render() {
+        let { show } = this.state;
+        if(!show){return false}
+        return (
+            <AIOHighlighter
+                onClose={()=>this.setState({show:false})}
+                padding={12}
+                targets={[
+                    ()=>$('.rsa-navigation-item').eq(0),
+                    ()=>$('.rsa-navigation-item').eq(1),
+                    ()=>$('.rsa-header-title'),
+                    ()=>$('#go-to-home')
+                ]}
+                htmls={[
+                    ()=>'this tab show basic usage of aio-highlighter component',
+                    ()=>'this tab show usage of aio-highlighter mouseAccess Props',
+                    ()=>'this is title of page',
+                    ()=>'this button is for exit to home page'
+                ]}
+            />
         )
     }
 }
@@ -249,119 +292,6 @@ class Example extends Component {
         )
     }
 }
-
-class Padding extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            index: false
-        }
-    }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show basic usage of aio-highlighter component' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter mouseAccess Props' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
-    }
-    preview() {
-        let { index } = this.state;
-        return (
-            <>
-                {
-                    index !== false &&
-                    <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
-                        padding={0}
-                    />
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
-            </>
-        )
-    }
-    code() {
-        return (`
-class Example extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            index: false
-        }
-    }
-    getDom() {
-        let { index } = this.state;
-        if (index === 0) { return $('.rsa-navigation-item').eq(0) }
-        if (index === 1) { return $('.rsa-navigation-item').eq(1) }
-        if (index === 2) { return $('.rsa-header-title') }
-        if (index === 3) { return $('#go-to-home') }
-    }
-    changeIndex() {
-        let { index } = this.state;
-        let newIndex;
-        if (index === false) { newIndex = 0 }
-        else if (index === 3) { newIndex = false }
-        else { newIndex = index + 1 }
-        this.setState({ index: newIndex })
-    }
-    getHTML() {
-        let { index } = this.state;
-        if (index === 0) { return 'this tab show usage of aio-highlighter component width target props with string type' }
-        if (index === 1) { return 'this tab show usage of aio-highlighter component width target props with array type' }
-        if (index === 2) { return 'this is title of page' }
-        if (index === 3) { return 'this button is for exit to home page' }
-
-    }
-    render() {
-        let { index } = this.state;
-        return (
-            <>
-                {
-                    index !== false &&
-                    <AIOHighlighter
-                        target={this.getDom()}
-                        onClick={() => this.changeIndex()}
-                        html={this.getHTML.bind(this)}
-                        padding={0}
-                    />
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.changeIndex()}>start</button>
-            </>
-        )
-    }
-}
-      `)
-    }
-    toolbar() {
-        return ('')
-    }
-    render() {
-        return (
-            <Example
-                preview={() => this.preview()}
-                code={() => this.code()}
-                toolbar={() => this.toolbar()}
-            />
-        )
-    }
-}
-
 
 
 class Example extends Component {

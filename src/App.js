@@ -17,12 +17,13 @@ import Puzzle from './documents/puzzle/index';
 import DOC_AIODragList from './documents/aio-drag-list/doc-aio-drag-list';
 import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
 import DOC_AIOService from './documents/aio-service/doc-aio-service';
+import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
 
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-highlighter',
+      part:'aio-popup',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-highlighter':{name:'aio-highlighter',Render:DOC_AIOHighlighter},
@@ -41,6 +42,7 @@ export default class AIOComponents extends Component{
         'aio-drag-list':{name:'aio-drag-list',Render:DOC_AIODragList},
         'react-super-app':{name:'react-super-app',Render:DOC_ReactSuperApp},
         'aio-service':{name:'aio-service',Render:DOC_AIOService},
+        'aio-popup':{name:'aio-popup',Render:DOC_AIOPopup},
 
 
       }
