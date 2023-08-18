@@ -34,7 +34,7 @@ export default class AIOPopup {
     this.addModal({
       id:obj.id,
       attrs:obj.attrs,
-      type:'confirm',
+      type:obj.type || 'confirm',
       body:()=>obj.text,
       title:obj.title,
       onClose:obj.onClose,

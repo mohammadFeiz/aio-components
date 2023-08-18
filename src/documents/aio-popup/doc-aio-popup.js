@@ -736,15 +736,16 @@ class Confirm extends Component {
         super(props);
         this.popup = new AIOPopup()
     }
-    addConfirm(){
-        this.popup.addConfirm({
-            title:'my confirm title',
-            text:'this is the text of my confirm . please select your action by footer buttons',
-            footerButtons:[
+    addConfirm(obj = {}){
+        let {
+            title = 'my confirm title',
+            text = 'this is the text of my confirm . please select your action by footer buttons',
+            footerButtons = [
                 ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
                 ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
             ]
-        })
+        } = obj
+        this.popup.addConfirm({...obj,title,text,footerButtons})
     }
     preview() {
         return (
@@ -764,6 +765,22 @@ this.popup.confirm({
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addConfirm()}>Open confirm</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3>confirm top</h3>
+                {
+                    AIODoc().Code(`
+this.popup.confirm({
+    type:'top',
+    text:'this is the text of my confirm . please select your action by footer buttons',
+    footerButtons:[
+        ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
+        ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
+    ]
+})
+                    `)
+                }
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addConfirm({type:'top',title:''})}>Open confirm</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                
                 {this.popup.render()}
             </div>
         )
