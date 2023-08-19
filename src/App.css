@@ -63,3 +63,23 @@
 .size18{
   font-size:18px;
 }
+.aio-component-table{
+  border:1px solid #ddd;
+  border-collapse: collapse;
+  font-size:12px;
+  width:100%;
+}
+.aio-component-table thead{
+  border-bottom:1px solid #ddd;
+}
+.aio-component-table td{
+  border-right:1px solid #ddd;
+  padding: 6px;
+}
+.aio-component-table tr{
+  border-bottom:1px solid #ddd;
+}
+.aio-component-table th{
+  border-right:1px solid #ddd;
+  padding: 6px;
+}

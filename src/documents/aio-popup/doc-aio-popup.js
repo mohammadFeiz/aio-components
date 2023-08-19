@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component,createRef } from 'react';
 import DOC from '../../resuse-components/doc';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import AIOPopup from '../../npm/aio-popup/aio-popup';
@@ -7,21 +7,21 @@ import content from './content';
 import {Icon} from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import $ from 'jquery';
 import './index.css';
 export default class DOC_AIOForm extends Component {
     render() {
         return (
             <DOC
                 {...this.props}
-                navId='instance'
+                navId='popover'
                 navs={[
                     { text: 'aio-popup documentation', id: 'instance', COMPONENT: () => <Instance /> },
                     { text: 'modal', id: 'modal', COMPONENT: () => <Modal /> },
-                    { text: 'modal type', id: 'modaltype', COMPONENT: () => <ModalType /> },
-                    { text: 'confirm', id: 'confirm', COMPONENT: () => <Confirm /> },
-                    { text: 'prompt', id: 'prompt', COMPONENT: () => <Prompt /> },
+                    { text: 'modal position', id: 'modalposition', COMPONENT: () => <ModalPosition /> },
                     { text: 'alert', id: 'alert', COMPONENT: () => <Alert /> },
                     { text: 'snakebar', id: 'snakebar', COMPONENT: () => <Snakebar /> },
+                    { text: 'popover', id: 'popover', COMPONENT: () => <Popover /> },
                 ]}
             />
         )
@@ -66,84 +66,238 @@ function MyCompoennt(){
                 {
                     AIODoc().Code(`
 instance.addModal({
-    //title property => (string) (optional) (title of modal)
-    title:'my modal title',
-    //subtitle property (string) (optional) (subtitle of modal)
-    subtitle:'my modal subtitle', 
-    //type property ('fullscreen' | 'top' | 'right' | 'left' | 'bottom') (optional) (set position of modal)
-    type:'fullscreen', 
-    //attrs property (object) (optional) (set custom attributes on modal like style,classname,...)
+    header:{
+        attrs:{className:'my-modal-header'},
+        title:'My Modal Title',
+        subtitle:'My Modal Subtitle',
+        onClose:undefined,
+        buttons:[
+            ['save',{onClick:()=>this.save(),className:'save-button'}]
+        ]
+    },
+    body:{
+        attrs:{className:'my-modal-body'},
+        render:({close})=><MyForm onClose={close}/>
+    }, 
+    footer:{
+        attrs:{className:'my-modal-footer'},
+        buttons:[
+            ['Save',{onClick:()=>this.save(),className:'save-button'}],
+            ['Cansel',{onClick:()=>this.cansel(),className:'cansel-button'}]
+        ],
+    }
+    backdrop:{
+        attrs:{style:{background:'rgba(0,0,0,0.4)'}},
+        close:true
+    },
+    id:'my-register-form',
+    position:'fullscreen', 
     attrs:{
         className:'my-modal'
     },
-    //backClose property (boolean) (default is true) (set true for close modal after click on backdrop of modal)
-    backClose:true, 
-    //backdropAttrs property (object) (optional) (set custom attributes on modal backdrop like style,classname,...)
-    backdropAttrs:{
-        style:{background:'rgba(0,0,0,0.4)'}
-    }, 
-    //body property (function) (required) 
-    //(returns jsx or html for render body of modal and get some functons as parameter object, 
-    //like close to handle close modal manualy by call it)
-    body:({close})=><MyForm onClose={close}/>, 
-    //headerButtons property (array of [<buttontext(string)>,<button attrs(object)>]) (optional) (set some custom buttons in modal header)
-    headerButtons:[
-        ['save',{onClick:()=>this.save(),className:'save-button'}]
-    ]
-    //footerButtons property (array of [<buttontext(string)>,<button attrs(object)>]) (optional) (set some custom buttons in modal footer)
-    footerButtons:[
-        ['Save',{onClick:()=>this.save(),className:'save-button'}],
-        ['Cansel',{onClick:()=>this.cansel(),className:'cansel-button'}],
-    ],
-    //id property (any) (optional) (use for handle prevent open a uniq popup more than one time)
-    //If a popup with a specific id is open and you request to open a popup with the same id, 
-    //the popup will be closed first and then it will be opened again on the top of list of popups.
-    id:'my-register-form',
-    //animate property (boolean) (default is true) (if true, The opening of the popup will be accompanied by animation )
-    animate:true,
-    //onClose property (function callback) (optional) (set onClose top prevent close popup automatically and you can close it manually) 
-    onClose:()=>this.closePopup()
+    animate:true
 })
 `)
                 }
+                <h5>header</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>configure modal header</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>header properties</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>attrs</td>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>set modal header attributes</td>
+                        </tr>
+                        <tr>
+                            <td>title</td>
+                            <td>string</td>
+                            <td>---</td>
+                            <td>title of modal</td>
+                        </tr>
+                        <tr>
+                            <td>subtitle</td>
+                            <td>string</td>
+                            <td>---</td>
+                            <td>subtitle of modal</td>
+                        </tr>
+                        <tr>
+                            <td>onClose</td>
+                            <td>undefined | false | function</td>
+                            <td>undefined</td>
+                            <td>
+                                set false to prevent show close button in header.
+                                set function to prevent close popup automatically and you can close it manually.
+                                and if undefined, the close button will appear and it will automatically close the modal
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>buttons</td>
+                            <td>array</td>
+                            <td>---</td>
+                            <td>use custom buttons in modal header. each member of buttons is an array width 2 members,first is button text and second is button attributes object</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>body</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>object</td>
+                            <td>yes</td>
+                            <td>configure modal body</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>body properties</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>attrs</td>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>set modal body attributes</td>
+                        </tr>
+                        <tr>
+                            <td>render</td>
+                            <td>function</td>
+                            <td>---</td>
+                            <td>
+                                returns jsx or html for render content of modal body and get some functions as parameter object like close to handle close modal manualy by call it
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>footer</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>configure modal footer</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>footer properties</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr><td>attrs</td><td>object</td><td>---</td><td>set modal footer attributes</td></tr>
+                        <tr>
+                            <td>buttons</td><td>array</td><td>---</td>
+                            <td>use custom buttons in modal footer. each member of buttons is an array width 2 members,first is button text and second is button attributes object</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>backdrop</h5>
+                <table className='aio-component-table'>
+                    <thead><th>Type</th><th>Default</th><th>Description</th></thead>
+                    <tbody><tr><td>object</td><td>---</td><td>configure modal backdrop</td></tr></tbody>
+                </table>
+                <h5>backdrop properties</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>attrs</td>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>set modal backdrop attributes</td>
+                        </tr>
+                        <tr>
+                            <td>close</td>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>set true for handle close modal after click on backdrop</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>id</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>number or string</td>
+                            <td>---</td>
+                            <td>
+                                use for handle prevent open a uniq popup more than one time.
+                                if a popup with a specific id is open and you request to open a popup with the same id, 
+                                the popup will be closed first and then it will be opened again on the top of list of popups.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>position</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>'fullscreen' | 'top' | 'right' | 'left' | 'bottom' | 'center'</td>
+                            <td>fullscreen</td>
+                            <td>set position of modal</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>attrs</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>set custom attributes on modal</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>animate</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>boolean</td>
+                            <td>true</td>
+                            <td>if true, The opening of the popup will be accompanied by animation</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>instance.addConfirm()</h3>
-                <h5>
-                    user instance.addConfirm() to show confirm box in your page. you can add more than one confirm and dont need to handle any state of that 
-                </h5>
-                {
-                    AIODoc().Code(`
-instance.addConfirm({
-    //title property => (string) (optional) (title of confirm)
-    title:'my confirm title',
-    //attrs property (object) (optional) (set custom attributes on confirm box like style,classname,...)
-    attrs:{
-        className:'my-confirm'
-    },
-    //backClose property (boolean) (default is true) (set true for close confirm after click on backdrop of confirm)
-    backClose:true, 
-    //backdropAttrs property (object) (optional) (set custom attributes on confirm box backdrop like style,classname,...)
-    backdropAttrs:{
-        style:{background:'rgba(0,0,0,0.4)'}
-    }, 
-    //text property (string) (required) (text of confirm) 
-    text:'are you sure to remove?', 
-    //footerButtons property (array of [<buttontext(string)>,<button attrs(object)>]) (optional) (set some custom buttons in copnfirm box footer)
-    footerButtons:[
-        ['Approve',{onClick:()=>this.approve(),className:'approve-button'}],
-        ['Cansel',{onClick:()=>this.cansel(),className:'cansel-button'}],
-    ],
-    //id property (any) (optional) (use for handle prevent open a uniq confirm more than one time)
-    //If a confirm box with a specific id is open and you request to open a confirm box with the same id, 
-    //the confirm box will be closed first and then it will be opened again on the top of list of popups.
-    id:'my-register-form',
-    //animate property (boolean) (default is true) (if true, The opening of the confirm box will be accompanied by animation )
-    animate:true,
-    //onClose property (function callback) (optional) (set onClose top prevent close confirm box automatically and you can close it manually) 
-    onClose:()=>this.closePopup()
-})
-`)
-                }
                 <h3>instance.addAlert()</h3>
                 <h5>
                     user instance.addAlert() to show alert box in your page. you can add more than one alert and dont need to handle any state of that 
@@ -168,120 +322,184 @@ instance.addSnakebar(props)
             </div>
         )
     }
-    code() {
-        return (`
-
-      `)
-    }
-    toolbar() {
-        return ('')
-    }
-    render() {
-        return (
-            <Example
-                preview={() => this.preview()}
-                code={() => this.code()}
-                toolbar={() => this.toolbar()}
-            />
-        )
-    }
+    render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Modal extends Component {
     constructor(props){
         super(props);
         this.popup = new AIOPopup()
+        this.state = {temp:''}
     }
     modal1(){
-        this.popup.addModal({title:'my modal',body:()=>content})
+        this.popup.addModal({
+            header:{title:'my modal'},
+            body:{render:()=>content}
+        })
     }
     modal2(){
-        this.popup.addModal({title:'my modal',body:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>})
+        this.popup.addModal({
+            header:{title:'my modal'},
+            body:{render:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>}
+        })
     }
     modal3(){
-        this.popup.addModal({title:'my modal',subtitle:'my modal subtitle',body:()=>content})
+        this.popup.addModal({
+            header:{title:'my modal',subtitle:'my modal subtitle'},
+            body:{render:()=>content}
+        })
     }
     modal4(){
-        this.popup.addModal({title:'my modal',subtitle:'my modal subtitle',headerButtons:[
-            [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-            [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
-            ['My Button']
-        ],body:()=>content})
+        this.popup.addModal({
+            header:{
+                title:'my modal',
+                subtitle:'my modal subtitle',
+                buttons:[
+                    [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
+                    [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
+                    ['My Button']
+                ]
+            },
+            body:{
+                render:()=>content
+            }
+        })
+
     }
     backClose(){
         this.popup.addModal({
-            type:'top',
-            backClose:true,
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        row:[
-                            {
-                                flex:1,
-                                style:{maxHeight:400,overflowY:'auto'},
-                                html:'this is my sample text in modal',
-                                align:'v'},
-                            {
-                                gap:6,
-                                column:[
-                                    {html:(<button className='btn-123'>Approve</button>)},
-                                    {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
+            position:'top',
+            backdrop:{
+                close:true
+            },
+            body:{
+                render:({close})=>(
+                    <RVD
+                        layout={{
+                            row:[
+                                {
+                                    flex:1,
+                                    style:{maxHeight:400,overflowY:'auto'},
+                                    html:'this is my sample text in modal',
+                                    align:'v'},
+                                {
+                                    gap:6,
+                                    column:[
+                                        {html:(<button className='btn-123'>Approve</button>)},
+                                        {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                                    ]   
+                                }
+                            ]
+                        }}
+                    />
+                )
+            }
         })
     }
-    remove(){
+    removeModal(){
         this.popup.addModal({
-            type:'top',
+            position:'top',
             id:'one',
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        row:[
-                            {
-                                flex:1,
-                                style:{maxHeight:400,overflowY:'auto'},
-                                html:'this is my sample text in modal',
-                                align:'v'},
-                            {
-                                gap:6,
-                                column:[
-                                    {html:(<button className='btn-123'>Approve</button>)},
-                                    {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
+            body:{
+                render:({close})=>(
+                    <RVD
+                        layout={{
+                            row:[
+                                {
+                                    flex:1,
+                                    style:{maxHeight:400,overflowY:'auto'},
+                                    html:'this is my sample text in modal',
+                                    align:'v'},
+                                {
+                                    gap:6,
+                                    column:[
+                                        {html:(<button className='btn-123'>Approve</button>)},
+                                        {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                                    ]   
+                                }
+                            ]
+                        }}
+                    />
+                )
+            }
         })
         this.popup.addModal({
-            type:'bottom',
+            position:'bottom',
             id:'two',
             backClose:true,
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        row:[
-                            {
-                                flex:1,
-                                style:{maxHeight:400,overflowY:'auto'},
-                                html:'this is my sample text in modal',
-                                align:'v'},
-                            {
-                                gap:6,
-                                column:[
-                                    {html:(<button className='btn-123'>Approve</button>)},
-                                    {html:(<button className='btn-123' onClick={()=>this.popup.remove()}>Close</button>)}
-                                ]   
+            body:{
+                render:({close})=>(
+                    <RVD
+                        layout={{
+                            row:[
+                                {
+                                    flex:1,
+                                    style:{maxHeight:400,overflowY:'auto'},
+                                    html:'this is my sample text in modal',
+                                    align:'v'},
+                                {
+                                    gap:6,
+                                    column:[
+                                        {html:(<button className='btn-123'>Approve</button>)},
+                                        {html:(<button className='btn-123' onClick={()=>this.popup.removeModal()}>Close</button>)}
+                                    ]   
+                                }
+                            ]
+                        }}
+                    />
+                )
+            }
+        })
+    }
+    addConfirm(){
+        this.popup.addModal({
+            position:'center',
+            header:{title:'my confirm title'},
+            body:{render:()=>'my confirm text'},
+            footer:{
+                buttons:[
+                    ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
+                    ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
+                ]
+            }
+        })
+    }
+    addPrompt(obj = {}){
+        this.popup.addModal({
+            position:'center',
+            header:{title:'my prompt title'},
+            body:{
+                render:()=>{
+                    let {temp} = this.state;
+                    return (
+                        <textarea
+                            value={temp} onChange={(e)=>this.setState({temp:e.target.value})}
+                            style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
+                        />
+                    )
+                }},
+            footer:{
+                buttons:[
+                    [
+                        'yes',
+                        {
+                            onClick:({close})=>{
+                                let {temp} = this.state;
+                                console.log(temp); 
+                                close();
                             }
-                        ]
-                    }}
-                />
-            )
+                        }
+                    ],
+                    [
+                        'no',
+                        {
+                            onClick:({close})=>{
+                                close()
+                            },
+                            style:{background:'#999'}
+                        }
+                    ]
+                ]
+            },
         })
     }
     preview() {
@@ -290,7 +508,10 @@ class Modal extends Component {
                 <h3>Basic Modal</h3>
                 {
                     AIODoc().Code(`
-instance.addModal({title:'my modal',body:()=>content})
+instance.addModal({
+    header:{title:'my modal'},
+    body:{render:()=>content}
+})
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.modal1()}>Open Modal</button>
@@ -299,486 +520,200 @@ instance.addModal({title:'my modal',body:()=>content})
                 {
                     AIODoc().Code(`
 instance.addModal({
-    title:'my modal',
-    body:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>
+    header:{title:'my modal'},
+    body:{render:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>}
 })
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.modal2()}>Open Modal</button>
-                <h3>Modal subtitle</h3>
+                <h3>Modal header.subtitle</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
-    title:'my modal',
-    subtitle:'my modal subtitle',
-    body:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>
+    header:{title:'my modal',subtitle:'my modal subtitle'},
+    body:{render:()=>content}
 })
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.modal3()}>Open Modal</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal headerButtons</h3>
+                <h3>Modal header.buttons</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
-    title:'my modal',
-    subtitle:'my modal subtitle',
-    body:()=><div style={{height:'100%',overflowY:'auto'}}>{content}</div>,
-    headerButtons:[
-        [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-        [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
-        ['My Button']
-    ]
+    header:{
+        title:'my modal',
+        subtitle:'my modal subtitle',
+        buttons:[
+            [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
+            [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
+            ['My Button']
+        ]
+    },
+    body:{
+        render:()=>content
+    }
 })
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.modal4()}>Open Modal</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal backClose</h3>
+                <h3>Modal header.close</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
-    type:'top',
-    backClose:true,
-    body:({close})=>(
-        <RVD
-            layout={{
-                row:[
-                    {
-                        flex:1,
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
-                        align:'v'},
-                    {
-                        gap:6,
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
+    position:'top',
+    backdrop:{
+        close:true
+    },
+    body:{
+        render:({close})=>(
+            <RVD
+                layout={{
+                    row:[
+                        {
+                            flex:1,
+                            style:{maxHeight:400,overflowY:'auto'},
+                            html:'this is my sample text in modal',
+                            align:'v'},
+                        {
+                            gap:6,
+                            column:[
+                                {html:(<button className='btn-123'>Approve</button>)},
+                                {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                            ]   
+                        }
+                    ]
+                }}
+            />
+        )
+    }
 })
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.backClose()}>Open Modal</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal remove</h3>
+                <h3>Modal removeModal</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
-    type:'top',
+    position:'top',
     id:'one',
-    body:({close})=>(
-        <RVD
-            layout={{
-                row:[
-                    {
-                        flex:1,
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
-                        align:'v'},
-                    {
-                        gap:6,
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
+    body:{
+        render:({close})=>(
+            <RVD
+                layout={{
+                    row:[
+                        {
+                            flex:1,
+                            style:{maxHeight:400,overflowY:'auto'},
+                            html:'this is my sample text in modal',
+                            align:'v'},
+                        {
+                            gap:6,
+                            column:[
+                                {html:(<button className='btn-123'>Approve</button>)},
+                                {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                            ]   
+                        }
+                    ]
+                }}
+            />
+        )
+    }
 })
 instance.addModal({
-    type:'bottom',
+    position:'bottom',
     id:'two',
     backClose:true,
-    body:({close})=>(
-        <RVD
-            layout={{
-                row:[
-                    {
-                        flex:1,
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
-                        align:'v'},
-                    {
-                        gap:6,
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={()=>this.popup.remove()}>Close</button>)}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
-})
-                    `)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.remove()}>Open Modal</button>
-                {this.popup.render()}
-            </div>
-        )
-    }
-    code() {
-        return (`
-
-      `)
-    }
-    toolbar() {
-        return ('')
-    }
-    render() {
-        return (
-            <Example
-                preview={() => this.preview()}
-                code={() => this.code()}
-                toolbar={() => this.toolbar()}
+    body:{
+        render:({close})=>(
+            <RVD
+                layout={{
+                    row:[
+                        {
+                            flex:1,
+                            style:{maxHeight:400,overflowY:'auto'},
+                            html:'this is my sample text in modal',
+                            align:'v'},
+                        {
+                            gap:6,
+                            column:[
+                                {html:(<button className='btn-123'>Approve</button>)},
+                                {html:(<button className='btn-123' onClick={()=>this.popup.removeModal()}>Close</button>)}
+                            ]   
+                        }
+                    ]
+                }}
             />
         )
     }
-}
-
-class ModalType extends Component {
-    constructor(props){
-        super(props);
-        this.popup = new AIOPopup()
-    }
-    type_top(){
-        this.popup.addModal({
-            type:'top',
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        row:[
-                            {
-                                flex:1,
-                                style:{maxHeight:400,overflowY:'auto'},
-                                html:'this is my sample text in modal',
-                                align:'v'},
-                            {
-                                gap:6,
-                                column:[
-                                    {html:(<button className='btn-123'>Approve</button>)},
-                                    {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
-        })
-    }
-    type_bottom(){
-        this.popup.addModal({
-            type:'bottom',
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        row:[
-                            {
-                                flex:1,
-                                style:{maxHeight:400,overflowY:'auto'},
-                                html:'this is my sample text in modal',
-                                align:'v'},
-                            {
-                                gap:6,
-                                column:[
-                                    {html:(<button className='btn-123'>Approve</button>)},
-                                    {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
-        })
-    }
-    type_right(){
-        this.popup.addModal({
-            type:'right',
-            attrs:{style:{width:300}},
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        style:{height:'100%'},
-                        column:[
-                            {
-                                flex:1,className:'ofy-auto',
-                                html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
-                            },
-                            {
-                                gap:6,
-                                row:[
-                                    {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                                    {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
-        })
-    }
-    type_left(){
-        this.popup.addModal({
-            type:'left',
-            attrs:{style:{width:300}},
-            body:({close})=>(
-                <RVD
-                    layout={{
-                        style:{height:'100%'},
-                        column:[
-                            {
-                                flex:1,className:'ofy-auto',
-                                html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
-                            },
-                            {
-                                gap:6,
-                                row:[
-                                    {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                                    {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
-                                ]   
-                            }
-                        ]
-                    }}
-                />
-            )
-        })
-    }
-    center(){
-        this.popup.addModal({
-            title:'my modal',body:()=>content,
-            attrs:{
-                style:{
-                    width:'calc(100% - 48px)',
-                    height:'calc(100% - 48px)',
-                    maxWidth:400,
-                    maxHeight:600
-
-                }
-            }
-        })
-    }
-    preview() {
-        return (
-            <div className='example'>
-                <h3>Modal type top</h3>
-                {
-                    AIODoc().Code(`
-instance.addModal({
-    type:'top',
-    body:({close})=>(
-        <RVD
-            layout={{
-                row:[
-                    {
-                        flex:1,
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
-                        align:'v'},
-                    {
-                        gap:6,
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
 })
                     `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.type_top()}>Open Modal</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.removeModal()}>Open Modal</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal type bottom</h3>
+                <h3>use as confirm</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
-    type:'bottom',
-    body:({close})=>(
-        <RVD
-            layout={{
-                row:[
-                    {
-                        flex:1,
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
-                        align:'v'},
-                    {
-                        gap:6,
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
-})
-                    `)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.type_bottom()}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal type right</h3>
-                {
-                    AIODoc().Code(`
-instance.addModal({
-    type:'right',
-    attrs:{style:{width:300}},
-    body:({close})=>(
-        <RVD
-            layout={{
-                style:{height:'100%'},
-                column:[
-                    {
-                        flex:1,className:'ofy-auto',
-                        html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
-                    },
-                    {
-                        gap:6,
-                        row:[
-                            {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                            {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
-})
-                    `)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.type_right()}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal type left</h3>
-                {
-                    AIODoc().Code(`
-instance.addModal({
-    type:'left',
-    attrs:{style:{width:300}},
-    body:({close})=>(
-        <RVD
-            layout={{
-                style:{height:'100%'},
-                column:[
-                    {
-                        flex:1,className:'ofy-auto',
-                        html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
-                    },
-                    {
-                        gap:6,
-                        row:[
-                            {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                            {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
-                        ]   
-                    }
-                ]
-            }}
-        />
-    )
-})
-                    `)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.type_left()}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal set to center</h3>
-                {
-                    AIODoc().Code(`
-instance.addModal({
-    title:'my modal',body:()=>content,
-    attrs:{
-        style:{
-            width:'calc(100% - 48px)',
-            height:'calc(100% - 48px)',
-            maxWidth:400,
-            maxHeight:600
-
-        }
+    position:'center',
+    header:{title:'my confirm title'},
+    body:{render:()=>'my confirm text'},
+    footer:{
+        buttons:[
+            ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
+            ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
+        ]
     }
-})
-                    `)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.center()}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                {this.popup.render()}
-            </div>
-        )
-    }
-    code() {
-        return (`
-
-      `)
-    }
-    toolbar() {
-        return ('')
-    }
-    render() {
-        return (
-            <Example
-                preview={() => this.preview()}
-                code={() => this.code()}
-                toolbar={() => this.toolbar()}
-            />
-        )
-    }
-}
-
-class Confirm extends Component {
-    constructor(props){
-        super(props);
-        this.popup = new AIOPopup()
-    }
-    addConfirm(obj = {}){
-        let {
-            title = 'my confirm title',
-            text = 'this is the text of my confirm . please select your action by footer buttons',
-            footerButtons = [
-                ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
-                ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
-            ]
-        } = obj
-        this.popup.addConfirm({...obj,title,text,footerButtons})
-    }
-    preview() {
-        return (
-            <div className='example'>
-                <h3>addConfirm</h3>
-                {
-                    AIODoc().Code(`
-this.popup.confirm({
-    title:'my confirm title',
-    text:'this is the text of my confirm . please select your action by footer buttons',
-    footerButtons:[
-        ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
-        ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
-    ]
 })
                     `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addConfirm()}>Open confirm</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>confirm top</h3>
+                <h3>use as prompt</h3>
                 {
                     AIODoc().Code(`
-this.popup.confirm({
-    type:'top',
-    text:'this is the text of my confirm . please select your action by footer buttons',
-    footerButtons:[
-        ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
-        ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
-    ]
+instance.addModal({
+    position:'center',
+    header:{title:'my prompt title'},
+    body:{
+        render:()=>{
+            let {temp} = this.state;
+            return (
+                <textarea
+                    value={temp} onChange={(e)=>this.setState({temp:e.target.value})}
+                    style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
+                />
+            )
+        }},
+    footer:{
+        buttons:[
+            [
+                'yes',
+                {
+                    onClick:({close})=>{
+                        let {temp} = this.state;
+                        console.log(temp); 
+                        close();
+                    }
+                }
+            ],
+            [
+                'no',
+                {
+                    onClick:({close})=>{
+                        close()
+                    },
+                    style:{background:'#999'}
+                }
+            ]
+        ]
+    },
 })
                     `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addConfirm({type:'top',title:''})}>Open confirm</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addPrompt()}>Open prompt</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 
                 {this.popup.render()}
@@ -794,41 +729,162 @@ this.popup.confirm({
     }
 }
 
-class Prompt extends Component {
+class ModalPosition extends Component {
     constructor(props){
         super(props);
         this.popup = new AIOPopup()
     }
-    addPrompt(){
-        this.popup.addPrompt({
-            title:'my propmpt title',
-            text:'this is the text of my prompt . please select your action by footer buttons',
-            onSubmit:(value)=>console.log('you intered' , value)
-        })
+    v_layout(close){
+        return (
+            <RVD
+                layout={{
+                    row:[
+                        {flex:1,style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',align:'v'},
+                        {gap:6,column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
+                    ]
+                }}
+            />
+        )
+    }
+    h_layout(close){
+        return (
+            <RVD
+                layout={{
+                    style:{height:'100%'},
+                    column:[
+                        {
+                            flex:1,className:'ofy-auto',
+                            html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
+                        },
+                        {
+                            gap:6,
+                            row:[
+                                {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
+                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
+                            ]   
+                        }
+                    ]
+                }}
+            />
+        )
+    }
+    openModal(position){
+        let body,attrs = {},header;
+        if(position === 'top' || position === 'bottom'){body = {render:({close})=>this.v_layout(close)}}
+        else if(position === 'left' || position === 'right'){body = {render:({close})=>this.h_layout(close)}; attrs.style = {width:360}}
+        else if(position === 'center'){body = {render:()=>content}; attrs.style = {maxHeight:'90vh'}; header = {title:'My Modal'}}
+        else if(position === 'fullscreen'){body = {render:()=>content}; header = {title:'My Modal'}}
+        this.popup.addModal({position,body,attrs,header})
+    }
+    getCode(position){
+        let body;
+        if(position === 'top' || position === 'bottom'){
+            body = 
+    `body:{
+        render:({close})=>(
+            <RVD
+                layout={{
+                    row:[
+                        {
+                            flex:1,
+                            style:{maxHeight:400,overflowY:'auto'},
+                            html:'this is my sample text in modal',
+                            align:'v'
+                        },
+                        {
+                            gap:6,
+                            column:[
+                                {html:(<button className='btn-123'>Approve</button>)},
+                                {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                            ]   
+                        }
+                    ]
+                }}
+            />
+        )
+    }`
+        }
+        else if(position === 'left' || position === 'right'){
+            body = 
+    `body:{
+        render:({close})=>(
+            <RVD
+                layout={{
+                    style:{height:'100%'},
+                    column:[
+                        {
+                            flex:1,className:'ofy-auto',
+                            html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
+                        },
+                        {
+                            gap:6,
+                            row:[
+                                {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
+                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
+                            ]   
+                        }
+                    ]
+                }}
+            />
+        )
+    }`
+        }
+        else if(position === 'center'){
+            body = `
+    title:'My Modal',
+    body:{render:()=>content}
+`            
+        }
+        else if(position === 'fullscreen'){
+            body = `
+    title:'My Modal',
+    body:{render:()=>content} 
+`            
+        }
+return AIODoc().Code(`
+instance.addModal({
+    position:'${position}',
+    ${body}
+})
+`)
+    }
+    getItem(position){
+        return (
+            <>
+                <h3>{`Modal position ${position}`}</h3>
+                {this.getCode(position)}
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.openModal(position)}>Open Modal</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </>
+        )
     }
     preview() {
         return (
             <div className='example'>
-                <h3>addPrompt</h3>
-                {
-                    AIODoc().Code(`
-instance.confirm({
-    title:'my confirm title',
-    text:'this is the text of my confirm . please select your action by footer buttons',
-    onSubmit:(value)=>console.log('you intered' , value)
-})
-`)
-                }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addPrompt()}>Open prompt</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                {this.getItem('top')}
+                {this.getItem('bottom')}
+                {this.getItem('right')}
+                {this.getItem('left')}
+                {this.getItem('center')}
+                {this.getItem('fullscreen')}
                 {this.popup.render()}
             </div>
         )
+    }
+    code() {
+        return (`
+
+      `)
+    }
+    toolbar() {
+        return ('')
     }
     render() {
         return (
             <Example
                 preview={() => this.preview()}
+                code={() => this.code()}
+                toolbar={() => this.toolbar()}
             />
         )
     }
@@ -1043,6 +1099,115 @@ instance.addSnakebar({
 `)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({type:'success'})}>Open snakebar</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                {this.popup.render()}
+            </div>
+        )
+    }
+    render() {
+        return (
+            <Example
+                preview={() => this.preview()}
+            />
+        )
+    }
+}
+class Popover extends Component {
+    constructor(props){
+        super(props);
+        this.dom1 = createRef()
+        this.dom2= createRef()
+        this.dom3 = createRef()
+        this.popup = new AIOPopup()
+    }
+    v_layout(close){
+        return (
+            <RVD
+                layout={{
+                    className:'p-12',
+                    row:[
+                        {flex:1,style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',align:'v'},
+                        {gap:6,column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
+                    ]
+                }}
+            />
+        )
+    }
+    addPopover(type){
+        this.popup.addModal({
+            popover:{
+                getTarget:()=>$(this.dom1.current),
+            
+            },
+            body:()=>this.v_layout()
+
+        })
+    }
+    backdrop(){
+        this.popup.addPopover({
+            getTarget:()=>$(this.dom2.current),
+            backdrop:{
+                attrs:{
+                    style:{background:'rgba(0,0,0,0.8)'}
+                }
+            },
+            body:()=>this.v_layout(),
+
+        })
+    }
+    position_right(){
+        this.popup.addPopover({
+            position:'right',
+            getTarget:()=>$(this.dom3.current),
+            backdrop:true,
+            body:()=>this.v_layout(),
+
+        })
+    }
+    preview() {
+        return (
+            <div className='example'>
+                <h3>addPopover</h3>
+                {
+                    AIODoc().Code(`
+instance.addAlert({
+    text:'my alert text',
+    subtext:'this is the subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
+})
+                    `)
+                }
+                <button ref={this.dom1} style={{ height: 36, padding: '0 24px' }} onClick={() => this.addPopover()}>Open Popover</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3>backdrop</h3>
+                {
+                    AIODoc().Code(`
+instance.addAlert({
+    text:'my alert text',
+    subtext:'this is the subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
+})
+                    `)
+                }
+                <button ref={this.dom2} style={{ height: 36, padding: '0 24px' }} onClick={() => this.backdrop()}>Open Popover</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3>position right</h3>
+                {
+                    AIODoc().Code(`
+instance.addAlert({
+    text:'my alert text',
+    subtext:'this is the subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
+})
+                    `)
+                }
+                <button ref={this.dom3} style={{ height: 36, padding: '0 24px' }} onClick={() => this.position_right()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 {this.popup.render()}
             </div>

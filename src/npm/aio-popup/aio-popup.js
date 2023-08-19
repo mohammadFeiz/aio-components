@@ -1,4 +1,5 @@
 import React, { Component, createRef } from 'react';
+import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
@@ -14,9 +15,11 @@ export default class AIOPopup {
     return (
       <>
         <Popups
-          getActions={({addModal,remove})=>{
+          getActions={({addModal,removeModal,addPopover,removePopover})=>{
             this._addModal = addModal;
-            this._remove = remove;
+            this._removeModal = removeModal;
+            this._addPopover = addPopover;
+            this._removePopover = removePopover;
           }}
         />
         <AIOSnackeBar rtl={this.rtl} getActions={({add})=>{
@@ -29,38 +32,7 @@ export default class AIOPopup {
     if(obj.id === undefined){obj.id = 'popup' + Math.round(Math.random() * 1000000)}
     this._addModal(obj)
   }
-  remove = (arg)=> this._remove(arg);
-  addConfirm = (obj = {})=>{
-    this.addModal({
-      id:obj.id,
-      attrs:obj.attrs,
-      type:obj.type || 'confirm',
-      body:()=>obj.text,
-      title:obj.title,
-      onClose:obj.onClose,
-      backClose:obj.backClose,
-      backdropAttrs:obj.backdropAttrs,
-      footerButtons:obj.footerButtons,
-      onClose:obj.onClose,
-      animate:obj.animate
-    })
-  }
-  addPrompt = (obj = {})=>{
-    this.addModal({
-      id:obj.id,
-      attrs:obj.attrs,
-      type:'prompt',
-      title:obj.title,
-      text:obj.text,
-      onClose:obj.onClose,
-      backClose:obj.backClose,
-      backdropAttrs:obj.backdropAttrs,
-      footerButtons:obj.footerButtons,
-      onClose:obj.onClose,
-      animate:obj.animate,
-      onSubmit:obj.onSubmit
-    })
-  }
+  removeModal = (arg)=> this._removeModal(arg);
   addAlert = (obj = {}) => {
     let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن' } = obj
     Alert({icon,type,text,subtext,time,className,closeText})
@@ -69,15 +41,14 @@ export default class AIOPopup {
     let {text,index,type,subtext,action = {},time = 6,rtl} = obj;
     this._addSnakebar({text,index,type,subtext,action,time,rtl})
   }
-
 }
 class Popups extends Component {
   constructor(props) {
     super(props);
     let { getActions = () => { } } = props
-    this.state = {modals: []}
+    this.state = {modals: [],popovers:[]}
     getActions({
-      remove: this.remove.bind(this),
+      removeModal: this.removeModal.bind(this),
       addModal: this.addModal.bind(this),
     })
   }
@@ -92,7 +63,7 @@ class Popups extends Component {
     newModals.push({...o})
     this.onChange({ modals: newModals })
   }
-  async remove(arg) {
+  async removeModal(arg) {
     if (arg === 'all') {this.onChange({ modals: [] }); return}
     let { modals } = this.state;
     let modal = arg !== undefined?modals.find((o) => o.id === arg):modals[modals.length - 1];
@@ -105,14 +76,14 @@ class Popups extends Component {
     let { modals } = this.state;
     let { modalConfig = {} } = this.props;
     if (!modals.length) { return null }
-    return modals.map(({ 
-      blur, type,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backClose, title,subtitle, headerButtons,footerButtons, closeType, body, id, animate }, i) => {
+    return modals.map(({popover, 
+      blur, position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,footer, closeType, body, id, animate }, i) => {
       let props = {
-        id, animate,backClose,footerButtons,text,onSubmit,
+        id, animate,backdrop,footer,text,onSubmit,header,popover,
         key: i, blur:i === modals.length - 2,
         ...modalConfig,
-        blur, type, rtl, attrs, onClose, title,subtitle, headerButtons, closeType, body,index: i,rtl,
-        onClose: () => this.remove(),
+        blur, position, rtl, attrs, onClose, closeType, body,index: i,rtl,
+        onClose: () => this.removeModal(),
       }
       return <Popup {...props} />
     })
@@ -131,7 +102,7 @@ class Popup extends Component {
     super(props);
     this.dom = createRef();
     this.dui = 'a' + Math.random();
-    this.state = {mounted:props.animate === false,promptValue:''}
+    this.state = {mounted:props.animate === false,popoverStyle:{}}
   }
   async onClose() {
     let { onClose } = this.props;
@@ -141,103 +112,66 @@ class Popup extends Component {
   componentDidMount(){
     let {mounted} = this.props;
     if(mounted === true){return}
-    setTimeout(()=>this.setState({mounted:true}),0)
+    setTimeout(()=>this.setState({
+      popoverStyle:this.getPopoverStyle(),
+      mounted:true
+    }),0)
   }
   header_layout() {
-    let { title, headerButtons, rtl, closeType = 'close button',subtitle } = this.props;
-    if (!title && !headerButtons) { return false }
-    return {
-      className: 'aio-popup-header',
-      row: [
-        { show: closeType === 'back button' && this.props.onClose !== false, html: <Icon path={rtl ? mdiChevronRight : mdiChevronLeft} size={1} />, align: 'vh', onClick: () => this.onClose() },
-        { show: closeType === 'back button' && this.props.onClose !== false, size: 6 },
-        { show:!!title && !subtitle,flex: 1, html: title, align: 'v', className: 'aio-popup-title' },
-        { 
-          show:!!title && !!subtitle,flex: 1, align: 'v',
-          column:[
-            {html:title,className: 'aio-popup-title'},
-            {html:subtitle,className: 'aio-popup-subtitle'}
-          ]  
-        },
-        {
-          show:!!headerButtons,gap:6,align:'vh',
-          row:()=>headerButtons.map(([text,attrs = {}])=>{
-            let {onClick = ()=>{}} = attrs;
-            attrs.onClick = ()=> onClick({close:this.onClose.bind(this)})
-            return {attrs,html:text,align:'vh',className:'aio-popup-header-button' + (attrs.className?' ' + attrs.className:''),style:attrs.style}
-          })
-        },
-        { show: closeType === 'close button' && this.props.onClose !== false, size: 48, html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: () => this.onClose() }
-      ]
-    }
+    let { rtl,header } = this.props;
+    if (typeof header !== 'object') { return false }
+    return {html:<ModalHeader rtl={rtl} header={header} handleClose={()=>this.onClose()}/>}
   }
-  getFooterButtons(){
-    let { type,footerButtons,closeText = 'close',submitText = 'submit'} = this.props;
-    if(type === 'prompt'){
-      let {promptValue} = this.state;
-      let {onSubmit} = this.props;
-      if(typeof onSubmit !== 'function'){console.error('aio-popup => addPrompt => onSubmit props is not a function')}
-      return [
-        [closeText,{onClick:()=>this.onClose(),className:'aio-popup-prompt-close-button'}],
-        [submitText,{onClick:onSubmit?()=>onSubmit(promptValue):undefined,disabled:!promptValue,className:'aio-popup-prompt-submit-button'}]
-      ]
+  body_layout(){
+    let {body = {}} = this.props;
+    let {attrs = {},render} = body;
+    let props = {
+      handleClose:this.onClose.bind(this),render
     }
-    return footerButtons
+    let className = 'aio-popup-body' + (attrs.className?' ' + attrs.className:'') 
+    return { attrs:{...attrs,className},html:<ModalBody {...props}/> }
   }
   footer_layout() {
-    let footerButtons = this.getFooterButtons()
-    if (!footerButtons) { return false }
-    return {
-      className: 'aio-popup-footer',
-      row: [
-        {
-          gap:6,align:'vh',
-          row:()=>footerButtons.map(([text,attrs = {}])=>{
-            let {onClick = ()=>{}} = attrs;
-            let className = 'aio-popup-footer-button' + (attrs.className?' ' + attrs.className:'');
-            attrs.onClick = ()=> onClick({close:this.onClose.bind(this)})
-            return {html:(
-              <button {...{...attrs,className}}>{text}</button>
-            ),align:'vh'}
-          })
-        }
-      ]
-    }
+    let {closeText,submitText,onSubmit,footer,type} = this.props;
+    let handleClose = this.onClose.bind(this);
+    let props = {closeText,submitText,onSubmit,footer,type,handleClose};
+    return {html:<ModalFooter {...props}/>}
   }
   getBackDropClassName() {
-    let { blur, className: cls,type = 'fullscreen' } = this.props;
+    let { blur, className: cls,position = 'fullscreen' } = this.props;
     let className = 'aio-popup-backdrop';
     if (cls) { className += className ? (' ' + cls) : '' }
     if (blur) { className += ' aio-popup-blur' }
-    className += ` aio-popup-${type}`
+    className += ` aio-popup-position-${position}`
     return className
   }
   backClick(e) {
     let target = $(e.target);
-    let { backClose } = this.props;
-    if (!backClose) { return }
+    let { backdrop = {} } = this.props;
+    if (backdrop.close === false) { return }
     if(!target.hasClass('aio-popup-backdrop')){return}
     this.onClose()
   }
-  getBody(){
-    let {body,type = 'fullscreen',text} = this.props;
-    if(type === 'prompt'){
-      let {promptValue} = this.state;
-      return (
-        <textarea placeholder={text} type='text' value={promptValue} onChange={(e)=>this.setState({promptValue:e.target.value})}/>
-      )
-    }
-    return body({close:this.onClose.bind(this)})
+  getPopoverStyle(){
+    let { popover = {}, position,animate,rtl,attrs = {} } = this.props;
+    let {getTarget,openRelatedTo,fitHorizontal,fixStyle = (o) => o} = popover; 
+    if(!getTarget || position) { return {} }
+    let target = getTarget();
+    if (!target || !target.length) { return {}}
+    let popup = $(this.dom.current);
+    return Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
+    
   }
   render() {
     let { rtl, attrs = {}, id } = this.props;
-    let {mounted} = this.state
+    let {mounted,popoverStyle} = this.state
     let backdropProps = {
       className: this.getBackDropClassName(),
       onClick: (e) => this.backClick(e),
       'data-popup-id': id,
     }
-    let style = { ...attrs.style,flex:'none'}
+    debugger
+    let style = { ...popoverStyle,...attrs.style,flex:'none'}
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (' ' + this.dui) + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
       <div {...backdropProps}>
@@ -247,7 +181,7 @@ class Popup extends Component {
             className,style,
             column: [
               this.header_layout(),
-              { flex: 1, html: <div className='aio-popup-body'>{this.getBody()}</div> },
+              this.body_layout(),
               this.footer_layout()
             ]
           }}
@@ -256,6 +190,77 @@ class Popup extends Component {
     )
   }
 }
+function ModalHeader({rtl,header,handleClose}){
+  if(typeof header !== 'object'){return null}
+  let {title,subtitle,buttons = [],onClose,backButton,attrs = {}} = header;
+  function close(){if(onClose){onClose()} else{handleClose()}}
+  function backButton_layout(){
+    if(!backButton || onClose === false){return false}
+    let path,style;
+    if(rtl){path = mdiChevronRight; style = {marginLeft:12}}
+    else {path = mdiChevronLeft; style = {marginRight:12}}
+    return { html: <Icon path={path} size={1} />, align: 'vh', onClick: () => onClose() ,style}
+  }
+  function title_layout(){
+    if(!title){return false}
+    if(!subtitle){
+      return { flex: 1,align: 'v', html: title, className: 'aio-popup-title' }  
+    }
+    else {
+      return { 
+        flex: 1, align: 'v',
+        column:[
+          {html:title,className: 'aio-popup-title'},
+          {html:subtitle,className: 'aio-popup-subtitle'}
+        ]  
+      }
+    }
+  }
+  function buttons_layout(){
+    if(!buttons.length){return false}
+    return {
+      gap:6,align:'vh',
+      row:()=>buttons.map(([text,attrs = {}])=>{
+        let {onClick = ()=>{},className} = attrs;
+        attrs.className = 'aio-popup-header-button' + (className?' ' + className:'');
+        attrs.onClick = ()=> onClick({close:handleClose})
+        return {html:(<button {...attrs}>{text}</button>),align:'vh'}
+      })
+    }
+  }
+  function close_layout(){
+    if(backButton || onClose === false){return false}
+    return { html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: () => close(),className:'aio-popup-header-close-button' }
+  }
+  let className = 'aio-popup-header' + (attrs.className?' ' + attrs.className:'')
+  let style = attrs.style;
+  return (<RVD layout={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
+}
+function ModalBody({handleClose,render}){
+  if(typeof render === 'function'){return render({close:handleClose})}
+}
+function ModalFooter({type,closeText = 'Close',submitText = 'Submit',footer,handleClose,onSubmit}){
+  if(typeof footer !== 'object'){return null}
+  let {attrs = {}} = footer;
+  let {buttons = []} = footer;
+  function buttons_layout(){
+    if(!buttons.length){return false}
+    return {
+      gap:6,align:'vh',
+      row:()=>buttons.map(([text,attrs = {}])=>{
+        let {onClick = ()=>{},className} = attrs;
+        attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
+        attrs.onClick = ()=> onClick({close:handleClose})
+        return {html:(<button {...attrs}>{text}</button>),align:'vh'}
+      })
+    }
+  }
+  let className = 'aio-popup-footer' + (attrs.className?' ' + attrs.className:'')
+  let style = attrs.style;
+  return (<RVD layout={{className,style,...buttons_layout()}}/>)
+}
+
+
 function Alert(obj = {}) {
   let { icon,type,text,subtext,time,className,closeText} = obj;
   let $$ = {
@@ -275,7 +280,7 @@ function Alert(obj = {}) {
         <div class='aio-popup-alert aio-popup-alert-${type}'>
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body'>
-            <div class='aio-popup-alert-text'>${text}</div>
+            <div class='aio-popup-alert-text'>${ReactDOMServer.renderToStaticMarkup(text)}</div>
             <div class='aio-popup-alert-subtext'>${subtext}</div>
           </div>
           <div class='aio-popup-alert-footer'>
@@ -300,11 +305,7 @@ function Alert(obj = {}) {
       },
       startTimer() {
           setTimeout(() => {
-              if ($$.time >= 100) {
-                  $$.time = 100;
-                  $$.close();
-                  return
-              }
+              if ($$.time >= 100) { $$.time = 100; $$.close(); return}
               $$.time += 2;
               $$.updateBarRender();
               $$.startTimer();
@@ -366,16 +367,8 @@ class SnackebarItem extends Component{
     this.setState({mounted:false})
     setTimeout(()=>onRemove(id),200)
   }
-  info_svg(){
-    return (
-      <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" style={{fill: 'currentcolor'}}></path></svg>
-    )
-  }
-  success_svg(){
-    return (
-      <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z" style={{fill: 'currentcolor'}}></path></svg>
-    )
-  }
+  info_svg(){return (<svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" style={{fill: 'currentcolor'}}></path></svg>)}
+  success_svg(){return (<svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z" style={{fill: 'currentcolor'}}></path></svg>)}
   getSvg(type){return type === 'error' || type === 'warning' || type === 'info'?this.info_svg():this.success_svg()}
   getBottom(index){
     let els = $('.aio-popup-snakebar-item-container'),sum = 12;
@@ -401,6 +394,7 @@ class SnackebarItem extends Component{
     )
   }
 }
+//id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,animate,openRelatedTo,rtl,body
 export class Popover extends Component {
   constructor(props) {
     super(props);
@@ -421,53 +415,35 @@ export class Popover extends Component {
     }
   }
   update(popup) {
-    let { getTarget, popoverSide } = this.props;
-    if (popoverSide) { return }
+    let { getTarget, position } = this.props;
+    if (position) { return }
     let target = getTarget();
     if (!target || !target.length) { return }
-    var { rtl, openRelatedTo, animate, fitHorizontal, attrs = {}, fixPopupPosition = (o) => o, popupWidth } = this.props;
-    Align(popup, target, { fixStyle: fixPopupPosition, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
+    var { rtl, openRelatedTo, animate, fitHorizontal, attrs = {}, fixStyle = (o) => o } = this.props;
+    Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
     popup.focus();
   }
   getClassName() {
-    let { attrs = {}, className } = this.props;
-    let { className: popupClassName } = attrs;
+    let { attrs = {} } = this.props;
+    let { className } = attrs;
     let cls = 'aio-popover';
-    if (popupClassName) { cls += ' ' + popupClassName }
-    else if (className) { cls += ' ' + className }
+    if (className) { cls += ' ' + className }
     return cls;
   }
-  getBackClassName() {
-    let { backdropAttrs = {}, popoverSide } = this.props;
-    let { className: backdropClassName } = backdropAttrs;
-    let className = 'aio-popover-backdrop';
-    if (backdropClassName) { className += ' ' + backdropClassName }
-    if (popoverSide === 'center') { className += ' aio-popover-center' }
-    if (popoverSide === 'left') { className += ' aio-popover-left' }
-    if (popoverSide === 'right') { className += ' aio-popover-right' }
-    if (popoverSide === 'top') { className += ' aio-popover-top' }
-    if (popoverSide === 'bottom') { className += ' aio-popover-bottom' }
-    if (popoverSide === 'top right') { className += ' aio-popover-topright' }
-    if (popoverSide === 'top left') { className += ' aio-popover-topleft' }
-    if (popoverSide === 'bottom right') { className += ' aio-popover-bottomright' }
-    if (popoverSide === 'bottom left') { className += ' aio-popover-bottomleft' }
-    return className;
+  getPopover(){
+    let { attrs = {}, body, id } = this.props;
+    return <div {...attrs} ref={this.dom} data-uniq-id={id} className={this.getClassName()}>{body()}</div>
   }
-  //start
   render() {
-    var { attrs = {}, body, backdropAttrs = {}, backdrop, id } = this.props;
-    let props = {
-      className: this.getBackClassName(),
-      style: backdropAttrs.style,
-      onClick: (e) => this.handleClose(e),
+    var { backdrop,position} = this.props;
+    let popOver = this.getPopover()
+    if (!backdrop) { return popOver; }
+    let {attrs = {}} = backdrop;
+    let backdropProps = {
+      onClick: (e) => this.handleClose(e),...attrs,
+      className: 'aio-popup-backdrop' + (attrs.className?' ' + attrs.className:'') + (position?` aio-popup-position-${position}`:''),
     }
-    let popOver = (
-      <div {...attrs} ref={this.dom} data-uniq-id={id} className={this.getClassName()}>
-        {body()}
-      </div>
-    )
-    if (backdrop === false) { return popOver; }
-    return <div {...props}>{popOver}</div>;
+    return <div {...backdropProps}>{popOver}</div>;
   }
 }
 
@@ -536,20 +512,8 @@ function Align(dom,target,config = {}){
       }
       let finalStyle = {left:domLimit.left,top:domLimit.top,width:domLimit.width,overflowY,...style}
         console.log(finalStyle)
-      if(animate){
-        let beforeTop = finalStyle.top + 90,afterTop = finalStyle.top,obj;
-        if(animate === true){
-          finalStyle.top = beforeTop; finalStyle.opacity = 0;
-          obj = {top:afterTop,opacity:1}
-        }
-        else{obj = animate}
-        dom.css(fixStyle(finalStyle,{targetLimit,pageLimit}))
-        dom.animate(obj,{duration:100})
-      }
-      else{
-        dom.css(fixStyle(finalStyle,{targetLimit,pageLimit}))
-      }
+        return fixStyle(finalStyle,{targetLimit,pageLimit})
     }
   }
-  $$.align();
+  return $$.align();
 }

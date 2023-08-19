@@ -6,10 +6,11 @@ let RVDCLS = {
   row:'rvd-row',column:'rvd-column',hidexs:'rvd-hide-xs',hidesm:'rvd-hide-sm',hidemd:'rvd-hide-md',hidelg:'rvd-hide-lg'
 }
 export default class ReactVirtualDom extends Component {
-  getClassName(pointer,isRoot,props){
+  getClassName(pointer,isRoot,props,attrs = {}){
     let className = RVDCLS.rvd;
     if(isRoot){className += ' rvd-root'}
     if(props.className){className += ' ' + props.className}
+    else if(attrs.className){className += ' ' + attrs.className}
     if(pointer){ className += ' ' + RVDCLS.pointer;}
     if(props.align === 'v'){className += ' ' + (props.column?RVDCLS.justify:RVDCLS.align);}
     else if(props.align === 'h'){className += ' ' + (props.column?RVDCLS.align:RVDCLS.justify);}
@@ -57,7 +58,7 @@ export default class ReactVirtualDom extends Component {
       }
       obj.column = [...childs]
     }
-    let className = this.getClassName(pointer,isRoot,props);
+    let className = this.getClassName(pointer,isRoot,props,attrs);
     let gapAttrs = getGapAttrs(obj,parent,props,dataId)
     if(swapId !== undefined){
       attrs.draggable = true;
