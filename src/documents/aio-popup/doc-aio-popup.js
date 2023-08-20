@@ -1118,15 +1118,18 @@ class Popover extends Component {
         this.dom1 = createRef()
         this.dom2= createRef()
         this.dom3 = createRef()
+        this.dom4 = createRef()
+        this.dom5 = createRef()
         this.popup = new AIOPopup()
     }
     v_layout(close){
         return (
             <RVD
                 layout={{
-                    className:'p-12',
+                    className:'p-6',
                     row:[
                         {flex:1,style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',align:'v'},
+                        {size:12},
                         {gap:6,column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
                     ]
                 }}
@@ -1137,30 +1140,66 @@ class Popover extends Component {
         this.popup.addModal({
             popover:{
                 getTarget:()=>$(this.dom1.current),
-            
             },
-            body:()=>this.v_layout()
+            position:'popover',
+            body:{render:()=>this.v_layout()}
 
         })
     }
-    backdrop(){
-        this.popup.addPopover({
-            getTarget:()=>$(this.dom2.current),
-            backdrop:{
-                attrs:{
-                    style:{background:'rgba(0,0,0,0.8)'}
+    fixStyle(){
+        this.popup.addModal({
+            popover:{
+                getTarget:()=>$(this.dom2.current),
+                fixStyle:(a,b)=>{
+                    return {...a,top:a.top + 36}
                 }
             },
-            body:()=>this.v_layout(),
+            position:'popover',
+            body:{render:()=>this.v_layout()},
 
         })
     }
-    position_right(){
-        this.popup.addPopover({
-            position:'right',
-            getTarget:()=>$(this.dom3.current),
-            backdrop:true,
-            body:()=>this.v_layout(),
+    fitHorizontal(){
+        this.popup.addModal({
+            popover:{
+                getTarget:()=>$(this.dom3.current),
+                fitHorizontal:true
+            },
+            position:'popover',
+            body:{render:()=>this.v_layout()},
+
+        })
+    }
+    test_long(){
+        this.popup.addModal({
+            popover:{
+                getTarget:()=>$(this.dom4.current),
+                fitHorizontal:true,
+            },
+            position:'popover',
+            body:{render:()=>content},
+            attrs:{
+                style:{
+                    height:360
+                }
+            }
+
+        })
+    }
+    without_animate(){
+        this.popup.addModal({
+            popover:{
+                getTarget:()=>$(this.dom5.current),
+                fitHorizontal:true,
+            },
+            position:'popover',
+            animate:false,
+            body:{render:()=>content},
+            attrs:{
+                style:{
+                    height:360
+                }
+            }
 
         })
     }
@@ -1193,7 +1232,7 @@ instance.addAlert({
 })
                     `)
                 }
-                <button ref={this.dom2} style={{ height: 36, padding: '0 24px' }} onClick={() => this.backdrop()}>Open Popover</button>
+                <button ref={this.dom2} style={{ height: 36, padding: '0 24px' }} onClick={() => this.fixStyle()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>position right</h3>
                 {
@@ -1207,8 +1246,37 @@ instance.addAlert({
 })
                     `)
                 }
-                <button ref={this.dom3} style={{ height: 36, padding: '0 24px' }} onClick={() => this.position_right()}>Open Popover</button>
+                <button ref={this.dom3} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.fitHorizontal()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3>test long</h3>
+                {
+                    AIODoc().Code(`
+instance.addAlert({
+    text:'my alert text',
+    subtext:'this is the subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
+})
+                    `)
+                }
+                <button ref={this.dom4} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.test_long()}>test long</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3> without animate</h3>
+                {
+                    AIODoc().Code(`
+instance.addAlert({
+    text:'my alert text',
+    subtext:'this is the subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
+})
+                    `)
+                }
+                <button ref={this.dom5} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.without_animate()}>Open Popover</button>
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                
                 {this.popup.render()}
             </div>
         )

@@ -102,7 +102,7 @@ class Popup extends Component {
     super(props);
     this.dom = createRef();
     this.dui = 'a' + Math.random();
-    this.state = {mounted:props.animate === false,popoverStyle:{}}
+    this.state = {mounted:props.animate === false,popoverStyle:undefined}
   }
   async onClose() {
     let { onClose } = this.props;
@@ -110,10 +110,10 @@ class Popup extends Component {
     setTimeout(()=>onClose(),300)
   }
   componentDidMount(){
-    let {mounted} = this.props;
+    let {mounted,position} = this.props;
     if(mounted === true){return}
     setTimeout(()=>this.setState({
-      popoverStyle:this.getPopoverStyle(),
+      popoverStyle:position === 'popover'?this.getPopoverStyle():{},
       mounted:true
     }),0)
   }
@@ -139,10 +139,12 @@ class Popup extends Component {
   }
   getBackDropClassName() {
     let { blur, className: cls,position = 'fullscreen' } = this.props;
+    let { mounted } = this.state;
     let className = 'aio-popup-backdrop';
     if (cls) { className += className ? (' ' + cls) : '' }
     if (blur) { className += ' aio-popup-blur' }
     className += ` aio-popup-position-${position}`
+    if(!mounted){className += ' not-mounted'}
     return className
   }
   backClick(e) {
@@ -153,14 +155,14 @@ class Popup extends Component {
     this.onClose()
   }
   getPopoverStyle(){
-    let { popover = {}, position,animate,rtl,attrs = {} } = this.props;
+    let { popover = {},animate,rtl,attrs = {} } = this.props;
     let {getTarget,openRelatedTo,fitHorizontal,fixStyle = (o) => o} = popover; 
-    if(!getTarget || position) { return {} }
+    if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
     let popup = $(this.dom.current);
-    return Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
-    
+    let style = Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
+    return {...style,position:'fixed'}
   }
   render() {
     let { rtl, attrs = {}, id } = this.props;
@@ -170,7 +172,6 @@ class Popup extends Component {
       onClick: (e) => this.backClick(e),
       'data-popup-id': id,
     }
-    debugger
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (' ' + this.dui) + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
