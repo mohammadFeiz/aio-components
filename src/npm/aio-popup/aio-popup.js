@@ -102,7 +102,7 @@ class Popup extends Component {
     super(props);
     this.dom = createRef();
     this.dui = 'a' + Math.random();
-    this.state = {mounted:props.animate === false,popoverStyle:undefined}
+    this.state = {mounted:props.position === 'popover'?false:props.animate === false,popoverStyle:undefined}
   }
   async onClose() {
     let { onClose } = this.props;
@@ -110,12 +110,15 @@ class Popup extends Component {
     setTimeout(()=>onClose(),300)
   }
   componentDidMount(){
-    let {mounted,position} = this.props;
-    if(mounted === true){return}
-    setTimeout(()=>this.setState({
-      popoverStyle:position === 'popover'?this.getPopoverStyle():{},
-      mounted:true
-    }),0)
+    let {position} = this.props;
+    let {mounted} = this.state;
+    if(!mounted){
+      setTimeout(()=>this.setState({
+        popoverStyle:position === 'popover'?this.getPopoverStyle():{},
+        mounted:true
+      }),0)
+    }
+    
   }
   header_layout() {
     let { rtl,header } = this.props;
@@ -165,14 +168,16 @@ class Popup extends Component {
     return {...style,position:'fixed'}
   }
   render() {
-    let { rtl, attrs = {}, id } = this.props;
+    let { rtl, attrs = {}, id,backdrop} = this.props;
     let {mounted,popoverStyle} = this.state
     let backdropProps = {
       className: this.getBackDropClassName(),
-      onClick: (e) => this.backClick(e),
+      style:backdrop === false?{pointerEvents:'none',background:'none'}:undefined,
+      onClick: backdrop === false?undefined:(e) => this.backClick(e),
       'data-popup-id': id,
     }
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
+    
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (' ' + this.dui) + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
       <div {...backdropProps}>

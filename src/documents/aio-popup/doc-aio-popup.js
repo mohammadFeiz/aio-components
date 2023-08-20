@@ -162,7 +162,7 @@ instance.addModal({
                     <tbody>
                         <tr>
                             <td>object</td>
-                            <td>yes</td>
+                            <td>---</td>
                             <td>configure modal body</td>
                         </tr>
                     </tbody>
@@ -265,12 +265,52 @@ instance.addModal({
                     </thead>
                     <tbody>
                         <tr>
-                            <td>'fullscreen' | 'top' | 'right' | 'left' | 'bottom' | 'center'</td>
+                            <td>'fullscreen' | 'top' | 'right' | 'left' | 'bottom' | 'center' | 'popover'</td>
                             <td>fullscreen</td>
                             <td>set position of modal</td>
                         </tr>
                     </tbody>
                 </table>
+                <h5>popover (use in 'popover' position)</h5>
+                <table className='aio-component-table'>
+                    <thead>
+                        <th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>object</td>
+                            <td>---</td>
+                            <td>set modal as popover near of any html target</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>popover properties</h5> 
+                <table className='aio-component-table'>
+                    <thead>
+                    <th>property</th><th>Type</th><th>Default</th><th>Description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>getTarget</td>
+                            <td>function</td>
+                            <td>---</td>
+                            <td>a function that returns an html tag for render modal as popover near it</td>
+                        </tr>
+                        <tr>
+                            <td>fixStyle</td>
+                            <td>function</td>
+                            <td>---</td>
+                            <td>a function that get computed style of popover and returns fixed style of computed popover style</td>
+                        </tr>
+                        <tr>
+                            <td>fitHorizontal</td>
+                            <td>boolean</td>
+                            <td>false</td>
+                            <td>set true for set width of modal equal to width of target html</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
                 <h5>attrs</h5>
                 <table className='aio-component-table'>
                     <thead>
@@ -369,7 +409,7 @@ class Modal extends Component {
         this.popup.addModal({
             position:'top',
             backdrop:{
-                close:true
+                close:false
             },
             body:{
                 render:({close})=>(
@@ -558,35 +598,16 @@ instance.addModal({
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.modal4()}>Open Modal</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>Modal header.close</h3>
+                <h3>Modal backdrop.close</h3>
                 {
                     AIODoc().Code(`
 instance.addModal({
     position:'top',
     backdrop:{
-        close:true
+        close:false
     },
     body:{
-        render:({close})=>(
-            <RVD
-                layout={{
-                    row:[
-                        {
-                            flex:1,
-                            style:{maxHeight:400,overflowY:'auto'},
-                            html:'this is my sample text in modal',
-                            align:'v'},
-                        {
-                            gap:6,
-                            column:[
-                                {html:(<button className='btn-123'>Approve</button>)},
-                                {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                            ]   
-                        }
-                    ]
-                }}
-            />
-        )
+        render:({close})=><MyComponent onClose={close}/>
     }
 })
                     `)
@@ -600,26 +621,7 @@ instance.addModal({
     position:'top',
     id:'one',
     body:{
-        render:({close})=>(
-            <RVD
-                layout={{
-                    row:[
-                        {
-                            flex:1,
-                            style:{maxHeight:400,overflowY:'auto'},
-                            html:'this is my sample text in modal',
-                            align:'v'},
-                        {
-                            gap:6,
-                            column:[
-                                {html:(<button className='btn-123'>Approve</button>)},
-                                {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                            ]   
-                        }
-                    ]
-                }}
-            />
-        )
+        render:({close})=><MyComponent onClose={close}/>
     }
 })
 instance.addModal({
@@ -627,26 +629,7 @@ instance.addModal({
     id:'two',
     backClose:true,
     body:{
-        render:({close})=>(
-            <RVD
-                layout={{
-                    row:[
-                        {
-                            flex:1,
-                            style:{maxHeight:400,overflowY:'auto'},
-                            html:'this is my sample text in modal',
-                            align:'v'},
-                        {
-                            gap:6,
-                            column:[
-                                {html:(<button className='btn-123'>Approve</button>)},
-                                {html:(<button className='btn-123' onClick={()=>this.popup.removeModal()}>Close</button>)}
-                            ]   
-                        }
-                    ]
-                }}
-            />
-        )
+        render:({close})=><MyComponent onClose={close}/>
     }
 })
                     `)
@@ -1138,145 +1121,166 @@ class Popover extends Component {
     }
     addPopover(type){
         this.popup.addModal({
+            position:'popover',
             popover:{
                 getTarget:()=>$(this.dom1.current),
             },
-            position:'popover',
-            body:{render:()=>this.v_layout()}
+            body:{render:({close})=>this.v_layout(close)}
 
         })
     }
     fixStyle(){
         this.popup.addModal({
+            position:'popover',
             popover:{
                 getTarget:()=>$(this.dom2.current),
                 fixStyle:(a,b)=>{
                     return {...a,top:a.top + 36}
                 }
             },
-            position:'popover',
             body:{render:()=>this.v_layout()},
-
         })
     }
     fitHorizontal(){
         this.popup.addModal({
+            position:'popover',
             popover:{
                 getTarget:()=>$(this.dom3.current),
                 fitHorizontal:true
             },
-            position:'popover',
             body:{render:()=>this.v_layout()},
 
         })
     }
-    test_long(){
+    styling(){
         this.popup.addModal({
+            position:'popover',
             popover:{
                 getTarget:()=>$(this.dom4.current),
-                fitHorizontal:true,
             },
-            position:'popover',
             body:{render:()=>content},
             attrs:{
                 style:{
-                    height:360
+                    height:360,
+                    width:400
                 }
             }
-
         })
     }
-    without_animate(){
+    without_backdrop(){
         this.popup.addModal({
+            backdrop:false,
             popover:{
                 getTarget:()=>$(this.dom5.current),
                 fitHorizontal:true,
             },
             position:'popover',
-            animate:false,
             body:{render:()=>content},
             attrs:{
+                onClick:()=>{
+                    this.popup.removeModal()
+                },
                 style:{
                     height:360
                 }
             }
-
         })
     }
     preview() {
         return (
             <div className='example'>
-                <h3>addPopover</h3>
+                <h3>popover</h3>
                 {
                     AIODoc().Code(`
-instance.addAlert({
-    text:'my alert text',
-    subtext:'this is the subtext of my alert',
-    time:10,
-    type:'error',
-    closeText:'بستن'
+instance.addModal({
+    position:'popover',
+    popover:{
+        getTarget:()=>$(this.dom1.current),
+    },
+    body:{render:({close})=>this.v_layout(close)}
 })
                     `)
                 }
                 <button ref={this.dom1} style={{ height: 36, padding: '0 24px' }} onClick={() => this.addPopover()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>backdrop</h3>
+                <h3>popover fixStyle</h3>
                 {
                     AIODoc().Code(`
-instance.addAlert({
-    text:'my alert text',
-    subtext:'this is the subtext of my alert',
-    time:10,
-    type:'error',
-    closeText:'بستن'
+instance.addModal({
+    position:'popover',
+    popover:{
+        getTarget:()=>$(this.dom2.current),
+        fixStyle:(a,b)=>{
+            return {...a,top:a.top + 36}
+        }
+    },
+    body:{render:()=>this.v_layout()},
 })
                     `)
                 }
                 <button ref={this.dom2} style={{ height: 36, padding: '0 24px' }} onClick={() => this.fixStyle()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>position right</h3>
+                <h3>fitHorizontal</h3>
                 {
                     AIODoc().Code(`
-instance.addAlert({
-    text:'my alert text',
-    subtext:'this is the subtext of my alert',
-    time:10,
-    type:'error',
-    closeText:'بستن'
+instance.addModal({
+    popover:{
+        getTarget:()=>$(this.dom3.current),
+        fitHorizontal:true
+    },
+    position:'popover',
+    body:{render:()=>this.v_layout()},
+
 })
                     `)
                 }
                 <button ref={this.dom3} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.fitHorizontal()}>Open Popover</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>test long</h3>
+                <h3>styling popover</h3>
                 {
                     AIODoc().Code(`
-instance.addAlert({
-    text:'my alert text',
-    subtext:'this is the subtext of my alert',
-    time:10,
-    type:'error',
-    closeText:'بستن'
+instance.addModal({
+    position:'popover',
+    popover:{
+        getTarget:()=>$(this.dom4.current),
+        fitHorizontal:true,
+    },
+    body:{render:()=>content},
+    attrs:{
+        style:{
+            height:360,
+            width:400
+        }
+    }
 })
                     `)
                 }
-                <button ref={this.dom4} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.test_long()}>test long</button>
+                <button ref={this.dom4} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.styling()}>test long</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3> without animate</h3>
+                <h3>popover without backdrop</h3>
                 {
                     AIODoc().Code(`
-instance.addAlert({
-    text:'my alert text',
-    subtext:'this is the subtext of my alert',
-    time:10,
-    type:'error',
-    closeText:'بستن'
+instance.addModal({
+    backdrop:false,
+    popover:{
+        getTarget:()=>$(this.dom5.current),
+        fitHorizontal:true,
+    },
+    position:'popover',
+    body:{render:()=>content},
+    attrs:{
+        onClick:()=>{
+            instance.removeModal()
+        },
+        style:{
+            height:360
+        }
+    }
 })
                     `)
                 }
-                <button ref={this.dom5} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.without_animate()}>Open Popover</button>
+                <button ref={this.dom5} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => this.without_backdrop()}>test long</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                
                 {this.popup.render()}
             </div>
         )
