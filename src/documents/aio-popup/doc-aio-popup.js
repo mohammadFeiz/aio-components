@@ -17,7 +17,7 @@ export default class DOC_AIOForm extends Component {
                 navId='popover'
                 navs={[
                     { text: 'aio-popup documentation', id: 'instance', COMPONENT: () => <Instance /> },
-                    { text: 'modal', id: 'modal', COMPONENT: () => <Modal /> },
+                    { text: 'addModal', id: 'addModal', COMPONENT: () => <AddModal /> },
                     { text: 'modal position', id: 'modalposition', COMPONENT: () => <ModalPosition /> },
                     { text: 'alert', id: 'alert', COMPONENT: () => <Alert /> },
                     { text: 'snakebar', id: 'snakebar', COMPONENT: () => <Snakebar /> },
@@ -364,7 +364,7 @@ instance.addSnakebar(props)
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class Modal extends Component {
+class AddModal extends Component {
     constructor(props){
         super(props);
         this.popup = new AIOPopup()
