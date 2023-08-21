@@ -18,12 +18,13 @@ import DOC_AIODragList from './documents/aio-drag-list/doc-aio-drag-list';
 import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
 import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
+import DOC_AIOMap from './documents/aio-map/doc-aio-map';
 
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-popup',
+      part:'aio-map',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-highlighter':{name:'aio-highlighter',Render:DOC_AIOHighlighter},
@@ -43,8 +44,7 @@ export default class AIOComponents extends Component{
         'react-super-app':{name:'react-super-app',Render:DOC_ReactSuperApp},
         'aio-service':{name:'aio-service',Render:DOC_AIOService},
         'aio-popup':{name:'aio-popup',Render:DOC_AIOPopup},
-
-
+        'aio-map':{name:'aio-map',Render:DOC_AIOMap}
       }
     }
   }
