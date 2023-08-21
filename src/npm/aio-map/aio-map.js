@@ -29,7 +29,7 @@ export default class Map extends Component {
             .then(
                 (response) => {
                     let { lat, lon } = response;
-                    this.flyTo(lat, lon)
+                    this.flyTo(lat, lon,undefined,'ipLookUp')
                 },
 
                 (data, status) => {
@@ -72,26 +72,31 @@ export default class Map extends Component {
         onSubmit(latitude, longitude,address)
     }
     goToCurrent() {
+        console.log('goToCurrent')
+        
         if ("geolocation" in navigator) {
             this.handlePermission();
             // check if geolocation is supported/enabled on current browser
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     let { latitude, longitude } = position.coords;
-                    this.apis.flyTo(latitude, longitude);
+                    this.apis.flyTo(latitude, longitude,undefined,'goToCurrent');
                 },
                 (error_message) => this.ipLookUp()
             )
         }
         else { this.ipLookUp() }
     }
-    flyTo(lat, lng,zoom = this.state.zoom) {
+    flyTo(lat, lng,zoom = this.state.zoom,caller) {
+        console.log('flyTo',caller)
         this.map.flyTo([lat, lng], zoom,{animate: true,duration: 1.4});
     }
     panTo(lat, lng) {
+        console.log('panTo')
         this.map.panTo({ lat, lng })
     }
     async updateAddress(lat,lng){
+        console.log('updateAddress')
         let {onChangeAddress} = this.props;
         let address = await this.getAddress(lat,lng)
         this.setState({address})
@@ -99,20 +104,23 @@ export default class Map extends Component {
             onChangeAddress(address)
         }
     }
-    move(lat, lng){
+    move(lat, lng,caller){
+        console.log('move',caller)
         let {onChange = ()=>{}} = this.props;
         this.marker.setLatLng({ lat, lng })
         clearTimeout(this.timeout);
 
         this.timeout = setTimeout(async () => {
-            this.setState({ latitude: lat, longitude: lng })
-            onChange(lat,lng);
-            this.updateAddress(lat,lng)
+            this.setState({ latitude: lat, longitude: lng },()=>{
+                onChange(lat,lng);
+                this.updateAddress(lat,lng)
+            })
         }, 700);
     }
     //maptype: "dreamy" | 'standard-day'
     
     init(){
+        console.log('init')
         let {zoom = 12, onClick, apiKeys,onChange,onSubmit,popup} = this.props;
         let { latitude, longitude } = this.state;
         let changeView = (!!onSubmit || !!onChange) && !popup;
@@ -147,7 +155,7 @@ export default class Map extends Component {
         myMap.on('move', (e) => {
             //marker.setLatLng(e.target.getCenter())
             let { lat, lng } = e.target.getCenter()
-            this.move(lat,lng)
+            this.move(lat,lng,'init')
         });
         if (changeView) {
             
@@ -178,15 +186,16 @@ export default class Map extends Component {
         else {this.init()}
     }
     componentDidUpdate(){
-        let {latitude:plat,longitude:plon,zoom:pzoom} = this.props;
+        let {latitude:plat,longitude:plon,zoom:pzoom = 14} = this.props;
         let {prevLatitude:slat,prevLongitude:slon,prevZoom:szoom} = this.state;
         if(plat !== slat || plon !== slon || pzoom !== szoom){
             setTimeout(()=>{
-                this.flyTo(plat,plon,pzoom);
-                //this.setState({prevLatitude:plat,prevLongitude:plon})
+                this.flyTo(plat,plon,pzoom,'componentDidUpdate');
+                this.setState({prevLatitude:plat,prevLongitude:plon,prevZoom:pzoom})
             },0)
         }
         this.handleArea()
+        this.handleMarkers()
     }
     getMarkerDefaultOptions(marker){
         let {markerOptions = {}} = this.props;
@@ -229,13 +238,6 @@ export default class Map extends Component {
             )
         }
     }
-    handlePropsChange(){
-        let { prevLatitude,prevLongitude } = this.state;
-        if(this.props.latitude !== prevLatitude || this.props.longitude !== prevLongitude){
-            let { latitude = 35.699739, longitude = 51.338097 } = this.props;
-            setTimeout(()=>this.setState({latitude,longitude,prevLatitude:latitude,prevLongitude:longitude}),0)
-        }
-    }
     getContext(){
         return {
             rootProps:{...this.props},
@@ -265,7 +267,7 @@ export default class Map extends Component {
     }
     render() {
         let {style = {width:'100%',height:240}} = this.props;
-        this.handlePropsChange()
+        console.log('render')
         return (
             <>
                 <MapContext.Provider value={this.getContext()}>
@@ -360,7 +362,7 @@ class MapHeader extends Component {
                 return {
                     onClick: () => {
                         this.setState({ showResult: false });
-                        flyTo(location.y, location.x, title)
+                        flyTo(location.y, location.x, undefined,'result_layout')
                     },
                     className:'aio-map-search-result',
                     column: [

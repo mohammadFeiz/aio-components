@@ -5,17 +5,20 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOMap from './../../npm/aio-map/aio-map';
 import './index.css';
 import {Icon} from '@mdi/react';
-import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift } from '@mdi/js';
 export default class DOC_AIOMap extends Component {
     render() {
         return (
             <DOC
                 {...this.props}
-                navId='onChange'
+                navId='markers'
                 navs={[
                     { text: 'apiKeys', id: 'apiKeys', COMPONENT: () => <APIKeys /> },
                     { text: 'latitude , longitude , zoom', id: 'latlngzoom', COMPONENT: () => <LatLngZoom /> },
                     { text: 'onChange', id: 'onChange', COMPONENT: () => <OnChange /> },
+                    { text: 'area', id: 'area', COMPONENT: () => <Area /> },
+                    { text: 'markers', id: 'markers', COMPONENT: () => <Markers /> },
+
                 ]}
             />
         )
@@ -168,6 +171,190 @@ class OnChange extends Component {
         this.setState({latitude,longitude})
     }}
 />
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Area extends Component {
+    state = {area:{latitude:35.694739,longitude:51.394097,radius:2000,color:'orange',opacity:0.2}}
+    change(dir,field,fixed){
+        let result = this.state.area[field] + dir;
+        result = +result.toFixed(fixed)
+        this.setState({area:{...this.state.area,[field]:result}})
+    }
+    preview() {
+        let {area} = this.state; 
+        return (
+            <div className='example'>
+                <RVD
+                    layout={{
+                        row:[
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'latitude',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:area.latitude,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            },
+                            {size:36},
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'longitude',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:area.longitude,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            },
+                            {size:36},
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'radius',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-100,'radius',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:area.radius,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(100,'radius',0)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }}
+                />
+                <AIOMap
+                    apiKeys={{
+                        map:'web.bfb13683318840ad840923a88043ceba',
+                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+                    }}
+                    latitude={35.694739}
+                    longitude={51.394097}
+                    area={area}
+                />
+                {
+                    AIODoc().Code(`
+<AIOMap
+    apiKeys={{
+        map:'web.bfb13683318840ad840923a88043ceba',
+        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+    }}
+    latitude={35.694739}
+    longitude={51.394097}
+    area={{
+        latitude:${area.latitude},
+        longitude:${area.longitude},
+        radius:${area.radius},
+        color:'orange',
+        opacity:0.2
+    }}
+/>
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Markers extends Component {
+    state = {
+        markers:[
+            {latitude:35.76025388385241,longitude:51.40858858823776,size:30,color:'orange',html:<Icon path={mdiOfficeBuilding} size={1}/>},
+            {latitude:35.76920327411297,longitude:51.40546649694443,size:30,color:'red',html:<Icon path={mdiOfficeBuilding} size={1}/>},
+            {latitude:35.78097175634515,longitude:51.39394909143448,size:30,color:'red',html:<Icon path={mdiGift} size={1}/>,text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>}
+        ]
+    }
+    change(dir,field,fixed){
+        let {markers} = this.state;
+        let result = markers[0][field] + dir;
+        result = +result.toFixed(fixed)
+        this.setState({markers:markers.map((o,i)=>i === 0?{...markers[i],[field]:result}:o)})
+    }
+    preview() {
+        let {markers} = this.state; 
+        return (
+            <div className='example'>
+                <RVD
+                    layout={{
+                        row:[
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'latitude',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:markers[0].latitude,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            },
+                            {size:36},
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'longitude',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:markers[0].longitude,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            },
+                            {size:36},
+                            {
+                                style:{border:'1px solid #ddd',padding:12},
+                                row:[
+                                    {html:'radius',align:'v',className:'bold'},
+                                    {size:12},
+                                    {
+                                        row:[
+                                            {html:<button onClick={()=>this.change(-1,'size',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:markers[0].size,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(1,'size',0)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }}
+                />
+                <AIOMap
+                    apiKeys={{
+                        map:'web.bfb13683318840ad840923a88043ceba',
+                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+                    }}
+                    zoom={13}
+                    latitude={35.76920327411297}
+                    longitude={51.40546649694443}
+                    markers={markers}
+                />
+                {
+                    AIODoc().Code(`
+
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
