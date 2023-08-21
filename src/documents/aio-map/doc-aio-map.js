@@ -354,7 +354,39 @@ class Markers extends Component {
                 />
                 {
                     AIODoc().Code(`
-
+<AIOMap
+    apiKeys={{
+        map:'web.bfb13683318840ad840923a88043ceba',
+        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+    }}
+    zoom={13}
+    latitude={35.76920327411297}
+    longitude={51.40546649694443}
+    markers={[
+        {
+            latitude:${markers[0].latitude},
+            longitude:${markers[0].longitude},
+            size:${markers[0].size},
+            color:'orange',
+            html:<Icon path={mdiOfficeBuilding} size={1}/>
+        },
+        {
+            latitude:35.76920327411297,
+            longitude:51.40546649694443,
+            size:30,
+            color:'red',
+            html:<Icon path={mdiOfficeBuilding} size={1}/>
+        },
+        {
+            latitude:35.78097175634515,
+            longitude:51.39394909143448,
+            size:30,
+            color:'red',
+            html:<Icon path={mdiGift} size={1}/>,
+            text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>
+        }
+    ]}
+/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
