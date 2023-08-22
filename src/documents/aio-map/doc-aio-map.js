@@ -11,7 +11,7 @@ export default class DOC_AIOMap extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='markers'
+                navId='apiKeys'
                 navs={[
                     { text: 'apiKeys', id: 'apiKeys', COMPONENT: () => <APIKeys /> },
                     { text: 'latitude , longitude , zoom', id: 'latlngzoom', COMPONENT: () => <LatLngZoom /> },

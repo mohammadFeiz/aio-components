@@ -15,11 +15,10 @@ export default class AIOPopup {
     return (
       <>
         <Popups
-          getActions={({addModal,removeModal,addPopover,removePopover})=>{
+          getActions={({addModal,removeModal,getModals})=>{
             this._addModal = addModal;
             this._removeModal = removeModal;
-            this._addPopover = addPopover;
-            this._removePopover = removePopover;
+            this._getModals = getModals;
           }}
         />
         <AIOSnackeBar rtl={this.rtl} getActions={({add})=>{
@@ -28,6 +27,7 @@ export default class AIOPopup {
       </>
     )
   }
+  getModals = ()=>this._getModals()
   addModal = (obj = {})=>{
     if(obj.id === undefined){obj.id = 'popup' + Math.round(Math.random() * 1000000)}
     this._addModal(obj)
@@ -46,10 +46,11 @@ class Popups extends Component {
   constructor(props) {
     super(props);
     let { getActions = () => { } } = props
-    this.state = {modals: [],popovers:[]}
+    this.state = {modals: []}
     getActions({
       removeModal: this.removeModal.bind(this),
       addModal: this.addModal.bind(this),
+      getModals: ()=>[...this.state.modals]
     })
   }
   onChange(obj) {
@@ -141,12 +142,13 @@ class Popup extends Component {
     return {html:<ModalFooter {...props}/>}
   }
   getBackDropClassName() {
-    let { blur, className: cls,position = 'fullscreen' } = this.props;
+    let { blur, className: cls,position = 'fullscreen',backdrop } = this.props;
     let { mounted } = this.state;
     let className = 'aio-popup-backdrop';
     if (cls) { className += className ? (' ' + cls) : '' }
     if (blur) { className += ' aio-popup-blur' }
     className += ` aio-popup-position-${position}`
+    className += backdrop === false?' aio-popup-backdrop-off':''
     if(!mounted){className += ' not-mounted'}
     return className
   }
@@ -171,8 +173,8 @@ class Popup extends Component {
     let { rtl, attrs = {}, id,backdrop} = this.props;
     let {mounted,popoverStyle} = this.state
     let backdropProps = {
+      ...(backdrop?backdrop.attrs:{}),
       className: this.getBackDropClassName(),
-      style:backdrop === false?{pointerEvents:'none',background:'none'}:undefined,
       onClick: backdrop === false?undefined:(e) => this.backClick(e),
       'data-popup-id': id,
     }
@@ -401,58 +403,6 @@ class SnackebarItem extends Component{
   }
 }
 //id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,animate,openRelatedTo,rtl,body
-export class Popover extends Component {
-  constructor(props) {
-    super(props);
-    this.dom = createRef();
-  }
-  handleClose(e) {
-    let { id, onClose = () => { } } = this.props;
-    let target = $(e.target);
-    let datauniqid = target.attr('datauniqid')
-    if (datauniqid === id) { return }
-    if (target.parents(`[data-uniq-id=${id}]`).length) { return }
-    onClose()
-  }
-  componentDidMount() {
-    this.update($(this.dom.current));
-    if (this.props.backdrop === false) {
-      $(window).on('click', (e) => this.handleClose(e))
-    }
-  }
-  update(popup) {
-    let { getTarget, position } = this.props;
-    if (position) { return }
-    let target = getTarget();
-    if (!target || !target.length) { return }
-    var { rtl, openRelatedTo, animate, fitHorizontal, attrs = {}, fixStyle = (o) => o } = this.props;
-    Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
-    popup.focus();
-  }
-  getClassName() {
-    let { attrs = {} } = this.props;
-    let { className } = attrs;
-    let cls = 'aio-popover';
-    if (className) { cls += ' ' + className }
-    return cls;
-  }
-  getPopover(){
-    let { attrs = {}, body, id } = this.props;
-    return <div {...attrs} ref={this.dom} data-uniq-id={id} className={this.getClassName()}>{body()}</div>
-  }
-  render() {
-    var { backdrop,position} = this.props;
-    let popOver = this.getPopover()
-    if (!backdrop) { return popOver; }
-    let {attrs = {}} = backdrop;
-    let backdropProps = {
-      onClick: (e) => this.handleClose(e),...attrs,
-      className: 'aio-popup-backdrop' + (attrs.className?' ' + attrs.className:'') + (position?` aio-popup-position-${position}`:''),
-    }
-    return <div {...backdropProps}>{popOver}</div>;
-  }
-}
-
 function Align(dom,target,config = {}){
   let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,animate,rtl} = config;
   let $$ = {

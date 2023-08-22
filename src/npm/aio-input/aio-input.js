@@ -1,17 +1,20 @@
 import React, { Component, createRef } from 'react';
 import AIODate from './../aio-date/aio-date';
+import RVD from './../react-virtual-dom/react-virtual-dom';
+import AIOValidation from "../aio-validation/aio-validation";
+import SearchBox from './search-box';
 import Layout from './layout';
-import Tags from './tags';
+import { Icon } from '@mdi/react';
+import { mdiChevronRight, mdiClose,mdiCircleMedium } from "@mdi/js";
 import Table from './table';
-import Form from './form';
 import Slider from './../aio-slider/aio-slider';
 import AIOSwip from '../aio-swip/aio-swip';
-import Options from './options';
 import DatePicker from './datepicker';
 import AIContext from './context';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
+
 export default class AIOInput extends Component {
     constructor(props) {
         super(props);
@@ -21,7 +24,6 @@ export default class AIOInput extends Component {
         this.state = {
             fitHorizontal:['text','number','textarea','password'].indexOf(props.type) !== -1 || props.popupWidth === 'fit' || props.type === 'multiselect',
             backdrop:['text','number','textarea','password'].indexOf(props.type) === -1,
-            open: props.open || false,
         }
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
@@ -46,18 +48,20 @@ export default class AIOInput extends Component {
         Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
         return Arr.filter((o) => o._testswapindex !== fromIndex)
     }
-    toggle(state) {
-        let { open } = this.state;
+    toggle(popover) {
+        let open = !!this.popup.getModals().length
         let { onToggle } = this.props;
-        if (state === undefined) { state = !open }
-        if (state === open) { return }
-        this.setState({ open: state });
-        if (state) { $('body').addClass('aio-input-open'); }
+        if (!!popover === !!open) { return }
+        if (popover) { 
+            this.popup.addModal(popover);
+            $('body').addClass('aio-input-open'); 
+        }
         else {
+            this.popup.removeModal();
             $('body').removeClass('aio-input-open');
             setTimeout(() => $(this.dom.current).focus(), 0)
         }
-        if (onToggle) { onToggle(state) }
+        if (onToggle) { onToggle(!!popover) }
     }
     getSelectText() {
         let { options = [] } = this.props;
@@ -127,51 +131,51 @@ export default class AIOInput extends Component {
         if (prop !== undefined) { return prop }
         return def
     }
-    getPopover(){
-        let {type,popover,options} = this.props;
+    getPopover(dom){
+        let {type,popover,options,rtl} = this.props;
         if (type === 'button' && popover) {
-            let {backdropAttrs,attrs,render,fixStyle,fitHorizontal} = popover
-            return {
-                position:'popover',attrs,
-                body:{render},
-                backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+            let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
+            let a = {
+                rtl,position,attrs,backdrop:{attrs:backdropAttrs},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)},
+                body:{render:({close})=>render({close})}
             }
+            return a;
         }
         if (type === 'datepicker') { 
-            let {backdropAttrs,attrs,fixStyle,fitHorizontal} = popover
+            let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
             return {
-                position:'popover',attrs,
+                rtl,position,attrs,
                 body:{render:()=><DatePicker {...this.props}/>},
                 backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
             }
         }
         if (type === 'select' || type === 'multiselect') { 
-            let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer} = popover
+            let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover'} = popover || {}
             return {
-                position:'popover',attrs,
-                body:{render:()=><Options/>},
+                rtl,position,attrs,
+                body:{render:()=><Options/>,attrs:{style:{flexDirection:'column'}}},
                 backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
             }
         }   
         if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){
-            let {attrs,fixStyle,fitHorizontal = type === 'multiselect'} = popover
+            let {attrs,fixStyle,fitHorizontal = type === 'multiselect',position = 'popover'} = popover
             return {
-                position:'popover',attrs,backdrop:false,body:{render:()=><Options/>},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+                rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
             }
         }
     }
-    click(e) {
+    click(e,dom) {
         if ($(e.target).parents('.aio-input-tags').length !== 0) { return; }
-        let { type, onChange = () => { }, onClick,popover } = this.props;
+        let { type, onChange = () => { }, onClick } = this.props;
         
         if (type === 'file') { return }
         else if (type === 'checkbox') { onChange(!this.getProp('value')) }
-        let popOver = this.getProp('popOver');
-        if (popOver) {this.popup.addModal(this.getPopover())}
+        let popover = this.getPopover(dom);
+        if (popover) {this.toggle(popover)}
         else if (onClick) { onClick(); }
     }
     optionClick(option) {
@@ -188,7 +192,7 @@ export default class AIOInput extends Component {
         if (close) { this.toggle(false) }
     }
     getContext() {
-        let { open,fitHorizontal,backdrop } = this.state;
+        let { fitHorizontal,backdrop } = this.state;
         return {
             ...this.props,
             popup:this.popup,
@@ -201,8 +205,7 @@ export default class AIOInput extends Component {
             getProp: this.getProp.bind(this),
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
-            toggle: this.toggle.bind(this),
-            open,fitHorizontal,backdrop
+            fitHorizontal,backdrop
         }
     }
     render_button() { return <Layout /> }
@@ -390,3 +393,370 @@ class Input extends Component {
 }
 
 
+
+class Form extends Component {
+    constructor(props){
+        super(props);
+        let {value = {},onChange} = props;
+        this.state = {initialValue:JSON.stringify(props.model)}
+        if(!onChange){
+            this.state.value = value;
+        }
+        this.errors = {}
+    }
+    getValue(){
+        let {onChange} = this.props;
+        if(onChange){
+            let {value = {}} = this.props;
+            return value;
+        }
+        else{
+            let {value} = this.state;
+            return value;
+        }
+    }
+    getErrors(){
+        return [...Object.keys(this.errors).filter((o)=>!!this.errors[o]).map((o)=>this.errors[o])]
+    }
+    removeError(field){
+        let newErrors = {}
+        for(let prop in this.errors){
+            if(prop !== field){newErrors[prop] = this.errors[prop]}
+        }
+        this.errors = newErrors
+    }
+    setValue(v,field,obj){
+        let { onChange } = this.props;
+        let value = this.getValue();
+        let newValue = this.setValueByField(value, field, v);
+        let error = this.getError(obj,v)
+        if(error){this.errors[field] = error}
+        else {
+            this.removeError(field)
+        }
+        if(onChange){onChange(newValue,this.getErrors())}
+        else{this.setState({value:newValue})} 
+        
+    }
+    header_layout() {
+        let { header, title, subtitle, headerAttrs = {}, onClose, onBack } = this.props;
+        if (!header && !title && !onClose && !onBack) { return false }
+        return {
+            className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
+            row: [
+                { show: !!onBack, size: 36, html: <Icon path={mdiChevronRight} size={.8} />, align: 'vh', onClick: () => onBack() },
+                {
+                    show: !!title,
+                    column: [
+                        { flex: 1 },
+                        { html: title, className: 'aio-input-form-title' },
+                        { show: !!subtitle, html: subtitle, className: 'aio-input-form-subtitle' },
+                        { flex: 1 }
+                    ]
+                },
+                {flex:1,show:!!title},
+                { show:!!header,flex: !!title ? undefined : 1, html: ()=>typeof header === 'function'?header():header,align:'vh' },
+                { show: !!onClose, html: <Icon path={mdiClose} size={.8} />, onClick: () => onClose(),className:'aio-input-form-close-icon' }
+            ]
+        }
+    }
+    body_layout() {
+        let { inputs } = this.props;
+        if (Array.isArray(inputs)) {
+            inputs = { column: inputs.map((o) => this.input_layout(o)) }
+        }
+        let res = {
+            flex: 1, className: 'aio-input-form-body', ...inputs
+        }
+        return res
+    }
+    reset(){
+        let {onChange} = this.props;
+        let {initialValue} = this.state;
+        if(onChange){onChange(JSON.parse(initialValue))}
+        else {
+            this.setState({value:JSON.parse(initialValue)})
+        }
+    }
+    footer_layout() {
+        let { footer, onSubmit, onClose, footerAttrs = {}, closeText = 'Close',resetText='reset',submitText = 'submit',reset } = this.props;
+        let {initialValue} = this.state;
+        if (footer === false) { return false }
+        if (!footer && !onSubmit && !onClose && !reset) { return false }
+        let disabled = !!this.getErrors().length || initialValue === JSON.stringify(this.getValue())
+        if(footer){
+            let html = typeof footer === 'function'?footer({onReset:()=>this.reset(),disabled,errors:this.getErrors()}):footer
+            return {
+                className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
+                html
+            }
+        }
+        return {
+            className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
+            row: [
+                { show: !!onClose, html: <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button> },
+                { show: !!reset, html: <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button> },
+                { show: !!onSubmit, html: <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> },
+            ]
+        }
+    }
+    getDefault({ type, multiple }) {
+        return {
+            file: [],
+            multiselect: [],
+            radio: multiple ? [] : undefined,
+        }[type]
+    }
+    getValueByField(field, def) {
+        let props = this.props;
+        let value = this.getValue();
+        let a;
+        if (typeof field === 'string') {
+            if (field.indexOf('value.') !== -1 || field.indexOf('props.') !== -1) {
+                try { eval(`a = ${field}`); }
+                catch (err) { a = a; }
+            }
+            else { a = field }
+        }
+        else { a = typeof field === 'function' ? field() : field }
+        if (a === undefined) { return def }
+        return a
+    }
+    setValueByField(obj = {}, field, value) {
+        field = field.replaceAll('[', '.');
+        field = field.replaceAll(']', '');
+        var fields = field.split('.');
+        var node = obj;
+        for (let i = 0; i < fields.length - 1; i++) {
+            let f = fields[i];
+            if (f === 'value') { continue }
+            if (node[f] === undefined) {
+                if (isNaN(parseFloat(fields[i + 1]))) { node[f] = {} }
+                else { node[f] = []; }
+                node = node[f];
+            }
+            else { node = node[f]; }
+        }
+        node[fields[fields.length - 1]] = value;
+        return obj;
+    }
+    inlineLabel_layout(inlineLabel, props) {
+        if (!inlineLabel) { return false }
+        let { inlineLabelAttrs = {} } = props;
+        let { className } = inlineLabelAttrs;
+        return {
+            html: inlineLabel, align: 'v', attrs: inlineLabelAttrs,
+            className: 'aio-input-form-inline-label' + (className ? ' ' + className : '')
+        }
+    }
+    label_layout(label, props) {
+        if (!label) { return false }
+        let { labelAttrs = {} } = props;
+        let { className } = labelAttrs;
+        return {
+            html: label, attrs: labelAttrs,
+            className: 'aio-input-form-label' + (className ? ' ' + className : '')
+        }
+    }
+    error_layout(error,props){
+        if(!error){return false}
+        let { errorAttrs = {} } = this.props;
+        let { className } = errorAttrs;
+        return { 
+            html: error,attrs:errorAttrs,
+            className: 'aio-input-form-error' + (className ? ' ' + className : '')
+        }
+    }
+    componentDidMount(){
+        let {onChange = ()=>{}} = this.props;
+        onChange(this.getValue(),this.errors)
+    }
+    input_layout(obj) {
+        let {rtl,inputAttrs} = this.props;
+        let { label, footer, inlineLabel, input, flex, size, props = {},field } = obj;
+        let value = this.getValueByField(field, this.getDefault(input));
+        let error = this.getError(obj,value)
+        if(error){this.errors[field] = error}
+        else {this.errors[field] = undefined}
+        return {
+            flex, size,
+            className: 'aio-input-form-item',
+            column:[
+                {
+                    row: [
+                        this.inlineLabel_layout(inlineLabel, props),
+                        {
+                            flex: 1,className:'of-visible',
+                            column: [
+                                this.label_layout(label, props),
+                                { html: <AIOInput {...inputAttrs} {...input} rtl={rtl} value={value} onChange={(value) => this.setValue(value, field,obj)} /> },
+                                { show: !!footer, html: footer },
+                            ]
+                        }
+                    ]
+                },
+                this.error_layout(error,props)
+            ]
+        }
+    }
+    getError(o, value, options) {
+        let { lang = 'en' } = this.props;
+        let { validations = [], input } = o;
+        let { type } = input;
+        if (!validations.length || type === 'html') { return '' }
+        let a = {
+            value, title: o.label || o.inlineLabel, lang,
+            validations: validations.map((a) => {
+                let params = a[2] || {};
+                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField(a[1],'' );
+                let operator = a[0];
+                return [operator, target, params]
+            })
+        }
+        let error = AIOValidation(a);
+        return error;
+    }
+    render() {
+        let {rtl,style,className} = this.props;
+        return (
+            <RVD
+                getLayout={(obj, parent = {}) => {
+                    let show = this.getValueByField(obj.show, true);
+                    if(show === false){return false}
+                    if (obj.input) {
+                        return this.input_layout({ ...obj,flex:parent.row && !obj.size && !obj.flex?1:undefined })
+                    }
+                    if(parent.input){
+                        obj.className = 'of-visible'
+                    }
+                    return { ...obj }
+
+                }}
+                layout={{
+                    style,
+                    className: 'aio-input-form' + (rtl?' aio-input-form-rtl':'') + (className?' ' + className:''),
+                    column: [
+                        this.header_layout(),
+                        this.body_layout(),
+                        this.footer_layout()
+                    ]
+                }}
+            />
+        )
+    }
+}
+
+class Options extends Component {
+    static contextType = AIContext;
+    constructor(props) {
+        super(props);
+        this.state = { searchValue: ''};
+    }
+    getDefaultOptionChecked(type, value) {
+        if (type === 'multiselect' || type === 'radio') {
+            let { getProp } = this.context;
+            let Value = getProp('value');
+            return getProp('multiple') ? Value.indexOf(value) !== -1 : Value === value
+        }
+
+    }
+    getOptions() {
+        let { getProp, getOptionProp, type} = this.context;
+        let options = getProp('options', []);
+        let result = [];
+        let renderIndex = 0;
+        let isInput = ['text','number','textarea','password'].indexOf(type) !== -1;
+        let Value = getProp('value')
+        for (let i = 0; i < options.length; i++) {
+            let option = options[i];
+            let show = getOptionProp(option, 'show')
+            if (show === false) { continue }
+            let text = getOptionProp(option, 'text');
+            if(isInput && Value && text.indexOf(Value) !== 0){continue}
+            let value = getOptionProp(option, 'value')
+            let obj = {
+                text,
+                value,
+                attrs: getOptionProp(option, 'attrs',{}),
+                checkIcon: getOptionProp(option, 'checkIcon'),
+                checked: getOptionProp(option, 'checked', this.getDefaultOptionChecked(type, value)),
+                before: getOptionProp(option, 'before'),
+                after: getOptionProp(option, 'after'),
+                subtext: getOptionProp(option, 'subtext'),
+                attrs: getOptionProp(option, 'attrs'),
+                tagAttrs: getOptionProp(option, 'tagAttrs'),
+                style: getOptionProp(option, 'style'),
+                className: getOptionProp(option, 'className',''),
+                onClick: getOptionProp(option, 'onClick'),
+                disabled: getProp('disabled') || getOptionProp(option, 'disabled'),
+                tagBefore: getOptionProp(option, 'tagBefore'),
+                close: getOptionProp(option, 'close', type !== 'multiselect'),
+                tagAfter: getOptionProp(option, 'tagAfter'),
+                renderIndex, realIndex: i
+            }
+            if (value === Value) { obj.className += obj.className ? ' active' : 'active' }
+            result.push(obj)
+            renderIndex++;
+        }
+        return result;
+    }
+    renderSearchBox(options) {
+        let { search, type,isInput } = this.context;
+        if (type === 'tabs' || isInput || search === false) { return null }
+        if (type === 'radio' && !search) { return null }
+        if (typeof search !== 'string') { search = 'Search' }
+        let { searchValue } = this.state;
+        if (searchValue === '' && options.length < 10) { return null }
+        return <SearchBox value={searchValue} onChange={(text) => this.setState({ searchValue: text })} placeholder={search} />
+    }
+    Options(options) {
+        let { searchValue } = this.state;
+        let renderIndex = 0;
+        return options.map((option, i) => {
+            if (searchValue) {
+                if (option.text === undefined || option.text === '') { return null }
+                if (option.text.indexOf(searchValue) === -1) { return null }
+            }
+            let props = { key: i, option, renderIndex, realIndex: i, searchValue, selectedText: this.selectedText }
+            return <Layout {...props} />
+        });
+    }
+    render() {
+        let { type } = this.context;
+        let options = this.getOptions();
+        if(!options.length){return null}
+        let Options = this.Options(options);
+        return (
+            <>
+                {this.renderSearchBox(options)}
+                <div className={`aio-input-options aio-input-${type}-options`}>{Options}</div>
+            </>
+        )
+    }
+}
+
+
+
+class Tags extends Component {
+  render() {
+    let {tags,rtl} = this.props;
+    if(!tags.length){return null}
+    return (
+      <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>
+        {tags.map((o)=><Tag {...o}/>)}
+      </div>
+    )
+  }
+}
+
+function Tag(props) {
+  let {text,disabled,tagAttrs = {},onRemove,tagBefore = <Icon path={mdiCircleMedium} size={0.7}/>,tagAfter } = props;
+  return (
+    <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
+      <div className='aio-input-tag-icon'>{tagBefore}</div>
+      <div className='aio-input-tag-text'>{text}</div>
+      {tagAfter !== undefined && <div className='aio-input-tag-icon'>{tagAfter}</div>}
+      <div className='aio-input-tag-icon'><Icon path={mdiClose} size={0.7} onClick={onRemove}/></div>
+    </div>
+  )
+}

@@ -58,7 +58,6 @@ export default class DOC_AIOInput extends Component {
                     value:{ background: 'orange' },code:`style={{background:"orange"}}`,
                     types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','table','text','number','textarea','color','password','slider']
                 },
-                'popupWidth':{value:'fit',code:`popupWidth="fit"`,types:['select', 'datepicker']},
                 'optionText':{
                     value:'option.text',code:`optionText='option.text'`,
                     types:['select', 'multiselect','radio','tabs','text','number','textarea']
@@ -91,6 +90,7 @@ export default class DOC_AIOInput extends Component {
                     code:`optionTagAttrs={{ style: { background: 'orange' } }}`,
                     types:['multiselect']
                 },
+
                 'showTags':{value:true,code:`showTags={true}`,types:['multiselect']},
                 'optionShow':{
                     value:'option.id !== "2" && option.value !== "2"',
@@ -140,16 +140,22 @@ export default class DOC_AIOInput extends Component {
                     value:true,code:`disabled={true}`,
                     types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
-                
-                'popOver':{
-                    value:(toggle) => {
-                        return (
-                            <div style={{ padding: 12 }}>
-                                this is my popOver. you can place html here
-                                <br />
-                                <button onClick={() => toggle()}>click here to close</button>
-                            </div>
-                        )
+                'popover':{
+                    value:{
+                        render:({close}) => {
+                            return (
+                                <div style={{ padding: 12 }}>
+                                    this is my popover. you can place html here
+                                    <br />
+                                    <button onClick={() => close()}>click here to close</button>
+                                </div>
+                            )
+                        },
+                        fitHorizontal:true,
+                        position:'bottom',
+                        attrs:{
+                            style:{maxWidth:500}
+                        }
                     },
                     code:`popOver={(toggle) => {
             return (
