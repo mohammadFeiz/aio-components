@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { Component, createRef, useContext } from 'react';
 import AIODate from './../aio-date/aio-date';
 import RVD from './../react-virtual-dom/react-virtual-dom';
 import AIOValidation from "../aio-validation/aio-validation";
@@ -15,15 +15,64 @@ import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
 
+
 export default class AIOInput extends Component {
     constructor(props) {
         super(props);
         this.dom = createRef();
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
         this.popup = new AIOPopup();
+        this.getPopover = this.handleGetPopover();
         this.state = {
-            fitHorizontal:['text','number','textarea','password'].indexOf(props.type) !== -1 || props.popupWidth === 'fit' || props.type === 'multiselect',
             backdrop:['text','number','textarea','password'].indexOf(props.type) === -1,
+        }
+    }
+    handleGetPopover(){
+        let {type,popover,options} = this.props;
+        if (type === 'button' && popover) {
+            return (dom)=>{
+                let {popover,rtl} = this.props;
+                let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover'} = popover;
+                return {
+                    rtl,position,attrs,backdrop:{attrs:backdropAttrs},
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)},
+                    body:{render:({close})=>render({close})}
+                }
+            }
+        }
+        if (type === 'datepicker') { 
+            return (dom)=>{
+                let {popover,rtl} = this.props;
+                let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
+                return {
+                    rtl,position,attrs,
+                    body:{render:()=><DatePicker {...this.props}/>},
+                    backdrop:{attrs:backdropAttrs},
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
+                }
+            }
+        }
+        if (type === 'select' || type === 'multiselect') { 
+            return (dom)=>{
+                let {popover,rtl} = this.props;
+                let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover'} = popover || {}
+                return {
+                    rtl,position,attrs,
+                    body:{render:()=><Options/>,attrs:{style:{flexDirection:'column'}}},
+                    backdrop:{attrs:backdropAttrs},
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
+                }
+            }
+        }   
+        if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){
+            return (dom)=>{
+                let {type,popover,rtl} = this.props;
+                let {attrs,fixStyle,fitHorizontal = type === 'multiselect',position = 'popover'} = popover
+                return {
+                    rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
+                }
+            }
         }
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
@@ -131,51 +180,10 @@ export default class AIOInput extends Component {
         if (prop !== undefined) { return prop }
         return def
     }
-    getPopover(dom){
-        let {type,popover,options,rtl} = this.props;
-        if (type === 'button' && popover) {
-            let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
-            let a = {
-                rtl,position,attrs,backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)},
-                body:{render:({close})=>render({close})}
-            }
-            return a;
-        }
-        if (type === 'datepicker') { 
-            let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
-            return {
-                rtl,position,attrs,
-                body:{render:()=><DatePicker {...this.props}/>},
-                backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
-            }
-        }
-        if (type === 'select' || type === 'multiselect') { 
-            let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover'} = popover || {}
-            return {
-                rtl,position,attrs,
-                body:{render:()=><Options/>,attrs:{style:{flexDirection:'column'}}},
-                backdrop:{attrs:backdropAttrs},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
-            }
-        }   
-        if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){
-            let {attrs,fixStyle,fitHorizontal = type === 'multiselect',position = 'popover'} = popover
-            return {
-                rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},
-                popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
-            }
-        }
-    }
     click(e,dom) {
-        if ($(e.target).parents('.aio-input-tags').length !== 0) { return; }
         let { type, onChange = () => { }, onClick } = this.props;
-        
-        if (type === 'file') { return }
-        else if (type === 'checkbox') { onChange(!this.getProp('value')) }
-        let popover = this.getPopover(dom);
-        if (popover) {this.toggle(popover)}
+        if (type === 'checkbox') { onChange(!this.getProp('value')) }
+        else if (this.getPopover) {this.toggle(this.getPopover(dom))}
         else if (onClick) { onClick(); }
     }
     optionClick(option) {
@@ -192,7 +200,7 @@ export default class AIOInput extends Component {
         if (close) { this.toggle(false) }
     }
     getContext() {
-        let { fitHorizontal,backdrop } = this.state;
+        let { backdrop } = this.state;
         return {
             ...this.props,
             popup:this.popup,
@@ -205,7 +213,7 @@ export default class AIOInput extends Component {
             getProp: this.getProp.bind(this),
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
-            fitHorizontal,backdrop
+            backdrop
         }
     }
     render_button() { return <Layout /> }
@@ -258,42 +266,38 @@ class InputSlider extends Component{
         )
     }
 }
-class Multiselect extends Component {
-    static contextType = AIContext;
-    getTagByValue(v) {
-        let { getProp, getOptionProp} = this.context;
+function Multiselect (){
+    let { style = {} } = useContext(AIContext);
+    return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags/></div>)
+}
+function Tags(){
+    let {getProp} = useContext(AIContext);
+    let value = getProp('value'),rtl = getProp('rtl');
+    if(!value.length || !getProp('showTags', true)){return null}
+    return <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>{value.map((o)=><Tag value={o}/>)}</div>
+}  
+function Tag({value}) {
+    let { getProp, getOptionProp:gop,onChange = () => {}} = useContext(AIContext); 
+    function getTagByValue(v) {
         let options = getProp('options', [])
-        let option = options.find((option) => v === getOptionProp(option, 'value'))
+        let option = options.find((option) => v === gop(option, 'value'))
         if (option === undefined) { return }
         let disabled = getProp('disabled');
         return {
             option, disabled,
-            text: getOptionProp(option, 'text'),
-            value: getOptionProp(option, 'value'),
-            tagBefore: getOptionProp(option, 'tagBefore'),
-            tagAfter: getOptionProp(option, 'tagAfter'),
-            tagAttrs: getOptionProp(option, 'tagAttrs', {}),
-            onRemove: ()=>this.removeTag(v,disabled)
+            text: gop(option, 'text'),value: gop(option, 'value'),tagBefore: gop(option, 'tagBefore'),tagAfter: gop(option, 'tagAfter'),tagAttrs: gop(option, 'tagAttrs', {}),
+            onRemove: ()=>{if(!disabled){onChange(getProp('value').filter((o) => o !== v))}}
         }
     }
-    removeTag(v,disabled){
-        if(disabled){return}
-        let {getProp,onChange = () => { } } = this.context;
-        let value = getProp('value')
-        onChange(value.filter((o) => o !== v))
-    }
-    render() {
-        let { style = {}, getProp } = this.context;
-        let value = getProp('value');
-        let showTags = getProp('showTags', true);
-        let tags = value.map((o, i) => this.getTagByValue(o));
-        return (
-            <div className={'aio-input-multiselect-container'} style={{ width: style.width }}>
-                <Layout />
-                {!!showTags && !!value.length && <Tags tags={tags} />}
-            </div>
-        )
-    }
+    let {text,disabled,tagAttrs = {},onRemove,tagBefore = <Icon path={mdiCircleMedium} size={0.7}/>,tagAfter } = getTagByValue(value);
+    return (
+        <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
+        <div className='aio-input-tag-icon'>{tagBefore}</div>
+        <div className='aio-input-tag-text'>{text}</div>
+        {tagAfter !== undefined && <div className='aio-input-tag-icon'>{tagAfter}</div>}
+        <div className='aio-input-tag-icon'><Icon path={mdiClose} size={0.7} onClick={onRemove}/></div>
+        </div>
+    )
 }
 
 class Input extends Component {
@@ -737,26 +741,3 @@ class Options extends Component {
 
 
 
-class Tags extends Component {
-  render() {
-    let {tags,rtl} = this.props;
-    if(!tags.length){return null}
-    return (
-      <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>
-        {tags.map((o)=><Tag {...o}/>)}
-      </div>
-    )
-  }
-}
-
-function Tag(props) {
-  let {text,disabled,tagAttrs = {},onRemove,tagBefore = <Icon path={mdiCircleMedium} size={0.7}/>,tagAfter } = props;
-  return (
-    <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
-      <div className='aio-input-tag-icon'>{tagBefore}</div>
-      <div className='aio-input-tag-text'>{text}</div>
-      {tagAfter !== undefined && <div className='aio-input-tag-icon'>{tagAfter}</div>}
-      <div className='aio-input-tag-icon'><Icon path={mdiClose} size={0.7} onClick={onRemove}/></div>
-    </div>
-  )
-}
