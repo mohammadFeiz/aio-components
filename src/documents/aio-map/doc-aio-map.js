@@ -18,7 +18,7 @@ export default class DOC_AIOMap extends Component {
                     { text: 'onChange', id: 'onChange', COMPONENT: () => <OnChange /> },
                     { text: 'area', id: 'area', COMPONENT: () => <Area /> },
                     { text: 'markers', id: 'markers', COMPONENT: () => <Markers /> },
-
+                    { text: 'search', id: 'search', COMPONENT: () => <Search /> },
                 ]}
             />
         )
@@ -386,6 +386,48 @@ class Markers extends Component {
             text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>
         }
     ]}
+/>
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Search extends Component {
+    state = {latitude:35.694739,longitude:51.394097}
+    preview() {
+        let {latitude,longitude} = this.state;
+        return (
+            <div className='example'>
+                <span>{`latitude = ${latitude}`}</span>
+                <span>{`longitude = ${longitude}`}</span>
+                <AIOMap
+                    apiKeys={{
+                        map:'web.bfb13683318840ad840923a88043ceba',
+                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+                    }}
+                    search={true}
+                    latitude={latitude}
+                    longitude={longitude}
+                    onChange={(latitude,longitude)=>{
+                        this.setState({latitude,longitude})
+                    }}
+                />
+                {
+                    AIODoc().Code(`
+<AIOMap
+    apiKeys={{
+        map:'web.bfb13683318840ad840923a88043ceba',
+        service:'service.f84df93b4aa94b609e2d30b7c765a719',
+    }}
+    search={true}
+    latitude={latitude}
+    longitude={longitude}
+    onChange={(latitude,longitude)=>{
+        this.setState({latitude,longitude})
+    }}
 />
                     `)
                 }

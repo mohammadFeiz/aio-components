@@ -9,6 +9,7 @@ import AIOSwip from '../aio-swip/aio-swip';
 import Options from './options';
 import DatePicker from './datepicker';
 import AIContext from './context';
+import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
 export default class AIOInput extends Component {
@@ -16,6 +17,7 @@ export default class AIOInput extends Component {
         super(props);
         this.dom = createRef();
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
+        this.popup = new AIOPopup();
         this.state = {
             fitHorizontal:['text','number','textarea','password'].indexOf(props.type) !== -1 || props.popupWidth === 'fit' || props.type === 'multiselect',
             backdrop:['text','number','textarea','password'].indexOf(props.type) === -1,
@@ -84,16 +86,9 @@ export default class AIOInput extends Component {
         return this.getProp('placeholder', calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
     }
     getProp(key, def) {
-        let { type, popOver, caret,options } = this.props;
+        let { type, caret } = this.props;
         if(key === 'attrs'){
             if(['text','textarea','number','password','color'].indexOf(type) !== -1){return {}}
-        }
-        if (key === 'popOver') {
-            if(['table','form','radio','tabs','checkbox','file'].indexOf(type) !== -1){return}
-            if (type === 'button') { return popOver }
-            if (type === 'datepicker') { return () => <DatePicker {...this.props} /> }
-            if (type === 'select' || type === 'multiselect') { return () => <Options /> }
-            if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){return ()=><Options type={type}/>}
         }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
         if (key === 'caret') { return caret === false?false:(this.getProp('popOver') ? (caret || true) : false )}
@@ -132,12 +127,51 @@ export default class AIOInput extends Component {
         if (prop !== undefined) { return prop }
         return def
     }
+    getPopover(){
+        let {type,popover,options} = this.props;
+        if (type === 'button' && popover) {
+            let {backdropAttrs,attrs,render,fixStyle,fitHorizontal} = popover
+            return {
+                position:'popover',attrs,
+                body:{render},
+                backdrop:{attrs:backdropAttrs},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+            }
+        }
+        if (type === 'datepicker') { 
+            let {backdropAttrs,attrs,fixStyle,fitHorizontal} = popover
+            return {
+                position:'popover',attrs,
+                body:{render:()=><DatePicker {...this.props}/>},
+                backdrop:{attrs:backdropAttrs},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+            }
+        }
+        if (type === 'select' || type === 'multiselect') { 
+            let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer} = popover
+            return {
+                position:'popover',attrs,
+                body:{render:()=><Options/>},
+                backdrop:{attrs:backdropAttrs},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+            }
+        }   
+        if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){
+            let {attrs,fixStyle,fitHorizontal = type === 'multiselect'} = popover
+            return {
+                position:'popover',attrs,backdrop:false,body:{render:()=><Options/>},
+                popover:{fixStyle,fitHorizontal,getTarget:()=>$(this.dom.current)}
+            }
+        }
+    }
     click(e) {
         if ($(e.target).parents('.aio-input-tags').length !== 0) { return; }
-        let { type, onChange = () => { }, onClick } = this.props;
+        let { type, onChange = () => { }, onClick,popover } = this.props;
+        
         if (type === 'file') { return }
-        if (this.getProp('popOver')) { this.toggle(true); }
         else if (type === 'checkbox') { onChange(!this.getProp('value')) }
+        let popOver = this.getProp('popOver');
+        if (popOver) {this.popup.addModal(this.getPopover())}
         else if (onClick) { onClick(); }
     }
     optionClick(option) {
@@ -157,6 +191,7 @@ export default class AIOInput extends Component {
         let { open,fitHorizontal,backdrop } = this.state;
         return {
             ...this.props,
+            popup:this.popup,
             dragStart:this.dragStart.bind(this),
             dragOver:this.dragOver.bind(this),
             drop:this.drop.bind(this),
@@ -192,6 +227,7 @@ export default class AIOInput extends Component {
         return (
             <AIContext.Provider value={this.getContext()}>
                 {this['render_' + type]()}
+                {this.popup.render()}
             </AIContext.Provider>
         )
     }

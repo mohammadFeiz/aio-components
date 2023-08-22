@@ -1,5 +1,4 @@
 import React, { Component, createRef } from 'react';
-import Popup from './popup';
 import { InputFile, Files } from './file';
 import { Icon } from '@mdi/react';
 import { mdiChevronDown, mdiLoading } from '@mdi/js';
@@ -82,15 +81,6 @@ export default class Layout extends Component {
         }
         return option
     }
-    renderPopup() {
-        let { option } = this.props;
-        if (option) { return null }
-        let { open, getProp } = this.context;
-        if (!open) { return null }
-        let popOver = getProp('popOver');
-        if (!popOver) { return null }
-        return <Popup popOver={popOver} parentDom={this.dom} />
-    }
     render() {
         let { type } = this.context;
         let { option } = this.props;
@@ -121,7 +111,6 @@ export default class Layout extends Component {
         return (
             <>
                 <div {...props}>{content}</div>
-                {this.renderPopup()}
             </>
         )
     }

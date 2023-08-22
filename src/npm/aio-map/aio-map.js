@@ -22,7 +22,6 @@ export default class Map extends Component {
             let {color = 'dodgerblue',opacity = 0.1,radius = 1000,latitude,longitude} = area;
             this.area = this.L.circle([latitude, longitude], {color,fillColor: color,fillOpacity: opacity,radius}).addTo(this.map);
         }
-        
     }
     ipLookUp() {
         $.ajax('http://ip-api.com/json')
@@ -31,7 +30,6 @@ export default class Map extends Component {
                     let { lat, lon } = response;
                     this.flyTo(lat, lon,undefined,'ipLookUp')
                 },
-
                 (data, status) => {
                     console.log('Request failed.  Returned status of', status);
                 }
@@ -132,11 +130,11 @@ export default class Map extends Component {
             traffic: false,
             center: [latitude, longitude],
             zoom: 14,
-            minZoom: changeView === false ? zoom : undefined,
-            maxZoom: changeView === false ? zoom : undefined,
-            dragging: changeView !== false,
+            //dragging: changeView !== false,
             scrollWheelZoom: 'center',
-            zoomControl: changeView !== false
+            // minZoom: changeView === false ? zoom : undefined,
+            // maxZoom: changeView === false ? zoom : undefined,
+            // zoomControl: changeView !== false
         }
         let map = new window.L.Map(this.dom.current, config);
         let L = window.L;
