@@ -26,6 +26,9 @@ export default class AIOLogin extends Component {
                             let isAuthenticated = this.tokenStorage.load({ name: 'isAuthenticated', def: false });
                             if (!token || !isAuthenticated) { return { result: false } }
                             let result = await checkToken(token);
+                            if(result === false){
+                                this.tokenStorage.remove({name:'token'});
+                            }
                             return { result }
                         },
                         async onSubmit({model,mode}){
@@ -49,6 +52,9 @@ export default class AIOLogin extends Component {
             errorMessage: 'اتصال خود را بررسی کنید',
         })
         this.mounted = true;
+        if(res === false){
+            this.tokenStorage.remove({name:'token'});
+        }
         this.setState({ isAutenticated: res });
     }
     logout() { this.tokenStorage.remove({ name: 'token' }); window.location.reload() }
@@ -190,14 +196,13 @@ class LoginForm extends Component {
     getInputs() {
         let { fields, mode, model, userId } = this.state;
         let {model:InitialModel} = this.props;
-        debugger;
         let {otpLength} = this.props;
         if (mode === 'Register') {
             return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]
         }
         let inputs = [
             {
-                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری',
+                show:mode === 'UserName',field: 'value.UserName',label: 'نام کاربری', 
                 input:{
                     type: 'text', disabled:!!InitialModel.UserName,placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
                     style:{direction:'ltr'}
