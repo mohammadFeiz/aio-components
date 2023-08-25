@@ -15,6 +15,7 @@ export default class AIOPopup {
     return (
       <>
         <Popups
+          rtl={this.rtl}
           getActions={({addModal,removeModal,getModals})=>{
             this._addModal = addModal;
             this._removeModal = removeModal;
@@ -28,11 +29,11 @@ export default class AIOPopup {
     )
   }
   getModals = ()=>this._getModals()
-  addModal = (obj = {})=>{
+  addModal = (obj = {},animate = true)=>{
     if(obj.id === undefined){obj.id = 'popup' + Math.round(Math.random() * 1000000)}
-    this._addModal(obj)
+    this._addModal(obj,animate)
   }
-  removeModal = (arg)=> this._removeModal(arg);
+  removeModal = (arg,animate = true)=> this._removeModal(arg,animate);
   addAlert = (obj = {}) => {
     let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن' } = obj
     Alert({icon,type,text,subtext,time,className,closeText})
@@ -53,40 +54,58 @@ class Popups extends Component {
       getModals: ()=>[...this.state.modals]
     })
   }
-  onChange(obj) {
+  change(obj) {
     let { onChange = () => { } } = this.props;
     for(let prop in obj){this.state[prop] = obj[prop]}
     this.setState(obj, () => onChange({ ...this.state }))
   }
-  addModal(o) {
+  addModal(o,animate = true) {
+    if(typeof o !== 'object'){
+      console.error('aio-popup => addModal modal parameter to add is not an object');
+      return;
+    }
+    if(o.id === undefined){
+      console.error('aio-popup => addModal missing modal id property');
+      return;
+    }
     let { modals } = this.state;
     let newModals = modals.filter(({ id }) => id !== o.id);
-    newModals.push({...o})
-    this.onChange({ modals: newModals })
+    newModals.push({...o,mounted:o.position === 'popover'?false:!animate})
+    this.change({ modals: newModals })
   }
-  async removeModal(arg) {
-    if (arg === 'all') {this.onChange({ modals: [] }); return}
-    let { modals } = this.state;
-    let modal = arg !== undefined?modals.find((o) => o.id === arg):modals[modals.length - 1];
-    if (!modal) { return }
-    let { onClose, id } = modal;
-    if(onClose){onClose()}
-    else {this.onChange({ modals: modals.filter((o) => o.id !== id) })}
+  async removeModal(arg = 'last',animate = true) {
+    if(arg === 'all'){this.change({ modals: [] });}
+    else{
+      this.mount(arg,false);
+      setTimeout(()=>{
+        let { modals } = this.state;
+        let modal = arg === 'last'?modals[modals.length - 1]:modals.find((o) => o.id === arg);
+        if(modal.onClose){modal.onClose()}
+        else {this.change({ modals: modals.filter((o) => o.id !== arg) })}
+      },animate?300:0)
+    }
+  }
+  mount(id = 'last',state){
+    try{
+      let { modals } = this.state;
+      if(id === 'last'){id = modals[modals.length - 1].id}
+      let newModals = modals.map((o)=>o.id === id?{...o,mounted:state}:o)
+      this.change({modals:newModals})
+    }
+    catch{return}
   }
   getModals() {
     let { modals } = this.state;
-    let { modalConfig = {} } = this.props;
     if (!modals.length) { return null }
     return modals.map(({popover, 
-      blur, position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,footer, closeType, body, id, animate }, i) => {
+      position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,footer, closeType, body, id,mounted }, i) => {
       let props = {
-        id, animate,backdrop,footer,text,onSubmit,header,popover,
-        key: i, blur:i === modals.length - 2,
-        ...modalConfig,
-        blur, position, rtl, attrs, onClose, closeType, body,index: i,rtl,
-        onClose: () => this.removeModal(),
+        id,backdrop,footer,text,onSubmit,header,popover,
+        position, rtl, attrs, onClose, closeType, body,index: i,rtl,mounted,
+        onClose: () => this.removeModal(id),
+        onMount:()=>this.mount(id,true)
       }
-      return <Popup {...props} />
+      return <Popup key={id} {...props} />
     })
   }
   render() {
@@ -100,26 +119,23 @@ class Popups extends Component {
 
 class Popup extends Component {
   constructor(props) {
-    super(props);
+    super(props);    
     this.dom = createRef();
     this.dui = 'a' + Math.random();
-    this.state = {mounted:props.position === 'popover'?false:props.animate === false,popoverStyle:undefined}
+    this.state = {popoverStyle:undefined}
   }
   async onClose() {
     let { onClose } = this.props;
-    this.setState({mounted:false});
-    setTimeout(()=>onClose(),300)
+    onClose();
   }
   componentDidMount(){
-    let {position} = this.props;
-    let {mounted} = this.state;
-    if(!mounted){
-      setTimeout(()=>this.setState({
+    let {position,mounted,onMount} = this.props;
+    setTimeout(()=>{
+      this.setState({
         popoverStyle:position === 'popover'?this.getPopoverStyle():{},
-        mounted:true
-      }),0)
-    }
-    
+      })
+      if(!mounted){onMount()}
+    },0)
   }
   header_layout() {
     let { rtl,header } = this.props;
@@ -128,12 +144,7 @@ class Popup extends Component {
   }
   body_layout(){
     let {body = {}} = this.props;
-    let {attrs = {},render} = body;
-    let props = {
-      handleClose:this.onClose.bind(this),render
-    }
-    let className = 'aio-popup-body' + (attrs.className?' ' + attrs.className:'') 
-    return { attrs:{...attrs,className},html:<ModalBody {...props}/> }
+    return { flex:1,html:<ModalBody body={body} handleClose={this.onClose.bind(this)}/> }
   }
   footer_layout() {
     let {closeText,submitText,onSubmit,footer,type} = this.props;
@@ -142,17 +153,17 @@ class Popup extends Component {
     return {html:<ModalFooter {...props}/>}
   }
   getBackDropClassName() {
-    let { blur, className: cls,position = 'fullscreen',backdrop } = this.props;
-    let { mounted } = this.state;
+    let { rtl,position = 'fullscreen',backdrop,mounted } = this.props;
     let className = 'aio-popup-backdrop';
-    if (cls) { className += className ? (' ' + cls) : '' }
-    if (blur) { className += ' aio-popup-blur' }
+    if (backdrop && backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
     className += ` aio-popup-position-${position}`
     className += backdrop === false?' aio-popup-backdrop-off':''
+    className += rtl?' rtl':' ltr'
     if(!mounted){className += ' not-mounted'}
     return className
   }
   backClick(e) {
+    e.stopPropagation();
     let target = $(e.target);
     let { backdrop = {} } = this.props;
     if (backdrop.close === false) { return }
@@ -160,18 +171,19 @@ class Popup extends Component {
     this.onClose()
   }
   getPopoverStyle(){
-    let { popover = {},animate,rtl,attrs = {} } = this.props;
+    let { popover = {},rtl,attrs = {} } = this.props;
     let {getTarget,openRelatedTo,fitHorizontal,fixStyle = (o) => o} = popover; 
     if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
     let popup = $(this.dom.current);
-    let style = Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, animate, fitHorizontal, style: attrs.style, rtl })
+    let style = Align(popup, target, { fixStyle: fixStyle, pageSelector: openRelatedTo, fitHorizontal, style: attrs.style, rtl })
     return {...style,position:'fixed'}
   }
   render() {
-    let { rtl, attrs = {}, id,backdrop} = this.props;
-    let {mounted,popoverStyle} = this.state
+    let { rtl, attrs = {}, id,backdrop,mounted} = this.props;
+    console.log('mounted',mounted)
+    let {popoverStyle} = this.state
     let backdropProps = {
       ...(backdrop?backdrop.attrs:{}),
       className: this.getBackDropClassName(),
@@ -179,7 +191,6 @@ class Popup extends Component {
       'data-popup-id': id,
     }
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
-    
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (' ' + this.dui) + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
       <div {...backdropProps}>
@@ -244,8 +255,13 @@ function ModalHeader({rtl,header,handleClose}){
   let style = attrs.style;
   return (<RVD layout={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
 }
-function ModalBody({handleClose,render}){
-  if(typeof render === 'function'){return render({close:handleClose})}
+function ModalBody({handleClose,body}){
+    let {render,attrs = {}} = body;
+    return (
+      <div {...attrs} className={'aio-popup-body' + (attrs.className?' ' + attrs.className:'')}>
+        {typeof render === 'function' && render({close:handleClose})}
+      </div>
+    )
 }
 function ModalFooter({type,closeText = 'Close',submitText = 'Submit',footer,handleClose,onSubmit}){
   if(typeof footer !== 'object'){return null}
@@ -402,9 +418,9 @@ class SnackebarItem extends Component{
     )
   }
 }
-//id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,animate,openRelatedTo,rtl,body
+//id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,openRelatedTo,rtl,body
 function Align(dom,target,config = {}){
-  let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,animate,rtl} = config;
+  let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,rtl} = config;
   let $$ = {
     getDomLimit(dom){
       let offset = dom.offset();

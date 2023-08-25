@@ -34,7 +34,7 @@ export default class AIOInput extends Component {
                 let {popover,rtl} = this.props;
                 let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover'} = popover;
                 return {
-                    rtl,position,attrs,backdrop:{attrs:backdropAttrs},
+                    rtl,position,attrs,backdrop:{attrs:backdropAttrs},id:'popover',
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)},
                     body:{render:({close})=>render({close})}
                 }
@@ -45,7 +45,7 @@ export default class AIOInput extends Component {
                 let {popover,rtl} = this.props;
                 let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
                 return {
-                    rtl,position,attrs,
+                    rtl,position,attrs,id:'popover',
                     body:{render:()=><DatePicker {...this.props}/>},
                     backdrop:{attrs:backdropAttrs},
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
@@ -57,7 +57,7 @@ export default class AIOInput extends Component {
                 let {popover,rtl} = this.props;
                 let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover'} = popover || {}
                 return {
-                    rtl,position,attrs,
+                    rtl,position,attrs,id:'popover',
                     body:{render:()=><Options/>,attrs:{style:{flexDirection:'column'}}},
                     backdrop:{attrs:backdropAttrs},
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
@@ -69,7 +69,7 @@ export default class AIOInput extends Component {
                 let {type,popover,rtl} = this.props;
                 let {attrs,fixStyle,fitHorizontal = type === 'multiselect',position = 'popover'} = popover
                 return {
-                    rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},
+                    rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},id:'popover',
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
                 }
             }
