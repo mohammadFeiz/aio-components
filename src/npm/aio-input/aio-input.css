@@ -44,8 +44,10 @@
 
 .aio-input-subtext {
     display: flex;
+    flex:1;
     font-size: 85%;
     opacity: 0.7;
+    align-items: center;
 }
 
 .aio-input-before {
@@ -387,15 +389,7 @@
     width:100%;
     background:none;
     outline:none;
-    width:100%;
-    color:inherit;
-}
-.aio-input-password input{
-    border:none;
-    width:100%;
-    background:none;
-    outline:none;
-    width:100%;
+    height:100%;
     color:inherit;
 }
 .aio-input-number input{
@@ -403,17 +397,26 @@
     width:100%;
     background:none;
     outline:none;
+    height:100%;
+    color:inherit;
+}
+.aio-input-password input{
+    border:none;
+    width:100%;
+    background:none;
+    outline:none;
     width:100%;
     color:inherit;
 }
-.aio-input-text{
-    height:36px;
-}
+
 .aio-input-password{
     height:36px;
 }
 .aio-input-password input{
     text-align:center;
+}
+.aio-input-text{
+    width:100%;
 }
 .aio-input-color{
     height:36px;
@@ -450,11 +453,16 @@
     opacity:0.5;
 }
 .aio-input-text-subtext,.aio-input-password-subtext,.aio-input-number-subtext,.aio-input-textarea-subtext,.aio-input-slider-subtext{
-    position: absolute;
     top:100%;
 }
 .aio-input-text,.aio-input-password,.aio-input-number,.aio-input-textarea,.aio-input-slider{
     padding:0 6px;
+}
+.aio-input-text-value{
+    flex:1;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .aio-input-color input{
     width:100%;
@@ -468,6 +476,9 @@
 }
 .aio-input-color img{
     display:none;
+}
+.aio-input-text-value,.aio-input-number-value{
+    height:100%;
 }
 .aio-input-color input::-webkit-color-swatch{
     border:none;
@@ -543,6 +554,9 @@
     color:dodgerblue;
     border-radius:6px;
     background:none;
+}
+.aio-input-text-content,.aio-input-number-content{
+    height:100%;
 }
 .aio-input-form-footer-button:disabled{
     cursor:not-allowed;
