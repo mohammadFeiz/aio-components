@@ -10,7 +10,7 @@
     background:#fff;
     color:#666;
   }
-  .aio-input-table .aio-button{
+  .aio-input-table .aio-input{
     color:inherit;
   }
   .aio-input-table-unit{
@@ -53,11 +53,9 @@
   .aio-input-table-cell .aio-input-container{
     width:100%;
   }
-  .aio-input-table-cell .aio-button{
+  .aio-input-table-cell .aio-input{
     width:100%;
     background:none;
-  }
-  .aio-input-table .aio-input{
     border:1px solid transparent;
     border-radius:0;
     background:none;
@@ -65,7 +63,7 @@
   .aio-input-table .aio-input-text{
     height:100%;
   }
-  .aio-input-table .aio-input input{
+  .aio-input-table-cell .aio-input input{
     padding:0;
     background:none;
   }
@@ -83,14 +81,13 @@
     height:36px;
     width:100%;
     align-items: center;
+    background:#f8f8f8;
   }
   .aio-input-table-toolbar-content{
-    flex:1;
     font-weight:bold;
     padding:0 12px;
     height:100%;
     display:flex;
-    width:100%;
     align-items: center;
   }
   .aio-input-table-toolbar-icon{
@@ -140,3 +137,45 @@
     background:#ddd;
     flex-shrink: 0;
   }
+  .aio-input-table-search{
+    flex:1;
+    height:100%;
+    padding:6px;
+    box-sizing: border-box;
+  }
+  .aio-input-table-search .aio-input{
+    background:#fff;
+    border:none;
+  }
+
+.aio-input-table-paging{
+  padding:6px;
+  display:flex;
+  justify-content: center;
+  border-top:1px solid #ddd;
+}
+.aio-input-table-paging-button{
+  border:1px solid #ddd;
+  background:none;
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  border-radius:6px;
+  box-sizing: border-box;
+  margin:0 3px;
+  opacity:.5;
+}
+.aio-input-table-paging-button-hidden{
+  opacity:0;
+}
+.aio-input-table-paging-size{
+  width:50px;
+}
+.aio-input-table-paging-button.active{
+  border:1px solid dodgerblue;
+  color:#fff;
+  background:dodgerblue;
+  opacity:1;
+}

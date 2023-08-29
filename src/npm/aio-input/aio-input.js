@@ -139,12 +139,12 @@ export default class AIOInput extends Component {
         return this.getProp('placeholder', calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
     }
     getProp(key, def) {
-        let { type, caret } = this.props;
+        let { type, caret,popover } = this.props;
         if(key === 'attrs'){
             if(['text','textarea','number','password','color'].indexOf(type) !== -1){return {}}
         }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
-        if (key === 'caret') { return caret === false?false:(this.getProp('popOver') ? (caret || true) : false )}
+        if (key === 'caret') { return caret === false?false:(((type === 'button' && popover) || (type === 'select' || type === 'multiselect')) ? (caret || true) : false )}
         if (key === 'multiple') { return type === 'multiselect' || (type === 'radio' && !!propsResult)}
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }

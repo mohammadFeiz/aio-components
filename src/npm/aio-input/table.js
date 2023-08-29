@@ -1,6 +1,6 @@
 import React,{Component,useContext} from 'react';
 import {Icon} from '@mdi/react';
-import {mdiClose,mdiFileExcel,mdiPlusThick} from '@mdi/js';
+import {mdiChevronLeft, mdiChevronRight, mdiClose,mdiFileExcel,mdiMagnify,mdiPlusThick} from '@mdi/js';
 import AIOInput from './aio-input';
 import AITableContext from './table-context';
 import ExportToExcel from '../aio-functions/export-to-excel';
@@ -85,18 +85,19 @@ export default class Table extends Component{
     drop(e,row){
       if(this.start._id === undefined){return}
       if(this.start._id === row._id){return}
-      let {onChange,rows} = this.props;
+      let {onChange,rows,onSwap} = this.props;
       let newRows = rows.filter((o)=>o._id !== this.start._id);
       let placeIndex = this.getIndexById(row._id);
       newRows.splice(placeIndex,0,this.start)
-      onChange(newRows)
+      if(typeof onSwap === 'function'){onSwap({newRows,from:{...this.start},to:row})}
+      else{onChange(newRows)}
     }
     getContext(){
-      let {onChange,placeholder = 'there is not any items',rowAttrs,headerAttrs,onAdd,onRemove,excel} = this.props;
+      let {onChange,onSearch,placeholder = 'there is not any items',rowAttrs,headerAttrs,onAdd,onRemove,excel,onSwap} = this.props;
       let {columns} = this.state;
       let context = {
         columns,getDynamics:this.getDynamics.bind(this),
-        placeholder,rowAttrs,headerAttrs
+        placeholder,rowAttrs,headerAttrs,onSearch
       }
       if(excel){context.exportToExcel = this.exportToExcel.bind(this)}
       if(!!onRemove){context.remove = this.remove.bind(this)}
@@ -104,7 +105,12 @@ export default class Table extends Component{
       if(typeof onChange === 'function'){
         context = {
           ...context,
-          change:this.change.bind(this),
+          change:this.change.bind(this)
+        }
+      }
+      if(onSwap){
+        context = {
+          ...context,
           dragStart:this.dragStart.bind(this),
           dragOver:this.dragOver.bind(this),
           drop:this.drop.bind(this)
@@ -114,9 +120,10 @@ export default class Table extends Component{
     }
     
     render(){
-      let {rows = [],toolbarContent,style} = this.props;
+      let {rows = [],toolbar,style,paging,onChangePaging} = this.props;
       if(!Array.isArray(rows)){console.error(`aio-input error => in type = "table" , rows prop is not an array`)}
-      let Toolbar = <TableToolbar toolbarContent={toolbarContent}/>;
+      let Toolbar = <TableToolbar toolbar={toolbar}/>;
+      let Paging = (paging && onChangePaging)?<TablePaging paging={paging} onChange={(paging)=>onChangePaging(paging)}/>:''
       let Header = <TableHeader/>;
       let Rows = <TableRows rows={rows}/>;
       return (
@@ -127,10 +134,62 @@ export default class Table extends Component{
               {Header}
               {Rows}
             </div>
+            {Paging}
           </div>  
         </AITableContext.Provider>
       )
     }
+  }
+  function TablePaging(props){
+    function fix(paging){
+      let {
+        rtl,
+        length,
+        number,
+        size = 20,
+        sizes = [1,5,10,15,20,30,50,70,100]
+      } = paging  
+      if(sizes.indexOf(size) === -1){size = sizes[0]}
+      number = number > length ? length : number;
+      number = number < 1?1:number;
+      let start = number - 4;
+      let end = number + 4;
+      return {rtl,length,number,size,sizes,start,end}
+    }
+    let paging = fix(props.paging)
+    let {rtl,length,number,size,sizes,start,end} = paging;
+    let buttons = [];
+    for(let i = start; i <= end; i++){
+      if(i < 1 || i > length){
+        buttons.push(<button key={i} className={'aio-input-table-paging-button aio-input-table-paging-button-hidden'}>{i}</button>)
+      }
+      else{
+        buttons.push(<button key={i} className={'aio-input-table-paging-button' + (i === number?' active':'')} onClick={()=>props.onChange(fix({...paging,number:i}))}>{i}</button>)
+      }
+    }
+    return (
+      <div className='aio-input-table-paging' style={{direction:rtl?'rtl':'ltr'}}>
+        {/* <button disabled={number <= 1} key={'before'} className='aio-input-table-paging-button' onClick={()=>props.onChange(fix({...paging,number:paging.number - 1}))}>
+          <Icon path={rtl?mdiChevronRight:mdiChevronLeft} size={1}/>
+        </button> */}
+        {buttons}
+        {/* <button disabled={number >= length} key={'after'} className='aio-input-table-paging-button' onClick={()=>props.onChange(fix({...paging,number:paging.number + 1}))}>
+          <Icon path={rtl?mdiChevronLeft:mdiChevronRight} size={1}/>
+        </button> */}
+        {
+          sizes.length &&
+          <AIOInput
+            className='aio-input-table-paging-button aio-input-table-paging-size'
+            type='select'
+            value={size}
+            options={sizes}
+            optionText='option'
+            optionValue='option'
+            onChange={(value)=>props.onChange(fix({...paging,size:value}))}
+          />
+        }
+      </div>
+    )
   }
   function TableRows({rows}){
     function getRows(){
@@ -150,13 +209,23 @@ export default class Table extends Component{
   class TableToolbar extends Component{
     static contextType = AITableContext;
     render(){
-      let {add,exportToExcel} = this.context;
-      let {toolbarContent} = this.props;
-      if(!add && !exportToExcel && !toolbarContent){return null}
+      let {add,exportToExcel,onSearch} = this.context;
+      let {toolbar} = this.props;
+      if(!add && !exportToExcel && !toolbar && !onSearch){return null}
       return (
         <>
           <div className='aio-input-table-toolbar'>
-            <div className='aio-input-table-toolbar-content'>{toolbarContent}</div>
+            {toolbar && <div className='aio-input-table-toolbar-content'>{toolbar}</div>}
+            <div className='aio-input-table-search'>
+              {
+                !!onSearch &&
+                <AIOInput
+                  type='text'
+                  onChange={(value)=>onSearch(value)}
+                  after={<Icon path={mdiMagnify} size={1}/>}
+                />
+              }  
+            </div>
             {
               !!add &&
               <div className='aio-input-table-toolbar-icon' onClick={()=>add()}>
@@ -168,7 +237,8 @@ export default class Table extends Component{
               <div className='aio-input-table-toolbar-icon' onClick={()=>exportToExcel()}>
                 <Icon path={mdiFileExcel} size={0.8}/>
               </div>
-            }  
+            }
+              
           </div>
           <div className='aio-input-table-border-h'></div>
         </>

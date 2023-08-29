@@ -11,11 +11,13 @@ export default class DOC_AIOInput_Table extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='excel'
+                navId='paging'
                 navs={[
                     { text: 'type ,placeholder', id: 'type', COMPONENT: () => <TypePlaceholder /> },
                     { text: 'rows', id: 'rows', COMPONENT: () => <Rows /> },
                     { text: 'columns', id: 'columns', COMPONENT: () => <Columns /> },
+                    { text: 'onSwap (true)', id: 'onSwapTrue', COMPONENT: () => <OnSwapTrue /> },
+                    { text: 'onSwap (function)', id: 'onSwapFunction', COMPONENT: () => <OnSwapFunction /> },
                     { text: 'column.title', id: 'column.title', COMPONENT: () => <Column_Title /> },
                     { text: 'column.titleAttrs', id: 'column.titleAttrs', COMPONENT: () => <Column_TitleAttrs /> },
                     { text: 'column.value', id: 'column.value', COMPONENT: () => <Column_Value /> },
@@ -29,13 +31,15 @@ export default class DOC_AIOInput_Table extends Component {
                     { text: 'column.cellAttrs', id: 'column.cellAttrs', COMPONENT: () => <Column_CellAttrs /> },
                     { text: 'column {subtext,before,after}', id: 'columnsubtextbeforeafter', COMPONENT: () => <Column_SubtextBeforeAfter /> },
                     { text: 'column.template', id: 'column.template', COMPONENT: () => <Column_Template /> },
-                    { text: 'toolbarContent', id: 'toolbarContent', COMPONENT: () => <ToolbarContent /> },
+                    { text: 'toolbar', id: 'toolbar', COMPONENT: () => <Toolbar /> },
                     { text: 'onAdd (function)', id: 'onAddobject', COMPONENT: () => <OnAddFunction /> },
                     { text: 'onAdd (object)', id: 'onAddfunction', COMPONENT: () => <OnAddObject /> },
                     { text: 'onRemove (function)', id: 'onRemoveFunction', COMPONENT: () => <OnRemoveFunction /> },
                     { text: 'onRemove (true)', id: 'onRemoveTrue', COMPONENT: () => <OnRemoveTrue /> },
+                    { text: 'onSearch', id: 'onSearch', COMPONENT: () => <OnSearch /> },
                     { text: 'rowAttrs', id: 'rowAttrs', COMPONENT: () => <RowAttrs /> },
                     { text: 'headerAttrs', id: 'headerAttrs', COMPONENT: () => <HeaderAttrs /> },
+                    { text: 'paging', id: 'paging', COMPONENT: () => <Paging /> },
                 ]}
             />
         )
@@ -653,6 +657,144 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
+class OnSwapTrue extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:[
+                {name:'mohammad',family:'feiz',age:38,id:0},
+                {name:'john',family:'doe',age:30,id:1},
+            ],
+            columns:[
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Family',value:'row.family',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ]
+        }
+    }
+    change(row,key,value){
+        let {rows} = this.state;
+        let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
+        this.setState({rows:newRows})
+    }
+    preview() {
+        let {rows,columns} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    onSwap={true}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',type:'text'},
+    {title:'Family',value:'row.family',type:'text'},
+    {title:'Age',value:'row.age',type:'number'},
+]
+function setRows(newRows){
+    //update state
+}
+return (
+    <AIOInput
+        type='table'
+        rows={rows}
+        columns={columns}
+        onChange={(newRows)=>setRows(newRows)}
+        onSwap={true}
+    />
+)
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class OnSwapFunction extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:[
+                {name:'mohammad',family:'feiz',age:38,id:0},
+                {name:'john',family:'doe',age:30,id:1},
+            ],
+            columns:[
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Family',value:'row.family',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ]
+        }
+    }
+    change(row,key,value){
+        let {rows} = this.state;
+        let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
+        this.setState({rows:newRows})
+    }
+    preview() {
+        let {rows,columns} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    onSwap={({newRows,from,to})=>{
+                        this.setState({rows:newRows})
+                    }}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',type:'text'},
+    {title:'Family',value:'row.family',type:'text'},
+    {title:'Age',value:'row.age',type:'number'},
+]
+function setRows(newRows){
+    //update state
+}
+return (
+    <AIOInput
+        type='table'
+        rows={rows}
+        columns={columns}
+        onChange={(newRows)=>setRows(newRows)}
+        onSwap={({newRows,from,to})=>{
+            this.setState({rows:newRows})
+        }}
+    />
+)
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
 class Excel extends Component {
     constructor(props){
         super(props);
@@ -1172,7 +1314,72 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class ToolbarContent extends Component {
+class OnSearch extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:[
+                {name:'mohammad',family:'feiz',age:38,id:0},
+                {name:'john',family:'doe',age:30,id:1},
+            ],
+            columns:[
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Family',value:'row.family',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ]
+        }
+    }
+    preview() {
+        let {rows,columns} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    excel={true}
+                    onSearch={(text)=>{
+                        debugger
+                    }}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',type:'text'},
+    {title:'Family',value:'row.family',type:'text'},
+    {title:'Age',value:'row.age',type:'number'},
+]
+function setRows(newRows){
+    //update state
+}
+return (
+    <AIOInput
+        type='table'
+        rows={rows}
+        columns={columns}
+        onChange={(newRows)=>setRows(newRows)}
+        onRemove={true}
+    />
+)
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Toolbar extends Component {
     constructor(props){
         super(props);
         this.state = {
@@ -1201,7 +1408,7 @@ class ToolbarContent extends Component {
                     rows={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
-                    toolbarContent='Title Of My Table'
+                    toolbar='Title Of My Table'
                 />                
                 {
                     AIODoc().Code(`
@@ -1224,7 +1431,7 @@ return (
         rows={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
-        toolbarContent='Title Of My Table'
+        toolbar='Title Of My Table'
     />
 )
                     `)
@@ -1443,6 +1650,75 @@ return (
             if(rowIndex % 2 === 0){style.background = '#eee'}
             return {style}
         }}
+    />
+)
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Paging extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:[
+                {name:'mohammad',family:'feiz',age:38,id:0},
+                {name:'john',family:'doe',age:30,id:1},
+            ],
+            columns:[
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Family',value:'row.family',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ],
+            paging:{
+                number:1,
+                size:20,
+                sizes:[20,50,100],
+                length:4,
+                rtl:false
+            }
+        }
+    }
+    preview() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    paging={paging}
+                    onChangePaging={(paging)=>this.setState({paging})}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',type:'text'},
+    {title:'Family',value:'row.family',type:'text'},
+    {title:'Age',value:'row.age',type:'number'},
+]
+function setRows(newRows){
+    //update state
+}
+return (
+    <AIOInput
+        type='table'
+        rows={rows}
+        columns={columns}
+        onChange={(newRows)=>setRows(newRows)}
     />
 )
                     `)
