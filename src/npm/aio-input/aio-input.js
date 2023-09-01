@@ -32,10 +32,10 @@ export default class AIOInput extends Component {
         if (type === 'button' && popover) {
             return (dom)=>{
                 let {popover,rtl} = this.props;
-                let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover'} = popover;
+                let {backdropAttrs,attrs,render,fixStyle,fitHorizontal,position = 'popover',openRelatedTo} = popover;
                 return {
                     rtl,position,attrs,backdrop:{attrs:backdropAttrs},id:'popover',
-                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)},
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current),openRelatedTo},
                     body:{render:({close})=>render({close})}
                 }
             }
@@ -43,24 +43,33 @@ export default class AIOInput extends Component {
         if (type === 'datepicker') { 
             return (dom)=>{
                 let {popover,rtl} = this.props;
-                let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover'} = popover || {}
+                let {backdropAttrs,attrs,fixStyle,fitHorizontal,position = 'popover',openRelatedTo} = popover || {}
                 return {
                     rtl,position,attrs,id:'popover',
                     body:{render:()=><DatePicker {...this.props}/>},
                     backdrop:{attrs:backdropAttrs},
-                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current),openRelatedTo}
                 }
             }
         }
         if (type === 'select' || type === 'multiselect') { 
             return (dom)=>{
                 let {popover,rtl} = this.props;
-                let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover'} = popover || {}
+                let {backdropAttrs,attrs,fixStyle,fitHorizontal = type === 'multiselect',header,footer,position = 'popover',openRelatedTo} = popover || {}
                 return {
                     rtl,position,attrs,id:'popover',
-                    body:{render:()=><Options/>,attrs:{style:{flexDirection:'column'}}},
+                    body:{render:()=>{
+                        return (
+                            <>
+                                {header && header}
+                                <Options/>
+                                {footer && footer} 
+                            </>
+                            
+                        )
+                    },attrs:{style:{flexDirection:'column'}}},
                     backdrop:{attrs:backdropAttrs},
-                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
+                    popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current),openRelatedTo}
                 }
             }
         }   
