@@ -1,27 +1,37 @@
-import React,{Component,useContext,createRef} from 'react';
+import React,{Component,useContext,createRef,Fragment} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiArrowUp, mdiArrowDown,mdiSort,mdiClose,mdiFileExcel,mdiMagnify,mdiPlusThick} from '@mdi/js';
 import AIOInput from './aio-input';
 import AITableContext from './table-context';
 import ExportToExcel from '../aio-functions/export-to-excel';
 import AIODate from '../aio-date/aio-date';
+import Search from '../aio-functions/search';
 import $ from 'jquery';
 import './table.css';
 //column schema
-//title,value,size,minSize,justify,type,onChange,cellAttrs,subtext,before,after
+//title,value,width,minWidth,justify,type,onChange,cellAttrs,subtext,before,after
 export default class Table extends Component{
     constructor(props){
       super(props);
-      let {columns = []} = props;
       this.dom = createRef();
       let Sort = new SortClass({
         getProps:()=>this.props,
         getState:()=>this.state,
         setState:(obj)=>this.setState(obj),
-        getRows:()=>this.rows
+      })
+      let {columns = []} = props;
+      let searchColumns = [];
+      let updatedColumns = columns.map((o)=>{
+        let {_id = 'aitc' + Math.round(Math.random() * 1000000),sort,search} = o;
+        sort = sort === true?{}:sort;
+        let column = {...o,_id,sort};
+        if(search){searchColumns.push(column)}
+        return column
       })
       this.state = {
-        columns:columns.map((o)=>{return {...o,_id:'aitc' + Math.round(Math.random() * 1000000),sort:o.sort === true?{}:o.sort}}),
+        searchValue:'',
+        columns:updatedColumns,
+        searchColumns,
         sorts:[],Sort,
         getDynamics:({value,row,column,def,rowIndex})=>{
           if(value === undefined){return def}
@@ -42,7 +52,7 @@ export default class Table extends Component{
           if(column.onChange){column.onChange({value,row,column})}
           else{
             let {setRows} = this.state;
-            let rows = this.rows;
+            let {rows} = this.props;
             row = JSON.parse(JSON.stringify(row));
             eval(`${column.value} = value`);
             setRows(rows.map((o)=>o._id !== row._id?o:row))
@@ -51,34 +61,23 @@ export default class Table extends Component{
       }
     }
     componentDidMount(){
-      let columns = this.getColumns();
-      let {Sort} = this.state;
+      let {columns,Sort} = this.state;
       this.setState({sorts:Sort.initiateSortsByColumns(columns)})
-    }
-    getRows(){
-      let {sorts,Sort} = this.state;
-      let {rows = [],paging:p} = this.props;
-      let sortedRows = Sort.getSortedRows(rows,sorts);
-      return p && !p.serverSide?sortedRows.slice((p.number - 1) * p.size,p.number * p.size):sortedRows;
-    }
-    getColumns(){
-      let {columns} = this.state;
-      return columns;
     }
     add(){
       let {onAdd} = this.props,{setRows} = this.state;
       if(typeof onAdd === 'function'){onAdd();}
-      else if(typeof onAdd === 'object'){setRows([onAdd,...this.rows])} 
+      else if(typeof onAdd === 'object'){setRows([onAdd,...this.props.rows])} 
     }
     remove(row,index){
-      let {onRemove} = this.props,{setRows} = this.state;
+      let {onRemove,rows} = this.props,{setRows} = this.state;
       if(typeof onRemove === 'function'){onRemove(row);}
-      else if(onRemove === true){setRows(this.rows.filter((o,i)=>o._id !== row._id));} 
+      else if(onRemove === true){setRows(rows.filter((o,i)=>o._id !== row._id));} 
     }
     exportToExcel(){
       let {excel} = this.props,list = [];
-      let {getDynamics} = this.state;
-      let rows = this.rows,columns = this.getColumns();
+      let {rows} = this.props;
+      let {getDynamics,columns} = this.state;
       for(let i = 0; i < rows.length; i++){
         let row = rows[i],json = {};
         for(let j = 0; j < columns.length; j++){
@@ -96,45 +95,125 @@ export default class Table extends Component{
       if(this.start._id === undefined){return}
       if(this.start._id === row._id){return}
       let {onSwap} = this.props,{setRows} = this.state;
-      let rows = this.rows;
+      let {rows} = this.props;
       let newRows = rows.filter((o)=>o._id !== this.start._id);
       let placeIndex = this.getIndexById(rows,row._id);
       newRows.splice(placeIndex,0,this.start)
       if(typeof onSwap === 'function'){onSwap({newRows,from:{...this.start},to:row})}
       else{setRows(newRows)}
     }
+    getSearchedRows(rows){
+      let {onSearch} = this.props;
+      if(onSearch !== true){return rows}
+      let {searchColumns,searchValue,getDynamics} = this.state;
+      if(!searchColumns.length || !searchValue){return rows}
+      return Search(rows,searchValue,(row,index)=>{
+        let str = '';
+        for(let i = 0; i < searchColumns.length; i++){
+          let column = searchColumns[i];
+          let value = getDynamics({value:column.value,row,def:'',column,rowIndex:index});
+          if(value){str += value + ' '}
+        }
+        return str
+      })
+    }
+    getRowsToRender(){
+      let {Sort} = this.state;
+      let {rows = [],paging:p} = this.props;
+      let searchedRows = this.getSearchedRows(rows);
+      let sortedRows = Sort.getSortedRows(searchedRows);
+      return p && !p.serverSide?sortedRows.slice((p.number - 1) * p.size,p.number * p.size):sortedRows;
+    }
+    //calculate style of cells and title cells
+    getCellStyle({row,rowIndex,column,type}){
+      let {getDynamics} = this.state;
+      let width = getDynamics({value:column.width});
+      let minWidth = getDynamics({value:column.minWidth});
+      let style = {width:width?width:undefined,flex:width?undefined:1,minWidth}
+      if(type === 'cell'){
+        let cellAttrs = getDynamics({value:column.cellAttrs,column,row,rowIndex,def:{}});
+        return {...style,...cellAttrs.style}
+      }
+      else if(type === 'title'){
+        let titleAttrs = getDynamics({value:column.titleAttrs,column,def:{}});
+        return {...style,...titleAttrs.style}
+      }
+    }
+    getTitleAttrs(column){
+      let {getDynamics} = this.state;
+      let titleAttrs = getDynamics({value:column.titleAttrs,column,def:{}});
+      let justify = getDynamics({value:column.justify,def:false});
+      let className = 'aio-input-table-title' + (justify?' aio-input-table-title-justify':'') + (titleAttrs.className?' ' + titleAttrs.className:'')
+      let style = this.getCellStyle({column,type:'title'})
+      let title = getDynamics({value:column.title,def:''})
+      return {...titleAttrs,style,className,title}
+    }
+    getCellAttrs({row,rowIndex,column}){
+      let {getDynamics} = this.state;
+      let cellAttrs = getDynamics({value:column.cellAttrs,column,row,rowIndex,def:{}});
+      let justify = getDynamics({value:column.justify,row,rowIndex,def:false});
+      let className = 'aio-input-table-cell' + (justify?' aio-input-table-cell-justify':'') + (cellAttrs.className?' ' + cellAttrs.className:'')
+      let style = this.getCellStyle({row,rowIndex,column,type:'cell'})
+      return {...cellAttrs,style,className}
+    }
+    getRowAttrs(row,rowIndex){
+      let {rowAttrs = ()=>{return {}},onSwap} = this.props;
+      let attrs = rowAttrs({row,rowIndex});
+      let obj = {...attrs,className:'aio-input-table-row' + (attrs.className?' ' + attrs.className:'')}
+      if(!!onSwap){obj = {...obj,draggable:true,onDragStart:(e)=>this.dragStart(e,row),onDragOver:(e)=>this.dragOver(e,row),onDrop:(e)=>this.drop(e,row)}}
+      return obj;
+    }
+    getCellContent({row,rowIndex,column}){
+      let {getDynamics,setCell} = this.state;
+      let template = getDynamics({value:column.template,row,rowIndex,column}); 
+      if(template !== undefined){return template}
+      let props = {
+        ...column,
+        value:getDynamics({value:column.value,row,rowIndex,column}), 
+        options:getDynamics({value:column.options,row,rowIndex,column}),  
+        type:getDynamics({value:column.type,row,rowIndex,column,def:'text'}),
+        subtext:getDynamics({value:column.subtext,row,rowIndex,column}), 
+        before:getDynamics({value:column.before,row,rowIndex,column}), 
+        after:getDynamics({value:column.after,row,rowIndex,column}),
+        onChange:(value)=>setCell(row,column,value)
+      }
+      return <AIOInput {...props}/>
+    }
+    search(searchValue){
+      let {onSearch} = this.props;
+      if(onSearch === true){this.setState({searchValue})}
+      else {onSearch(searchValue)}
+    }
     getContext(){
-      let {onSearch,placeholder = 'there is not any items',rowAttrs,headerAttrs,onAdd,onRemove,excel,onSwap,rowGap,columnGap} = this.props;
-      let {sorts,Sort} = this.state;
-      let columns = this.getColumns();
+      let {rowGap,columnGap} = this.props;
       let context = {
-        ...this.state,
+        props:{...this.props},
+        state:{...this.state},
         parentDom:this.dom,
-        SetState:(obj)=>this.setState(obj),sorts,Sort,
+        SetState:(obj)=>this.setState(obj),
+        getTitleAttrs:this.getTitleAttrs.bind(this),
+        getCellAttrs:this.getCellAttrs.bind(this),
+        getRowAttes:this.getRowAttrs.bind(this),
+        getCellContent:this.getCellContent.bind(this),
+        getRowsToRender:this.getRowsToRender.bind(this),
+        add:this.add.bind(this),
+        remove:this.remove.bind(this),
+        search:this.search.bind(this),
+        exportToExcel:this.exportToExcel.bind(this),
         RowGap:<div className='aio-input-table-border-h' style={{height:rowGap}}></div>,
         ColumnGap:<div className='aio-input-table-border-v' style={{width:columnGap}}></div>,
-        columns,
-        placeholder,rowAttrs,headerAttrs,onSearch,
-        rows:this.rows
       }
-      if(excel){context.exportToExcel = this.exportToExcel.bind(this)}
-      if(!!onRemove){context.remove = this.remove.bind(this)}
-      if(!!onAdd){context.add = this.add.bind(this)}
-      if(onSwap){context = {...context,dragStart:this.dragStart.bind(this),dragOver:this.dragOver.bind(this),drop:this.drop.bind(this)}}
       return context
     }
     render(){
-      let {toolbar,style,paging,rowTemplate,rowAfter,rowBefore,toolbarAttrs = {}} = this.props;
-      this.rows = this.getRows();
-      if(!Array.isArray(this.rows)){console.error(`aio-input error => in type = "table" , rows prop is not an array`)}
-      let Toolbar = <TableToolbar toolbar={toolbar} toolbarAttrs={toolbarAttrs}/>;
-      let Paging = paging?<TablePaging paging={paging} rows={this.rows}/>:''
-      let Header = <TableHeader/>;
-      let Rows = <TableRows rows={this.rows} rowTemplate={rowTemplate} rowAfter={rowAfter} rowBefore={rowBefore}/>;
-      let Table = <div className='aio-input-table-unit'>{Header} {Rows}</div>
+      let {paging,attrs = {}} = this.props;
       return (
         <AITableContext.Provider value={this.getContext()}>
-          <div ref={this.dom} className='aio-input-table' style={style}>{Toolbar}{Table}{Paging}</div>  
+          <div {...attrs} ref={this.dom} className={'aio-input-table' + (attrs.className?' ' + attrs.className:'')}>
+            <TableToolbar/>
+            <div className='aio-input-table-unit'><TableHeader/><TableRows/></div>
+            {paging?<TablePaging paging={paging}/>:''}
+          </div>  
         </AITableContext.Provider>
       )
     }
@@ -176,165 +255,101 @@ export default class Table extends Component{
       </div>
     )
   }
-  function TableRows({rows,rowTemplate,rowAfter = ()=>null,rowBefore = ()=>null}){
-    function getRows(){
-      return rows.map((o,i)=>{
-        let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
-        o._id = id;
-        let isLast = i === rows.length - 1,Row;
-        if(rowTemplate){Row = rowTemplate({row:o,rowIndex:i,isLast})}
-        else {Row = <TableRow key={id} row={o} rowIndex={i} isLast={isLast}/>}
-        return (<>{rowBefore({row:o,rowIndex:i})}{Row}{rowAfter({row:o,rowIndex:i})}</>)
-      })
-    }
-    let {placeholder} = useContext(AITableContext)
-    let content;
-    if(rows.length){content = getRows()}
-    else{content = <div style={{width:'100%',textAlign:'center',padding:12}}>{placeholder}</div>}
-    return <div className='aio-input-table-rows'>{content}</div>
-  }
-  class TableToolbar extends Component{
-    static contextType = AITableContext;
-    render(){
-      let {add,exportToExcel,onSearch,RowGap,sorts,Sort} = this.context;
-      let {toolbar,toolbarAttrs} = this.props;
-      if(!add && !exportToExcel && !toolbar && !onSearch && !sorts.length){return null}
-      return (
-        <>
-          <div {...toolbarAttrs} className={'aio-input-table-toolbar' + (toolbarAttrs.className?' ' + toolbarAttrs.className:'')}>
-            {toolbar && <div className='aio-input-table-toolbar-content'>{toolbar}</div>}
-            <div className='aio-input-table-search'>
-              {!!onSearch && <AIOInput type='text' onChange={(value)=>onSearch(value)} after={<Icon path={mdiMagnify} size={1}/>}/>}
-            </div>
-            {Sort.getSortButton(sorts)}
-            {
-              !!exportToExcel &&
-              <div className='aio-input-table-toolbar-icon' onClick={()=>exportToExcel()}><Icon path={mdiFileExcel} size={0.8}/></div>
-            }
-            {!!add && <div className='aio-input-table-toolbar-icon' onClick={()=>add()}><Icon path={mdiPlusThick} size={0.8}/></div>}
-            
-          </div>
-          {RowGap}
-        </>
-      )
-    }
-  }
-  class TableHeader extends Component{
-    static contextType = AITableContext;
-    render(){
-      let {remove,columns,headerAttrs = {},RowGap} = this.context;
-      let Titles = columns.map((o,i)=><TableTitle key={o._id} column={o} isLast={i === columns.length - 1}/>);
-      let RemoveTitle = !remove?null:<button className='aio-input-table-remove'></button>;
-      return (
-        <>
-          <div {...headerAttrs} className={'aio-input-table-header' + (headerAttrs.className?' ' + headerAttrs.className:'')}>{Titles}{RemoveTitle}</div>
-          {RowGap}
-        </>
-      )
-    }
-  }
-  class TableTitle extends Component{
-    static contextType = AITableContext;
-    render(){
-      let {getDynamics:gd,ColumnGap} = this.context;
-      let {column,isLast} = this.props;
-      let {size:s,title:t,justify:j,minSize:m,titleAttrs:ta} = column;
-      let size = gd({value:s}),title = gd({value:t,def:''}),justify = gd({value:j}),minSize = gd({value:m}),titleAttrs = gd({value:ta,column,def:{}});
-      return (
-        <>
-          <div 
-            {...titleAttrs}
-            className={'aio-input-table-title' + (justify?' aio-input-table-title-justify':'') + (titleAttrs.className?' ' + titleAttrs.className:'')} 
-            style={{width:size?size:undefined,flex:size?undefined:1,minWidth:minSize,...titleAttrs.style}}
-          >{title}</div>
-          {!isLast && ColumnGap}
-        </>
-      )
-    }
-  }
-  class TableRow extends Component{
-    static contextType = AITableContext;
-    getCells(columns,row,rowIndex){
-      let {getDynamics} = this.context;
-      return columns.map((column,i)=>{
-        let {size,minSize,cellAttrs,justify,template,subtext,before,after,type,options} = column;
-        let gd = (value,def)=>getDynamics({value,row,column,def,rowIndex});
-        let value = gd(column.value);
-        let key = row._id + ' ' + column._id;
-        return (
-          <TableCell 
-            {...column} isLast={i === columns.length - 1}
-            options={gd(options)} size={gd(size)} minSize={gd(minSize)} type={gd(type,'text')}
-            attrs={gd(cellAttrs,{})} justify={gd(justify)} template={gd(template)} subtext={gd(subtext)}
-            before={gd(before)} after={gd(after)} key={key} row={row} column={column} value={value}
-          />
-        )
-      })
-    }
-    getRemoveCell(row,remove){
-      return !remove?null:<button className='aio-input-table-remove' onClick={()=>remove(row)}><Icon path={mdiClose} size={0.8}/></button>
-    }
-    getProps(row,rowIndex){
-      let {dragStart,dragOver,drop,rowAttrs = ()=>{return {}}} = this.context;
-      let attrs = rowAttrs({row,rowIndex});
-      let props = {...attrs,className:'aio-input-table-row' + (attrs.className?' ' + attrs.className:'')}
-      if(!!dragStart){props = {...props,draggable:true,onDragStart:(e)=>dragStart(e,row),onDragOver:(e)=>dragOver(e,row),onDrop:(e)=>drop(e,row)}}
-      return props;
-    }
-    render(){
-      let {columns,remove,RowGap} = this.context;
-      let {row,isLast,rowIndex} = this.props;
-      let cells = this.getCells(columns,row,rowIndex);
-      let removeCell = this.getRemoveCell(row,remove);
-      let props = this.getProps(row,rowIndex);
-      return (
-        <>
-          <div {...props}>{cells}{removeCell}</div>
-          {!isLast && RowGap}
-        </>
-      )
-    }
-  }
-  class TableCell extends Component{
-    static contextType = AITableContext;
-    getProps(){
-      let {size,minSize,attrs,justify,isLast} = this.props;
-      return {
-        ...attrs,isLast,
-        className:'aio-input-table-cell' + (justify?' aio-input-table-cell-justify':'') + (attrs.className?' ' + attrs.className:''),
-        style:{width:size?size:undefined,flex:size?undefined:1,...attrs.style,minWidth:minSize},
+  function TableRows(){
+    let {props,getRowsToRender} = useContext(AITableContext)
+    let {rowTemplate,rowAfter = ()=>null,rowBefore = ()=>null} = props;
+    function getContent(){
+      let rows = getRowsToRender();
+      if(rows.length){
+        return rows.map((o,i)=>{
+          let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
+          o._id = id;
+          let isLast = i === rows.length - 1,Row;
+          if(rowTemplate){Row = rowTemplate({row:o,rowIndex:i,isLast})}
+          else {Row = <TableRow key={id} row={o} rowIndex={i} isLast={isLast}/>}
+          return (<Fragment key={id}>{rowBefore({row:o,rowIndex:i})}{Row}{rowAfter({row:o,rowIndex:i})}</Fragment>)
+        })
       }
+      let {placeholder = 'there is not any items'} = props;
+      return <div style={{width:'100%',textAlign:'center',padding:12}}>{placeholder}</div>
     }
-    getInputProps(){
-      let {setCell} = this.context;
-      let {value,subtext,before,after,type,options,row,column} = this.props;
-      return {...this.props,subtext,before,after,type,value,onChange:(value)=>setCell(row,column,value),options}
-    }
-    getContent(){
-      let {column,template} = this.props;
-      if(template !== undefined){return template}
-      let inputProps = this.getInputProps(column);
-      return <AIOInput {...inputProps}/>
-    }
-    render(){
-      let {ColumnGap} = this.context;
-      let props = this.getProps();
-      return (
-        <>
-          <div {...props} >{this.getContent()}</div>
-          {!props.isLast && ColumnGap}
-        </>
-      )
-    }
+    return <div className='aio-input-table-rows'>{getContent()}</div>
   }
-
-
+  function TableToolbar(){
+    let {add,exportToExcel,RowGap,props,state,search} = useContext(AITableContext);
+    let {toolbarAttrs = {},toolbar,onAdd,excel,onSearch} = props;
+    let {sorts} = state;
+    if(!onAdd && !excel && !toolbar && !onSearch && !sorts.length){return null}
+    return (
+      <>
+        <div {...toolbarAttrs} className={'aio-input-table-toolbar' + (toolbarAttrs.className?' ' + toolbarAttrs.className:'')}>
+          {toolbar && <div className='aio-input-table-toolbar-content'>{toolbar}</div>}
+          <div className='aio-input-table-search'>
+            {!!onSearch && <AIOInput type='text' onChange={(value)=>search(value)} after={<Icon path={mdiMagnify} size={1}/>}/>}
+          </div>
+          {state.Sort.getSortButton()}
+          {!!excel && <div className='aio-input-table-toolbar-icon' onClick={()=>exportToExcel()}><Icon path={mdiFileExcel} size={0.8}/></div>}
+          {!!onAdd && <div className='aio-input-table-toolbar-icon' onClick={()=>add()}><Icon path={mdiPlusThick} size={0.8}/></div>}
+          
+        </div>
+        {RowGap}
+      </>
+    )
+  }
+  function TableHeader(){
+    let {RowGap,props,state} = useContext(AITableContext);
+    let {headerAttrs = {},onRemove} = props;
+    let {columns} = state;
+    let Titles = columns.map((o,i)=><TableTitle key={o._id} column={o} isLast={i === columns.length - 1}/>);
+    let RemoveTitle = !onRemove?null:<button className='aio-input-table-remove'></button>;
+    let className = 'aio-input-table-header' + (headerAttrs.className?' ' + headerAttrs.className:'');
+    return (<><div {...{...headerAttrs,className}}>{Titles}{RemoveTitle}</div>{RowGap}</>)
+  }
+  function TableTitle({column,isLast}){
+    let {ColumnGap,getTitleAttrs} = useContext(AITableContext);
+    let attrs = getTitleAttrs(column);
+    return (
+      <>
+        <div {...attrs}>{attrs.title}</div>
+        {!isLast && ColumnGap}
+      </>
+    )
+  }
+  function TableRow({row,isLast,rowIndex}){
+    let {remove,RowGap,props,state,getRowAttes} = useContext(AITableContext);
+    function getCells(){
+      return state.columns.map((column,i)=>{
+        let key = row._id + ' ' + column._id;
+        let isLast = i === state.columns.length - 1;
+        return (<TableCell isLast={isLast} key={key} row={row} rowIndex={rowIndex} column={column}/>)
+      })
+    }
+    return (
+      <>
+        <div {...getRowAttes(row,rowIndex)}>
+          {getCells(row,rowIndex)}
+          {props.onRemove?<button className='aio-input-table-remove' onClick={()=>remove(row)}><Icon path={mdiClose} size={0.8}/></button>:null}
+        </div>
+        {!isLast && RowGap}
+      </>
+    )
+  }
+  function TableCell({row,rowIndex,column,isLast}){
+    let context = useContext(AITableContext);
+    let {ColumnGap,getCellAttrs,getCellContent} = context;
+    return (
+      <>
+        <div {...getCellAttrs({row,rowIndex,column})} >{getCellContent({row,rowIndex,column})}</div>
+        {!isLast && ColumnGap}
+      </>
+    )
+    
+  }
   class SortClass{
-    constructor({getProps,getState,setState,getRows}){
+    constructor({getProps,getState,setState}){
       this.getProps = getProps;
       this.getState = getState;
       this.setState = setState;
-      this.getRows = getRows;
     }
     setSort = (sortId,changeObject) => {
       let {sorts} = this.getState();
@@ -349,7 +364,6 @@ export default class Table extends Component{
     }
     setSorts = async (sorts) => {
       let {onChangeSort} = this.getProps();
-      let {setRows} = this.getState();
       if(onChangeSort){
         let res = await onChangeSort(sorts)
         if(res !== false){this.setState({sorts});}
@@ -358,14 +372,16 @@ export default class Table extends Component{
         this.setState({sorts});
         let activeSorts = sorts.filter((sort)=>sort.active !== false);
         if(activeSorts.length){
-          setRows(this.sort(this.getRows(),activeSorts))
+          let {setRows} = this.getState();
+          let {rows} = this.getProps();
+          setRows(this.sort(rows,activeSorts))
         }
       }
     }
-    getSortedRows = (rows,sorts) => {
+    getSortedRows = (rows) => {
       if(this.initialSort){return rows}
       let {onChangeSort} = this.getProps();
-      let {setRows} = this.getState();
+      let {setRows,sorts} = this.getState();
       if(onChangeSort){return rows}
       let activeSorts = sorts.filter((sort)=>sort.active !== false);
       if(!activeSorts.length){return rows}
@@ -395,7 +411,7 @@ export default class Table extends Component{
         let {active = true,dir = 'dec'} = sort;
         let getValue = (row)=>{
           let value = getDynamics({value:column.value,row,column})
-          if(type === 'date'){value = AIODate().getTime(value);}
+          if(type === 'datepicker'){value = AIODate().getTime(value);}
           return value
         }
         sorts.push({dir,title:sort.title || column.title,sortId:_id,active,type,getValue})
@@ -415,7 +431,8 @@ export default class Table extends Component{
         onClick:()=>this.setSort(sortId,{active:active?false:true})
       }
     }
-    getSortButton(sorts){
+    getSortButton(){
+      let {sorts} = this.getState();
       if(!sorts.length){return null}
       let sortOptions = sorts.map((sort)=>this.getSortOption(sort));
       return (

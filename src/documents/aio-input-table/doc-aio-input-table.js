@@ -12,18 +12,19 @@ export default class DOC_AIOInput_Table extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='onChangeSort'
+                navId='column.type'
                 navs={[
                     { text: 'type ,placeholder', id: 'type', COMPONENT: () => <TypePlaceholder /> },
                     { text: 'rows', id: 'rows', COMPONENT: () => <Rows /> },
                     { text: 'columns', id: 'columns', COMPONENT: () => <Columns /> },
+                    { text: 'attrs', id: 'attrs', COMPONENT: () => <Attrs /> },
                     { text: 'onSwap (true)', id: 'onSwapTrue', COMPONENT: () => <OnSwapTrue /> },
                     { text: 'onSwap (function)', id: 'onSwapFunction', COMPONENT: () => <OnSwapFunction /> },
                     { text: 'column.title', id: 'column.title', COMPONENT: () => <Column_Title /> },
                     { text: 'column.titleAttrs', id: 'column.titleAttrs', COMPONENT: () => <Column_TitleAttrs /> },
                     { text: 'column.value', id: 'column.value', COMPONENT: () => <Column_Value /> },
-                    { text: 'column.size', id: 'column.size', COMPONENT: () => <Column_Size /> },
-                    { text: 'column.minSize', id: 'column.minSize', COMPONENT: () => <Column_MinSize /> },
+                    { text: 'column.width', id: 'column.width', COMPONENT: () => <Column_Width /> },
+                    { text: 'column.minWidth', id: 'column.minWidth', COMPONENT: () => <Column_MinWidth /> },
                     { text: 'column.justify', id: 'column.justify', COMPONENT: () => <Column_Justify /> },
                     { text: 'column.type', id: 'column.type', COMPONENT: () => <Column_Type /> },
                     { text: 'column.onChange', id: 'column.onChange', COMPONENT: () => <Column_OnChange /> },
@@ -39,7 +40,8 @@ export default class DOC_AIOInput_Table extends Component {
                     { text: 'onAdd (object)', id: 'onAddfunction', COMPONENT: () => <OnAddObject /> },
                     { text: 'onRemove (function)', id: 'onRemoveFunction', COMPONENT: () => <OnRemoveFunction /> },
                     { text: 'onRemove (true)', id: 'onRemoveTrue', COMPONENT: () => <OnRemoveTrue /> },
-                    { text: 'onSearch', id: 'onSearch', COMPONENT: () => <OnSearch /> },
+                    { text: 'onSearch function', id: 'onSearchfunction', COMPONENT: () => <OnSearchFunction /> },
+                    { text: 'onSearch true', id: 'onSearchTrue', COMPONENT: () => <OnSearchTrue /> },
                     { text: 'rowAttrs', id: 'rowAttrs', COMPONENT: () => <RowAttrs /> },
                     { text: 'headerAttrs', id: 'headerAttrs', COMPONENT: () => <HeaderAttrs /> },
                     { text: 'paging', id: 'paging', COMPONENT: () => <Paging /> },
@@ -216,6 +218,53 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
+class Attrs extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:model,
+            columns:[
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ]
+        }
+    }
+    preview() {
+        let {rows,columns} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    attrs={{style:{height:360}}}
+                    rows={rows}
+                    columns={columns}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = model;
+let columns = [
+    {title:'Name',value:'row.name',type:'text'},
+    {title:'Gender',value:'row.gender',type:'text'},
+    {title:'Age',value:'row.age',type:'number'},
+]
+return (
+    <AIOInput
+        type='table'
+        attrs={{style:{height:360}}}
+        rows={rows}
+        columns={columns}
+    />
+)
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
 class Column_TitleAttrs extends Component {
     constructor(props){
         super(props);
@@ -327,7 +376,7 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class Column_Size extends Component {
+class Column_Width extends Component {
     constructor(props){
         super(props);
         this.state = {
@@ -336,8 +385,8 @@ class Column_Size extends Component {
                 {name:'john',family:'doe',age:30},
             ],
             columns:[
-                {title:'Name',value:'row.name',size:120},
-                {title:'Family',value:'row.family',size:'family_column_size'},
+                {title:'Name',value:'row.name',width:120},
+                {title:'Family',value:'row.family',width:'family_column_width'},
                 {title:'Age',value:'row.age'},
             ]
         }
@@ -351,7 +400,7 @@ class Column_Size extends Component {
                     rows={rows}
                     columns={columns}
                     getValue={{
-                        family_column_size:({row,column})=>260
+                        family_column_width:({row,column})=>260
                     }}
                 />                
                 {
@@ -362,8 +411,8 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',size:120},
-    {title:'Family',value:'row.family',size:'family_column_size'},
+    {title:'Name',value:'row.name',width:120},
+    {title:'Family',value:'row.family',width:'family_column_width'},
     {title:'Age',value:'row.age'},
 ]
 return (
@@ -372,7 +421,7 @@ return (
         rows={rows}
         columns={columns}
         getValue={{
-            family_column_size:({row,column})=>260
+            family_column_width:({row,column})=>260
         }}
     />
 )
@@ -384,7 +433,7 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class Column_MinSize extends Component {
+class Column_MinWidth extends Component {
     constructor(props){
         super(props);
         this.state = {
@@ -393,8 +442,8 @@ class Column_MinSize extends Component {
                 {name:'john',family:'doe',age:30},
             ],
             columns:[
-                {title:'Name',value:'row.name',size:120},
-                {title:'Family',value:'row.family',minSize:160},
+                {title:'Name',value:'row.name',width:120},
+                {title:'Family',value:'row.family',minWidth:160},
                 {title:'Age',value:'row.age'},
             ]
         }
@@ -416,8 +465,8 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',size:120},
-    {title:'Family',value:'row.family',minSize:160},
+    {title:'Name',value:'row.name',width:120},
+    {title:'Family',value:'row.family',minWidth:160},
     {title:'Age',value:'row.age'},
 ]
 return (
@@ -444,8 +493,8 @@ class Column_Justify extends Component {
                 {name:'john',family:'doe',age:30},
             ],
             columns:[
-                {title:'Name',value:'row.name',size:120},
-                {title:'Family',value:'row.family',minSize:160},
+                {title:'Name',value:'row.name'},
+                {title:'Family',value:'row.family'},
                 {title:'Age',value:'row.age',justify:true},
             ]
         }
@@ -467,8 +516,8 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',size:120},
-    {title:'Family',value:'row.family',minSize:160},
+    {title:'Name',value:'row.name'},
+    {title:'Family',value:'row.family'},
     {title:'Age',value:'row.age',justify:true},
 ]
 return (
@@ -490,14 +539,18 @@ class Column_Type extends Component {
     constructor(props){
         super(props);
         this.state = {
-            rows:[
-                {name:'mohammad',family:'feiz',age:38},
-                {name:'john',family:'doe',age:30},
-            ],
+            rows:model,
             columns:[
                 {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
+                {
+                    title:'Gender',value:'row.gender',type:'select',
+                    options:[
+                        {text:'Male',value:'male'},
+                        {text:'Female',value:'female'}
+                    ]
+                },
                 {title:'Age',value:'row.age',type:'number'},
+                {title:'Date',value:'row.date',type:'datepicker',unit:'month'}
             ]
         }
     }
@@ -509,17 +562,15 @@ class Column_Type extends Component {
                     type='table'
                     rows={rows}
                     columns={columns}
+                    onChange={(rows)=>this.setState({rows})}
                 />                
                 {
                     AIODoc().Code(`
 
-let rows = [
-    {name:'mohammad',family:'feiz',age:38},
-    {name:'john',family:'doe',age:30},
-]
+let rows = model;
 let columns = [
     {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
+    {title:'Gender',value:'row.gender',type:'text'},
     {title:'Age',value:'row.age',type:'number'},
 ]
 return (
@@ -1323,17 +1374,14 @@ return (
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class OnSearch extends Component {
+class OnSearchFunction extends Component {
     constructor(props){
         super(props);
         this.state = {
-            rows:[
-                {name:'mohammad',family:'feiz',age:38,id:0},
-                {name:'john',family:'doe',age:30,id:1},
-            ],
+            rows:model,
             columns:[
                 {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
                 {title:'Age',value:'row.age',type:'number'},
             ]
         }
@@ -1355,13 +1403,10 @@ class OnSearch extends Component {
                 {
                     AIODoc().Code(`
 
-let rows = [
-    {name:'mohammad',family:'feiz',age:38},
-    {name:'john',family:'doe',age:30},
-]
+let rows = model;
 let columns = [
     {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
+    {title:'Gender',value:'row.gender',type:'text'},
     {title:'Age',value:'row.age',type:'number'},
 ]
 function setRows(newRows){
@@ -1373,7 +1418,70 @@ return (
         rows={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
-        onRemove={true}
+        onSearch={(text)=>{
+            debugger
+        }}
+    />
+)
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class OnSearchTrue extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:model,
+            columns:[
+                {title:'Name',value:'row.name',type:'text',search:true},
+                {title:'Gender',value:'row.gender',type:'text',search:true},
+                {title:'Age',value:'row.age',type:'number',search:true},
+            ]
+        }
+    }
+    preview() {
+        let {rows,columns} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table'
+                    attrs={{style:{height:700}}}
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    onSearch={true}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',type:'text',search:true},
+    {title:'Gender',value:'row.gender',type:'text',search:true},
+    {title:'Age',value:'row.age',type:'number',search:true},
+]
+function setRows(newRows){
+    //update state
+}
+return (
+    <AIOInput
+        type='table'
+        attrs={{style:{height:700}}}
+        rows={rows}
+        columns={columns}
+        onChange={(newRows)=>this.setState({rows:newRows})}
+        onSearch={true}
     />
 )
                     `)
@@ -1695,13 +1803,10 @@ class RowAttrs extends Component {
     constructor(props){
         super(props);
         this.state = {
-            rows:[
-                {name:'mohammad',family:'feiz',age:38,id:0},
-                {name:'john',family:'doe',age:30,id:1},
-            ],
+            rows:model,
             columns:[
                 {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
                 {title:'Age',value:'row.age',type:'number'},
             ]
         }
@@ -1717,6 +1822,7 @@ class RowAttrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
+                    attrs={{style:{height:700}}}
                     rows={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
@@ -1744,9 +1850,10 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
+        attrs={{style:{height:700}}}
         rows={rows}
         columns={columns}
-        onChange={(newRows)=>setRows(newRows)}
+        onChange={(newRows)=>this.setState({rows:newRows})}
         rowAttrs={({row,rowIndex})=>{
             let style = {height:48};
             if(rowIndex % 2 === 0){style.background = '#eee'}
@@ -1819,11 +1926,9 @@ return (
         type='table'
         rows={rows}
         columns={columns}
-        onChange={(newRows)=>setRows(newRows)}
-        rowAttrs={({row,rowIndex})=>{
-            let style = {height:48};
-            if(rowIndex % 2 === 0){style.background = '#eee'}
-            return {style}
+        onChange={(newRows)=>this.setState({rows:newRows})}
+        headerAttrs={{
+            style:{background:'pink'}
         }}
     />
 )
@@ -1871,7 +1976,7 @@ class Paging extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     columns={columns}
@@ -1913,13 +2018,12 @@ class Paging extends Component {
         let {rows,columns,paging} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
-                
             />                
         )
     }
@@ -1981,7 +2085,7 @@ class Paging_ServerSide extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     columns={columns}
@@ -2035,13 +2139,12 @@ class Paging extends Component {
         let {rows,columns,paging} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
-                
             />                
         )
     }
@@ -2083,7 +2186,7 @@ class RowTemplate extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
@@ -2137,13 +2240,12 @@ class Paging extends Component {
         let {rows,columns,paging} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
-                columns={columns}
+                rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
-                
             />                
         )
     }
@@ -2177,7 +2279,7 @@ class RowAfter extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     rowAfter={({row})=>{
@@ -2205,7 +2307,7 @@ class Paging extends Component {
         let {rows,columns} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
                 rowAfter={({row})=>{
@@ -2246,7 +2348,7 @@ class RowBefore extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     rowBefore={({row})=>{
@@ -2274,11 +2376,11 @@ class Paging extends Component {
         let {rows,columns} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
-                rowAfter={({row})=>{
-                    return <div style={{padding:'0 12px',background:'orange',color:'#fff'}}>this is my row before</div>
+                rowBefore={({row})=>{
+                    return <div style={{padding:'0 12px',background:'orange',color:'#fff',marginTop:12}}>this is my row before</div>
                 }}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
@@ -2315,7 +2417,7 @@ class Column_Sort extends Component {
         return (
             <div className='example'>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     columns={columns}
@@ -2340,7 +2442,7 @@ class Paging extends Component {
         let {rows,columns} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
                 columns={columns}
@@ -2383,7 +2485,7 @@ class OnChangeSort extends Component {
                     this function can returns false to prevent change sort control of table if any error occured
                 </h5>
                 <AIOInput
-                    style={{height:600}}
+                    attrs={{style:{height:600}}}
                     type='table'
                     rows={rows}
                     columns={columns}
@@ -2411,7 +2513,7 @@ class Paging extends Component {
         let {rows,columns} = this.state;
         return (
             <AIOInput
-                style={{height:600}}
+                attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
                 columns={columns}
