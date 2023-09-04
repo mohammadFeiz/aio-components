@@ -12,7 +12,7 @@ export default class DOC_AIOInput_Table extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='column.type'
+                navId='pagingnumber'
                 navs={[
                     { text: 'type ,placeholder', id: 'type', COMPONENT: () => <TypePlaceholder /> },
                     { text: 'rows', id: 'rows', COMPONENT: () => <Rows /> },
@@ -45,6 +45,7 @@ export default class DOC_AIOInput_Table extends Component {
                     { text: 'rowAttrs', id: 'rowAttrs', COMPONENT: () => <RowAttrs /> },
                     { text: 'headerAttrs', id: 'headerAttrs', COMPONENT: () => <HeaderAttrs /> },
                     { text: 'paging', id: 'paging', COMPONENT: () => <Paging /> },
+                    { text: 'paging number', id: 'pagingnumber', COMPONENT: () => <PagingNumber /> },
                     { text: 'paging serverSide:true', id: 'pagingserverside', COMPONENT: () => <Paging_ServerSide /> },
                     { text: 'rowTemplate', id: 'rowTemplate', COMPONENT: () => <RowTemplate /> },
                     { text: 'rowAfter', id: 'rowAfter', COMPONENT: () => <RowAfter /> },
@@ -550,7 +551,8 @@ class Column_Type extends Component {
                     ]
                 },
                 {title:'Age',value:'row.age',type:'number'},
-                {title:'Date',value:'row.date',type:'datepicker',unit:'month'}
+                {title:'Date',value:'row.date',type:'datepicker',unit:'month'},
+                {title:'Active',value:'row.active',type:'checkbox'},
             ]
         }
     }
@@ -560,6 +562,7 @@ class Column_Type extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
+                    attrs={{style:{height:500}}}
                     rows={rows}
                     columns={columns}
                     onChange={(rows)=>this.setState({rows})}
@@ -570,14 +573,23 @@ class Column_Type extends Component {
 let rows = model;
 let columns = [
     {title:'Name',value:'row.name',type:'text'},
-    {title:'Gender',value:'row.gender',type:'text'},
+    {
+        title:'Gender',value:'row.gender',type:'select',
+        options:[
+            {text:'Male',value:'male'},
+            {text:'Female',value:'female'}
+        ]
+    },
     {title:'Age',value:'row.age',type:'number'},
+    {title:'Date',value:'row.date',type:'datepicker',unit:'month'}
 ]
 return (
     <AIOInput
         type='table'
+        attrs={{style:{height:700}}}
         rows={rows}
         columns={columns}
+        onChange={(rows)=>this.setState({rows})}
     />
 )
                     `)
@@ -1945,6 +1957,101 @@ return (
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Paging extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:model,
+            columns:[
+                {
+                    title:'',size:42,justify:true,
+                    template:({rowIndex})=>{
+                        let {paging} = this.state;
+                        let {size,number} = paging;
+                        return rowIndex + 1 + (size * (number - 1))
+                    }
+                },
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ],
+            paging:{
+                number:1,
+                size:15,
+                sizes:[15,30,50],
+                onChange:(paging)=>this.setState({paging})
+            }
+        }
+    }
+    preview() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    attrs={{style:{height:600}}}
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    paging={paging}
+                    
+                />                
+                {
+                    AIODoc().Code(`
+
+class Paging extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:model,
+            columns:[
+                {
+                    title:'',size:42,justify:true,
+                    template:({rowIndex})=>{
+                        let {paging} = this.state;
+                        let {size,number} = paging;
+                        return rowIndex + 1 + (size * (number - 1))
+                    }
+                },
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ],
+            paging:{
+                number:1,
+                size:15,
+                sizes:[15,30,50],
+                length:model.length,
+                onChange:(paging)=>this.setState({paging})
+            }
+        }
+    }
+    render() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <AIOInput
+                attrs={{style:{height:600}}}
+                type='table'
+                rows={rows}
+                columns={columns}
+                onChange={(newRows)=>this.setState({rows:newRows})}
+                paging={paging}
+            />                
+        )
+    }
+}
+                    `)
+                }
+                <h3>model</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class PagingNumber extends Component {
     constructor(props){
         super(props);
         this.state = {

@@ -1,4 +1,4 @@
-import React,{Component,useContext,createRef,Fragment} from 'react';
+import React,{Component,useContext,createRef,Fragment,useMemo} from 'react';
 import {Icon} from '@mdi/react';
 import {mdiArrowUp, mdiArrowDown,mdiSort,mdiClose,mdiFileExcel,mdiMagnify,mdiPlusThick} from '@mdi/js';
 import AIOInput from './aio-input';
@@ -22,9 +22,10 @@ export default class Table extends Component{
       let {columns = []} = props;
       let searchColumns = [];
       let updatedColumns = columns.map((o)=>{
-        let {_id = 'aitc' + Math.round(Math.random() * 1000000),sort,search} = o;
+        let {id = 'aitc' + Math.round(Math.random() * 1000000),sort,search} = o;
+        o._id = id;
         sort = sort === true?{}:sort;
-        let column = {...o,_id,sort};
+        let column = {...o,sort};
         if(search){searchColumns.push(column)}
         return column
       })
@@ -117,12 +118,13 @@ export default class Table extends Component{
         return str
       })
     }
-    getRowsToRender(){
+    getRows(){
       let {Sort} = this.state;
       let {rows = [],paging:p} = this.props;
       let searchedRows = this.getSearchedRows(rows);
       let sortedRows = Sort.getSortedRows(searchedRows);
-      return p && !p.serverSide?sortedRows.slice((p.number - 1) * p.size,p.number * p.size):sortedRows;
+      let pagedRows = p && !p.serverSide?sortedRows.slice((p.number - 1) * p.size,p.number * p.size):sortedRows;
+      return {rows,searchedRows,sortedRows,pagedRows}
     }
     //calculate style of cells and title cells
     getCellStyle({row,rowIndex,column,type}){
@@ -175,7 +177,7 @@ export default class Table extends Component{
         subtext:getDynamics({value:column.subtext,row,rowIndex,column}), 
         before:getDynamics({value:column.before,row,rowIndex,column}), 
         after:getDynamics({value:column.after,row,rowIndex,column}),
-        onChange:(value)=>setCell(row,column,value)
+        onChange:(value)=>setCell(row,column,value),
       }
       return <AIOInput {...props}/>
     }
@@ -184,9 +186,10 @@ export default class Table extends Component{
       if(onSearch === true){this.setState({searchValue})}
       else {onSearch(searchValue)}
     }
-    getContext(){
+    getContext(ROWS){
       let {rowGap,columnGap} = this.props;
       let context = {
+        ROWS,
         props:{...this.props},
         state:{...this.state},
         parentDom:this.dom,
@@ -195,7 +198,6 @@ export default class Table extends Component{
         getCellAttrs:this.getCellAttrs.bind(this),
         getRowAttes:this.getRowAttrs.bind(this),
         getCellContent:this.getCellContent.bind(this),
-        getRowsToRender:this.getRowsToRender.bind(this),
         add:this.add.bind(this),
         remove:this.remove.bind(this),
         search:this.search.bind(this),
@@ -207,8 +209,9 @@ export default class Table extends Component{
     }
     render(){
       let {paging,attrs = {}} = this.props;
+      let ROWS = this.getRows();
       return (
-        <AITableContext.Provider value={this.getContext()}>
+        <AITableContext.Provider value={this.getContext(ROWS)}>
           <div {...attrs} ref={this.dom} className={'aio-input-table' + (attrs.className?' ' + attrs.className:'')}>
             <TableToolbar/>
             <div className='aio-input-table-unit'><TableHeader/><TableRows/></div>
@@ -219,8 +222,10 @@ export default class Table extends Component{
     }
   }
   function TablePaging(props){
+    let {ROWS} = useContext(AITableContext)
     function fix(paging){
-      let {number,size = 20,length = 0,sizes = [1,5,10,15,20,30,50,70,100]} = paging
+      let {number,size = 20,length = 0,sizes = [1,5,10,15,20,30,50,70,100],serverSide} = paging
+      if(!serverSide){length = ROWS.sortedRows.length}
       if(sizes.indexOf(size) === -1){size = sizes[0]}
       let pages = Math.ceil(length / size);
       number = number > pages ? pages : number;
@@ -256,14 +261,14 @@ export default class Table extends Component{
     )
   }
   function TableRows(){
-    let {props,getRowsToRender} = useContext(AITableContext)
+    let {props,ROWS} = useContext(AITableContext)
     let {rowTemplate,rowAfter = ()=>null,rowBefore = ()=>null} = props;
     function getContent(){
-      let rows = getRowsToRender();
+      let rows = ROWS.pagedRows;
       if(rows.length){
         return rows.map((o,i)=>{
           let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;
-          o._id = id;
+          o._id = o._id === undefined? id:o._id;
           let isLast = i === rows.length - 1,Row;
           if(rowTemplate){Row = rowTemplate({row:o,rowIndex:i,isLast})}
           else {Row = <TableRow key={id} row={o} rowIndex={i} isLast={isLast}/>}
@@ -326,7 +331,7 @@ export default class Table extends Component{
     }
     return (
       <>
-        <div {...getRowAttes(row,rowIndex)}>
+        <div key={row._id} {...getRowAttes(row,rowIndex)}>
           {getCells(row,rowIndex)}
           {props.onRemove?<button className='aio-input-table-remove' onClick={()=>remove(row)}><Icon path={mdiClose} size={0.8}/></button>:null}
         </div>
@@ -334,14 +339,15 @@ export default class Table extends Component{
       </>
     )
   }
-  function TableCell({row,rowIndex,column,isLast}){
+  const TableCell = ({row,rowIndex,column,isLast})=>{
     let context = useContext(AITableContext);
     let {ColumnGap,getCellAttrs,getCellContent} = context;
+    let content = getCellContent({row,rowIndex,column});
     return (
-      <>
-        <div {...getCellAttrs({row,rowIndex,column})} >{getCellContent({row,rowIndex,column})}</div>
+      <Fragment key={row._id + ' ' + column._id}>
+        <div {...getCellAttrs({row,rowIndex,column})} >{content}</div>
         {!isLast && ColumnGap}
-      </>
+      </Fragment>
     )
     
   }

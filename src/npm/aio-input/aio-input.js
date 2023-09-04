@@ -153,7 +153,7 @@ export default class AIOInput extends Component {
             if(['text','textarea','number','password','color'].indexOf(type) !== -1){return {}}
         }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
-        if (key === 'caret') { return caret === false?false:(((type === 'button' && popover) || (type === 'select' || type === 'multiselect')) ? (caret || true) : false )}
+        if (key === 'caret') { return caret === false?false:(((type === 'button' && popover) || (type === 'select' || type === 'multiselect' || type === 'datepicker')) ? (caret || true) : false )}
         if (key === 'multiple') { return type === 'multiselect' || (type === 'radio' && !!propsResult)}
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }

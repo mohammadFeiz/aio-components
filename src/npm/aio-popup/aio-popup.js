@@ -81,6 +81,7 @@ class Popups extends Component {
         let { modals } = this.state;
         let modal = arg === 'last'?modals[modals.length - 1]:modals.find((o) => o.id === arg);
         if(modal.onClose){modal.onClose()}
+        else if(arg === 'last'){this.change({ modals: modals.slice(0,modals.length - 1) })}
         else {this.change({ modals: modals.filter((o) => o.id !== arg) })}
       },animate?300:0)
     }

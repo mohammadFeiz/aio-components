@@ -356,7 +356,7 @@ class DPHeaderDropdown extends Component {
             className:'aio-input-datepicker-dropdown',
             optionStyle: { height: size / 6, background: theme[1], color: theme[0] }
         }
-        return (<AIOInput {...this.props} {...props} />)
+        return (<AIOInput {...this.props} {...props} popover={{attrs:{style:{maxHeight:400}}}}/>)
     }
 }
 class DPArrow extends Component {
