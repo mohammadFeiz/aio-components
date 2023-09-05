@@ -12,7 +12,7 @@ export default class DOC_AIOInput_Table extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='pagingnumber'
+                navId='rowsTemplate'
                 navs={[
                     { text: 'type ,placeholder', id: 'type', COMPONENT: () => <TypePlaceholder /> },
                     { text: 'rows', id: 'rows', COMPONENT: () => <Rows /> },
@@ -45,9 +45,9 @@ export default class DOC_AIOInput_Table extends Component {
                     { text: 'rowAttrs', id: 'rowAttrs', COMPONENT: () => <RowAttrs /> },
                     { text: 'headerAttrs', id: 'headerAttrs', COMPONENT: () => <HeaderAttrs /> },
                     { text: 'paging', id: 'paging', COMPONENT: () => <Paging /> },
-                    { text: 'paging number', id: 'pagingnumber', COMPONENT: () => <PagingNumber /> },
                     { text: 'paging serverSide:true', id: 'pagingserverside', COMPONENT: () => <Paging_ServerSide /> },
                     { text: 'rowTemplate', id: 'rowTemplate', COMPONENT: () => <RowTemplate /> },
+                    { text: 'rowsTemplate', id: 'rowsTemplate', COMPONENT: () => <RowsTemplate /> },
                     { text: 'rowAfter', id: 'rowAfter', COMPONENT: () => <RowAfter /> },
                     { text: 'rowBefore', id: 'rowBefore', COMPONENT: () => <RowBefore /> },
                     { text: 'column.sort', id: 'columnsort', COMPONENT: () => <Column_Sort /> },
@@ -2051,102 +2051,6 @@ class Paging extends Component {
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class PagingNumber extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            rows:model,
-            columns:[
-                {
-                    title:'',size:42,justify:true,
-                    template:({rowIndex})=>{
-                        let {paging} = this.state;
-                        let {size,number} = paging;
-                        return rowIndex + 1 + (size * (number - 1))
-                    }
-                },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
-            ],
-            paging:{
-                number:1,
-                size:15,
-                sizes:[15,30,50],
-                length:model.length,
-                onChange:(paging)=>this.setState({paging})
-            }
-        }
-    }
-    preview() {
-        let {rows,columns,paging} = this.state;
-        return (
-            <div className='example'>
-                <AIOInput
-                    attrs={{style:{height:600}}}
-                    type='table'
-                    rows={rows}
-                    columns={columns}
-                    onChange={(newRows)=>this.setState({rows:newRows})}
-                    paging={paging}
-                    
-                />                
-                {
-                    AIODoc().Code(`
-
-class Paging extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            rows:model,
-            columns:[
-                {
-                    title:'',size:42,justify:true,
-                    template:({rowIndex})=>{
-                        let {paging} = this.state;
-                        let {size,number} = paging;
-                        return rowIndex + 1 + (size * (number - 1))
-                    }
-                },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
-            ],
-            paging:{
-                number:1,
-                size:15,
-                sizes:[15,30,50],
-                length:model.length,
-                onChange:(paging)=>this.setState({paging})
-            }
-        }
-    }
-    render() {
-        let {rows,columns,paging} = this.state;
-        return (
-            <AIOInput
-                attrs={{style:{height:600}}}
-                type='table'
-                rows={rows}
-                columns={columns}
-                onChange={(newRows)=>this.setState({rows:newRows})}
-                paging={paging}
-            />                
-        )
-    }
-}
-                    `)
-                }
-                <h3>model</h3>
-                {
-                    AIODoc().Code(JSON.stringify(rows,null,4))
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    render() {return (<Example preview={() => this.preview()}/>)}
-}
 class Paging_ServerSide extends Component {
     constructor(props){
         super(props);
@@ -2368,6 +2272,133 @@ class Paging extends Component {
         )
     }
     render() {return (<Example preview={() => this.preview()}/>)}
+}
+class RowsTemplate extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:model,
+            paging:{
+                size:10,
+                number:1,
+                onChange:(paging)=>this.setState({paging})
+            },
+            columns:[
+                {title:'Name',value:'row.name',type:'text',search:true},
+                {title:'Gender',value:'row.gender',type:'text',search:true},
+                {title:'Age',value:'row.age',type:'number',search:true},
+            ]
+        }
+    }
+    preview() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    attrs={{style:{height:600}}}
+                    type='table'
+                    rows={rows}
+                    columns={columns}
+                    headerAttrs={{style:{display:'none'}}}
+                    rowsTemplate={(rows)=>{
+                        return (
+                            <div className='custom-rows'>
+                                {
+                                    rows.map((row,i)=>{
+                                        return (
+                                            <Card key={row._id} row={row}/>
+                                        )
+                                    })
+                                }
+                            </div>
+                        )
+                    }}
+                    onChange={(newRows)=>this.setState({rows:newRows})}
+                    paging={paging}
+                    onSearch={true}
+                />                
+                {
+                    AIODoc().Code(`
+
+class Paging extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rows:[],
+            columns:[
+                {
+                    title:'',size:42,justify:true,
+                    template:({rowIndex})=>{
+                        let {paging} = this.state;
+                        let {size,number} = paging;
+                        return rowIndex + 1 + (size * (number - 1))
+                    }
+                },
+                {title:'Name',value:'row.name',type:'text'},
+                {title:'Gender',value:'row.gender',type:'text'},
+                {title:'Age',value:'row.age',type:'number'},
+            ],
+            paging:{
+                serverSide:true,
+                number:1,
+                size:15,
+                sizes:[15,30,50],
+                length:model.length,
+                onChange:(paging)=>{
+                    this.setState({paging},()=>{
+                        this.setState({rows:this.getRowsByPaging()})
+                    })
+                }
+            }
+        }
+    }
+    componentDidMount(){
+        this.setState({rows:this.getRowsByPaging()})
+    }
+    getRowsByPaging(){
+        let {paging} = this.state;
+        let {size,number} = paging;
+        return model.slice((number - 1) * size,number * size)
+    }
+    render() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <AIOInput
+                attrs={{style:{height:600}}}
+                type='table'
+                rows={rows}
+                rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
+                onChange={(newRows)=>this.setState({rows:newRows})}
+                paging={paging}
+            />                
+        )
+    }
+}
+                    `)
+                }
+                <h3>rows</h3>
+                {
+                    AIODoc().Code(JSON.stringify(rows,null,4))
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+function Card({row}){
+    return (
+        <RVD
+            layout={{
+                style:{width:'50%',maxWidth:160,minWidth:120,border:'1px solid #ddd',height:240,padding:12},
+                column:[
+                    {html:row.name},
+                    {html:row.gender},
+                    {html:row.age,flex:1,align:'vh',className:'fs-24'},
+                ]
+            }}
+        />
+    )
 }
 class RowAfter extends Component {
     constructor(props){

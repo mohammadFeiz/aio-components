@@ -9,3 +9,7 @@
     border-radius:12px;
     margin: 6px;
 }
+.custom-rows{
+    display:flex;
+    flex-wrap: wrap;
+}

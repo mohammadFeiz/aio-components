@@ -91,7 +91,7 @@ export default class DOC_AIOInput extends Component {
                     types:['multiselect']
                 },
 
-                'showTags':{value:true,code:`showTags={true}`,types:['multiselect']},
+                'hideTags':{value:true,code:`hideTags={true}`,types:['multiselect']},
                 'optionShow':{
                     value:'option.id !== "2" && option.value !== "2"',
                     code:`optionShow='option.id !== "2" && option.value !== "2"'`,

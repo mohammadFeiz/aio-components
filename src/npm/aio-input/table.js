@@ -265,6 +265,9 @@ export default class Table extends Component{
     let {rowTemplate,rowAfter = ()=>null,rowBefore = ()=>null} = props;
     function getContent(){
       let rows = ROWS.pagedRows;
+      if(props.rowsTemplate){
+        return props.rowsTemplate(rows)
+      }
       if(rows.length){
         return rows.map((o,i)=>{
           let {id = 'ailr' + Math.round(Math.random() * 10000000)} = o;

@@ -252,7 +252,6 @@ export default class AIOInput extends Component {
         )
     }
 }
-AIOInput.defaultProps = { showTags: true }
 class InputSlider extends Component{
     static contextType = AIContext;
     change(value){
@@ -282,7 +281,7 @@ function Multiselect (){
 function Tags(){
     let {getProp} = useContext(AIContext);
     let value = getProp('value'),rtl = getProp('rtl');
-    if(!value.length || !getProp('showTags', true)){return null}
+    if(!value.length || getProp('hideTags', false)){return null}
     return <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>{value.map((o)=><Tag value={o}/>)}</div>
 }  
 function Tag({value}) {

@@ -20,12 +20,13 @@ import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
 import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
 import DOC_AIOMap from './documents/aio-map/doc-aio-map';
+import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
 
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-input-table',
+      part:'aio-canvas',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-input-table':{name:'aio-input',Render:DOC_AIOInput_Table},
@@ -46,7 +47,8 @@ export default class AIOComponents extends Component{
         'react-super-app':{name:'react-super-app',Render:DOC_ReactSuperApp},
         'aio-service':{name:'aio-service',Render:DOC_AIOService},
         'aio-popup':{name:'aio-popup',Render:DOC_AIOPopup},
-        'aio-map':{name:'aio-map',Render:DOC_AIOMap}
+        'aio-map':{name:'aio-map',Render:DOC_AIOMap},
+        'aio-canvas':{name:'aio-canvas',Render:DOC_AIOCanvas}
       }
     }
   }

@@ -1,0 +1,18 @@
+.aioc{
+    background:#3b3c50;
+    color:#fff;
+}
+.aioc-item{
+    border-bottom:1px solid #ddd;
+    height:36px;
+    margin:3px;
+    border-radius:0;
+
+}
+.aioc-item.active{
+    background: #ffd000;
+}
+.aioc-items-header{
+    height:36px;
+    background:rgba(255,255,255,0.2)
+}
