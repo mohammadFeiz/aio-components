@@ -2,7 +2,7 @@ import React,{useReducer,createContext,useContext} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import {Icon} from '@mdi/react';
-import { mdiCircle, mdiDelete, mdiPlusThick } from "@mdi/js";
+import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiDelete, mdiPlusThick } from "@mdi/js";
 import './index.css';
 const CTX = createContext()
 function Reducer(state,action){
@@ -11,15 +11,15 @@ function Reducer(state,action){
 export default function DOC_AIO_Canvas(){
     let [state,dispatch] = useReducer(Reducer,{
         items:[
-            {id:0,name:'my item 0'},
-            {id:1,name:'my item 1'},
-            {id:2,name:'my item 2'},
-            {id:3,name:'my item 3'},
-            {id:4,name:'my item 4'},
-            {id:5,name:'my item 5'},
-            {id:6,name:'my item 6'},
-            {id:7,name:'my item 7'},
-            {id:8,name:'my item 8'},
+            {id:0,name:'my item 0',x:0,y:0},
+            {id:1,name:'my item 1',x:0,y:0},
+            {id:2,name:'my item 2',x:0,y:0},
+            {id:3,name:'my item 3',x:0,y:0},
+            {id:4,name:'my item 4',x:0,y:0},
+            {id:5,name:'my item 5',x:0,y:0},
+            {id:6,name:'my item 6',x:0,y:0},
+            {id:7,name:'my item 7',x:0,y:0},
+            {id:8,name:'my item 8',x:0,y:0},
         ],
         types:['Arc','Rectangle'],
         activeItemId:false
@@ -53,7 +53,7 @@ export default function DOC_AIO_Canvas(){
             addItem:(type)=>{
                 let {items} = state;
                 let id = 'aa' + Math.round(Math.random() * 10000000);
-                let item = {id,name:type + Math.round(Math.random() * 10000000)}
+                let item = {id,name:type + Math.round(Math.random() * 10000000),x:0,y:0}
                 if(type === 'Arc'){
                     item = {...item,r:100}
                 }
@@ -220,10 +220,72 @@ function Preview(){
     )
 }
 function Setting(){
+    let {activeItemId,items} = useContext(CTX);
+    function position_layout(item){
+        return {
+            html:<Position item={item}/>
+        }
+    }
+    if(activeItemId === false){return null}
+    let activeItem = items.find((o)=>o.id === activeItemId)
     return (
         <RVD
             layout={{
-                html:'setting'
+                column:[
+                    position_layout(activeItem)
+                ]
+            }}
+        />
+    )
+}
+
+function Position({item}){
+    let {changeItem} = useContext(CTX)
+    let size = 30;
+    let style = {}
+    function getInput(type){
+        return (
+            <AIOInput
+                type='number' spin={false}
+                style={{border:'1px solid',width:'100%',height:30}}
+                value={item[type]}
+                onChange={(value)=>changeItem(item,{[type]:value})}
+            />
+        )
+    }
+    function change(v,dir){
+        let value = item[dir] + v;
+        changeItem(item,{[dir]:value})
+    }
+    return (
+        <RVD
+            layout={{
+                column:[
+                    {html:<Icon path={mdiChevronUp} size={.8}/>,align:'vh',size,style,onClick:()=>change(40,'y')},
+                    {html:<Icon path={mdiChevronUp} size={.8}/>,align:'vh',size,style,onClick:()=>change(10,'y')},
+                    {html:<Icon path={mdiChevronUp} size={.8}/>,align:'vh',size,style,onClick:()=>change(1,'y')},
+                    {
+                        row:[
+                            {html:<Icon path={mdiChevronLeft} size={.8}/>,align:'vh',size,style,onClick:()=>change(-40,'x')},
+                            {html:<Icon path={mdiChevronLeft} size={.8}/>,align:'vh',size,style,onClick:()=>change(-10,'x')},
+                            {html:<Icon path={mdiChevronLeft} size={.8}/>,align:'vh',size,style,onClick:()=>change(-1,'x')}, 
+                            {
+                                flex:1,align:'vh',
+                                column:[
+                                    {html:getInput('x'),align:'vh'},
+                                    {html:getInput('y'),align:'vh'},
+                                    
+                                ]
+                            },
+                            {html:<Icon path={mdiChevronRight} size={.8}/>,align:'vh',size,style,onClick:()=>change(1,'x')},
+                            {html:<Icon path={mdiChevronRight} size={.8}/>,align:'vh',size,style,onClick:()=>change(10,'x')},
+                            {html:<Icon path={mdiChevronRight} size={.8}/>,align:'vh',size,style,onClick:()=>change(40,'x')}, 
+                        ]
+                    },
+                    {html:<Icon path={mdiChevronDown} size={.8}/>,align:'vh',size,style,onClick:()=>change(1,'y')},
+                    {html:<Icon path={mdiChevronDown} size={.8}/>,align:'vh',size,style,onClick:()=>change(10,'y')},
+                    {html:<Icon path={mdiChevronDown} size={.8}/>,align:'vh',size,style,onClick:()=>change(40,'y')}       
+                ]
             }}
         />
     )
