@@ -285,3 +285,6 @@ pre[class*="language-"] > code[class*="language-"] {
     margin-bottom:12px;
     margin-top:24px; 
 }
+.Code{
+	width: 100%;
+}

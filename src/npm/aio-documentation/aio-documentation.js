@@ -3,8 +3,8 @@ import Prism from 'prismjs';
 import './aio-documentation.css';
 export default function AIODoc(){
     let $$ = {
-        Code(code,language){
-            return <PrismCode code={code} language={language}/>
+        Code(code,language,style){
+            return <PrismCode code={code} language={language} style={style}/>
         },
         DescList(list){
             return <DescList list={list}/>
@@ -28,10 +28,10 @@ class PrismCode extends Component{
       Prism.highlightAll();
     }
     render(){
-      let { code, language = 'javascript' } = this.props;
+      let { code, language = 'javascript',style } = this.props;
       return (
-        <div className="Code">
-          <pre>
+        <div className="Code" style={style}>
+          <pre style={{height:'100%',overflow:'auto'}}>
             <code className={`language-${language}`}>{code}</code>
           </pre>
         </div>

@@ -16,3 +16,22 @@
     height:36px;
     background:rgba(255,255,255,0.2)
 }
+.aioc-setting{
+    border-left:1px solid rgba(255,255,255,0.2);
+}
+.aioc-setting-header{
+    background:rgba(255,255,255,0.2);
+    padding:0 12px;
+    height:36px;
+    font-size:10px;
+}
+.aioc-setting-form .aio-input{
+    height:24px;
+    border-radius: 0;
+    border:1px solid rgba(255,255,255,0.2);
+    color:#9ea5ad;
+}
+.aioc-setting-form .aio-input-form-label{
+    color:#7e8594;
+    font-size:11px;
+}

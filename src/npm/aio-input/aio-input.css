@@ -527,9 +527,7 @@
     padding:12px;
     overflow-y:auto;
 }
-.aio-input-form .aio-input{
-    width:100%;
-}
+
 .aio-input-form-error{
     color:red;
     font-size:10px;
@@ -596,8 +594,9 @@
     font-weight:bold;
 }
 .aio-input-form .aio-input{
+    width:100%;
     border:1px solid #ddd;
-    min-height:36px;
+    min-height:24px;
 }
 .aio-input-form .aio-input-options{
     max-height:300px;
