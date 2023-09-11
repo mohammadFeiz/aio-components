@@ -25,7 +25,7 @@ export default class ReactVirtualDom extends Component {
     let {childsProps = ()=>{return {}}} = parent;
     let Props = (typeof childsProps === 'function'?childsProps(obj,index):childsProps) || {};
     let props = {...Props,...obj}
-    let {swapId,size,flex,onClick,html,style,longTouch} = props; 
+    let {dragId,size,flex,onClick,html,style,longTouch} = props; 
     let attrs = obj.attrs || Props.attrs || {};
     let pointer =  !!onClick || !!attrs.onClick;
     let childs = [];
@@ -60,21 +60,23 @@ export default class ReactVirtualDom extends Component {
     }
     let className = this.getClassName(pointer,isRoot,props,attrs);
     let gapAttrs = getGapAttrs(obj,parent,props,dataId)
-    if(swapId !== undefined){
+    if(dragId !== undefined){
       attrs.draggable = true;
       attrs.onDragStart = (e)=>{
-        let {swapHandleClassName} = this.props;
-        if(swapHandleClassName){
-          if(!$(e.target).hasClass(swapHandleClassName) && $(e.target).parents('.' + swapHandleClassName).length === 0){return;}
+        let {dragHandleClassName,onDragStart = ()=>{}} = this.props;
+        if(dragHandleClassName){
+          if(!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0){return;}
         }
-        this.swapId = swapId;
+        onDragStart(dragId)
+        this.dragId = dragId;
       }
       attrs.onDragOver = (e)=>e.preventDefault();
       attrs.onDrop = ()=>{
-        let {onSwap = ()=>{}} = this.props;
-        if(this.swapId === swapId){return;}
-        onSwap(this.swapId,swapId);
-        this.swapId = false
+        let {onSwap = ()=>{},onDrop = ()=>{}} = this.props;
+        if(this.dragId === dragId){return;}
+        onSwap(this.dragId,dragId);
+        onDrop(dragId);
+        this.dragId = false
       }
     } 
     attrs = {onClick,...attrs,style:{flex,...style},className,'data-id':dataId};

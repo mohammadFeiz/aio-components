@@ -348,8 +348,8 @@ class Input extends Component {
             dom.style.resize = 'none';
         }
         clearTimeout(this.rrt)
-        if (this.state.value !== this.props.value) {
-            this.rrt = setTimeout(() => this.setState({ value: this.props.value }), delay + 10)
+        if (this.state.prevValue !== this.props.value) {
+            this.rrt = setTimeout(() => this.setState({ value: this.props.value,prevValue:this.props.value }), delay + 10)
         }
     }
     change(value) {
@@ -387,7 +387,7 @@ class Input extends Component {
     }
     render() {
         let { getProp, type } = this.context;
-        let { value } = this.state;
+        let { value = '' } = this.state;
         let attrs = getProp('attrs', {});
         let disabled = getProp('disabled', false);
         let placeholder = getProp('placeholder');
@@ -552,30 +552,27 @@ class Form extends Component {
         node[fields[fields.length - 1]] = value;
         return obj;
     }
-    inlineLabel_layout(inlineLabel, props) {
+    inlineLabel_layout(inlineLabel, attrs) {
         if (!inlineLabel) { return false }
-        let { inlineLabelAttrs = {} } = props;
-        let { className } = inlineLabelAttrs;
+        let { className,style } = attrs;
         return {
-            html: inlineLabel, align: 'v', attrs: inlineLabelAttrs,
+            html: inlineLabel, align: 'v', attrs,style,
             className: 'aio-input-form-inline-label' + (className ? ' ' + className : '')
         }
     }
-    label_layout(label, props) {
+    label_layout(label, attrs) {
         if (!label) { return false }
-        let { labelAttrs = {} } = props;
-        let { className } = labelAttrs;
+        let { className,style } = attrs;
         return {
-            html: label, attrs: labelAttrs,
+            html: label, attrs,style,
             className: 'aio-input-form-label' + (className ? ' ' + className : '')
         }
     }
-    error_layout(error,props){
+    error_layout(error,attrs){
         if(!error){return false}
-        let { errorAttrs = {} } = this.props;
-        let { className } = errorAttrs;
+        let { className,style } = attrs;
         return { 
-            html: error,attrs:errorAttrs,
+            html: error,attrs,style,
             className: 'aio-input-form-error' + (className ? ' ' + className : '')
         }
     }
@@ -583,31 +580,37 @@ class Form extends Component {
         let {onChange = ()=>{}} = this.props;
         onChange(this.getValue(),this.errors)
     }
+    getAttrs(propsAttrs = {},ownAttrs = {}){
+        let style = {...propsAttrs.style,...ownAttrs.style}
+        return {...propsAttrs,...ownAttrs,style}
+    }
     input_layout(obj) {
         let {rtl,inputAttrs} = this.props;
-        let { label, footer, inlineLabel, input, flex, size, props = {},field } = obj;
+        let { label, footer, inlineLabel, input, flex, size,field } = obj;
         let value = this.getValueByField(field, this.getDefault(input));
         let error = this.getError(obj,value)
         if(error){this.errors[field] = error}
         else {this.errors[field] = undefined}
+        let labelAttrs = this.getAttrs(this.props.labelAttrs,obj.labelAttrs)
+        let errorAttrs = this.getAttrs(this.props.errorAttrs,obj.errorAttrs)
         return {
             flex, size,
             className: 'aio-input-form-item',
             column:[
                 {
                     row: [
-                        this.inlineLabel_layout(inlineLabel, props),
+                        this.inlineLabel_layout(inlineLabel, labelAttrs),
                         {
                             flex: 1,className:'of-visible',
                             column: [
-                                this.label_layout(label, props),
+                                this.label_layout(label, labelAttrs),
                                 { html: <AIOInput {...inputAttrs} {...input} rtl={rtl} value={value} onChange={(value) => this.setValue(value, field,obj)} /> },
                                 { show: !!footer, html: footer },
                             ]
                         }
                     ]
                 },
-                this.error_layout(error,props)
+                this.error_layout(error,errorAttrs)
             ]
         }
     }
