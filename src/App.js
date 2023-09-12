@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import './App.css'
 import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
-import DOC_AIOInput_Table from "./documents/aio-input-table/doc-aio-input-table";
+import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table";
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
 import DOC_AIODatepicker from './documents/aio-datepicker/doc-aio-datepicker';

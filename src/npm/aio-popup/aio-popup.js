@@ -102,7 +102,7 @@ class Popups extends Component {
       position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,footer, closeType, body, id,mounted }, i) => {
         let props = {
         id,backdrop,footer,text,onSubmit,header,popover,
-        position, rtl, attrs, onClose, closeType, body,index: i,rtl,mounted,
+        position, rtl, attrs, closeType, body,index: i,mounted,
         onClose: () => this.removeModal(id),
         onMount:()=>this.mount(id,true)
       }
@@ -122,7 +122,7 @@ class Popup extends Component {
   constructor(props) {
     super(props);    
     this.dom = createRef();
-    this.dui = 'a' + Math.random();
+    this.dui = 'a' + (Math.round(Math.random() * 10000000));
     this.state = {popoverStyle:undefined}
   }
   async onClose() {
@@ -137,6 +137,15 @@ class Popup extends Component {
       })
       if(!mounted){onMount()}
     },0)
+    $(window).unbind('click',this.handleBackClick)
+    $(window).bind('click',$.proxy(this.handleBackClick,this))
+  }
+  handleBackClick(e){
+    let target = $(e.target)
+    if(this.props.backdrop !== false || target.hasClass(this.dui) || target.parents('.' + this.dui).length){
+      return
+    }
+    this.onClose();
   }
   header_layout() {
     let { rtl,header } = this.props;

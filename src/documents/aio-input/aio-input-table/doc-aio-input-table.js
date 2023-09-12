@@ -1,9 +1,9 @@
 import React, { Component,createRef } from 'react';
-import DOC from '../../resuse-components/doc';
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
-import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from '../../npm/aio-input/aio-input';
-import './index.css';
+import DOC from '../../../resuse-components/doc';
+import AIODoc from '../../../npm/aio-documentation/aio-documentation';
+import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
+import AIOInput from '../../../npm/aio-input/aio-input';
+import './doc-aio-input.css';
 import {Icon} from '@mdi/react';
 import model from './model';
 import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile} from '@mdi/js';

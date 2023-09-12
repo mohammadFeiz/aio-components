@@ -114,7 +114,7 @@ export default class DOC_AIOInput extends Component {
                     types:['text','textarea','number','password']
                 },
                 'justNumber':{value:true,code:`justNumber={true}`,types:['text','password']},
-                'spin':{value:true,code:`spin={true}`,types:['number']},
+                'spin':{value:false,code:`spin={false}`,types:['number']},
                 'swip':{value:true,code:`swip={true}`,types:['number']},
                 'multiple':{value:true,code:`multiple={true}`,types:['file', 'radio', 'tabs']},
                 'text':{value:'my text',code:`text='my text'`,types:['button', 'file', 'select', 'multiselect', 'checkbox', 'datepicker']},

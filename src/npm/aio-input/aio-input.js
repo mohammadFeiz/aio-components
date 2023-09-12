@@ -75,8 +75,8 @@ export default class AIOInput extends Component {
         }   
         if(type && options && ['text','number','textarea','password'].indexOf(type) !== -1){
             return (dom)=>{
-                let {type,popover,rtl} = this.props;
-                let {attrs,fixStyle,fitHorizontal = type === 'multiselect',position = 'popover'} = popover
+                let {type,popover = {},rtl} = this.props;
+                let {attrs,fixStyle,fitHorizontal = true,position = 'popover'} = popover
                 return {
                     rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},id:'popover',
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
