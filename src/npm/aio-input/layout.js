@@ -137,7 +137,7 @@ class CheckIcon extends Component {
             return (
                 <>
                     {checkIcon(checked)}
-                    <div className='aio-button-gap' style={{ width: gap }}></div>
+                    <div className='aio-input-gap' style={{ width: gap }}></div>
                 </>
             )
         }
@@ -155,7 +155,7 @@ class CheckIcon extends Component {
                             style={{ background: innerColor, width: innerSize, height: innerSize }}
                         ></div>}
                 </div>
-                <div className='aio-button-gap' style={{ width: gap }}></div>
+                <div className='aio-input-gap' style={{ width: gap }}></div>
             </>
         );
     }

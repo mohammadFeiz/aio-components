@@ -76,12 +76,6 @@
     cursor: pointer;
 }
 
-.aio-input-datepicker-select .aio-button {
-    background: none;
-    color: inherit;
-    font-size: inherit;
-    padding: 0 3px;
-}
 
 .aio-input-datepicker-body {
     display: grid;
