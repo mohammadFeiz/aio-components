@@ -1,6 +1,6 @@
 import React,{Component,createRef,createContext} from 'react';
 import Slider from './../../npm/aio-slider/aio-slider';
-import RCanvas from './../aio-canvas/aio-canvas';
+import AIOCanvas from './../aio-canvas/aio-canvas';
 import $ from 'jquery';
 import './index.css';
 import {
@@ -14,9 +14,10 @@ var RChartContext = createContext();
  export default class RChart extends Component{
     constructor(props){
       super(props);
+      let Canvas = new AIOCanvas();
       this.mouseDownDetail = {};
       var {filter,data} = this.props;
-      this.state = {popup:false,dataHide:{},filter,data,prevData:JSON.stringify(data)};
+      this.state = {Canvas,popup:false,dataHide:{},filter,data,prevData:JSON.stringify(data)};
       this.dom = createRef();
       this.details = {
         min:Infinity,max:-Infinity
@@ -108,6 +109,7 @@ var RChartContext = createContext();
     }
     addCanvasPoint(data,dataIndex,point,pointIndex){
       let {hideInterfere} = this.props;
+      let {Canvas} = this.state;
       let {color = '#000',lineWidth = 1,pointRadius,pointStroke,pointFill,pointStrokeWidth,pointDash,lineDash,pointSlice} = data;
       let radius = this.getValueByField(point,pointRadius);
       let stroke = this.getValueByField(point,pointStroke) || color;
@@ -118,7 +120,7 @@ var RChartContext = createContext();
       if(!radius){return;}
       let space = -Infinity;
       if(hideInterfere){
-        let center = this.details.canvasSize.x * point._px / 100;
+        let center = Canvas.size.x * point._px / 100;
         let left = center - radius - strokeWidth / 2;
         if(left > space){space = center + radius + strokeWidth / 2;}
         else{return;}
@@ -455,7 +457,7 @@ var RChartContext = createContext();
       )
     }
     getLabelSlider(axis){
-      var {range,xZoom,yZoom,axisToD,canvasSize} = this.details;
+      var {range,xZoom,yZoom,axisToD} = this.details;
       if(!range || !range[axis]){return null;}
       var {start,end,step,labelSpace} = this.details.range[axis]; 
       var dAxis = axisToD[axis];
@@ -579,10 +581,11 @@ var RChartContext = createContext();
     getMouseDetail(pos){
       if(!pos){return;}
       let {keyAxis,valueAxis} = this.props;
+      let {Canvas} = this.state;
       let {edit:keyEdit=(a)=>a} = keyAxis;
       let {edit:valueEdit=(a)=>a} = valueAxis;
       let {x,y,px,py} = pos;
-      let client = this.canvasToClient([x,y]);
+      let client = Canvas.canvasToClient([x,y]);
       let cx = client[0] + this.getAxisSize()[1];
       let cy = client[1];                
       let {onAdd} = this.props;
@@ -615,9 +618,6 @@ var RChartContext = createContext();
         result.value = parseFloat(((end - start) * obj[valueAxis] / 100 + start).toFixed(precision))
       }
       return result;
-    }
-    canvasToClient(fn){
-      this.canvasToClient = fn;
     }
     renderMouseLabels(dom){//خطوط و لیبل های موقعیت موس
       var {cx,cy,label,addDataIndexes} = this.mouseDetail;
@@ -652,9 +652,9 @@ var RChartContext = createContext();
       var xls = '',yls = '',xfs = '',yfs = '',items = '',HTML = '';
       var {keys,html = ()=>'',onAdd,id,className} = this.props;  
       var style = typeof this.props.style === 'function'?this.props.style():this.props.style;
-      var {popup,data} = this.state; 
+      var {popup,data,Canvas} = this.state; 
       var ok = false;
-      if(this.details.canvasSize && data.length && keys){
+      if(data.length && keys){
         ok = true;
         this.getDetails();
         var d = this.details;
@@ -679,12 +679,10 @@ var RChartContext = createContext();
               <div className='r-chart-canvas'>
                 {HTML} 
                 <div className='r-chart-multiselect'></div>
-                <RCanvas 
-                  getSize={(width,height)=>{this.details.canvasSize = {x:width,y:height}}} 
-                  canvasToClient={this.canvasToClient.bind(this)}
-                  screenPosition={['50%','50%']}
-                  items={items}
-                  events={{
+                {Canvas.render({
+                  screenPosition:['50%','50%'],
+                  items,
+                  events:{
                     onMouseMove:(e,pos)=>{
                       if(!ok){return;}            
                       this.getMouseDetail(pos);
@@ -694,8 +692,8 @@ var RChartContext = createContext();
                       this.renderPointLabels(dom);
                     },
                     onMouseDown:this.mouseDown.bind(this)
-                  }}
-                />
+                  }
+                })}
                 <div className={'r-chart-popup-container r-chart-detail-popup'}></div>
               </div>
               <div className='r-chart-corner'></div>

@@ -3,9 +3,8 @@
     color:#fff;
 }
 .aioc-item{
-    border-bottom:1px solid #ddd;
+    border-bottom:1px solid rgba(255,255,255,0.2);
     height:36px;
-    margin:3px;
     border-radius:0;
 
 }
@@ -34,4 +33,7 @@
 .aioc-setting-form .aio-input-form-label{
     color:#7e8594;
     font-size:11px;
+}
+.aioc-items{
+    border-right:1px solid rgba(255,255,255,0.2);
 }

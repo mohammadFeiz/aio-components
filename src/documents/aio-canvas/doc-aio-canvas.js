@@ -33,12 +33,6 @@ export default function DOC_AIO_Canvas({goToHome}){
             html:<Body/>
         }
     }
-    
-    function footer_layout(){
-        return {
-            html:<Footer/>
-        }
-    }
     function getNewId(){return 'aa' + Math.round(Math.random() * 10000000);}
     function getItemById(ids){
         let {items} = state;
@@ -153,7 +147,6 @@ export default function DOC_AIO_Canvas({goToHome}){
                     column:[
                         header_layout(),
                         body_layout(),
-                        footer_layout()
                     ]
                 }}
             />
@@ -209,18 +202,6 @@ function Body(){
         />
     )
 }
-function Footer(){
-    return (
-        <RVD
-            layout={{
-                style:{background:'rgba(255,255,255,.2)',height:48,color:'#fff',padding:'0 24px'},
-                row:[
-                    {align:'v',className:'aioc-mouse-position',html:''}
-                ]
-            }}
-        />
-    )
-}
 function Items(){
     let {items} = useContext(CTX);
     function header_layout(){
@@ -230,11 +211,12 @@ function Items(){
         return {flex:1,className:'ofy-auto',html:<Items_Body items={items} level={0}/>}
     }
     function footer_layout(){
-        return {html:'items footer'}
+        return {size:36,align:'v',style:{background:'rgba(255,255,255,.2)',padding:'0 12px'},html:'items footer'}
     }
     return (
         <RVD
             layout={{
+                className:'aioc-items',
                 column:[
                     header_layout(),
                     body_layout(),
@@ -336,22 +318,33 @@ function Preview(){
         <>
         <RVD
             layout={{
-                html:(
-                    Canvas.render({
-                        events:{
-                            onMouseMove:()=>{
-                                let mp = Canvas.mousePosition || {};
-                                console.log(mp)
-                                $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
-                                $('.msf').css({left:mp.cx,top:mp.cy})
-                                
-                            }
-                        },
-                        grid:[10,10,'#444'],
-                        style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
-                        items
-                    })
-                )
+                column:[
+                    {
+                        flex:1,
+                        html:(
+                            Canvas.render({
+                                events:{
+                                    onMouseMove:()=>{
+                                        let mp = Canvas.mousePosition || {};
+                                        console.log(mp)
+                                        $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
+                                        $('.msf').css({left:mp.cx,top:mp.cy})
+                                        
+                                    }
+                                },
+                                grid:[10,10,'#444'],
+                                style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
+                                items
+                            })
+                        )
+                    },
+                    {
+                        style:{background:'rgba(255,255,255,.2)',height:36,color:'#fff',padding:'0 24px'},
+                        row:[
+                            {align:'v',className:'aioc-mouse-position',html:''}
+                        ]
+                    }
+                ]
             }}
         />
         <div className='msf' style={{background:'red',width:10,height:10,position:'absolute'}}></div>
@@ -417,7 +410,11 @@ function Setting({activeItem}){
                                 ]
                             },
                             {
-                                show:activeItem.type === 'Arc' || activeItem.type === 'NGon',input:{type:'number'},field:'value.r',label:'radius'
+                                show:activeItem.type === 'Arc' || activeItem.type === 'NGon',
+                                row:[
+                                    {input:{type:'number'},field:'value.r',label:'radius'},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{r:undefined})},
+                                ]
                             },
                             {
                                 show:activeItem.type === 'NGon',input:{type:'number'},field:'value.count',label:'count'

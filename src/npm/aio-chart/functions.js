@@ -3,9 +3,10 @@ export function getGap(length){
   return Math.max(0.5,Math.round(length / 10))
 }
 export function value_getRange(axis){
-      var {min,max,canvasSize,axisToD} = this.details;
+      var {min,max,axisToD} = this.details;
+      let {Canvas} = this.state;
       var filter = this.state.filter[axisToD[axis]];
-      var size = canvasSize[axis];
+      var size = Canvas.size[axis];
       if(min === undefined || max === undefined){return false;}
       var range = max - min,i = 1;
       var start,step,end;
@@ -31,13 +32,14 @@ export function value_getRange(axis){
       return {start:fs,step,end:fe,filter:filteredRange}; 
     } 
     export function key_getRange(axis){
-      var {canvasSize,axisToD} = this.details;
+      var {axisToD} = this.details;
+      let {Canvas} = this.state;
       var {keys} = this.props;
       var filter = this.state.filter[axisToD[axis]];
       var labelSize;
       if(axis === 'x'){labelSize = this.props.labelSize;}
       else{labelSize = 30;}
-      var canvasSize = canvasSize[axis]
+      let canvasSize = Canvas.size[axis]
       var fs = filter[0]?keys.indexOf(filter[0]):0;
       var fe = filter[1]?keys.indexOf(filter[1]):keys.length - 1;
       if(fs === -1){fs = 0;}
@@ -124,15 +126,17 @@ export function value_getRange(axis){
     
 
     export function normal_getArea(points,color,areaColor = 'rgba(255,255,255,0)'){
+      let {Canvas} = this.state;
       let area;
-      area = {type:'Line',points:points.slice(),fill:[0,0,0,-this.details.canvasSize[this.details.dToAxis.value],['0 ' + areaColor,'1 ' + color]]}; 
+      area = {type:'Line',points:points.slice(),fill:[0,0,0,-Canvas.size[this.details.dToAxis.value],['0 ' + areaColor,'1 ' + color]]}; 
       area.points.splice(0,0,[points[0][0],0]);
       area.points.push([points[points.length - 1][0],0]);
       return area;
     };
 
     export function reverse_getArea(points,color,areaColor){
-      let area = {type:'Line',points:points.slice(),fill:[0,0,this.details.canvasSize[this.details.dToAxis.value],0,['0 '+ 'rgba(255,255,255,0)','1 ' + color]]};
+      let {Canvas} = this.state;
+      let area = {type:'Line',points:points.slice(),fill:[0,0,Canvas.size[this.details.dToAxis.value],0,['0 '+ 'rgba(255,255,255,0)','1 ' + color]]};
       area.points.splice(0,0,[0,points[0][1]]);
       area.points.push([0,points[points.length - 1][1]]);
       return area;

@@ -1,15 +1,23 @@
 import React, { Component, createRef } from "react";
 import $ from "jquery";
 export default class Canvas{
-  mp = {}
+  mp = {};
+  size = [0,0];
   listenToMousePosition = (mp)=>{
     this.mousePosition = mp;
   }
   render = (props)=>{
-    return <CANVAS {...props} listenToMousePosition={this.listenToMousePosition.bind(this)} getActions={({clientToCanvas,canvasToClient})=>{
-      this.clientToCanvas = clientToCanvas;
-      this.canvasToClient = canvasToClient;
-    }}/>
+    return (
+      <CANVAS 
+        {...props} 
+        listenToMousePosition={this.listenToMousePosition.bind(this)} 
+        getActions={({clientToCanvas,canvasToClient})=>{
+          this.clientToCanvas = clientToCanvas;
+          this.canvasToClient = canvasToClient;
+        }}
+        getSize={(size)=>this.size = size}
+      />
+    )
   }
 }
 class CANVAS extends Component {
@@ -327,9 +335,10 @@ class CANVAS extends Component {
       rotate = sequenceProps.rotate || 0,
       slice = sequenceProps.slice,
       opacity = sequenceProps.opacity || 1,
-      lineWidth = sequenceProps.lineWidth || this.props.lineWidth || 1
+      lineWidth = sequenceProps.lineWidth || this.props.lineWidth || 1,
+      r = sequenceProps.r
     } = updatedItem;
-    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt",x: 0,y: 0},...updatedItem,fill,stroke,rotate,slice,opacity,lineWidth};
+    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt",x: 0,y: 0},...updatedItem,fill,stroke,rotate,slice,opacity,lineWidth,r};
     updatedItem.items = originalItem.items;
     updatedItem.rect = false;
     if (!updatedItem.stroke && !updatedItem.fill) {updatedItem.stroke = "#000";}
@@ -555,7 +564,7 @@ class CANVAS extends Component {
     dom[0].width = this.width;
     dom[0].height = this.height;
     this.axisPosition = [this.width / 2,this.height / 2];
-    if (getSize) {getSize(this.width, this.height);}
+    if (getSize) {getSize({x:this.width, y:this.height});}
     if (grid) {dom.css(this.getBackground(grid, zoom, this.width, this.height));}
     this.clear();
     this.setScreen();
