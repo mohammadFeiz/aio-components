@@ -12,7 +12,7 @@ function Reducer(state,action){
     if(action.key === 'items'){console.log(JSON.parse(JSON.stringify(action.value)))}
     return {...state,[action.key]:action.value}
 }
-export default function DOC_AIO_Canvas(){
+export default function DOC_AIO_Canvas({goToHome}){
     let Canvas = new AIOCanvas();
     let [state,dispatch] = useReducer(Reducer,{
         items:[
@@ -123,6 +123,7 @@ export default function DOC_AIO_Canvas(){
     function getContext(){
         return {
             ...state,
+            goToHome,
             Canvas,
             changeItem,
             addNewItem,
@@ -161,11 +162,14 @@ export default function DOC_AIO_Canvas(){
 }
 
 function Header(){
+    let {goToHome} = useContext(CTX)
     return (
         <RVD
             layout={{
-                style:{height:48,background:'lightblue'},
-                html:'header'
+                style:{height:48,background:'lightblue',padding:'0 24px'},align:'v',
+                row:[
+                    {html:'Go To Home',onClick:()=>goToHome()}
+                ]
             }}
         />
     )
