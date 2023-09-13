@@ -38,7 +38,9 @@ class CANVAS extends Component {
   getScreenPosition(){
 
   }
-  setScreenPosition
+  setScreenPosition(){
+
+  }
   getPrepDip(line){
     var dip = this.getDip(line);
     dip.m = -1 / dip.m;
@@ -333,12 +335,15 @@ class CANVAS extends Component {
       fill = sequenceProps.fill || parentFill,
       stroke = sequenceProps.stroke || parentStroke,
       rotate = sequenceProps.rotate || 0,
+      x = sequenceProps.x || 0,
+      y = sequenceProps.y || 0,
       slice = sequenceProps.slice,
       opacity = sequenceProps.opacity || 1,
       lineWidth = sequenceProps.lineWidth || this.props.lineWidth || 1,
       r = sequenceProps.r
     } = updatedItem;
-    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt",x: 0,y: 0},...updatedItem,fill,stroke,rotate,slice,opacity,lineWidth,r};
+    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt"},...updatedItem,fill,stroke,rotate,slice,opacity,lineWidth,r,x,y};
+    debugger
     updatedItem.items = originalItem.items;
     updatedItem.rect = false;
     if (!updatedItem.stroke && !updatedItem.fill) {updatedItem.stroke = "#000";}
@@ -368,7 +373,7 @@ class CANVAS extends Component {
       height = this.getValueByRange(height, 0, this.height);
       let [c0 = 0, c1 = 0, c2 = 0, c3 = 0] = corner;
       updatedItem.rect = true;
-      var [x, y] = updatedItem.pivotedCoords;
+      let [x, y] = updatedItem.pivotedCoords;
       updatedItem.points = [[x + width / 2, -y],[x + width, -y, c1],[x + width, -y + height, c2],[x, -y + height, c3],[x, -y, c0],[x + width / 2, -y, c1]];
     }
     else if (type === 'NGon') {
@@ -405,6 +410,7 @@ class CANVAS extends Component {
       console.log(updatedItem.points)
     }
     var result = {...originalItem,...updatedItem};
+    debugger
     return result;
   }
   draw(items = this.props.items, parent = {}, index = []) {
