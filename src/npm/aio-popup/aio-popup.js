@@ -122,7 +122,6 @@ class Popup extends Component {
   constructor(props) {
     super(props);    
     this.dom = createRef();
-    this.dui = 'a' + (Math.round(Math.random() * 10000000));
     this.state = {popoverStyle:undefined}
   }
   async onClose() {
@@ -130,19 +129,25 @@ class Popup extends Component {
     onClose();
   }
   componentDidMount(){
-    let {position,mounted,onMount} = this.props;
+    let {popover = {},position,mounted,onMount} = this.props;
     setTimeout(()=>{
       this.setState({
         popoverStyle:position === 'popover'?this.getPopoverStyle():{},
       })
       if(!mounted){onMount()}
     },0)
+    if(popover.getTarget){
+      this.dui = 'a' + (Math.round(Math.random() * 10000000));
+      let target = popover.getTarget();
+      target.attr('data-uniq-id',this.dui)
+    }
     $(window).unbind('click',this.handleBackClick)
     $(window).bind('click',$.proxy(this.handleBackClick,this))
   }
   handleBackClick(e){
+    if(!this.dui){return}
     let target = $(e.target)
-    if(this.props.backdrop !== false || target.hasClass(this.dui) || target.parents('.' + this.dui).length){
+    if(this.props.backdrop !== false || target.attr('data-uniq-id') === this.dui || target.parents(`[data-uniq-id=${this.dui}]`).length){
       return
     }
     this.onClose();
@@ -191,21 +196,20 @@ class Popup extends Component {
     return {...style,position:'fixed'}
   }
   render() {
-    let { rtl, attrs = {}, id,backdrop,mounted} = this.props;
+    let { rtl, attrs = {},backdrop,mounted} = this.props;
     let {popoverStyle} = this.state
     let backdropProps = {
       ...(backdrop?backdrop.attrs:{}),
       className: this.getBackDropClassName(),
       onClick: backdrop === false?undefined:(e) => this.backClick(e),
-      'data-popup-id': id,
     }
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
-    let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (' ' + this.dui) + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
+    let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
       <div {...backdropProps}>
         <RVD
           layout={{
-            attrs:{...attrs,ref:this.dom,style:undefined,className:undefined},
+            attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui},
             className,style,
             column: [
               this.header_layout(),

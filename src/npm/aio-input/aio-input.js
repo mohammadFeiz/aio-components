@@ -78,7 +78,7 @@ export default class AIOInput extends Component {
                 let {type,popover = {},rtl} = this.props;
                 let {attrs,fixStyle,fitHorizontal = true,position = 'popover'} = popover
                 return {
-                    rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},id:'popover',
+                    rtl,position,attrs,backdrop:false,body:{render:()=><Options type={type}/>},id:this.datauniqid,
                     popover:{fixStyle,fitHorizontal,getTarget:()=>$(dom.current)}
                 }
             }
@@ -312,7 +312,6 @@ class Input extends Component {
     static contextType = AIContext;
     constructor(props) {
         super(props);
-        this.dataUniqId = 'ai' + Math.round(Math.random() * 10000000)
         this.dom = createRef();
         this.container = createRef();
         let {value = ''} = props;

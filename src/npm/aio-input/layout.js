@@ -11,7 +11,7 @@ export default class Layout extends Component {
         this.dom = createRef()
     }
     getClassName(label, disabled) {
-        let { type, getProp, getOptionProp } = this.context;
+        let { type, getProp, getOptionProp,datauniqid } = this.context;
         let { option } = this.props;
         let cls;
         let className;
@@ -28,19 +28,20 @@ export default class Layout extends Component {
             if (rtl) { cls += ' aio-input-rtl' }
 
         }
+        cls += ' ' + datauniqid;
         cls += label ? ' has-label' : '';
         cls += className ? ' ' + className : '';
         return cls;
     }
     getProps() {
-        let { onSwap, dragStart, dragOver, drop, datauniqid, click, optionClick } = this.context;
+        let { onSwap, dragStart, dragOver, drop, click, optionClick } = this.context;
         let { option, realIndex, renderIndex } = this.props;
         let { label, disabled, style,center,loading,attrs } = this.properties;
         let props = {
             ...attrs,
             className: this.getClassName(label, disabled),
             onClick: loading?undefined:(option === undefined ? (e) => click(e,this.dom) : () => optionClick(option)),
-            ref: this.dom, disabled, style:{justifyContent:center?'center':undefined,...style}, datauniqid, 'data-label': label
+            ref: this.dom, disabled, style:{justifyContent:center?'center':undefined,...style}, 'data-label': label
         }
         if (option && onSwap) {
             props.datarealindex = realIndex;
