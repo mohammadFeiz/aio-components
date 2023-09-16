@@ -2,19 +2,24 @@ import React, { Component, createRef } from "react";
 import $ from "jquery";
 export default class Canvas{
   mp = {};
-  size = [0,0];
+  constructor(){
+    this.size = [0,0]
+  }
   listenToMousePosition = (mp)=>{
     this.mousePosition = mp;
+  }
+  canvasToClient = ()=>{return [100,100]}
+  clientToCanvas = ()=>{return [0,0]}
+  getActions = ({clientToCanvas,canvasToClient})=>{
+    this.clientToCanvas = clientToCanvas;
+    this.canvasToClient = canvasToClient;
   }
   render = (props)=>{
     return (
       <CANVAS 
         {...props} 
         listenToMousePosition={this.listenToMousePosition.bind(this)} 
-        getActions={({clientToCanvas,canvasToClient})=>{
-          this.clientToCanvas = clientToCanvas;
-          this.canvasToClient = canvasToClient;
-        }}
+        getActions={(obj)=>this.getActions(obj)}
         getSize={(size)=>this.size = size}
       />
     )
@@ -28,18 +33,21 @@ class CANVAS extends Component {
     this.width = 0;
     this.height = 0;
     this.touch = "ontouchstart" in document.documentElement;
+    this.state = {screenPosition:props.screenPosition}
+    if(props.onPan === true){
+      this.getScreenPosition = ()=>this.state.screenPosition
+      this.setScreenPosition = (screenPosition)=>this.setState({screenPosition})
+    }
+    else if(typeof onPan === 'function') {
+      this.getScreenPosition = ()=>this.props.screenPosition
+      this.setScreenPosition = (screenPosition)=>props.onPan(screenPosition)
+    }
     $(window).on("resize", this.resize.bind(this));
     this.mousePosition = [Infinity, Infinity];
     props.getActions({
       canvasToClient:this.canvasToClient.bind(this),
       clientToCanvas:this.clientToCanvas.bind(this)
     })
-  }
-  getScreenPosition(){
-
-  }
-  setScreenPosition(){
-
   }
   getPrepDip(line){
     var dip = this.getDip(line);
@@ -343,7 +351,6 @@ class CANVAS extends Component {
       r = sequenceProps.r
     } = updatedItem;
     updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt"},...updatedItem,fill,stroke,rotate,slice,opacity,lineWidth,r,x,y};
-    debugger
     updatedItem.items = originalItem.items;
     updatedItem.rect = false;
     if (!updatedItem.stroke && !updatedItem.fill) {updatedItem.stroke = "#000";}
@@ -410,7 +417,6 @@ class CANVAS extends Component {
       console.log(updatedItem.points)
     }
     var result = {...originalItem,...updatedItem};
-    debugger
     return result;
   }
   draw(items = this.props.items, parent = {}, index = []) {
@@ -588,8 +594,10 @@ class CANVAS extends Component {
     this.draw([{ type:'Line',points: [[0, -4002], [0, 4000]], stroke, dash },{ type:'Line',points: [[-4002, 0], [4000, 0]], stroke, dash }]);
   }
   componentDidMount() {
+    let {onMount = ()=>{}} = this.props;
     this.ctx = this.ctx || this.dom.current.getContext("2d");
     this.update();
+    onMount()
   }
   componentDidUpdate() {this.update()}
   getColor(color, { x = 0, y = 0 }) {
@@ -639,7 +647,7 @@ class CANVAS extends Component {
     this.eventHandler("window", "mousemove", $.proxy(this.panmousemove, this));
     this.eventHandler("window", "mouseup", $.proxy(this.panmouseup, this));
     this.panned = false;
-    var { screenPosition } = this.props;
+    let screenPosition = this.getScreenPosition();
     var client = this.getClient(e);
     this.startOffset = {x: client.x,y: client.y,endX: screenPosition[0],endY: screenPosition[1]};
   }
@@ -648,19 +656,19 @@ class CANVAS extends Component {
     this.eventHandler("window", "mouseup", this.panmouseup, "unbind");
   }
   panmousemove(e) {
-    var so = this.startOffset,{ zoom, onPan } = this.props,coords = this.getClient(e);
+    var so = this.startOffset,{ zoom } = this.props,coords = this.getClient(e);
     //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
     this.panned = true;
     var x = (so.x - coords.x) / zoom + so.endX,y = (coords.y - so.y) / zoom + so.endY;
-    onPan([x, y]);
+    this.setScreenPosition([x, y]);
   }
   onMouseDown(e) {
-    const { events, onPan } = this.props;
+    const { events } = this.props;
     this.mousePosition = this.getMousePosition(e);
     this.eventMode = "onMouseDown";
     this.update();
     if (this.item) {this.item.onMouseDown(e, this.mousePosition,this.item, this.props)} 
-    else if (onPan) {this.panmousedown(e)} 
+    else if (this.setScreenPosition) {this.panmousedown(e)} 
     else if (events.onMouseDown) {events.onMouseDown(e, this.mousePosition)}
     this.item = false; this.eventMode = false;
   }
@@ -689,7 +697,8 @@ class CANVAS extends Component {
     listenToMousePosition(this.mousePosition)
   }
   setScreen() {
-    var { zoom, screenPosition } = this.props;
+    var { zoom } = this.props;
+    let screenPosition = this.getScreenPosition();
     var canvas = this.dom.current;
     this.screenX = -this.getValueByRange(screenPosition[0],0,this.width / zoom) * zoom;
     this.screenY = this.getValueByRange(screenPosition[1],0,this.height / zoom) * zoom;
@@ -702,7 +711,7 @@ class CANVAS extends Component {
     $(canvas).css({backgroundPosition: this.translate.x + "px " + this.translate.y + "px"});
   }
   
-  canvasToClient(obj){
+  canvasToClient(obj,addOffset){
     if(!obj){return false;}
     var [x,y] = obj;
     if(this.screenX === undefined){return false}
@@ -715,9 +724,9 @@ class CANVAS extends Component {
         x,y
     ];
   }
-  clientToCanvas([X,Y]){
+  clientToCanvas([X,Y],a = true){
     var { zoom } = this.props;
-    var offset = $(this.dom.current).offset();
+    var offset = a?$(this.dom.current).offset():{left:0,top:0};
     var client = [X - offset.left + window.pageXOffset,Y - offset.top + window.pageYOffset];
     return [Math.floor((client[0] - this.axisPosition[0] - this.screenX) / zoom),-Math.floor((client[1] - this.axisPosition[1] - this.screenY) / zoom)];
   }

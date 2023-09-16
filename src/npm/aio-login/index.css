@@ -3,6 +3,7 @@
     font-size:14px;
     font-family:IRANSans-Light;
     direction:rtl;
+    width:100%;
 }
 .aio-login .aio-form{
     background: none;
@@ -11,11 +12,11 @@
     padding:12px;
     background: none;
 }
-.aio-login .aio-form-prefix{
+.aio-login .aio-input-before{
     background:#f6f7f9;
     color:#9ba9c3;
 }
-.aio-login .aio-form-affix{
+.aio-login .aio-input-after{
     background:#f6f7f9;
     color:#9ba9c3;
 }
@@ -40,6 +41,7 @@
     color:#445778;
     padding:0 12px;
     margin-bottom:6px;
+    text-align: right;
 }
 .aio-login-text{
     padding:0 12px;
@@ -73,17 +75,12 @@
     border-radius:100%;
     padding:3px;
 }
-.aio-login-error{
-    padding:0 12px;
-    color:#ff0000;
-    font-size:10px;
-}
 .aio-login-form{
     background:#fff;
     margin:12px;
+    width:100%;
     padding:12px;
     border-radius:12px;
-    max-width:500px;
 }
 .aio-login .aio-form-input{
     background:#f6f7f9;
@@ -95,7 +92,7 @@
 }
 .aio-login .aio-form{
     overflow:visible;
-    margin-bottom:36px;
+    margin-bottom:24px;
 }
 .aio-login .aio-form-body{
     overflow:visible;
@@ -107,12 +104,15 @@
     border-radius:6px;
     border:1px solid #1265db;
     background:#1265db;
-    border:none;
     color:#fff;
     display:flex;
     align-items: center;
     justify-content: center;
     cursor:pointer;
+}
+.aio-login-submit-outline{
+    background:none;
+    color:#1265db;
 }
 .aio-login-button{
     height:40px;
@@ -130,4 +130,19 @@
 .aio-login-submit:disabled{
     cursor:not-allowed;
     background:#aaa;
+}
+.aio-login .aio-form-row{
+    margin-bottom:12px;
+}
+.aio-login-otp-code input{
+    font-size: 32px;
+    letter-spacing: 24px;
+    text-align: center;
+    direction:ltr;
+}
+.aio-login-register-button{
+    color:#1265db;
+    background:none;
+    border:none;
+    margin-top:24px;
 }

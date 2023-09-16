@@ -1,25 +1,27 @@
-import React,{useReducer,createContext,useContext,useState} from "react";
+import React,{useReducer,createContext,useContext,useState,createRef,useEffect} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import AIOCanvas from './../../npm/aio-canvas/aio-canvas';
+import AIOSwip from './../../npm/aio-swip/aio-swip';
 import {Icon} from '@mdi/react';
 import AIODoc from './../../npm/aio-documentation/aio-documentation';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
 import './index.css';
 import $ from 'jquery';
+import { Component } from "react";
 const CTX = createContext()
 function Reducer(state,action){
-    if(action.key === 'items'){console.log(JSON.parse(JSON.stringify(action.value)))}
     return {...state,[action.key]:action.value}
 }
 export default function DOC_AIO_Canvas({goToHome}){
-    let Canvas = new AIOCanvas();
     let [state,dispatch] = useReducer(Reducer,{
         items:[
             
         ],
+        Canvas:new AIOCanvas(),
         types:['Group','Arc','Rectangle','Line','NGon','Triangle'],
-        activeItemId:false
+        activeItemId:false,
+        activePointIndex:false
     })
     let startDragId;
     function header_layout(){
@@ -111,17 +113,42 @@ export default function DOC_AIO_Canvas({goToHome}){
             }
         }
     }
+
     function setActiveItemId(id){
         dispatch({key:'activeItemId',value:id})
+        setActivePointIndex(false)
+    }
+    function setActivePointIndex(index){
+        state.activePointIndex = index;
+        dispatch({key:'activePointIndex',value:index})
+    }
+    function getActivePoint(){
+        let {activeItemId,activePointIndex} = state;
+        if(activeItemId === false || activePointIndex === false){return false}
+        let activeItem = getItemById(activeItemId);
+        return activeItem.points[activePointIndex];
+    }
+    function changeActivePoint([x,y]){
+        let {items} = state;
+        let activePoint = getActivePoint();
+        activePoint[0] = x;
+        activePoint[1] = y;
+        changeItems(items);
+    }
+    function removePoint(item,pointIndex){
+        let {items} = state;
+        item.points.splice(pointIndex,1);
+        changeItems(items);
+        setActivePointIndex(false)
     }
     function getContext(){
         return {
             ...state,
+            onMount:()=>dispatch({key:'mounted',value:true}),
             goToHome,
-            Canvas,
             changeItem,
             addNewItem,
-            addItem,removeItem,cloneItem,getItemById,
+            addItem,removeItem,cloneItem,getItemById,removePoint,setActivePointIndex,getActivePoint,changeActivePoint,
             setActiveItemId,
             dragStart:(id)=>{
                 startDragId = id;
@@ -313,7 +340,8 @@ function Item({item,level,active}){
     )
 }
 function Preview(){
-    let {Canvas,items} = useContext(CTX)
+    let {Canvas,items,onMount,mounted,activeItemId,activePointIndex,getActivePoint} = useContext(CTX)
+    let activePoint = getActivePoint();
     return (
         <>
         <RVD
@@ -323,10 +351,11 @@ function Preview(){
                         flex:1,
                         html:(
                             Canvas.render({
+                                onMount:()=>onMount(),
+                                onPan:true,
                                 events:{
                                     onMouseMove:()=>{
                                         let mp = Canvas.mousePosition || {};
-                                        console.log(mp)
                                         $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
                                         $('.msf').css({left:mp.cx,top:mp.cy})
                                         
@@ -347,12 +376,120 @@ function Preview(){
                 ]
             }}
         />
-        <div className='msf' style={{background:'red',width:10,height:10,position:'absolute'}}></div>
+        {!!mounted && activePoint !== false && <PointController key={activeItemId + ' ' + activePointIndex } x={activePoint[0]} y={activePoint[1]}/>}
         </>
     )
 }
+class PointController extends Component{
+    static contextType = CTX;
+    constructor(props){
+        super(props);
+        this.moveDom = createRef()
+        this.drawDom = createRef()
+        this.state = {
+            coords:[0,0],prevX:props.x,prevY:props.y
+        }
+        
+    }
+    componentDidMount(){
+        let {Canvas} = this.context;
+        let {x,y} = this.props;
+        this.setState({coords:Canvas.canvasToClient([x,y])})
+        AIOSwip({
+            dom:$(this.moveDom.current),
+            start:()=>{
+                let {coords} = this.state;
+                this.tempx = coords[0];
+                this.tempy = coords[1];
+            },
+            move:({dx,dy})=>{
+                this.setState({coords:[this.tempx + dx,this.tempy + dy]})
+            },
+            end:()=>{
+                let {Canvas,changeActivePoint} = this.context;
+                let {coords} = this.state;
+                let p = Canvas.clientToCanvas(coords,false);
+                changeActivePoint(p)
+            }
+        })
+        AIOSwip({
+            dom:$(this.drawDom.current),
+            start:()=>{
+                let {coords} = this.state;
+                this.tempx = coords[0];
+                this.tempy = coords[1];
+            },
+            move:({dx,dy})=>{
+                this.setState({coords:[this.tempx + dx,this.tempy + dy]})
+            },
+            end:()=>{
+                let {Canvas,addPoint} = this.context;
+                let {coords} = this.state;
+                let p = Canvas.clientToCanvas(coords,false);
+                addPoint(p)
+            }
+        })
+    }
+    render(){
+        let {Canvas} = this.context;
+        if(this.props.x !== this.state.prevX || this.props.y !== this.state.prevY){
+            setTimeout(()=>this.setState({coords:Canvas.canvasToClient([this.props.x,this.props.y]),prevX:this.props.x,prevY:this.props.y}),0)
+        }
+        let {coords} = this.state;
+        return (
+            <div className='point-controller' style={{left:coords[0],top:coords[1]}}>
+                <div ref={this.moveDom} className='point-controller-button-container'><button>Move</button></div>
+                <div ref={this.drawDom} className='point-controller-button-container'><button>Draw</button></div>
+                <div className='point-controller-button-container'><button>2</button></div>
+                <div className='point-controller-button-container'><button>3</button></div>
+                <div className='point-controller-button-container'><button>4</button></div>
+                <div className='point-controller-button-container'><button>5</button></div>
+                <div className='point-controller-button-container'><button>6</button></div>
+                <div className='point-controller-button-container'><button>7</button></div>
+                
+            </div>
+        )
+    }
+}
+// function PointController(props){
+//     let {Canvas,changeActivePoint} = useContext(CTX);
+//     let [dom] = useState(createRef());
+//     let [coords,setCoords] = useState(Canvas.canvasToClient([props.x,props.y]));
+//     useEffect(()=>{
+//         let tempx,tempy;
+//         AIOSwip({
+//             dom:$(dom.current),
+//             start:()=>{tempx = coords[0]; tempy = coords[1];},
+//             move:({dx,dy})=>{
+//                 setCoords([tempx + dx,tempy + dy])
+//             },
+//             end:()=>{
+//                 let p = Canvas.clientToCanvas(coords);
+//                 debugger
+//                 changeActivePoint(p)
+//             }
+//         })
+//     },[props.x,props.y])
+//     useEffect(()=>{
+//         setCoords(Canvas.canvasToClient([props.x,props.y]))
+//     },[props.x,props.y])
+//     console.log('1',coords)
+//     return (
+//         <div className='point-controller' style={{left:coords[0],top:coords[1]}}>
+//             <div ref={dom} className='point-controller-button-container'><button>Move</button></div>
+//             <div className='point-controller-button-container'><button>1</button></div>
+//             <div className='point-controller-button-container'><button>2</button></div>
+//             <div className='point-controller-button-container'><button>3</button></div>
+//             <div className='point-controller-button-container'><button>4</button></div>
+//             <div className='point-controller-button-container'><button>5</button></div>
+//             <div className='point-controller-button-container'><button>6</button></div>
+//             <div className='point-controller-button-container'><button>7</button></div>
+            
+//         </div>
+//     )
+// }
 function Setting({activeItem}){
-    let {changeItem,setActiveItemId,removeItem,cloneItem} = useContext(CTX);
+    let {changeItem,setActiveItemId,activePointIndex,removeItem,cloneItem,removePoint,setActivePointIndex} = useContext(CTX);
     let [codeView,setCodeView] = useState(false);
     function header_layout(){
         return {
@@ -496,11 +633,18 @@ function Setting({activeItem}){
                             {
                                 show:activeItem.type === 'Line',props:{gap:0},
                                 column:()=>activeItem.points.map((o,i)=>{
+                                    let active = activePointIndex === i;
                                     return {
+                                        className:'aioc-setting-line-point' + (active?' active':''),
+                                        onClick:()=>setActivePointIndex(i),
                                         row:[
                                             {input:{type:'number'},field:`value.points[${i}][0]`},
                                             {input:{type:'number'},field:`value.points[${i}][1]`},
                                             {input:{type:'number'},field:`value.points[${i}][2]`},
+                                            {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingLeft:12},onClick:(e)=>{
+                                                e.stopPropagation();
+                                                removePoint(activeItem,i)
+                                            }},
                                         ]
                                     }
                                 })

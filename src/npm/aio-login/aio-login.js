@@ -23,15 +23,17 @@ export default class AIOLogin extends Component {
                     return {
                         checkToken: async () => {
                             let token = this.tokenStorage.load({ name: 'token', def: false });
+                            let userId = this.tokenStorage.load({ name: 'userId', def: '' });
                             let isAuthenticated = this.tokenStorage.load({ name: 'isAuthenticated', def: false });
                             if (!token || !isAuthenticated) { return { result: false } }
-                            let result = await checkToken(token);
+                            let result = await checkToken(token,userId);
                             if(result === false){
                                 this.tokenStorage.remove({name:'token'});
                             }
                             return { result }
                         },
-                        async onSubmit({model,mode}){
+                        onSubmit:async ({model,mode}) =>{
+                            this.tokenStorage.remove({name:'token'});
                             let {mode:Mode,error = 'خطایی رخ داد',token} = await onSubmit(model,mode);
                             if(Mode === 'Error'){return {result:error}}
                             return {result:{Mode,token}}
@@ -61,7 +63,7 @@ export default class AIOLogin extends Component {
     render() {
         if (!this.valid) { return null }
         if (!this.mounted) { return null }
-        let { registerFields, layout, otpLength, COMPONENT, id, time = 16,methods,className,style,model } = this.props;
+        let { registerFields, layout, otpLength, COMPONENT, id, time = 16,methods,className,style,model,registerButton } = this.props;
         let { isAutenticated,apis } = this.state;
         if (isAutenticated) {
             let props = {
@@ -79,7 +81,7 @@ export default class AIOLogin extends Component {
         }
         let html = (
             <LoginForm
-                time={time} fields={registerFields} otpLength={otpLength} id={id} methods={methods} className={className} style={style} model={model}
+                time={time} fields={registerFields} otpLength={otpLength} id={id} methods={methods} className={className} style={style} model={model} registerButton={registerButton}
                 onSubmit={async (model,mode)=>{
                     let name = {
                         "OTPPhoneNumber":'ارسال شماره همراه',
@@ -175,11 +177,16 @@ class LoginForm extends Component {
     title_layout() {
         let { mode } = this.state;
         if(mode === 'OTPCode'){return false}
-        let dic = {OTPPhoneNumber:'کد یکبار مصرف',Email:'ایمیل',UserName:'نام کاربری',PhoneNumber:'شماره همراه'}
+        let {methods} = this.props;
+        let dic = {OTPPhoneNumber:'کد یکبار مصرف',Email:'ایمیل',UserName:'نام کاربری',PhoneNumber:'شماره همراه و رمز عبور'}
         let html = mode === 'Register'?`ثبت نام`:`ورود با ${dic[mode]}`
         return {
             className: 'aio-login-title',
-            html, align: 'v'
+            align: 'v',
+            row:[
+                {show:mode === 'Register',html:<Icon path={mdiChevronRight} size={1} />,size:48,align:'vh',onClick:()=>this.changeMode(methods[0])},
+                {html}
+            ]
         }
     }
     subtitle_layout() {
@@ -195,7 +202,7 @@ class LoginForm extends Component {
     }
     getInputs() {
         let { fields, mode, model, userId } = this.state;
-        let {model:InitialModel} = this.props;
+        let {model:InitialModel = {}} = this.props;
         let {otpLength} = this.props;
         if (mode === 'Register') {
             return [...fields.map((o) => { return { input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field, validations: o.required ? [['required']] : undefined } })]
@@ -245,7 +252,9 @@ class LoginForm extends Component {
             html: (
                 <AIOInput
                     type='form' key={mode + userId} lang='fa' value={model} rtl={true} 
-                    onChange={(model,errors) => this.setState({ model,formError:!!errors.length})}
+                    onChange={(model,errors) => {
+                        this.setState({ model,formError:!!Object.keys(errors).length})}
+                    }
                     inputs={{props:{gap:12},column:this.getInputs()}}
                 />
             )
@@ -286,14 +295,14 @@ class LoginForm extends Component {
         }
     }
     recode_layout() {
-        let { mode ,userId} = this.state;
+        let { mode ,model} = this.state;
         if (mode !== 'OTPCode') { return false }
         let waitingTime = this.getWaitingTime();
         if(!!waitingTime){return false}
         return {
             className: 'aio-login-text m-b-12', html: `ارسال مجدد کد`, align: 'vh',
             onClick: () => {
-                this.setState({mode:'OTPPhoneNumber'})
+                this.setState({mode:'OTPPhoneNumber',model:{...model,OTPCode:''}})
 
             }
         }    
@@ -337,6 +346,17 @@ class LoginForm extends Component {
             ]
         }
     }
+    register_layout(){
+        let {registerButton} = this.props;
+        let {mode} = this.state;
+        if(!registerButton || mode === 'Register'){return false}
+        return {
+            align:'vh',
+            html:(
+                <button onClick={()=>this.changeMode('Register')} className='aio-login-register-button'>{registerButton}</button>
+            )
+        }
+    }
     render() {
         let {className,style} = this.props;
         return (
@@ -360,7 +380,8 @@ class LoginForm extends Component {
                                 this.changeUserId_layout()
                             ]
                         },
-                        this.changeMode_layout()
+                        this.changeMode_layout(),
+                        this.register_layout()
                     ]
                 }}
             />
