@@ -62,7 +62,7 @@ export default function DOC_AIO_Canvas({goToHome}){
     function addNewItem(type,parent){
         let id = getNewId();
         let newItem = {
-            type,id:parent?[...parent.id,id]:[id],name:type + Math.round(Math.random() * 10000000),x:0,y:0,show:true,
+            type,id:parent?[...parent.id,id]:[id],name:type + Math.round(Math.random() * 10000000),show:true,
             events:{
                 'click':()=>alert()
             }
@@ -89,9 +89,18 @@ export default function DOC_AIO_Canvas({goToHome}){
     function removeItem(item){
         let {items} = state;
         let parent = getParentById(item.id);
-        if(parent){changeItem(parent,{items:parent.items.filter((o)=>o.id.toString() !== item.id.toString())})}
-        else {changeItems(items.filter((o)=>o.id.toString() !== item.id.toString()))}
-        setActiveItemId(false)
+        if(parent){
+            let newItems = parent.items.filter((o)=>o.id.toString() !== item.id.toString());
+            changeItem(parent,{items:newItems});
+            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].id)}
+            else {setActiveItemId(false)}
+        }
+        else {
+            let newItems = items.filter((o)=>o.id.toString() !== item.id.toString())
+            changeItems(newItems);
+            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].id)}
+            else {setActiveItemId(false)}
+        }
     }
     function cloneItem(item){
         item = JSON.parse(JSON.stringify(item))
@@ -399,11 +408,10 @@ class PointController extends Component{
             dom:$(this.moveDom.current),
             start:()=>{
                 let {coords} = this.state;
-                this.tempx = coords[0];
-                this.tempy = coords[1];
+                return [coords[0],coords[1]];
             },
-            move:({dx,dy})=>{
-                this.setState({coords:[this.tempx + dx,this.tempy + dy]})
+            move:({x,y})=>{
+                this.setState({coords:[x,y]})
             },
             end:()=>{
                 let {Canvas,changeActivePoint} = this.context;
@@ -416,11 +424,10 @@ class PointController extends Component{
             dom:$(this.drawDom.current),
             start:()=>{
                 let {coords} = this.state;
-                this.tempx = coords[0];
-                this.tempy = coords[1];
+                return [coords[0],coords[1]];
             },
-            move:({dx,dy})=>{
-                this.setState({coords:[this.tempx + dx,this.tempy + dy]})
+            move:({x,y})=>{
+                this.setState({coords:[x,y]})
             },
             end:()=>{
                 let {Canvas,addPoint} = this.context;
@@ -648,6 +655,18 @@ function Setting({activeItem}){
                                         ]
                                     }
                                 })
+                            },
+                            {
+                                row:[
+                                    {
+                                        show:activeItem.type === 'Group',label:'Repeat Childs',
+                                        input:{type:'checkbox'},field:'value.repeatChilds'
+                                    },
+                                    {
+                                        label:'Repeat Count',
+                                        input:{type:'number',text:'Repeat'},field:'value.repeat'
+                                    },
+                                ]
                             },
                             {
                                 show:activeItem.type === 'Group',

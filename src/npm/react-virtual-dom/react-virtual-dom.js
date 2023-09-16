@@ -33,6 +33,11 @@ export default class ReactVirtualDom extends Component {
     if(typeof html === 'string' && htmls[html]){
       html = htmls[html](obj)
     }
+    // if(typeof html === 'object'){
+    //   console.error('react-virtual-dom html error, html cannot be an abject');
+    //   console.error('node is : ' ,obj)
+    //   html = '';
+    // }
     let dataId = 'a' + Math.random();
     style = {...attrs.style,...style}
     if(parent.row){

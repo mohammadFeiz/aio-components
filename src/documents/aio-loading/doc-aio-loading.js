@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import AIOLoading from './../../npm/aio-loading/aio-loading';
-import Form from './../../npm/aio-form-react/aio-form-react';
+import AIOInput from './../../npm/aio-input/aio-input';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import DOC from '../../resuse-components/doc';
 export default class DOC_AIOForm extends Component{
@@ -60,145 +60,146 @@ class MSF extends Component{
         let {name} = this.props;
         if(name === 'spin1'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:30},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'spin2'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:30},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.model.empty',label:'empty'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.model.empty',label:'empty'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'spin3'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:30},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.model.empty',label:'empty'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.model.empty',label:'empty'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'spin4'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness[0]',label:'width',start:1,end:30},
-                {type:'slider',field:'model.model.thickness[1]',label:'height',start:1,end:30},
-                {type:'slider',field:'model.model.round',label:'round',start:1,end:36},
-                {type:'slider',field:'model.model.count',label:'count',start:2,end:24},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness[0]',label:'width'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness[1]',label:'height'},
+                {input:{type:'slider',start:1,end:36},field:'value.model.round',label:'round'},
+                {input:{type:'slider',start:2,end:24},field:'value.model.count',label:'count'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'spin5'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:24},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:24},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'dots1'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:30},
-                {type:'slider',field:'model.model.gap',label:'gap',start:1,end:30},
-                {type:'slider',field:'model.model.count',label:'count',start:2,end:12},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.gap',label:'gap'},
+                {input:{type:'slider',start:2,end:12},field:'value.model.count',label:'count'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'dots2'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:30},
-                {type:'slider',field:'model.model.count',label:'count',start:2,end:12},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:30},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'slider',start:2,end:12},field:'value.model.count',label:'count'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'cubes1'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.gap',label:'gap',start:0,end:30},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:0,end:30},field:'value.model.gap',label:'gap'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'cubes2'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.gap',label:'gap',start:0,end:30},
-                {type:'slider',field:'model.model.count',label:'count',start:2,end:20},
-                {type:'slider',field:'model.model.thickness[0]',label:'width',start:1,end:60},
-                {type:'slider',field:'model.model.thickness[1]',label:'height',start:1,end:60},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'slider',field:'model.model.delay',label:'delay',start:0.1,end:1,step:0.1},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:0,end:30},field:'value.model.gap',label:'gap'},
+                {input:{type:'slider',start:2,end:20},field:'value.model.count',label:'count'},
+                {input:{type:'slider',start:1,end:60},field:'value.model.thickness[0]',label:'width'},
+                {input:{type:'slider',start:1,end:60},field:'value.model.thickness[1]',label:'height'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'slider',start:0.1,end:1,step:0.1},field:'value.model.delay',label:'delay'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'cubes3'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.gap',label:'gap',start:0,end:24},
-                {type:'slider',field:'model.model.type',label:'Type',start:1,end:5},
-                {type:'slider',field:'model.model.count',label:'Count',start:3,end:7},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:0,end:24},field:'value.model.gap',label:'gap'},
+                {input:{type:'slider',start:1,end:5},field:'value.model.input:{type',label:'Type'},
+                {input:{type:'slider',start:3,end:7},field:'value.model.count',label:'Count'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'orbit'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.gap',label:'gap',start:0,end:30},
-                {type:'slider',field:'model.model.count',label:'count',start:1,end:20},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:20},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'slider',field:'model.model.delay',label:'delay',start:0.1,end:1,step:0.1},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:0,end:30},field:'value.model.gap',label:'gap'},
+                {input:{type:'slider',start:1,end:20},field:'value.model.count',label:'count'},
+                {input:{type:'slider',start:1,end:20},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'slider',start:0.1,end:1,step:0.1},field:'value.model.delay',label:'delay'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'puls'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.thickness',label:'thickness',start:1,end:20},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:1,end:20},field:'value.model.thickness',label:'thickness'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
         if(name === 'puls1'){
             return [
-                {type:'number',field:'model.model.size',label:'size'},
-                {type:'slider',field:'model.model.duration',label:'duration',start:0.1,end:3,step:0.1},
-                {type:'color',field:'model.model.fill',label:'fill'},
-                {type:'color',field:'model.background',label:'background'},
+                {input:{type:'number'},field:'value.model.size',label:'size'},
+                {input:{type:'slider',start:0.1,end:3,step:0.1},field:'value.model.duration',label:'duration'},
+                {input:{type:'color'},field:'value.model.fill',label:'fill'},
+                {input:{type:'color'},field:'value.background',label:'background'},
             ]
         }
     }
     form_layout(){
       let {config} = this.state;
-      let props = {model:config,inputs:this.getInputs()}
+      let props = {value:config,inputs:{column:this.getInputs()}}
       console.log(props)
       return {
         html:(
-          <Form
+          <AIOInput
+            type='form'
             {...props}
             onChange={(config)=>this.setState({config})}
           />

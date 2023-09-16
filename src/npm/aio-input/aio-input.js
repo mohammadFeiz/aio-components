@@ -7,7 +7,7 @@ import Layout from './layout';
 import { Icon } from '@mdi/react';
 import { mdiChevronRight, mdiClose,mdiCircleMedium } from "@mdi/js";
 import Table from './table';
-import Slider from './../aio-slider/aio-slider';
+import Slider from './../../npm/aio-slider/aio-slider';
 import AIOSwip from '../aio-swip/aio-swip';
 import DatePicker from './datepicker';
 import AIContext from './context';
@@ -150,7 +150,7 @@ export default class AIOInput extends Component {
     getProp(key, def) {
         let { type, caret,popover } = this.props;
         if(key === 'attrs'){
-            if(['text','textarea','number','password','color'].indexOf(type) !== -1){return {}}
+            if(['text','textarea','number','password','color'].indexOf(type) === -1){return {}}
         }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
         if (key === 'caret') { return caret === false?false:(((type === 'button' && popover) || (type === 'select' || type === 'multiselect' || type === 'datepicker')) ? (caret || true) : false )}
@@ -262,13 +262,20 @@ class InputSlider extends Component{
     render(){
         let {getProp} = this.context;
         let value = getProp('value');
+        let start = getProp('start');
+        let end = getProp('end');
+        let step = getProp('step');
+        let min = getProp('min');
+        let max = getProp('max');
         let rtl = getProp('rtl');
         if(!Array.isArray(value)){value = [value]}
+        let props = {start,end,step,min,max}
         return (
             <Slider
+                {...props}
                 direction={rtl?'left':'right'}
                 showValue={true}
-                value={value}
+                points={value}
                 onChange={this.change.bind(this)}
             />
         )
@@ -387,7 +394,7 @@ class Input extends Component {
     render() {
         let { getProp, type } = this.context;
         let { value = '' } = this.state;
-        let attrs = getProp('attrs', {});
+        let attrs = getProp('attrs');
         let disabled = getProp('disabled', false);
         let placeholder = getProp('placeholder');
         let spin = getProp('spin');
@@ -398,6 +405,13 @@ class Input extends Component {
             onChange: (e) => this.change(e.target.value)
         }
         if (typeof this.onChange !== 'function') { return <div className='aio-input-value'>{value}</div> }
+        else if (type === 'color') { 
+            return (
+                <label style={{width:'100%',height:'100%',background:value}}>
+                    <input {...props} style={{opacity:0}}/>
+                </label>
+            ) 
+        }
         else if (type === 'textarea') { return <textarea {...props} /> }
         else { return (<input {...props} />) }
     }
@@ -583,6 +597,12 @@ class Form extends Component {
         let style = {...propsAttrs.style,...ownAttrs.style}
         return {...propsAttrs,...ownAttrs,style}
     }
+    getAttrs_slider(attrs){
+        let start = this.getValueByField(attrs.start, 0);
+        let end = this.getValueByField(attrs.end, 100);
+        let step = this.getValueByField(attrs.step, 1);
+        return {start,step,end}
+    }
     input_layout(obj) {
         let {rtl,inputAttrs} = this.props;
         let { label, footer, inlineLabel, input, flex, size,field } = obj;
@@ -592,6 +612,12 @@ class Form extends Component {
         else {this.errors[field] = undefined}
         let labelAttrs = this.getAttrs(this.props.labelAttrs,obj.labelAttrs)
         let errorAttrs = this.getAttrs(this.props.errorAttrs,obj.errorAttrs)
+        let attrs = this.getAttrs(inputAttrs,input)
+        let privateAttrs = this['getAttrs_' + input.type]?this['getAttrs_' + input.type](attrs):{}
+        let props = {
+            ...attrs,...privateAttrs,rtl,value,
+            onChange:(value) => this.setValue(value, field,obj)
+        }
         return {
             flex, size,
             className: 'aio-input-form-item',
@@ -603,7 +629,7 @@ class Form extends Component {
                             flex: 1,className:'of-visible',
                             column: [
                                 this.label_layout(label, labelAttrs),
-                                { html: <AIOInput {...inputAttrs} {...input} rtl={rtl} value={value} onChange={(value) => this.setValue(value, field,obj)} /> },
+                                { html: <AIOInput {...props}/> },
                                 { show: !!footer, html: footer },
                             ]
                         }

@@ -4,6 +4,9 @@ import AIOCanvas from './../../npm/aio-canvas/aio-canvas';
 export default class RGauger extends Component{
   constructor(props){
     super(props);
+    this.state = {
+      Canvas:new AIOCanvas()
+    }
     this.getDetails();
   }
   getPercentByValue(value,start,end){return 100 * (value - start) / (end - start)}
@@ -147,7 +150,7 @@ export default class RGauger extends Component{
     return { 
       type:'Group',
       items:[
-        {type:'Line',fill:color,points:[[0,-width / 2],[height,0],[0,width / 2]],lineWidth:width,pivot:[-offset,0],rotate:angle,close:true},
+        {type:'Line',fill:color,points:[[0,-width / 2],[height,0],[0,width / 2]],lineWidth:0,pivot:[-offset,0],rotate:angle,close:true},
         {type:'Arc',r:handleRadius,fill:color}
       ] 
     }
@@ -199,9 +202,12 @@ export default class RGauger extends Component{
   }
   render(){
     var {dynamic,position,id,className} = this.props;
+    let {Canvas} = this.state;
     if(dynamic){this.getDetails();}
     return (
-      <AIOCanvas className={`r-gauger${className?' ' + className:''}`} id={id} items={this.getItems()} style={this.getStyle()} screenPosition={position}/>
+      Canvas.render({
+        className:`r-gauger${className?' ' + className:''}`,id,items:this.getItems(),style:this.getStyle(),screenPosition:position
+      })
     )
   }
 }

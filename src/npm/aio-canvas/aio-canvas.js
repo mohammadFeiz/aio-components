@@ -38,7 +38,7 @@ class CANVAS extends Component {
       this.getScreenPosition = ()=>this.state.screenPosition
       this.setScreenPosition = (screenPosition)=>this.setState({screenPosition})
     }
-    else if(typeof onPan === 'function') {
+    else{
       this.getScreenPosition = ()=>this.props.screenPosition
       this.setScreenPosition = (screenPosition)=>props.onPan(screenPosition)
     }
@@ -467,7 +467,19 @@ class CANVAS extends Component {
   }
   drawGroup(item, index) {
     var [X, Y] = item.pivotedCoords;
-    this.draw(item.items,{ x: X, y: Y, rotate: item.rotate, opacity: item.opacity,fill:item.fill,stroke:item.stroke,sequence:item.sequence },index);
+    let items = [];
+    if(item.repeatChilds){
+      for(let i = 0; i < item.items.length; i++){
+        let itm = item.items[i];
+        let {repeat = 0,showPivot} = itm;
+        for(let j = 0; j < repeat; j++){
+          items.push({...itm,isRepeat:j > 0 ,showPivot:j === 0?showPivot:false})
+        }
+      }
+    }
+    else {items = item.items;}
+    
+    this.draw(items,{ x: X, y: Y, rotate: item.rotate, opacity: item.opacity,fill:item.fill,stroke:item.stroke,sequence:item.sequence },index);
   }
   drawText({align = [0, 0],fontSize = 12,fontFamily = 'arial',text = "Text",fill,stroke,pivotedCoords}) {
     var { zoom } = this.props,[X, Y] = pivotedCoords,[textAlign, textBaseline] = this.getTextAlign(align);

@@ -1,12 +1,11 @@
 import React,{Component} from 'react';
-import Form from './../../npm/aio-form-react/aio-form-react';
+import AIOInput from './../../npm/aio-input/aio-input';
 import Gauge from './../../npm/aio-gauge/aio-gauge';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOJson from './../../npm/aio-json/aio-json';
 import {Icon} from '@mdi/react';
 import { mdiDelete ,mdiPlusThick,mdiClose} from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 export default class DOC_AIOGauge extends Component{
     render(){
@@ -15,6 +14,7 @@ export default class DOC_AIOGauge extends Component{
         )
     }
 }
+
 class Input extends Component{
     constructor(props) {
         super(props);
@@ -22,7 +22,7 @@ class Input extends Component{
         this.state = { 
             mode:'preview',
             Storage,
-            gauges:Storage.getList(),
+            gauges:this.getGaugesFromStorage(Storage),
             fileName:'',
             gauge:{
                 circles:[{lineWidth:1,stroke:'#555555',radius:50,slice:true}],
@@ -40,6 +40,10 @@ class Input extends Component{
                 handle:{value:50,width:3,height:50,radius:3,offset:0,color:'#000000'}
             }
         }
+    }
+    getGaugesFromStorage(Storage){
+        let model = Storage.getModel()
+        return Object.keys(model).map((key)=>key)
     }
     addRange(e){
         e.stopPropagation()
@@ -94,234 +98,341 @@ class Input extends Component{
     this.setState({gauge})
     }
     form_ranges(){
-    var {gauge} = this.state;
-    var {start,end,ranges} = gauge;
-    return {
-        type:'group',id:'ranges',text:'ranges',
-        html:()=>{return (<button className='add-button' onClick={(e)=>this.addRange(e)}>Add Range</button>)},
-        inputs:ranges.map((o,i)=>{
-        let beforeValue = i === 0?start:ranges[i - 1].value;
-        let afterValue = i === ranges.length - 1?end:ranges[i + 1].value;
-        let rowKey = 'range' + i;
+        var {gauge} = this.state;
+        var {start,end,ranges} = gauge;
         return {
-            type:'group',
-            inputs:[
-            {type:'html',html:()=>'range ' + i,rowKey,rowWidth:70},
-            {type:'slider',field:`model.ranges[${i}].value`,rowKey,start:beforeValue,end:afterValue},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',field:`model.ranges[${i}].value`,rowKey,rowWidth:70},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'color',field:`model.ranges[${i}].color`,rowKey,rowWidth:46},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'html',html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeRange(i)}/>,rowKey,rowWidth:20},
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:<Icon path={mdiPlusThick} size={0.8}/>,onClick:(e)=>this.addRange(e),align:'vh',size:30},
+                        {html:'Gaguge Ranges',align:'v',flex:1},
+                        
+                    ]
+                },
+                {
+                    column:ranges.map((o,i)=>{
+                        let beforeValue = i === 0?start:ranges[i - 1].value;
+                        let afterValue = i === ranges.length - 1?end:ranges[i + 1].value;
+                        return {
+                            row:[
+                                this.getInlineLabel('range ' + i),
+                                {input:{type:'slider',start:beforeValue,end:afterValue},field:`value.ranges[${i}].value`},
+                                {size:2},
+                                {input:{type:'number'},field:`value.ranges[${i}].value`,size:70},
+                                {size:2},
+                                {input:{type:'color'},field:`value.ranges[${i}].color`,size:46},
+                                {size:2},
+                                {html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeRange(i)}/>,size:20,align:'vh'},
+                            ]
+                        }
+                    })
+                }
             ]
         }
-        })
-    }
     }
     form_circles(){
-    var {gauge} = this.state;
-    var {circles} = gauge;
-    return {
-        type:'group',id:'circles',text:'circles',
-        html:()=>{return (<button className='add-button' onClick={(e)=>this.addCircle(e)}>Add Circle</button>)},
-        inputs:circles.map((o,i)=>{
-        let rowKey = 'circle' + i;
+        var {gauge} = this.state;
+        var {circles} = gauge;
         return {
-            type:'group',
-            inputs:[
-            {type:'html',html:()=>'circle ' + i,rowKey,rowWidth:70},
-            {type:'number',field:`model.circles[${i}].radius`,rowKey},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',field:`model.circles[${i}].lineWidth`,rowKey},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'color',field:`model.circles[${i}].stroke`,rowKey},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'checkbox',field:`model.circles[${i}].slice`,rowKey,inputStyle:{padding:0,justifyContent:'center'},rowWidth:20},
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'html',html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeCircle(i)}/>,rowKey,rowWidth:20}
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:<Icon path={mdiPlusThick} size={0.8}/>,onClick:(e)=>this.addCircle(e),align:'vh',size:30},
+                        {html:'Gaguge Circles',align:'v',flex:1},
+                        
+                    ]
+                },
+                {
+                    column:circles.map((o,i)=>{
+                        return {
+                            row:[
+                                this.getInlineLabel('circle ' + i),
+                                {input:{type:'number'},field:`value.circles[${i}].radius`},
+                                {size:2},
+                                {input:{type:'number'},field:`value.circles[${i}].lineWidth`},
+                                {size:2},
+                                {input:{type:'color'},field:`value.circles[${i}].stroke`},
+                                {size:2},
+                                {input:{type:'checkbox',style:{padding:0},center:true},field:`value.circles[${i}].slice`,size:24},
+                                {size:2},
+                                {html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeCircle(i)}/>,size:20,align:'vh'}
+                            ]
+                        }
+                    })
+                }
             ]
         }
-        })
     }
-    }
+    getInlineLabel(html){return {html,align:'v',size:70,style:{fontSize:10}}}
     form_style(){
-    return {
-        type:'group',id:'style',text:'style',
-        inputs:[
-        {type:'html',html:()=>'start-end',rowKey:'1',rowWidth:70},
-        {type:'number',field:'model.start',rowKey:'1'},
-        {type:'html',html:()=>'',rowKey:'1',rowWidth:2},
-        {type:'number',field:'model.end',rowKey:'1'},
-
-        {type:'html',html:()=>'size',rowKey:'2',rowWidth:70},
-        {type:'slider',field:'model.style.width',rowKey:'2',start:30,end:260},
-        {type:'html',html:()=>'',rowKey:'2',rowWidth:2},
-        {type:'slider',field:'model.style.height',rowKey:'2',start:30,end:260},
-
-        {type:'html',html:()=>'position',rowKey:'3',rowWidth:70},
-        {type:'slider',field:'model.position[0]',rowKey:'3',start:0,end:100},
-        {type:'html',html:()=>'',rowKey:'3',rowWidth:2},
-        {type:'slider',field:'model.position[1]',rowKey:'3',start:0,end:100},
-        
-        {type:'html',html:()=>'direction',rowKey:'4',rowWidth:70},
-        {type:'radio',field:'model.direction',rowKey:'4',options:[{value:'clock',text:'clock'},{value:'clockwise',text:'clockwise'}],optionStyle:{width:"50%"}},
-        
-        {type:'html',html:()=>'radius',rowKey:'5',rowWidth:70},
-        {type:'slider',field:'model.radius',rowKey:'5',start:20,end:130},
-
-        {type:'html',html:()=>'angle',rowKey:'6',rowWidth:70},
-        {type:'slider',field:'model.angle',rowKey:'6',start:0,end:360},
-        {type:'html',html:()=>'',rowKey:'6',rowWidth:2},
-        {type:'slider',field:'model.rotate',rowKey:'6',start:0,end:360},
-        
-        {type:'html',html:()=>'thickness',rowKey:'7',rowWidth:70},
-        {type:'slider',field:'model.thickness',rowKey:'7',start:0,end:70},
-
-        {type:'html',html:()=>'background',rowKey:'8',rowWidth:70},
-        {type:'color',field:'model.style.background',rowKey:'8'},
-        ]
-    }
+        return {
+            column:[
+                {html:'Gauge Styling',size:36,align:'v',style:{marginTop:12}},
+                {
+                    row:[
+                        this.getInlineLabel('start-end'),
+                        {input:{type:'number'},field:'value.start'},
+                        {size:2},
+                        {input:{type:'number'},field:'value.end'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('size'),
+                        {input:{type:'slider',start:30,end:260},field:'value.style.width'},
+                        {size:2},
+                        {input:{type:'slider',start:30,end:260},field:'value.style.height'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('position'),
+                        {input:{type:'slider',start:0,end:100},field:'value.position[0]'},
+                        {size:2},
+                        {input:{type:'slider',start:0,end:100},field:'value.position[1]'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('direction'),
+                        {input:{type:'radio',options:[{value:'clock',text:'clock'},{value:'clockwise',text:'clockwise'}],optionStyle:{width:"50%"}},field:'value.direction'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('radius'),
+                        {input:{type:'slider',start:20,end:130},field:'value.radius'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('angle'),
+                        {input:{type:'slider',start:0,end:360},field:'value.angle'},
+                        {size:2},
+                        {input:{type:'slider',start:0,end:360},field:'value.rotate'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('thickness'),
+                        {input:{type:'slider',start:0,end:70},field:'value.thickness'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('background'),
+                        {input:{type:'color'},field:'value.style.background'},
+                    ]
+                }
+            ]
+        }
     }
     form_label(){
-    var {gauge} = this.state;
-    var {label} = gauge;
-    return {
-        type:'group',id:'label',text:'label',
-        html:()=>{return (<button className='add-label' onClick={(e)=>this.addLabel(e)}>Add Label</button>)},
-        inputs:label.map((o,i)=>{
-        let rowKey = 'label' + i;
+        var {gauge} = this.state;
+        var {label} = gauge;
         return {
-            type:'group',
-            inputs:[
-            {type:'number',label:'step',field:`model.label[${i}].step`,rowKey},
-            
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'start',field:`model.label[${i}].start`,rowKey},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'fontSize',field:`model.label[${i}].fontSize`,rowKey,min:2,max:20},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'offset',field:`model.label[${i}].offset`,rowKey,min:0,max:200},
-            
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'color',label:'color',field:`model.label[${i}].color`,rowKey},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'html',html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeLabel(i)}/>,rowKey,rowWidth:20}
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:<Icon path={mdiPlusThick} size={0.8}/>,onClick:(e)=>this.addLabel(e),align:'vh',size:30},
+                        {html:'Gaguge Labels',align:'v',flex:1},
+                        
+                    ]
+                },
+                {
+                    column:label.map((o,i)=>{
+                        return {
+                            row:[
+                                {input:{type:'number'},label:'step',field:`value.label[${i}].step`},
+                                {size:2},
+                                {input:{type:'number'},label:'start',field:`value.label[${i}].start`},
+                                {size:2},
+                                {input:{type:'number',attrs:{min:2,max:20}},label:'fontSize',field:`value.label[${i}].fontSize`},
+                                {size:2},
+                                {input:{type:'number',attrs:{min:0,max:200}},label:'offset',field:`value.label[${i}].offset`},
+                                {size:2},
+                                {input:{type:'color'},label:'color',field:`value.label[${i}].color`},
+                                {size:2},
+                                {html:<Icon path={mdiClose} size={0.8} onClick={()=>this.removeLabel(i)}/>,size:20,style:{paddingTop:24}}
+                            ]
+                        }    
+                    })
+                }
             ]
         }
-        })
-    }
     }
     form_scale(){
-    let {gauge} = this.state;
-    let {scale} = gauge;
-    return {
-        type:'group',id:'scale',text:'scale',
-        html:()=>{return (<button className='add-scale' onClick={(e)=>this.addScale(e)}>Add Scale</button>)},
-        inputs:scale.map((o,i)=>{
-        let rowKey = 'scale' + i;
+        let {gauge} = this.state;
+        let {scale} = gauge;
         return {
-            type:'group',
-            inputs:[
-            {type:'number',label:'step',field:`model.scale[${i}].step`,rowKey},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'width',field:`model.scale[${i}].width`,rowKey,min:0,max:20},
-            
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'height',field:`model.scale[${i}].height`,rowKey,min:0,max:30},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'number',label:'offset',field:`model.scale[${i}].offset`,rowKey,min:0,max:200},
-            
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'color',label:'color',field:`model.scale[${i}].color`,rowKey},
-
-            {type:'html',html:()=>'',rowKey,rowWidth:2},
-            {type:'html',html:()=><Icon path={mdiClose} size={0.8} onClick={()=>this.removeScale(i)}/>,rowKey,rowWidth:20}
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:<Icon path={mdiPlusThick} size={0.8}/>,onClick:(e)=>this.addScale(e),align:'vh',size:30},
+                        {html:'Gaguge Scales',align:'v',flex:1},
+                        
+                    ]
+                },
+                {
+                    column:scale.map((o,i)=>{
+                        return {
+                            row:[
+                                {input:{type:'number'},label:'step',field:`value.scale[${i}].step`},
+                                {size:2},
+                                {input:{type:'number',attrs:{min:0,max:20}},label:'width',field:`value.scale[${i}].width`},
+                                {size:2},
+                                {input:{type:'number',attrs:{min:0,max:30}},label:'height',field:`value.scale[${i}].height`},
+                                {size:2},
+                                {input:{type:'number',attrs:{min:0,max:200}},label:'offset',field:`value.scale[${i}].offset`},
+                                {size:2},
+                                {input:{type:'color'},label:'color',field:`value.scale[${i}].color`},
+                                {size:2},
+                                {html:<Icon path={mdiClose} size={0.8} onClick={()=>this.removeScale(i)}/>,size:20,style:{paddingTop:24}}
+                            ]
+                        }
+                    })
+                }
             ]
         }
-        })
-    }
     }
     form_handle(){
-    return {
-        type:'group',id:'handle',text:'handle',
-        inputs:[
-        {type:'html',html:()=>'value',rowKey:'17',rowWidth:70},
-        {type:'slider',field:'model.handle.value',rowKey:'17',start:'model.start',end:'model.end'},
-
-        {type:'html',html:()=>'width',rowKey:'18',rowWidth:70},
-        {type:'slider',field:'model.handle.width',rowKey:'18',start:0,end:50},
-
-        {type:'html',html:()=>'height',rowKey:'19',rowWidth:70},
-        {type:'slider',field:'model.handle.height',rowKey:'19',start:0,end:100},
-        
-        {type:'html',html:()=>'offset',rowKey:'20',rowWidth:70},
-        {type:'slider',field:'model.handle.offset',rowKey:'20',start:0,end:60},
-        
-        {type:'html',html:()=>'radius',rowKey:'21',rowWidth:70},
-        {type:'slider',field:'model.handle.radius',rowKey:'21',start:0,end:60},
-        
-        {type:'html',html:()=>'color',rowKey:'22',rowWidth:70},
-        {type:'color',field:'model.handle.color',rowKey:'22'},
-        ]
-    }
+        return {
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:'Gaguge Handle',align:'v',flex:1}, 
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('value'),
+                        {input:{type:'slider',start:'value.start',end:'value.end'},field:'value.handle.value'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('width'),
+                        {input:{type:'slider',start:0,end:50},field:'value.handle.width'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('height'),
+                        {input:{type:'slider',start:-100,end:100},field:'value.handle.height'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('offset'),
+                        {input:{type:'slider',start:0,end:120},field:'value.handle.offset'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('radius'),
+                        {input:{type:'slider',start:0,end:60},field:'value.handle.radius'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('color'),
+                        {input:{type:'color'},field:'value.handle.color'},
+                    ]
+                }
+            ]
+        }
     }
     form_text(){
-    return {
-        type:'group',id:'text',text:'text',
-        inputs:[
-        {type:'html',html:()=>'value',rowKey:'23',rowWidth:70},
-        {type:'text',field:'model.text.value',rowKey:'23'},
-        
-        {type:'html',html:()=>'top',rowKey:'24',rowWidth:70},
-        {type:'slider',field:'model.text.top',rowKey:'24',start:-100,end:100},
-        
-        {type:'html',html:()=>'left',rowKey:'25',rowWidth:70},
-        {type:'slider',field:'model.text.left',rowKey:'25',start:-100,end:100},
-        
-        {type:'html',html:()=>'fontSize',rowKey:'26',rowWidth:70},
-        {type:'slider',field:'model.text.fontSize',rowKey:'26',start:2,end:40},
-        
-        {type:'html',html:()=>'rotate',rowKey:'27',rowWidth:70},
-        {type:'slider',field:'model.text.rotate',rowKey:'27',start:0,end:360},
-        
-        {type:'html',html:()=>'color',rowKey:'28',rowWidth:70},
-        {type:'color',field:'model.text.color',rowKey:'28'},
-        ]
-    }
+        return {
+            column:[
+                {
+                    size:36,style:{marginTop:12},
+                    row:[
+                        {html:'Gaguge Text',align:'v',flex:1}, 
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('value'),
+                        {input:{type:'text'},field:'value.text.value'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('top'),
+                        {input:{type:'slider',start:-100,end:100},field:'value.text.top'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('left'),
+                        {input:{type:'slider',start:-100,end:100},field:'value.text.left'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('fontSize'),
+                        {input:{type:'slider',start:2,end:40},field:'value.text.fontSize'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('rotate'),
+                        {input:{type:'slider',start:0,end:360},field:'value.text.rotate'},
+                    ]
+                },
+                {
+                    row:[
+                        this.getInlineLabel('color'),
+                        {input:{type:'color'},field:'value.text.color'},
+                    ]
+                }
+            ]
+        }
     }
     activeGauge_layout(){
         let {fileName,Storage,gauge} = this.state;
         if(!fileName){return false}
         gauge.start = gauge.start || 0;
+        let inputs = {
+            column:[
+                this.form_ranges(),
+                this.form_circles(),
+                this.form_style(),
+                this.form_label(),
+                this.form_scale(),
+                this.form_handle(),
+                this.form_text()
+            ]
+        }
         return {
             size:480,
             html:(
-                <Form
+                <AIOInput
+                    type='form'
                     onChange={(gauge)=>{
-                    let {fileName} = this.state;
-                    Storage.save({value:gauge,name:fileName})
-                    this.setState({gauge})
+                        let {fileName} = this.state;
+                        Storage.save({value:gauge,name:fileName})
+                        this.setState({gauge})
                     }}
                     defaults={{
-                    slider:{
-                        thickness:3,emptyColor:'#1d292c',fillColor:'#105e57',
-                        buttonStyle:{background:'#4c525a',height:16,fontSize:10}
-                    }
+                        slider:{
+                            thickness:3,emptyColor:'#1d292c',fillColor:'#105e57',
+                            buttonStyle:{background:'#4c525a',height:16,fontSize:10}
+                        }
                     }}
-                    labelStyle={{height:12,fontSize:10,paddingLeft:12}}
                     style={{padding:6,color:'#fff',background:'#1d292c'}}
                     theme={{checkIconSize:[12,10,1],checkIconColor:['#ff6600']}}
-                    inputStyle={{height:20,borderRadius:0,background:'rgba(138, 166, 216, 0.1)',color:'#fff',border:'none',padding:12,fontSize:10}}
+                    inputAttrs={{style:{height:20,borderRadius:0,background:'rgba(138, 166, 216, 0.1)',color:'#fff',border:'none',fontSize:10,marginBottom:2}}}
                     rowStyle={{height:38,margin:0}}
                     bodyStyle={{padding:0}}
-                    model={gauge}
-                    inputs={[this.form_ranges(),this.form_circles(),this.form_style(),this.form_label(),this.form_scale(),this.form_handle(),this.form_text()]}
+                    value={gauge}
+                    inputs={inputs}
                 />
             )
         }
@@ -334,8 +445,8 @@ class Input extends Component{
         }
     }
     preview_preview(){
-        let {fileName} = this.state;
-        if(!fileName){return false}
+        // let {fileName} = this.state;
+        // if(!fileName){return false}
         return (
             <Gauge {...this.state.gauge} position={[this.state.gauge.position[0] + '%',this.state.gauge.position[1] + '%']}/>
         )
@@ -376,7 +487,7 @@ class Input extends Component{
                             let {fileName} = this.state;
                             if(name === fileName){fileName = false;}
                             Storage.remove({name});
-                            this.setState({fileName,gauges:Storage.getList()})
+                            this.setState({fileName,gauges:this.getGaugesFromStorage(Storage)})
                         }}}
                     ]
                 }
@@ -397,8 +508,10 @@ class Input extends Component{
                             style={{background:'#2a59545c',color:'#fff',width:'100%',height:48}}
                             type='button'
                             onClick={()=>{
-                                Storage.save({value:gauge});
-                                this.setState({gauges:Storage.getList()})
+                                let name = window.prompt('inter gauge name')
+                                if(!name || name === null){return}
+                                Storage.save({value:gauge,name});
+                                this.setState({gauges:this.getGaugesFromStorage(Storage)})
                             }}
                         />
                     )

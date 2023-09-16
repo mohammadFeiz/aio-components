@@ -86,13 +86,23 @@
     height: 100%;
 }
 
-.aio-input-options {
+.aio-input-select-options {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     outline: none;
     border:1px solid #ddd;
+    border-radius: 4px;
+}
+.aio-input-multiselect-options {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    border:1px solid #ddd;
+    border-radius: 4px;
 }
 
 .aio-input-options::-webkit-scrollbar {
@@ -214,9 +224,7 @@
     border-bottom:1px solid #ddd;
 }
 
-.aio-input-options {
-    border-radius: 4px;
-}
+
 
 .aio-input-check-out {
     color: dodgerblue;
@@ -226,9 +234,14 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    margin-inline-end: 6px;
     justify-content: center;
     position: relative;
+}
+.aio-input-checkbox-value{
+    margin-inline-start: 6px;
+}
+.aio-input-radio-option-value{
+    margin-inline-start: 6px;
 }
 .aio-input-tabs{
     padding-bottom:0;
@@ -421,7 +434,7 @@
     width:100%;
 }
 .aio-input-color{
-    height:36px;
+    padding:0;
 }
 .aio-input-slider{
     height:36px;

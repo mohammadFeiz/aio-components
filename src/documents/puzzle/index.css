@@ -27,7 +27,7 @@ body{
     align-items: center;
     flex-direction: column;
   }
-  .r-floater{
+  .puzzle .r-floater{
     left:0;
     bottom:0;
     height:unset;

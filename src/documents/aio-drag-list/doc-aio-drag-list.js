@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import Form from './../../npm/aio-form-react/aio-form-react';
+import AIOInput from './../../npm/aio-input/aio-input';
 import AIODragList from './../../npm/aio-drag-list/aio-drag-list';
 import DOC from '../../resuse-components/doc';
 export default class DOC_AIOForm extends Component{
@@ -30,18 +30,17 @@ class Basic extends Component{
         let {model,items} = this.state;
         return (
             <div className='example'>
-                <Form
-                    inlineLabel={true}
-                    model={model}
-                    inputs={[
-                        {type:'slider',field:'model.size',label:'size',rowKey:'1',start:24,end:72},
-                        {type:'html',rowWidth:12,rowKey:'1'},
-                        {type:'slider',field:'model.width',label:'width',rowKey:'1',start:80,end:400},
-                        {type:'html',rowWidth:12,rowKey:'1'},
-                        {type:'slider',field:'model.decay',label:'decay',rowKey:'1',start:0,end:40},
-                        {type:'html',rowWidth:12,rowKey:'1'},
-                        {type:'slider',field:'model.stop',label:'stop',rowKey:'1',start:0,end:9}
-                    ]}
+                <AIOInput
+                    type='form'
+                    value={model}
+                    inputs={{
+                        row:[
+                            {input:{type:'slider',start:24,end:72},field:'value.size',inlineLabel:'size'},
+                            {input:{type:'slider',start:80,end:400},field:'value.width',inlineLabel:'width'},
+                            {input:{type:'slider',start:0,end:40},field:'value.decay',inlineLabel:'decay'},
+                            {input:{type:'slider',start:0,end:9},field:'value.stop',inlineLabel:'stop'}
+                        ]
+                    }}
                     onChange={(model)=>this.setState({model})}
                 />
                 <AIODragList
