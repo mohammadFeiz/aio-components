@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
-import AIOInput from './../../npm/aio-input/aio-input';
-import Slider from './../../npm/aio-slider/aio-slider';
-import DOC from '../../resuse-components/doc';
+import AIOInput from './../../../npm/aio-input/aio-input';
+import Slider from './../../../npm/aio-slider/aio-slider';
+import DOC from '../../../resuse-components/doc';
 export default class DOC_AIOForm extends Component{
     render(){
         return (

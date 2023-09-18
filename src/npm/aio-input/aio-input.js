@@ -12,9 +12,6 @@ import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
 
-
-
-
 const AIContext = createContext();
 export default class AIOInput extends Component {
     constructor(props) {
@@ -23,9 +20,6 @@ export default class AIOInput extends Component {
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
         this.popup = new AIOPopup();
         this.getPopover = this.handleGetPopover();
-        this.state = {
-            backdrop: ['text', 'number', 'textarea', 'password'].indexOf(props.type) === -1,
-        }
     }
     handleGetPopover() {
         let { type, popover, options } = this.props;
@@ -211,7 +205,6 @@ export default class AIOInput extends Component {
         if (close) { this.toggle(false) }
     }
     getContext() {
-        let { backdrop } = this.state;
         return {
             ...this.props,
             popup: this.popup,
@@ -224,7 +217,6 @@ export default class AIOInput extends Component {
             getProp: this.getProp.bind(this),
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
-            backdrop
         }
     }
     render_button() { return <Layout /> }
@@ -1245,6 +1237,11 @@ class Layout extends Component {
         }
         return option
     }
+    getItemClassName(key){
+        let { type } = this.context;
+        let { option } = this.props;
+        return `aio-input-${key} aio-input-${option ? `${type}-option` : type}-${key}`
+    }
     render() {
         let { type } = this.context;
         let { option } = this.props;
@@ -1253,13 +1250,13 @@ class Layout extends Component {
         let content = (
             <>
                 <CheckIcon {...{ checked, checkIcon, type, option }} />
-                <Before before={before} type={type} option={option} />
+                {before !== undefined && <div className={this.getItemClassName('before')}>{before}</div>}
                 <div className={`aio-input-content aio-input-${type}-content`} style={{ flex: center ? 'none' : undefined }}>
-                    <Text text={text} type={type} option={option} />
-                    <Subtext subtext={subtext} type={type} option={option} />
+                    {text !== undefined && <div className={this.getItemClassName('value')}>{text}</div>}
+                    {subtext !== undefined && <div className={this.getItemClassName('subtext')}>{subtext}</div>}
                 </div>
-                <After after={after} type={type} option={option} />
-                <Loading loading={loading} type={type} option={option} />
+                {after !== undefined && <div className={this.getItemClassName('after')}>{after}</div>}
+                {loading && <div className={this.getItemClassName('loading')}>{loading === true ? <Icon path={mdiLoading} spin={0.3} size={.8} /> : loading}</div>}
                 {caret && <div className='aio-input-caret'>{caret === true ? <Icon path={mdiChevronDown} size={.8} /> : caret}</div>}
             </>
         )
@@ -1300,29 +1297,6 @@ class CheckIcon extends Component {
             </>
         );
     }
-}
-function Before({ before, type, option }) {
-    let className = `aio-input-before aio-input-${option ? `${type}-option` : type}-before`
-    return before === undefined ? null : <div className={className}>{before}</div>
-}
-function After({ after, type, option }) {
-    let className = `aio-input-after aio-input-${option ? `${type}-option` : type}-after`;
-    return after === undefined ? null : <div className={className}>{after}</div>
-}
-function Loading({ loading, type, option }) {
-    if (!loading) { return null }
-    let className = `aio-input-loading aio-input-${option ? `${type}-option` : type}-loading`;
-    return (<div className={className}>{loading === true ? <Icon path={mdiLoading} spin={0.3} size={.8} /> : loading}</div>)
-}
-function Subtext({ subtext, type, option }) {
-    if (subtext === undefined) { return null }
-    let className = `aio-input-subtext aio-input-${option ? `${type}-option` : type}-subtext`;
-    return <div className={className}>{subtext}</div>
-}
-function Text({ text, type, option }) {
-    if (text === undefined) { return null }
-    let className = `aio-input-value aio-input-${option ? `${type}-option` : type}-value`;
-    return <div className={className}>{text}</div>
 }
 export class InputFile extends Component {
     static contextType = AIContext;

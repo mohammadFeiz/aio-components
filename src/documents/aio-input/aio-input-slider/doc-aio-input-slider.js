@@ -664,29 +664,6 @@ const [value,setValue] = useState(50);
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>getScaleHTML</h3>
-                <AIOInput 
-                    type='slider' value={value} 
-                    onChange={(value)=>this.setState({value})}
-                    scaleStep={[0,50,70,100]}
-                    getScaleHTML={(value)=>{
-                        if(value === 0){return <Icon path={mdiAccount} size={1}/>}
-                        if(value === 50){return <Icon path={mdiAccount} size={1}/> }
-                        if(value === 70){return <Icon path={mdiAccount} size={1}/> }
-                        if(value === 100){return <Icon path={mdiAccount} size={1}/> }
-                    }}
-                />
-                {
-                    AIODoc().Code(`
-const [value,setValue] = useState(50);
-<AIOInput 
-    type='slider' value={value} 
-    onChange={(value)=>this.setState({value})}
-    scaleStep={[0,50,70,100]}
-/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>scaleStep (Array)</h3>
                 <AIOInput 
                     type='slider' value={value} 
@@ -744,6 +721,35 @@ const [value,setValue] = useState(50);
         if(value % 10 === 0){return {height:12}}
         if(value % 5 === 0){return {height:8}}
         return {height:5}
+    }}
+/>
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <h3>getScaleHTML</h3>
+                <AIOInput 
+                    type='slider' value={value} 
+                    onChange={(value)=>this.setState({value})}
+                    scaleStep={[0,50,70,100]}
+                    getScaleHTML={(value)=>{
+                        if(value === 0){return <Icon path={mdiAccount} size={1}/>}
+                        if(value === 50){return <Icon path={mdiAccount} size={1}/> }
+                        if(value === 70){return <Icon path={mdiAccount} size={1}/> }
+                        if(value === 100){return <Icon path={mdiAccount} size={1}/> }
+                    }}
+                />
+                {
+                    AIODoc().Code(`
+const [value,setValue] = useState(50);
+<AIOInput 
+    type='slider' value={value} 
+    onChange={(value)=>this.setState({value})}
+    scaleStep={[0,50,70,100]}
+    getScaleHTML={(value)=>{
+        if(value === 0){return <Icon path={mdiAccount} size={1}/>}
+        if(value === 50){return <Icon path={mdiAccount} size={1}/> }
+        if(value === 70){return <Icon path={mdiAccount} size={1}/> }
+        if(value === 100){return <Icon path={mdiAccount} size={1}/> }
     }}
 />
                     `)
