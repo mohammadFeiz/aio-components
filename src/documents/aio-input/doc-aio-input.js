@@ -51,7 +51,7 @@ export default class DOC_AIOInput extends Component {
                     value:'My subTitle',code:`subtitle="My Subtitle"`,types:['form']
                 },
                 'className':{
-                    value:"aio-input-button-style-1",code:`className="aio-input-button-style-1"`,
+                    value:"ai-style-6",code:`className="aio-input-button-style-1"`,
                     types:['button', 'file', 'select', 'multiselect', 'radio', 'tabs', 'checkbox', 'datepicker','text','number','textarea','color','password','slider']
                 },
                 'style':{
