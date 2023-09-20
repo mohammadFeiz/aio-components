@@ -2367,10 +2367,25 @@ class Paging extends Component {
                 attrs={{style:{height:600}}}
                 type='table'
                 rows={rows}
-                rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
+                columns={columns}
+                headerAttrs={{style:{display:'none'}}}
+                rowsTemplate={(rows)=>{
+                    return (
+                        <div className='custom-rows'>
+                            {
+                                rows.map((row,i)=>{
+                                    return (
+                                        <Card key={row._id} row={row}/>
+                                    )
+                                })
+                            }
+                        </div>
+                    )
+                }}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
-            />                
+                onSearch={true}
+            />          
         )
     }
 }

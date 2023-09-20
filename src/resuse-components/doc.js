@@ -5,7 +5,7 @@ export default class DOC extends Component{
     constructor(props){
         super(props);
         this.propsList = props.propsList;
-        this.state = {}
+        this.state = {rsa:new RSA({rtl:true})}
     }
     getNavById(id){
         let {navs} = this.props;
@@ -23,20 +23,17 @@ export default class DOC extends Component{
         }
     }
     render(){
+        let {rsa} = this.state;
         let {name,navs,goToHome,navId} = this.props;
-        return (
-            <RSA
-                navs={navs}
-                navId={navId}
-                body={({navId})=>{
-                    if(navId === 'props'){return <PropsList props={this.propsList}/>}
-                    let nav = this.getNavById(navId);
-                    return nav.COMPONENT()
-                }}
-                navHeader={()=><div className='part-title'>{name}</div>}
-                getActions={(obj)=>this.setState(obj)}
-                header={()=><button id='go-to-home' onClick={()=>goToHome()}>Home</button>}
-            />
-        )
+        return rsa.render({
+            navs,navId,
+            body:({navId})=>{
+                if(navId === 'props'){return <PropsList props={this.propsList}/>}
+                let nav = this.getNavById(navId);
+                return nav.COMPONENT()
+            },
+            navHeader:()=><div className='part-title'>{name}</div>,
+            header:()=><button id='go-to-home' onClick={()=>goToHome()}>Home</button>
+        })
     }
 }
