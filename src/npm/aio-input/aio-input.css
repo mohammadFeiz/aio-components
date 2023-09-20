@@ -402,9 +402,53 @@
     width: 100%;
     transition: 0.3s;
 }
-
-
-
+.aio-input-image{
+    width:fit-content;
+    padding:0;
+    overflow: hidden;
+}
+.aio-input-image-remove{
+    position:absolute;
+    top:0;
+    width:24px;
+    height:24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right:0;
+    background:rgba(255,255,255,0.3);
+}
+.aio-input-image-preview{
+    position:absolute;
+    top:0;
+    width:24px;
+    height:24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left:0;
+    background:rgba(255,255,255,0.3);
+}
+.aio-input-image-preview-popup{
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-input-image-placeholder{
+    padding:12px;
+}
+.aio-input-image-content{
+    flex:1;
+    height:100%;
+    
+}
+.aio-input-image-value{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    height:100%;
+}
 .aio-input-text input {
     border: none;
     width: 100%;

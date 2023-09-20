@@ -4,6 +4,7 @@ import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
 import DOC_AIOInput_Datepicker from './documents/aio-input/aio-input-datepicker/doc-aio-input-datepicker';
+import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
@@ -26,12 +27,13 @@ export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-input-slider',
+      part:'aio-input-image',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-input-table':{name:'aio-input-table',Render:DOC_AIOInput_Table},
         'aio-input-slider':{name:'aio-input-slider',Render:DOC_AIOInput_Slider},
         'aio-input-datepicker':{name:'aio-input-datepicker',Render:DOC_AIOInput_Datepicker},
+        'aio-input-image':{name:'aio-input-image',Render:DOC_AIOInput_Image},
         'aio-highlighter':{name:'aio-highlighter',Render:DOC_AIOHighlighter},
         'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
         'aio-loading':{name:'aio-loading',Render:DOC_AIOLoading},
