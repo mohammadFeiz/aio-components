@@ -1049,7 +1049,7 @@ function TableRows() {
             })
         }
         let { placeholder = 'there is not any items' } = props;
-        return <div style={{ width: '100%', textAlign: 'center', padding: 12 }}>{placeholder}</div>
+        return <div style={{ width: '100%', textAlign: 'center', padding: 12,boxSizing:'border-box' }}>{placeholder}</div>
     }
     return <div className='aio-input-table-rows'>{getContent()}</div>
 }
@@ -1061,7 +1061,7 @@ function TableToolbar() {
     return (
         <>
             <div {...toolbarAttrs} className={'aio-input-table-toolbar' + (toolbarAttrs.className ? ' ' + toolbarAttrs.className : '')}>
-                {toolbar && <div className='aio-input-table-toolbar-content'>{toolbar}</div>}
+                {toolbar && <div className='aio-input-table-toolbar-content'>{typeof toolbar === 'function'?toolbar():toolbar}</div>}
                 <div className='aio-input-table-search'>
                     {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={<Icon path={mdiMagnify} size={1} />} />}
                 </div>
@@ -1375,9 +1375,9 @@ class CheckIcon extends Component {
 export class InputFile extends Component {
     static contextType = AIContext;
     change(e) {
-        let { value = [], onChange = () => { } } = this.context;
+        let { value = [], onChange = () => { },multiple } = this.context;
         let Files = e.target.files;
-        let result = [...value];
+        let result = multiple?[...value]:[];
         let names = result.map(({ name }) => name);
         for (let i = 0; i < Files.length; i++) {
             let file = Files[i];

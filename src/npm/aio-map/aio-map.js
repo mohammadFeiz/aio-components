@@ -130,10 +130,10 @@ export default class Map extends Component {
             traffic: false,
             center: [latitude, longitude],
             zoom: 14,
-            //dragging: changeView !== false,
+            dragging: !popup,
             scrollWheelZoom: 'center',
-            // minZoom: changeView === false ? zoom : undefined,
-            // maxZoom: changeView === false ? zoom : undefined,
+            minZoom: changeView === false ? zoom : undefined,
+            maxZoom: changeView === false ? zoom : undefined,
             // zoomControl: changeView !== false
         }
         let map = new window.L.Map(this.dom.current, config);
@@ -150,11 +150,13 @@ export default class Map extends Component {
         else if (onClick) {
             myMap.on('click', (e) => onClick());
         }
-        myMap.on('move', (e) => {
-            //marker.setLatLng(e.target.getCenter())
-            let { lat, lng } = e.target.getCenter()
-            this.move(lat,lng,'init')
-        });
+        if(!popup){
+            myMap.on('move', (e) => {
+                //marker.setLatLng(e.target.getCenter())
+                let { lat, lng } = e.target.getCenter()
+                this.move(lat,lng,'init')
+            });
+        }
         if (changeView) {
             
             myMap.on('click', (e) => {
@@ -249,11 +251,11 @@ export default class Map extends Component {
         let {apiKeys} = this.props;
         let {showPopup} = this.state;
         if(showPopup){
-            let {popup} = this.props;
+            let {popup,search,title} = this.props;
             let {latitude,longitude} = this.state;
             let props = {
-                ...popup,apiKeys,popup:undefined,latitude,longitude,
-                style:{width:'100%',height:'100%',top:0,position:'fixed',...popup.style},
+                apiKeys,popup:undefined,latitude,longitude,search,title,
+                style:{width:'100%',height:'100%',top:0,position:'fixed',left:0,zIndex:10,...popup.style},
                 onClick:undefined,
                 onClose:()=>this.setState({showPopup:false}),
                 onChange:undefined,
@@ -391,6 +393,7 @@ class MapHeader extends Component {
     }
     render() {
         let {rootProps} = this.context;
+        if(rootProps.popup){return null}
         if(!rootProps.search && !rootProps.title && !rootProps.onClose){return null}
         let { searchResult, showResult } = this.state;
         let isOpen = true;
@@ -418,7 +421,8 @@ class MapFooter extends Component{
     }
     render(){
         let { rootProps,rootState } = this.context;
-        let { onSubmit } = rootProps;
+        let { onSubmit,popup } = rootProps;
+        if(popup){return null}
         if (!onSubmit) { return null }
         return (
             <RVD 

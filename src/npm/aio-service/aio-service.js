@@ -1,11 +1,14 @@
 import Axios from "axios";
 import AIODate from "./../../npm/aio-date/aio-date";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
-import AIOMessage from "../aio-message/aio-message";
+import AIOPopup from "../aio-popup/aio-popup";
 import './index.css';
 import $ from "jquery";
 export let helper = {
-  showAlert(obj = {}){AIOMessage(obj)},
+  showAlert(obj = {}){
+    let inst = new AIOPopup();
+    inst.addAlert(obj)
+  },
   getDateAndTime(value){
     try{
       let res = AIODate().toJalali({date:value});
@@ -39,7 +42,7 @@ export default function services(obj = {}) {
   if(typeof id !== 'string'){console.error('aio-storage => id should be an string, but id is:',id); return;}
   return Service({
     getState,token,loader,id,onCatch,getError,baseUrl,
-    getResponse:getResponse({getState,token,helper,baseUrl}),
+    getResponse:getResponse({getState,token,helper,baseUrl,Axios}),
     getMock:getMock({getState,token,helper,baseUrl}) 
   })
 }
