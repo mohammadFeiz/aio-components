@@ -605,7 +605,7 @@ class Form extends Component {
     }
     componentDidMount() {
         let { onChange = () => { } } = this.props;
-        onChange(this.getValue(), this.errors)
+        onChange(this.getValue(), this.getErrors(),true)
     }
     getAttrs(propsAttrs = {}, ownAttrs = {}) {
         let style = { ...propsAttrs.style, ...ownAttrs.style }
@@ -937,17 +937,20 @@ class Table extends Component {
     }
     getCellContent({ row, rowIndex, column }) {
         let { getDynamics, setCell } = this.state;
+        let {onChange} = this.props;
         let template = getDynamics({ value: column.template, row, rowIndex, column });
         if (template !== undefined) { return template }
-        let props = {
-            ...column,
+        let {input} = column;
+        let inputProps = {}
+        if(input){
+            for(let prop in input){
+                inputProps[prop] = getDynamics({ value: input[prop], row, rowIndex, column })
+            }
+        }
+        props = {
+            ...inputProps,
             value: getDynamics({ value: column.value, row, rowIndex, column }),
-            options: getDynamics({ value: column.options, row, rowIndex, column }),
-            type: getDynamics({ value: column.type, row, rowIndex, column, def: 'text' }),
-            subtext: getDynamics({ value: column.subtext, row, rowIndex, column }),
-            before: getDynamics({ value: column.before, row, rowIndex, column }),
-            after: getDynamics({ value: column.after, row, rowIndex, column }),
-            onChange: column.type ? (value) => setCell(row, column, value) : undefined,
+            onChange: inputProps.type || onChange  ? (value) => setCell(row, column, value) : undefined,
         }
         return <AIOInput {...props} />
     }
