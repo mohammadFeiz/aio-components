@@ -149,7 +149,7 @@ class OnChange extends Component {
                     placeholder='select an image'
                     style={{border:'1px solid',height:100}}
                     height='100px'
-                    onChange={(image)=>this.setState({image})}
+                    onChange={({file,url})=>this.setState({image:file})}
                 />
                 {
                     AIODoc().Code(`
@@ -185,8 +185,11 @@ class OnRemove extends Component {
                     placeholder='select an image'
                     style={{border:'1px solid',height:100}}
                     height='100px'
-                    onChange={(image)=>this.setState({image})}
-                    onRemove={()=>this.setState({image:false})}
+                    onChange={({file,url})=>this.setState({image:file})}
+                    onRemove={()=>{
+                        debugger
+                        this.setState({image:false})
+                    }}
                 />
                 {
                     AIODoc().Code(`
@@ -223,7 +226,7 @@ class Preview extends Component {
                     placeholder='select an image'
                     style={{border:'1px solid',height:100}}
                     height='100px'
-                    onChange={(image)=>this.setState({image})}
+                    onChange={({file,url})=>this.setState({image:file})}
                     onRemove={()=>this.setState({image:false})}
                     preview={true}
                 />
@@ -265,7 +268,7 @@ class BeforeAfter extends Component {
                     placeholder='select an image'
                     style={{border:'1px solid',height:124}}
                     height='100px'
-                    onChange={(image)=>this.setState({image})}
+                    onChange={({file,url})=>this.setState({image:file})}
                     onRemove={()=>this.setState({image:false})}
                 />
                 {

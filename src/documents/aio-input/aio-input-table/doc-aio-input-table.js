@@ -15,8 +15,7 @@ export default class DOC_AIOInput_Table extends Component {
                 navId='rowsTemplate'
                 navs={[
                     { text: 'type ,placeholder', id: 'type', COMPONENT: () => <TypePlaceholder /> },
-                    { text: 'rows', id: 'rows', COMPONENT: () => <Rows /> },
-                    { text: 'columns', id: 'columns', COMPONENT: () => <Columns /> },
+                    { text: 'row,columns', id: 'rowscolumns', COMPONENT: () => <RowsAndColumns /> },
                     { text: 'attrs', id: 'attrs', COMPONENT: () => <Attrs /> },
                     { text: 'onSwap (true)', id: 'onSwapTrue', COMPONENT: () => <OnSwapTrue /> },
                     { text: 'onSwap (function)', id: 'onSwapFunction', COMPONENT: () => <OnSwapFunction /> },
@@ -69,6 +68,7 @@ class TypePlaceholder extends Component {
                     AIODoc().Code(`
 <AIOInput
     type='table'
+    placeholder='موردی وجود ندارد'
 />
                     `)
                 }
@@ -78,46 +78,7 @@ class TypePlaceholder extends Component {
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class Rows extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            rows:[
-                {name:'mohammad',family:'feiz',age:38},
-                {name:'john',family:'doe',age:30},
-            ]
-        }
-    }
-    preview() {
-        let {rows} = this.state;
-        return (
-            <div className='example'>
-                <AIOInput
-                    type='table'
-                    rows={rows}
-                />                
-                {
-                    AIODoc().Code(`
-
-let rows = [
-    {name:'mohammad',family:'feiz',age:38},
-    {name:'john',family:'doe',age:30},
-]
-return (
-    <AIOInput
-        type='table'
-        rows={rows}
-    />
-)
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    render() {return (<Example preview={() => this.preview()}/>)}
-}
-class Columns extends Component {
+class RowsAndColumns extends Component {
     constructor(props){
         super(props);
         this.state = {
@@ -126,9 +87,9 @@ class Columns extends Component {
                 {name:'john',family:'doe',age:30},
             ],
             columns:[
-                {title:'Name'},
-                {title:'Family'},
-                {title:'Age'},
+                {title:'Name',value:'row.name'},
+                {title:'Family',value:'row.family'},
+                {title:'Age',value:'row.age'},
             ]
         }
     }
@@ -149,9 +110,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name'},
-    {title:'Family'},
-    {title:'Age'},
+    {title:'Name',value:'row.name'},
+    {title:'Family',value:'row.family'},
+    {title:'Age',value:'row.age'}
 ]
 return (
     <AIOInput
