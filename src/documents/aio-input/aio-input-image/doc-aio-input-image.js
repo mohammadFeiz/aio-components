@@ -11,7 +11,7 @@ export default class DOC_AIOInput_Slider extends Component {
         return (
             <DOC
                 {...this.props}
-                navId='preview'
+                navId='drop'
                 navs={[
                     { text: 'basic', id: 'basic', COMPONENT: () => <Basic /> },
                     { text: 'width height', id: 'widthheight', COMPONENT: () => <WidthHeight /> },
@@ -20,6 +20,7 @@ export default class DOC_AIOInput_Slider extends Component {
                     { text: 'onRemove', id: 'onRemove', COMPONENT: () => <OnRemove /> },
                     { text: 'preview', id: 'preview', COMPONENT: () => <Preview /> },
                     { text: 'before after subtext', id: 'beforeafter', COMPONENT: () => <BeforeAfter /> },
+                    { text: 'drop', id: 'drop', COMPONENT: () => <Drop /> },
                     
                 ]}
             />
@@ -28,7 +29,41 @@ export default class DOC_AIOInput_Slider extends Component {
 }
 
 
-
+class Drop extends Component {
+    constructor(props){
+        super(props);
+        this.state = {image:undefined}
+    }
+    preview() {
+        let {image} = this.state
+        return (
+            <div className='example'>
+                <AIOInput 
+                    type='image' 
+                    value={image}
+                    placeholder='select an image'
+                    style={{border:'1px solid',height:100}}
+                    height='100px'
+                    onChange={({file,url})=>this.setState({image:file})}
+                />
+                {
+                    AIODoc().Code(`
+<AIOInput 
+    type='image' 
+    value={image}
+    placeholder='select an image'
+    style={{border:'1px solid',height:100}}
+    height='100px'
+    onChange={(image)=>this.setState({image})}
+/>
+                    `)
+                }
+                {/* <div style={{marginTop:24}} className='aio-component-splitter'></div> */}
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
 
 
 class Basic extends Component {

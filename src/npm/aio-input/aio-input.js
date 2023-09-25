@@ -145,9 +145,6 @@ export default class AIOInput extends Component {
     }
     getProp(key, def) {
         let { type, caret, popover } = this.props;
-        if (key === 'attrs') {
-            if (['text', 'textarea', 'number', 'password', 'color'].indexOf(type) === -1) { return {} }
-        }
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
         if (key === 'caret') { return caret === false ? false : (((type === 'button' && popover) || (type === 'select' || type === 'multiselect' || type === 'datepicker')) ? (caret || true) : false) }
         if (key === 'multiple') { return (type === 'multiselect') || (type === 'radio' && !!propsResult) || (type === 'slider' && !!propsResult) }
@@ -472,13 +469,13 @@ class Input extends Component {
     render() {
         let { getProp, type } = this.context;
         let { value = '' } = this.state;
-        let attrs = getProp('attrs');
+        let inputAttrs = getProp('inputAttrs',{});
         let disabled = getProp('disabled', false);
         let placeholder = getProp('placeholder');
         let spin = getProp('spin');
         this.onChange = getProp('onChange');
         let props = {
-            ...attrs, value, type, disabled, ref: this.dom, placeholder,
+            ...inputAttrs, value, type, disabled, ref: this.dom, placeholder,
             className: spin === false ? 'no-spin' : '',
             onChange: (e) => this.change(e.target.value)
         }
