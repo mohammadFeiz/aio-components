@@ -40,7 +40,7 @@ export default class AIOInput extends Component {
                 let { backdropAttrs, attrs, fixStyle, fitHorizontal, position = 'popover', openRelatedTo } = popover || {}
                 return {
                     rtl, position, attrs, id: 'popover',
-                    body: { render: () => <DatePicker {...this.props} /> },
+                    body: { render: (obj) => <DatePicker {...this.props} onClose={obj.close}/>},
                     backdrop: { attrs: backdropAttrs },
                     popover: { fixStyle, fitHorizontal, getTarget: () => $(dom.current), openRelatedTo }
                 }
@@ -1487,7 +1487,10 @@ class DatePicker extends Component {
     static contextType = AIContext;
     render() {
         let { getProp } = this.context;
+        let {onClose} = this.props
         let props = {
+            onClose,
+            close: getProp('close', false),
             unit: getProp('unit', 'day'), calendarType: getProp('calendarType', 'gregorian'),
             disabled: getProp('disabled', false), value: getProp('value'),
             onChange: getProp('onChange', () => { }), onClear: getProp('onClear'),
@@ -1563,7 +1566,7 @@ class Calendar extends Component {
             translate: this.translate.bind(this),
             SetState: (obj) => this.setState(obj),
             onChange: ({ year, month, day, hour }) => {
-                let { onChange = () => { }, calendarType, unit, value } = this.props;
+                let { onChange = () => { }, calendarType, unit, value,close,onClose } = this.props;
                 let { months } = this.state;
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = calendarType === 'gregorian' ? AIODate().toJalali({ date: dateArray }) : dateArray;
@@ -1586,7 +1589,8 @@ class Calendar extends Component {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
-                onChange(dateString, props)
+                onChange(dateString, props);
+                if(close){onClose()}
             }
         }
     }
