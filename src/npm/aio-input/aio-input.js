@@ -26,32 +26,41 @@ export default class AIOInput extends Component {
         if (type === 'button' && popover) {
             return (dom) => {
                 let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs, render, fixStyle, fitHorizontal, position = 'popover', openRelatedTo } = popover;
+                let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover' } = popover;
                 return {
-                    rtl, position, attrs, backdrop: { attrs: backdropAttrs }, id: 'popover',
-                    popover: { fixStyle, fitHorizontal, getTarget: () => $(dom.current), openRelatedTo },
-                    body: { render: ({ close }) => render({ close }) }
+                    rtl, position,
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-popover' + (rtl?' aio-input-popover-rtl':'')} },
+                    id: 'popover',
+                    popover: { 
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop'
+                    },
+                    body: { render: ({ close }) => render({ close }) },
+                    attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
             }
         }
         if (type === 'datepicker') {
             return (dom) => {
                 let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs, fixStyle, fitHorizontal, position = 'popover', openRelatedTo } = popover || {}
+                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal, position = 'popover' } = popover || {}
                 return {
                     rtl, position, attrs, id: 'popover',
                     body: { render: (obj) => <DatePicker {...this.props} onClose={obj.close}/>},
-                    backdrop: { attrs: backdropAttrs },
-                    popover: { fixStyle, fitHorizontal, getTarget: () => $(dom.current), openRelatedTo }
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
+                    popover: { 
+                        fixStyle, fitHorizontal, 
+                        getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop'
+                    },
+                    attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
             }
         }
         if (type === 'select' || type === 'multiselect') {
             return (dom) => {
                 let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs, fixStyle, fitHorizontal = type === 'multiselect', header, footer, position = 'popover', openRelatedTo } = popover || {}
+                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, footer, position = 'popover' } = popover || {}
                 return {
-                    rtl, position, attrs, id: 'popover',
+                    rtl, position, id: 'popover',
                     body: {
                         render: () => {
                             return (
@@ -64,18 +73,24 @@ export default class AIOInput extends Component {
                             )
                         }, attrs: { style: { flexDirection: 'column' } }
                     },
-                    backdrop: { attrs: backdropAttrs },
-                    popover: { fixStyle, fitHorizontal, getTarget: () => $(dom.current), openRelatedTo }
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
+                    popover: { 
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop' ,
+                    },
+                    attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
             }
         }
         if (type && options && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) {
             return (dom) => {
                 let { type, popover = {}, rtl } = this.props;
-                let { attrs, fixStyle, fitHorizontal = true, position = 'popover' } = popover
+                let { attrs = {}, fixStyle, fitHorizontal = true, position = 'popover' } = popover
                 return {
-                    rtl, position, attrs, backdrop: false, body: { render: () => <Options type={type} /> }, id: this.datauniqid,
-                    popover: { fixStyle, fitHorizontal, getTarget: () => $(dom.current) }
+                    rtl, position, backdrop: false, body: { render: () => <Options type={type} /> }, id: this.datauniqid,
+                    popover: { 
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop',
+                    },
+                    attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
             }
         }
@@ -434,7 +449,7 @@ class Input extends Component {
         }
     }
     change(value) {
-        let { type, getProp } = this.context;
+        let { type, getProp,blurChange } = this.context;
         let onChange = getProp('onChange');
         if (!onChange) { return }
         let maxLength = getProp('maxLength', Infinity);
@@ -461,10 +476,17 @@ class Input extends Component {
             }
         }
         this.setState({ value });
-        clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-            this.onChange(value);
-        }, delay);
+        if(!blurChange){
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => {
+                this.onChange(value);
+            }, delay);
+        }
+    }
+    blur(){
+        let {blurChange} = this.context;
+        if(!blurChange){return}
+        this.onChange(this.state.value)
     }
     render() {
         let { getProp, type } = this.context;
@@ -477,7 +499,8 @@ class Input extends Component {
         let props = {
             ...inputAttrs, value, type, disabled, ref: this.dom, placeholder,
             className: spin === false ? 'no-spin' : '',
-            onChange: (e) => this.change(e.target.value)
+            onChange: (e) => this.change(e.target.value),
+            onBlur:()=>this.blur()
         }
         if (typeof this.onChange !== 'function') { return <div className='aio-input-value'>{value}</div> }
         else if (type === 'color') {
@@ -968,7 +991,7 @@ class Table extends Component {
         let template = getDynamics({ value: column.template, row, rowIndex, column });
         if (template !== undefined) { return template }
         let props = {
-            ...column,
+            ...column,blurChange:true,
             value: getDynamics({ value: column.value, row, rowIndex, column }),
             options: getDynamics({ value: column.options, row, rowIndex, column }),
             type: getDynamics({ value: column.type, row, rowIndex, column, def: 'text' }),
@@ -1246,7 +1269,7 @@ class SortClass {
             <AIOInput
                 popover={{
                     header: <div style={{ padding: '6px 12px' }}>sort</div>,
-                    openRelatedTo: '.aio-input-table'
+                    pageSelector: '.aio-input-table'
                 }}
                 key='sortbutton' caret={false} type='select' options={sortOptions} className='aio-input-table-toolbar-icon'
                 text={<Icon path={mdiSort} size={0.7} />}
