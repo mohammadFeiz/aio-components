@@ -26,10 +26,10 @@ export default class AIOInput extends Component {
         if (type === 'button' && popover) {
             return (dom) => {
                 let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover' } = popover;
+                let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover',header } = popover;
                 return {
-                    rtl, position,
-                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-popover' + (rtl?' aio-input-popover-rtl':'')} },
+                    rtl, position,header,
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
                     id: 'popover',
                     popover: { 
                         fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop'
@@ -58,16 +58,16 @@ export default class AIOInput extends Component {
         if (type === 'select' || type === 'multiselect') {
             return (dom) => {
                 let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, footer, position = 'popover' } = popover || {}
+                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, before,after, position = 'popover' } = popover || {}
                 return {
-                    rtl, position, id: 'popover',
+                    rtl, position, id: 'popover',header,
                     body: {
                         render: () => {
                             return (
                                 <>
-                                    {header && header}
+                                    {before && before}
                                     <Options />
-                                    {footer && footer}
+                                    {after && after}
                                 </>
 
                             )
