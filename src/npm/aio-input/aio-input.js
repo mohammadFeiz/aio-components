@@ -285,10 +285,7 @@ function Image(){
         else if(typeof value === 'string'){
             if(url !== value){setUrl(value)}
         }
-        else {
-            setUrl(false)
-        }
-        
+        else if(url !== false) {setUrl(false)} 
     })
     function changeUrl(file,callback = ()=>{}){
         let fr = new FileReader();
@@ -434,7 +431,7 @@ class Input extends Component {
         }
     }
     componentDidUpdate() {
-        let { type, autoHeight, delay = 400 } = this.props;
+        let { type, autoHeight } = this.props;
         if (type === 'textarea' && autoHeight) {
             let dom = this.dom.current;
             dom.style.height = 'fit-content';
@@ -445,7 +442,7 @@ class Input extends Component {
         }
         clearTimeout(this.rrt)
         if (this.state.prevValue !== this.props.value) {
-            this.rrt = setTimeout(() => this.setState({ value: this.props.value, prevValue: this.props.value }), delay + 10)
+            this.rrt = setTimeout(() => this.setState({ value: this.props.value, prevValue: this.props.value }), 0)
         }
     }
     change(value) {
