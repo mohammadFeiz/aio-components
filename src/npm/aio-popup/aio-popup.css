@@ -152,9 +152,7 @@
   background:#ddd;
   cursor:not-allowed;
 }
-.aio-popup-prompt-close-button{
-  background:#aaa;
-}
+
 .aio-popup-blur {
   filter: blur(5px);
 }
