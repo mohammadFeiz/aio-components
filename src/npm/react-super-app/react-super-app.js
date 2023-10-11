@@ -1,37 +1,68 @@
-import React, { Component } from 'react';
+import React, { Component,useReducer } from 'react';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from '../aio-popup/aio-popup';
-import $ from 'jquery';
 import './react-super-app.css';
 export default class RSA {
   constructor(props = {}) {
-    let { rtl, maxWidth } = props;
+    let { rtl, maxWidth,initialState,AppContext,navs,navId,side,title,subtitle } = props;
     this.rtl = rtl;
     this.maxWidth = maxWidth;
+    this.AppContext = AppContext;
     this.popup = new AIOPopup({ rtl })
+    this.initialState = initialState;
+    this.navs = navs;
+    this.navId = navId;
+    this.side = side;
+    this.title = title;
+    this.subtitle = subtitle;
   }
+  state = {}
+  GetState = ()=>this.state;
   render = (props) => {
     return (
-      <>
-        <ReactSuperApp 
-          {...props} popup={this.popup} rtl={this.rtl} maxWidth={this.maxWidth}
-          getActions={({getNavId,setNavId,openSide,closeSide})=>{
-            this.getNavId = getNavId;
-            this.setNavId = setNavId;
-            this.openSide = openSide;
-            this.closeSide = closeSide;
-          }}
-        />
-      </>
+      <RSAAPP
+        AppContext={this.AppContext}
+        updateState={(state)=>this.state = state}
+        props={props}
+        navs={this.navs}
+        side={this.side}
+        navId={this.navId}
+        rtl={this.rtl}
+        popup={this.popup}
+        title={this.title}
+        subtitle={this.subtitle}
+        maxWidth={this.maxWidth}
+        initialState={this.initialState}
+        getActions={({getNavId,setNavId,openSide,closeSide,SetState})=>{
+          this.getNavId = getNavId;
+          this.setNavId = setNavId;
+          this.openSide = openSide;
+          this.closeSide = closeSide;
+          this.SetState = SetState;
+        }}
+      />
     )
   }
   addModal = (obj) => this.popup.addModal(obj);
   removeModal = (obj) => this.popup.removeModal(obj);
   addSnakebar = (obj) => this.popup.addSnakebar(obj);
 }
+function REDUCER(state,action){
+  return {...state,[action.key]:action.value}
+}
+function RSAAPP({initialState = {},getActions,popup,rtl,maxWidth,AppContext,updateState,navs,side,navId,title,subtitle,props}){
+  let [state,dispatch] = useReducer(REDUCER,initialState)
+  function SetState(key,value){dispatch({key,value})}
+  function GetState(key){return key?state[key]:{...state}}
+  function getContext(){return {state:{...state},actions:props.actions,SetState,GetState,...popup}}
+  updateState(state)
+  let PROPS = {...props,title,subtitle,navs,side,navId,popup,rtl,maxWidth,getActions:(obj)=>getActions({...obj,SetState})} 
+  return (<AppContext.Provider value={getContext()}><ReactSuperApp {...PROPS}/></AppContext.Provider>);
+}
+
 class ReactSuperApp extends Component {
   constructor(props) {
     super(props);
@@ -94,19 +125,25 @@ class ReactSuperApp extends Component {
     return navs.filter(({ show = () => true }) => show())[0].id;
   }
   header_layout(nav) {
-    let { header,headerContent, side, title = () => nav.text } = this.props;
-    if (header === false) { return false }
-    if(typeof header === 'function'){
-      return {
-        style: { flex: 'none', width: '100%' }, align: 'v', className: 'rsa-header of-visible',
-        html: header()
-      }
-    }
+    let { header} = this.props;
+    let Header = typeof header === 'function'?header():header;
+    if (Header === false) { return false }
+    if(Header){return {style: { flex: 'none', width: '100%' }, align: 'v', className: 'rsa-header of-visible',html: Header}}
+    let { headerContent, side, title = () => nav?nav.text:'' ,subtitle = ()=>{}} = this.props;
+    let Title = title(nav);
+    let Subtitle = subtitle(nav);
+    if(!Title && !side && !headerContent){return false}
     return {
       style: { flex: 'none', width: '100%' }, align: 'v', className: 'rsa-header of-visible',
       row: [
         { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, align: 'vh', attrs: { onClick: () => this.openSide() } },
-        { show: title !== false, html: () => title(nav), className: 'rsa-header-title' },
+        {
+          show: !!Title,
+          column:[
+            {  html: Title, className: 'rsa-header-title' },
+            {  show:!!Subtitle,html: Subtitle, className: 'rsa-header-subtitle' }
+          ]
+        },
         { flex: 1, show: !!headerContent, html: () => headerContent(), className: 'of-visible' },
       ]
     }
@@ -181,11 +218,11 @@ class ReactSuperApp extends Component {
   }
   render() {
     let { splash } = this.state;
-    let { style, className, maxWidth, popup } = this.props;
+    let { style, className, maxWidth, popup,rtl } = this.props;
     return (
-      <div className={`rsa-container` + (className ? ' ' + className : '')} style={style}>
+      <div className={`rsa-container` + (className ? ' ' + className : '')} style={{...style,direction:rtl?'rtl':'ltr'}}>
         <div className='rsa' style={{ maxWidth }}>
-          {this.renderMain()},
+          {this.renderMain()}
           {popup.render()}
           {splash && splash()}
         </div>
@@ -243,9 +280,10 @@ class Navigation extends Component {
     return {
       flex: 1, className: 'rsa-bottom-menu-item of-visible' + (active ? ' active' : ''), attrs: { onClick: () => setNavId(id) },
       column: [
-        { flex: 2 },
+        { show: !icon,flex: 1 },
+        { show: !!icon,flex: 2 },
         { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh', className: 'of-visible' },
-        { flex: 1 },
+        { show: !!icon,flex: 1 },
         { html: text, align: 'vh', className: 'rsa-bottom-menu-item-text' },
         { flex: 1 }
       ]

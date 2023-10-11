@@ -76,9 +76,10 @@ class Popups extends Component {
   async removeModal(arg = 'last',animate = true) {
     if(arg === 'all'){this.change({ modals: [] });}
     else{
+      let { modals } = this.state;
+      if(!modals.length){return}
       this.mount(arg,false);
       setTimeout(()=>{
-        let { modals } = this.state;
         let modal = arg === 'last'?modals[modals.length - 1]:modals.find((o) => o.id === arg);
         if(modal.onClose){modal.onClose()}
         else if(arg === 'last'){this.change({ modals: modals.slice(0,modals.length - 1) })}
@@ -450,9 +451,12 @@ function Align(dom,target,config = {}){
       let top = offset.top - window.pageYOffset;
       if(pageSelector && type !== 'page'){
         let page = dom.parents(pageSelector);
-        let {left:l,top:t} = page.offset()
-        left -= l;
-        top -= t;
+        try{
+          let {left:l,top:t} = page.offset()
+          left -= l;
+          top -= t;
+        }
+        catch{}
       }
       let width = dom.outerWidth();
       let height = dom.outerHeight();
