@@ -29,10 +29,10 @@ export default class AIOInput extends Component {
                 let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover',header } = popover;
                 return {
                     rtl, position,header,
-                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop ' + this.datauniqid} },
                     id: 'popover',
                     popover: { 
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop'
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-input-backdrop.' + this.datauniqid
                     },
                     body: { render: ({ close }) => render({ close }) },
                     attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
@@ -46,10 +46,10 @@ export default class AIOInput extends Component {
                 return {
                     rtl, position, attrs, id: 'popover',
                     body: { render: (obj) => <DatePicker {...this.props} onClose={obj.close}/>},
-                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop ' + this.datauniqid} },
                     popover: { 
                         fixStyle, fitHorizontal, 
-                        getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop'
+                        getTarget: () => $(dom.current), pageSelector:'.aio-input-backdrop.' + this.datauniqid
                     },
                     attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
@@ -65,9 +65,9 @@ export default class AIOInput extends Component {
                         render: () => (<>{before && before}<Options />{after && after}</>), 
                         attrs: { style: { flexDirection: 'column' } }
                     },
-                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop'} },
+                    backdrop: { attrs: {...backdropAttrs,className:'aio-input-backdrop ' + this.datauniqid} },
                     popover: { 
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop' ,
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-input-backdrop.' + this.datauniqid ,
                     },
                     attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }
@@ -80,7 +80,7 @@ export default class AIOInput extends Component {
                 return {
                     rtl, position, backdrop: false, body: { render: () => <Options type={type} /> }, id: this.datauniqid,
                     popover: { 
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-popup-backdrop',
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector:'.aio-input-backdrop.' + this.datauniqid,
                     },
                     attrs: {...attrs,className:'aio-input-popover' + (attrs.className?' ' + attrs.className:'') + (rtl?' aio-input-popover-rtl':'')} 
                 }

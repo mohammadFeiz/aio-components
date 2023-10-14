@@ -51,7 +51,7 @@ export default class Map extends Component {
     async getAddress(latitude, longitude){
         let { apiKeys = {}} = this.props;
         try{
-            let param = {headers:{'Api-Key':apiKeys.service}}
+            let param = {headers:{'Api-Key':apiKeys.service,Authorization:false}}
             let url = `https://api.neshan.org/v5/reverse?lat=${latitude}&lng=${longitude}`;
             let res = await Axios.get(url,param);
             let address;
