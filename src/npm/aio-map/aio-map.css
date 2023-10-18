@@ -20,7 +20,6 @@
     display:flex;
     border-radius:16px 16px 0 0;
     align-items: center;
-    justify-content: center;
 }
 .aio-map-address{
     width:100%;
@@ -28,6 +27,13 @@
     align-items: center;
     text-align: right;
     font-weight: bold;
+    flex:1;
+}
+.aio-map-latlng{
+    width:100%;
+    font-size:10px;
+    align-items: center;
+    text-align: right;
     flex:1;
 }
 .aio-map-submit-button{

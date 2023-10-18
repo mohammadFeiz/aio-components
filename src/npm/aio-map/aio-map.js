@@ -299,17 +299,17 @@ class Map extends Component {
     renderPopup(){
         let {showPopup} = this.state;
         if(showPopup){
-            let {popup,search} = this.props;
+            let {popup,search,onChange} = this.props;
             if(popup === true){popup = {}}
-            let {title = this.props.title,apiKeys = this.props.apiKeys} = popup
+            let {title = this.props.title,apiKeys = this.props.apiKeys,showMarker = this.props.showMarker,markers = this.props.markers} = popup
             let {latitude,longitude} = this.state;
             let props = {
-                apiKeys,popup:undefined,latitude,longitude,search,title,
+                apiKeys,popup:undefined,latitude,longitude,search,title,showMarker,markers,
                 style:{width:'100%',height:'100%',top:0,position:'fixed',left:0,zIndex:10,...popup.style},
                 onClick:undefined,
                 onClose:()=>this.setState({showPopup:false}),
                 onChange:undefined,
-                onSubmit:(lat,lng)=>{this.move(lat,lng); this.setState({showPopup:false})}
+                onSubmit:!onChange?undefined:(lat,lng)=>{this.move(lat,lng); this.setState({showPopup:false})}
             }
             return <Map {...props}/>
         }
@@ -465,20 +465,26 @@ class MapHeader extends Component {
 class MapFooter extends Component{
     static contextType = MapContext;
     submit_layout(){
-        let {submit} = this.context;
+        let {rootProps,submit} = this.context;
+        let {onSubmit,popup} = rootProps
+        if(!onSubmit || popup){return false}
         return {html: (<button className='aio-map-submit-button' onClick={async () => submit()}>تایید موقعیت</button>)}
     }
     render(){
-        let { rootProps,rootState } = this.context;
-        let { onSubmit,popup } = rootProps;
-        if(popup){return null}
-        if (!onSubmit) { return null }
+        let { rootState,rootProps } = this.context;
+        if(rootProps.popup){return null}
+        let {latitude:lat,longitude:lng} = rootState;
         return (
             <RVD 
                 layout={{
                     className: 'aio-map-footer',
                     row:[
-                        {html:rootState.address,className:'aio-map-address',},
+                        {
+                            column:[
+                                {html:rootState.address,className:'aio-map-address'},
+                                {show:!!lat && !!lng,html:()=>`${lat} - ${lng}`,className:'aio-map-latlng'},
+                            ]
+                        },
                         this.submit_layout()
                     ]
                 }}
