@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, { Component, Fragment, createRef } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -46,6 +46,7 @@ export default class AIOPopup {
 class Popups extends Component {
   constructor(props) {
     super(props);
+    this.dom = createRef()
     let { getActions = () => { } } = props
     this.state = {modals: []}
     getActions({
@@ -99,30 +100,29 @@ class Popups extends Component {
   getModals() {
     let { modals } = this.state;
     if (!modals.length) { return null }
-    return modals.map(({popover, 
-      position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,footer, closeType, body, id,mounted }, i) => {
-        let props = {
+    return modals.map((modal, i) => {
+      let {
+        popover,position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,
+        footer, closeType, body, id,mounted 
+      } = modal;  
+      let props = {
         id,backdrop,footer,text,onSubmit,header,popover,
-        position, rtl, attrs, closeType, body,index: i,mounted,
+        position, rtl, attrs, closeType, body,index: i,isLast: i === modals.length - 1,mounted,
         onClose: () => this.removeModal(id),
+        removeModal:this.removeModal.bind(this),//use for remove lastModal by esc keyboard
         onMount:()=>this.mount(id,true)
       }
       return <Popup key={id} {...props} />
     })
   }
-  render() {
-    return (
-      <>
-        {this.getModals()}
-      </>
-    )
-  }
+  render() {return (<>{this.getModals()}</>)}
 }
 
 class Popup extends Component {
   constructor(props) {
     super(props);    
     this.dom = createRef();
+    this.backdropDom = createRef()
     this.state = {popoverStyle:undefined}
   }
   async onClose() {
@@ -142,6 +142,7 @@ class Popup extends Component {
       let target = popover.getTarget();
       target.attr('data-uniq-id',this.dui)
     }
+    $(this.backdropDom.current).focus();
     $(window).unbind('click',this.handleBackClick)
     $(window).bind('click',$.proxy(this.handleBackClick,this))
   }
@@ -196,6 +197,14 @@ class Popup extends Component {
     let style = Align(popup, target, { fixStyle: fixStyle, pageSelector, fitHorizontal, style: attrs.style, rtl })
     return {...style,position:'fixed'}
   }
+  keyDown(e){
+    let {isLast,removeModal} = this.props;
+    if(!isLast){return}
+    let code = e.keyCode;
+    if(code === 27){
+      removeModal()
+    }
+  }
   render() {
     let { rtl, attrs = {},backdrop,mounted} = this.props;
     let {popoverStyle} = this.state
@@ -207,7 +216,7 @@ class Popup extends Component {
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
     return (
-      <div {...backdropProps}>
+      <div {...backdropProps} ref={this.backdropDom} onKeyDown={this.keyDown.bind(this)} tabIndex={0}>
         <RVD
           layout={{
             attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui},

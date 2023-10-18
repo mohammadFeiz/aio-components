@@ -5,7 +5,20 @@ export default class DOC extends Component{
     constructor(props){
         super(props);
         this.propsList = props.propsList;
-        this.state = {rsa:new RSA({rtl:true})}
+        this.state = {
+            rsa:new RSA({
+                nav:{
+                    items:props.navs,
+                    id:props.navId,
+                    header:()=><div className='part-title'>{props.name}</div>
+                },
+                body:({navId})=>{
+                    if(navId === 'props'){return <PropsList props={this.propsList}/>}
+                    let nav = this.getNavById(navId);
+                    return nav.COMPONENT()
+                },
+                headerContent:()=><button id='go-to-home' onClick={()=>props.goToHome()}>Home</button>
+            })}
     }
     getNavById(id){
         let {navs} = this.props;
@@ -24,16 +37,6 @@ export default class DOC extends Component{
     }
     render(){
         let {rsa} = this.state;
-        let {name,navs,goToHome,navId} = this.props;
-        return rsa.render({
-            navs,navId,
-            body:({navId})=>{
-                if(navId === 'props'){return <PropsList props={this.propsList}/>}
-                let nav = this.getNavById(navId);
-                return nav.COMPONENT()
-            },
-            navHeader:()=><div className='part-title'>{name}</div>,
-            header:()=><button id='go-to-home' onClick={()=>goToHome()}>Home</button>
-        })
+        return rsa.render()
     }
 }

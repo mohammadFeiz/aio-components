@@ -147,27 +147,32 @@
   font-size:16px;
   color:#fff;
   height:48px;
+  white-space: nowrap;
   user-select:none;
 }
 .rsa-bottom-menu{
-    box-shadow: 0 0 12px 0px rgba(0,0,0,0.1);
-    height:48px;
-    margin:6px;
-    border-radius:8px;
-    font-size:14px;
-  }
+  box-shadow: 0 0 12px 0px rgba(0,0,0,0.1);
+  height:48px;
+  margin:6px;
+  border-radius:8px;
+  font-size:14px;
+  overflow-x:auto;
+}
 .rsa-navigation-item.active{
   color:#fff;
   background:rgba(0,0,0,0.2);
 }
 .rsa-bottom-menu-item{
     font-size:18px;
+    flex-shrink: 0;
+    padding:0 12px;
 }
   .rsa-bottom-menu-item.active{
     color:dodgerblue;
   }
 .rsa-bottom-menu-item-text{
   font-size:10px;
+  white-space: nowrap;
 }
 .rsa-navigation-title{
   color:#FFF;

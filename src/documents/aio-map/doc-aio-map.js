@@ -3,6 +3,7 @@ import DOC from '../../resuse-components/doc';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOMap from './../../npm/aio-map/aio-map';
+import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 import {Icon} from '@mdi/react';
 import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift } from '@mdi/js';
@@ -14,34 +15,279 @@ export default class DOC_AIOMap extends Component {
                 navId='apiKeys'
                 navs={[
                     { text: 'apiKeys', id: 'apiKeys', COMPONENT: () => <APIKeys /> },
+                    { text: 'draggable', id: 'draggable', COMPONENT: () => <Draggable /> },
+                    { text: 'zoomable', id: 'zoomable', COMPONENT: () => <Zoomable /> },
+                    { text: 'traffic', id: 'traffic', COMPONENT: () => <Traffic /> },
+                    { text: 'onClick', id: 'onClick', COMPONENT: () => <OnClick /> },
+                    { text: 'onClose', id: 'onClose', COMPONENT: () => <OnClose /> },
+                    { text: 'title', id: 'title', COMPONENT: () => <Title /> },
+                    { text: 'showMarker', id: 'showMarker', COMPONENT: () => <ShowMarker /> },
                     { text: 'latitude , longitude , zoom', id: 'latlngzoom', COMPONENT: () => <LatLngZoom /> },
                     { text: 'onChange', id: 'onChange', COMPONENT: () => <OnChange /> },
+                    { text: 'onSubmit', id: 'onSubmit', COMPONENT: () => <OnSubmit /> },
                     { text: 'area', id: 'area', COMPONENT: () => <Area /> },
                     { text: 'markers', id: 'markers', COMPONENT: () => <Markers /> },
                     { text: 'search', id: 'search', COMPONENT: () => <Search /> },
+                    { text: 'popup', id: 'popup', COMPONENT: () => <Popup /> },
                 ]}
             />
         )
     }
 }
 class APIKeys extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+    }
     preview() {
         return (
             <div className='example'>
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                />
+                {this.mapInstance.render()}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-/>
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+
+return map.render()
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Draggable extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+    }
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render({draggable:false})}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+return map.render({draggable:false})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Zoomable extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+    }
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render({zoomable:false})}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+return map.render({zoomable:false})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Traffic extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+    }
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render({traffic:true})}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+return map.render({traffic:true})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+
+class OnClick extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onClick:()=>alert('you clicked map')
+        })
+    }
+    
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render()}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onClick:()=>alert('you clicked map')
+})
+return map.render()
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class OnClose extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onClose:()=>alert('you closed map')
+        })
+    }
+    
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render()}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onClose:()=>alert('you closed map')                
+})
+return map.render()
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Title extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            title:'نمایش موقعیت'
+        })
+    }
+    
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render()}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    title:'نمایش موقعیت'
+})
+return map.render()
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class ShowMarker extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            showMarker:false
+        })
+    }
+    
+    preview() {
+        return (
+            <div className='example'>
+                {this.mapInstance.render()}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    showMarker:false
+})
+return map.render()
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -51,7 +297,17 @@ class APIKeys extends Component {
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class LatLngZoom extends Component {
-    state = {latitude:35.694739,longitude:51.394097,zoom:14}
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+        this.state = {latitude:35.694739,longitude:51.394097,zoom:14}
+    
+    }
     change(dir,field,fixed){
         let result = this.state[field] + dir;
         result = +result.toFixed(fixed)
@@ -111,26 +367,16 @@ class LatLngZoom extends Component {
                         ]
                     }}
                 />
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                    latitude={latitude}
-                    longitude={longitude}
-                    zoom={zoom}
-                />
+                {this.mapInstance.render({latitude,longitude,zoom})}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-    latitude={${latitude}}
-    longitude={${longitude}}
-    zoom={${zoom}}
-/>
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+return map.render({latitude:${latitude},longitude:${longitude},zoom:${zoom}})
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -140,37 +386,79 @@ class LatLngZoom extends Component {
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class OnChange extends Component {
-    state = {latitude:35.694739,longitude:51.394097}
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onChange:(latitude,longitude)=>{
+                this.setState({latitude,longitude})
+            }
+        })
+        this.state = {latitude:35.694739,longitude:51.394097}
+    }
     preview() {
         let {latitude,longitude} = this.state;
         return (
             <div className='example'>
                 <span>{`latitude = ${latitude}`}</span>
                 <span>{`longitude = ${longitude}`}</span>
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                    latitude={latitude}
-                    longitude={longitude}
-                    onChange={(latitude,longitude)=>{
-                        this.setState({latitude,longitude})
-                    }}
-                />
+                {this.mapInstance.render({latitude,longitude})}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-    latitude={latitude}
-    longitude={longitude}
-    onChange={(latitude,longitude)=>{
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onChange:(latitude,longitude)=>{
         this.setState({latitude,longitude})
-    }}
-/>
+    }
+})
+....
+let {latitude,longitude} = this.state;
+return map.render({latitude,longitude})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class OnSubmit extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onSubmit:(latitude,longitude)=>this.setState({latitude,longitude})
+        })
+        this.state = {latitude:35.694739,longitude:51.394097}
+    }
+    preview() {
+        let {latitude,longitude} = this.state;
+        return (
+            <div className='example'>
+                <span>{`latitude = ${latitude}`}</span>
+                <span>{`longitude = ${longitude}`}</span>
+                {this.mapInstance.render({latitude,longitude})}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onSubmit:(latitude,longitude)=>this.setState({latitude,longitude})
+})
+....
+let {latitude,longitude} = this.state;
+return map.render()
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -180,7 +468,16 @@ class OnChange extends Component {
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Area extends Component {
-    state = {area:{latitude:35.694739,longitude:51.394097,radius:2000,color:'orange',opacity:0.2}}
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+        this.state = {area:{latitude:35.694739,longitude:51.394097,radius:2000,color:'orange',opacity:0.2}}
+    }
     change(dir,field,fixed){
         let result = this.state.area[field] + dir;
         result = +result.toFixed(fixed)
@@ -192,47 +489,89 @@ class Area extends Component {
             <div className='example'>
                 <RVD
                     layout={{
-                        row:[
+                        column:[
                             {
-                                style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'latitude',align:'v',className:'bold'},
-                                    {size:12},
                                     {
+                                        style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:area.latitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:'latitude',align:'v',className:'bold'},
+                                            {size:12},
+                                            {
+                                                row:[
+                                                    {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                                    {html:area.latitude,size:120,align:'vh'},
+                                                    {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {size:36},
+                                    {
+                                        style:{border:'1px solid #ddd',padding:12},
+                                        row:[
+                                            {html:'longitude',align:'v',className:'bold'},
+                                            {size:12},
+                                            {
+                                                row:[
+                                                    {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                                    {html:area.longitude,size:120,align:'vh'},
+                                                    {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {size:36},
+                                    {
+                                        style:{border:'1px solid #ddd',padding:12},
+                                        row:[
+                                            {html:'radius',align:'v',className:'bold'},
+                                            {size:12},
+                                            {
+                                                row:[
+                                                    {html:<button onClick={()=>this.change(-100,'radius',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                                    {html:area.radius,size:120,align:'vh'},
+                                                    {html:<button onClick={()=>this.change(100,'radius',0)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                                ]
+                                            }
                                         ]
                                     }
                                 ]
                             },
-                            {size:36},
                             {
-                                style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'longitude',align:'v',className:'bold'},
-                                    {size:12},
                                     {
+                                        flex:1,
+                                        style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:area.longitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:'opacity',align:'v',className:'bold'},
+                                            {
+                                                flex:1,
+                                                html:(
+                                                    <AIOInput
+                                                        type='slider' showValue='inline' style={{width:'100%'}} value={area.opacity} step={0.1} start={0} end={1}
+                                                        onChange={(opacity)=>this.setState({area:{...area,opacity}})}
+                                                    />
+                                                )
+                                            }
                                         ]
-                                    }
-                                ]
-                            },
-                            {size:36},
-                            {
-                                style:{border:'1px solid #ddd',padding:12},
-                                row:[
-                                    {html:'radius',align:'v',className:'bold'},
-                                    {size:12},
+                                    },
+                                    {size:24},
                                     {
+                                        flex:1,
+                                        style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:<button onClick={()=>this.change(-100,'radius',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:area.radius,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(100,'radius',0)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:'color',align:'v',className:'bold'},
+                                            {size:12},
+                                            {
+                                                flex:1,
+                                                html:(
+                                                    <AIOInput
+                                                        type='color' style={{width:'100%'}} value={area.color}
+                                                        onChange={(color)=>this.setState({area:{...area,color}})}
+                                                    />
+                                                )
+                                            },
                                         ]
                                     }
                                 ]
@@ -240,32 +579,26 @@ class Area extends Component {
                         ]
                     }}
                 />
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                    latitude={35.694739}
-                    longitude={51.394097}
-                    area={area}
-                />
+                {this.mapInstance.render({area})}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-    latitude={35.694739}
-    longitude={51.394097}
-    area={{
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+....
+let {area} = this.state;
+return map.render({
+    area:{
         latitude:${area.latitude},
         longitude:${area.longitude},
         radius:${area.radius},
-        color:'orange',
-        opacity:0.2
-    }}
-/>
+        color:${area.color},
+        opacity:${area.opacity}
+    }
+})
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -275,12 +608,34 @@ class Area extends Component {
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Markers extends Component {
-    state = {
-        markers:[
-            {latitude:35.76025388385241,longitude:51.40858858823776,size:30,color:'orange',html:<Icon path={mdiOfficeBuilding} size={1}/>},
-            {latitude:35.76920327411297,longitude:51.40546649694443,size:30,color:'red',html:<Icon path={mdiOfficeBuilding} size={1}/>},
-            {latitude:35.78097175634515,longitude:51.39394909143448,size:30,color:'red',html:<Icon path={mdiGift} size={1}/>,text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>}
-        ]
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            }
+        })
+        this.state = {
+            latitude:35.76025287,longitude:51.40858757,
+            markers:[
+                {
+                    latitude:35.76025388385241,longitude:51.40858858823776,size:30,color:'orange',
+                    html:<Icon path={mdiOfficeBuilding} size={1}/>,
+                    popup:({latitude,longitude})=>latitude
+                },
+                {
+                    latitude:35.76920327411297,longitude:51.40546649694443,size:30,color:'red',
+                    html:<Icon path={mdiOfficeBuilding} size={1}/>,
+                    popup:({latitude,longitude})=>latitude
+                },
+                {
+                    latitude:35.78097175634515,longitude:51.39394909143448,size:30,color:'red',
+                    html:<Icon path={mdiGift} size={1}/>,text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
+                    popup:({latitude,longitude})=>latitude
+                }
+            ]
+        }
     }
     change(dir,field,fixed){
         let {markers} = this.state;
@@ -289,7 +644,7 @@ class Markers extends Component {
         this.setState({markers:markers.map((o,i)=>i === 0?{...markers[i],[field]:result}:o)})
     }
     preview() {
-        let {markers} = this.state; 
+        let {markers,latitude,longitude} = this.state; 
         return (
             <div className='example'>
                 <RVD
@@ -342,40 +697,34 @@ class Markers extends Component {
                         ]
                     }}
                 />
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                    zoom={13}
-                    latitude={35.76920327411297}
-                    longitude={51.40546649694443}
-                    markers={markers}
-                />
+                {this.mapInstance.render({latitude,longitude,markers})}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-    zoom={13}
-    latitude={35.76920327411297}
-    longitude={51.40546649694443}
-    markers={[
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    }
+})
+....
+return map.render({
+    latitude:${latitude},longitude:${longitude},
+    markers:[
         {
-            latitude:${markers[0].latitude},
-            longitude:${markers[0].longitude},
-            size:${markers[0].size},
+            latitude:35.76025388385241,
+            longitude:51.40858858823776,
+            size:30,
             color:'orange',
-            html:<Icon path={mdiOfficeBuilding} size={1}/>
+            html:<Icon path={mdiOfficeBuilding} size={1}/>,
+            popup:(marker)=>marker.latitude
         },
         {
             latitude:35.76920327411297,
             longitude:51.40546649694443,
             size:30,
             color:'red',
-            html:<Icon path={mdiOfficeBuilding} size={1}/>
+            html:<Icon path={mdiOfficeBuilding} size={1}/>,
+            popup:(marker)=>marker.latitude
         },
         {
             latitude:35.78097175634515,
@@ -383,10 +732,11 @@ class Markers extends Component {
             size:30,
             color:'red',
             html:<Icon path={mdiGift} size={1}/>,
-            text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>
+            text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
+            popup:(marker)=>marker.latitude
         }
-    ]}
-/>
+    ]
+})
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -396,39 +746,100 @@ class Markers extends Component {
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Search extends Component {
-    state = {latitude:35.694739,longitude:51.394097}
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onChange:(latitude,longitude)=>{
+                this.setState({latitude,longitude})
+            },
+            search:true
+        })
+        this.state = {
+            latitude:35.694739,longitude:51.394097
+        }
+    }
     preview() {
         let {latitude,longitude} = this.state;
         return (
             <div className='example'>
                 <span>{`latitude = ${latitude}`}</span>
                 <span>{`longitude = ${longitude}`}</span>
-                <AIOMap
-                    apiKeys={{
-                        map:'web.bfb13683318840ad840923a88043ceba',
-                        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-                    }}
-                    search={true}
-                    latitude={latitude}
-                    longitude={longitude}
-                    onChange={(latitude,longitude)=>{
-                        this.setState({latitude,longitude})
-                    }}
-                />
+                {this.mapInstance.render({latitude,longitude})}
                 {
                     AIODoc().Code(`
-<AIOMap
-    apiKeys={{
-        map:'web.bfb13683318840ad840923a88043ceba',
-        service:'service.f84df93b4aa94b609e2d30b7c765a719',
-    }}
-    search={true}
-    latitude={latitude}
-    longitude={longitude}
-    onChange={(latitude,longitude)=>{
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onChange:(latitude,longitude)=>{
         this.setState({latitude,longitude})
+    },
+    search:true
+})
+....
+return map.render({
+    latitude:${latitude},longitude:${longitude}
+    
+})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class Popup extends Component {
+    constructor(props){
+        super(props);
+        this.mapInstance = new AIOMap({
+            apiKeys:{
+                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+                service:'service.09a2234e299a4ff585007b2894df9fca',
+            },
+            onChange:(latitude,longitude)=>{
+                this.setState({latitude,longitude})
+            },
+            search:true,
+            popup:{
+                title:'انتخاب موقعیت'
+            }
+        })
+        this.state = {
+            latitude:35.694739,longitude:51.394097
+        }
+    }
+    preview() {
+        let {latitude,longitude} = this.state;
+        return (
+            <div className='example'>
+                <span>{`latitude = ${latitude}`}</span>
+                <span>{`longitude = ${longitude}`}</span>
+                {this.mapInstance.render({latitude,longitude})}
+                {
+                    AIODoc().Code(`
+let map = new AIOMap({
+    apiKeys:{
+        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+        service:'service.09a2234e299a4ff585007b2894df9fca',
+    },
+    onChange:(latitude,longitude)=>{
+        this.setState({latitude,longitude})
+    },
+    search:true,
+    popup={{
+        title:'انتخاب موقعیت'
     }}
-/>
+})
+....
+return map.render({
+    latitude,longitude
+})
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>

@@ -134,6 +134,7 @@
   padding:0 6px;
   background:none;
   border:none;
+  cursor:pointer;
 }
 .aio-popup-header-close-button{
   width:36px;

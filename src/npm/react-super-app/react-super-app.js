@@ -5,47 +5,26 @@ import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/j
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from '../aio-popup/aio-popup';
 import './react-super-app.css';
+//type I_Sidemenu_props = {items:I_SideMenu_props_item[],header:()=>React.ReactNode,footer:()=>React.ReactNode,attrs:object}
+//type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}
 export default class RSA {
   constructor(props = {}) {
-    let { rtl, maxWidth,initialState,AppContext,navs,navId,side,title,subtitle } = props;
-    this.rtl = rtl;
-    this.maxWidth = maxWidth;
-    this.AppContext = AppContext;
-    this.popup = new AIOPopup({ rtl })
-    this.initialState = initialState;
-    this.navs = navs;
-    this.navId = navId;
-    this.side = side;
-    this.title = title;
-    this.subtitle = subtitle;
+    let { rtl, maxWidth,initialState = {},AppContext,nav,side,title,subtitle,headerContent,actions,header,body } = props;
+    let {id:navId,items:navs,header:navHeader,footer:navFooter} = nav;
+    this.props = {
+      rtl,maxWidth,AppContext,initialState,navs,navId,navHeader,navFooter,side,title,subtitle,headerContent,actions,header,body,
+      popup:new AIOPopup({ rtl }),
+      getActions:({getNavId,setNavId,openSide,closeSide,SetState,GetState})=>{
+        this.getNavId = getNavId;
+        this.GetState = GetState;
+        this.setNavId = setNavId;
+        this.openSide = openSide;
+        this.closeSide = closeSide;
+        this.SetState = SetState;
+      }
+    }  
   }
-  state = {}
-  GetState = ()=>this.state;
-  render = (props) => {
-    return (
-      <RSAAPP
-        AppContext={this.AppContext}
-        updateState={(state)=>this.state = state}
-        props={props}
-        navs={this.navs}
-        side={this.side}
-        navId={this.navId}
-        rtl={this.rtl}
-        popup={this.popup}
-        title={this.title}
-        subtitle={this.subtitle}
-        maxWidth={this.maxWidth}
-        initialState={this.initialState}
-        getActions={({getNavId,setNavId,openSide,closeSide,SetState})=>{
-          this.getNavId = getNavId;
-          this.setNavId = setNavId;
-          this.openSide = openSide;
-          this.closeSide = closeSide;
-          this.SetState = SetState;
-        }}
-      />
-    )
-  }
+  render = () => <RSAAPP {...this.props}/>
   addModal = (obj) => this.popup.addModal(obj);
   removeModal = (obj) => this.popup.removeModal(obj);
   addSnakebar = (obj) => this.popup.addSnakebar(obj);
@@ -53,14 +32,15 @@ export default class RSA {
 function REDUCER(state,action){
   return {...state,[action.key]:action.value}
 }
-function RSAAPP({initialState = {},getActions,popup,rtl,maxWidth,AppContext,updateState,navs,side,navId,title,subtitle,props}){
-  let [state,dispatch] = useReducer(REDUCER,initialState)
+function RSAAPP(props){
+  let [state,dispatch] = useReducer(REDUCER,props.initialState)
   function SetState(key,value){dispatch({key,value})}
   function GetState(key){return key?state[key]:{...state}}
-  function getContext(){return {state:{...state},actions:props.actions,SetState,GetState,...popup}}
-  updateState(state)
-  let PROPS = {...props,title,subtitle,navs,side,navId,popup,rtl,maxWidth,getActions:(obj)=>getActions({...obj,SetState})} 
-  return (<AppContext.Provider value={getContext()}><ReactSuperApp {...PROPS}/></AppContext.Provider>);
+  function getContext(){return {actions:props.actions,SetState,GetState,...props.popup}}
+  let PROPS = {...props,getActions:(obj)=>props.getActions({...obj,SetState,GetState})} 
+  let {AppContext} = props;
+  if(AppContext){return (<AppContext.Provider value={getContext()}><ReactSuperApp {...PROPS}/></AppContext.Provider>);}
+  else {return <ReactSuperApp {...PROPS}/>}
 }
 
 class ReactSuperApp extends Component {
@@ -144,7 +124,8 @@ class ReactSuperApp extends Component {
             {  show:!!Subtitle,html: Subtitle, className: 'rsa-header-subtitle' }
           ]
         },
-        { flex: 1, show: !!headerContent, html: () => headerContent(), className: 'of-visible' },
+        {show:!!title || !!side ,flex:1},
+        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => headerContent(), className: 'of-visible' },
       ]
     }
   }
@@ -173,10 +154,10 @@ class ReactSuperApp extends Component {
     return className;
   }
   navigation_layout(type) {
-    let { navs = [], navHeader, rtl } = this.props;
+    let { navs = [], navHeader, rtl,navFooter } = this.props;
     if (!navs.length) { return false }
     let { navId } = this.state;
-    let props = { navs, navHeader, navId, setNavId: (navId) => this.setNavId(navId), type, rtl }
+    let props = { navs, navHeader,navFooter, navId, setNavId: (navId) => this.setNavId(navId), type, rtl }
     return { className: 'of-visible', html: (<Navigation {...props} />) };
   }
   page_layout(nav) {
@@ -237,6 +218,11 @@ class Navigation extends Component {
     if (!navHeader) { return { size: 12 } }
     return { html: navHeader() };
   }
+  footer_layout() {
+    let { navFooter } = this.props;
+    if (!navFooter) { return { size: 12 } }
+    return { html: navFooter() };
+  }
   items_layout(navs, level) {
     return {
       flex: 1, className: 'ofy-auto',
@@ -294,7 +280,7 @@ class Navigation extends Component {
     if (type === 'bottom') {
       return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navs.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
     }
-    return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navs, 0)] }} />);
+    return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navs, 0),this.footer_layout()] }} />);
   }
 }
 class SideMenu extends Component {
@@ -308,9 +294,10 @@ class SideMenu extends Component {
     return {
       flex: 1, gap: 12,
       column: items.map((o, i) => {
-        let { icon = () => <div style={{ width: 12 }}></div>, text, id, className, onClick = () => { }, show = () => true } = o;
+        let { icon = () => <div style={{ width: 12 }}></div>, text, className,style, onClick = () => { }, show = () => true } = o;
         let Show = show();
         return {
+          style,
           show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (className ? ' ' + className : ''), onClick: () => { onClick(o); onClose() },
           row: [
             { size: 48, html: typeof icon === 'function'?icon():icon, align: 'vh' },

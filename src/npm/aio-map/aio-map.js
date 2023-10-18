@@ -7,13 +7,37 @@ import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import "./aio-map.css";
 const MapContext = createContext();
-export default class Map extends Component {
+
+export default class AIOMap{
+    constructor(props){
+        this.props = props;
+    }
+    render = (props)=>{
+        return (
+            <Map
+                {...this.props} {...props}
+                getActions={({flyTo,showPath})=>{
+                    this.flyTo = flyTo;
+                    this.showPath = showPath
+                }}
+            />
+        )
+    }
+}
+class Map extends Component {
     constructor(props) {
         super(props);
+        this.datauniqid = 'mp' + (Math.round(Math.random() * 10000000))
         this.markers = []
         this.dom = createRef();
         let { latitude = 35.699739, longitude = 51.338097,zoom = 14 } = props;
         this.state = { address:'',latitude, longitude,prevLatitude:latitude,prevLongitude:longitude,zoom,prevZoom:zoom }
+        if(props.getActions){
+            props.getActions({
+                flyTo:this.flyTo.bind(this),
+                showPath:this.showPath.bind(this)
+            })
+        }
     }
     handleArea(){
         let {area} = this.props;
@@ -70,22 +94,52 @@ export default class Map extends Component {
         onSubmit(latitude, longitude,address)
     }
     goToCurrent() {
-        console.log('goToCurrent')
-        
         if ("geolocation" in navigator) {
             this.handlePermission();
             // check if geolocation is supported/enabled on current browser
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    debugger
                     let { latitude, longitude } = position.coords;
                     this.apis.flyTo(latitude, longitude,undefined,'goToCurrent');
                 },
-                (error_message) => this.ipLookUp()
+                (error_message) => {
+                    debugger
+                    this.ipLookUp()
+                }
             )
         }
-        else { this.ipLookUp() }
+        else { 
+            debugger
+            this.ipLookUp() 
+        }
+    }
+    async route(from = [35.699739,51.338097],to=[35.699939,51.338497]){
+        let { apiKeys = {}} = this.props;
+        try{
+            let param = {headers:{'Api-Key':apiKeys.service}}
+            let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
+            let res = await Axios.get(url,param);
+            debugger
+        }
+        catch(err){
+            return ''
+        }
+    }
+    async showPath(path){
+        let { apiKeys = {}} = this.props;
+        try{
+            let param = {headers:{'Api-Key':apiKeys.service}}
+            let url = `https://api.neshan.org/v3/map-matching?path=${path}`;
+            let res = await Axios.post(url,param);
+            debugger
+        }
+        catch(err){
+            return ''
+        }
     }
     flyTo(lat, lng,zoom = this.state.zoom,caller) {
+        if(!lat || !lng){return}
         console.log('flyTo',caller)
         this.map.flyTo([lat, lng], zoom,{animate: true,duration: 1.4});
     }
@@ -104,8 +158,10 @@ export default class Map extends Component {
     }
     move(lat, lng,caller){
         console.log('move',caller)
-        let {onChange = ()=>{}} = this.props;
-        this.marker.setLatLng({ lat, lng })
+        let {onChange = ()=>{},showMarker = true} = this.props;
+        if(showMarker){
+            this.marker.setLatLng({ lat, lng })
+        }
         clearTimeout(this.timeout);
 
         this.timeout = setTimeout(async () => {
@@ -119,51 +175,39 @@ export default class Map extends Component {
     
     init(){
         console.log('init')
-        let {zoom = 12, onClick, apiKeys,onChange,onSubmit,popup} = this.props;
+        let {zoomable = true,zoom = 14, apiKeys,onChange,popup,showMarker = true,draggable = true,traffic = false,zoomControl = false} = this.props;
         let { latitude, longitude } = this.state;
-        let changeView = (!!onSubmit || !!onChange) && !popup;
+        //onClick
+        let onClick;
+        if(popup){onClick = (e) => this.setState({showPopup:true})}
+        else if(this.props.onClick){onClick = (e) => this.props.onClick(e)}
+        else if(onChange){onClick = (e) => {let { lat, lng } = e.latlng; this.map.panTo({ lat, lng })}}
         let config = {
             key: apiKeys.map,
             maptype: 'standard-day',
             maptype: 'dreamy-gold',
             poi: true,
-            traffic: false,
+            traffic,
             center: [latitude, longitude],
             zoom: 14,
-            dragging: !popup,
+            dragging:draggable && !popup,
             scrollWheelZoom: 'center',
-            minZoom: changeView === false ? zoom : undefined,
-            maxZoom: changeView === false ? zoom : undefined,
-            // zoomControl: changeView !== false
+            minZoom: zoomable && !popup ? undefined:zoom,
+            maxZoom: zoomable && !popup ? undefined:zoom,
+            zoomControl
         }
         let map = new window.L.Map(this.dom.current, config);
         let L = window.L;
         let myMap = map;
         this.map = myMap;
         this.L = L;
-        this.marker = L.marker([latitude, longitude])
-            .addTo(myMap)
-            .bindPopup('I am a popup.');
-        if(popup){
-            myMap.on('click', (e) => this.setState({showPopup:true}));
-        }
-        else if (onClick) {
-            myMap.on('click', (e) => onClick());
-        }
+        if(showMarker){this.marker = L.marker([latitude, longitude]).addTo(myMap);}
+        if(onClick){myMap.on('click', onClick);}
         if(!popup){
             myMap.on('move', (e) => {
                 //marker.setLatLng(e.target.getCenter())
                 let { lat, lng } = e.target.getCenter()
                 this.move(lat,lng,'init')
-            });
-        }
-        if (changeView) {
-            
-            myMap.on('click', (e) => {
-                //marker.setLatLng(e.target.getCenter())
-                let { lat, lng } = e.latlng
-                this.map.panTo({ lat, lng })
-                //this.panTo(lat, lng);
             });
         }
         this.updateAddress(latitude, longitude);
@@ -218,7 +262,7 @@ export default class Map extends Component {
         if(text){
             innerText = ReactDOMServer.renderToStaticMarkup(text)
         }
-        return (`<div style="${style1}">${innerHtml}<div class='aio-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
+        return (`<div class='aio-map-marker' data-parent='${this.datauniqid}' style="${style1}">${innerHtml}<div class='aio-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
     }
     
     handleMarkers(){
@@ -232,9 +276,14 @@ export default class Map extends Component {
         }
         for(let i = 0; i < markers.length; i++){
             let marker = markers[i];
-            let {latitude,longitude} = marker;
+            let {latitude,longitude,popup = ()=>''} = marker;
+            let pres = popup(marker)
+            if(typeof pres !== 'string'){
+                try{pres = pres.toString()}
+                catch{}
+            }
             this.markers.push(
-                this.L.marker([latitude, longitude],{icon:this.L.divIcon({html: this.getMarker(marker)})}).addTo(this.map).bindPopup('marker.')
+                this.L.marker([latitude, longitude],{icon:this.L.divIcon({html: this.getMarker(marker)})}).addTo(this.map).bindPopup(pres)
             )
         }
     }
@@ -248,10 +297,11 @@ export default class Map extends Component {
         }
     }
     renderPopup(){
-        let {apiKeys} = this.props;
         let {showPopup} = this.state;
         if(showPopup){
-            let {popup,search,title} = this.props;
+            let {popup,search} = this.props;
+            if(popup === true){popup = {}}
+            let {title = this.props.title,apiKeys = this.props.apiKeys} = popup
             let {latitude,longitude} = this.state;
             let props = {
                 apiKeys,popup:undefined,latitude,longitude,search,title,
@@ -375,9 +425,7 @@ class MapHeader extends Component {
             })
         }
     }
-    header_layout(){
-        let {rootProps} = this.context;
-        let {title,onClose} = rootProps;
+    header_layout(title,onClose){
         if(typeof title !== 'string' && !onClose){return false}
         return {
             row:[
@@ -393,8 +441,9 @@ class MapHeader extends Component {
     }
     render() {
         let {rootProps} = this.context;
-        if(rootProps.popup){return null}
-        if(!rootProps.search && !rootProps.title && !rootProps.onClose){return null}
+        let {popup,search,title,onClose} = rootProps;
+        if(popup){return null}
+        if(!search && !title && !onClose){return null}
         let { searchResult, showResult } = this.state;
         let isOpen = true;
         if (!searchResult || !searchResult.length || !showResult) { isOpen = false }
@@ -404,7 +453,7 @@ class MapHeader extends Component {
                     className:'aio-map-header of-visible' + (isOpen?' aio-map-header-open':''),
                     style: {  },
                     column: [
-                        this.header_layout(),
+                        this.header_layout(title || 'نقشه',onClose),
                         this.input_layout(),
                         this.result_layout(),
                     ]
