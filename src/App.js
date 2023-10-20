@@ -22,12 +22,13 @@ import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
 import DOC_AIOMap from './documents/aio-map/doc-aio-map';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
+import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
     this.state = {
-      part:'aio-input-image',
+      part:'aio-login',
       parts:{
         'aio-input':{name:'aio-input',Render:DOC_AIOInput},
         'aio-input-table':{name:'aio-input-table',Render:DOC_AIOInput_Table},
@@ -50,7 +51,8 @@ export default class AIOComponents extends Component{
         'aio-service':{name:'aio-service',Render:DOC_AIOService},
         'aio-popup':{name:'aio-popup',Render:DOC_AIOPopup},
         'aio-map':{name:'aio-map',Render:DOC_AIOMap},
-        'aio-canvas':{name:'aio-canvas',Render:DOC_AIOCanvas}
+        'aio-canvas':{name:'aio-canvas',Render:DOC_AIOCanvas},
+        'aio-login':{name:'aio-login',Render:DOC_AIOLogin}
       }
     }
   }

@@ -9,10 +9,10 @@ import './react-super-app.css';
 //type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}
 export default class RSA {
   constructor(props = {}) {
-    let { rtl, maxWidth,initialState = {},AppContext,nav,side,title,subtitle,headerContent,actions,header,body } = props;
-    let {id:navId,items:navs,header:navHeader,footer:navFooter} = nav;
+    let { rtl, maxWidth,initialState = {},AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id } = props;
+    let {id:navId,items:navs,header:navHeader,footer:navFooter,cache:navCache} = nav;
     this.props = {
-      rtl,maxWidth,AppContext,initialState,navs,navId,navHeader,navFooter,side,title,subtitle,headerContent,actions,header,body,
+      rtl,maxWidth,AppContext,initialState,navs,navId,navHeader,navFooter,navCache,side,title,subtitle,headerContent,actions,header,body,id,
       popup:new AIOPopup({ rtl }),
       getActions:({getNavId,setNavId,openSide,closeSide,SetState,GetState})=>{
         this.getNavId = getNavId;
@@ -46,15 +46,16 @@ function RSAAPP(props){
 class ReactSuperApp extends Component {
   constructor(props) {
     super(props);
-    let { touch = 'ontouchstart' in document.documentElement, splash, splashTime = 7000 } = props;
-    this.storage = AIOStorage('rsa-cache');
+    let { touch = 'ontouchstart' in document.documentElement, splash, splashTime = 7000,id,navCache } = props;
+    this.storage = AIOStorage('rsa-cache-' + id);
     window.oncontextmenu = function (event) {
       event.preventDefault();
       event.stopPropagation();
       return false;
     };
+    let navId = navCache?this.storage.load({name:'navId',def:this.initNavId()}):this.initNavId()
     this.state = {
-      navId: this.initNavId(),
+      navId,
       splash,
       showSplash: true,
       confirm: false,
@@ -93,7 +94,11 @@ class ReactSuperApp extends Component {
     props.getActions({ ...this.state })
   }
   getNavId(){return this.state.navId}
-  setNavId(navId){this.setState({navId})}
+  setNavId(navId){
+    let {navCache} = this.props;
+    if(navCache){this.storage.save({name:'navId',value:navId})}
+    this.setState({navId})
+  }
   initNavId() {
     let { navs, navId } = this.props;
     if (!navs) { return false }

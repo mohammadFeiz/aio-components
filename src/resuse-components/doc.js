@@ -8,7 +8,7 @@ export default class DOC extends Component{
         this.state = {
             rsa:new RSA({
                 nav:{
-                    items:props.navs,
+                    items:props.navs,cache:true,
                     id:props.navId,
                     header:()=><div className='part-title'>{props.name}</div>
                 },
