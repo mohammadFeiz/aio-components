@@ -20,8 +20,7 @@ import './index.css';
 // }
 // type I_mode = 'OTPNumber' |'OTPCode' |'userName' |'email' | 'phoneNumber' | 'forgetId' | 'forgetCode' | 'register' | 'error' | 'auth'
 // type I_model = {
-//     userId:string,
-//     password:string,
+//     login:{userId:string,password:string},
 //     register?:{[field:string]:any},
 //     forget?:{id?:string,code?:string,password?:string,rePassword?:string},
 // }
@@ -64,11 +63,12 @@ class AIOLOGIN extends Component {
         this.state = {
             isAuth: false,
             reportedAuthToParent:false,//prevent unlimit loop between aio login and parent
-            apis: AIOService({
+            apis: new AIOService({
                 id: `${id}login`,
-                getResponse: () => {
+                getApiFunctions: () => {
                     return {
                         checkToken: async () => {
+                            debugger
                             let {token,userId,isAuth} = getStorage();
                             if (typeof token !== 'string' || !isAuth) { return { result: false } }
                             let result = await checkToken(token,userId);
@@ -76,10 +76,16 @@ class AIOLOGIN extends Component {
                             return { result }
                         },
                         onSubmit:async ({model,currentMode}) =>{
+                            let res = await onSubmit(model,currentMode);
+                            if(!res){return {result:{noAction:true}}}
+                            if(!res.nextMode){return {result:'aio-login error => onSubmit should returns an object contain nextMode property'}}
+                            let {nextMode,error,token} = res;
+                            if(nextMode === currentMode){return {result:false}}
                             removeToken();
-                            let {nextMode,error = 'خطایی رخ داد',token} = await onSubmit(model,currentMode);
-                            if(!nextMode){return {result:'aio-login error => onSubmit should returns an object contain nextMode property'}}
-                            if(nextMode === 'error'){return {result:error}}
+                            if(nextMode === 'error'){
+                                if(error){return {result:error}}
+                                else {return {result:{nextMode:'error'}}}
+                            }
                             return {result:{nextMode,token}}
                         }
                     }
@@ -93,9 +99,10 @@ class AIOLOGIN extends Component {
     }
     async componentDidMount() {
         if (!this.valid) { return }
-        let res = await this.state.apis({
-            api: 'checkToken', name: 'بررسی توکن',
-            errorMessage: 'اتصال خود را بررسی کنید',
+        let {apis} = this.state
+        let res = await apis.request({
+            api: 'checkToken', description: 'بررسی توکن',
+            message: {error:'اتصال خود را بررسی کنید'},
         })
         this.mounted = true;
         if(res === false){
@@ -104,21 +111,12 @@ class AIOLOGIN extends Component {
         }
         this.setState({ isAuth: res });
     }
-    async onSubmit(model,currentMode){
-        let { methods,setStorage } = this.props;
-        let { apis } = this.state;
-        let name = {
-            "OTPNumber":'ارسال شماره همراه',
-            "OTPCode":'ارسال کد یکبار مصرف',
-            "userName":'ارسال نام کاربری و رمز عبور',
-            "phoneNumber":'ارسال شماره همراه و رمز عبور',
-            "email":'ارسال آدرس ایمیل و رمز عبور',
-            "register":'عملیات ثبت نام'
-        }[currentMode];
-        let obj = await apis({api:'onSubmit', parameter: {model,currentMode}, name,loading:false})
-        if(typeof obj !== 'object'){return}
-        let {token,nextMode} = obj;
-        let modes = [];
+    handleOnsubmitError(currentMode,nextMode,methods,token){
+        if(nextMode === 'auth' && !token){
+            alert(`
+                aio-login error => if onSubmit returns an object contain nextMode:"auth", token props is required
+            `)
+        }
         if(currentMode === 'OTPNumber'){
             if(nextMode !== 'OTPCode' && nextMode !== 'register'){
                 alert(`
@@ -151,6 +149,7 @@ class AIOLOGIN extends Component {
                 `)
             }
         }
+        else if(currentMode === 'register'){}
         else{
             if(['auth','register'].indexOf(nextMode) === -1){
                 alert(`
@@ -159,9 +158,28 @@ class AIOLOGIN extends Component {
                 `)
             }
         }
+    }
+    async onSubmit(model,currentMode){
+        let { methods,setStorage } = this.props;
+        let { apis } = this.state;
+        let description = {
+            "OTPNumber":'ارسال شماره همراه',
+            "OTPCode":'ارسال کد یکبار مصرف',
+            "userName":'ارسال نام کاربری و رمز عبور',
+            "phoneNumber":'ارسال شماره همراه و رمز عبور',
+            "email":'ارسال آدرس ایمیل و رمز عبور',
+            "register":'عملیات ثبت نام'
+        }[currentMode];
+        let obj = await apis.request({api:'onSubmit', parameter: {model,currentMode}, description,loading:false})
+        if(typeof obj !== 'object'){return}
+        if(obj.noAction){return}
+        let {token,nextMode} = obj;
+        if(nextMode === 'error'){return 'error'}
+        let modes = [];
+        this.handleOnsubmitError(currentMode,nextMode,methods,token);
         if(this.fields){modes.push('register')}
         if(['OTPNumber','phoneNumber','userName','email'].indexOf(currentMode) !== -1){
-            setStorage('userId',model.userId);
+            setStorage('userId',model.login.userId);
         }
         if (token) { 
             setStorage('token',token);
@@ -222,7 +240,7 @@ class LoginForm extends Component {
             let subtitle = 'شماره همراه خود را وارد کنید . پیامکی حاوی کد برای شما ارسال خواهد شد';
             return {inputLabel:'شماره همراه',title:'ورود با کد یکبار مصرف',submitText:'ورود',subtitle}
         }
-        if(mode === 'OTPCode'){return {inputLabel:'کد پیامک شده',title:false,submitText:'ورود',subtitle:`کد پیامک شده به شماره ی ${model.userId} را وارد کنید`}}
+        if(mode === 'OTPCode'){return {inputLabel:'کد پیامک شده',title:false,submitText:'ورود',subtitle:`کد پیامک شده به شماره ی ${model.login.userId} را وارد کنید`}}
         if(mode === 'register'){return {inputLabel:false,title:registerText,submitText:registerText,subtitle:false,backButton:tab !== 'register'}}
         if(mode === 'forgetId'){
             let subtitle = `${forget.type === 'phoneNumber'?'شماره همراه':'ایمیل'} خود را وارد کنید . کد باز یابی رمز عبور برای شما ارسال خواهد شد`
@@ -247,7 +265,7 @@ class LoginForm extends Component {
     getInitialModel(mode) {
         if(!mode){mode = this.state.mode}
         let { userId } = this.props;
-        return {forget:{},register:{},userId};
+        return {forget:{},register:{},login:{userId}};
     }
     getWaitingTime(){
         let {time,mode} = this.state;
@@ -270,7 +288,8 @@ class LoginForm extends Component {
         this.setState({loading:false})
         if(!nextMode){return}
         this.setLastTry();
-        this.setState({mode:nextMode})
+        if(nextMode === 'error'){this.changeMode(mode)}
+        else {this.setState({mode:nextMode})}
     }
     title_layout({title,backButton}) {
         if(!title){return false}
@@ -345,38 +364,38 @@ class LoginForm extends Component {
         }
         let inputs = [
             {
-                show:mode === 'userName',field: 'value.userId',label: labels.inputLabel, 
+                show:mode === 'userName',field: 'value.login.userId',label: labels.inputLabel, 
                 input:{
                     type: 'text', disabled:!!userId,placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
                     style:{direction:'ltr'}
                 },
-                validations: [['function', () => errorHandler({field:'userName', value:model.userId})]]
+                validations: [['function', () => errorHandler({field:'userName', value:model.login.userId})]]
             },
             {
-                show:mode === 'OTPNumber' || mode === 'phoneNumber',field: `value.userId`,label: labels.inputLabel,
+                show:mode === 'OTPNumber' || mode === 'phoneNumber',field: `value.login.userId`,label: labels.inputLabel,
                 input:{
                     type: 'text',disabled:!!userId,justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
                     placeholder: '09...',maxLength:11,style:{direction:'ltr'}
                 },  
-                validations: [['function', () => errorHandler({field:'phoneNumber', value:model.userId})]]
+                validations: [['function', () => errorHandler({field:'phoneNumber', value:model.login.userId})]]
             },
             {
-                show:mode === 'email',field: 'value.userId',label: labels.inputLabel, 
+                show:mode === 'email',field: 'value.login.userId',label: labels.inputLabel, 
                 input:{type: 'text', disabled:!!userId,before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
-                validations: [['function', () => errorHandler({field:'email', value:model.userId})]],
+                validations: [['function', () => errorHandler({field:'email', value:model.login.userId})]],
             },
             {
-                show:!!model.userId && mode === 'OTPCode',field: 'value.password', label: labels.inputLabel,
+                show:!!model.login.userId && mode === 'OTPCode',field: 'value.login.password', label: labels.inputLabel,
                 input:{
                     maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''),
                     className:'aio-login-otp-code'
                 },
-                validations: [['function', () => errorHandler({field:'code', value:model.password, parameter:{codeLength:otpLength}})]]
+                validations: [['function', () => errorHandler({field:'code', value:model.login.password, parameter:{codeLength:otpLength}})]]
             },
             {
-                show:mode !== 'OTPNumber' && mode !== 'OTPCode',field: 'value.password',label: 'رمز عبور', 
+                show:mode !== 'OTPNumber' && mode !== 'OTPCode',field: 'value.login.password',label: 'رمز عبور', 
                 input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,style:{direction:'ltr'}}, 
-                validations: [['function', () => errorHandler({field:'password', value:model.password})]]
+                validations: [['function', () => errorHandler({field:'password', value:model.login.password})]]
             }
         ];
         return inputs
@@ -431,8 +450,7 @@ class LoginForm extends Component {
         return {
             className: 'aio-login-text m-b-12', html: `ارسال مجدد کد`, align: 'vh',
             onClick: () => {
-                this.setState({mode:'OTPNumber',model:{...model,OTPCode:''}})
-
+                this.setState({mode:'OTPNumber',model:{...model,login:{...model.login,password:''}}})
             }
         }    
     }
@@ -490,19 +508,18 @@ class LoginForm extends Component {
         let {registerTab,methods} = this.props;
         if(registerTab === true){registerTab = 'ثبت نام'}
         if(!registerTab){return false}
-        let {tab,mode} = this.state;
+        let {mode} = this.state;
         if(mode === 'forgetId' || mode === 'forgetCode'){return false}
         return {
             html:(
                 <AIOInput
                     className='aio-login-register-tabs'
-                    type='tabs' value={tab}
+                    type='tabs' value={mode === 'register'?'register':'login'}
                     options={[
                         {text:'ورود',value:'login'},
                         {text:registerTab,value:'register'},
                     ]}
                     onChange={(tab)=>{
-                        this.setState({tab});
                         if(tab === 'login'){this.changeMode(methods[0])}
                         else if(tab === 'register'){this.changeMode('register')}
                     }}
@@ -648,12 +665,25 @@ function AIOMapValidator(props){
         let error = `
             aio-login error=> missing onSubmit props,
             onSubmit type is => 
-            (model:I_model,mode:<mode type>)=>{
+            (model:<model type>,mode:<mode type>)=>{
                 nextMode:<mode type> // define next mode after submition
                 error?:String, //should set in 'error' mode
                 token?:string // should set in 'auth' mode
             }
-            mode type can be one of 'OTPNumber' | 'OTPCode' | 'userName' | 'email' | 'phoneNumber' | 'forgetId' | 'forgetCode' | 'register' | 'error', | 'auth'
+            <model type> is {
+                login:{
+                    userId:string,
+                    password:string | number
+                },
+                forget:{
+                    userId:string,
+                    password:string | number
+                },
+                register:{
+                    [field:string]:any
+                }
+            }
+            <mode type> is 'OTPNumber' | 'OTPCode' | 'userName' | 'email' | 'phoneNumber' | 'forgetId' | 'forgetCode' | 'register' | 'error', | 'auth'
         `;
         alert(error); console.log(error); return;
     }
@@ -690,7 +720,7 @@ function AIOMapValidator(props){
                         before:html (for example an icon),
                         label:string (form input label),
                         validation:(value)=>string (error message) | undefined,
-                        field:string (register model property)
+                        field:string (register object property)
                     },
                     ...
                 ],
