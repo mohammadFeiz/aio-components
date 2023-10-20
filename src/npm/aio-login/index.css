@@ -128,6 +128,7 @@
 .aio-login-submit:disabled{
     cursor:not-allowed;
     background:#aaa;
+    border:1px solid #aaa;
 }
 .aio-login .aio-form-row{
     margin-bottom:12px;
@@ -145,8 +146,10 @@
     margin-top:24px;
     font-family:inherit;
 }
-.aio-login-register-tabs{
+.aio-login .aio-login-register-tabs{
     margin-bottom:24px;
+    font-family: inherit;
+    border:none;
 }
 .aio-login-register-tabs .aio-input-tabs-option{
     flex:1;

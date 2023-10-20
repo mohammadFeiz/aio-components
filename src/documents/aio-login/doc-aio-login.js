@@ -20,7 +20,9 @@ export default class DOC_AIOMap extends Component {
                     { text: 'getUserId', id: 'getUserId', COMPONENT: () => <GetUserId /> },
                     { text: 'logout', id: 'logout', COMPONENT: () => <Logout /> },
                     { text: 'methods', id: 'methods', COMPONENT: () => <Methods /> },
-                    { text: 'register type:"mode"', id: 'registerTypeMode', COMPONENT: () => <RegisterTypeMode /> }
+                    { text: 'register type:"mode"', id: 'registerTypeMode', COMPONENT: () => <RegisterTypeMode /> },
+                    { text: 'register type:"button"', id: 'registertypeButton', COMPONENT: () => <RegisterTypeButton /> },
+                    { text: 'register type:"tab"', id: 'registertypeTab', COMPONENT: () => <RegisterTypeTab /> },
                 ]}
             />
         )
@@ -860,6 +862,330 @@ function LoginPage() {
             methods:['OTPNumber'],otpLength:5,
             register:{
                 type:'mode',
+                fields:[
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام',field:'name'},
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام خانوادگی',field:'family'},
+                    {type:'password',before:<Icon path={mdiLock} size={0.7}/>,label:'رمز ثابت',field:'password'},
+                ],
+                text:'ایجاد حساب کاربری'
+            },
+            otpLength:5
+        })
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState();
+    let [token,setToken] = useState(loginInstance.getToken());
+    function onSubmit(model,mode){
+        if(mode === 'OTPNumber'){
+            if(model.userId !== '09111111111'){
+                return {nextMode:'error',error:'cannot find this userId'}
+            }
+            else {
+                return {nextMode:'OTPCode'}
+            }
+        }
+        else if(mode === 'OTPCode'){
+            if(model.password !== '12345'){
+                return {nextMode:'error',error:'code is incorrect'}
+            }
+            else {
+                return {nextMode:'register'}
+            }
+        }
+        else if(mode === 'register'){
+            console.log('register object : ',model.register)
+            let token = 'my test token';
+            setToken(token);
+            setUserId(model.userId);
+            return {nextMode:'auth',token}
+        }
+    }
+    function onAuth({userId,token,logout}){
+        setAuth(true)
+    }
+    if(auth){
+        return (
+            <>
+                <ul>
+                    <li style={{color:'green'}}>
+                        you are now autenticated and you entered to app
+                    </li>
+                    <li>
+                        {\`your token is ${'${token}'}\`}
+                    </li>
+                    <li>
+                        {\`your userId is ${'${userId}'}\`}
+                    </li>
+                    <li>
+                        <button onClick={()=>loginInstance.logout()}>Logout</button>
+                    </li>
+                </ul>
+            </>
+        )
+    }
+    else {return loginInstance.render()}
+}
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    return (<Example preview={() => preview()}/>)
+}
+function RegisterTypeButton() {
+    let [loginInstance] = useState(
+        new AIOLogin({
+            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            methods:['OTPNumber'],otpLength:5,
+            register:{
+                type:'button',
+                fields:[
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام',field:'name'},
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام خانوادگی',field:'family'},
+                    {type:'password',before:<Icon path={mdiLock} size={0.7}/>,label:'رمز ثابت',field:'password'},
+                ],
+                text:'ایجاد حساب کاربری'
+            }
+        })
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState(loginInstance.getUserId());
+    let [token,setToken] = useState(loginInstance.getToken());
+    function onSubmit(model,mode){
+        if(mode === 'OTPNumber'){
+            if(model.userId !== '09111111111'){
+                return {nextMode:'error',error:'cannot find this userId'}
+            }
+            else {
+                return {nextMode:'OTPCode'}
+            }
+        }
+        else if(mode === 'OTPCode'){
+            if(model.password !== '12345'){
+                return {nextMode:'error',error:'code is incorrect'}
+            }
+            else {
+                return {nextMode:'register'}
+            }
+        }
+        else if(mode === 'register'){
+            console.log('register object : ',model.register)
+            let token = 'my test token';
+            setToken(token);
+            setUserId(model.userId);
+            return {nextMode:'auth',token}
+        }
+        
+    }
+    function onAuth({userId,token,logout}){
+        setAuth(true)
+    }
+    function preview() {
+        return (
+            <div className='example'>
+                {
+                    <ul>
+                        {!auth && <li>imagine a valid OTPNumber is "09111111111" and its password is "12345"</li>}
+                        <li>in this example we set <strong style={{background:'yellow'}}>register</strong> props </li>
+                    </ul>
+                }
+                {!auth && loginInstance.render()}
+                {
+                    auth && 
+                    <ul>
+                        <li style={{color:'green'}}>{`you are now autenticated and you entered to app`}</li>
+                        <li>{`your token is "${token}"`}</li>
+                        <li>{`your userId is "${userId}"`}</li>
+                        <li>
+                            <button onClick={()=>loginInstance.logout()}>Logout</button>
+                        </li>
+                        
+                    </ul>
+                }
+                {
+                    !auth &&
+                    <ul>
+                        <li style={{color:'red'}}>{`you are not autenticated and you cannot inter to app`}</li>
+                        
+                    </ul>
+                }
+                {
+                    AIODoc().Code(`
+function LoginPage() {
+    //use useState To create instance only once
+    let [loginInstance] = useState(
+        new AIOLogin({
+            id:'mylogintest',
+            checkToken:(token)=>true,
+            onAuth,
+            onSubmit,
+            timer:10,
+            methods:['OTPNumber'],otpLength:5,
+            register:{
+                type:'button',
+                fields:[
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام',field:'name'},
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام خانوادگی',field:'family'},
+                    {type:'password',before:<Icon path={mdiLock} size={0.7}/>,label:'رمز ثابت',field:'password'},
+                ],
+                text:'ایجاد حساب کاربری'
+            },
+            otpLength:5
+        })
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState();
+    let [token,setToken] = useState(loginInstance.getToken());
+    function onSubmit(model,mode){
+        if(mode === 'OTPNumber'){
+            if(model.userId !== '09111111111'){
+                return {nextMode:'error',error:'cannot find this userId'}
+            }
+            else {
+                return {nextMode:'OTPCode'}
+            }
+        }
+        else if(mode === 'OTPCode'){
+            if(model.password !== '12345'){
+                return {nextMode:'error',error:'code is incorrect'}
+            }
+            else {
+                return {nextMode:'register'}
+            }
+        }
+        else if(mode === 'register'){
+            console.log('register object : ',model.register)
+            let token = 'my test token';
+            setToken(token);
+            setUserId(model.userId);
+            return {nextMode:'auth',token}
+        }
+    }
+    function onAuth({userId,token,logout}){
+        setAuth(true)
+    }
+    if(auth){
+        return (
+            <>
+                <ul>
+                    <li style={{color:'green'}}>
+                        you are now autenticated and you entered to app
+                    </li>
+                    <li>
+                        {\`your token is ${'${token}'}\`}
+                    </li>
+                    <li>
+                        {\`your userId is ${'${userId}'}\`}
+                    </li>
+                    <li>
+                        <button onClick={()=>loginInstance.logout()}>Logout</button>
+                    </li>
+                </ul>
+            </>
+        )
+    }
+    else {return loginInstance.render()}
+}
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    return (<Example preview={() => preview()}/>)
+}
+function RegisterTypeTab() {
+    let [loginInstance] = useState(
+        new AIOLogin({
+            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            methods:['OTPNumber'],otpLength:5,
+            register:{
+                type:'tab',
+                fields:[
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام',field:'name'},
+                    {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام خانوادگی',field:'family'},
+                    {type:'password',before:<Icon path={mdiLock} size={0.7}/>,label:'رمز ثابت',field:'password'},
+                ],
+                text:'ایجاد حساب کاربری'
+            }
+        })
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState(loginInstance.getUserId());
+    let [token,setToken] = useState(loginInstance.getToken());
+    function onSubmit(model,mode){
+        if(mode === 'OTPNumber'){
+            if(model.userId !== '09111111111'){
+                return {nextMode:'error',error:'cannot find this userId'}
+            }
+            else {
+                return {nextMode:'OTPCode'}
+            }
+        }
+        else if(mode === 'OTPCode'){
+            if(model.password !== '12345'){
+                return {nextMode:'error',error:'code is incorrect'}
+            }
+            else {
+                return {nextMode:'register'}
+            }
+        }
+        else if(mode === 'register'){
+            console.log('register object : ',model.register)
+            let token = 'my test token';
+            setToken(token);
+            setUserId(model.userId);
+            return {nextMode:'auth',token}
+        }
+        
+    }
+    function onAuth({userId,token,logout}){
+        setAuth(true)
+    }
+    function preview() {
+        return (
+            <div className='example'>
+                {
+                    <ul>
+                        {!auth && <li>imagine a valid OTPNumber is "09111111111" and its password is "12345"</li>}
+                        <li>in this example we set <strong style={{background:'yellow'}}>register</strong> props </li>
+                    </ul>
+                }
+                {!auth && loginInstance.render()}
+                {
+                    auth && 
+                    <ul>
+                        <li style={{color:'green'}}>{`you are now autenticated and you entered to app`}</li>
+                        <li>{`your token is "${token}"`}</li>
+                        <li>{`your userId is "${userId}"`}</li>
+                        <li>
+                            <button onClick={()=>loginInstance.logout()}>Logout</button>
+                        </li>
+                        
+                    </ul>
+                }
+                {
+                    !auth &&
+                    <ul>
+                        <li style={{color:'red'}}>{`you are not autenticated and you cannot inter to app`}</li>
+                        
+                    </ul>
+                }
+                {
+                    AIODoc().Code(`
+function LoginPage() {
+    //use useState To create instance only once
+    let [loginInstance] = useState(
+        new AIOLogin({
+            id:'mylogintest',
+            checkToken:(token)=>true,
+            onAuth,
+            onSubmit,
+            timer:10,
+            methods:['OTPNumber'],otpLength:5,
+            register:{
+                type:'tab',
                 fields:[
                     {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام',field:'name'},
                     {type:'text',before:<Icon path={mdiAccount} size={0.7}/>,label:'نام خانوادگی',field:'family'},
