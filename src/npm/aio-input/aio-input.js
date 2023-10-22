@@ -556,8 +556,8 @@ class Input extends Component {
         super(props);
         this.dom = createRef();
         this.container = createRef();
-        let { value = '' } = props;
-        if (value === null) { value = '' }
+        let { value } = props;
+        if (value === null) { value = undefined }
         this.state = { value, prevValue: value }
     }
     componentDidMount() {
@@ -649,7 +649,7 @@ class Input extends Component {
         else if (type === 'color') {
             return (
                 <label style={{ width: '100%', height: '100%', background: value }}>
-                    <input {...props} style={{ opacity: 0 }} />
+                    <input {...props} style={{ opacity: 0 }}/>
                 </label>
             )
         }

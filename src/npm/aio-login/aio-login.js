@@ -68,7 +68,6 @@ class AIOLOGIN extends Component {
                 getApiFunctions: () => {
                     return {
                         checkToken: async () => {
-                            debugger
                             let {token,userId,isAuth} = getStorage();
                             if (typeof token !== 'string' || !isAuth) { return { result: false } }
                             let result = await checkToken(token,userId);
@@ -634,7 +633,8 @@ function AIOMapValidator(props){
         if(['id','onAuth','onSubmit','methods','timer','checkToken','register','userId','attrs','forget','otpLength'].indexOf(prop) === -1){
             let error = `
                 aio-login error => unknown props 
-                ${prop} is not one of AIOLogin props
+                ${prop} is not one of AIOLogin props,
+                valid props are 'id' | 'onAuth' | 'onSubmit' | 'methods' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength'
             `;
             alert(error); console.log(error); return;
         }
