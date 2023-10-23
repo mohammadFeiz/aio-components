@@ -517,7 +517,8 @@
 .flex-10{flex:10}
 .flex-11{flex:11}
 .flex-12{flex:12}
-
+.dir-rtl{direction:rtl}
+.dir-ltr{direction:ltr}
 .t-a-right{
   text-align:right;
 }

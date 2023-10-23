@@ -1,6 +1,6 @@
 import React,{Component,Fragment} from "react";
 import $ from 'jquery';
-import "./index.css";
+import "./react-virtual-dom.css";
 let RVDCLS = {
   rvd:'rvd',pointer:'rvd-pointer',gap:'rvd-gap',justify:'rvd-justify',align:'rvd-align',
   row:'rvd-row',column:'rvd-column',hidexs:'rvd-hide-xs',hidesm:'rvd-hide-sm',hidemd:'rvd-hide-md',hidelg:'rvd-hide-lg'
@@ -65,6 +65,7 @@ export default class ReactVirtualDom extends Component {
     }
     let className = this.getClassName(pointer,isRoot,props,attrs);
     let gapAttrs = getGapAttrs(obj,parent,props,dataId)
+    let gapHtml = parent && parent.gapHtml?parent.gapHtml(obj,index):''
     if(dragId !== undefined){
       attrs.draggable = true;
       attrs.onDragStart = (e)=>{
@@ -103,20 +104,20 @@ export default class ReactVirtualDom extends Component {
       )
       attrs.onClick = undefined
     }
-    return {childs,html,attrs,gapAttrs}
+    return {childs,html,attrs,gapAttrs,gapHtml}
   }
   getLayout(obj,index,parent,isRoot){
     if(typeof obj === 'object' && typeof parent === 'object'){obj.props = {...parent.props,...obj.props}}
     let {getLayout} = this.props;
     if(!obj || obj === null || (typeof obj.show === 'function'?obj.show():obj.show) === false){return ''}
     if(getLayout){obj = getLayout(obj,parent)}
-    let {childs,html,attrs,gapAttrs} = this.getProps(obj,index,parent,isRoot)
+    let {childs,html,attrs,gapAttrs,gapHtml = ''} = this.getProps(obj,index,parent,isRoot)
     return (
       <Fragment key={index}>
         <div {...attrs}>
           {childs.length?childs.map((o,i)=><Fragment key={i}>{this.getLayout(o,i,obj,false)}</Fragment>):html}
         </div>
-        {parent && (parent.gap !== undefined || (parent.props && parent.props.gap !== undefined)) && <div {...gapAttrs}></div>}
+        {parent && (parent.gap !== undefined || (parent.props && parent.props.gap !== undefined)) && <div {...gapAttrs}>{gapHtml}</div>}
       </Fragment>
     ) 
   }
