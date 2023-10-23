@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
 import AIOInput from './../../../npm/aio-input/aio-input';
-import Slider from './../../../npm/aio-slider/aio-slider';
 import DOC from '../../../resuse-components/doc';
 export default class DOC_AIOForm extends Component{
     render(){
@@ -311,7 +310,7 @@ class Size extends Component{
         return (
             <div className='example'>
                 {'Change Size'}
-                <Slider points={[size]} start={100} end={400} onChange={(points)=>this.setState({size:points[0]})} showValue={true}
+                <AIOInput type='slider' value={[size]} start={100} end={400} onChange={(points)=>this.setState({size:points[0]})} showValue={true}
                     fillStyle={{height:8,background:'dodgerblue'}}
                     lineStyle={{height:12}}
                 />

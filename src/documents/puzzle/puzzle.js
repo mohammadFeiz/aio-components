@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
 import Floater from './../../npm/aio-floater/aio-floater';
-import Slider from './../../npm/aio-slider/aio-slider';
 import $ from 'jquery';
 import './index.css';
 export default class Puzzle extends Component{
