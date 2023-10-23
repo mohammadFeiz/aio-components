@@ -6,7 +6,7 @@ import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOService from './../aio-service/aio-service';
 
-import './index.css';
+import './aio-login.css';
 // type I_props = {
 //     id:string,
 //     onSubmit:(model:I_model,mode:I_mode)=>{nextMode:I_mode,error?:String,token?:string},
@@ -29,18 +29,21 @@ export default class AIOlogin{
     constructor(props){
         let {id,onAuth,onSubmit,methods,timer, checkToken,register,userId,attrs,forget,otpLength} = props;
         AIOMapValidator(props);
-        let tokenStorage = AIOStorage(`${id}-token`);
-        this.setStorage = (key,value) => {tokenStorage.save({name:key,value});}
+        let storage = AIOStorage(`aio-login-storage-${id}`);
+        this.setStorage = (key,value) => {storage.save({name:key,value});}
         this.getStorage = () => {
-            let token = tokenStorage.load({ name: 'token', def: false });
-            let userId = tokenStorage.load({ name: 'userId', def: '' });
-            let isAuth = tokenStorage.load({ name: 'isAuth', def: false });
-            return {token,userId,isAuth}                    
+            let token = storage.load({ name: 'token', def: false });
+            let userId = storage.load({ name: 'userId', def: '' });
+            let isAuth = storage.load({ name: 'isAuth', def: false });
+            let userInfo = storage.load({ name: 'userInfo' });
+            return {token,userId,isAuth,userInfo}                    
         }
-        this.removeToken = ()=>{tokenStorage.remove({name:'token'});}
+        this.setUserInfo = (userInfo)=>{this.setStorage('userInfo',userInfo)}
+        this.getUserInfo = ()=>{return this.getStorage().userInfo}
+        this.removeToken = ()=>{storage.remove({name:'token'});}
         this.getToken = () => {return this.getStorage().token;}
-        this.getUserId = () => {return this.getStorage().userId}
         this.setToken = (token) => {this.setStorage('token',token)}
+        this.getUserId = () => {return this.getStorage().userId}
         this.logout = () => { this.removeToken(); window.location.reload() }
         this.props = {
             id, checkToken,onAuth,onSubmit,methods,register,userId,attrs,timer,forget,otpLength,
@@ -65,12 +68,13 @@ class AIOLOGIN extends Component {
             reportedAuthToParent:false,//prevent unlimit loop between aio login and parent
             apis: new AIOService({
                 id: `${id}login`,
+                getToken:()=>{},
                 getApiFunctions: () => {
                     return {
                         checkToken: async () => {
-                            let {token,userId,isAuth} = getStorage();
+                            let {token,userId,isAuth,userInfo} = getStorage();
                             if (typeof token !== 'string' || !isAuth) { return { result: false } }
-                            let result = await checkToken(token,userId);
+                            let result = await checkToken(token,{userId,userInfo});
                             if(result === false){removeToken()}
                             return { result }
                         },
@@ -196,8 +200,8 @@ class AIOLOGIN extends Component {
         let { layout, otpLength, onAuth, id, timer,methods,userId,register = {},attrs = {},forget,getStorage,logout } = this.props;
         let { isAuth,reportedAuthToParent } = this.state;
         if (isAuth && !reportedAuthToParent) {
-            let {token,userId} = getStorage();
-            onAuth({token,userId,logout})
+            let {token,userId,userInfo} = getStorage();
+            onAuth({token,userId,userInfo,logout})
             this.setState({reportedAuthToParent:true})
             return null
         }
@@ -632,7 +636,7 @@ function AIOMapValidator(props){
     for(let prop in props){
         if(['id','onAuth','onSubmit','methods','timer','checkToken','register','userId','attrs','forget','otpLength'].indexOf(prop) === -1){
             let error = `
-                aio-login error => unknown props 
+                aio-login error => invalid props 
                 ${prop} is not one of AIOLogin props,
                 valid props are 'id' | 'onAuth' | 'onSubmit' | 'methods' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength'
             `;

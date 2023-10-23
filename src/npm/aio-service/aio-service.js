@@ -33,19 +33,54 @@ export let helper = {
 export default class AIOservice{
   constructor(props){
     AIOServiceValidate(props);
-    let {id,loader,getState,token,getApiFunctions = ()=>{return {}},getMockFunction = ()=> {return {}},onCatch = ()=>{},baseUrl,getError = ()=>{}} = props;
+    this.Axios = Axios;
+    this.helper = helper;
+    let {
+      id,loader,baseUrl,token,
+      getState = ()=>{return {}},
+      getApiFunctions = ()=>{return {}},
+      getMockFunction = ()=> {return {}},
+      onCatch = ()=>{},
+      getError = ()=>{},
+    } = props;
     this.id = id;
+    this.baseUrl = baseUrl;
     this.storage = AIOStorage(this.id);
     this.loader = loader;
     this.getState = getState;
     this.token = token;
-    this.apiFunctions = getApiFunctions({getState,token,helper,baseUrl,Axios,storage:this.storage});
-    this.mockFunctions = getMockFunction({getState,token,helper,baseUrl,Axios,storage:this.storage}); 
     this.onCatch = onCatch;
     this.getError = getError;
+    this.setToken = (token)=>{
+      let res = token || this.token;
+      if(res){Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`;}
+    }
+    let param = {helper,storage:this.storage,baseUrl:this.baseUrl,id:this.id,Axios:this.Axios,setToken:this.setToken.bind(this)};
+    this.apiFunctions = getApiFunctions(param);
+    this.mockFunctions = getMockFunction(param); 
+  }
+  handleCacheVersions = (cacheVersions) => {
+    let def = {};
+    for(let prop in cacheVersions){def[prop] = 0}
+    let storedCacheVersions = this.getCache('storedCacheVersions',def);
+    for(let prop in cacheVersions){
+      if (storedCacheVersions[prop] !== cacheVersions[prop]) {
+        if(prop === 'all'){localStorage.clear()}
+        else{this.removeCache(prop)}
+      }
+    }
+    this.setCache('storedCacheVersions',cacheVersions)
   }
   removeCache = (name) => this.storage.remove({name});
-  getCache = () => this.storage.getModel();
+  setCache = (name,value) => this.storage.save({name,value})
+  getCache = (name,def) => {
+    if(name){return this.storage.load({name,def})}
+    else {return this.storage.getModel()} 
+  }
+  setProperty = (key,value)=>{
+    if(['getState','loader','baseUrl'].indexOf(key) === -1){return}
+    this[key] = value;
+  }
   getLoading = (id) => {
     return (`
       <div class="aio-service-loading" id="${id}">
@@ -77,6 +112,7 @@ export default class AIOservice{
     return this.storage.load({name:cache.name,time:cache.time})
   }
   handleError = (type,p) => {
+    let id = this.id;
     if(type === 'request'){
       let properties = [
         'token','api','def','description','message','cache','onError','onSuccess',
@@ -84,18 +120,18 @@ export default class AIOservice{
       ]
       for(let prop in p){
         if(properties.indexOf(prop) === -1){
-          let error = `aio-service error => ${prop} is not a valid property for request object. valid proprties for request object is ${properties.split(' | ')}`
+          let error = `aio-service with id:${id} error => ${prop} is not a valid property for request object. valid proprties for request object is ${properties.split(' | ')}`
           helper.showAlert({type:'error',text:error});
           return error
         }
       }
       let error;
       if(!p.api){
-        error = `aio-service error => missing api property in call request. request object is ${p}`
+        error = `aio-service with id:${id} in apiFunction with name (${p.api}) error => missing api property in call request. request object is ${p}`
       }
       else if(p.cache && (typeof p.cache !== 'object' || typeof p.cache.name !== 'string' || typeof p.cache.time !== 'number')){
         error = `
-          aio-service error => cache property request parameter object should be an object contain name:string and time:number.
+          aio-service with id:${id} error => cache property request parameter object should be an object contain name:string and time:number.
           api is ${p.api}
         `
       }
@@ -105,7 +141,7 @@ export default class AIOservice{
       }
     }
     if(type === 'apiFunction'){
-      let error = `aio-service error => cannot find apiFunction. apiFunction should define in getApiFunctions result  or request object`
+      let error = `aio-service with id:${id} error => cannot find apiFunction ${p.api}. apiFunction should define in getApiFunctions result  or request object`
       helper.showAlert({type:'error',text:error});
       return error;
     }
@@ -113,7 +149,7 @@ export default class AIOservice{
       let {res,service} = p;
       if((Array.isArray(res) || typeof res !== 'object') || (res.response === undefined && res.result === undefined)){
         let error = `
-          aio-service error => apiFunction should return an object contain response and result.
+          aio-service with id:${id} error => apiFunction (by name '${service.api}') should return an object contain response and result.
           apiFunction name is ${service.api}
         `
         helper.showAlert({type:'error',text:error});
@@ -122,7 +158,7 @@ export default class AIOservice{
       for(let prop in res){
         if(['response','result'].indexOf(prop) === -1){
           let error = `
-            aio-service error => apiFunction returned an object contain invalid property. 
+            aio-service with id:${id} error => apiFunction returned an object contain invalid property. 
             invalid property is : ${prop}
             apiFunction name is ${service.api}
           `
@@ -132,26 +168,28 @@ export default class AIOservice{
       }
     }
     if(type === 'mockFunction'){
-      let error = `aio-service error => apiFunction returns an object contain mock:true, but cannot find mockFunction. mockFunction should define in getMockFunctions props or request object`
+      let error = `aio-service with id:${id} error => apiFunction returns an object contain mock:true, but cannot find mockFunction. mockFunction should define in getMockFunctions props or request object`
       helper.showAlert({type:'error',text:error});
       return error;
     }
   }
-  setToken = (token)=>{
-    let res = token || this.token;
-    if(res){Axios.defaults.headers.common['Authorization'] = `Bearer ${typeof res === 'function'?res():res}`;}
+  getApisFunction(service){
+    if(service.apiFunction){return service.apiFunction}
+    let res;
+    eval(`res = this.apiFunctions.${service.api}`);
+    return res;
   }
   getResult = async (service) => {//return undefined(apiFunction not set) or string(error) or response
     let {
       api,parameter,
       onCatch = this.onCatch,
       getError = this.getError,
-      apiFunction = this.apiFunctions[api],
       mockFunction = this.mockFunctions[api]
     } = service;
     try{
-        if(!apiFunction){return this.handleError('apiFunction');}
-        let res = await apiFunction(parameter);
+        let apiFunction = this.getApisFunction(service);
+        if(!apiFunction){return this.handleError('apiFunction',service);}
+        let res = await apiFunction(parameter,this.getState());
         let resError = this.handleError('apiFunctionReturn',{res,service})
         if(resError){return resError;}
         let {response,result,mock} = res;
@@ -165,11 +203,7 @@ export default class AIOservice{
         }
         return result
     }
-    catch(err){
-      let catchResult = onCatch(err,service);
-      if(typeof catchResult === 'string'){return catchResult}
-      else{return err.message}  
-    }
+    catch(err){console.log(err); return onCatch(err,service)}
   }
   fetchData = async (service) => {
     let cacheResult = this.getFromCache(service); if(cacheResult !== undefined){return cacheResult}
@@ -215,26 +249,21 @@ export default class AIOservice{
 }
 
 
-function AIOServiceValidate({id,loader,getState,getApiFunctions}){
+function AIOServiceValidate({id,loader,getApiFunctions,cacheVersions}){
   let error;
   if(typeof getApiFunctions !== 'function'){
     error = `
-      aio-service error => missing getApiFunctions props. getAPiFunctions is a function that returns an object contain apiFunctions.
+      aio-service with id:${id} error => missing getApiFunctions props. getAPiFunctions is a function that returns an object contain apiFunctions.
     `
   }
   if(typeof id !== 'string'){
     error = `
-      aio-service error => id props should be an string
+      aio-service with id:${id} error => id props should be an string
     `
   }
   if(loader && typeof loader !== 'function'){
     error = `
-      aio-service error => loader props should be a function
-    `
-  }
-  if(getState && typeof getState !== 'function'){
-    error = `
-      aio-service error => getState props should be a function
+      aio-service with id:${id} error => loader props should be a function
     `
   }
   if(error){alert(error); console.log(error)}
