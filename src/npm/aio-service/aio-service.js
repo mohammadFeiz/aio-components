@@ -45,7 +45,7 @@ export default class AIOservice{
     } = props;
     this.id = id;
     this.baseUrl = baseUrl;
-    this.storage = AIOStorage(this.id);
+    this.storage = AIOStorage('-AIOService-' + this.id);
     this.loader = loader;
     this.getState = getState;
     this.token = token;

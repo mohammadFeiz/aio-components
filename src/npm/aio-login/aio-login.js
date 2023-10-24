@@ -29,7 +29,7 @@ export default class AIOlogin{
     constructor(props){
         let {id,onAuth,onSubmit,methods,timer, checkToken,register,userId,attrs,forget,otpLength} = props;
         AIOMapValidator(props);
-        let storage = AIOStorage(`aio-login-storage-${id}`);
+        let storage = AIOStorage(`-AIOLogin-${id}`);
         this.setStorage = (key,value) => {storage.save({name:key,value});}
         this.getStorage = () => {
             let token = storage.load({ name: 'token', def: false });
@@ -67,7 +67,7 @@ class AIOLOGIN extends Component {
             isAuth: false,
             reportedAuthToParent:false,//prevent unlimit loop between aio login and parent
             apis: new AIOService({
-                id: `${id}login`,
+                id: `AIOLoginApis-${id}`,
                 getToken:()=>{},
                 getApiFunctions: () => {
                     return {
@@ -93,9 +93,8 @@ class AIOLOGIN extends Component {
                         }
                     }
                 },
-                onCatch: (res) => { 
-                    this.setState({ isAuth: false }); 
-                    return 'error' 
+                onCatch: (res,service) => { 
+                    this.setState({ isAuth: false });
                 }
             })
         }
@@ -227,7 +226,7 @@ class LoginForm extends Component {
     constructor(props) {
         super(props);
         this.dom = createRef()
-        this.storage = AIOStorage(props.id + 'aio-login');
+        this.storage = AIOStorage(`-AIOLogin-${props.id}`);
         let { time = 30, fields = [] } = props;
         let mode = props.methods[0];
         this.state = {
@@ -616,18 +615,11 @@ class SubmitButton extends Component {
         if (loading && !reload) { setTimeout(() => this.setState({ reload: true }), 16 * 1000) }
         let loadingText = reload ? 'بارگزاری مجدد' : 'در حال ارسال';
         return (
-            <>
-                <button className={'aio-login-submit' + (outline?' aio-login-submit-outline':'')} disabled={disabled()} onClick={() => this.onClick()}>
-                    {loading ? (<><Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />{loadingText}</>) : text}
-                </button>
-                {
-                    loading &&
-                    <div
-                        style={{ position: 'fixed', width: '100%', height: '100%', left: 0, top: 0, zIndex: 100000000000000000000000000000000000000 }}
-                        onClick={() => { if (reload) { window.location.reload() } }}
-                    ></div>
-                }
-            </>
+            <button className={'aio-login-submit' + (outline?' aio-login-submit-outline':'')} disabled={disabled()} onClick={() => this.onClick()}>
+                {!loading && text}
+                {!!loading && <Icon path={mdiLoading} size={1} spin={0.2} style={{ margin: '0 6px' }} />}
+                {!!loading && loadingText}
+            </button>
         )
     }
 }
