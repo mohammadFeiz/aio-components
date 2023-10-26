@@ -3,43 +3,117 @@ import DOC from '../../resuse-components/doc';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOLogin from './../../npm/aio-login/aio-login';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
 import {Icon} from '@mdi/react';
 import { mdiAccount, mdiLock } from '@mdi/js';
-export default class DOC_AIOMap extends Component {
+export default class DOC_AIOLogin extends Component {
     render() {
-        let storage = AIOStorage('doc-aio-login')
         return (
             <DOC
                 {...this.props}
-                navId={storage.load({name:'navId',def:'basic'})}
-                navs={[
-                    { text: 'basic', id: 'basic', COMPONENT: () => <Basic /> },
-                    { text: 'checkToken', id: 'checkToken', COMPONENT: () => <CheckToken /> },
-                    { text: 'removeToken', id: 'removeToken', COMPONENT: () => <RemoveToken /> },
-                    { text: 'getUserId', id: 'getUserId', COMPONENT: () => <GetUserId /> },
-                    { text: 'logout', id: 'logout', COMPONENT: () => <Logout /> },
-                    { text: 'methods', id: 'methods', COMPONENT: () => <Methods /> },
-                    { text: 'register type:"mode"', id: 'registerTypeMode', COMPONENT: () => <RegisterTypeMode /> },
-                    { text: 'register type:"button"', id: 'registertypeButton', COMPONENT: () => <RegisterTypeButton /> },
-                    { text: 'register type:"tab"', id: 'registertypeTab', COMPONENT: () => <RegisterTypeTab /> },
-                ]}
+                nav={{
+                    items:[
+                        { text: 'Types', id: 'types', render: () => <Types /> },
+                        { text: 'basic', id: 'basic', render: () => <Basic /> },
+                        { text: 'checkToken', id: 'checkToken', render: () => <CheckToken /> },
+                        { text: 'removeToken', id: 'removeToken', render: () => <RemoveToken /> },
+                        { text: 'getUserId', id: 'getUserId', render: () => <GetUserIdFromInstance /> },
+                        { text: 'userId from onAuth', id: 'userId from onAuth', render: () => <GetUserIdFromOnAuth /> },
+                        { text: 'logout', id: 'logout', render: () => <Logout /> },
+                        { text: 'modes', id: 'modes', render: () => <Modes /> },
+                        { text: 'register type:"mode"', id: 'registerTypeMode', render: () => <RegisterTypeMode /> },
+                        { text: 'register type:"button"', id: 'registertypeButton', render: () => <RegisterTypeButton /> },
+                        { text: 'register type:"tab"', id: 'registertypeTab', render: () => <RegisterTypeTab /> },
+                        { text: 'setUserInfo getUserInfo', id: 'setuserinfogetuserinfo', render: () => <SetUserInfoGetUserInfo /> },
+                    ]
+                }}
             />
         )
     }
 }
+// type I_props = {
+//     id:string,
+//     onSubmit:(model:I_model,mode:I_mode)=>{nextMode:I_mode,error?:String,token?:string},
+//     modes:('OTPNumber' |'userName' |'email' |'phoneNumber')[],
+//     timer?:Number,
+//     checkToken:(token:string)=>Boolean,
+//     register?:{type:'mode'|'button'|'tab',fields:I_registerField[],text:string},
+//     forget?:{type:'phoneNumber' | 'email',codeLength:Number},
+//     otpLength?:number,
+//     attrs?:object
+// }
+// type I_mode = 'OTPNumber' |'OTPCode' |'userName' |'email' | 'phoneNumber' | 'forgetId' | 'forgetCode' | 'register' | 'error' | 'auth'
+// type I_model = {
+//     login:{userId:string,password:string},
+//     register?:{[field:string]:any},
+//     forget?:{id?:string,code?:string,password?:string,rePassword?:string},
+// }
+function Types(){
+    return (
+        AIODoc().Code(`
+let inst:TSInst = new AIOLogin(params:TSParams)
+type TSParams = {
+    // uniq id for aio-login instance
+    id : string,
+    // check cached token is valid or not
+    checkToken : ( token : string ) => boolean,
+    onSubmit : ( model : TSModel , mode : TSMode ) => { 
+        nextMode : Mode , 
+        token ? string , 
+        error ? : string 
+    },
+    onAutch:( params : { userId : string , token : string , userInfo : any } ) => void,
+    register ? : { 
+        type : 'mode' | 'button' | 'tab',
+        fields : TSRegisterFields,
+        text : string
+    }[],
+    forget ? : { 
+        type : 'phoneNumber' | 'email',
+        codeLength : Number
+    },
+    timer ? : number
+    otpLength ? : number,
+    attrs ? : object,
+    modes : TSMode[],
+}
+type TSMode = 
+    "OTPNumber" | "OTPCode" | "userName" | "email" | 
+    "phoneNumber" | "register" | "forgetId" | "forgetCode" | 
+    "error" | "auth";
+
+type TSModel = {
+    login : {
+        userId : string,
+        password : string
+    },
+    register : {
+        [field:string] : any
+    },
+    forget:{
+        id ? string,
+        password ? string,
+        code ? string
+    }
+}
+type TSRegisterFields = {
+    input : TSInputText | TSInputNumber | TSInputSelect | TSInputCheckbox | TSInputRadio | TSInputImage
+}[]
+
+`)
+    )
+}
 function Basic() {
     //use useState To create instance only once
     let [loginInstance] = useState(
-        new AIOLogin({id:'mylogintestbasic',checkToken:(token)=>false,onAuth,onSubmit,timer:10,methods:['userName']})
+        new AIOLogin({id:'mylogintestbasic',checkToken:(token)=>false,onAuth,onSubmit,timer:10,modes:['userName']})
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -63,7 +137,7 @@ function Basic() {
                             <li>{'checkToken : (token)=>boolean - this function define user token is valid or not , if returns true user will be authenticated'}</li>
                             <li>{'onSubmit : (model,mode)=>{return {nextMode,...}} - this function will called when user inter some data in forms'}</li>
                             <ul>
-                                <li>{'model is an object contain userId,password,...'}</li>
+                                <li>{'model is an object contain login,register,forget'}</li>
                                 <li>{"mode is 'OTPNumber' | 'OTPCode' | 'userName' | 'email' | 'phoneNumber' | 'forgetId' | 'forgetCode' | 'register' | 'error' | 'auth'"}</li>
                                 <li>{"this function should returns an object contain nextMode to preview next form of aio-login"}</li>
                             </ul>
@@ -99,16 +173,16 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['userName']
+            modes:['userName']
         })
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -133,15 +207,15 @@ function LoginPage() {
 }
 function CheckToken() {
     let [loginInstance] = useState(
-        new AIOLogin({id:'mylogintestchecktoken',checkToken:(token)=>true,onAuth,onSubmit,timer:10,methods:['userName']})
+        new AIOLogin({id:'mylogintestchecktoken',checkToken:(token)=>true,onAuth,onSubmit,timer:10,modes:['userName']})
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -162,7 +236,7 @@ function CheckToken() {
                         <li>this example is same basic part just we set <strong style={{background:'yellow'}}>{'checkToken:(token)=>true'}</strong></li>
                         <li >
                             if you refresh the page you will <strong style={{background:'yellow'}}>not</strong> visit login page again because of result of checkToken props (true),
-                            if checkToken returns true your means your token is valid 
+                            if checkToken returns true,it means your token is valid 
                         </li>
                     </ul>
                 }
@@ -193,16 +267,16 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['userName']
+            modes:['userName']
         })
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -227,15 +301,15 @@ function LoginPage() {
 }
 function RemoveToken() {
     let [loginInstance] = useState(
-        new AIOLogin({id:'mylogintestremovetoken',checkToken:(token)=>true,onAuth,onSubmit,timer:10,methods:['userName']})
+        new AIOLogin({id:'mylogintestremovetoken',checkToken:(token)=>true,onAuth,onSubmit,timer:10,modes:['userName']})
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -290,16 +364,16 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['userName']
+            modes:['userName']
         })
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -348,18 +422,18 @@ function LoginPage() {
     }
     return (<Example preview={() => preview()}/>)
 }
-function GetUserId() {
+function GetUserIdFromInstance() {
     let [loginInstance] = useState(
-        new AIOLogin({id:'mylogintestgetuserid',checkToken:(token)=>true,onAuth,onSubmit,timer:10,methods:['userName']})
+        new AIOLogin({id:'mylogintestgetuseridfrominstance',checkToken:(token)=>true,onAuth,onSubmit,timer:10,modes:['userName']})
     )
-    let [auth,setAuth] = useState(loginInstance.getUserId());
+    let [auth,setAuth] = useState(false);
     let [userId] = useState(loginInstance.getUserId());
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -407,16 +481,17 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['userName']
+            modes:['userName']
         })
     )
     let [auth,setAuth] = useState(false);
+    let [userId] = useState(loginInstance.getUserId());
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -469,18 +544,144 @@ function LoginPage() {
     }
     return (<Example preview={() => preview()}/>)
 }
+function GetUserIdFromOnAuth() {
+    let [loginInstance] = useState(
+        new AIOLogin({id:'mylogintestgetuseridfromonauth',checkToken:(token)=>true,onAuth,onSubmit,timer:10,modes:['userName']})
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState('');
+    let [token,setToken] = useState('');
+    function onSubmit(model,mode){
+        if(model.login.userId !== 'asd'){
+            return {nextMode:'error',error:'cannot find this userId'}
+        }
+        else if(model.login.password !== '123'){
+            return {nextMode:'error',error:'password is incorrect'}
+        }
+        else {
+            let token = 'my test token';
+            return {nextMode:'auth',token}
+        }
+    }
+    function onAuth({userId,token,logout}){
+        setToken(token)
+        setUserId(userId);
+        setAuth(true)
+    }
+    function preview() {
+        return (
+            <div className='example'>
+                {
+                    <ul>
+                        {!auth && <li>imagine a valid username is "asd" and its password is "123"</li>}
+                        <li>in this example we use <strong style={{background:'yellow'}}>loginInstance.getUserId()</strong></li>
+                    </ul>
+                }
+                {!auth && loginInstance.render()}
+                {
+                    auth && 
+                    <ul>
+                        <li style={{color:'green'}}>{`you are now autenticated and you entered to app`}</li>
+                        <li>{`your token is "${token}"`}</li>
+                        <li>{`your userId is "${userId}"`}</li>
+                        <li><button onClick={()=>{loginInstance.removeToken(); setToken(false)}}>{token?'Remove Token':'your token is removed'}</button></li>
+                        <li><button onClick={()=>window.location.reload()}>Reload Page</button></li>
+                    </ul>
+                }
+                {
+                    !auth &&
+                    <ul>
+                        <li style={{color:'red'}}>{`you are not autenticated and you cannot inter to app`}</li>
+                        
+                    </ul>
+                }
+                {
+                    AIODoc().Code(`
+function LoginPage() {
+    //use useState To create instance only once
+    let [loginInstance] = useState(
+        new AIOLogin({
+            id:'mylogintest',
+            checkToken:(token)=>true,
+            onAuth,
+            onSubmit,
+            timer:10,
+            modes:['userName']
+        })
+    )
+    let [auth,setAuth] = useState(false);
+    let [userId,setUserId] = useState('');
+    let [token,setToken] = useState('');
+    function onSubmit(model,mode){
+        if(model.login.userId !== 'asd'){
+            return {nextMode:'error',error:'cannot find this userId'}
+        }
+        else if(model.login.password !== '123'){
+            return {nextMode:'error',error:'password is incorrect'}
+        }
+        else {
+            let token = 'my test token';
+            return {nextMode:'auth',token}
+        }
+    }
+    function onAuth({userId,token,logout}){
+        setToken(token)
+        setUserId(userId);
+        setAuth(true)
+    }
+    if(auth){
+        return (
+            <>
+                <ul>
+                    <li style={{color:'green'}}>
+                        you are now autenticated and you entered to app
+                    </li>
+                    <li>
+                        {\`your token is ${'${token}'}\`}
+                    </li>
+                    <li>
+                        {\`your userId is ${"${userId}"}\`}
+                    </li>
+
+                    <li>
+                        <button 
+                            onClick={()=>{
+                                loginInstance.removeToken(); 
+                                setToken(false);
+                            }}
+                        >{token?'Remove Token':'your token is removed'}</button>
+                    </li>
+                    <li>
+                        <button 
+                            onClick={()=>window.location.reload()}
+                        >Reload Page</button>
+                    </li>
+                </ul>
+            </>
+        )
+    }
+    else {return loginInstance.render()}
+}
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    return (<Example preview={() => preview()}/>)
+}
 function Logout() {
     let [loginInstance] = useState(
-        new AIOLogin({id:'mylogintestlogout',checkToken:(token)=>true,onAuth,onSubmit,timer:10,methods:['userName']})
+        new AIOLogin({id:'mylogintestlogout',checkToken:(token)=>true,onAuth,onSubmit,timer:10,modes:['userName']})
     )
     let [auth,setAuth] = useState(false);
     let [userId] = useState(loginInstance.getUserId());
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -529,16 +730,16 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['userName']
+            modes:['userName']
         })
     )
     let [auth,setAuth] = useState(false);
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
-        if(model.userId !== 'asd'){
+        if(model.login.userId !== 'asd'){
             return {nextMode:'error',error:'cannot find this userId'}
         }
-        else if(model.password !== '123'){
+        else if(model.login.password !== '123'){
             return {nextMode:'error',error:'password is incorrect'}
         }
         else {
@@ -588,11 +789,11 @@ function LoginPage() {
     }
     return (<Example preview={() => preview()}/>)
 }
-function Methods() {
+function Modes() {
     let [loginInstance] = useState(
         new AIOLogin({
-            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
-            methods:['OTPNumber','userName','email','phoneNumber'],otpLength:5
+            id:'mylogintestmodes',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            modes:['OTPNumber','userName','email','phoneNumber'],otpLength:5
         })
     )
     let [auth,setAuth] = useState(false);
@@ -600,31 +801,31 @@ function Methods() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'userName'){
-            if(model.userId !== 'asd'){
+            if(model.login.userId !== 'asd'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'email'){
-            if(model.userId !== 'a@b.com'){
+            if(model.login.userId !== 'a@b.com'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'phoneNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -632,13 +833,13 @@ function Methods() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
         }
         let token = 'my test token';
         setToken(token);
-        setUserId(model.userId);
+        setUserId(model.login.userId);
         return {nextMode:'auth',token}
     }
     function onAuth({userId,token,logout}){
@@ -653,7 +854,7 @@ function Methods() {
                         {!auth && <li>imagine a valid email is "a@b.com" and its password is "123"</li>}
                         {!auth && <li>imagine a valid phoneNumber is "09111111111" and its password is "123"</li>}
                         {!auth && <li>imagine a valid OTPNumber is "09111111111" and its password is "12345"</li>}
-                        <li>in this example we set 4 <strong style={{background:'yellow'}}>methods</strong> of login ('OTPNumber','phoneNumber','userName','email')</li>
+                        <li>in this example we set 4 <strong style={{background:'yellow'}}>modes</strong> of login ('OTPNumber','phoneNumber','userName','email')</li>
                         <li>in this example we set <strong style={{background:'yellow'}}>otpLength</strong> 5</li>
                     </ul>
                 }
@@ -688,7 +889,7 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['OTPNumber','userName','email','phoneNumber'],
+            modes:['OTPNumber','userName','email','phoneNumber'],
             otpLength:5
         })
     )
@@ -697,31 +898,31 @@ function LoginPage() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'userName'){
-            if(model.userId !== 'asd'){
+            if(model.login.userId !== 'asd'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'email'){
-            if(model.userId !== 'a@b.com'){
+            if(model.login.userId !== 'a@b.com'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'phoneNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
-            else if(model.password !== '123'){
+            else if(model.login.password !== '123'){
                 return {nextMode:'error',error:'password is incorrect'}
             }
         }
         else if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -729,13 +930,13 @@ function LoginPage() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
         }
         let token = 'my test token';
         setToken(token);
-        setUserId(model.userId);
+        setUserId(model.login.userId);
         return {nextMode:'auth',token}
     }
     function onAuth({userId,token,logout}){
@@ -774,8 +975,8 @@ function LoginPage() {
 function RegisterTypeMode() {
     let [loginInstance] = useState(
         new AIOLogin({
-            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            id:'mylogintestregistertypemode',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'mode',
                 fields:[
@@ -792,7 +993,7 @@ function RegisterTypeMode() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -800,7 +1001,7 @@ function RegisterTypeMode() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -811,7 +1012,7 @@ function RegisterTypeMode() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
         
@@ -859,7 +1060,7 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'mode',
                 fields:[
@@ -877,7 +1078,7 @@ function LoginPage() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -885,7 +1086,7 @@ function LoginPage() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -896,7 +1097,7 @@ function LoginPage() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
     }
@@ -936,8 +1137,8 @@ function LoginPage() {
 function RegisterTypeButton() {
     let [loginInstance] = useState(
         new AIOLogin({
-            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            id:'mylogintestregistertypebutton',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'button',
                 fields:[
@@ -954,7 +1155,7 @@ function RegisterTypeButton() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -962,7 +1163,7 @@ function RegisterTypeButton() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -973,7 +1174,7 @@ function RegisterTypeButton() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
         
@@ -1021,7 +1222,7 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'button',
                 fields:[
@@ -1039,7 +1240,7 @@ function LoginPage() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -1047,7 +1248,7 @@ function LoginPage() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -1058,7 +1259,7 @@ function LoginPage() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
     }
@@ -1098,8 +1299,8 @@ function LoginPage() {
 function RegisterTypeTab() {
     let [loginInstance] = useState(
         new AIOLogin({
-            id:'mylogintestmethods',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            id:'mylogintestregistertypetab',checkToken:(token)=>true,onAuth,onSubmit,timer:10,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'tab',
                 fields:[
@@ -1116,7 +1317,7 @@ function RegisterTypeTab() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -1124,7 +1325,7 @@ function RegisterTypeTab() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -1135,7 +1336,7 @@ function RegisterTypeTab() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
         
@@ -1183,7 +1384,7 @@ function LoginPage() {
             onAuth,
             onSubmit,
             timer:10,
-            methods:['OTPNumber'],otpLength:5,
+            modes:['OTPNumber'],otpLength:5,
             register:{
                 type:'tab',
                 fields:[
@@ -1201,7 +1402,7 @@ function LoginPage() {
     let [token,setToken] = useState(loginInstance.getToken());
     function onSubmit(model,mode){
         if(mode === 'OTPNumber'){
-            if(model.userId !== '09111111111'){
+            if(model.login.userId !== '09111111111'){
                 return {nextMode:'error',error:'cannot find this userId'}
             }
             else {
@@ -1209,7 +1410,7 @@ function LoginPage() {
             }
         }
         else if(mode === 'OTPCode'){
-            if(model.password !== '12345'){
+            if(model.login.password !== '12345'){
                 return {nextMode:'error',error:'code is incorrect'}
             }
             else {
@@ -1220,7 +1421,7 @@ function LoginPage() {
             console.log('register object : ',model.register)
             let token = 'my test token';
             setToken(token);
-            setUserId(model.userId);
+            setUserId(model.login.userId);
             return {nextMode:'auth',token}
         }
     }
@@ -1256,6 +1457,9 @@ function LoginPage() {
         )
     }
     return (<Example preview={() => preview()}/>)
+}
+function SetUserInfoGetUserInfo(){
+    return 'should implement'
 }
 class Example extends Component {
     constructor(props) {

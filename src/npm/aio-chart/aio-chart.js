@@ -1,5 +1,5 @@
 import React,{Component,createRef,createContext} from 'react';
-import Slider from './../../npm/aio-slider/aio-slider';
+import AIOInput from './../../npm/aio-input/aio-input';
 import AIOCanvas from './../aio-canvas/aio-canvas';
 import $ from 'jquery';
 import './index.css';
@@ -470,12 +470,10 @@ var RChartContext = createContext();
       var {labelRotate,keys} = this.props;
       var d = axisToD[axis];
       return (
-        <Slider 
+        <AIOInput type='slider' 
           showValue={false}
-          attrs={{
-            className:'labelSlider',
-            style:{position:'absolute',left:0,top:0,width:'100%',height:'100%',padding:0}
-          }}
+          className='labelSlider'
+          style={{position:'absolute',left:0,top:0,width:'100%',height:'100%',padding:0}}
           pointStyle={()=>{return {display:'none'}}} 
           lineStyle={()=>{return {display:'none'}}}
           direction={axis === 'x'?'right':'top'} start={start} end={end}
@@ -518,12 +516,10 @@ var RChartContext = createContext();
         y:{width:'16px',height:'100%',padding:'12px 0',right:'0px',opacity:1}
       } 
       return (
-        <Slider direction={axis === 'x'?'right':'top'} start={start} end={end}
-          attrs={{
-            className:'filterSlider',
-            style:{position:'absolute',...style[axis]}
-          }}
-          points={[p1,p2]}
+        <AIOInput type='slider' direction={axis === 'x'?'right':'top'} start={start} end={end} multiple={true}
+          className='filterSlider'
+          style={{position:'absolute',...style[axis]}}
+          value={[p1,p2]}
           getPointHTML={()=>{
             return (
               <div 

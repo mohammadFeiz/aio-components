@@ -5,27 +5,29 @@ import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import './doc-aio-input-slider.css';
 import {Icon} from '@mdi/react';
-import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount} from '@mdi/js';
+import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiAccountAlert} from '@mdi/js';
 export default class DOC_AIOInput_Slider extends Component {
     render() {
         return (
             <DOC
                 {...this.props}
-                navId='valueStyle'
-                navs={[
-                    { text: 'value', id: 'value', COMPONENT: () => <Value /> },
-                    { text: 'onChange', id: 'onChange', COMPONENT: () => <OnChange /> },
-                    { text: 'start end min max', id: 'startendminmax', COMPONENT: () => <StartEndMinMax /> },
-                    { text: 'showValue', id: 'showValue', COMPONENT: () => <ShowValue /> },
-                    { text: 'multiple', id: 'multiple', COMPONENT: () => <Multiple /> },
-                    { text: 'direction', id: 'direction', COMPONENT: () => <Direction /> },
-                    { text: 'pointStyle', id: 'pointStyle', COMPONENT: () => <PointStyle /> },
-                    { text: 'valueStyle', id: 'valueStyle', COMPONENT: () => <ValueStyle /> },
-                    { text: 'lineStyle', id: 'lineStyle', COMPONENT: () => <LineStyle /> },
-                    { text: 'fillStyle', id: 'fillStyle', COMPONENT: () => <FillStyle /> },
-                    { text: 'label', id: 'label', COMPONENT: () => <Label /> },
-                    { text: 'scale', id: 'scale', COMPONENT: () => <Scale /> },
-                ]}
+                nav={{
+                    items:[
+                        { text: 'value', id: 'value', render: () => <Value /> },
+                        { text: 'onChange', id: 'onChange', render: () => <OnChange /> },
+                        { text: 'start end min max', id: 'startendminmax', render: () => <StartEndMinMax /> },
+                        { text: 'showValue', id: 'showValue', render: () => <ShowValue /> },
+                        { text: 'multiple', id: 'multiple', render: () => <Multiple /> },
+                        { text: 'direction', id: 'direction', render: () => <Direction /> },
+                        { text: 'pointStyle', id: 'pointStyle', render: () => <PointStyle /> },
+                        { text: 'getPointHTML', id: 'getPointHTML', render: () => <GetPointHTML /> },
+                        { text: 'valueStyle', id: 'valueStyle', render: () => <ValueStyle /> },
+                        { text: 'lineStyle', id: 'lineStyle', render: () => <LineStyle /> },
+                        { text: 'fillStyle', id: 'fillStyle', render: () => <FillStyle /> },
+                        { text: 'label', id: 'label', render: () => <Label /> },
+                        { text: 'scale', id: 'scale', render: () => <Scale /> },
+                    ]
+                }}
             />
         )
     }
@@ -342,6 +344,51 @@ const [value,setValue] = useState([30,70]);
         return {width:24,height:24,borderRadius:6,background:index === 0?'dodgerblue':'red'}
     }}
     onChange={(value)=>this.setState({value})}
+/>
+                    `)
+                }
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+class GetPointHTML extends Component {
+    constructor(props){
+        super(props);
+        this.state = {value:50,multiValue:[30,70]}
+    }
+    preview() {
+        let {value,multiValue} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput 
+                    type='slider' value={multiValue} multiple={true}
+                    pointStyle={{width:24,height:24,background:'none'}}
+                    getPointHTML={(index)=>{
+                        if(index === 0){
+                            return <Icon path={mdiAccount} size={.8}/>
+                        }
+                        if(index === 1){
+                            return <Icon path={mdiFile} size={.7}/>
+                        }
+                    }}
+                    onChange={(multiValue)=>this.setState({multiValue})}
+                />
+                {
+                    AIODoc().Code(`
+const [value,setValue] = useState([30,70]);
+<AIOInput 
+    type='slider' value={value} multiple={true}
+    pointStyle={{width:24,height:24,background:'none'}}
+    getPointHTML={(index)=>{
+        if(index === 0){
+            return <Icon path={mdiAccount} size={.8}/>
+        }
+        if(index === 1){
+            return <Icon path={mdiFile} size={.7}/>
+        }
+    }}
+    onChange={(value)=>setValue(value)}
 />
                     `)
                 }

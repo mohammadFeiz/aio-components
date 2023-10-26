@@ -13,26 +13,55 @@ import $ from 'jquery';
 import './aio-input.css';
 
 const AIContext = createContext();
-export default class AIOInput extends Component {
-    constructor(props) {
-        super(props);
-        this.dom = createRef();
-        this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
-        this.popup = new AIOPopup();
-        this.getPopover = this.handleGetPopover();
-    }
-    handleGetPopover() {
-        let { type, popover, options } = this.props;
-        if (type === 'button' && popover) {
+type TSProps = {
+    type:(
+        'text'|'number'|'textarea'|'color'|'password'|'checkbox'|'select'|'multiselect'|
+        'radio'|'checkbox'|'image'|'table'|'form'|'list'|'time'|'datepicker' |'button'|'file'|'tabs'|'slider'
+    ),
+    popover?:TSPopover,
+    rtl?:boolean,
+    options:TSOption[],
+    caret?:boolean | React.ReactNode,
+    onChange:(value:any)=>void,
+    onClick?:()=>void
+    
+}
+type TSPopover = {
+    backdropAttrs?:any,
+    attrs?:{className?:string},
+    position:'left' | 'right' |'top' |'bottom' |'center' |'popover' |'fullscreen',
+    render?:(obj:{close:()=>void})=>React.ReactNode,
+    header:{title?:string,subtitle?:string,attrs?:object}
+    fixStyle?:()=>object,fitHorizontal?:boolean
+    before?:()=>React.ReactNode,
+    after?:()=>React.ReactNode,
+}
+type TSOption = {
+    text:any,value:string | number
+}
+type TSGetPopover = (dom:any)=>{
+
+}
+type TSAIContext = {
+
+}
+export default function AIOInput(props:TSProps):React.ReactNode {
+    let [dom] = useState(createRef())
+    let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
+    let [popup] = useState(new AIOPopup())
+    let [getPopover] = useState(handleGetPopover())
+    function handleGetPopover() {
+        let { type, popover, options } = props;
+        if (typeof popover === 'object' && type === 'button') {
             return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover', header } = popover;
+                let { popover, rtl } = props;
+                let { backdropAttrs, attrs = {}, render = ()=>'', fixStyle, fitHorizontal, position = 'popover', header } = popover as TSPopover;
                 return {
                     rtl, position, header,
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
+                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + datauniqid } },
                     id: 'popover',
                     popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + datauniqid
                     },
                     body: { render: ({ close }) => render({ close }) },
                     attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
@@ -41,11 +70,11 @@ export default class AIOInput extends Component {
         }
         if (type === 'datepicker') {
             return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal, position = 'popover' } = popover || {}
+                let { popover = {}, rtl } = props;
+                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal, position = 'popover' } = popover as TSPopover
                 return {
-                    rtl, position, attrs, id: 'popover',
-                    body: { render: (obj) => <DatePicker {...this.props} onClose={obj.close} /> },
+                    rtl, position, id: 'popover',
+                    body: { render: (obj) => <DatePicker {...props} onClose={obj.close} /> },
                     backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
                     popover: {
                         fixStyle, fitHorizontal,
@@ -57,17 +86,17 @@ export default class AIOInput extends Component {
         }
         if (type === 'select' || type === 'multiselect') {
             return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, before, after, position = 'popover' } = popover || {}
+                let { popover = {}, rtl } = props;
+                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, before, after, position = 'popover' } = popover as TSPopover
                 return {
                     rtl, position, id: 'popover', header,
                     body: {
                         render: () => (<>{before && before}<Options />{after && after}</>),
                         attrs: { style: { flexDirection: 'column' } }
                     },
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
+                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + datauniqid } },
                     popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid,
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + datauniqid,
                     },
                     attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
                 }
@@ -75,49 +104,64 @@ export default class AIOInput extends Component {
         }
         if (type && options && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) {
             return (dom) => {
-                let { type, popover = {}, rtl } = this.props;
-                let { backdropAttrs = {},attrs = {}, fixStyle, fitHorizontal = true, position = 'popover' } = popover
+                let { type, popover = {}, rtl } = props;
+                let { attrs = {}, fixStyle, fitHorizontal = true, position = 'popover' } = popover as TSPopover
                 return {
-                    rtl, position, body: { render: () => <Options type={type} /> }, id: this.datauniqid,
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid,style:{...backdropAttrs.style,background:'none',pointerEvents:'none'} } },
+                    rtl, position, backdrop: false, body: { render: () => <Options type={type} /> }, id: datauniqid,
                     popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid,
+                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + datauniqid,
                     },
                     attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
                 }
             }
         }
     }
-    dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
-    dragOver(e) { e.preventDefault(); }
-    drop(e) {
+    let dragIndex;
+    function dragStart(e) { dragIndex = parseInt($(e.target).attr('datarealindex')); }
+    function dragOver(e) { e.preventDefault(); }
+    function drop(e) {
         e.stopPropagation();
-        let { onSwap } = this.props, from = this.dragIndex, dom = $(e.target);
+        let { onSwap } = this.props, from = dragIndex, dom = $(e.target);
         if (!dom.hasClass('aio-input-option')) { dom = dom.parents('.aio-input-option'); };
         if (!dom.hasClass('aio-input-option')) { return };
         let to = parseInt(dom.attr('datarealindex'));
         if (from === to) { return }
-        onSwap(from, to, this.swap)
+        onSwap(from, to, swap)
     }
-    swap(arr, from, to) {
+    function swap(arr, from, to) {
         if (to === from + 1) { let a = to; to = from; from = a; }
         let Arr = arr.map((o, i) => { o._testswapindex = i; return o })
         let fromIndex = Arr[from]._testswapindex
         Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
         return Arr.filter((o) => o._testswapindex !== fromIndex)
     }
-    getSelectText() {
-        let { options = [] } = this.props;
-        let value = this.getProp('value');
-        let option = options.find((option) => this.getOptionProp(option, 'value') === value);
-        if (option === undefined) { return '' }
-        return this.getOptionProp(option, 'text', '')
+    function toggle(popover) {
+        let open = !!popup.getModals().length
+        let { onToggle } = this.props;
+        if (!!popover === !!open) { return }
+        if (popover) {
+            this.popup.addModal(popover);
+            $('body').addClass('aio-input-open');
+        }
+        else {
+            this.popup.removeModal();
+            $('body').removeClass('aio-input-open');
+            setTimeout(() => $(dom.current).focus(), 0)
+        }
+        if (onToggle) { onToggle(!!popover) }
     }
-    getDatepickerText() {
-        let value = this.getProp('value');
+    function getSelectText() {
+        let { options = [] } = props;
+        let value = getProp('value');
+        let option = options.find((option) => getOptionProp(option, 'value') === value);
+        if (option === undefined) { return '' }
+        return getOptionProp(option, 'text', '')
+    }
+    function getDatepickerText() {
+        let value = getProp('value');
         if (value) {
-            let unit = this.getProp('unit', 'day');
-            let Pattern = this.getProp('pattern');
+            let unit = getProp('unit', 'day');
+            let Pattern = getProp('pattern');
             let list = AIODate().convertToArray({ date: value });
             let [year, month = 1, day = 1, hour = 0] = list;
             list = [year, month, day, hour];
@@ -129,17 +173,17 @@ export default class AIOInput extends Component {
             else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
             return <div style={{ direction: 'ltr' }}>{AIODate().getDateByPattern({ date: list, pattern })}</div>
         }
-        let calendarType = this.getProp('calendarType', 'gregorian')
+        let calendarType = getProp('calendarType', 'gregorian')
         return this.getProp('placeholder', calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
     }
-    getProp(key, def) {
-        let { type, caret, popover } = this.props;
-        let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
+    function getProp(key, def?:any) {
+        let { type, caret, popover } = props;
+        let propsResult = props[key] === 'function' ? props[key]() : props[key];
         if (key === 'caret') { return caret === false ? false : (((type === 'button' && popover) || (type === 'select' || type === 'multiselect' || type === 'datepicker')) ? (caret || true) : false) }
         if (key === 'multiple') { return (type === 'multiselect') || (type === 'radio' && !!propsResult) || (type === 'slider' && !!propsResult) }
         if (key === 'text' && propsResult === undefined) {
-            if (type === 'select') { return this.getSelectText() }
-            if (type === 'datepicker') { return this.getDatepickerText() }
+            if (type === 'select') { return getSelectText() }
+            if (type === 'datepicker') { return getDatepickerText() }
         }
         if (key === 'value') {
             if (this.getProp('multiple')) {
@@ -151,14 +195,13 @@ export default class AIOInput extends Component {
         propsResult = propsResult === undefined ? def : propsResult;
         return propsResult;
     }
-    getOptionProp(option, key, def) {
+    function getOptionProp(option, key, def?:any) {
         if (key === 'onClick') { return option.onClick }
         let optionResult = typeof option[key] === 'function' ? option[key](option) : option[key]
         if (optionResult !== undefined) { return optionResult }
-        let prop = this.props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
+        let prop = props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
         if (typeof prop === 'string') {
             try {
-                let props = this.props;
                 let value, evalText = 'value = ' + prop;
                 eval(evalText);
                 return value;
@@ -169,82 +212,55 @@ export default class AIOInput extends Component {
         if (prop !== undefined) { return prop }
         return def
     }
-    toggle(popover,e) {
-        let open = !!this.popup.getModals().length
-        let { onToggle } = this.props;
-        if (!!popover === !!open) { return }
-        if (popover) {
-            this.popup.addModal(popover);
-            $('body').addClass('aio-input-open');
-        }
-        else {
-            this.popup.removeModal();
-            $('body').removeClass('aio-input-open');
-            setTimeout(() => $(this.dom.current).focus(), 0)
-        }
-        if (onToggle) { onToggle(!!popover) }
-    }
-    click(e, dom) {
-        let { type, onChange = () => { }, onClick } = this.props;
-        if (type === 'checkbox') { onChange(!this.getProp('value')) }
-        else if (this.getPopover) { this.toggle(this.getPopover(dom),e) }
+    function click(e, dom) {
+        let { type, onChange, onClick } = props;
+        if (type === 'checkbox') { if(onChange){onChange(!getProp('value')) }}
+        else if (getPopover) { toggle(getPopover(dom)) }
         else if (onClick) { onClick(); }
     }
-    optionClick(option) {
-        let { onChange = () => { }, type } = this.props;
-        let Value = this.getProp('value');
+    function optionClick(option) {
+        let { onChange = () => { }, type } = props;
+        let Value = getProp('value');
         let { value, onClick, close, text } = option;
         if (onClick) { onClick(value, option); }
         else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text) }
-        else if (this.getProp('multiple')) {
+        else if (getProp('multiple')) {
             if (Value.indexOf(value) === -1) { onChange(Value.concat(value), value, 'add') }
             else { onChange(Value.filter((o) => o !== value), value, 'remove') }
         }
         else { onChange(value, option) }
-        if (close) { this.toggle(false) }
+        if (close) { toggle(false) }
     }
-    getContext() {
-        return {
-            ...this.props,
-            popup: this.popup,
-            dragStart: this.dragStart.bind(this),
-            dragOver: this.dragOver.bind(this),
-            drop: this.drop.bind(this),
-            click: this.click.bind(this),
-            optionClick: this.optionClick.bind(this),
-            datauniqid: this.datauniqid,
-            getProp: this.getProp.bind(this),
-            getOptionProp: this.getOptionProp.bind(this),
-            parentDom: this.dom,
-        }
+    function getContext():TSAIContext {
+        return {...props,popup,dragStart,dragOver,drop,click,optionClick,datauniqid,getProp,getOptionProp,parentDom: dom}
     }
-    D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
-    render_button() { return <Layout /> }
-    render_list() {
-        return <List {...this.props} getOptionProp={this.getOptionProp.bind(this)} />
+    function D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
+    function render_button() { return <Layout /> }
+    function render_list() {
+        return <List {...props} getOptionProp={getOptionProp.bind(this)} />
     }
-    render_time() {
-        let { year, month, day, hour, minute, popover = {}, onChange } = this.props;
+    function render_time() {
+        let { year, month, day, hour, minute, popover = {}, onChange } = props;
         let { attrs: popoverAttrs = {} } = popover;
         let text = [];
         let dateArray = [];
-        if (year) { dateArray.push(this.D2S(year)) }
-        if (month) { dateArray.push(this.D2S(month)) }
-        if (day) { dateArray.push(this.D2S(day)) }
+        if (year) { dateArray.push(D2S(year)) }
+        if (month) { dateArray.push(D2S(month)) }
+        if (day) { dateArray.push(D2S(day)) }
         if (dateArray.length) { text.push(dateArray.join('/')) }
-        if (hour !== undefined) { text.push(`${this.D2S(hour)} : ${this.D2S(minute === undefined ? 0 : minute)}`) }
+        if (hour !== undefined) { text.push(`${D2S(hour)} : ${D2S(minute === undefined ? 0 : minute)}`) }
         return (
             <AIOInput
                 caret={false} center={true}
                 text={text.join(' ')}
-                {...this.props}
-                style={{ ...this.props.style, direction: 'ltr' }}
+                {...props}
+                style={{ ...props.style, direction: 'ltr' }}
                 type='button'
                 popover={!onChange ? undefined : {
                     position: 'center', ...popover,
                     attrs: { ...popoverAttrs, className: 'aio-input-time-popover' + (popoverAttrs.className ? ' ' + popoverAttrs.className : '') },
                     render: ({ close }) => {
-                        let { year, month, day, hour, minute, onChange = () => { } } = this.props;
+                        let { year, month, day, hour, minute, onChange = () => { } } = props;
                         return (
                             <TimePopover
                                 year={year} month={month} day={day} hour={hour} minute={minute}
@@ -257,35 +273,33 @@ export default class AIOInput extends Component {
             />
         )
     }
-    render_file() { return <File /> }
-    render_select() { return <Layout /> }
-    render_multiselect() { return <Multiselect /> }
-    render_radio() { return <Layout text={<Options />} /> }
-    render_tabs() { return <Layout text={<Options />} /> }
-    render_checkbox() { return <Layout /> }
-    render_datepicker() { return <Layout /> }
-    render_image() { return <Layout text={<Image />} /> }
-    render_table() { return <Table {...this.props} /> }
-    render_text() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_password() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_textarea() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_number() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_color() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_slider() { return <Layout text={<InputSlider value={this.getProp('value')} />} /> }
-    render_form() { return <Form {...this.props} /> }
-    render() {
-        let { type,validate = true } = this.props;
-        if(validate){new AIOInputValidate(this.props)}
-        if (!type || !this['render_' + type]) { return null }
-        return (
-            <AIContext.Provider value={this.getContext()}>
-                {this['render_' + type]()}
-                {this.popup.render()}
-            </AIContext.Provider>
-        )
+    function Render(){
+        if(props.type === 'file'){return <Layout />}
+        if(props.type === 'select'){return <Layout />}
+        if(props.type === 'multiselect'){return <Multiselect />}
+        if(props.type === 'radio'){return <Layout text={<Options />} />}
+        if(props.type === 'tabs'){return <Layout text={<Options />} />}
+        if(props.type === 'checkbox'){return <Layout />}
+        if(props.type === 'datepicker'){return <Layout />}
+        if(props.type === 'image'){return <Layout text={<Image />} />}
+        if(props.type === 'table'){return <Table {...this.props} />}
+        if(props.type === 'text'){return <Layout text={<Input value={this.getProp('value')} />} />}
+        if(props.type === 'password'){return <Layout text={<Input value={this.getProp('value')} />} />}
+        if(props.type === 'textarea'){return <Layout text={<Input value={this.getProp('value')} />} />}
+        if(props.type === 'number'){return <Layout text={<Input value={this.getProp('value')} />} />}
+        if(props.type === 'color'){return <Layout text={<Input value={this.getProp('value')} />} />}
+        if(props.type === 'slider'){return <Layout text={<InputSlider value={this.getProp('value')} />} />}
+        if(props.type === 'form'){return <Form {...this.props} />}
+        return null;
     }
+        
+    return (
+        <AIContext.Provider value={this.getContext()}>
+            {Render()}
+            {popup.render()}
+        </AIContext.Provider>
+    )
 }
-
 function TimePopover(props) {
     let { calendarType, lang = 'fa' } = props;
     let [today] = useState(AIODate().getToday({ calendarType }))
@@ -417,7 +431,8 @@ function TimePopover(props) {
     )
 }
 function Image() {
-    let { getProp } = useContext(AIContext);
+    let context:TSAIContext = useContext(AIContext)
+    let { getProp } = context;
     let [popup] = useState(new AIOPopup());
     let value = getProp('value', '');
     let [url, setUrl] = useState();
@@ -496,8 +511,8 @@ function Image() {
         />
     )
 }
-class InputSlider extends Component {
-    static contextType = AIContext;
+function InputSlider {
+    let context = useContext(AIContext);
     change(value) {
         let { onChange, getProp } = this.context;
         if (getProp('multiple')) { onChange([...value]) }
@@ -508,11 +523,10 @@ class InputSlider extends Component {
         let value = getProp('value'), rtl = getProp('rtl');
         if (!Array.isArray(value)) { value = [value] }
         let disabled = getProp('disabled', false)
-        let onChange = getProp('onChange');
         let props = {
             disabled,
             value, rtl, start: getProp('start'), end: getProp('end'), step: getProp('step'), min: getProp('min'), max: getProp('max'),
-            direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: disabled || !onChange ? undefined : this.change.bind(this),
+            direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: disabled ? undefined : this.change.bind(this),
             pointStyle: getProp('pointStyle'), lineStyle: getProp('lineStyle'), fillStyle: getProp('fillStyle'), getPointHTML: getProp('getPointHTML'),
             labelStep: getProp('labelStep'), editLabel: getProp('editLabel'), editValue: getProp('editValue'), labelRotate: getProp('labelRotate'), labelStyle: getProp('labelStyle'),
             scaleStep: getProp('scaleStep'), scaleStyle: getProp('scaleStyle'), getScaleHTML: getProp('getScaleHTML'),
@@ -532,7 +546,8 @@ function Tags() {
     return <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>{value.map((o) => <Tag value={o} />)}</div>
 }
 function Tag({ value }) {
-    let { getProp, getOptionProp: gop, onChange = () => { } } = useContext(AIContext);
+    let context:TSAIContext = useContext(AIContext);
+    let { getProp, getOptionProp: gop, onChange = () => { } } = context;
     function getTagByValue(v) {
         let options = getProp('options', [])
         let option = options.find((option) => v === gop(option, 'value'))
@@ -595,8 +610,10 @@ class Input extends Component {
             this.rrt = setTimeout(() => this.setState({ value: this.props.value, prevValue: this.props.value }), 0)
         }
     }
-    change(value,onChange) {
+    change(value) {
         let { type, getProp, blurChange } = this.context;
+        let onChange = getProp('onChange');
+        if (!onChange) { return }
         let maxLength = getProp('maxLength', Infinity);
         let justNumber = getProp('justNumber');
         let delay = getProp('delay', 400);
@@ -608,12 +625,7 @@ class Input extends Component {
                 if (justNumber) {
                     value = value.toString();
                     let lastChar = value[value.length - 1];
-                    if(lastChar === ' ' || isNaN(+lastChar)){
-                        if(Array.isArray(justNumber)){
-                            if(justNumber.indexOf(lastChar) === -1){value = value.slice(0, value.length - 1)}
-                        }
-                        else{value = value.slice(0, value.length - 1) }
-                    }
+                    if (isNaN(+lastChar)) { value = value.slice(0, value.length - 1) }
                 }
                 if (filter.length) {
                     value = value.toString();
@@ -629,59 +641,39 @@ class Input extends Component {
         if (!blurChange) {
             clearTimeout(this.timeout);
             this.timeout = setTimeout(() => {
-                onChange(value);
+                this.onChange(value);
             }, delay);
         }
     }
-    blur(onChange) {
+    blur() {
         let { blurChange } = this.context;
         if (!blurChange) { return }
-        onChange(this.state.value)
+        this.onChange(this.state.value)
     }
-    getInputStyle(inputAttrs){
-        let { getProp } = this.context;
-        let justify = getProp('justify', false);
-        let style = {...inputAttrs.style};
-        if(justify){style.textAlign = 'center'}
-        return style;
-    }
-    getInputClassName(inputAttrs = {}){
-        let { getProp } = this.context;
-        let classes = [];
-        let spin = getProp('spin');
-        if(spin === false){classes.push('no-spin')}
-        if(inputAttrs.className){classes.push(inputAttrs.className)}
-        return classes.length?classes.join(' '):'';
-    }
-    getInputAttrs(){
+    render() {
         let { getProp, type } = this.context;
         let { value = '' } = this.state;
         let inputAttrs = getProp('inputAttrs', {});
-        let onChange = getProp('onChange');
-        let loading = getProp('loading');
-        return {
-            ...inputAttrs, value, type, ref: this.dom,
-            disabled:!!loading || inputAttrs.disabled,
-            style:this.getInputStyle(inputAttrs),
-            className: this.getInputClassName(inputAttrs),
-            onChange: onChange?(e) => this.change(e.target.value,onChange):undefined,
-            onBlur: () => this.blur(onChange)
+        let disabled = getProp('disabled', false);
+        let placeholder = getProp('placeholder');
+        let spin = getProp('spin');
+        this.onChange = getProp('onChange');
+        let props = {
+            ...inputAttrs, value, type, disabled, ref: this.dom, placeholder,
+            className: spin === false ? 'no-spin' : '',
+            onChange: (e) => this.change(e.target.value),
+            onBlur: () => this.blur()
         }
-    }
-    render() {
-        let { type } = this.context;
-        let { value = '' } = this.state;
-        let attrs = this.getInputAttrs()
-        if (!attrs.onChange) { return <div className='aio-input-value'>{value}</div> }
+        if (typeof this.onChange !== 'function') { return <div className='aio-input-value'>{value}</div> }
         else if (type === 'color') {
             return (
                 <label style={{ width: '100%', height: '100%', background: value }}>
-                    <input {...attrs} style={{ opacity: 0 }} />
+                    <input {...props} style={{ opacity: 0 }} />
                 </label>
             )
         }
-        else if (type === 'textarea') { return <textarea {...attrs} /> }
-        else { return (<input {...attrs} />) }
+        else if (type === 'textarea') { return <textarea {...props} /> }
+        else { return (<input {...props} />) }
     }
 }
 class Form extends Component {
@@ -1565,7 +1557,7 @@ class Layout extends Component {
             </>
         )
         let props = this.getProps();
-        if (type === 'file') { return (<><label {...props}>{content}<InputFile /></label></>) }
+        if (type === 'file') { return (<><label {...props}>{content}<InputFile /></label><Files /></>) }
         return (<div {...props}>{content}</div>)
     }
 }
@@ -1602,10 +1594,6 @@ class CheckIcon extends Component {
         );
     }
 }
-function File() {
-    let { style = {} } = useContext(AIContext);
-    return (<div className={'aio-input-file-container'} style={{ width: style.width }}><Layout /><FileItems /></div>)
-}
 export class InputFile extends Component {
     static contextType = AIContext;
     change(e) {
@@ -1626,17 +1614,17 @@ export class InputFile extends Component {
         return <input {...props} />
     }
 }
-export class FileItems extends Component {
+export class Files extends Component {
     static contextType = AIContext;
     render() {
         let { value = [], rtl } = this.context;
         if (!value.length) { return null }
         return (
-            <div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{value.map((o, i) => <FileItem key={i} {...o} index={i} />)}</div>
+            <div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{value.map((o, i) => <File key={i} {...o} index={i} />)}</div>
         )
     }
 }
-class FileItem extends Component {
+class File extends Component {
     static contextType = AIContext;
     getFile(filename, fileSize) {
         let nameLength = 20;
@@ -1950,9 +1938,8 @@ class DPCell extends Component {
         return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
     }
 }
-class DPHeader extends Component {
-    static contextType = DPContext;
-    getYears() {
+function DPHeader() {
+    function getYears() {
         let { activeDate, years, changeActiveDate } = this.context;
         let props = {
             value: activeDate.year, options: years, optionText: 'option.toString()', optionValue: 'option',
@@ -1960,7 +1947,7 @@ class DPHeader extends Component {
         }
         return (<DPHeaderDropdown {...props} />)
     }
-    getMonths() {
+    function getMonths() {
         let { calendarType = 'gregorian', activeDate, changeActiveDate, months, translate } = this.context;
         let props = {
             value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
@@ -1968,27 +1955,27 @@ class DPHeader extends Component {
         }
         return (<DPHeaderDropdown {...props} />)
     }
-    getDays() {
+    function getDays() {
         let { activeDate, changeActiveDate } = this.context;
         let daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
         let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
         let props = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
         return (<DPHeaderDropdown {...props} />)
     }
-    render() {
-        let { unit = 'day', size, calendarType = 'gregorian' } = this.context;
-        return (
-            <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
-                <DPArrow type='minus' />
-                <div className='aio-input-datepicker-select' style={{ fontSize: Math.floor(size / 12) }}>
-                    {this.getYears()}
-                    {unit !== 'month' ? this.getMonths() : null}
-                    {unit === 'hour' ? this.getDays() : null}
-                </div>
-                <DPArrow type='plus' />
+    let context:TSAIContext = useContext(DPContext)
+    let { unit = 'day', size, calendarType = 'gregorian' } = context;
+    return (
+        <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
+            <DPArrow type='minus' />
+            <div className='aio-input-datepicker-select' style={{ fontSize: Math.floor(size / 12) }}>
+                {this.getYears()}
+                {unit !== 'month' ? this.getMonths() : null}
+                {unit === 'hour' ? this.getDays() : null}
             </div>
-        )
-    }
+            <DPArrow type='plus' />
+        </div>
+    )
+    
 }
 class DPHeaderDropdown extends Component {
     static contextType = DPContext;
@@ -2700,166 +2687,3 @@ class List extends Component {
     }
 }
 List.defaultProps = { size: 48, options: [], onChange: (item, index) => { } }
-
-
-
-class AIOInputValidate{
-    constructor(props){
-        this.props = props;
-        let error = this.getError()
-        if(error && !$('.aio-popup-alert-container').length){
-            new AIOPopup().addAlert({text:error,type:'error',subtext:JSON.stringify(props)})
-        }
-    }
-    varTypes = {
-        'object':true,'array':true,'string':true,'number':true,'boolean':true,'undefined':true,'any':true,'function':true,'null':true,
-    }
-    titr = 'aio-input error =>';
-    getTypes = ()=>{
-        return [
-            'text','number','textarea','color','password','file','image','select','multiselect','table','form',
-            'time','datepicker','list','checkbox','radio','tabs'
-        ]
-    }
-    getType = (v)=>{
-        if(Array.isArray(v)){return 'array'}
-        if(v === null){return 'undefined'}
-        return typeof v;
-    }
-    checkTypes = (value,types)=>{
-        if(types === 'any'){return}
-        types = types.split('|');
-        let res;
-        let passed = false;
-        for(let i = 0; i < types.length; i++){
-            let type = types[i];
-            let error = this.checkType(value,type,types)
-            if(error){res = error}
-            else {passed = true}
-        }
-        if(!passed){return res}
-    }
-    checkType = (value,type,types)=>{
-        let res = false;
-        let valueType = this.getType(value);
-        if(this.varTypes[type]){
-            if(valueType === type){res = true}
-        }
-        else {
-            try{if(value === JSON.parse(type)){res = true}}
-            catch{debugger; if(value === JSON.parse(type)){res = true}}
-        }
-        if(res === false){
-
-            return `should be ${types.join('|')} but is ${JSON.stringify(value)}`
-        }
-
-    }
-    getError = ()=>{
-        let types = this.getTypes();
-        let {type} = this.props;
-        if(types.indexOf(type) === -1){return `${this.titr} ${type} is invalid type`}
-        let error = this.getMessage(type);
-        if(error){return error}
-    }
-    validateObject = {
-        text:{
-            rtl:'boolean|undefined',
-            type:'"text"',
-            inputAttrs:"object|undefined",
-            attrs:"object|undefined",
-            justNumber:"boolean|array|undefined",
-            style:'object|undefined',
-            value:'string|number|undefined',
-            onChange:'function',
-            options:'array|undefined',
-            maxLength:'number|undefined',
-            filter:'array',
-            attrs:'object|undfined'
-        },
-        number:{
-            rtl:'boolean|undefined',
-            type:'"number"',
-            inputAttrs:"object|undefined",
-            attrs:"object|undefined",
-            style:'object|undefined',
-            value:'""|number|undefined',
-            onChange:'function',
-        },
-        checkbox:{
-            rtl:'boolean|undefined',
-            type:'"checkbox"',
-            text:'any',
-            style:'object|undefined',
-            value:'boolean|undefined',
-            onChange:'function',
-
-        },
-        radio:{
-            rtl:'boolean|undefined',
-            type:'"radio"',
-            options:'array',
-            style:'object|undefined',
-            value:'any',
-            onChange:'function'
-        },
-        select:{
-            rtl:'boolean|undefined',
-            type:'"select"',
-            options:'array',
-            style:'object|undefined',
-            value:'number|string|undefined',
-            onChange:'function'
-
-        },
-        file:{
-            rtl:'boolean|undefined',
-            type:'"file"',
-            text:'any',
-            style:'object|undefined',
-            multiple:'boolean',
-            value:'any',
-            onChange:'function'
-
-            
-        },
-        multiselect:{
-            rtl:'boolean|undefined',
-            type:'"multiselect"',
-            text:'any',
-            options:'array',
-            style:'object|undefined',
-            value:'array|undefined',
-            onChange:'function'
-
-        },
-        form:{
-            rtl:'boolean|undefined',
-            type:'"form"',
-            inputs:'object',
-            value:'object',
-            onChange:'function'
-        },
-        textarea:{
-            rtl:'boolean|undefined',
-            type:'"textarea"',
-            style:'object|undefined',
-            value:'string|number|undefined',
-            onChange:'function'
-        }
-    }
-    getMessage = (type) => {
-        let validProps = this.validateObject[type]
-        if(!validProps){
-            return `${type} validator is not implement`
-
-        }
-        for(let prop in this.props){
-            if(!validProps[prop]){return `${this.titr} in type="${type}", ${prop} is invalid props`}
-            let error = this.checkTypes(this.props[prop],validProps[prop])
-            if(error){
-                return `${this.titr} in type="${type}", ${prop} props ${error}`
-            }
-        }
-    }
-} 

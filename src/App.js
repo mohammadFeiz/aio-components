@@ -1,10 +1,12 @@
 import React,{Component} from "react";
 import './App.css'
+import AIOStorage from './npm/aio-storage/aio-storage';
 import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
 import DOC_AIOInput_Datepicker from './documents/aio-input/aio-input-datepicker/doc-aio-input-datepicker';
 import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
+import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
@@ -16,7 +18,7 @@ import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip';
 import DOC_AIOChart from './documents/aio-chart/doc-aio-chart';
 import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater';
 import Puzzle from './documents/puzzle/index';
-import DOC_AIODragList from './documents/aio-drag-list/doc-aio-drag-list';
+import DOC_AIOInput_List from './documents/aio-input/aio-input-list/doc-aio-input-list';
 import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
 import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
@@ -27,43 +29,50 @@ import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);
+    this.storage = AIOStorage('aio-componentspart');
     this.state = {
-      part:'aio-login',
+      part:this.storage.load({name:'part',def:'aio-input'}),
       parts:{
-        'aio-input':{name:'aio-input',Render:DOC_AIOInput},
-        'aio-input-table':{name:'aio-input-table',Render:DOC_AIOInput_Table},
-        'aio-input-slider':{name:'aio-input-slider',Render:DOC_AIOInput_Slider},
-        'aio-input-datepicker':{name:'aio-input-datepicker',Render:DOC_AIOInput_Datepicker},
-        'aio-input-image':{name:'aio-input-image',Render:DOC_AIOInput_Image},
-        'aio-highlighter':{name:'aio-highlighter',Render:DOC_AIOHighlighter},
-        'aio-validation':{name:'aio-validation',Render:DOC_AIOValidation},
-        'aio-loading':{name:'aio-loading',Render:DOC_AIOLoading},
-        'aio-table':{name:'aio-table',Render:DOC_AIOTable},
-        'aio-content-slider':{name:'aio-content-slider',Render:DOC_AIOContentSlider},
-        'aio-gauge':{name:'aio-gauge',Render:DOC_AIOGauge},
-        'aio-storage':{name:'aio-storage',Render:DOC_AIOStorage},
-        'aio-swip':{name:'aio-swip',Render:DOC_AIOSwip},
-        'aio-chart':{name:'aio-chart',Render:DOC_AIOChart},
-        'aio-floater':{name:'aio-floater',Render:DOC_AIOFloater},
-        'puzzle':{name:'puzzle',Render:Puzzle},
-        'aio-drag-list':{name:'aio-drag-list',Render:DOC_AIODragList},
-        'react-super-app':{name:'react-super-app',Render:DOC_ReactSuperApp},
-        'aio-service':{name:'aio-service',Render:DOC_AIOService},
-        'aio-popup':{name:'aio-popup',Render:DOC_AIOPopup},
-        'aio-map':{name:'aio-map',Render:DOC_AIOMap},
-        'aio-canvas':{name:'aio-canvas',Render:DOC_AIOCanvas},
-        'aio-login':{name:'aio-login',Render:DOC_AIOLogin}
+        'aio-input':DOC_AIOInput,
+        'aio-input-table':DOC_AIOInput_Table,
+        'aio-input-slider':DOC_AIOInput_Slider,
+        'aio-input-datepicker':DOC_AIOInput_Datepicker,
+        'aio-input-image':DOC_AIOInput_Image,
+        'aio-input-list':DOC_AIOInput_List,
+        'aio-input-form':DOC_AIOInput_Form,
+        'aio-highlighter':DOC_AIOHighlighter,
+        'aio-validation':DOC_AIOValidation,
+        'aio-loading':DOC_AIOLoading,
+        'aio-table':DOC_AIOTable,
+        'aio-content-slider':DOC_AIOContentSlider,
+        'aio-gauge':DOC_AIOGauge,
+        'aio-storage':DOC_AIOStorage,
+        'aio-swip':DOC_AIOSwip,
+        'aio-chart':DOC_AIOChart,
+        'aio-floater':DOC_AIOFloater,
+        'puzzle':Puzzle,
+        'react-super-app':DOC_ReactSuperApp,
+        'aio-service':DOC_AIOService,
+        'aio-popup':DOC_AIOPopup,
+        'aio-map':DOC_AIOMap,
+        'aio-canvas':DOC_AIOCanvas,
+        'aio-login':DOC_AIOLogin
       }
     }
   }
+  changePart(part){
+    this.storage.save({name:'part',value:part})
+    this.setState({part})
+  }
   part(){
     let {parts,part} = this.state;
-    let {Render,name} = parts[part]
+    let COMPONENT = parts[part]
     let props = {
-      goToHome:()=>this.setState({part:false}),
-      name
+      id:part,
+      goToHome:()=>this.changePart(false),
+      name:part
     }
-    return <Render {...props}/>
+    return <COMPONENT {...props}/>
   }
   render(){
     let {part,parts} = this.state;
@@ -72,7 +81,7 @@ export default class AIOComponents extends Component{
       <div className='aio-components'>
         {
           Object.keys(parts).map((o)=>{
-            return (<div className='aio-component' onClick={()=>this.setState({part:o})}>{o}</div>)
+            return (<div className='aio-component' onClick={()=>this.changePart(o)}>{o}</div>)
           })
         }
       </div>

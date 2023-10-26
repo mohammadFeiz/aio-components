@@ -10,7 +10,7 @@ import './aio-login.css';
 // type I_props = {
 //     id:string,
 //     onSubmit:(model:I_model,mode:I_mode)=>{nextMode:I_mode,error?:String,token?:string},
-//     methods:('OTPNumber' |'userName' |'email' |'phoneNumber')[],
+//     modes:('OTPNumber' |'userName' |'email' |'phoneNumber')[],
 //     timer?:Number,
 //     checkToken:(token:string)=>Boolean,
 //     register?:{type:'mode'|'button'|'tab',fields:I_registerField[],text:string},
@@ -27,7 +27,7 @@ import './aio-login.css';
 
 export default class AIOlogin{
     constructor(props){
-        let {id,onAuth,onSubmit,methods,timer, checkToken,register,userId,attrs,forget,otpLength} = props;
+        let {id,onAuth,onSubmit,modes,timer, checkToken,register,userId,attrs,forget,otpLength} = props;
         AIOMapValidator(props);
         let storage = AIOStorage(`-AIOLogin-${id}`);
         this.setStorage = (key,value) => {storage.save({name:key,value});}
@@ -46,7 +46,7 @@ export default class AIOlogin{
         this.getUserId = () => {return this.getStorage().userId}
         this.logout = () => { this.removeToken(); window.location.reload() }
         this.props = {
-            id, checkToken,onAuth,onSubmit,methods,register,userId,attrs,timer,forget,otpLength,
+            id, checkToken,onAuth,onSubmit,modes,register,userId,attrs,timer,forget,otpLength,
             getStorage:this.getStorage,
             setStorage:this.setStorage,
             removeToken:this.removeToken,
@@ -113,7 +113,7 @@ class AIOLOGIN extends Component {
         }
         this.setState({ isAuth: res });
     }
-    handleOnsubmitError(currentMode,nextMode,methods,token){
+    handleOnsubmitError(currentMode,nextMode,modes,token){
         if(nextMode === 'auth' && !token){
             alert(`
                 aio-login error => if onSubmit returns an object contain nextMode:"auth", token props is required
@@ -144,10 +144,10 @@ class AIOLOGIN extends Component {
             }
         }
         else if(currentMode === 'forgetCode'){
-            if(methods.indexOf(nextMode) === -1){
+            if(modes.indexOf(nextMode) === -1){
                 alert(`
                     aio-login error => in onSubmit props cannot switch from mode:"${currentMode}" to mode:"${nextMode}" 
-                    in this mode you just can switch to ${methods.concat('error').split(' or ')} mode
+                    in this mode you just can switch to ${modes.concat('error').split(' or ')} mode
                 `)
             }
         }
@@ -162,7 +162,7 @@ class AIOLOGIN extends Component {
         }
     }
     async onSubmit(model,currentMode){
-        let { methods,setStorage } = this.props;
+        let { modes,setStorage } = this.props;
         let { apis } = this.state;
         let description = {
             "OTPNumber":'ارسال شماره همراه',
@@ -177,9 +177,7 @@ class AIOLOGIN extends Component {
         if(obj.noAction){return}
         let {token,nextMode} = obj;
         if(nextMode === 'error'){return 'error'}
-        let modes = [];
-        this.handleOnsubmitError(currentMode,nextMode,methods,token);
-        if(this.fields){modes.push('register')}
+        this.handleOnsubmitError(currentMode,nextMode,modes,token);
         if(['OTPNumber','phoneNumber','userName','email'].indexOf(currentMode) !== -1){
             setStorage('userId',model.login.userId);
         }
@@ -196,7 +194,7 @@ class AIOLOGIN extends Component {
     render() {
         if (!this.valid) { return null }
         if (!this.mounted) { return null }
-        let { layout, otpLength, onAuth, id, timer,methods,userId,register = {},attrs = {},forget,getStorage,logout } = this.props;
+        let { layout, otpLength, onAuth, id, timer,modes,userId,register = {},attrs = {},forget,getStorage,logout } = this.props;
         let { isAuth,reportedAuthToParent } = this.state;
         if (isAuth && !reportedAuthToParent) {
             let {token,userId,userInfo} = getStorage();
@@ -210,7 +208,7 @@ class AIOLOGIN extends Component {
         let html = (
             <LoginForm
                 forget={forget}
-                time={timer} otpLength={otpLength} id={id} methods={methods} attrs={attrs} userId={userId} 
+                time={timer} otpLength={otpLength} id={id} modes={modes} attrs={attrs} userId={userId} 
                 fields={fields}
                 registerText={registerText}
                 registerButton={register.type === 'button'?registerText:undefined}
@@ -228,7 +226,7 @@ class LoginForm extends Component {
         this.dom = createRef()
         this.storage = AIOStorage(`-AIOLogin-${props.id}`);
         let { time = 30, fields = [] } = props;
-        let mode = props.methods[0];
+        let mode = props.modes[0];
         this.state = {
             mode,fields, time, recode: false,tab:'login',
             formError: true,
@@ -295,11 +293,11 @@ class LoginForm extends Component {
     }
     title_layout({title,backButton}) {
         if(!title){return false}
-        let {methods} = this.props;
+        let {modes} = this.props;
         return {
             className: 'aio-login-title',align: 'v',
             row:[
-                {show:!!backButton,html:<Icon path={mdiChevronRight} size={1} />,size:48,align:'vh',onClick:()=>this.changeMode(methods[0])},
+                {show:!!backButton,html:<Icon path={mdiChevronRight} size={1} />,size:48,align:'vh',onClick:()=>this.changeMode(modes[0])},
                 {html:title}
             ]
         }
@@ -459,10 +457,10 @@ class LoginForm extends Component {
     changeMode_layout() {
         let { mode } = this.state;
         if (mode === 'register' || mode === 'forgetId' || mode === 'forgetCode') { return false }
-        let { methods } = this.props;
+        let { modes } = this.props;
         let others = []
-        for (let i = 0; i < methods.length; i++) {
-            let key = methods[i];
+        for (let i = 0; i < modes.length; i++) {
+            let key = modes[i];
             if (mode === key) { continue }
             if(mode === 'OTPCode' && key === 'OTPNumber'){continue}
             let title = {OTPNumber:'رمز یکبار مصرف',userName:'نام کاربری و رمز عبور',email:'آدرس ایمیل و رمز عبور',phoneNumber:'شماره همراه و رمز عبور'}[key];
@@ -507,7 +505,7 @@ class LoginForm extends Component {
         }
     }
     registerTab_layout(){
-        let {registerTab,methods} = this.props;
+        let {registerTab,modes} = this.props;
         if(registerTab === true){registerTab = 'ثبت نام'}
         if(!registerTab){return false}
         let {mode} = this.state;
@@ -522,7 +520,7 @@ class LoginForm extends Component {
                         {text:registerTab,value:'register'},
                     ]}
                     onChange={(tab)=>{
-                        if(tab === 'login'){this.changeMode(methods[0])}
+                        if(tab === 'login'){this.changeMode(modes[0])}
                         else if(tab === 'register'){this.changeMode('register')}
                     }}
                 />
@@ -624,13 +622,13 @@ class SubmitButton extends Component {
     }
 }
 function AIOMapValidator(props){
-    let {id,onAuth,onSubmit,methods,timer, checkToken,register,userId = '',attrs,forget,otpLength} = props;
+    let {id,onAuth,onSubmit,modes,timer, checkToken,register,userId = '',attrs,forget,otpLength} = props;
     for(let prop in props){
-        if(['id','onAuth','onSubmit','methods','timer','checkToken','register','userId','attrs','forget','otpLength'].indexOf(prop) === -1){
+        if(['id','onAuth','onSubmit','modes','timer','checkToken','register','userId','attrs','forget','otpLength'].indexOf(prop) === -1){
             let error = `
                 aio-login error => invalid props 
                 ${prop} is not one of AIOLogin props,
-                valid props are 'id' | 'onAuth' | 'onSubmit' | 'methods' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength'
+                valid props are 'id' | 'onAuth' | 'onSubmit' | 'modes' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength'
             `;
             alert(error); console.log(error); return;
         }
@@ -687,13 +685,13 @@ function AIOMapValidator(props){
         let error = `aio-login error=> timer props should be an number`;
         alert(error); console.log(error); return;
     }
-    if(!Array.isArray(methods) || !methods.filter((o)=>['OTPNumber','userName','email','phoneNumber'].indexOf(o) !== -1).length){
+    if(!Array.isArray(modes) || !modes.filter((o)=>['OTPNumber','userName','email','phoneNumber'].indexOf(o) !== -1).length){
         let error = `
-            aio-login error=> methods props should be an array contain composite of 'OTPNumber' | 'userName' | 'email' | 'phoneNumber'
+            aio-login error=> modes props should be an array contain composite of 'OTPNumber' | 'userName' | 'email' | 'phoneNumber'
         `
         alert(error); console.log(error); return;
     }
-    if(methods.indexOf('OTPNumber') !== -1){
+    if(modes.indexOf('OTPNumber') !== -1){
         if(!otpLength){
             let error = `aio-login error=> otpLength props is not an number (for define length of otp code)`
             alert(error); console.log(error); return;

@@ -22,31 +22,30 @@ export default class DOC_AIOForm extends Component{
       return (
         <DOC
           {...this.props}
-          navId='MultiData'
-          navs={[
-            {text:'data',id:'data',COMPONENT:()=><Data points={points} keys={keys}/>},
-            {text:'MultiData',id:'MultiData',COMPONENT:()=><MultiData points={points} keys={keys}/>},
-            {text:'data.color',id:'data.color',COMPONENT:()=><Data_color points={points} keys={keys}/>},
-            {text:'data.title',id:'data.title',COMPONENT:()=><Data_title points={points} keys={keys}/>},
-            {text:'data.pointRadius',id:'data.pointRadius',COMPONENT:()=><Data_pointRadius points={points} keys={keys}/>},
-            {text:'data.pointStrokeWidth',id:'data.pointStrokeWidth',COMPONENT:()=><Data_pointStrokeWidth points={points} keys={keys}/>},
-            {text:'data.pointStroke',id:'data.pointStroke',COMPONENT:()=><Data_pointStroke points={points} keys={keys}/>},
-            {text:'data.pointFill',id:'data.pointFill',COMPONENT:()=><Data_pointFill points={points} keys={keys}/>},
-            {text:'data.pointDash',id:'data.pointDash',COMPONENT:()=><Data_pointDash points={points} keys={keys}/>},
-            {text:'data.pointText',id:'data.pointText',COMPONENT:()=><Data_pointText points={points} keys={keys}/>},
-            {text:'data.pointTextStyle',id:'data.pointTextStyle',COMPONENT:()=><Data_pointTextStyle points={points} keys={keys}/>},
-            {text:'data.lineWidth',id:'data.lineWidth',COMPONENT:()=><Data_lineWidth points={points} keys={keys}/>},
-            {text:'data.lineDash',id:'data.lineDash',COMPONENT:()=><Data_lineDash points={points} keys={keys}/>},
-            {text:'data.areaColor',id:'data.areaColor',COMPONENT:()=><Data_areaColor points={points} keys={keys}/>},
-            {text:'valueAxis',id:'valueAxis',COMPONENT:()=><ValueAxis points={points} keys={keys}/>},
-            {text:'lines',id:'lines',COMPONENT:()=><Lines points={points} keys={keys}/>},
-            {text:'bar chart',id:'bar chart',COMPONENT:()=><BarChart points={points} keys={keys}/>},
-            {text:'barWidth',id:'barWidth',COMPONENT:()=><BarWidth points={points} keys={keys}/>},
-            {text:'labelRotate',id:'labelRotate',COMPONENT:()=><LabelRotate points={points} keys={keys}/>},
-            {text:'editLabel',id:'editLabel',COMPONENT:()=><EditLabel points={points} keys={keys}/>},
-
-
-          ]}
+          nav={{
+            items:[
+              {text:'data',id:'data',render:()=><Data points={points} keys={keys}/>},
+              {text:'MultiData',id:'MultiData',render:()=><MultiData points={points} keys={keys}/>},
+              {text:'data.color',id:'data.color',render:()=><Data_color points={points} keys={keys}/>},
+              {text:'data.title',id:'data.title',render:()=><Data_title points={points} keys={keys}/>},
+              {text:'data.pointRadius',id:'data.pointRadius',render:()=><Data_pointRadius points={points} keys={keys}/>},
+              {text:'data.pointStrokeWidth',id:'data.pointStrokeWidth',render:()=><Data_pointStrokeWidth points={points} keys={keys}/>},
+              {text:'data.pointStroke',id:'data.pointStroke',render:()=><Data_pointStroke points={points} keys={keys}/>},
+              {text:'data.pointFill',id:'data.pointFill',render:()=><Data_pointFill points={points} keys={keys}/>},
+              {text:'data.pointDash',id:'data.pointDash',render:()=><Data_pointDash points={points} keys={keys}/>},
+              {text:'data.pointText',id:'data.pointText',render:()=><Data_pointText points={points} keys={keys}/>},
+              {text:'data.pointTextStyle',id:'data.pointTextStyle',render:()=><Data_pointTextStyle points={points} keys={keys}/>},
+              {text:'data.lineWidth',id:'data.lineWidth',render:()=><Data_lineWidth points={points} keys={keys}/>},
+              {text:'data.lineDash',id:'data.lineDash',render:()=><Data_lineDash points={points} keys={keys}/>},
+              {text:'data.areaColor',id:'data.areaColor',render:()=><Data_areaColor points={points} keys={keys}/>},
+              {text:'valueAxis',id:'valueAxis',render:()=><ValueAxis points={points} keys={keys}/>},
+              {text:'lines',id:'lines',render:()=><Lines points={points} keys={keys}/>},
+              {text:'bar chart',id:'bar chart',render:()=><BarChart points={points} keys={keys}/>},
+              {text:'barWidth',id:'barWidth',render:()=><BarWidth points={points} keys={keys}/>},
+              {text:'labelRotate',id:'labelRotate',render:()=><LabelRotate points={points} keys={keys}/>},
+              {text:'editLabel',id:'editLabel',render:()=><EditLabel points={points} keys={keys}/>},
+            ]
+          }}
         />
       )
     }

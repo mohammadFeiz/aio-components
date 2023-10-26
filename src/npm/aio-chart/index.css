@@ -19,6 +19,9 @@
     height:100%;
     padding:0;
   }
+  .r-chart .aio-slider{
+    padding:0;
+  }
   .r-chart-container{
     position:relative;
     display:grid;
@@ -103,7 +106,9 @@
     border-bottom:1px solid #ddd;
     
   }
-  
+  .filterSlider .aio-slider.vertical{
+    width:100%;
+  }
   .r-chart-edit{
     position:absolute;
     left:calc(50% - 120px);

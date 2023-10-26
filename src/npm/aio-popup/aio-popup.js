@@ -147,9 +147,11 @@ class Popup extends Component {
     $(window).bind('click',$.proxy(this.handleBackClick,this))
   }
   handleBackClick(e){
+    //در مود پاپاور اگر هر جایی غیر از اینپوت و پاپاور کلیک شد پاپاپ رو ببند
     if(!this.dui){return}
+    let { position = 'fullscreen' } = this.props;
     let target = $(e.target)
-    if(this.props.backdrop !== false || target.attr('data-uniq-id') === this.dui || target.parents(`[data-uniq-id=${this.dui}]`).length){
+    if(position !== 'popover' || target.attr('data-uniq-id') === this.dui || target.parents(`[data-uniq-id=${this.dui}]`).length){
       return
     }
     this.onClose();
@@ -180,6 +182,7 @@ class Popup extends Component {
     return className
   }
   backClick(e) {
+    debugger
     e.stopPropagation();
     let target = $(e.target);
     let { backdrop = {} } = this.props;

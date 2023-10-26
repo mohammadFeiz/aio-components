@@ -13,40 +13,40 @@ export default class DOC_AIOForm extends Component{
         return (
             <DOC
                 {...this.props}
-                navId='simple'
-                navs={[
-                    {text:'simple',id:'simple',COMPONENT:()=><Simple/>},
-                    {text:'showHeader',id:'showHeader',COMPONENT:()=><ShowHeader/>},
-                    {text:'excel',id:'excel',COMPONENT:()=><Excel/>},
-                    {text:'tree',id:'tree',COMPONENT:()=><Tree/>},
-                    {text:'paging',id:'paging',COMPONENT:()=><Paging/>},
-                    {text:'paging with onChange',id:'pagingonchange',COMPONENT:()=><PagingOnChange/>},
-                    {text:'striped',id:'striped',COMPONENT:()=><Striped/>},
-                    {text:'toolbar',id:'toolbar',COMPONENT:()=><Toolbar/>},
-                    {text:'toolbarAttrs',id:'toolbarAttrs',COMPONENT:()=><ToolbarAttrs/>},
-                    {text:'rowGap,columnGap',id:'rowGapColumnGap',COMPONENT:()=><RowGapColumnGap/>},
-                    {text:'rowTemplate',id:'rowTemplate',COMPONENT:()=><RowTemplate/>},
+                nav={{
+                  items:[
+                    {text:'simple',id:'simple',render:()=><Simple/>},
+                    {text:'showHeader',id:'showHeader',render:()=><ShowHeader/>},
+                    {text:'excel',id:'excel',render:()=><Excel/>},
+                    {text:'tree',id:'tree',render:()=><Tree/>},
+                    {text:'paging',id:'paging',render:()=><Paging/>},
+                    {text:'paging with onChange',id:'pagingonchange',render:()=><PagingOnChange/>},
+                    {text:'striped',id:'striped',render:()=><Striped/>},
+                    {text:'toolbar',id:'toolbar',render:()=><Toolbar/>},
+                    {text:'toolbarAttrs',id:'toolbarAttrs',render:()=><ToolbarAttrs/>},
+                    {text:'rowGap,columnGap',id:'rowGapColumnGap',render:()=><RowGapColumnGap/>},
+                    {text:'rowTemplate',id:'rowTemplate',render:()=><RowTemplate/>},
                     {
                       text:'column properties',id:'column properties',
-                      navs:[
-                        {text:'column.width',id:'column width',COMPONENT:()=><ColumnWidth/>},  
-                        {text:'column.minWidth',id:'column minWidth',COMPONENT:()=><ColumnMinWidth/>},  
-                        {text:'toggle,show',id:'column toggleandshow',COMPONENT:()=><ToggleAndShow/>},
-                        {text:'column.justify',id:'column justify',COMPONENT:()=><ColumnJustify/>},
-                        {text:'column.titleJustify',id:'column titleJustify',COMPONENT:()=><ColumnTitleJustify/>},   
-                        {text:'column.cellAttrs',id:'column cellAttrs',COMPONENT:()=><ColumnCellAttrs/>},
-                        {text:'column.titleAttrs',id:'column titleAttrs',COMPONENT:()=><ColumnTitleAttrs/>}, 
-                        {text:'column.template',id:'column template',COMPONENT:()=><ColumnTemplate/>}, 
-                        {text:'column.sort',id:'column sort',COMPONENT:()=><ColumnSort/>},
-                        {text:'column.group',id:'column group',COMPONENT:()=><ColumnGroup/>},
-                        {text:'column.filter',id:'column filter',COMPONENT:()=><ColumnFilter/>},
-                        {text:'column.inlineEdit',id:'column inlineEdit',COMPONENT:()=><ColumnInlineEdit/>},
-                        {text:'(before,after,subtext)',id:'column beforeaftersubtext',COMPONENT:()=><ColumnBeforeAfterSubtext/>},
-                        {text:'column.storageKey',id:'column storageKey',COMPONENT:()=><ColumnStorageKey/>},
-                        
+                      items:[
+                        {text:'column.width',id:'column width',render:()=><ColumnWidth/>},  
+                        {text:'column.minWidth',id:'column minWidth',render:()=><ColumnMinWidth/>},  
+                        {text:'toggle,show',id:'column toggleandshow',render:()=><ToggleAndShow/>},
+                        {text:'column.justify',id:'column justify',render:()=><ColumnJustify/>},
+                        {text:'column.titleJustify',id:'column titleJustify',render:()=><ColumnTitleJustify/>},   
+                        {text:'column.cellAttrs',id:'column cellAttrs',render:()=><ColumnCellAttrs/>},
+                        {text:'column.titleAttrs',id:'column titleAttrs',render:()=><ColumnTitleAttrs/>}, 
+                        {text:'column.template',id:'column template',render:()=><ColumnTemplate/>}, 
+                        {text:'column.sort',id:'column sort',render:()=><ColumnSort/>},
+                        {text:'column.group',id:'column group',render:()=><ColumnGroup/>},
+                        {text:'column.filter',id:'column filter',render:()=><ColumnFilter/>},
+                        {text:'column.inlineEdit',id:'column inlineEdit',render:()=><ColumnInlineEdit/>},
+                        {text:'(before,after,subtext)',id:'column beforeaftersubtext',render:()=><ColumnBeforeAfterSubtext/>},
+                        {text:'column.storageKey',id:'column storageKey',render:()=><ColumnStorageKey/>}      
                       ]
                     }
-                ]}
+                  ]
+                }}
             />
         )
     }
@@ -578,8 +578,8 @@ class ToolbarAttrs extends Component {
                     {html:'rowGap'},
                     {
                       flex:1,html:(
-                        <AIOInput type={slider} 
-                          value={[rowGap]} start={0} end={24} onChange={(points)=>this.setState({rowGap:points[0]})} showValue={true}
+                        <AIOInput type='slider' 
+                          value={[rowGap]} start={0} end={24} onChange={(points)=>this.setState({rowGap:points[0]})} showValue={'inline'}
                             fillStyle={{height:3,background:'dodgerblue'}}
                             lineStyle={{height:3}}
                         />
@@ -595,7 +595,7 @@ class ToolbarAttrs extends Component {
                     {
                       flex:1,html:(
                         <AIOInput type='slider' 
-                          value={[columnGap]} start={0} end={24} onChange={(points)=>this.setState({columnGap:points[0]})} showValue={true}
+                          value={[columnGap]} start={0} end={24} onChange={(points)=>this.setState({columnGap:points[0]})} showValue={'inline'}
                             fillStyle={{height:3,background:'dodgerblue'}}
                             lineStyle={{height:3}}
                         />

@@ -3,7 +3,6 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import {Icon} from '@mdi/react';
 import {mdiClose,mdiPlusThick,mdiCog,mdiChevronRight,mdiChevronDown,mdiContentCopy} from '@mdi/js';
 import AIOInput from './../../npm/aio-input/aio-input';
-import Slider from './../../npm/aio-slider/aio-slider'; 
 import $ from 'jquery';
 import "./index.css";
 export default class AIOJson extends Component {
@@ -171,10 +170,10 @@ export default class AIOJson extends Component {
                       {
                         size:160,
                         html:(
-                          <Slider start={10} end={36}
+                          <AIOInput type='slider' start={10} end={36}
                             attrs={{style:{height:24}}}
                             showValue={false}
-                            points={[indent]}
+                            value={[indent]}
                             onChange={(points)=>this.setState({indent:points[0]})}
                           />
                         )
@@ -190,7 +189,7 @@ export default class AIOJson extends Component {
                       {
                         size:160,
                         html:(
-                          <Slider start={12} end={36}
+                          <AIOInput type='slider' start={12} end={36}
                             attrs={{style:{height:24}}}
                             showValue={false}
                             points={[height]}
@@ -209,7 +208,7 @@ export default class AIOJson extends Component {
                       {
                         size:160,
                         html:(
-                          <Slider start={10} end={28} attrs={{style:{height:24}}} showValue={false} points={[fontSize]}
+                          <AIOInput type='slider' start={10} end={28} attrs={{style:{height:24}}} showValue={false} value={[fontSize]}
                             onChange={(points)=>this.setState({fontSize:points[0]})}
                           />
                         )
