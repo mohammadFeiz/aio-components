@@ -6,98 +6,111 @@ import Search from '../aio-functions/search';
 import ExportToExcel from '../aio-functions/export-to-excel';
 import DownloadUrl from '../aio-functions/download-url';
 import { Icon } from '@mdi/react';
-import { mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown, mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage } from "@mdi/js";
+import { mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown, mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline } from "@mdi/js";
 import AIOSwip from '../aio-swip/aio-swip';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
-
-const AIContext = createContext();
+class Popover{
+    constructor(getProp,id,toggle,getOptions){
+        this.getProp = getProp;
+        this.getOptions = getOptions;
+        this.toggle = toggle;
+        this.type = getProp('type');
+        this.id = id;
+        this.isActive = this.getIsActive();
+        if(this.isActive){
+            this.rtl = getProp('rtl')
+        }
+    }
+    getRender = (popover)=>{
+        if(this.type === 'button'){return ({close})=>popover.render({close})}
+        else if(this.type === 'datepicker'){return ({close})=><DatePicker onClose={close} />}
+        else {
+            return ({close})=>{
+                let options = this.getOptions() || [];
+                if(!options.length){return null}
+                if(popover.render){return popover.render({close,options})}
+                return <Options options={options}/>
+            }
+        }
+    }
+    getIsActive = ()=>{
+        let options = this.getProp('options');
+        let popover = this.getProp('popover');
+        if(this.type === 'button'){return !!popover}
+        if(this.type === 'datepicker'){return true}
+        else if(this.type === 'select'){return true}
+        else if(this.type === 'multiselect'){return true}
+        else if(this.type === 'text'){return !!options}
+        else if(this.type === 'number'){return !!options}
+        else if(this.type === 'textarea'){return !!options}
+        return false        
+    }
+    getBackdrop = (popover) => {
+        let {backdrop = {}} = popover; 
+        let {attrs = {}} = backdrop;
+        let {className,style = {}} = attrs;
+        let newClassName = ('aio-input-backdrop ' + this.id) + (className?' ' + className:'');
+        let newStyle = {...style};
+        // if(['text','number','textarea'].indexOf(this.type) !== -1){
+        //     newStyle = {...newStyle,background:'none',pointerEvents:'none'}
+        // }
+        let newAttrs = {...attrs,className:newClassName,style:newStyle}
+        return { ...backdrop,attrs: newAttrs }
+    }
+    getBody = (popover,render)=>{
+        let {body = {}} = popover;
+        return { ...body,render }
+    }
+    getPopover = (popover,dom)=>{
+        let {fixStyle, fitHorizontal = ['multiselect','text','number','textarea'].indexOf(this.type) !== -1} = popover;
+        return {fixStyle, fitHorizontal,pageSelector: '.aio-input-backdrop.' + this.id,getTarget: () => $(dom.current)}
+    }
+    getAttrs = (popover)=>{
+        let {attrs = {}} = popover;
+        return { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (this.rtl ? ' aio-input-popover-rtl' : '') }
+    }
+    getFn = ()=>{
+        if(!this.isActive){return}
+        return (dom)=>{
+            let popover = this.getProp('popover',{})
+            let render = this.getRender(popover);
+            let body = this.getBody(popover,render)
+            let {rtl,position='popover',header,attrs = {}} = popover;
+            return {
+                onClose:()=>this.toggle(false),
+                rtl,header,position, header,
+                backdrop:this.getBackdrop(popover),
+                body,
+                popover: this.getPopover(popover,dom),
+                attrs: this.getAttrs(popover)
+            }
+        }
+    }
+    
+}
+const AICTX = createContext();
 export default class AIOInput extends Component {
     constructor(props) {
         super(props);
         this.dom = createRef();
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
         this.popup = new AIOPopup();
-        this.getPopover = this.handleGetPopover();
-    }
-    handleGetPopover() {
-        let { type, popover, options } = this.props;
-        if (type === 'button' && popover) {
-            return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, render, fixStyle, fitHorizontal, position = 'popover', header } = popover;
-                return {
-                    rtl, position, header,
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
-                    id: 'popover',
-                    popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid
-                    },
-                    body: { render: ({ close }) => render({ close }) },
-                    attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
-                }
-            }
-        }
-        if (type === 'datepicker') {
-            return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal, position = 'popover' } = popover || {}
-                return {
-                    rtl, position, attrs, id: 'popover',
-                    body: { render: (obj) => <DatePicker {...this.props} onClose={obj.close} /> },
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
-                    popover: {
-                        fixStyle, fitHorizontal,
-                        getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid
-                    },
-                    attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
-                }
-            }
-        }
-        if (type === 'select' || type === 'multiselect') {
-            return (dom) => {
-                let { popover, rtl } = this.props;
-                let { backdropAttrs, attrs = {}, fixStyle, fitHorizontal = type === 'multiselect', header, before, after, position = 'popover' } = popover || {}
-                return {
-                    rtl, position, id: 'popover', header,
-                    body: {
-                        render: () => (<>{before && before}<Options />{after && after}</>),
-                        attrs: { style: { flexDirection: 'column' } }
-                    },
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid } },
-                    popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid,
-                    },
-                    attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
-                }
-            }
-        }
-        if (type && options && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) {
-            return (dom) => {
-                let { type, popover = {}, rtl } = this.props;
-                let { backdropAttrs = {},attrs = {}, fixStyle, fitHorizontal = true, position = 'popover' } = popover
-                return {
-                    rtl, position, body: { render: () => <Options type={type} /> }, id: this.datauniqid,
-                    backdrop: { attrs: { ...backdropAttrs, className: 'aio-input-backdrop ' + this.datauniqid,style:{...backdropAttrs.style,background:'none',pointerEvents:'none'} } },
-                    popover: {
-                        fixStyle, fitHorizontal, getTarget: () => $(dom.current), pageSelector: '.aio-input-backdrop.' + this.datauniqid,
-                    },
-                    attrs: { ...attrs, className: 'aio-input-popover' + (attrs.className ? ' ' + attrs.className : '') + (rtl ? ' aio-input-popover-rtl' : '') }
-                }
-            }
-        }
+        this.getPopover = new Popover(this.getProp.bind(this),this.datauniqid,this.toggle.bind(this),this.getOptions.bind(this)).getFn();
+        this.state = {open:this.getProp('open',false),showPassword:false}
+        this.isInput = ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
     dragOver(e) { e.preventDefault(); }
     drop(e) {
         e.stopPropagation();
-        let { onSwap } = this.props, from = this.dragIndex, dom = $(e.target);
+        let from = this.dragIndex, dom = $(e.target);
         if (!dom.hasClass('aio-input-option')) { dom = dom.parents('.aio-input-option'); };
         if (!dom.hasClass('aio-input-option')) { return };
         let to = parseInt(dom.attr('datarealindex'));
         if (from === to) { return }
-        onSwap(from, to, this.swap)
+        this.getProp('onSwap')(from, to, this.swap)
     }
     swap(arr, from, to) {
         if (to === from + 1) { let a = to; to = from; from = a; }
@@ -107,11 +120,14 @@ export default class AIOInput extends Component {
         return Arr.filter((o) => o._testswapindex !== fromIndex)
     }
     getSelectText() {
-        let { options = [] } = this.props;
+        let options = this.getProp('options',[])
         let value = this.getProp('value');
-        let option = options.find((option) => this.getOptionProp(option, 'value') === value);
-        if (option === undefined) { return '' }
-        return this.getOptionProp(option, 'text', '')
+        let option = options.find((option) => {
+            if(value === undefined){return false}
+            return this.getOptionProp(option, 'value') === value
+        });
+        if (option === undefined) { return  }
+        return this.getOptionProp(option, 'text')
     }
     getDatepickerText() {
         let value = this.getProp('value');
@@ -133,26 +149,60 @@ export default class AIOInput extends Component {
         return this.getProp('placeholder', calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
     }
     getProp(key, def) {
-        let { type, caret, popover } = this.props;
+        if(key === 'type'){return this.props.type}
+        if(key === 'isInput'){return this.isInput}
+        if(key === 'props'){return this.props}
+        let { type } = this.props;
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
-        if (key === 'caret') { return caret === false ? false : (((type === 'button' && popover) || (type === 'select' || type === 'multiselect' || type === 'datepicker')) ? (caret || true) : false) }
-        if (key === 'multiple') { return (type === 'multiselect') || (type === 'radio' && !!propsResult) || (type === 'slider' && !!propsResult) }
+        if(key === 'after'){
+            if(type === 'password' && this.getProp('visible')){
+                let {showPassword} = this.state;
+                return <div className='align-v' onClick={()=>this.toggleShowPassword()}><Icon path={showPassword?mdiEyeOff:mdiEye} size={.8}/></div>
+            }
+        }
+        if (key === 'caret') { 
+            if(propsResult === false){return false}
+            if(type === 'button'){return !!this.getProp('popover')}
+            if(type === 'select' || type === 'multiselect' || type === 'datepicker'){return propsResult || true}
+            if(type === 'text' || type === 'number' || type === 'textarea'){
+                let options = this.getProp('options');
+                if(options){return propsResult || true}
+                else{return false}
+            }
+            return false;
+        }
+        if (key === 'multiple') { 
+            if(type === 'multiselect'){return true}
+            if(type === 'radio'){return !!propsResult}
+            if(type === 'slider'){return !!propsResult}
+            if(type === 'file'){return !!propsResult}
+            return false;
+        }
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }
             if (type === 'datepicker') { return this.getDatepickerText() }
         }
         if (key === 'value') {
             if (this.getProp('multiple')) {
-                if (propsResult === undefined) { return [] }
-                return !Array.isArray(propsResult) ? [propsResult] : propsResult
+                if (propsResult === undefined || propsResult === null) { propsResult = [] }
+                if(!Array.isArray(propsResult)){
+                    console.error(`aio-input error => in type="${type}" by multiple:true value should be an array but is ${propsResult}`)
+                    return [propsResult]
+                } 
             }
-            else { return Array.isArray(propsResult) ? propsResult[0] : propsResult }
+            else {
+                if(Array.isArray(propsResult)){
+                    console.error(`aio-input error => in type="${type}" by multiple:false|undefined value cannot be an array`)
+                    return propsResult[0]
+                }
+                
+            }
+            return propsResult;
         }
         propsResult = propsResult === undefined ? def : propsResult;
         return propsResult;
     }
     getOptionProp(option, key, def) {
-        if (key === 'onClick') { return option.onClick }
         let optionResult = typeof option[key] === 'function' ? option[key](option) : option[key]
         if (optionResult !== undefined) { return optionResult }
         let prop = this.props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
@@ -171,30 +221,33 @@ export default class AIOInput extends Component {
     }
     toggle(popover,e) {
         let open = !!this.popup.getModals().length
-        let { onToggle } = this.props;
+        let onToggle = this.getProp('onToggle');
         if (!!popover === !!open) { return }
         if (popover) {
             this.popup.addModal(popover);
-            $('body').addClass('aio-input-open');
+            this.setState({open:true})
         }
         else {
             this.popup.removeModal();
-            $('body').removeClass('aio-input-open');
+            this.setState({open:false})
             setTimeout(() => $(this.dom.current).focus(), 0)
         }
         if (onToggle) { onToggle(!!popover) }
     }
     click(e, dom) {
-        let { type, onChange = () => { }, onClick } = this.props;
+        let type = this.getProp('type');
+        let onChange = this.getProp('onChange',()=>{});
+        let attrs = this.getProp('attrs',{});
         if (type === 'checkbox') { onChange(!this.getProp('value')) }
         else if (this.getPopover) { this.toggle(this.getPopover(dom),e) }
-        else if (onClick) { onClick(); }
+        else if (attrs.onClick) { attrs.onClick(); }
     }
     optionClick(option) {
-        let { onChange = () => { }, type } = this.props;
+        let onChange = this.getProp('onChange',()=>{});
+        let type = this.getProp('type');
         let Value = this.getProp('value');
-        let { value, onClick, close, text } = option;
-        if (onClick) { onClick(value, option); }
+        let { value, attrs = {}, close, text } = option;
+        if (attrs.onClick) { attrs.onClick(value, option); }
         else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text) }
         else if (this.getProp('multiple')) {
             if (Value.indexOf(value) === -1) { onChange(Value.concat(value), value, 'add') }
@@ -203,9 +256,61 @@ export default class AIOInput extends Component {
         else { onChange(value, option) }
         if (close) { this.toggle(false) }
     }
+    toggleShowPassword(){this.setState({showPassword:!this.state.showPassword})}
+    getOptions() {
+        let getProp = this.getProp.bind(this);
+        let getOptionProp = this.getOptionProp.bind(this);
+        let type = getProp('type');
+        function getDefaultOptionChecked(value) {
+            if (type === 'multiselect' || type === 'radio') {
+                let Value = getProp('value');
+                return getProp('multiple') ? Value.indexOf(value) !== -1 : Value === value
+            }
+        }
+        let options = getProp('options', []);
+        let result = [];
+        let renderIndex = 0;
+        let Value = getProp('value')
+        for (let i = 0; i < options.length; i++) {
+            let option = options[i];
+            let show = getOptionProp(option, 'show')
+            if (show === false) { continue }
+            let text = getOptionProp(option, 'text');
+            if (
+                getProp('isInput') && 
+                Value && text.toString().indexOf(Value.toString()) !== 0
+            ) { continue }
+            let value = getOptionProp(option, 'value')
+            let attrs = getOptionProp(option, 'attrs',{});
+            let obj = {
+                text, value,
+                checkIcon: getOptionProp(option, 'checkIcon'),
+                checked: getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
+                before: getOptionProp(option, 'before'),
+                after: getOptionProp(option, 'after'),
+                center: getOptionProp(option, 'center'),
+                subtext: getOptionProp(option, 'subtext'),
+                disabled: getOptionProp(option, 'disabled'),
+                attrs,
+                tagAttrs: getOptionProp(option, 'tagAttrs'),
+                tagBefore: getOptionProp(option, 'tagBefore'),
+                close: getOptionProp(option, 'close', type !== 'multiselect'),
+                tagAfter: getOptionProp(option, 'tagAfter'),
+                renderIndex, realIndex: i
+            }
+            if (value === Value) { obj.className += obj.className ? ' active' : 'active' }////notice
+            result.push(obj)
+            renderIndex++;
+        }
+        return result;
+    }
     getContext() {
         return {
             ...this.props,
+            getOptions:this.getOptions.bind(this),
+            open:this.state.open,
+            toggleShowPassword:this.toggleShowPassword.bind(this),
+            showPassword:this.state.showPassword,
             popup: this.popup,
             dragStart: this.dragStart.bind(this),
             dragOver: this.dragOver.bind(this),
@@ -221,10 +326,17 @@ export default class AIOInput extends Component {
     D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
     render_button() { return <Layout /> }
     render_list() {
-        return <List {...this.props} getOptionProp={this.getOptionProp.bind(this)} />
+        return <List getProp={this.getProp.bind(this)} getOptionProp={this.getOptionProp.bind(this)} />
     }
     render_time() {
-        let { year, month, day, hour, minute, popover = {}, onChange } = this.props;
+        let year = this.getProp('year');
+        let month = this.getProp('month');
+        let day = this.getProp('day');
+        let hour = this.getProp('hour');
+        let minute = this.getProp('minute');
+        let popover = this.getProp('popover',{});
+        let onChange = this.getProp('onChange');
+        let attrs = this.getProp('attrs',{});
         let { attrs: popoverAttrs = {} } = popover;
         let text = [];
         let dateArray = [];
@@ -238,13 +350,18 @@ export default class AIOInput extends Component {
                 caret={false} center={true}
                 text={text.join(' ')}
                 {...this.props}
-                style={{ ...this.props.style, direction: 'ltr' }}
+                attrs={{...attrs,style:{...attrs.style, direction: 'ltr'}}}
                 type='button'
                 popover={!onChange ? undefined : {
                     position: 'center', ...popover,
                     attrs: { ...popoverAttrs, className: 'aio-input-time-popover' + (popoverAttrs.className ? ' ' + popoverAttrs.className : '') },
                     render: ({ close }) => {
-                        let { year, month, day, hour, minute, onChange = () => { } } = this.props;
+                        let year = this.getProp('year');
+                        let month = this.getProp('month');
+                        let day = this.getProp('day');
+                        let hour = this.getProp('hour');
+                        let minute = this.getProp('minute');
+                        let onChange = this.getProp('onChange',()=>{});
                         return (
                             <TimePopover
                                 year={year} month={month} day={day} hour={hour} minute={minute}
@@ -265,23 +382,24 @@ export default class AIOInput extends Component {
     render_checkbox() { return <Layout /> }
     render_datepicker() { return <Layout /> }
     render_image() { return <Layout text={<Image />} /> }
-    render_table() { return <Table {...this.props} /> }
-    render_text() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_password() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_textarea() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_number() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_color() { return <Layout text={<Input value={this.getProp('value')} />} /> }
-    render_slider() { return <Layout text={<InputSlider value={this.getProp('value')} />} /> }
-    render_form() { return <Form {...this.props} /> }
+    render_table() { return <Table getProp={this.getProp.bind(this)} /> }
+    render_text() { return <Layout text={<Input/>} /> }
+    render_password() { return <Layout text={<Input/>} /> }
+    render_textarea() { return <Layout text={<Input/>} /> }
+    render_number() { return <Layout text={<Input/>} /> }
+    render_color() { return <Layout text={<Input/>} /> }
+    render_slider() { return <Layout text={<InputSlider getProp={this.getProp.bind(this)} />} /> }
+    render_form() { return <Form getProp={this.getProp.bind(this)} /> }
     render() {
-        let { type,validate = true } = this.props;
+        let type = this.getProp('type');
+        let validate = this.getProp('validate',true);
         if(validate){new AIOInputValidate(this.props)}
         if (!type || !this['render_' + type]) { return null }
         return (
-            <AIContext.Provider value={this.getContext()}>
+            <AICTX.Provider key={this.datauniqid} value={this.getContext()}>
                 {this['render_' + type]()}
                 {this.popup.render()}
-            </AIContext.Provider>
+            </AICTX.Provider>
         )
     }
 }
@@ -417,7 +535,7 @@ function TimePopover(props) {
     )
 }
 function Image() {
-    let { getProp } = useContext(AIContext);
+    let { getProp } = useContext(AICTX);
     let [popup] = useState(new AIOPopup());
     let value = getProp('value', '');
     let [url, setUrl] = useState();
@@ -488,7 +606,7 @@ function Image() {
     }
     return (
         <AIOInput
-            type='file' center={true} text={IMG} style={{ width: '100%', height: '100%', padding: 0 }}
+            type='file' center={true} text={IMG} attrs={{style:{ width: '100%', height: '100%', padding: 0 }}}
             onChange={(files) => {
                 let file = files[0].file
                 changeUrl(file, (url) => onChange({ file, url }));
@@ -496,55 +614,51 @@ function Image() {
         />
     )
 }
-class InputSlider extends Component {
-    static contextType = AIContext;
-    change(value) {
-        let { onChange, getProp } = this.context;
+function InputSlider() {
+    let { getProp } = useContext(AICTX)
+    let onChange = getProp('onChange');
+    function change(value) {
         if (getProp('multiple')) { onChange([...value]) }
         else { onChange(value[0]) }
     }
-    render() {
-        let { getProp } = this.context;
-        let value = getProp('value'), rtl = getProp('rtl');
-        if (!Array.isArray(value)) { value = [value] }
-        let disabled = getProp('disabled', false)
-        let onChange = getProp('onChange');
-        let props = {
-            disabled,
-            value, rtl, start: getProp('start'), end: getProp('end'), step: getProp('step'), min: getProp('min'), max: getProp('max'),
-            direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: disabled || !onChange ? undefined : this.change.bind(this),
-            pointStyle: getProp('pointStyle'), lineStyle: getProp('lineStyle'), fillStyle: getProp('fillStyle'), getPointHTML: getProp('getPointHTML'),
-            labelStep: getProp('labelStep'), editLabel: getProp('editLabel'), editValue: getProp('editValue'), labelRotate: getProp('labelRotate'), labelStyle: getProp('labelStyle'),
-            scaleStep: getProp('scaleStep'), scaleStyle: getProp('scaleStyle'), getScaleHTML: getProp('getScaleHTML'),
-            valueStyle: getProp('valueStyle')
-        }
-        return (<Slider {...props} />)
+    let value = getProp('value'), rtl = getProp('rtl');
+    if (!Array.isArray(value)) { value = [value] }
+    let attrs = getProp('attrs', {})
+    let disabled = getProp('disabled');
+    let props = {
+        attrs,
+        value, rtl, start: getProp('start'), end: getProp('end'), step: getProp('step'), min: getProp('min'), max: getProp('max'),
+        direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: disabled || !onChange ? undefined : change,
+        pointStyle: getProp('pointStyle'), lineStyle: getProp('lineStyle'), fillStyle: getProp('fillStyle'), getPointHTML: getProp('getPointHTML'),
+        labelStep: getProp('labelStep'), editLabel: getProp('editLabel'), editValue: getProp('editValue'), labelRotate: getProp('labelRotate'), labelStyle: getProp('labelStyle'),
+        scaleStep: getProp('scaleStep'), scaleStyle: getProp('scaleStyle'), getScaleHTML: getProp('getScaleHTML'),
+        valueStyle: getProp('valueStyle')
     }
+    return (<Slider {...props} />)
 }
 function Multiselect() {
-    let { style = {} } = useContext(AIContext);
+    let { getProp } = useContext(AICTX);
+    let style = getProp('style',{})
     return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags /></div>)
 }
 function Tags() {
-    let { getProp } = useContext(AIContext);
+    let { getProp } = useContext(AICTX);
     let value = getProp('value'), rtl = getProp('rtl');
     if (!value.length || getProp('hideTags', false)) { return null }
     return <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>{value.map((o) => <Tag value={o} />)}</div>
 }
 function Tag({ value }) {
-    let { getProp, getOptionProp: gop, onChange = () => { } } = useContext(AIContext);
-    function getTagByValue(v) {
-        let options = getProp('options', [])
-        let option = options.find((option) => v === gop(option, 'value'))
-        if (option === undefined) { return }
-        let disabled = getProp('disabled');
-        return {
-            option, disabled,
-            text: gop(option, 'text'), value: gop(option, 'value'), tagBefore: gop(option, 'tagBefore'), tagAfter: gop(option, 'tagAfter'), tagAttrs: gop(option, 'tagAttrs', {}),
-            onRemove: () => { if (!disabled) { onChange(getProp('value').filter((o) => o !== v)) } }
-        }
-    }
-    let { text, disabled, tagAttrs = {}, onRemove, tagBefore = <Icon path={mdiCircleMedium} size={0.7} />, tagAfter } = getTagByValue(value);
+    let { getProp, getOptionProp } = useContext(AICTX);
+    let onChange = getProp('onChange',()=>{})
+    let options = getProp('options', [])
+    let option = options.find((option) => value === getOptionProp(option, 'value'))
+    if (option === undefined) { return null }
+    let text = getOptionProp(option, 'text');
+    let tagAttrs = getOptionProp(option, 'tagAttrs', {});
+    let tagBefore = getOptionProp(option, 'tagBefore',<Icon path={mdiCircleMedium} size={0.7} />);
+    let tagAfter = getOptionProp(option, 'tagAfter');
+    let disabled = getOptionProp(option,'disabled') || getProp('disabled');
+    let onRemove = disabled?undefined:() => { onChange(getProp('value').filter((o) => o !== value)) }
     return (
         <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
             <div className='aio-input-tag-icon'>{tagBefore}</div>
@@ -555,17 +669,22 @@ function Tag({ value }) {
     )
 }
 class Input extends Component {
-    static contextType = AIContext;
+    static contextType = AICTX;
     constructor(props) {
         super(props);
         this.dom = createRef();
         this.container = createRef();
-        let { value } = props;
-        if (value === null) { value = undefined }
-        this.state = { value, prevValue: value }
+        this.datauniqid = `ac${Math.round(Math.random() * 100000)}`;
+        this.state = { value:undefined, prevValue: undefined }
     }
     componentDidMount() {
-        let { type, min, max, swip } = this.context;
+        let {getProp} = this.context;
+        let type = getProp('type')
+        let min = getProp('min')
+        let max = getProp('max')
+        let swip = getProp('swip')
+        let value = getProp('value');
+        this.setState({value,prevValue:value})
         if (type === 'number' && swip) {
             AIOSwip({
                 speedY: 0.2,
@@ -581,7 +700,9 @@ class Input extends Component {
         }
     }
     componentDidUpdate() {
-        let { type, autoHeight } = this.props;
+        let {getProp} = this.context;
+        let type = getProp('type')
+        let autoHeight = getProp('autoHeight')
         if (type === 'textarea' && autoHeight) {
             let dom = this.dom.current;
             dom.style.height = 'fit-content';
@@ -591,19 +712,21 @@ class Input extends Component {
             dom.style.resize = 'none';
         }
         clearTimeout(this.rrt)
-        if (this.state.prevValue !== this.props.value) {
-            this.rrt = setTimeout(() => this.setState({ value: this.props.value, prevValue: this.props.value }), 0)
+        let propsValue = getProp('value')
+        if (this.state.prevValue !== propsValue) {
+            this.rrt = setTimeout(() => this.setState({ value: propsValue, prevValue: propsValue }), 0)
         }
     }
     change(value,onChange) {
-        let { type, getProp, blurChange } = this.context;
+        let {getProp} = this.context;
+        let type = getProp('type')
+        let blurChange = getProp('blurChange')
         let maxLength = getProp('maxLength', Infinity);
         let justNumber = getProp('justNumber');
         let delay = getProp('delay', 400);
         let filter = getProp('filter', []);
-
         if (type === 'number') { if (value) { value = +value; } }
-        else if (type === 'text' || value === 'textarea') {
+        else if (type === 'text' || type === 'textarea' || type === 'password') {
             if (value) {
                 if (justNumber) {
                     value = value.toString();
@@ -634,49 +757,73 @@ class Input extends Component {
         }
     }
     blur(onChange) {
-        let { blurChange } = this.context;
+        let {getProp} = this.context;
+        let blurChange = getProp('blurChange')
         if (!blurChange) { return }
         onChange(this.state.value)
     }
     getInputStyle(inputAttrs){
-        let { getProp } = this.context;
+        let {getProp} = this.context;
         let justify = getProp('justify', false);
         let style = {...inputAttrs.style};
         if(justify){style.textAlign = 'center'}
         return style;
     }
     getInputClassName(inputAttrs = {}){
-        let { getProp } = this.context;
         let classes = [];
+        let {getProp} = this.context;
         let spin = getProp('spin');
         if(spin === false){classes.push('no-spin')}
         if(inputAttrs.className){classes.push(inputAttrs.className)}
         return classes.length?classes.join(' '):'';
     }
     getInputAttrs(){
-        let { getProp, type } = this.context;
+        let {getProp,showPassword} = this.context;
         let { value = '' } = this.state;
+        let type = getProp('type');
         let inputAttrs = getProp('inputAttrs', {});
+        let disabled = getProp('disabled');
+        let placeholder = getProp('placeholder');
         let onChange = getProp('onChange');
         let loading = getProp('loading');
-        return {
+        let p = {
             ...inputAttrs, value, type, ref: this.dom,
-            disabled:!!loading || inputAttrs.disabled,
+            disabled:!!loading || disabled,
+            placeholder,
             style:this.getInputStyle(inputAttrs),
             className: this.getInputClassName(inputAttrs),
             onChange: onChange?(e) => this.change(e.target.value,onChange):undefined,
             onBlur: () => this.blur(onChange)
         }
+        if(type === 'color'){
+            if(getProp('options')){
+                p = {...p,list:this.datauniqid}
+            }
+        }
+        if(type === 'password' && showPassword){p = {...p,type:'text',style:{...p.style,textAlign:'center'}}}
+        return p;
     }
     render() {
-        let { type } = this.context;
+        let {getProp} = this.context;
+        let type = getProp('type');
         let { value = '' } = this.state;
         let attrs = this.getInputAttrs()
         if (!attrs.onChange) { return <div className='aio-input-value'>{value}</div> }
         else if (type === 'color') {
+            let options = getProp('options');
             return (
                 <label style={{ width: '100%', height: '100%', background: value }}>
                     <input {...attrs} style={{ opacity: 0 }} />
+                    {
+                        options && 
+                        <datalist id={this.datauniqid}>
+                            {
+                                options.map((o)=>{
+                                    return <option value={o}/>
+                                })
+                            }
+                        </datalist>
+                    }
                 </label>
             )
         }
@@ -687,14 +834,17 @@ class Input extends Component {
 class Form extends Component {
     constructor(props) {
         super(props);
-        let { value = {}, onChange } = props;
-        this.state = { initialValue: JSON.stringify(props.model) }
+        let {getProp} = props;
+        this.getProp = getProp;
+        let value = this.getProp('value',{})
+        let onChange = this.getProp('onChange')
+        this.state = { initialValue: JSON.stringify(value) }
         if (!onChange) {
             this.state.value = value;
         }
         this.errors = {}
     }
-    getValue() { return this.props.onChange ? (this.props.value || {}) : this.state.value }
+    getValue() { return this.getProp('onChange') ? this.getProp('value',{}) : this.state.value }
     getErrors() {
         return [...Object.keys(this.errors).filter((o) => !!this.errors[o]).map((o) => this.errors[o])]
     }
@@ -703,20 +853,24 @@ class Form extends Component {
         for (let prop in this.errors) { if (prop !== field) { newErrors[prop] = this.errors[prop] } }
         this.errors = newErrors
     }
-    setValue(v, obj) {
-        let { onChange } = this.props;
-        let { field, input = {} } = obj;
+    setValue(v, formItem) {
+        let onChange = this.getProp('onChange');
+        let { field } = formItem;
         let value = this.getValue();
         let newValue = this.setValueByField(value, field, v);
-        let error = this.getError(obj, v)
+        let error = this.getError(formItem, v)
         if (error) { this.errors[field] = error }
         else { this.removeError(field) }
-        if (input.onChange) { input.onChange(v) }
-        else if (onChange) { onChange(newValue, this.getErrors()) }
+        if (onChange) { onChange(newValue, this.getErrors()) }
         else { this.setState({ value: newValue }) }
     }
     header_layout() {
-        let { header, title, subtitle, headerAttrs = {}, onClose, onBack } = this.props;
+        let header = this.getProp('header');
+        let title = this.getProp('title');
+        let subtitle = this.getProp('subtitle');
+        let headerAttrs = this.getProp('headerAttrs',{});
+        let onClose = this.getProp('onClose');
+        let onBack = this.getProp('onBack');
         if (!header && !title && !onClose && !onBack) { return false }
         return {
             className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
@@ -736,19 +890,26 @@ class Form extends Component {
         }
     }
     body_layout() {
-        let { inputs } = this.props;
+        let inputs = this.getProp('inputs');
         if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => this.input_layout(o)) } }
         let res = { flex: 1, className: 'aio-input-form-body', ...inputs }
         return res
     }
     reset() {
-        let { onChange } = this.props;
+        let onChange = this.getProp('onChange');
         let { initialValue } = this.state;
         if (onChange) { onChange(JSON.parse(initialValue)) }
         else { this.setState({ value: JSON.parse(initialValue) }) }
     }
     footer_layout() {
-        let { footer, onSubmit, onClose, footerAttrs = {}, closeText = 'Close', resetText = 'reset', submitText = 'submit', reset } = this.props;
+        let footer = this.getProp('footer');
+        let onSubmit = this.getProp('onSubmit');
+        let onClose = this.getProp('onClose');
+        let footerAttrs = this.getProp('footerAttrs',{});
+        let closeText = this.getProp('closeText','Close');
+        let resetText = this.getProp('resetText','Reset');
+        let submitText = this.getProp('submitText','Submit');
+        let reset = this.getProp('reset');
         let { initialValue } = this.state;
         if (footer === false) { return false }
         if (!footer && !onSubmit && !onClose && !reset) { return false }
@@ -771,7 +932,7 @@ class Form extends Component {
         return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
     }
     getValueByField(field, def) {
-        let props = this.props, value = this.getValue(), a;
+        let props = this.getProp('props'), value = this.getValue(), a;
         if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 || field.indexOf('props.') !== -1) {
                 try { eval(`a = ${field}`); }
@@ -779,7 +940,7 @@ class Form extends Component {
             }
             else { a = field }
         }
-        else { a = typeof field === 'function' ? field() : field }
+        else { a = field }
         return a === undefined ? def : a;
     }
     setValueByField(obj = {}, field, value) {
@@ -810,6 +971,11 @@ class Form extends Component {
         let { className, style } = attrs;
         return { html: label, attrs, style, className: 'aio-input-form-label' + (className ? ' ' + className : '') }
     }
+    footer_layout(footer, attrs) {
+        if (!footer) { return false }
+        let { className, style } = attrs;
+        return { html: footer, attrs, style, className: 'aio-input-form-item-footer' + (className ? ' ' + className : '') }
+    }
     error_layout(error, attrs) {
         if (!error) { return false }
         let { className, style } = attrs;
@@ -822,7 +988,7 @@ class Form extends Component {
         this.reportErrors()
     }
     reportErrors() {
-        let { getErrors } = this.props;
+        let getErrors = this.getProp('getErrors');
         if (!getErrors) { return }
         let errors = this.getErrors();
         if (JSON.stringify(errors) !== this.reportedErrors) {
@@ -834,46 +1000,63 @@ class Form extends Component {
         let style = { ...propsAttrs.style, ...ownAttrs.style }
         return { ...propsAttrs, ...ownAttrs, style }
     }
-    getAttrs_slider(attrs) {
-        let start = this.getValueByField(attrs.start, 0);
-        let end = this.getValueByField(attrs.end, 100);
-        let step = this.getValueByField(attrs.step, 1);
-        return { start, step, end }
+    getInputProps(input,formItem){
+        let rtl = this.getProp('rtl');
+        let disabled = this.getProp('disabled');
+        let value = this.getValueByField(formItem.field, this.getDefault(input));
+        let updateInputProps = this.getProp('updateInputProps',(o)=>o)
+        let props = {rtl,value,onChange: (value) => this.setValue(value, formItem)};
+        for(let prop in input){
+            props[prop] = this.getValueByField(input[prop])
+        }
+        let {attrs = {}} = input;
+        props.attrs = {};
+        for(let prop in attrs){
+            props.attrs[prop] = this.getValueByField(attrs[prop])
+        }
+        if(disabled){props.disabled = true;}
+        if(['text','number','password','textarea'].indexOf(props.type) !== -1){
+            let {inputAttrs = {}} = input;
+            props.inputAttrs = {};
+            for(let prop in inputAttrs){
+                props.inputAttrs[prop] = this.getValueByField(inputAttrs[prop])
+            }
+        }
+        return updateInputProps(props);
     }
-    input_layout(obj) {
-        let { rtl, inputAttrs } = this.props;
-        let { label, footer, inlineLabel, input, flex, size, field } = obj;
+    input_layout(formItem) {
+        let { label, footer, inlineLabel, input, flex, size, field } = formItem;
         let value = this.getValueByField(field, this.getDefault(input));
-        let error = this.getError(obj, value)
+        let error = this.getError(formItem, value)
         if (error) { this.errors[field] = error }
         else { this.errors[field] = undefined }
-        let labelAttrs = this.getAttrs(this.props.labelAttrs, obj.labelAttrs)
-        let errorAttrs = this.getAttrs(this.props.errorAttrs, obj.errorAttrs)
-        let attrs = this.getAttrs(inputAttrs, input)
-        let privateAttrs = this['getAttrs_' + input.type] ? this['getAttrs_' + input.type](attrs) : {}
-        let props = { ...attrs, ...privateAttrs, rtl, value, onChange: (value) => this.setValue(value, obj) }
+        let labelAttrs = this.getAttrs(this.getProp('labelAttrs'), formItem.labelAttrs)
+        let errorAttrs = this.getAttrs(this.getProp('errorAttrs'), formItem.errorAttrs)
+        let footerAttrs = this.getAttrs(this.getProp('footerAttrs'), formItem.footerAttrs)
+        let inputProps = this.getInputProps(input,formItem);
         return {
             flex, size, className: 'aio-input-form-item',
             column: [
                 {
+                    className:'of-visible',
                     row: [
                         this.inlineLabel_layout(inlineLabel, labelAttrs),
                         {
                             flex: 1, className: 'of-visible',
                             column: [
                                 this.label_layout(label, labelAttrs),
-                                { html: <AIOInput {...props} /> },
-                                { show: !!footer, html: footer },
+                                { html: <AIOInput {...inputProps} />,className:'of-visible' },
                             ]
                         }
                     ]
                 },
+                this.footer_layout(footer,footerAttrs),
                 this.error_layout(error, errorAttrs)
             ]
         }
     }
     getError(o, value, options) {
-        let { lang = 'en' } = this.props;
+        let lang = this.getProp('lang','en')
         let { validations = [], input } = o;
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
@@ -889,7 +1072,9 @@ class Form extends Component {
         return AIOValidation(a);
     }
     render() {
-        let { rtl, style, className } = this.props;
+        let rtl = this.getProp('rtl')
+        let attrs = this.getProp('attrs',{})
+        let {style, className} = attrs;
         return (
             <RVD
                 getLayout={(obj, parent = {}) => {
@@ -907,112 +1092,62 @@ class Form extends Component {
         )
     }
 }
-class Options extends Component {
-    static contextType = AIContext;
-    constructor(props) {
-        super(props);
-        this.state = { searchValue: '' };
-    }
-    getDefaultOptionChecked(type, value) {
-        if (type === 'multiselect' || type === 'radio') {
-            let { getProp } = this.context;
-            let Value = getProp('value');
-            return getProp('multiple') ? Value.indexOf(value) !== -1 : Value === value
-        }
-    }
-    getOptions() {
-        let { getProp, getOptionProp, type } = this.context;
-        let options = getProp('options', []);
-        let result = [];
-        let renderIndex = 0;
-        let isInput = ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1;
-        let Value = getProp('value')
-        for (let i = 0; i < options.length; i++) {
-            let option = options[i];
-            let show = getOptionProp(option, 'show')
-            if (show === false) { continue }
-            let text = getOptionProp(option, 'text');
-            if (isInput && Value && text.indexOf(Value) !== 0) { continue }
-            let value = getOptionProp(option, 'value')
-            let obj = {
-                text, value,
-                attrs: getOptionProp(option, 'attrs', {}),
-                checkIcon: getOptionProp(option, 'checkIcon'),
-                checked: getOptionProp(option, 'checked', this.getDefaultOptionChecked(type, value)),
-                before: getOptionProp(option, 'before'),
-                after: getOptionProp(option, 'after'),
-                subtext: getOptionProp(option, 'subtext'),
-                attrs: getOptionProp(option, 'attrs'),
-                tagAttrs: getOptionProp(option, 'tagAttrs'),
-                style: getOptionProp(option, 'style'),
-                className: getOptionProp(option, 'className', ''),
-                onClick: getOptionProp(option, 'onClick'),
-                disabled: getProp('disabled') || getOptionProp(option, 'disabled'),
-                tagBefore: getOptionProp(option, 'tagBefore'),
-                close: getOptionProp(option, 'close', type !== 'multiselect'),
-                tagAfter: getOptionProp(option, 'tagAfter'),
-                renderIndex, realIndex: i
-            }
-            if (value === Value) { obj.className += obj.className ? ' active' : 'active' }
-            result.push(obj)
-            renderIndex++;
-        }
-        return result;
-    }
-    renderSearchBox(options) {
-        let { search, type, isInput } = this.context;
-        if (type === 'tabs' || isInput || search === false) { return null }
+function Options(props) {
+    let context = useContext(AICTX);
+    let {getProp,getOptions} = context;
+    let type = getProp('type');
+    let [searchValue,setSearchValue] = useState('');
+    function renderSearchBox(options) {
+        let search = getProp('search');
+        if (type === 'tabs' || getProp('isInput') || search === false) { return null }
         if (type === 'radio' && !search) { return null }
         if (typeof search !== 'string') { search = 'Search' }
-        let { searchValue } = this.state;
         if (searchValue === '' && options.length < 10) { return null }
         return (
             <div className='aio-input-search'>
-                <input type='text' value={searchValue} placeholder={search} onChange={(e) => this.setState({ searchValue: e.target.value })} />
-                <div className='aio-input-search-icon' onClick={() => { this.setState({ searchValue: '' }) }}>
+                <input type='text' value={searchValue} placeholder={search} onChange={(e) => setSearchValue(e.target.value)} />
+                <div className='aio-input-search-icon' onClick={() => { setSearchValue('') }}>
                     <Icon path={searchValue ? mdiClose : mdiMagnify} size={.8} />
                 </div>
             </div>
         )
     }
-    Options(options) {
-        let { searchValue } = this.state;
+    function getRenderOptions(options) {
         let renderIndex = 0;
         return options.map((option, i) => {
             if (searchValue) {
                 if (option.text === undefined || option.text === '') { return null }
                 if (option.text.indexOf(searchValue) === -1) { return null }
             }
-            let props = { key: i, option, renderIndex, realIndex: i, searchValue, selectedText: this.selectedText }
-            return <Layout {...props} />
+            let p = { key: i, option, renderIndex, realIndex: i, searchValue }
+            return <Layout {...p} />
         });
     }
-    render() {
-        let { type } = this.context;
-        let options = this.getOptions();
-        if (!options.length) { return null }
-        let Options = this.Options(options);
-        return (
-            <>
-                {this.renderSearchBox(options)}
-                <div className={`aio-input-options aio-input-${type}-options`}>{Options}</div>
-            </>
-        )
-    }
+    let options = props.options || getOptions();
+    if (!options.length) { return null }
+    let renderOptions = getRenderOptions(options);
+    return (
+        <>
+            {renderSearchBox(options)}
+            <div className={`aio-input-options aio-input-${type}-options`}>{renderOptions}</div>
+        </>
+    )
 }
 //column schema
 //title,value,width,minWidth,justify,type,onChange,cellAttrs,subtext,before,after
 const AITableContext = createContext();
 class Table extends Component {
-    constructor(props) {
-        super(props);
+    constructor(p) {
+        super(p);
+        let {getProp} = p;
+        this.getProp = getProp;
         this.dom = createRef();
         let Sort = new SortClass({
-            getProps: () => this.props,
+            getProp,
             getState: () => this.state,
             setState: (obj) => this.setState(obj),
         })
-        let { columns = [] } = props;
+        let columns = this.getProp('columns',[]);
         let searchColumns = [];
         let updatedColumns = columns.map((o) => {
             let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search } = o;
@@ -1032,21 +1167,21 @@ class Table extends Component {
                 if (typeof value === 'function') { return value({ row, column, rowIndex }) }
                 let result = value;
                 if (typeof value === 'string') {
-                    let { getValue = {} } = this.props;
+                    let getValue = this.getProp('getValue',{});
                     if (getValue[value]) { result = getValue[value]({ row, column, rowIndex }) }
                     else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
                 }
                 return result === undefined ? def : result;
             },
             setRows: (rows) => {
-                let { onChange } = this.props;
+                let onChange = this.getProp('onChange');
                 onChange(rows);
             },
             setCell: (row, column, value) => {
                 if (column.onChange) { column.onChange({ value, row, column }) }
                 else {
                     let { setRows } = this.state;
-                    let { rows } = this.props;
+                    let rows = this.getProp('rows');
                     row = JSON.parse(JSON.stringify(row));
                     eval(`${column.value} = value`);
                     setRows(rows.map((o) => o._id !== row._id ? o : row))
@@ -1059,18 +1194,22 @@ class Table extends Component {
         this.setState({ sorts: Sort.initiateSortsByColumns(columns) })
     }
     add() {
-        let { onAdd } = this.props, { setRows } = this.state;
+        let onAdd = this.getProp('onAdd');
+        let rows = this.getProp('rows');
+        let { setRows } = this.state;
         if (typeof onAdd === 'function') { onAdd(); }
-        else if (typeof onAdd === 'object') { setRows([onAdd, ...this.props.rows]) }
+        else if (typeof onAdd === 'object') { setRows([onAdd, ...rows]) }
     }
     remove(row, index) {
-        let { onRemove, rows } = this.props, { setRows } = this.state;
+        let rows = this.getProp('rows');
+        let onRemove = this.getProp('onRemove');
+        let { setRows } = this.state;
         if (typeof onRemove === 'function') { onRemove(row); }
         else if (onRemove === true) { setRows(rows.filter((o, i) => o._id !== row._id)); }
     }
     exportToExcel() {
-        let { excel } = this.props, list = [];
-        let { rows } = this.props;
+        let excel = this.getProp('excel'), list = [];
+        let rows = this.getProp('rows');
         let { getDynamics, columns } = this.state;
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i], json = {};
@@ -1088,8 +1227,9 @@ class Table extends Component {
     drop(e, row) {
         if (this.start._id === undefined) { return }
         if (this.start._id === row._id) { return }
-        let { onSwap } = this.props, { setRows } = this.state;
-        let { rows } = this.props;
+        let { setRows } = this.state;
+        let rows = this.getProp('rows');
+        let onSwap = this.getProp('onSwap');
         let newRows = rows.filter((o) => o._id !== this.start._id);
         let placeIndex = this.getIndexById(rows, row._id);
         newRows.splice(placeIndex, 0, this.start)
@@ -1097,7 +1237,7 @@ class Table extends Component {
         else { setRows(newRows) }
     }
     getSearchedRows(rows) {
-        let { onSearch } = this.props;
+        let onSearch = this.getProp('onSearch');
         if (onSearch !== true) { return rows }
         let { searchColumns, searchValue, getDynamics } = this.state;
         if (!searchColumns.length || !searchValue) { return rows }
@@ -1113,7 +1253,8 @@ class Table extends Component {
     }
     getRows() {
         let { Sort } = this.state;
-        let { rows = [], paging: p } = this.props;
+        let rows = this.getProp('rows');
+        let p = this.getProp('paging');
         let searchedRows = this.getSearchedRows(rows);
         let sortedRows = Sort.getSortedRows(searchedRows);
         let pagedRows = p && !p.serverSide ? sortedRows.slice((p.number - 1) * p.size, p.number * p.size) : sortedRows;
@@ -1152,7 +1293,8 @@ class Table extends Component {
         return { ...cellAttrs, style, className }
     }
     getRowAttrs(row, rowIndex) {
-        let { rowAttrs = () => { return {} }, onSwap } = this.props;
+        let onSwap = this.getProp('onSwap');
+        let rowAttrs = this.getProp('rowAttrs',()=>{return {}});
         let attrs = rowAttrs({ row, rowIndex });
         let obj = { ...attrs, className: 'aio-input-table-row' + (attrs.className ? ' ' + attrs.className : '') }
         if (!!onSwap) { obj = { ...obj, draggable: true, onDragStart: (e) => this.dragStart(e, row), onDragOver: (e) => this.dragOver(e, row), onDrop: (e) => this.drop(e, row) } }
@@ -1162,7 +1304,7 @@ class Table extends Component {
         let { getDynamics, setCell } = this.state;
         let template = getDynamics({ value: column.template, row, rowIndex, column });
         if (template !== undefined) { return template }
-        let props = {
+        let p = {
             ...column, blurChange: true,
             value: getDynamics({ value: column.value, row, rowIndex, column }),
             options: getDynamics({ value: column.options, row, rowIndex, column }),
@@ -1172,18 +1314,19 @@ class Table extends Component {
             after: getDynamics({ value: column.after, row, rowIndex, column }),
             onChange: column.type ? (value) => setCell(row, column, value) : undefined,
         }
-        return <AIOInput {...props} />
+        return <AIOInput {...p} />
     }
     search(searchValue) {
-        let { onSearch } = this.props;
+        let onSearch = this.getProp('onSearch');
         if (onSearch === true) { this.setState({ searchValue }) }
         else { onSearch(searchValue) }
     }
     getContext(ROWS) {
-        let { rowGap, columnGap } = this.props;
+        let rowGap = this.getProp('rowGap');
+        let columnGap = this.getProp('columnGap');
         let context = {
             ROWS,
-            props: { ...this.props },
+            getProp:this.getProp,
             state: { ...this.state },
             parentDom: this.dom,
             SetState: (obj) => this.setState(obj),
@@ -1201,21 +1344,22 @@ class Table extends Component {
         return context
     }
     render() {
-        let { paging, attrs = {} } = this.props;
+        let paging = this.getProp('paging');
+        let attrs = this.getProp('attrs',{});
         let ROWS = this.getRows();
         return (
             <AITableContext.Provider value={this.getContext(ROWS)}>
                 <div {...attrs} ref={this.dom} className={'aio-input-table' + (attrs.className ? ' ' + attrs.className : '')}>
                     <TableToolbar />
                     <div className='aio-input-table-unit'><TableHeader /><TableRows /></div>
-                    {paging ? <TablePaging paging={paging} /> : ''}
+                    {paging ? <TablePaging /> : ''}
                 </div>
             </AITableContext.Provider>
         )
     }
 }
-function TablePaging(props) {
-    let { ROWS } = useContext(AITableContext)
+function TablePaging() {
+    let { ROWS,getProp } = useContext(AITableContext)
     function fix(paging) {
         let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
         if (!serverSide) { length = ROWS.sortedRows.length }
@@ -1227,7 +1371,7 @@ function TablePaging(props) {
         let end = number + 3;
         return { ...paging, length, pages, number, size, sizes, start, end }
     }
-    let paging = fix(props.paging)
+    let paging = fix(getProp('paging'))
     function changePaging(obj) { paging.onChange({ ...paging, ...obj }) }
     let { rtl, pages, number, size, sizes, start, end } = paging;
     let buttons = [];
@@ -1254,13 +1398,14 @@ function TablePaging(props) {
     )
 }
 function TableRows() {
-    let { props, ROWS } = useContext(AITableContext)
-    let { rowTemplate, rowAfter = () => null, rowBefore = () => null } = props;
+    let { getProp, ROWS } = useContext(AITableContext)
+    let rowTemplate = getProp('rowTemplate');
+    let rowAfter = getProp('rowAfter',() => null);
+    let rowBefore = getProp('rowBefore',() => null);
     function getContent() {
         let rows = ROWS.pagedRows;
-        if (props.rowsTemplate) {
-            return props.rowsTemplate(rows)
-        }
+        let rowsTemplate = getProp('rowsTemplate');
+        if (rowsTemplate) {return rowsTemplate(rows)}
         if (rows.length) {
             return rows.map((o, i) => {
                 let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;
@@ -1271,14 +1416,18 @@ function TableRows() {
                 return (<Fragment key={id}>{rowBefore({ row: o, rowIndex: i })}{Row}{rowAfter({ row: o, rowIndex: i })}</Fragment>)
             })
         }
-        let { placeholder = 'there is not any items' } = props;
+        let placeholder = getProp('placeholder','there is not any items');
         return <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
     }
     return <div className='aio-input-table-rows'>{getContent()}</div>
 }
 function TableToolbar() {
-    let { add, exportToExcel, RowGap, props, state, search } = useContext(AITableContext);
-    let { toolbarAttrs = {}, toolbar, onAdd, excel, onSearch } = props;
+    let { add, exportToExcel, RowGap, getProp, state, search } = useContext(AITableContext);
+    let toolbarAttrs = getProp('toolbarAttrs',{});
+    let toolbar = getProp('toolbar');
+    let onAdd = getProp('onAdd');
+    let excel = getProp('excel');
+    let onSearch = getProp('onSearch');
     let { sorts } = state;
     if (!onAdd && !excel && !toolbar && !onSearch && !sorts.length) { return null }
     return (
@@ -1298,8 +1447,9 @@ function TableToolbar() {
     )
 }
 function TableHeader() {
-    let { RowGap, props, state } = useContext(AITableContext);
-    let { headerAttrs = {}, onRemove } = props;
+    let { RowGap, getProp, state } = useContext(AITableContext);
+    let headerAttrs = getProp('headerAttrs',{});
+    let onRemove = getProp('onRemove');
     let { columns } = state;
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
     let RemoveTitle = !onRemove ? null : <button className='aio-input-table-remove'></button>;
@@ -1317,7 +1467,7 @@ function TableTitle({ column, isLast }) {
     )
 }
 function TableRow({ row, isLast, rowIndex }) {
-    let { remove, RowGap, props, state, getRowAttes } = useContext(AITableContext);
+    let { remove, RowGap, getProp, state, getRowAttes } = useContext(AITableContext);
     function getCells() {
         return state.columns.map((column, i) => {
             let key = row._id + ' ' + column._id;
@@ -1325,11 +1475,12 @@ function TableRow({ row, isLast, rowIndex }) {
             return (<TableCell isLast={isLast} key={key} row={row} rowIndex={rowIndex} column={column} />)
         })
     }
+    let onRemove = getProp('onRemove');
     return (
         <>
             <div key={row._id} {...getRowAttes(row, rowIndex)}>
                 {getCells(row, rowIndex)}
-                {props.onRemove ? <button className='aio-input-table-remove' onClick={() => remove(row)}><Icon path={mdiClose} size={0.8} /></button> : null}
+                {onRemove ? <button className='aio-input-table-remove' onClick={() => remove(row)}><Icon path={mdiClose} size={0.8} /></button> : null}
             </div>
             {!isLast && RowGap}
         </>
@@ -1348,8 +1499,8 @@ const TableCell = ({ row, rowIndex, column, isLast }) => {
 
 }
 class SortClass {
-    constructor({ getProps, getState, setState }) {
-        this.getProps = getProps;
+    constructor({ getProp, getState, setState }) {
+        this.getProp = getProp;
         this.getState = getState;
         this.setState = setState;
     }
@@ -1365,7 +1516,7 @@ class SortClass {
         this.setSorts(newSorts)
     }
     setSorts = async (sorts) => {
-        let { onChangeSort } = this.getProps();
+        let onChangeSort = this.getProp('onChangeSort');
         if (onChangeSort) {
             let res = await onChangeSort(sorts)
             if (res !== false) { this.setState({ sorts }); }
@@ -1375,14 +1526,14 @@ class SortClass {
             let activeSorts = sorts.filter((sort) => sort.active !== false);
             if (activeSorts.length) {
                 let { setRows } = this.getState();
-                let { rows } = this.getProps();
+                let rows = this.getProp('rows');
                 setRows(this.sort(rows, activeSorts))
             }
         }
     }
     getSortedRows = (rows) => {
         if (this.initialSort) { return rows }
-        let { onChangeSort } = this.getProps();
+        let onChangeSort = this.getProp('onChangeSort');
         let { setRows, sorts } = this.getState();
         if (onChangeSort) { return rows }
         let activeSorts = sorts.filter((sort) => sort.active !== false);
@@ -1451,50 +1602,54 @@ class SortClass {
     }
 }
 class Layout extends Component {
-    static contextType = AIContext;
-    constructor(props) {
-        super(props);
+    static contextType = AICTX;
+    constructor(p) {
+        super(p);
         this.dom = createRef()
     }
-    getClassName(label, disabled) {
-        let { type, getProp, getOptionProp, datauniqid } = this.context;
+    getClassName(label) {
+        let { getProp, getOptionProp, datauniqid } = this.context;
         let { option } = this.props;
         let cls;
-        let className;
+        let attrs;
         if (option !== undefined) {
-            cls = `aio-input-option aio-input-${type}-option`
-            if (getProp('multiple')) { cls += ` aio-input-${type}-multiple-option` }
-            className = getOptionProp(option, 'className')
+            cls = `aio-input-option aio-input-${this.type}-option`
+            if (getProp('multiple')) { cls += ` aio-input-${this.type}-multiple-option` }
+            attrs = getOptionProp(option, 'attrs')
         }
         else {
-            cls = `aio-input aio-input-${type}`;
-            if (type === 'slider') {
+            cls = `aio-input aio-input-${this.type}`;
+            if (this.type === 'slider') {
                 let direction = getProp('direction', 'right')
                 if (direction === 'left' || direction === 'right') { cls += ' aio-input-slider-horizontal' }
                 else { cls += ' aio-input-slider-vertical' }
             }
-            if (type === 'file' && disabled) { cls += ' disabled' }
-            className = getProp('className');
+            if (getProp('disabled') || getProp('loading')) { cls += ' disabled' }
+            attrs = getProp('attrs');
             let rtl = getProp('rtl');
             if (rtl) { cls += ' aio-input-rtl' }
 
         }
         cls += ' ' + datauniqid;
         cls += label ? ' has-label' : '';
-        cls += className ? ' ' + className : '';
+        cls += attrs && attrs.className ? ' ' + attrs.className : '';
         return cls;
     }
     getProps() {
-        let { onSwap, dragStart, dragOver, drop, click, optionClick } = this.context;
+        let { dragStart, dragOver, drop, click, optionClick,open,getProp } = this.context;
         let { option, realIndex, renderIndex } = this.props;
-        let { label, disabled, style, center, loading, attrs } = this.properties;
+        let { label, center, loading, attrs = {},disabled } = this.properties;
+        let zIndex = 0;
+        if(open && !option && ['text','number','textarea'].indexOf(this.type) !== -1){
+            zIndex = 100000
+        }
         let props = {
             ...attrs,
-            className: this.getClassName(label, disabled),
-            onClick: loading ? undefined : (option === undefined ? (e) => { e.stopPropagation(); click(e, this.dom) } : (e) => { e.stopPropagation(); optionClick(option) }),
-            ref: this.dom, disabled, style: { justifyContent: center ? 'center' : undefined, ...style }, 'data-label': label
+            className: this.getClassName(label),
+            onClick: loading || disabled ? undefined : (option === undefined ? (e) => { e.stopPropagation(); click(e, this.dom) } : (e) => { e.stopPropagation(); optionClick(option) }),
+            ref: this.dom, disabled, style: {justifyContent: center ? 'center' : undefined, ...attrs.style,zIndex}, 'data-label': label
         }
-        if (option && onSwap) {
+        if (option && getProp('onSwap')) {
             props.datarealindex = realIndex;
             props.datarenderindex = renderIndex;
             props.onDragStart = dragStart;
@@ -1505,11 +1660,12 @@ class Layout extends Component {
         return props;
     }
     getDefaultChecked() {
-        let { type, getProp } = this.context;
-        if (type === 'checkbox') { return !!getProp('value') }
+        let { getProp } = this.context;
+        if (this.type === 'checkbox') { return !!getProp('value') }
     }
     getProperties() {
         let { option, text } = this.props;
+
         if (!option) {
             let { getProp } = this.context;
             let properties = {
@@ -1517,16 +1673,14 @@ class Layout extends Component {
                 tabIndex: getProp('tabIndex'),
                 attrs: getProp('attrs', {}),
                 caret: getProp('caret'),
-                className: getProp('className'),
-                disabled: getProp('disabled'),
-                style: getProp('style'),
                 text: text !== undefined ? text : getProp('text'),
                 checkIcon: getProp('checkIcon', []),
+                disabled: getProp('disabled'),
                 checked: getProp('checked', this.getDefaultChecked()),
                 before: getProp('before'),
+                placeholder:getProp('placeholder'),
                 after: getProp('after'),
                 subtext: getProp('subtext'),
-                onClick: getProp('onClick'),
                 center: getProp('center'),
                 loading: getProp('loading')
             }
@@ -1535,42 +1689,48 @@ class Layout extends Component {
         return option
     }
     getItemClassName(key) {
-        let { type } = this.context;
         let { option } = this.props;
-        return `aio-input-${key} aio-input-${option ? `${type}-option` : type}-${key}`
+        return `aio-input-${key} aio-input-${option ? `${this.type}-option` : this.type}-${key}`
+    }
+    text_layout(text,subtext,placeholder,center){
+        if(text === undefined && placeholder !== undefined){text = <div className='aio-input-placeholder'>{placeholder}</div>}
+        let style = { flex: center ? 'none' : undefined };
+        if(text){
+            if(subtext){
+                return (
+                    <div className={`aio-input-content aio-input-${this.type}-content`} style={style}>
+                        <div className={this.getItemClassName('value')}>{text}</div>
+                        <div className={this.getItemClassName('subtext')}>{subtext}</div>
+                    </div>
+                )
+            }
+            else{return <div className={this.getItemClassName('value')} style={style}>{text}</div>}
+        }
+        else{return <div className='flex-1'></div>}
     }
     render() {
-        let { type } = this.context;
+        let {getProp} = this.context;
+        this.type = getProp('type')
         let { option } = this.props;
         this.properties = this.getProperties()
-        let { checked, checkIcon, before, text, subtext, after, caret, center, loading } = this.properties;
+        let { checked, checkIcon, before, text, subtext, after, caret,center, placeholder, loading } = this.properties;
         let content = (
             <>
-                <CheckIcon {...{ checked, checkIcon, type, option }} />
+                <CheckIcon {...{ checked, checkIcon, type:this.type, option }} />
                 {before !== undefined && <div className={this.getItemClassName('before')}>{before}</div>}
-                {
-                    subtext === undefined && text !== undefined &&
-                    <div className={this.getItemClassName('value')}>{text}</div>
-                }
-                {
-                    subtext !== undefined &&
-                    <div className={`aio-input-content aio-input-${type}-content`} style={{ flex: center ? 'none' : undefined }}>
-                        {text !== undefined && <div className={this.getItemClassName('value')}>{text}</div>}
-                        {subtext !== undefined && <div className={this.getItemClassName('subtext')}>{subtext}</div>}
-                    </div>
-                }
+                {this.text_layout(text,subtext,placeholder,center)}
                 {after !== undefined && <div className={this.getItemClassName('after')}>{after}</div>}
                 {loading && <div className={this.getItemClassName('loading')}>{loading === true ? <Icon path={mdiLoading} spin={0.3} size={.8} /> : loading}</div>}
                 {caret && <div className='aio-input-caret'>{caret === true ? <Icon path={mdiChevronDown} size={.8} /> : caret}</div>}
             </>
         )
         let props = this.getProps();
-        if (type === 'file') { return (<><label {...props}>{content}<InputFile /></label></>) }
+        if (this.type === 'file') { return (<label {...props}>{content}<InputFile /></label>) }
         return (<div {...props}>{content}</div>)
     }
 }
 class CheckIcon extends Component {
-    static contextType = AIContext;
+    static contextType = AICTX;
     render() {
         let { gap } = this.context;
         let { checked, checkIcon = [] } = this.props;
@@ -1603,42 +1763,62 @@ class CheckIcon extends Component {
     }
 }
 function File() {
-    let { style = {} } = useContext(AIContext);
-    return (<div className={'aio-input-file-container'} style={{ width: style.width }}><Layout /><FileItems /></div>)
+    let { getProp } = useContext(AICTX);
+    let attrs = getProp('attrs',{})
+    return (<div className='aio-input-file-container'><Layout /><FileItems /></div>)
 }
 export class InputFile extends Component {
-    static contextType = AIContext;
+    static contextType = AICTX;
     change(e) {
-        let { value = [], onChange = () => { }, multiple } = this.context;
+        let { getProp } = this.context;
+        let value = getProp('value',[]);
+        let onChange = getProp('onChange',()=>{});
+        let multiple = getProp('multiple');
         let Files = e.target.files;
-        let result = multiple ? [...value] : [];
-        let names = result.map(({ name }) => name);
-        for (let i = 0; i < Files.length; i++) {
-            let file = Files[i];
-            if (names.indexOf(file.name) !== -1) { continue }
-            result.push({ name: file.name, size: file.size, file })
+        let result;
+        if(multiple){
+            result = [...value];
+            let names = result.map(({ name }) => name);
+            for (let i = 0; i < Files.length; i++) {
+                let file = Files[i];
+                if (names.indexOf(file.name) !== -1) { continue }
+                result.push({ name: file.name, size: file.size, file })
+            }
+        }
+        else {
+            result = Files.length?Files[0]:undefined
         }
         onChange(result)
     }
     render() {
-        let { disabled, multiple } = this.context;
-        let props = { disabled, type: 'file', style: { display: 'none' }, multiple, onChange: (e) => this.change(e) }
+        let { getProp } = this.context;
+        let multiple = getProp('multiple');
+        let loading = getProp('loading');
+        let disabled = getProp('disabled');
+        let props = { disabled:disabled || loading, type: 'file', style: { display: 'none' }, multiple, onChange: (e) => this.change(e) }
         return <input {...props} />
     }
 }
 export class FileItems extends Component {
-    static contextType = AIContext;
+    static contextType = AICTX;
     render() {
-        let { value = [], rtl } = this.context;
-        if (!value.length) { return null }
+        let { getProp } = this.context;
+        let value = getProp('value'), rtl = getProp('rtl');
+        let files = [];
+        if(Array.isArray(value)){files = value}
+        else if(value){files = [value]}
+        else{return null}
+        if(!files.length){return null}
         return (
-            <div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{value.map((o, i) => <FileItem key={i} {...o} index={i} />)}</div>
+            <div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{files.map((file, i) => <FileItem key={i} file={file} index={i} />)}</div>
         )
     }
 }
 class FileItem extends Component {
-    static contextType = AIContext;
-    getFile(filename, fileSize) {
+    static contextType = AICTX;
+    getFile(file) {
+        let filename = file.name || 'untitle';
+        let fileSize = file.size || 0;
         let nameLength = 20;
         try {
             let minName, sizeString;
@@ -1650,6 +1830,7 @@ class FileItem extends Component {
             }
             else { minName = filename; }
             let size = fileSize;
+            if(!size){return {minName,sizeString:false}}
             let gb = size / (1024 * 1024 * 1024), mb = size / (1024 * 1024), kb = size / 1024;
             if (gb >= 1) { sizeString = gb.toFixed(2) + ' GB'; }
             else if (mb >= 1) { sizeString = mb.toFixed(2) + ' MB'; }
@@ -1658,11 +1839,13 @@ class FileItem extends Component {
             return { minName, sizeString }
         }
         catch {
-            return { minName: 'untitle', sizeString: '0' }
+            return { minName: 'untitle', sizeString: false }
         }
     }
     remove(index) {
-        let { onChange = () => { }, value = [] } = this.context;
+        let {getProp} = this.context;
+        let onChange = getProp('onChange',()=>{});
+        let value = getProp('value',[])
         let newValue = [];
         for (let i = 0; i < value.length; i++) {
             if (i === index) { continue }
@@ -1670,16 +1853,25 @@ class FileItem extends Component {
         }
         onChange(newValue);
     }
+    renderString(minName,sizeString){
+        let size;
+        if(sizeString === false){size = ''}
+        else {size = ` ( ${sizeString})`}
+        return `${minName}${size}`
+    }
     render() {
-        let { name, url, size, index } = this.props;
-        let { minName, sizeString } = this.getFile(name, size);
+        let { file, index } = this.props;
+        let { minName, sizeString } = this.getFile(file);
+        let {url,name} = file;
         return (
-            <div className='aio-input-file'>
+            <div className='aio-input-file' style={{cursor:url?'pointer':'default'}}>
                 <div className='aio-input-file-icon'>
-                    <Icon path={mdiAttachment} size={.8} />
+                    <Icon path={url?mdiDownloadOutline:mdiAttachment} size={.8} />
                 </div>
-                <div className='aio-input-file-name' onClick={() => DownloadUrl(url, name)}>
-                    {`${minName} (${sizeString})`}
+                <div className='aio-input-file-name' onClick={() => {
+                    if(url){DownloadUrl(url, name)} 
+                }}>
+                    {this.renderString(minName,sizeString)}
                 </div>
                 <div className='aio-input-file-icon' onClick={() => this.remove(index)}>
                     <Icon path={mdiClose} size={.7} />
@@ -1690,26 +1882,18 @@ class FileItem extends Component {
 }
 const DPContext = createContext();
 class DatePicker extends Component {
-    static contextType = AIContext;
+    static contextType = AICTX;
     render() {
-        let { getProp } = this.context;
-        let { onClose } = this.props
-        let props = {
-            onClose,
-            close: getProp('close', false),
-            unit: getProp('unit', 'day'), calendarType: getProp('calendarType', 'gregorian'),
-            disabled: getProp('disabled', false), value: getProp('value'),
-            onChange: getProp('onChange', () => { }), onClear: getProp('onClear'),
-            startYear: getProp('startYear'), endYear: getProp('endYear'),
-            theme: getProp('theme'), size: getProp('size'), dateAttrs: getProp('dateAttrs')
-        }
-        return (<Calendar {...props} />)
+        let { getProp } = this.context,{ onClose } = this.props
+        return (<Calendar getProp={getProp} onClose={onClose} />)
     }
 }
 class Calendar extends Component {
     constructor(props) {
         super(props);
-        let { calendarType = 'gregorian', value } = props;
+        let { getProp } = props;
+        let calendarType = getProp('calendarType','gregorian');
+        let value = getProp('value')
         let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
         let today = getToday({ calendarType });
         if (!value) { value = today }
@@ -1722,7 +1906,9 @@ class Calendar extends Component {
         }
     }
     translate(text) {
-        let { unit = 'day', calendarType = 'gregorian', translate = (text) => text } = this.props;
+        let { getProp, translate = (text) => text } = this.props;
+        let calendarType = getProp('calendarType','gregorian');
+        let unit = getProp('unit','day');
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
@@ -1735,7 +1921,9 @@ class Calendar extends Component {
     changeActiveDate(obj) {
         let newActiveDate;
         if (obj === 'today') {
-            let { today } = this.state, { unit = 'day' } = this.props;
+            let { today } = this.state;
+            let { getProp } = this.props;
+            let unit = getProp('unit','day');
             let [year, month, day] = today;
             newActiveDate = { year, month, day: unit === 'month' ? 1 : day };
         }
@@ -1744,7 +1932,10 @@ class Calendar extends Component {
     }
     getYears() {
         let start, end;
-        let { calendarType, startYear, endYear } = this.props;
+        let { getProp } = this.props;
+        let calendarType = getProp('calendarType','gregorian');
+        let startYear = getProp('startYear','-20');
+        let endYear = getProp('endYear','+10'); 
         let today = AIODate().getToday({ calendarType });
         if (typeof startYear === 'string' && startYear.indexOf('-') === 0) {
             start = today[0] - parseInt(startYear.slice(1, startYear.length));
@@ -1759,20 +1950,31 @@ class Calendar extends Component {
         return years;
     }
     getPopupStyle() {
-        var { size, disabled, theme = [] } = this.props;
+        let { getProp } = this.props;
+        let disabled = getProp('disabled');
+        let size = getProp('size',180);
+        let theme = getProp('theme',[])
         return {
             width: size, fontSize: size / 17, background: theme[1], color: theme[0], stroke: theme[0],
             cursor: disabled === true ? 'not-allowed' : undefined,
         };
     }
     getContext() {
+        let {getProp} = this.props;
         return {
-            ...this.props, ...this.state,
+            ...this.state,
+            getProp,
             changeActiveDate: this.changeActiveDate.bind(this),
             translate: this.translate.bind(this),
             SetState: (obj) => this.setState(obj),
             onChange: ({ year, month, day, hour }) => {
-                let { onChange = () => { }, calendarType, unit, value, close, onClose } = this.props;
+                let { getProp,onClose } = this.props;
+                let calendarType = getProp('calendarType','gregorian');
+                let unit = getProp('unit','day');
+                let onChange = getProp('onChange',()=>{});
+                let close = getProp('close');
+                let value = getProp('value')
+        
                 let { months } = this.state;
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = calendarType === 'gregorian' ? AIODate().toJalali({ date: dateArray }) : dateArray;
@@ -1813,15 +2015,14 @@ class Calendar extends Component {
         );
     }
 }
-Calendar.defaultProps = {
-    size: 180, calendarType: 'gregorian', disabled: false,
-    startYear: '-10', endYear: '+20', unit: 'day',
-    setDisabled: () => false
-}
 class DPToday extends Component {
     static contextType = DPContext;
     render() {
-        let { calendarType = 'gregorian', size, unit = 'day', theme = [], translate, today, todayWeekDay, thisMonthString } = this.context;
+        let { getProp, translate, today, todayWeekDay, thisMonthString } = this.context;
+        let theme = getProp('theme',[])
+        let calendarType = getProp('calendarType','gregorian');
+        let unit = getProp('unit','day');
+        let size = getProp('size',180);
         return (
             <div className='aio-input-datepicker-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
                 <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
@@ -1843,7 +2044,10 @@ class DPToday extends Component {
 class DPFooter extends Component {
     static contextType = DPContext;
     render() {
-        let { onClear, disabled, size, changeActiveDate, translate } = this.context;
+        let { getProp, changeActiveDate, translate } = this.context;
+        let onClear = getProp('onClear');
+        let disabled = getProp('disabled');
+        let size = getProp('size',180);
         if (disabled) { return null }
         let buttonStyle = { padding: `${size / 20}px 0` };
         return (
@@ -1857,7 +2061,10 @@ class DPFooter extends Component {
 class DPBody extends Component {
     static contextType = DPContext;
     getStyle() {
-        let { size, calendarType = 'gregorian', unit = 'day' } = this.context;
+        let { getProp } = this.context;
+        let size = getProp('size',180)
+        let calendarType = getProp('calendarType','gregorian');
+        let unit = getProp('unit','day');
         var columnCount = { hour: 4, day: 7, month: 3 }[unit];
         var rowCount = { hour: 6, day: 7, month: 4 }[unit];
         var padding = size / 18, fontSize = size / 15,
@@ -1874,7 +2081,8 @@ class DPBody extends Component {
         return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
     }
     render() {
-        let { unit = 'day', activeDate } = this.context;
+        let { getProp, activeDate } = this.context;
+        let unit = getProp('unit','day');
         return (
             <div className='aio-input-datepicker-body' style={this.getStyle()}>
                 {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
@@ -1887,7 +2095,9 @@ class DPBody extends Component {
 class DPBodyDay extends Component {
     static contextType = DPContext;
     render() {
-        let { calendarType = 'gregorian', theme = [], activeDate } = this.context;
+        let { getProp, activeDate } = this.context;
+        let theme = getProp('theme',[])
+        let calendarType = getProp('calendarType','gregorian');
         let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
         var daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
         let weekDays = AIODate().getWeekDays({ calendarType });
@@ -1902,7 +2112,9 @@ class DPBodyDay extends Component {
 class DPCell_Weekday extends Component {
     static contextType = DPContext;
     render() {
-        let { calendarType = 'gregorian', theme = [], translate } = this.context;
+        let { getProp, translate } = this.context;
+        let theme = getProp('theme',[])
+        let calendarType = getProp('calendarType','gregorian');
         let { weekDay } = this.props;
         return (
             <div className='aio-input-datepicker-weekday aio-input-datepicker-cell' style={{ background: theme[1], color: theme[0] }}>
@@ -1922,15 +2134,22 @@ class DPCell extends Component {
         return str;
     }
     render() {
-        let { unit = 'day', theme = [], onChange, dateAttrs, disabled, calendarType = 'gregorian', value, translate } = this.context;
+        let { getProp, translate } = this.context;
+        let disabled = getProp('disabled')
+        let dateAttrs = getProp('dateAttrs')
+        let theme = getProp('theme',[])
+        let onChange = getProp('onChange', () => { })
+        let value = getProp('value');
+        let calendarType = getProp('calendarType','gregorian');
+        let unit = getProp('unit','day');
         let { dateArray } = this.props;
         let { isEqual, isMatch, getMonths, getToday } = AIODate();
         let isActive = !value ? false : AIODate().isEqual(dateArray, value);
         let isToday = isEqual(dateArray, getToday({ calendarType }))
-        let isDisabled = typeof disabled === 'boolean' ? disabled : isMatch({ date: dateArray, matchers: disabled })
-        let attrs = {}
-        if (dateAttrs) { attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) }) || {} }
-        let className = this.getClassName(isActive, isToday, isDisabled, attrs.className);
+        let isDisabled = typeof disabled === 'boolean' ? disabled : isMatch({ date: dateArray, matchers: disabled })//notice
+        let Attrs = {}
+        if (dateAttrs) { Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) }) || {} }
+        let className = this.getClassName(isActive, isToday, isDisabled, Attrs.className);
         let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }, true) };
         let style = {}
         if (!isDisabled) { style.background = theme[1]; }
@@ -1939,7 +2158,7 @@ class DPCell extends Component {
             style.color = theme[1];
         }
         if (className.indexOf('today') !== -1) { style.border = `1px solid ${theme[0]}` }
-        style = { ...style, ...attrs.style }
+        style = { ...style, ...Attrs.style }
         let text;
         if (unit === 'hour') { text = dateArray[3] + ':00' }
         else if (unit === 'day') { text = dateArray[2] }
@@ -1955,13 +2174,14 @@ class DPHeader extends Component {
     getYears() {
         let { activeDate, years, changeActiveDate } = this.context;
         let props = {
-            value: activeDate.year, options: years, optionText: 'option.toString()', optionValue: 'option',
+            value: activeDate.year, options: years.map((y)=>{return {text:y.toString(),value:y}}),
             onChange: (year) => { changeActiveDate({ year }) }
         }
         return (<DPHeaderDropdown {...props} />)
     }
     getMonths() {
-        let { calendarType = 'gregorian', activeDate, changeActiveDate, months, translate } = this.context;
+        let { getProp, activeDate, changeActiveDate, months, translate } = this.context;
+        let calendarType = getProp('calendarType','gregorian');
         let props = {
             value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
             options: months.map((o, i) => { return { value: i + 1, text: translate(calendarType === 'gregorian' ? o.slice(0, 3) : o) } })
@@ -1976,7 +2196,9 @@ class DPHeader extends Component {
         return (<DPHeaderDropdown {...props} />)
     }
     render() {
-        let { unit = 'day', size, calendarType = 'gregorian' } = this.context;
+        let { getProp} = this.context;
+        let size = getProp('size',180)
+        let unit = getProp('unit','day');
         return (
             <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
                 <DPArrow type='minus' />
@@ -1994,13 +2216,20 @@ class DPHeaderDropdown extends Component {
     static contextType = DPContext;
     render() {
         //این شرط فقط در حالت سال رخ میدهد در شرایطی که فقط یک سال قابل انتخاب است
+        let {value,options,onChange} = this.props;
         if (this.props.options.length === 1) { return this.props.options[0] }
-        let { size, theme = [] } = this.context;
+        let { getProp } = this.context;
+        let size = getProp('size',180)
+        let theme = getProp('theme',[])
         let props = {
-            ...this.props, search: false,
+            value,options,onChange, search: false,
             caret: false, type: 'select',
-            className: 'aio-input-datepicker-dropdown',
-            optionStyle: { height: size / 6, background: theme[1], color: theme[0] }
+            attrs:{
+                className: 'aio-input-datepicker-dropdown'
+            },
+            optionAttrs:{
+                style: { height: size / 6, background: theme[1], color: theme[0] }
+            }
         }
         return (<AIOInput {...props} />)
     }
@@ -2008,7 +2237,9 @@ class DPHeaderDropdown extends Component {
 class DPArrow extends Component {
     static contextType = DPContext;
     change() {
-        let { calendarType, unit = 'day', years, changeActiveDate, activeDate } = this.context;
+        let { getProp, years, changeActiveDate, activeDate } = this.context;
+        let calendarType = getProp('calendarType','gregorian');
+        let unit = getProp('unit','day');
         let { type } = this.props;
         let offset = (calendarType === 'gregorian' ? 1 : -1) * (type === 'minus' ? -1 : 1);
         let date = [activeDate.year, activeDate.month, activeDate.day]
@@ -2019,7 +2250,8 @@ class DPArrow extends Component {
         if (unit === 'hour') { changeActiveDate({ year: next[0], month: next[1], day: next[2] }) }
     }
     getIcon() {
-        let { theme = [] } = this.context, { type } = this.props;
+        let { getProp } = this.context, { type } = this.props;
+        let theme = getProp('theme',[])
         return <Icon path={type === 'minus' ? mdiChevronLeft : mdiChevronRight} size={1} style={{ color: theme[0] }} />
     }
     render() {
@@ -2027,7 +2259,6 @@ class DPArrow extends Component {
         return (<div className='aio-input-datepicker-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => this.change()}>{this.getIcon()}</div>)
     }
 }
-
 const SliderContext = createContext();
 export class Slider extends Component {
     constructor(props) {
@@ -2117,6 +2348,7 @@ export class Slider extends Component {
     mouseDown(e, index, type) {
         e.preventDefault();
         var { start, end, min = start, max = end, onChange, disabled } = this.props;
+
         if (!onChange || disabled) { return }
         var { x, y } = this.getClient(e), dom = $(this.dom.current);
         var pointContainers = dom.find('.aio-slider-point-container');
@@ -2257,7 +2489,6 @@ class SliderLine extends Component {
         return (<div className='aio-slider-line' style={typeof lineStyle === 'function' ? lineStyle(this.context) : lineStyle}></div>)
     }
 }
-
 class SliderFill extends Component {
     static contextType = SliderContext;
     getContainerStyle() {
@@ -2305,7 +2536,6 @@ class SliderFill extends Component {
         );
     }
 }
-
 class SliderPoint extends Component {
     static contextType = SliderContext;
     getContainerStyle() {
@@ -2344,7 +2574,6 @@ class SliderPoint extends Component {
         );
     }
 }
-
 class SliderLabels extends Component {
     static contextType = SliderContext;
     constructor(props) {
@@ -2417,7 +2646,6 @@ class SliderLabels extends Component {
         );
     }
 }
-
 class SliderLabel extends Component {
     static contextType = SliderContext;
     getStyle(rotate) {
@@ -2454,7 +2682,6 @@ class SliderLabel extends Component {
         );
     }
 }
-
 class SliderScales extends Component {
     static contextType = SliderContext;
     getScalesByStep(scaleStep) {
@@ -2491,13 +2718,16 @@ class SliderScale extends Component {
         return (<div className="aio-slider-scale" style={this.getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
     }
 }
-
 class List extends Component {
     constructor(props) {
         super(props);
+        let {getProp,getOptionProp} = props;
+        this.getProp = getProp;
+        this.getOptionProp = getOptionProp;
         this.touch = 'ontouchstart' in document.documentElement;
         this.dom = createRef();
-        var { count = 3, move } = this.props;
+        let count = this.getProp('count',3);
+        let move = this.getProp('move');
         if (move) { move(this.move.bind(this)) }
         this.state = { count }
     }
@@ -2521,24 +2751,27 @@ class List extends Component {
         }
     }
     getStyle() {
-        var { size, width = 200 } = this.props;
+        let size = this.getProp('size',48);
+        let width = this.getProp('width',200);
         var { count } = this.state;
         var height = count * (size);
         return { width, height }
     }
     getOptions() {
-        var { size, options, value: propsValue, getOptionProp } = this.props;
+        let size = this.getProp('size',48);
+        let options = this.getProp('options',[]);
+        let propsValue = this.getProp('value');
         this.activeIndex = 0;
         return options.map((option, i) => {
-            let value = getOptionProp(option, 'value');
-            let text = getOptionProp(option, 'text', '');
-            let style = getOptionProp(option, 'style', {});
+            let value = this.getOptionProp(option, 'value');
+            let text = this.getOptionProp(option, 'text', '');
+            let style = this.getOptionProp(option, 'style', {});
             if (value === propsValue) { this.activeIndex = i; }
             return <div key={i} dataindex={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
         })
     }
     getIndexByTop(top) {
-        var { size } = this.props;
+        let size = this.getProp('size',48);
         var { count } = this.state;
         return Math.round(((count * size) - size - (2 * top)) / (2 * size));
     }
@@ -2555,7 +2788,7 @@ class List extends Component {
     }
 
     moveDown() {
-        var { options } = this.props;
+        let options = this.getProp('options',[]);
         if (this.activeIndex >= options.length - 1) { return }
         this.activeIndex++;
         var newTop = this.getTopByIndex(this.activeIndex);
@@ -2575,8 +2808,8 @@ class List extends Component {
 
     }
     keyDown(e) {
-        var { editable } = this.props;
-        if (editable === false) { return }
+        let editable = this.getProp('editable',true);
+        if (!editable) { return }
         if (e.keyCode === 38) {
             this.moveUp();
         }
@@ -2586,22 +2819,24 @@ class List extends Component {
 
     }
     getLimit() {
-        var { options } = this.props;
+        let options = this.getProp('options',[]);
         return {
             top: this.getTopByIndex(-1),
             bottom: this.getTopByIndex(options.length)
         }
     }
     getTrueTop(top) {
-        let { options } = this.props;
+        let options = this.getProp('options',[]);
         let index = this.getIndexByTop(top);
         if (index < 0) { index = 0 }
         if (index > options.length - 1) { index = options.length - 1 }
         return this.getTopByIndex(index);
     }
     mouseDown(e) {
-        var { options, onChange, editable } = this.props;
-        if (editable === false) { return }
+        let options = this.getProp('options',[]);
+        let onChange = this.getProp('onChange',()=>{});
+        let editable = this.getProp('editable',true);
+        if (!editable) { return }
         this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
         this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this));
         clearInterval(this.interval);
@@ -2652,7 +2887,10 @@ class List extends Component {
         this.move(this.deltaY, this.so.newTop)
     }
     move(deltaY, startTop = this.getTop()) {
-        var { options, onChange = () => { }, decay = 8, stop = 3 } = this.props;
+        let options = this.getProp('options',[]);
+        let onChange = this.getProp('onChange',()=>{});
+        let decay = this.getProp('decay',8);
+        let stop = this.getProp('stop',3);
         if (decay < 0) { decay = 0 }
         if (decay > 99) { decay = 99 }
         decay = parseFloat(1 + decay / 1000)
@@ -2680,7 +2918,7 @@ class List extends Component {
         this.setBoldStyle(this.activeIndex);
     }
     render() {
-        let { attrs = {} } = this.props;
+        let attrs = this.getProp('attrs',{});
         var options = this.getOptions();
         return (
             <div
@@ -2699,16 +2937,19 @@ class List extends Component {
         );
     }
 }
-List.defaultProps = { size: 48, options: [], onChange: (item, index) => { } }
-
-
-
 class AIOInputValidate{
     constructor(props){
         this.props = props;
         let error = this.getError()
         if(error && !$('.aio-popup-alert-container').length){
-            new AIOPopup().addAlert({text:error,type:'error',subtext:JSON.stringify(props)})
+            let subtext;
+            try{
+                subtext = JSON.stringify(props);
+            }
+            catch{
+                subtext = '';
+            }
+            new AIOPopup().addAlert({text:error,type:'error',subtext})
         }
     }
     varTypes = {
@@ -2750,8 +2991,10 @@ class AIOInputValidate{
             catch{debugger; if(value === JSON.parse(type)){res = true}}
         }
         if(res === false){
-
-            return `should be ${types.join('|')} but is ${JSON.stringify(value)}`
+            let res;
+            try{res = JSON.stringify(value)}
+            catch{res = value}
+            return `should be ${types.join('|')} but is ${res}`
         }
 
     }
@@ -2762,94 +3005,183 @@ class AIOInputValidate{
         let error = this.getMessage(type);
         if(error){return error}
     }
-    validateObject = {
-        text:{
-            rtl:'boolean|undefined',
-            type:'"text"',
-            inputAttrs:"object|undefined",
-            attrs:"object|undefined",
-            justNumber:"boolean|array|undefined",
-            style:'object|undefined',
-            value:'string|number|undefined',
-            onChange:'function',
-            options:'array|undefined',
-            maxLength:'number|undefined',
-            filter:'array',
-            attrs:'object|undfined'
-        },
-        number:{
-            rtl:'boolean|undefined',
-            type:'"number"',
-            inputAttrs:"object|undefined",
-            attrs:"object|undefined",
-            style:'object|undefined',
-            value:'""|number|undefined',
-            onChange:'function',
-        },
-        checkbox:{
-            rtl:'boolean|undefined',
-            type:'"checkbox"',
-            text:'any',
-            style:'object|undefined',
-            value:'boolean|undefined',
-            onChange:'function',
+    getValidateObject = (type)=>{
+        let dic = {
+            text:{
+                type:'"text"',
+                inputAttrs:"object|undefined",
+                justNumber:"boolean|array|undefined",
+                value:'string|number|undefined',
+                options:'array|undefined',
+                maxLength:'number|undefined',
+                filter:'array',
+                justify:'boolean|undefined',
+                loading:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                caret:'any',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                popover:'object|undefined',
+                disabled:'boolean|undefined',
+                placeholder:'any',
+            },
+            textarea:{
+                type:'"textarea"',
+                value:'string|number|undefined',
+                inputAttrs:"object|undefined",
+                caret:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                loading:'any',
+                maxLength:'number|undefined',
+                options:'array|undefined',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                popover:'object|undefined',
+                disabled:'boolean|undefined',
+                placeholder:'any',
 
-        },
-        radio:{
-            rtl:'boolean|undefined',
-            type:'"radio"',
-            options:'array',
-            style:'object|undefined',
-            value:'any',
-            onChange:'function'
-        },
-        select:{
-            rtl:'boolean|undefined',
-            type:'"select"',
-            options:'array',
-            style:'object|undefined',
-            value:'number|string|undefined',
-            onChange:'function'
+            },
+            number:{
+                type:'"number"',
+                inputAttrs:"object|undefined",
+                value:'""|number|undefined',
+                caret:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                options:'array|undefined',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                justify:'boolean|undefined',
+                loading:'any',
+                swip:'boolean|undefined',
+                popover:'object|undefined',
+                disabled:'boolean|undefined',
+                placeholder:'any',
 
-        },
-        file:{
-            rtl:'boolean|undefined',
-            type:'"file"',
-            text:'any',
-            style:'object|undefined',
-            multiple:'boolean',
-            value:'any',
-            onChange:'function'
+            },
+            password:{
+                type:'"password"',
+                inputAttrs:"object|undefined",
+                justNumber:"boolean|array|undefined",
+                value:'string|number|undefined',
+                maxLength:'number|undefined',
+                filter:'array',
+                justify:'boolean|undefined',
+                loading:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                visible:'boolean|undefined',
+                disabled:'boolean|undefined',
+                placeholder:'any',
 
-            
-        },
-        multiselect:{
-            rtl:'boolean|undefined',
-            type:'"multiselect"',
-            text:'any',
-            options:'array',
-            style:'object|undefined',
-            value:'array|undefined',
-            onChange:'function'
-
-        },
-        form:{
-            rtl:'boolean|undefined',
-            type:'"form"',
-            inputs:'object',
-            value:'object',
-            onChange:'function'
-        },
-        textarea:{
-            rtl:'boolean|undefined',
-            type:'"textarea"',
-            style:'object|undefined',
-            value:'string|number|undefined',
-            onChange:'function'
+            },
+            color:{
+                type:'"color"',
+                inputAttrs:"object|undefined",
+                value:'string|number|undefined',
+                loading:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                options:'array|undefined',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                disabled:'boolean|undefined',
+            },
+            checkbox:{
+                type:'"checkbox"',
+                text:'any',
+                value:'boolean|undefined',
+            },
+            radio:{
+                type:'"radio"',
+                options:'array',
+                value:'any',
+                multiple:'boolean|undefined',
+            },
+            select:{
+                type:'"select"',
+                text:'any',
+                options:'array',
+                value:'number|string|undefined',
+                search:'boolean|undefined',
+                caret:'any',
+                optionAttrs:'function|string|undefined|object',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                loading:'any',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                popover:'object|undefined',
+                disabled:'boolean|undefined',
+                placeholder:'any',
+            },
+            file:{
+                type:'"file"',
+                text:'any',
+                multiple:'boolean',
+                value:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                inputAttrs:"object|undefined",
+                loading:'any',
+                disabled:'boolean|undefined',
+            },
+            multiselect:{
+                type:'"multiselect"',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                text:'any',
+                options:'array',
+                optionText:'any',
+                optionValue:'any',
+                optionAttrs:'any',
+                value:'array|undefined',
+                popover:'object|undefined',
+                hideTags:'boolean|undefined',
+                search:'boolean|undefined',
+                loading:'any',
+                caret:'any',
+                disabled:'boolean|undefined',
+            },
+            form:{
+                type:'"form"',
+                inputs:'object',
+                value:'object',
+                labelAttrs:'object|function|undefined',
+            },
+            datepicker:{
+                value:'any',
+                type:'"datepicker"',
+                caret:'any'
+            },
+            button:{
+                caret:'any'
+            }
         }
+        let privateObject = dic[type];
+        if(!privateObject){return}
+        let publicObject = {
+            attrs:'object|undefined',onChange:'function',rtl:'boolean|undefined',
+        }
+        return {...publicObject,...privateObject}
     }
     getMessage = (type) => {
-        let validProps = this.validateObject[type]
+        let validProps = this.getValidateObject(type)
         if(!validProps){
             return `${type} validator is not implement`
 

@@ -8,8 +8,9 @@
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.1);
   transition:0.3s;
+  pointer-events: all;
 }
 .aio-popup.not-mounted{
   transition:0.3s;
@@ -66,10 +67,6 @@
 .aio-popup-backdrop.not-mounted{
   background:none !important;
   transition:0.3s;
-}
-.aio-popup-backdrop-off{
-  pointer-events:none;
-  background:none;
 }
 .aio-popup-position-right{
   justify-content:right;

@@ -1,4 +1,4 @@
-import React, { Component, Fragment, createRef } from 'react';
+import React, { Component, Fragment, createRef, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -83,7 +83,7 @@ class Popups extends Component {
       setTimeout(()=>{
         let modal = arg === 'last'?modals[modals.length - 1]:modals.find((o) => o.id === arg);
         if(modal.onClose){modal.onClose()}
-        else if(arg === 'last'){this.change({ modals: modals.slice(0,modals.length - 1) })}
+        if(arg === 'last'){this.change({ modals: modals.slice(0,modals.length - 1) })}
         else {this.change({ modals: modals.filter((o) => o.id !== arg) })}
       },animate?300:0)
     }
@@ -129,12 +129,20 @@ class Popup extends Component {
     let { onClose } = this.props;
     onClose();
   }
+  componentWillUnmount(){
+    $(window).unbind('click',this.handleBackClick)
+  }
+  updatePopoverStyle(){
+    let popoverStyle = this.getPopoverStyle();
+    if(JSON.stringify(popoverStyle) !== JSON.stringify(this.state.popoverStyle)){
+      this.setState({popoverStyle})
+    }
+  }
   componentDidMount(){
-    let {popover = {},position,mounted,onMount} = this.props;
+    let {popover = {},position} = this.props;
     setTimeout(()=>{
-      this.setState({
-        popoverStyle:position === 'popover'?this.getPopoverStyle():{},
-      })
+      let {mounted,onMount} = this.props;
+      this.setState({popoverStyle:position === 'popover'?this.getPopoverStyle():{}})
       if(!mounted){onMount()}
     },0)
     if(popover.getTarget){
@@ -142,7 +150,7 @@ class Popup extends Component {
       let target = popover.getTarget();
       target.attr('data-uniq-id',this.dui)
     }
-    $(this.backdropDom.current).focus();
+    //$(this.backdropDom.current).focus();
     $(window).unbind('click',this.handleBackClick)
     $(window).bind('click',$.proxy(this.handleBackClick,this))
   }
@@ -163,7 +171,7 @@ class Popup extends Component {
   }
   body_layout(){
     let {body = {}} = this.props;
-    return { flex:1,html:<ModalBody body={body} handleClose={this.onClose.bind(this)}/> }
+    return { flex:1,html:<ModalBody body={body} handleClose={this.onClose.bind(this)} updatePopoverStyle={()=>this.updatePopoverStyle()}/> }
   }
   footer_layout() {
     let {closeText,submitText,onSubmit,footer,type} = this.props;
@@ -176,13 +184,11 @@ class Popup extends Component {
     let className = 'aio-popup-backdrop';
     if (backdrop && backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
     className += ` aio-popup-position-${position}`
-    className += backdrop === false?' aio-popup-backdrop-off':''
     className += rtl?' rtl':' ltr'
     if(!mounted){className += ' not-mounted'}
     return className
   }
   backClick(e) {
-    debugger
     e.stopPropagation();
     let target = $(e.target);
     let { backdrop = {} } = this.props;
@@ -209,10 +215,11 @@ class Popup extends Component {
     }
   }
   render() {
-    let { rtl, attrs = {},backdrop,mounted} = this.props;
+    let { rtl, attrs = {},backdrop = {},mounted} = this.props;
     let {popoverStyle} = this.state
+    let backdropAttrs = backdrop?backdrop.attrs:{};
     let backdropProps = {
-      ...(backdrop?backdrop.attrs:{}),
+      ...backdropAttrs,
       className: this.getBackDropClassName(),
       onClick: backdrop === false?undefined:(e) => this.backClick(e),
     }
@@ -281,11 +288,16 @@ function ModalHeader({rtl,header,handleClose}){
   let style = attrs.style;
   return (<RVD layout={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
 }
-function ModalBody({handleClose,body}){
+function ModalBody(props){
+    let {handleClose,body,updatePopoverStyle} = props;
     let {render,attrs = {}} = body;
+    let content = typeof render === 'function'?render({close:handleClose}):render;
+    useEffect(()=>{
+      updatePopoverStyle()
+    },[content])
     return (
       <div {...attrs} className={'aio-popup-body' + (attrs.className?' ' + attrs.className:'')}>
-        {typeof render === 'function' && render({close:handleClose})}
+        {typeof render === 'function' && content}
       </div>
     )
 }
