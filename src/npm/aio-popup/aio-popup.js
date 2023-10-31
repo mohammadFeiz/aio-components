@@ -133,9 +133,12 @@ class Popup extends Component {
     $(window).unbind('click',this.handleBackClick)
   }
   updatePopoverStyle(){
-    let popoverStyle = this.getPopoverStyle();
-    if(JSON.stringify(popoverStyle) !== JSON.stringify(this.state.popoverStyle)){
-      this.setState({popoverStyle})
+    let {position} = this.props;
+    if(position === 'popover'){
+      let popoverStyle = this.getPopoverStyle();
+      if(JSON.stringify(popoverStyle) !== JSON.stringify(this.state.popoverStyle)){
+        this.setState({popoverStyle})
+      }
     }
   }
   componentDidMount(){
@@ -189,6 +192,7 @@ class Popup extends Component {
     return className
   }
   backClick(e) {
+    if(this.isDown){return}
     e.stopPropagation();
     let target = $(e.target);
     let { backdrop = {} } = this.props;
@@ -204,7 +208,7 @@ class Popup extends Component {
     if (!target || !target.length) { return {}}
     let popup = $(this.dom.current);
     let style = Align(popup, target, { fixStyle: fixStyle, pageSelector, fitHorizontal, style: attrs.style, rtl })
-    return {...style,position:'fixed'}
+    return {...style,position:'absolute'}
   }
   keyDown(e){
     let {isLast,removeModal} = this.props;
@@ -213,6 +217,14 @@ class Popup extends Component {
     if(code === 27){
       removeModal()
     }
+  }
+  mouseUp(){
+    setTimeout(()=>this.isDown = false,0);
+  }
+  mouseDown(e){
+    $(window).unbind('mouseup',this.mouseUp);
+    $(window).bind('mouseup',$.proxy(this.mouseUp,this));
+    this.isDown = true
   }
   render() {
     let { rtl, attrs = {},backdrop = {},mounted} = this.props;
@@ -225,11 +237,12 @@ class Popup extends Component {
     }
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
+    let ev = "ontouchstart" in document.documentElement?'onTouchStart':'onMouseDown'
     return (
       <div {...backdropProps} ref={this.backdropDom} onKeyDown={this.keyDown.bind(this)} tabIndex={0}>
         <RVD
           layout={{
-            attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui},
+            attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui,[ev]:this.mouseDown.bind(this)},
             className,style,
             column: [
               this.header_layout(),
@@ -546,7 +559,6 @@ function Align(dom,target,config = {}){
         overflowY = 'auto';
       }
       let finalStyle = {left:domLimit.left,top:domLimit.top,width:domLimit.width,overflowY,...style}
-        console.log(finalStyle)
         return fixStyle(finalStyle,{targetLimit,pageLimit})
     }
   }

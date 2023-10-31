@@ -5,36 +5,36 @@ import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import './doc-aio-input-form.css';
 import { Icon } from '@mdi/react';
-import { mdiHumanMale, mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiAccountAlert, mdiChevronDown, mdiChevronDoubleDown } from '@mdi/js';
+import { mdiHumanMale, mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiAccountAlert, mdiChevronDown, mdiChevronDoubleDown, mdiCheckboxOutline, mdiCheckboxBlankOutline, mdiGenderFemale, mdiGenderMale } from '@mdi/js';
 const DOC_options = [
-    {name:'john',id:'1'},
-    {name:'stephan',id:'2'},
-    {name:'edvard',id:'3'},
-    {name:'luis',id:'4'},
-    {name:'carlos',id:'5'},
-    {name:'paul',id:'6'},
-    {name:'fernando',id:'7'},
-    {name:'mark',id:'8'},
-    {name:'antonio',id:'9'},
-    {name:'fred',id:'10'},
-    {name:'lucas',id:'11'},
-    {name:'maria',id:'12'}
+    {name:'john',id:'1',gender:'male'},
+    {name:'stephan',id:'2',gender:'male'},
+    {name:'edvard',id:'3',gender:'male'},
+    {name:'luis',id:'4',gender:'male'},
+    {name:'carlos',id:'5',gender:'male'},
+    {name:'kate',id:'6',gender:'female'},
+    {name:'fernando',id:'7',gender:'male'},
+    {name:'mark',id:'8',gender:'male'},
+    {name:'nicol',id:'9',gender:'female'},
+    {name:'lisa',id:'10',gender:'female'},
+    {name:'lucas',id:'11',gender:'male'},
+    {name:'maria',id:'12',gender:'female'}
 ]
 const DOC_options_code = 
 `
 options:[
-    {name:'john',id:'1'},
-    {name:'stephan',id:'2'},
-    {name:'edvard',id:'3'},
-    {name:'luis',id:'4'},
-    {name:'carlos',id:'5'},
-    {name:'paul',id:'6'},
-    {name:'fernando',id:'7'},
-    {name:'mark',id:'8'},
-    {name:'antonio',id:'9'},
-    {name:'fred',id:'10'},
-    {name:'lucas',id:'11'},
-    {name:'maria',id:'12'}
+    {name:'john',id:'1',gender:'male'},
+    {name:'stephan',id:'2',gender:'male'},
+    {name:'edvard',id:'3',gender:'male'},
+    {name:'luis',id:'4',gender:'male'},
+    {name:'carlos',id:'5',gender:'male'},
+    {name:'kate',id:'6',gender:'female'},
+    {name:'fernando',id:'7',gender:'male'},
+    {name:'mark',id:'8',gender:'male'},
+    {name:'nicol',id:'9',gender:'female'},
+    {name:'lisa',id:'10',gender:'female'},
+    {name:'lucas',id:'11',gender:'male'},
+    {name:'maria',id:'12',gender:'female'}
 ],
 optionText:'option.name',
 optionValue:'option.id'`
@@ -78,12 +78,73 @@ export default class DOC_AIOInput_Form extends Component {
                 allInputProps:{
                     options:DOC_options,
                     optionText:'option.name',
+                    optionValue:'option.id',
+                    text:'this is my text',
+                },
+                allInputFooters:`
+${DOC_options_code}
+text:'this is my text,'
+                `
+            },
+            { 
+                type:'radio',
+                allInputProps:{
+                    options:DOC_options,
+                    optionText:'option.name',
                     optionValue:'option.id'
                 },
                 allInputFooters:DOC_options_code
                 
             },
-            { prop:'after'}
+            { 
+                type:'tabs',
+                allInputProps:{
+                    options:DOC_options,
+                    optionText:'option.name',
+                    optionValue:'option.id'
+                },
+                allInputFooters:DOC_options_code
+                
+            },
+            {
+                type:'slider',
+                allInputProps:{
+                    start:20,step:1,end:240,
+                },
+                allInputFooters:`
+start:20,step:1,end:100,
+                `
+            },
+            {type:'datepicker'},
+            { type: 'checkbox',allInputProps:{text:'this is my text'} },
+            {
+                type:'image',
+                allInputProps:{
+                    value:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'}
+                },
+                allInputFooters:`
+value:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'}
+                `
+            },
+            {
+                type:'time',
+                model:{
+                    minute_second:{minute:10,second:0},
+                    hour_minute_second:{hour:3,minute:12,second:30},
+                    year_month_day:{year:2022,month:6,day:25},
+                    year_month_day_hour_minute:{year:2022,month:6,day:25,hour:12,minute:30},
+                    before:{minute:10,second:0},
+                    after:{minute:10,second:0},
+                    subtext:{minute:10,second:0},
+                    disabled:{minute:10,second:0},
+                    loading:{minute:10,second:0},
+                    attrs:{minute:10,second:0},
+
+                },
+                
+            },
+            { prop:'after'},
+            
         ]
         return (<DOC {...this.props} nav={{items:getNavItems(items)}}/>)
     }
@@ -103,7 +164,15 @@ function e_exist(type, prop) {
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
-            popover:true
+            popover:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
         },
         number: { 
             before: true, after: true,subtext: true,
@@ -118,8 +187,7 @@ function e_exist(type, prop) {
             optionText_optionValue__number___: true, 
             optionAttrs__object___: true,optionAttrs__function___: true,
             attrs:true,
-            popover:true
-
+            popover:true,
         },
         textarea: { 
             before: true,after: true,subtext: true, 
@@ -133,8 +201,15 @@ function e_exist(type, prop) {
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
-            popover:true
-
+            popover:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
         },
         password: {
             before: true,after: true,subtext: true, 
@@ -178,7 +253,20 @@ function e_exist(type, prop) {
             attrs:true,
             popover:true,
             popover__fitHorizontal___:true,
-            placeholder:true
+            placeholder:true,
+            search:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionClose:true,
+            optionChecked__string___:true,
+            optionChecked__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
+            
         },
         multiselect: {
             text:true,
@@ -192,18 +280,135 @@ function e_exist(type, prop) {
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
             popover:true,
-            popover__fitHorizontal___:true,
+            search:true,
+            optionTagBefore__html___:true,
+            optionTagBefore__function___:true,
+            optionTagAfter__html___:true,
+            optionTagAfter__function___:true,
+            hideTags:true,
+            optionTagAttrs__object___:true,
+            optionTagAttrs__function___:true,
+            optionCheckIcon__function___:true,
+            optionCheckIcon__object___:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
         },
-        
-        datepicker: { before: true, },
-        time: {},
+        radio: {
+            before: true,
+            after: true,subtext: true, 
+            disabled: true,
+            loading: true, 
+            options:true,
+            optionText_optionValue: true, 
+            optionAttrs__object___: true, optionAttrs__function___: true,
+            attrs:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
+            optionCheckIcon__function___:true,
+            optionCheckIcon__object___:true,
+            set_radio_option_style__width___:true,
+            multiple:true
+        },
+        tabs: {
+            before: true,
+            after: true,
+            subtext: true, 
+            disabled: true,
+            loading: true, 
+            options:true,
+            optionText_optionValue: true, 
+            optionAttrs__object___: true, optionAttrs__function___: true,
+            attrs:true,
+            optionSubtext__string___:true,
+            optionSubtext__function___:true,
+            optionBafore__string___:true,
+            optionBefore__function___:true,
+            optionAfter__string___:true,
+            optionAfter__function___:true,
+            optionDisabled__string___:true,
+            optionDisabled__function___:true,
+            optionCheckIcon__function___:true,
+            optionCheckIcon__object___:true,
+        },
+        checkbox: {
+            text:true,
+            before: true,after: true,subtext: true, 
+            disabled: true,
+            loading: true, 
+            attrs:true,
+            checkIcon__function___:true,
+            checkIcon__object___:true, 
+        },
+        slider:{
+            start_step_end:true,
+            before: true,after: true,
+            disabled: true,
+            loading: true, 
+            attrs:true,
+            showValue__false___:true,
+            showValue__true___:true,
+            showValue__inline___:true,
+            lineStyle:true,
+            fillStyle:true,
+            pointStyle:true,
+            valueStyle:true,
+            min_max:true,
+            multiple__slider___:true
+
+        },
+        datepicker: {
+            before: true,
+            after: true,
+            subtext: true, 
+            disabled: true,
+            placeholder: true,
+            loading: true, 
+            // caret_false: true,caret_html:true,
+            attrs:true,
+            popover:true
+        },
+        image:{
+            placeholder:true,
+            before: true,
+            after: true,
+            subtext: true, 
+            width_height:true,
+            width:true,
+            height:true,
+            attrs:true,
+            disabled: true,
+            loading: true, 
+            
+            
+            
+        },
+        time:{
+            minute_second:true,
+            hour_minute_second:true,
+            year_month_day:true,
+            year_month_day_hour_minute:true,
+            before:true,
+            after:true,
+            subtext:true,
+            disabled:true,
+            loading:true,
+            attrs:true
+        },
         list: {},
-        checkbox: { before: true, },
-        radio: { before: true, },
-        tabs: { before: true, },
         table: {},
         form: {},
-        slider: { before: true, }
     }
     if(!type && !prop){return dic}
     if(!prop){return dic[type]}
@@ -243,11 +448,13 @@ justNumber:['-']
         ]
     }
     if (prop === 'text') {/////////////////////////////////////////////////////////////////////////////// text
-        return [
-            { text: 'this is my text' },
+        let footer = type === 'multiselect'?'':
             `
 text: 'this is my text'
             `
+        return [
+            { text: 'this is my text' },
+            footer    
         ]
     }
     if (prop === 'subtext') {/////////////////////////////////////////////////////////////////////////////// subtext
@@ -391,11 +598,24 @@ optionValue:'option.id',
                 optionAttrs: { style: { background: 'pink' } }
             },
             `
-${DOC_options_code}
 optionAttrs:{style:{background:'pink'}}
             `
         ]
     }
+    if (prop === 'set_radio_option_style__width___') {
+        return [
+            {
+                options: DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id',
+                optionAttrs: { style: { width: '100%' } }
+            },
+            `
+optionAttrs: { style: { width: '100%' } }
+            `
+        ]
+    }
+    
     if (prop === 'optionAttrs__function___') {
         return [
             {
@@ -409,8 +629,6 @@ optionAttrs:{style:{background:'pink'}}
                 }
             },
             `
-${DOC_options_code}
-optionText:'option.name',
 optionAttrs:(option)=>{
     if(option.name === 'stephan'){
         return {style:{background:'pink'}}
@@ -426,7 +644,6 @@ optionAttrs:(option)=>{
                 caret: false
             },
             `
-${DOC_options_code}
 caret:false
         `
         ]
@@ -438,7 +655,6 @@ caret:false
                 caret: <Icon path={mdiChevronDoubleDown} size={.7} />
             },
             `
-${DOC_options_code}
 caret:<Icon path={mdiChevronDoubleDown} size={.7}/>
         `
         ]
@@ -478,9 +694,6 @@ attrs:{style:{boxShadow:'0 0 12px 2px lightblue'}}
     if (prop === 'popover') {///////////////////////////////////////////////////////////////////////////////////// popover
         return [
             { 
-                options: DOC_options,
-                optionText:'option.name',
-                optionValue:'option.id',
                 popover:{
                     position:'center',
                     backdrop:{
@@ -493,7 +706,7 @@ attrs:{style:{boxShadow:'0 0 12px 2px lightblue'}}
                 }
             },
             `
-${type === 'select'?'':DOC_options_code}
+${type === 'select' || type === 'multiselect'?'':DOC_options_code}
 popover:{
     position:'center',
     backdrop:{
@@ -562,11 +775,410 @@ value : {
             `
         ]
     }
-    if (prop === '') {
+    if (prop === 'search') {
+        return [
+            {search:false},
+            `
+search:false
+            `
+        ]
+    }
+    if (prop === 'optionTagBefore__html___') {
+        return [
+            {optionTagBefore:<Icon path={mdiAccount} size={.6}/>},
+            `
+optionTagBefore:<Icon path={mdiAccount} size={.6}/>
+            `
+        ]
+    }
+    if (prop === 'optionTagBefore__function___') {
+        return [
+            {optionTagBefore:(option)=><Icon path={mdiAccount} size={.6}/>},
+            `
+optionTagBefore:(option)=><Icon path={mdiAccount} size={.6}/>
+            `
+        ]
+    }
+    if (prop === 'optionTagAfter__html___') {
+        return [
+            {optionTagAfter:'TM'},
+            `
+optionTagAfter:'TM'
+            `
+        ]
+    }
+    if (prop === 'optionTagAfter__function___') {
+        return [
+            {optionTagAfter:(option)=>option.id},
+            `
+optionTagAfter:(option)=>option.id
+            `
+        ]
+    }
+    if (prop === 'hideTags') {
+        return [
+            {hideTags:true},
+            `
+hideTags:true
+            `
+        ]
+    }
+    if (prop === 'optionTagAttrs__object___') {
+        return [
+            {optionTagAttrs:{style:{background:'red'}}},
+            `
+optionTagAttrs:{style:{background:'red'}}
+            `
+        ]
+    }
+    if (prop === 'optionTagAttrs__function___') {
+        return [
+            {
+                optionTagAttrs:(option)=>{
+                    if(option.name === 'luis'){
+                        return {style:{background:'red'}}
+                    }
+                }
+            },
+            `
+optionTagAttrs:{style:{background:'red'}}
+            `
+        ]
+    }
+    if (prop === 'optionCheckIcon__function___') {
+        return [
+            {
+                optionCheckIcon:(checked)=>{
+                    return <Icon path={checked?mdiCheckboxOutline:mdiCheckboxBlankOutline} size={0.9}/>
+                }
+            },
+            `
+optionCheckIcon:(checked)=>{
+    let path = checked?mdiCheckboxOutline:mdiCheckboxBlankOutline
+    return <Icon path={path} size={0.9}/>
+}
+            `
+        ]
+    }
+    if (prop === 'optionCheckIcon__object___') {
+        return [
+            {
+                optionCheckIcon:{
+                    width:12,
+                    height:12,
+                    padding:2,
+                    borderColor:'#aaa',
+                    background:'orange',
+                    borderRadius:1
+                }
+            },
+            `
+optionCheckIcon:{
+    width:12,
+    height:12,
+    padding:2,
+    borderColor:'#aaa',
+    background:'orange',
+    borderRadius:1
+}
+            `
+        ]
+    }
+    if (prop === 'optionSubtext__string___') {
+        return [
+            {optionSubtext:'option.gender',options:DOC_options,optionText:'option.name',optionValue:'option.id'},
+            `
+optionSubtext:'option.gender'
+            `
+        ]
+    }
+    if (prop === 'optionSubtext__function___') {
+        return [
+            {optionSubtext:(option)=>option.gender,options:DOC_options,optionText:'option.name',optionValue:'option.id'},
+            `
+optionSubtext:(option)=>option.gender
+            `
+        ]
+    }
+    if (prop === 'optionClose') {
+        return [
+            {optionClose:false},
+            `
+optionClose:false
+            `
+        ]
+    }
+    if (prop === 'optionChecked__string___') {
+        return [
+            {optionChecked:'option.id === props.value'},
+            `
+optionChecked:'option.id === props.value'
+            `
+        ]
+    }
+    if (prop === 'optionChecked__function___') {
+        return [
+            {optionChecked:(option,props)=>option.id === props.value},
+            `
+optionChecked:(option,props)=>option.id === prop.value
+            `
+        ]
+    }
+    if (prop === 'optionBafore__string___') {
+        return [
+            {optionBefore:'option.gender === "male"?"M":"F"',options:DOC_options,optionText:'option.name',optionValue:'option.id'},
+            `
+optionBefore:'option.gender === "male"?"M":"F"'
+            `
+        ]
+    }
+    if (prop === 'optionBefore__function___') {
+        return [
+            {optionBefore:(option)=><Icon path={option.gender === 'male'?mdiGenderMale:mdiGenderFemale} size={.8}/>,options:DOC_options,optionText:'option.name',optionValue:'option.id'},
+            `
+optionBefore:(option)=><Icon path={option.gender === 'male'?mdiGenderMale:mdiGenderFemale} size={.8}/>
+            `
+        ]
+    }
+    if (prop === 'optionAfter__string___') {
+        return [
+            {
+                optionAfter:'option.gender',
+                options:DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id'
+            },
+            `
+optionAfter:'option.gender'
+            `
+        ]
+    }
+    if (prop === 'optionAfter__function___') {
+        return [
+            {
+                optionAfter:(option)=>option.gender,
+                options:DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id'
+            },
+            `
+optionAfter:(option)=>option.gender,
+            `
+        ]
+    }
+    if (prop === 'optionDisabled__string___') {
+        return [
+            {
+                optionDisabled:'option.id === "2"',
+                options:DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id'
+            },
+            `
+optionDisabled:'option.id === "2"'
+            `
+        ]
+    }
+    if (prop === 'optionDisabled__function___') {
+        return [
+            {
+                optionDisabled:(option)=>option.id === '2',
+                options:DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id'
+            },
+            `
+optionDisabled:(option)=>option.id === '2'
+            `
+        ]
+    }
+    if (prop === 'multiple') {
+        return [
+            {multiple:true},
+            `
+multiple:true
+            `
+        ]
+    }
+    if (prop === 'checkIcon__function___') {
+        return [
+            {
+                checkIcon:(checked)=>{
+                    return <Icon path={checked?mdiCheckboxOutline:mdiCheckboxBlankOutline} size={0.9}/>
+                }
+            },
+            `
+checkIcon:(checked)=>{
+    let path = checked?mdiCheckboxOutline:mdiCheckboxBlankOutline
+    return <Icon path={path} size={0.9}/>
+}
+            `
+        ]
+    }
+    if (prop === 'checkIcon__object___') {
+        return [
+            {
+                checkIcon:{
+                    width:12,
+                    height:12,
+                    padding:2,
+                    borderColor:'#aaa',
+                    background:'orange',
+                    borderRadius:1
+                }
+            },
+            `
+checkIcon:{
+    width:12,
+    height:12,
+    padding:2,
+    borderColor:'#aaa',
+    background:'orange',
+    borderRadius:1
+}
+            `
+        ]
+    }
+    if (prop === 'start_step_end') {
+        return [
+            {start:20,step:1,end:240},
+            `
+start:20,step:1,end:240
+            `
+        ]
+    }
+    if (prop === 'showValue__false___') {
+        return [
+            {showValue:false},
+            `
+showValue:false
+            `
+        ]
+    }
+    if (prop === 'showValue__true___') {
+        return [
+            {showValue:true},
+            `
+showValue:true
+            `
+        ]
+    }
+    if (prop === 'showValue__inline___') {
+        return [
+            {showValue:'inline'},
+            `
+showValue:'inline'
+            `
+        ]
+    }
+    if (prop === 'lineStyle') {
+        return [
+            {lineStyle:{height:5,background:'lightblue'}},
+            `
+lineStyle:{height:5,background:'lightblue'}
+            `
+        ]
+    }
+    if (prop === 'fillStyle') {
+        return [
+            {fillStyle:{height:5,background:'orange'}},
+            `
+fillStyle:{height:5,background:'orange'}
+            `
+        ]
+    }
+    if (prop === 'valueStyle') {
+        return [
+            {valueStyle:{background:'pink'}},
+            `
+valueStyle:{background:'pink'}
+            `
+        ]
+    }
+    if (prop === 'pointStyle') {
+        return [
+            {pointStyle:{background:'green'},showValue:true},
+            `
+pointStyle:{background:'green'},showValue:true
+            `
+        ]
+    }
+    if (prop === 'min_max') {
+        return [
+            {min:60,max:220},
+            `
+min:60,max:220
+            `
+        ]
+    }
+    if (prop === 'multiple__slider___') {
+        return [
+            {multiple:true,value:[100,200]},
+            `
+multiple:true,value:[100,200]
+            `
+        ]
+    }
+    if (prop === 'width_height') {
+        return [
+            {
+                width:100,height:100,
+            },
+            `
+width:100,
+height:100,
+            `
+        ]
+    }
+    if (prop === 'width') {
+        return [
+            {
+                width:'50%'
+            },
+            `
+width:'50%',
+            `
+        ]
+    }
+    if (prop === 'height') {
+        return [
+            {
+                height:240
+            },
+            `
+height:240,
+            `
+        ]
+    }
+    if (prop === 'minute_second') {
         return [
             {},
             `
-
+value:{minute:10,second:0}
+            `
+        ]
+    }
+    if (prop === 'hour_minute_second') {
+        return [
+            {},
+            `
+value:{hour:3,minute:12,second:30}
+            `
+        ]
+    }
+    if (prop === 'year_month_day') {
+        return [
+            {},
+            `
+value:{year:2022,month:6,day:25},
+            `
+        ]
+    }
+    if (prop === 'year_month_day_hour_minute') {
+        return [
+            {},
+            `
+value:{year:2022,month:6,day:25,hour:12,minute:30}
             `
         ]
     }
@@ -586,6 +1198,7 @@ value : {
             `
         ]
     }
+    
 }
 
 function getNavItems(items){
@@ -647,13 +1260,14 @@ function AIOINPUT({type,prop,initModel = {},allInputProps,allInputFooters}) {
     let [model,setModel] = useState(initModel);
     let [inputs,setInputs] = useState(getInputObjects(type,prop,allInputProps,allInputFooters))
     function preview() {
+        console.log(model)
         return (
             <div className='example'>
                 <AIOInput 
                     type='form' 
                     inputs={{ column: inputs }} 
                     value={{...model}} 
-                    onChange={(newModel) => setModel(newModel)} 
+                    onChange={(newModel) => setModel({...newModel})} 
                     labelAttrs={{style:{fontSize:14,fontWeight:'bold'}}}
                 />
             </div>

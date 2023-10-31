@@ -99,7 +99,8 @@ export default class AIOInput extends Component {
         this.popup = new AIOPopup();
         this.getPopover = new Popover(this.getProp.bind(this),this.datauniqid,this.toggle.bind(this),this.getOptions.bind(this)).getFn();
         this.state = {open:this.getProp('open',false),showPassword:false}
-        this.isInput = ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1
+        this.isInput = ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1;
+        this.isDropdown = ['text', 'number', 'textarea', 'select','multiselect'].indexOf(props.type) !== -1;
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
     dragOver(e) { e.preventDefault(); }
@@ -151,6 +152,7 @@ export default class AIOInput extends Component {
     getProp(key, def) {
         if(key === 'type'){return this.props.type}
         if(key === 'isInput'){return this.isInput}
+        if(key === 'isDropdown'){return this.isDropdown}
         if(key === 'props'){return this.props}
         let { type } = this.props;
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
@@ -197,13 +199,12 @@ export default class AIOInput extends Component {
                 }
                 
             }
-            return propsResult;
         }
         propsResult = propsResult === undefined ? def : propsResult;
         return propsResult;
     }
-    getOptionProp(option, key, def) {
-        let optionResult = typeof option[key] === 'function' ? option[key](option) : option[key]
+    getOptionProp(option, key, def,preventFunction) {
+        let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option,this.props) : option[key]
         if (optionResult !== undefined) { return optionResult }
         let prop = this.props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
         if (typeof prop === 'string') {
@@ -215,7 +216,10 @@ export default class AIOInput extends Component {
             }
             catch { prop = prop }
         }
-        if (typeof prop === 'function') { return prop(option) }
+        if (typeof prop === 'function' && !preventFunction) { 
+            let res = prop(option,this.props);
+            return res === undefined?def:res;
+        }
         if (prop !== undefined) { return prop }
         return def
     }
@@ -284,7 +288,7 @@ export default class AIOInput extends Component {
             let attrs = getOptionProp(option, 'attrs',{});
             let obj = {
                 text, value,
-                checkIcon: getOptionProp(option, 'checkIcon'),
+                checkIcon: getOptionProp(option, 'checkIcon',[],true),
                 checked: getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
                 before: getOptionProp(option, 'before'),
                 after: getOptionProp(option, 'after'),
@@ -298,7 +302,11 @@ export default class AIOInput extends Component {
                 tagAfter: getOptionProp(option, 'tagAfter'),
                 renderIndex, realIndex: i
             }
-            if (value === Value) { obj.className += obj.className ? ' active' : 'active' }////notice
+            if (value === Value) { 
+                obj.attrs = obj.attrs || {};
+                obj.attrs.className = obj.attrs.className || '';
+                obj.attrs.className += obj.attrs.className ? ' active' : 'active' 
+            }////notice
             result.push(obj)
             renderIndex++;
         }
@@ -329,25 +337,39 @@ export default class AIOInput extends Component {
         return <List getProp={this.getProp.bind(this)} getOptionProp={this.getOptionProp.bind(this)} />
     }
     render_time() {
-        let year = this.getProp('year');
-        let month = this.getProp('month');
-        let day = this.getProp('day');
-        let hour = this.getProp('hour');
-        let minute = this.getProp('minute');
-        let popover = this.getProp('popover',{});
-        let onChange = this.getProp('onChange');
-        let attrs = this.getProp('attrs',{});
-        let { attrs: popoverAttrs = {} } = popover;
-        let text = [];
-        let dateArray = [];
-        if (year) { dateArray.push(this.D2S(year)) }
-        if (month) { dateArray.push(this.D2S(month)) }
-        if (day) { dateArray.push(this.D2S(day)) }
-        if (dateArray.length) { text.push(dateArray.join('/')) }
-        if (hour !== undefined) { text.push(`${this.D2S(hour)} : ${this.D2S(minute === undefined ? 0 : minute)}`) }
+        let getProps = () => {
+            let value = this.getProp('value',{});
+            let {year:Year,month:Month,day:Day,hour:Hour,minute:Minute,second:Second} = value;
+            let calendarType = this.getProp('calendarType','gregorian');
+            let today = AIODate().getToday({ calendarType });
+            let year = Year === true ? today[0] : Year;
+            let month = Month === true ? today[1] : Month;
+            let day = Day === true ? today[2] : Day;
+            let hour = Hour === true ? today[3] : Hour;
+            let minute = Minute === true ? today[4] : Minute;
+            let second = Second === true ? today[5] : Second;
+            let popover = this.getProp('popover',{});
+            let onChange = this.getProp('onChange');
+            let attrs = this.getProp('attrs',{});
+            let { attrs: popoverAttrs = {} } = popover;
+            let text = [];
+            let dateArray = [];
+            if (year) { dateArray.push(this.D2S(year)) }
+            if (month) { dateArray.push(this.D2S(month)) }
+            if (day) { dateArray.push(this.D2S(day)) }
+            if (dateArray.length) { text.push(dateArray.join('/')) }
+            let timeArray = []
+            if (hour !== undefined) { timeArray.push(this.D2S(hour)) }
+            if (minute !== undefined) { timeArray.push(this.D2S(minute)) }
+            if (second !== undefined) { timeArray.push(this.D2S(second)) }
+            if (timeArray.length) { text.push(timeArray.join(':')) }
+            let props = {text,attrs,popover,popoverAttrs,onChange,year,month,day,hour,minute,second}
+            return props
+        }
+        let {text,attrs,popover,popoverAttrs,onChange} = getProps()
         return (
             <AIOInput
-                caret={false} center={true}
+                caret={false}
                 text={text.join(' ')}
                 {...this.props}
                 attrs={{...attrs,style:{...attrs.style, direction: 'ltr'}}}
@@ -356,16 +378,13 @@ export default class AIOInput extends Component {
                     position: 'center', ...popover,
                     attrs: { ...popoverAttrs, className: 'aio-input-time-popover' + (popoverAttrs.className ? ' ' + popoverAttrs.className : '') },
                     render: ({ close }) => {
-                        let year = this.getProp('year');
-                        let month = this.getProp('month');
-                        let day = this.getProp('day');
-                        let hour = this.getProp('hour');
-                        let minute = this.getProp('minute');
-                        let onChange = this.getProp('onChange',()=>{});
+                        let {onChange,year,month,day,hour,minute,second} = getProps()
                         return (
                             <TimePopover
-                                year={year} month={month} day={day} hour={hour} minute={minute}
-                                onChange={({ year, month, day, hour, minute }) => onChange({ year, month, day, hour, minute })}
+                                year={year} month={month} day={day} hour={hour} minute={minute} second={second}
+                                onChange={({ year, month, day, hour, minute,second }) => {
+                                    onChange({ year, month, day, hour, minute,second })
+                                }}
                                 onClose={() => close()}
                             />
                         )
@@ -405,17 +424,17 @@ export default class AIOInput extends Component {
 }
 
 function TimePopover(props) {
-    let { calendarType, lang = 'fa' } = props;
-    let [today] = useState(AIODate().getToday({ calendarType }))
-    let [year, setYear] = useState(props.year === true ? today[0] : props.year);
-    let [startYear] = useState(year ? year - 10 : undefined);
-    let [endYear] = useState(year ? year + 10 : undefined);
-    let [month, setMonth] = useState(props.month === true ? today[1] : props.month);
-    let [day, setDay] = useState(props.day === true ? today[2] : props.day);
-    let [hour, setHour] = useState(props.hour === true ? today[3] : props.hour);
-    let [minute, setMinute] = useState(props.minute === true ? today[4] : props.minute);
+    let { lang = 'fa' } = props;
+    let [startYear] = useState(props.year ? props.year - 10 : undefined);
+    let [endYear] = useState(props.year ? props.year + 10 : undefined);
+    let [year, setYear] = useState(props.year);
+    let [month, setMonth] = useState(props.month);
+    let [day, setDay] = useState(props.day);
+    let [hour, setHour] = useState(props.hour);
+    let [minute, setMinute] = useState(props.minute);
+    let [second, setSecond] = useState(props.second);
     function translate(key) {
-        return lang === 'fa' ? { 'Year': 'سال', 'Month': 'ماه', 'Day': 'روز', 'Hour': 'ساعت', 'Minute': 'دقیقه', 'Submit': 'ثبت' }[key] : key
+        return lang === 'fa' ? { 'Year': 'سال', 'Month': 'ماه', 'Day': 'روز', 'Hour': 'ساعت', 'Minute': 'دقیقه','Second':'ثانیه', 'Submit': 'ثبت' }[key] : key
     }
     function year_layout(year) {
         if (!year) { return false }
@@ -516,16 +535,47 @@ function TimePopover(props) {
             ]
         }
     }
+    function second_layout(second) {
+        if (second === undefined) { return false }
+        return {
+            column: [
+                { html: translate('Second'), align: 'vh', size: 36 },
+                {
+                    html: (
+                        <AIOInput
+                            type='list' value={second}
+                            options={
+                                new Array(60).fill(0).map((o, i) => {
+                                    return { text: i, value: i }
+                                })
+                            }
+                            size={48} width={72} onChange={(second) => setSecond(second)}
+                        />
+                    )
+                }
+            ]
+        }
+    }
     return (
         <RVD
             layout={{
                 style: { direction: 'ltr' },
                 column: [
-                    { align: 'h', row: [year_layout(year), month_layout(month), day_layout(year, month, day), hour_layout(hour), minute_layout(minute)] },
+                    { 
+                        align: 'h', 
+                        row: [
+                            year_layout(year), 
+                            month_layout(month), 
+                            day_layout(year, month, day), 
+                            hour_layout(hour), 
+                            minute_layout(minute),
+                            second_layout(second)
+                        ] 
+                    },
                     { size: 12 },
                     {
                         html: <button className='ai-style-3' style={{ height: 36, fontSize: 12 }} onClick={() => {
-                            props.onChange({ year, month, day, hour, minute })
+                            props.onChange({ year, month, day, hour, minute,second })
                             props.onClose()
                         }}>{translate('Submit')}</button>
                     }
@@ -537,13 +587,14 @@ function TimePopover(props) {
 function Image() {
     let { getProp } = useContext(AICTX);
     let [popup] = useState(new AIOPopup());
-    let value = getProp('value', '');
+    let value = getProp('value', {});
     let [url, setUrl] = useState();
     let dom = createRef()
     let width = getProp('width');
     let height = getProp('height');
     let onChange = getProp('onChange');
-    let onRemove = getProp('onRemove');
+    let disabled = getProp('disabled');
+    let loading = getProp('loading');
     let placeholder = getProp('placeholder')
     let preview = getProp('preview')
     // if(typeof value === 'object'){
@@ -554,13 +605,13 @@ function Image() {
     //     fr.readAsDataURL(value);
     // }
     useEffect(() => {
-        if (typeof value === 'object') {
-            changeUrl(value)
+        if (value.file) {
+            changeUrl(typeof value.file === 'object')
         }
-        else if (typeof value === 'string') {
-            if (url !== value) { setUrl(value) }
+        else if (typeof value.url === 'string') {
+            if (url !== value.url) { setUrl(value.url) }
         }
-        else if (url !== false) { setUrl(false) }
+        else if (value.url !== false) { setUrl(false) }//notice
     })
     function changeUrl(file, callback = () => { }) {
         try {
@@ -596,7 +647,7 @@ function Image() {
     let IMG = url ? (
         <>
             <img ref={dom} src={url} alt={''} style={{ objectFit: 'cover' }} width={width} height={height} />
-            {onRemove && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove() }} className='aio-input-image-remove'><Icon path={mdiClose} size={1} /></div>}
+            {typeof onChange === 'function' && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange() }} className='aio-input-image-remove'><Icon path={mdiClose} size={1} /></div>}
             {preview && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); openPopup() }} className='aio-input-image-preview'><Icon path={mdiImage} size={1} /></div>}
             {popup.render()}
         </>
@@ -606,10 +657,12 @@ function Image() {
     }
     return (
         <AIOInput
+            disabled={disabled || loading}
             type='file' center={true} text={IMG} attrs={{style:{ width: '100%', height: '100%', padding: 0 }}}
-            onChange={(files) => {
-                let file = files[0].file
-                changeUrl(file, (url) => onChange({ file, url }));
+            onChange={(file) => {
+                changeUrl(file, (url) => {
+                    onChange({ file, url })
+                });
             }}
         />
     )
@@ -622,13 +675,16 @@ function InputSlider() {
         else { onChange(value[0]) }
     }
     let value = getProp('value'), rtl = getProp('rtl');
-    if (!Array.isArray(value)) { value = [value] }
+    if (!Array.isArray(value)) { 
+        if(typeof value !== 'number'){value = []}
+        else{value = [value]}
+    }
     let attrs = getProp('attrs', {})
-    let disabled = getProp('disabled');
+    let disabled = getProp('disabled') || getProp('loading');
     let props = {
-        attrs,
+        attrs,disabled,
         value, rtl, start: getProp('start'), end: getProp('end'), step: getProp('step'), min: getProp('min'), max: getProp('max'),
-        direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: disabled || !onChange ? undefined : change,
+        direction: getProp('direction', rtl ? 'left' : 'right'), showValue: getProp('showValue'), onChange: !onChange ? undefined : change,
         pointStyle: getProp('pointStyle'), lineStyle: getProp('lineStyle'), fillStyle: getProp('fillStyle'), getPointHTML: getProp('getPointHTML'),
         labelStep: getProp('labelStep'), editLabel: getProp('editLabel'), editValue: getProp('editValue'), labelRotate: getProp('labelRotate'), labelStyle: getProp('labelStyle'),
         scaleStep: getProp('scaleStep'), scaleStyle: getProp('scaleStyle'), getScaleHTML: getProp('getScaleHTML'),
@@ -642,17 +698,25 @@ function Multiselect() {
     return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags /></div>)
 }
 function Tags() {
-    let { getProp } = useContext(AICTX);
+    let { getProp,getOptionProp } = useContext(AICTX);
     let value = getProp('value'), rtl = getProp('rtl');
     if (!value.length || getProp('hideTags', false)) { return null }
-    return <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>{value.map((o) => <Tag value={o} />)}</div>
+    let options = getProp('options', [])
+    return (
+        <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>
+            {
+                value.map((o,i) => {
+                    let option = options.find((option) => o === getOptionProp(option, 'value'))
+                    if(option === undefined){return null}
+                    return <Tag key={i} value={o} option={option}/>      
+                })
+            }
+        </div>
+    )
 }
-function Tag({ value }) {
+function Tag({ option,value }) {
     let { getProp, getOptionProp } = useContext(AICTX);
     let onChange = getProp('onChange',()=>{})
-    let options = getProp('options', [])
-    let option = options.find((option) => value === getOptionProp(option, 'value'))
-    if (option === undefined) { return null }
     let text = getOptionProp(option, 'text');
     let tagAttrs = getOptionProp(option, 'tagAttrs', {});
     let tagBefore = getOptionProp(option, 'tagBefore',<Icon path={mdiCircleMedium} size={0.7} />);
@@ -934,7 +998,7 @@ class Form extends Component {
     getValueByField(field, def) {
         let props = this.getProp('props'), value = this.getValue(), a;
         if (typeof field === 'string') {
-            if (field.indexOf('value.') !== -1 || field.indexOf('props.') !== -1) {
+            if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
                 try { eval(`a = ${field}`); }
                 catch (err) { a = a; }
             }
@@ -1009,6 +1073,10 @@ class Form extends Component {
         for(let prop in input){
             props[prop] = this.getValueByField(input[prop])
         }
+        props.value = value;
+        if(input.type === 'slider'){
+            if(props.showValue === undefined){props.showValue = 'inline';}
+        }
         let {attrs = {}} = input;
         props.attrs = {};
         for(let prop in attrs){
@@ -1026,6 +1094,7 @@ class Form extends Component {
     }
     input_layout(formItem) {
         let { label, footer, inlineLabel, input, flex, size, field } = formItem;
+        if(label){inlineLabel = undefined};
         let value = this.getValueByField(field, this.getDefault(input));
         let error = this.getError(formItem, value)
         if (error) { this.errors[field] = error }
@@ -1037,17 +1106,33 @@ class Form extends Component {
         return {
             flex, size, className: 'aio-input-form-item',
             column: [
+                // {
+                //     className:'aio-input-form-item-body of-visible',
+                //     row: [
+                //         this.inlineLabel_layout(inlineLabel, labelAttrs),
+                //         {
+                //             flex: 1, className: 'aio-input-form-item-input-container of-visible',
+                //             column: [
+                //                 this.label_layout(label, labelAttrs),
+                //                 { className:'aio-input-form-item-input-container of-visible',html: <AIOInput {...inputProps} />},
+                //             ]
+                //         }
+                //     ]
+                // },
                 {
-                    className:'of-visible',
+                    show:!!inlineLabel,
+                    className:'aio-input-form-item-body of-visible',
                     row: [
                         this.inlineLabel_layout(inlineLabel, labelAttrs),
-                        {
-                            flex: 1, className: 'of-visible',
-                            column: [
-                                this.label_layout(label, labelAttrs),
-                                { html: <AIOInput {...inputProps} />,className:'of-visible' },
-                            ]
-                        }
+                        { className:'aio-input-form-item-input-container of-visible',html: <AIOInput {...inputProps} />}
+                    ]
+                },
+                {
+                    show:!!label,
+                    flex: 1, className: 'aio-input-form-item-input-container of-visible',
+                    column: [
+                        this.label_layout(label, labelAttrs),
+                        { className:'aio-input-form-item-input-container of-visible',html: <AIOInput {...inputProps} />},
                     ]
                 },
                 this.footer_layout(footer,footerAttrs),
@@ -1615,6 +1700,8 @@ class Layout extends Component {
         if (option !== undefined) {
             cls = `aio-input-option aio-input-${this.type}-option`
             if (getProp('multiple')) { cls += ` aio-input-${this.type}-multiple-option` }
+            if (getProp('isDropdown')) { cls += ` aio-input-dropdown-option` }
+            if (getOptionProp(option,'disabled')) { cls += ' disabled' }
             attrs = getOptionProp(option, 'attrs')
         }
         else {
@@ -1625,6 +1712,7 @@ class Layout extends Component {
                 else { cls += ' aio-input-slider-vertical' }
             }
             if (getProp('disabled') || getProp('loading')) { cls += ' disabled' }
+            if (getProp('isInput')) { cls += ` aio-input-input` }
             attrs = getProp('attrs');
             let rtl = getProp('rtl');
             if (rtl) { cls += ' aio-input-rtl' }
@@ -1643,21 +1731,31 @@ class Layout extends Component {
         if(open && !option && ['text','number','textarea'].indexOf(this.type) !== -1){
             zIndex = 100000
         }
-        let props = {
-            ...attrs,
-            className: this.getClassName(label),
-            onClick: loading || disabled ? undefined : (option === undefined ? (e) => { e.stopPropagation(); click(e, this.dom) } : (e) => { e.stopPropagation(); optionClick(option) }),
-            ref: this.dom, disabled, style: {justifyContent: center ? 'center' : undefined, ...attrs.style,zIndex}, 'data-label': label
+        let onClick;
+        //ممکنه این یک آپشن باشه باید دیزیبل پرنتش هم چک بشه تا دیزیبل بشه
+        if(option){disabled = disabled || loading || !!getProp('disabled') || !!getProp('loading')}
+        if(!disabled && !loading){
+            if(option === undefined){
+                onClick = (e) => { e.stopPropagation(); click(e, this.dom) }
+            }
+            else {
+                onClick = (e) => { e.stopPropagation(); optionClick(option) }
+            }
+        }
+        
+        let p = {
+            ...attrs,className: this.getClassName(label),onClick,ref: this.dom, disabled, 'data-label': label,
+            style: {justifyContent: center ? 'center' : undefined, ...attrs.style,zIndex}
         }
         if (option && getProp('onSwap')) {
-            props.datarealindex = realIndex;
-            props.datarenderindex = renderIndex;
-            props.onDragStart = dragStart;
-            props.onDragOver = dragOver;
-            props.onDrop = drop;
-            props.draggable = true;
+            p.datarealindex = realIndex;
+            p.datarenderindex = renderIndex;
+            p.onDragStart = dragStart;
+            p.onDragOver = dragOver;
+            p.onDrop = drop;
+            p.draggable = true;
         }
-        return props;
+        return p;
     }
     getDefaultChecked() {
         let { getProp } = this.context;
@@ -1674,7 +1772,7 @@ class Layout extends Component {
                 attrs: getProp('attrs', {}),
                 caret: getProp('caret'),
                 text: text !== undefined ? text : getProp('text'),
-                checkIcon: getProp('checkIcon', []),
+                checkIcon: getProp('checkIcon', [],undefined,true),
                 disabled: getProp('disabled'),
                 checked: getProp('checked', this.getDefaultChecked()),
                 before: getProp('before'),
@@ -1690,21 +1788,27 @@ class Layout extends Component {
     }
     getItemClassName(key) {
         let { option } = this.props;
-        return `aio-input-${key} aio-input-${option ? `${this.type}-option` : this.type}-${key}`
+        let className = `aio-input-${key}`;
+        if(option){
+            className += ` aio-input-${this.type}-option-${key}`
+        }
+        else {
+            className += ` aio-input-${this.type}-${key}`
+        }
+        return className;        
     }
     text_layout(text,subtext,placeholder,center){
         if(text === undefined && placeholder !== undefined){text = <div className='aio-input-placeholder'>{placeholder}</div>}
-        let style = { flex: center ? 'none' : undefined };
         if(text){
             if(subtext){
                 return (
-                    <div className={`aio-input-content aio-input-${this.type}-content`} style={style}>
+                    <div className={`aio-input-content aio-input-${this.type}-content${center?' aio-input-content-center':''}`}>
                         <div className={this.getItemClassName('value')}>{text}</div>
                         <div className={this.getItemClassName('subtext')}>{subtext}</div>
                     </div>
                 )
             }
-            else{return <div className={this.getItemClassName('value')} style={style}>{text}</div>}
+            else{return <div className={`${this.getItemClassName('value')}${center?' aio-input-value-center':''}`}>{text}</div>}
         }
         else{return <div className='flex-1'></div>}
     }
@@ -1731,40 +1835,23 @@ class Layout extends Component {
 }
 class CheckIcon extends Component {
     static contextType = AICTX;
+    renderDefault(){
+
+    }
     render() {
         let { gap } = this.context;
         let { checked, checkIcon = [] } = this.props;
         if (checked === undefined) { return null }
-        if (typeof checkIcon === 'function') {
-            return (
-                <>
-                    {checkIcon(checked)}
-                    <div className='aio-input-gap' style={{ width: gap }}></div>
-                </>
-            )
-        }
-        let [outerSize, innerSize, stroke, outerColor = 'dodgerblue', innerColor = outerColor, round = false] = checkIcon;
+        if (typeof checkIcon === 'function') {return checkIcon(checked)}
         return (
-            <>
-                <div
-                    className={'aio-input-check-out' + (checked ? ' checked' : '') + (round ? ' round' : '')}
-                    style={{ color: outerColor, width: outerSize, height: outerSize, border: `${stroke}px solid` }}
-                >
-                    {
-                        checked &&
-                        <div
-                            className={'aio-input-check-in' + (round ? ' round' : '')}
-                            style={{ background: innerColor, width: innerSize, height: innerSize }}
-                        ></div>}
-                </div>
-                <div className='aio-input-gap' style={{ width: gap }}></div>
-            </>
+            <div className={'aio-input-check-out' + (checked ? ' checked' : '')} style={{...checkIcon,background:'none'}}>
+                {checked && <div className={'aio-input-check-in'} style={{background:checkIcon.background}}></div>}
+            </div>
         );
     }
 }
 function File() {
     let { getProp } = useContext(AICTX);
-    let attrs = getProp('attrs',{})
     return (<div className='aio-input-file-container'><Layout /><FileItems /></div>)
 }
 export class InputFile extends Component {
@@ -2301,7 +2388,8 @@ export class Slider extends Component {
         if (type === 'bind') { element.bind(event, action) }
     }
     getValidValue() {
-        let { value, start, end, min = start, max = end, step } = this.props;
+        let { value = [], start, end, min = start, max = end, step } = this.props;
+        if(!Array.isArray(value) || !value.length){value = [0]}
         for (var i = 0; i < value.length; i++) {
             var point = value[i];
             point = Math.round((point - start) / step) * step + start;
@@ -2776,7 +2864,7 @@ class List extends Component {
         return Math.round(((count * size) - size - (2 * top)) / (2 * size));
     }
     getTopByIndex(index) {
-        var { size } = this.props;
+        var  size  = this.getProp('size',48);
         var { count } = this.state;
         return (count - 2 * index - 1) * size / 2;
     }
@@ -2959,7 +3047,7 @@ class AIOInputValidate{
     getTypes = ()=>{
         return [
             'text','number','textarea','color','password','file','image','select','multiselect','table','form',
-            'time','datepicker','list','checkbox','radio','tabs'
+            'time','datepicker','list','checkbox','radio','tabs','slider','button'
         ]
     }
     getType = (v)=>{
@@ -2987,8 +3075,9 @@ class AIOInputValidate{
             if(valueType === type){res = true}
         }
         else {
-            try{if(value === JSON.parse(type)){res = true}}
-            catch{debugger; if(value === JSON.parse(type)){res = true}}
+            let typeString;
+            try{typeString = JSON.parse(type)} catch{typeString = type}
+            if(value === typeString){res = true}
         }
         if(res === false){
             let res;
@@ -3027,6 +3116,10 @@ class AIOInputValidate{
                 popover:'object|undefined',
                 disabled:'boolean|undefined',
                 placeholder:'any',
+                optionSubtext:'string|number|function|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
             },
             textarea:{
                 type:'"textarea"',
@@ -3045,7 +3138,10 @@ class AIOInputValidate{
                 popover:'object|undefined',
                 disabled:'boolean|undefined',
                 placeholder:'any',
-
+                optionSubtext:'string|number|function|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
             },
             number:{
                 type:'"number"',
@@ -3065,6 +3161,9 @@ class AIOInputValidate{
                 popover:'object|undefined',
                 disabled:'boolean|undefined',
                 placeholder:'any',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
 
             },
             password:{
@@ -3102,12 +3201,51 @@ class AIOInputValidate{
                 type:'"checkbox"',
                 text:'any',
                 value:'boolean|undefined',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                disabled:'boolean|undefined',
+                loading:'any',
+                checkIcon:'any', 
             },
             radio:{
                 type:'"radio"',
                 options:'array',
                 value:'any',
                 multiple:'boolean|undefined',
+                before:'any',
+                after:'any',
+                optionText:'any',
+                optionValue:'any',
+                subtext:'number|string|function',
+                disabled:'boolean|undefined',
+                loading:'any',
+                optionAttrs:'any',
+                optionSubtext:'string|number|function|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
+                optionCheckIcon:'any',
+                
+            },
+            tabs:{
+                type:'"tabs"',
+                options:'array',
+                value:'any',
+                before:'any',
+                after:'any',
+                optionText:'any',
+                optionValue:'any',
+                subtext:'number|string|function',
+                disabled:'boolean|undefined',
+                loading:'any',
+                optionAttrs:'any',
+                optionSubtext:'string|number|function|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
+                optionCheckIcon:'any',
+                
             },
             select:{
                 type:'"select"',
@@ -3127,6 +3265,13 @@ class AIOInputValidate{
                 popover:'object|undefined',
                 disabled:'boolean|undefined',
                 placeholder:'any',
+                optionSubtext:'string|number|function|undefined',
+                optionClose:'boolean|function|string|undefined',
+                optionChecked:'string|function|boolean|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
+                optionCheckIcon:'any',
             },
             file:{
                 type:'"file"',
@@ -3139,6 +3284,7 @@ class AIOInputValidate{
                 inputAttrs:"object|undefined",
                 loading:'any',
                 disabled:'boolean|undefined',
+                center:'boolean|undefined',
             },
             multiselect:{
                 type:'"multiselect"',
@@ -3157,6 +3303,35 @@ class AIOInputValidate{
                 loading:'any',
                 caret:'any',
                 disabled:'boolean|undefined',
+                optionTagBefore:'any',
+                optionTagAfter:'any',
+                optionTagAttrs:'any',
+                optionCheckIcon:'any',
+                optionSubtext:'string|number|function|undefined',
+                optionBefore:'any',
+                optionAfter:'any',
+                optionDisabled:'string|function|boolean|undefined',
+            },
+            slider:{
+                value:'number|array|undefined',
+                type:'"slider"',
+                before:'any',
+                after:'any',
+                start:'number|undefined',
+                step:'number|undefined',
+                end:'number|undefined',
+                disabled:'boolean|undefined',
+                loading:'any',
+                showValue:'boolean|"inline"|undefined',
+                lineStyle:'function|object|undefined',
+                fillStyle:'function|object|undefined',
+                pointStyle:'function|object|undefined',
+                valueStyle:'function|object|undefined',
+                labelStyle:'function|object|undefined',
+                scaleStyle:'function|object|undefined',
+                min:'number|undefined',
+                max:'number|undefined',
+                multiple:'boolean|undefined'
             },
             form:{
                 type:'"form"',
@@ -3167,10 +3342,62 @@ class AIOInputValidate{
             datepicker:{
                 value:'any',
                 type:'"datepicker"',
-                caret:'any'
+                caret:'any',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                placeholder:'any',
+                loading:'any',
+                disabled:'boolean|undefined',
+                popover:'object|undefined',
+                calendarType:'"jalali"|"gregorian"|undefined',
+                unit:'"month"|"day"|"hour"',
+            },
+            image:{
+                type:'"image"',
+                value:'object|undefined',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                placeholder:'any',
+                attrs:'object|undefined',
+                width:'string|number|undefined',
+                height:'string|number|undefined',
+                preview:'boolean|undefined',
+                loading:'any',
+                disabled:'boolean|undefined',
+            },
+            time:{
+                type:'"time"',
+                value:'object|undefined',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                loading:'any',
+                disabled:'boolean|undefined',
+                
             },
             button:{
-                caret:'any'
+                type:'"button"',
+                before:'any',
+                after:'any',
+                loading:'any',
+                disabled:'boolean|undefined',
+                subtext:'number|string|function',
+                caret:'any',
+                value:'any',
+                center:'boolean|undefined',
+                text:'any',
+                popover:'object|undefined',   
+            },
+            list:{
+                type:'"list"',
+                value:'any',
+                options:'array',
+                size:'number|undefined',
+                width:'number|undefined'
+                
+
             }
         }
         let privateObject = dic[type];
