@@ -106,7 +106,7 @@ class RowsAndColumns extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -124,7 +124,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -157,7 +157,7 @@ class Column_Title extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -175,7 +175,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -193,9 +193,9 @@ class Attrs extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -205,8 +205,8 @@ class Attrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    attrs={{style:{height:360}}}
-                    rows={rows}
+                    attrs={{style:{height:360,border:'4px solid #ddd'}}}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -214,15 +214,15 @@ class Attrs extends Component {
 
 let rows = model;
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Gender',value:'row.gender',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
     <AIOInput
         type='table'
-        attrs={{style:{height:360}}}
-        rows={rows}
+        attrs={{style:{height:360,border:'4px solid #ddd'}}}
+        value={rows}
         columns={columns}
     />
 )
@@ -255,7 +255,7 @@ class Column_TitleAttrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -273,7 +273,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -306,7 +306,7 @@ class Column_Value extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     getValue={{
                         get_age:({row,column})=>row.age
@@ -330,7 +330,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         getValue={{
             get_age:({row,column})=>row.age
@@ -366,7 +366,7 @@ class Column_Width extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     getValue={{
                         family_column_width:({row,column})=>260
@@ -387,7 +387,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         getValue={{
             family_column_width:({row,column})=>260
@@ -423,7 +423,7 @@ class Column_MinWidth extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -441,7 +441,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -474,7 +474,7 @@ class Column_Justify extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -492,7 +492,7 @@ let columns = [
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -510,17 +510,20 @@ class Column_Type extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
                 {
-                    title:'Gender',value:'row.gender',type:'select',
-                    options:[
-                        {text:'Male',value:'male'},
-                        {text:'Female',value:'female'}
-                    ]
+                    title:'Gender',value:'row.gender',
+                    input:{
+                        type:'select',
+                        options:[
+                            {text:'Male',value:'male'},
+                            {text:'Female',value:'female'}
+                        ]
+                    }
                 },
-                {title:'Age',value:'row.age',type:'number'},
-                {title:'Date',value:'row.date',type:'datepicker',unit:'month'},
-                {title:'Active',value:'row.active',type:'checkbox'},
+                {title:'Age',value:'row.age',input:{type:'number'}},
+                {title:'Date',value:'row.date',input:{type:'datepicker',unit:'month'}},
+                {title:'Active',value:'row.active',input:{type:'checkbox'}},
             ]
         }
     }
@@ -531,7 +534,7 @@ class Column_Type extends Component {
                 <AIOInput
                     type='table'
                     attrs={{style:{height:500}}}
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(rows)=>this.setState({rows})}
                 />                
@@ -540,22 +543,26 @@ class Column_Type extends Component {
 
 let rows = model;
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
     {
-        title:'Gender',value:'row.gender',type:'select',
-        options:[
-            {text:'Male',value:'male'},
-            {text:'Female',value:'female'}
-        ]
+        title:'Gender',value:'row.gender',
+        input:{
+            type:'select',
+            options:[
+                {text:'Male',value:'male'},
+                {text:'Female',value:'female'}
+            ]
+        }
     },
-    {title:'Age',value:'row.age',type:'number'},
-    {title:'Date',value:'row.date',type:'datepicker',unit:'month'}
+    {title:'Age',value:'row.age',input:{type:'number'}},
+    {title:'Date',value:'row.date',input:{type:'datepicker',unit:'month'}},
+    {title:'Active',value:'row.active',input:{type:'checkbox'}},
 ]
 return (
     <AIOInput
         type='table'
         attrs={{style:{height:700}}}
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(rows)=>this.setState({rows})}
     />
@@ -577,9 +584,9 @@ class Column_OnChange extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text',onChange:({row,column,value})=>this.change(row,'name',value)},
-                {title:'Family',value:'row.family',type:'text',onChange:({row,column,value})=>this.change(row,'family',value)},
-                {title:'Age',value:'row.age',type:'number',onChange:({row,column,value})=>this.change(row,'age',value)},
+                {title:'Name',value:'row.name',input:{type:'text',onChange:({row,column,value})=>this.change(row,'name',value)}},
+                {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>this.change(row,'family',value)}},
+                {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>this.change(row,'age',value)}},
             ]
         }
     }
@@ -594,7 +601,7 @@ class Column_OnChange extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                 />                
                 {
@@ -605,9 +612,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text',onChange:({row,column,value})=>change(row,'name',value)},
-    {title:'Family',value:'row.family',type:'text',onChange:({row,column,value})=>change(row,'family',value)},
-    {title:'Age',value:'row.age',type:'number',onChange:({row,column,value})=>change(row,'age',value)},
+    {title:'Name',value:'row.name',input:{type:'text',onChange:({row,column,value})=>this.change(row,'name',value)}},
+    {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>this.change(row,'family',value)}},
+    {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>this.change(row,'age',value)}},
 ]
 function change(){
     let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
@@ -616,7 +623,7 @@ function change(){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
     />
 )
@@ -641,9 +648,9 @@ class OnChange extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -658,7 +665,7 @@ class OnChange extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                 />                
@@ -670,9 +677,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -680,7 +687,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
     />
@@ -706,9 +713,9 @@ class OnSwapTrue extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -723,7 +730,7 @@ class OnSwapTrue extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onSwap={true}
@@ -736,9 +743,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -746,7 +753,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onSwap={true}
@@ -773,9 +780,9 @@ class OnSwapFunction extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -790,7 +797,7 @@ class OnSwapFunction extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onSwap={({newRows,from,to})=>{
@@ -805,9 +812,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -815,7 +822,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onSwap={({newRows,from,to})=>{
@@ -844,9 +851,9 @@ class Excel extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text',excel:'name'},
-                {title:'Family',value:'row.family',type:'text',excel:'family'},
-                {title:'Age',value:'row.age',type:'number',excel:'age'},
+                {title:'Name',value:'row.name',input:{type:'text'},excel:'name'},
+                {title:'Family',value:'row.family',input:{type:'text'},excel:'family'},
+                {title:'Age',value:'row.age',input:{type:'number'},excel:'age'},
             ]
         }
     }
@@ -861,7 +868,7 @@ class Excel extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     excel={'please inter excel file name'}
@@ -874,9 +881,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text',excel:'name'},
-    {title:'Family',value:'row.family',type:'text',excel:'family'},
-    {title:'Age',value:'row.age',type:'number',excel:'age'},
+    {title:'Name',value:'row.name',input:{type:'text'},excel:'name'},
+    {title:'Family',value:'row.family',input:{type:'text'},excel:'family'},
+    {title:'Age',value:'row.age',input:{type:'number'},excel:'age'},
 ]
 function setRows(newRows){
     //update state
@@ -884,7 +891,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         excel={'please inter excel file name'}
@@ -911,9 +918,9 @@ class Column_CellAttrs extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text',cellAttrs:{style:{background:'pink'}}},
-                {title:'Family',value:'row.family',type:'text',cellAttrs:'family_column_attrs'},
-                {title:'Age',value:'row.age',type:'number',cellAttrs:({row,column})=>{
+                {title:'Name',value:'row.name',input:{type:'text'},cellAttrs:{style:{background:'pink'}}},
+                {title:'Family',value:'row.family',input:{type:'text'},cellAttrs:'family_column_attrs'},
+                {title:'Age',value:'row.age',input:{type:'number'},cellAttrs:({row,column})=>{
                     if(row.age < 35){return {style:{background:'red',color:'#fff'}}}
                     return {style:{background:'green',color:'#fff'}}
                 }},
@@ -931,7 +938,7 @@ class Column_CellAttrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     getValue={{
@@ -948,9 +955,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text',cellAttrs:{style:{background:'pink'}}},
-    {title:'Family',value:'row.family',type:'text',cellAttrs:'family_column_attrs'},
-    {title:'Age',value:'row.age',type:'number',cellAttrs:({row,column})=>{
+    {title:'Name',value:'row.name',input:{type:'text'},cellAttrs:{style:{background:'pink'}}},
+    {title:'Family',value:'row.family',input:{type:'text'},cellAttrs:'family_column_attrs'},
+    {title:'Age',value:'row.age',input:{type:'number'},cellAttrs:({row,column})=>{
         if(row.age < 35){return {style:{background:'red',color:'#fff'}}}
         return {style:{background:'green',color:'#fff'}}
     }},
@@ -961,7 +968,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         getValue={{
@@ -992,7 +999,7 @@ class Column_SubtextBeforeAfter extends Component {
                 {name:'john doe',age:30,id:1,gender:'female'},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}
+                {title:'Name',value:'row.name',input:{type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}}
             ]
         }
     }
@@ -1007,7 +1014,7 @@ class Column_SubtextBeforeAfter extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     getValue={{
@@ -1035,7 +1042,7 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}
+    {title:'Name',value:'row.name',input:{type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}}
 ]
 function setRows(newRows){
     //update state
@@ -1043,7 +1050,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         getValue={{
@@ -1087,9 +1094,9 @@ class OnAddFunction extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1104,7 +1111,7 @@ class OnAddFunction extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onAdd={()=>{
@@ -1119,9 +1126,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1129,7 +1136,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onAdd={()=>{
@@ -1158,9 +1165,9 @@ class OnAddObject extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1175,7 +1182,7 @@ class OnAddObject extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onAdd={{name:'',family:'',age:0}}
@@ -1188,9 +1195,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1198,7 +1205,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onAdd={{name:'',family:'',age:0}}
@@ -1225,9 +1232,9 @@ class OnRemoveFunction extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1242,7 +1249,7 @@ class OnRemoveFunction extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onRemove={(row)=>{
@@ -1257,9 +1264,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1267,7 +1274,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onRemove={(row)=>{
@@ -1296,9 +1303,9 @@ class OnRemoveTrue extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1313,7 +1320,7 @@ class OnRemoveTrue extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onRemove={true}
@@ -1326,9 +1333,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1336,7 +1343,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onRemove={true}
@@ -1360,9 +1367,9 @@ class OnSearchFunction extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1372,7 +1379,7 @@ class OnSearchFunction extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     excel={true}
@@ -1385,9 +1392,9 @@ class OnSearchFunction extends Component {
 
 let rows = model;
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Gender',value:'row.gender',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1395,7 +1402,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onSearch={(text)=>{
@@ -1421,9 +1428,9 @@ class OnSearchTrue extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text',search:true},
-                {title:'Gender',value:'row.gender',type:'text',search:true},
-                {title:'Age',value:'row.age',type:'number',search:true},
+                {title:'Name',value:'row.name',input:{type:'text'},search:true},
+                {title:'Family',value:'row.family',input:{type:'text'},search:true},
+                {title:'Age',value:'row.age',input:{type:'number'},search:true},
             ]
         }
     }
@@ -1434,7 +1441,7 @@ class OnSearchTrue extends Component {
                 <AIOInput
                     type='table'
                     attrs={{style:{height:700}}}
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onSearch={true}
@@ -1447,9 +1454,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text',search:true},
-    {title:'Gender',value:'row.gender',type:'text',search:true},
-    {title:'Age',value:'row.age',type:'number',search:true},
+    {title:'Name',value:'row.name',input:{type:'text'},search:true},
+    {title:'Family',value:'row.family',input:{type:'text'},search:true},
+    {title:'Age',value:'row.age',input:{type:'number'},search:true},
 ]
 function setRows(newRows){
     //update state
@@ -1458,7 +1465,7 @@ return (
     <AIOInput
         type='table'
         attrs={{style:{height:700}}}
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>this.setState({rows:newRows})}
         onSearch={true}
@@ -1485,9 +1492,9 @@ class Toolbar extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1502,7 +1509,7 @@ class Toolbar extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     toolbar={(
@@ -1521,9 +1528,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1531,7 +1538,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         toolbar={(
@@ -1564,9 +1571,9 @@ class ToolbarAttrs extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1581,7 +1588,7 @@ class ToolbarAttrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     toolbar={(
@@ -1603,9 +1610,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1613,7 +1620,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         toolbar={(
@@ -1649,9 +1656,9 @@ class RowGapColumnGap extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1666,7 +1673,7 @@ class RowGapColumnGap extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     rowGap={6}
@@ -1680,9 +1687,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1690,7 +1697,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         rowGap={6}
@@ -1718,9 +1725,9 @@ class Column_Template extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number',template:'age_template'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'},template:'age_template'}
             ]
         }
     }
@@ -1735,7 +1742,7 @@ class Column_Template extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     getValue={{
@@ -1752,20 +1759,23 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'},template:'age_template'}
 ]
 function setRows(newRows){
     //update state
 }
 return (
-    <AIOInput
-        type='table'
-        rows={rows}
-        columns={columns}
-        onChange={(newRows)=>setRows(newRows)}
-    />
+    type='table'
+    value={rows}
+    columns={columns}
+    onChange={(newRows)=>this.setState({rows:newRows})}
+    getValue={{
+        age_template:({row,column})=>{
+            return row.age + ' years old'
+        }
+    }}
 )
                     `)
                 }
@@ -1785,9 +1795,9 @@ class RowAttrs extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1803,7 +1813,7 @@ class RowAttrs extends Component {
                 <AIOInput
                     type='table'
                     attrs={{style:{height:700}}}
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     rowAttrs={({row,rowIndex})=>{
@@ -1820,9 +1830,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1831,7 +1841,7 @@ return (
     <AIOInput
         type='table'
         attrs={{style:{height:700}}}
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>this.setState({rows:newRows})}
         rowAttrs={({row,rowIndex})=>{
@@ -1862,9 +1872,9 @@ class HeaderAttrs extends Component {
                 {name:'john',family:'doe',age:30,id:1},
             ],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Family',value:'row.family',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -1879,7 +1889,7 @@ class HeaderAttrs extends Component {
             <div className='example'>
                 <AIOInput
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     headerAttrs={{
@@ -1894,9 +1904,9 @@ let rows = [
     {name:'john',family:'doe',age:30},
 ]
 let columns = [
-    {title:'Name',value:'row.name',type:'text'},
-    {title:'Family',value:'row.family',type:'text'},
-    {title:'Age',value:'row.age',type:'number'},
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
     //update state
@@ -1904,7 +1914,7 @@ function setRows(newRows){
 return (
     <AIOInput
         type='table'
-        rows={rows}
+        value={rows}
         columns={columns}
         onChange={(newRows)=>this.setState({rows:newRows})}
         headerAttrs={{
@@ -1938,9 +1948,9 @@ class Paging extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 number:1,
@@ -1957,7 +1967,7 @@ class Paging extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     paging={paging}
@@ -1980,9 +1990,9 @@ class Paging extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 number:1,
@@ -1999,7 +2009,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
@@ -2033,9 +2043,9 @@ class Paging_ServerSide extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 serverSide:true,
@@ -2066,7 +2076,7 @@ class Paging_ServerSide extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     paging={paging}
@@ -2088,9 +2098,9 @@ class Paging extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 serverSide:true,
@@ -2120,7 +2130,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
@@ -2154,9 +2164,9 @@ class RowTemplate extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2167,7 +2177,7 @@ class RowTemplate extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     paging={paging}
@@ -2189,9 +2199,9 @@ class Paging extends Component {
                         return rowIndex + 1 + (size * (number - 1))
                     }
                 },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 serverSide:true,
@@ -2221,7 +2231,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 paging={paging}
@@ -2252,9 +2262,9 @@ class RowsTemplate extends Component {
                 onChange:(paging)=>this.setState({paging})
             },
             columns:[
-                {title:'Name',value:'row.name',type:'text',search:true},
-                {title:'Gender',value:'row.gender',type:'text',search:true},
-                {title:'Age',value:'row.age',type:'number',search:true},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2265,7 +2275,7 @@ class RowsTemplate extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     headerAttrs={{style:{display:'none'}}}
                     rowsTemplate={(rows)=>{
@@ -2288,23 +2298,15 @@ class RowsTemplate extends Component {
                 {
                     AIODoc().Code(`
 
-class Paging extends Component {
+class App extends Component {
     constructor(props){
         super(props);
         this.state = {
             rows:[],
             columns:[
-                {
-                    title:'',size:42,justify:true,
-                    template:({rowIndex})=>{
-                        let {paging} = this.state;
-                        let {size,number} = paging;
-                        return rowIndex + 1 + (size * (number - 1))
-                    }
-                },
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
                 serverSide:true,
@@ -2334,7 +2336,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 columns={columns}
                 headerAttrs={{style:{display:'none'}}}
                 rowsTemplate={(rows)=>{
@@ -2389,9 +2391,9 @@ class RowAfter extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2402,7 +2404,7 @@ class RowAfter extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     rowAfter={({row})=>{
                         return <div style={{padding:'0 12px',background:'orange',color:'#fff'}}>this is my row after</div>
                     }}
@@ -2412,15 +2414,15 @@ class RowAfter extends Component {
                 {
                     AIODoc().Code(`
 
-class Paging extends Component {
+class App extends Component {
     constructor(props){
         super(props);
         this.state = {
             rows:[],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'}
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2430,7 +2432,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 rowAfter={({row})=>{
                     return <div style={{padding:'0 12px',background:'orange',color:'#fff'}}>this is my row after</div>
                 }}
@@ -2458,9 +2460,9 @@ class RowBefore extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2471,7 +2473,7 @@ class RowBefore extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     rowBefore={({row})=>{
                         return <div style={{padding:'0 12px',background:'orange',color:'#fff',marginTop:12}}>this is my row before</div>
                     }}
@@ -2487,9 +2489,9 @@ class Paging extends Component {
         this.state = {
             rows:[],
             columns:[
-                {title:'Name',value:'row.name',type:'text'},
-                {title:'Gender',value:'row.gender',type:'text'},
-                {title:'Age',value:'row.age',type:'number'}
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2499,7 +2501,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 rowBefore={({row})=>{
                     return <div style={{padding:'0 12px',background:'orange',color:'#fff',marginTop:12}}>this is my row before</div>
                 }}
@@ -2527,9 +2529,9 @@ class Column_Sort extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text',sort:true},
-                {title:'Gender',value:'row.gender',type:'text',sort:true},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'},sort:true},
+                {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2540,7 +2542,7 @@ class Column_Sort extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                 />                
@@ -2553,9 +2555,9 @@ class Paging extends Component {
         this.state = {
             rows:[],
             columns:[
-                {title:'Name',value:'row.name',type:'text',sort:true},
-                {title:'Gender',value:'row.gender',type:'text',sort:true},
-                {title:'Age',value:'row.age',type:'number'}
+                {title:'Name',value:'row.name',input:{type:'text'},sort:true},
+                {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2565,7 +2567,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
             />                
@@ -2590,9 +2592,9 @@ class OnChangeSort extends Component {
         this.state = {
             rows:model,
             columns:[
-                {title:'Name',value:'row.name',type:'text',sort:true},
-                {title:'Gender',value:'row.gender',type:'text',sort:true},
-                {title:'Age',value:'row.age',type:'number'},
+                {title:'Name',value:'row.name',input:{type:'text'},sort:true},
+                {title:'Family',value:'row.family',input:{type:'text'},sort:true},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2608,7 +2610,7 @@ class OnChangeSort extends Component {
                 <AIOInput
                     attrs={{style:{height:600}}}
                     type='table'
-                    rows={rows}
+                    value={rows}
                     columns={columns}
                     onChange={(newRows)=>this.setState({rows:newRows})}
                     onChangeSort={(sorts)=>{
@@ -2624,9 +2626,9 @@ class Paging extends Component {
         this.state = {
             rows:[],
             columns:[
-                {title:'Name',value:'row.name',type:'text',sort:true},
-                {title:'Gender',value:'row.gender',type:'text',sort:true},
-                {title:'Age',value:'row.age',type:'number'}
+                {title:'Name',value:'row.name',input:{type:'text'},sort:true},
+                {title:'Family',value:'row.family',input:{type:'text'},sort:true},
+                {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
     }
@@ -2636,7 +2638,7 @@ class Paging extends Component {
             <AIOInput
                 attrs={{style:{height:600}}}
                 type='table'
-                rows={rows}
+                value={rows}
                 columns={columns}
                 onChange={(newRows)=>this.setState({rows:newRows})}
                 onChangeSort={(sorts)=>{

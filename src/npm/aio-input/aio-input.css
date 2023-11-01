@@ -50,7 +50,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    align-items: flex-start;
     position: relative;
     overflow:hidden;
 }
@@ -786,7 +785,11 @@
     justify-content: center;
     width: 36px;
     border: none;
-
+    background:none;
+}
+.aio-input-table-toolbar-popover-header{
+    padding:6px;
+    min-height:unset;
 }
 
 .aio-input-table-remove {

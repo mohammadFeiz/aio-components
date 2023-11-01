@@ -94,13 +94,21 @@ const AICTX = createContext();
 export default class AIOInput extends Component {
     constructor(props) {
         super(props);
+        this.type = props.type;
+        this.isInput = ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1;
+        this.isDropdown = ['text', 'number', 'textarea', 'select','multiselect'].indexOf(props.type) !== -1;
+        this.handleIsMultiple(props.type);
         this.dom = createRef();
         this.datauniqid = 'aiobutton' + (Math.round(Math.random() * 10000000));
         this.popup = new AIOPopup();
         this.getPopover = new Popover(this.getProp.bind(this),this.datauniqid,this.toggle.bind(this),this.getOptions.bind(this)).getFn();
         this.state = {open:this.getProp('open',false),showPassword:false}
-        this.isInput = ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1;
-        this.isDropdown = ['text', 'number', 'textarea', 'select','multiselect'].indexOf(props.type) !== -1;
+        
+    }
+    handleIsMultiple(type){
+        if(type === 'multiselect' || type === 'table'){this.isMultiple = ()=>true}
+        else if(type === 'radio' || type === 'slider' || type === 'file'){this.isMultiple = ()=>!!this.props.multiple}
+        else{this.isMultiple = ()=>false};
     }
     dragStart(e) { this.dragIndex = parseInt($(e.target).attr('datarealindex')); }
     dragOver(e) { e.preventDefault(); }
@@ -150,12 +158,27 @@ export default class AIOInput extends Component {
         return this.getProp('placeholder', calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
     }
     getProp(key, def) {
-        if(key === 'type'){return this.props.type}
-        if(key === 'isInput'){return this.isInput}
-        if(key === 'isDropdown'){return this.isDropdown}
-        if(key === 'props'){return this.props}
         let { type } = this.props;
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
+        if (key === 'value') {
+            if (this.isMultiple()) {
+                if (propsResult === undefined || propsResult === null) { propsResult = [] }
+                if(!Array.isArray(propsResult)){
+                    console.error(`aio-input error => in type="${type}" by multiple:true value should be an array but is ${propsResult}`)
+                    return [propsResult]
+                } 
+            }
+            else {
+                if(Array.isArray(propsResult)){
+                    console.error(`aio-input error => in type="${type}" by multiple:false|undefined value cannot be an array`)
+                    return propsResult[0]
+                }
+            }
+            return propsResult === undefined ? def : propsResult;
+        }
+        if(key === 'type'){return this.props.type}
+        if(key === 'isDropdown'){return this.isDropdown}
+        if(key === 'props'){return this.props}
         if(key === 'after'){
             if(type === 'password' && this.getProp('visible')){
                 let {showPassword} = this.state;
@@ -173,35 +196,45 @@ export default class AIOInput extends Component {
             }
             return false;
         }
-        if (key === 'multiple') { 
-            if(type === 'multiselect'){return true}
-            if(type === 'radio'){return !!propsResult}
-            if(type === 'slider'){return !!propsResult}
-            if(type === 'file'){return !!propsResult}
-            return false;
-        }
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }
             if (type === 'datepicker') { return this.getDatepickerText() }
         }
-        if (key === 'value') {
-            if (this.getProp('multiple')) {
-                if (propsResult === undefined || propsResult === null) { propsResult = [] }
-                if(!Array.isArray(propsResult)){
-                    console.error(`aio-input error => in type="${type}" by multiple:true value should be an array but is ${propsResult}`)
-                    return [propsResult]
-                } 
-            }
-            else {
-                if(Array.isArray(propsResult)){
-                    console.error(`aio-input error => in type="${type}" by multiple:false|undefined value cannot be an array`)
-                    return propsResult[0]
-                }
-                
-            }
-        }
+        
         propsResult = propsResult === undefined ? def : propsResult;
         return propsResult;
+    }
+    getMsf(obj = {}){
+        let {option,key,def,addStyle,addClassName} = obj;
+        let attrs = option?this.getOptionProp(option,'attrs',{}):this.getProp('attrs',{});
+        let type = typeof key;
+        if(type === 'string'){
+            let res = this.getProp(key,attrs[key] === undefined?def:attrs[key])
+            if(addClassName){return `${addClassName}${res?' ' + res:''}` }
+            else if(addStyle){return {...res,...addStyle} }
+            else {return res}
+        }
+        else if(type === 'object'){
+            let res = {};
+            for(let prop in key){
+                res[prop] = this.getProp(prop,attrs[prop] === undefined?key[prop]:attrs[prop])
+            }
+            if(addClassName){res.className = `${addClassName}${res.className?' ' + res.className:''}`}
+            if(addStyle){res.style = {...res.style,...addStyle} }
+            return res
+        }
+        else{
+            let res = {
+                ...attrs,
+                className:this.getProp('className',attrs.className),
+                style:this.getProp('style',attrs.style),
+                onClick:this.getProp('onClick',attrs.onClick),
+                title:this.getProp('title',attrs.title)
+            }
+            if(addClassName){res.className = `${addClassName}${res.className?' ' + res.className:''}`}
+            if(addStyle){res.style = {...res.style,...addStyle} }
+            return res
+        }
     }
     getOptionProp(option, key, def,preventFunction) {
         let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option,this.props) : option[key]
@@ -239,7 +272,7 @@ export default class AIOInput extends Component {
         if (onToggle) { onToggle(!!popover) }
     }
     click(e, dom) {
-        let type = this.getProp('type');
+        let type = this.type;
         let onChange = this.getProp('onChange',()=>{});
         let attrs = this.getProp('attrs',{});
         if (type === 'checkbox') { onChange(!this.getProp('value')) }
@@ -248,12 +281,12 @@ export default class AIOInput extends Component {
     }
     optionClick(option) {
         let onChange = this.getProp('onChange',()=>{});
-        let type = this.getProp('type');
+        let type = this.type;
         let Value = this.getProp('value');
         let { value, attrs = {}, close, text } = option;
         if (attrs.onClick) { attrs.onClick(value, option); }
-        else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text) }
-        else if (this.getProp('multiple')) {
+        else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text,option) }
+        else if (this.isMultiple()) {
             if (Value.indexOf(value) === -1) { onChange(Value.concat(value), value, 'add') }
             else { onChange(Value.filter((o) => o !== value), value, 'remove') }
         }
@@ -264,11 +297,11 @@ export default class AIOInput extends Component {
     getOptions() {
         let getProp = this.getProp.bind(this);
         let getOptionProp = this.getOptionProp.bind(this);
-        let type = getProp('type');
+        let type = this.type;
         function getDefaultOptionChecked(value) {
             if (type === 'multiselect' || type === 'radio') {
                 let Value = getProp('value');
-                return getProp('multiple') ? Value.indexOf(value) !== -1 : Value === value
+                return this.isMultiple() ? Value.indexOf(value) !== -1 : Value === value
             }
         }
         let options = getProp('options', []);
@@ -280,10 +313,7 @@ export default class AIOInput extends Component {
             let show = getOptionProp(option, 'show')
             if (show === false) { continue }
             let text = getOptionProp(option, 'text');
-            if (
-                getProp('isInput') && 
-                Value && text.toString().indexOf(Value.toString()) !== 0
-            ) { continue }
+            if (this.isInput && Value && text.toString().indexOf(Value.toString()) !== 0) { continue }
             let value = getOptionProp(option, 'value')
             let attrs = getOptionProp(option, 'attrs',{});
             let obj = {
@@ -315,6 +345,9 @@ export default class AIOInput extends Component {
     getContext() {
         return {
             ...this.props,
+            isMultiple:this.isMultiple.bind(this),
+            isInput:this.isInput,
+            type:this.type,
             getOptions:this.getOptions.bind(this),
             open:this.state.open,
             toggleShowPassword:this.toggleShowPassword.bind(this),
@@ -410,7 +443,7 @@ export default class AIOInput extends Component {
     render_slider() { return <Layout text={<InputSlider getProp={this.getProp.bind(this)} />} /> }
     render_form() { return <Form getProp={this.getProp.bind(this)} /> }
     render() {
-        let type = this.getProp('type');
+        let type = this.type;
         let validate = this.getProp('validate',true);
         if(validate){new AIOInputValidate(this.props)}
         if (!type || !this['render_' + type]) { return null }
@@ -668,10 +701,10 @@ function Image() {
     )
 }
 function InputSlider() {
-    let { getProp } = useContext(AICTX)
+    let { getProp,isMultiple } = useContext(AICTX)
     let onChange = getProp('onChange');
     function change(value) {
-        if (getProp('multiple')) { onChange([...value]) }
+        if (isMultiple()) { onChange([...value]) }
         else { onChange(value[0]) }
     }
     let value = getProp('value'), rtl = getProp('rtl');
@@ -742,8 +775,7 @@ class Input extends Component {
         this.state = { value:undefined, prevValue: undefined }
     }
     componentDidMount() {
-        let {getProp} = this.context;
-        let type = getProp('type')
+        let {getProp,type} = this.context;
         let min = getProp('min')
         let max = getProp('max')
         let swip = getProp('swip')
@@ -764,8 +796,7 @@ class Input extends Component {
         }
     }
     componentDidUpdate() {
-        let {getProp} = this.context;
-        let type = getProp('type')
+        let {getProp,type} = this.context;
         let autoHeight = getProp('autoHeight')
         if (type === 'textarea' && autoHeight) {
             let dom = this.dom.current;
@@ -782,8 +813,7 @@ class Input extends Component {
         }
     }
     change(value,onChange) {
-        let {getProp} = this.context;
-        let type = getProp('type')
+        let {getProp,type} = this.context;
         let blurChange = getProp('blurChange')
         let maxLength = getProp('maxLength', Infinity);
         let justNumber = getProp('justNumber');
@@ -842,9 +872,8 @@ class Input extends Component {
         return classes.length?classes.join(' '):'';
     }
     getInputAttrs(){
-        let {getProp,showPassword} = this.context;
+        let {getProp,showPassword,type} = this.context;
         let { value = '' } = this.state;
-        let type = getProp('type');
         let inputAttrs = getProp('inputAttrs', {});
         let disabled = getProp('disabled');
         let placeholder = getProp('placeholder');
@@ -868,11 +897,10 @@ class Input extends Component {
         return p;
     }
     render() {
-        let {getProp} = this.context;
-        let type = getProp('type');
+        let {getProp,type} = this.context;
         let { value = '' } = this.state;
         let attrs = this.getInputAttrs()
-        if (!attrs.onChange) { return <div className='aio-input-value'>{value}</div> }
+        if (!attrs.onChange) { return value }
         else if (type === 'color') {
             let options = getProp('options');
             return (
@@ -1179,12 +1207,12 @@ class Form extends Component {
 }
 function Options(props) {
     let context = useContext(AICTX);
-    let {getProp,getOptions} = context;
+    let {getProp,getOptions,isInput} = context;
     let type = getProp('type');
     let [searchValue,setSearchValue] = useState('');
     function renderSearchBox(options) {
         let search = getProp('search');
-        if (type === 'tabs' || getProp('isInput') || search === false) { return null }
+        if (type === 'tabs' || isInput || search === false) { return null }
         if (type === 'radio' && !search) { return null }
         if (typeof search !== 'string') { search = 'Search' }
         if (searchValue === '' && options.length < 10) { return null }
@@ -1227,11 +1255,7 @@ class Table extends Component {
         let {getProp} = p;
         this.getProp = getProp;
         this.dom = createRef();
-        let Sort = new SortClass({
-            getProp,
-            getState: () => this.state,
-            setState: (obj) => this.setState(obj),
-        })
+        let Sort = new SortClass({getProp,getState: () => this.state,setState: (obj) => this.setState(obj)})
         let columns = this.getProp('columns',[]);
         let searchColumns = [];
         let updatedColumns = columns.map((o) => {
@@ -1248,28 +1272,24 @@ class Table extends Component {
             searchColumns,
             sorts: [], Sort,
             getDynamics: ({ value, row, column, def, rowIndex }) => {
-                if (value === undefined) { return def }
-                if (typeof value === 'function') { return value({ row, column, rowIndex }) }
-                let result = value;
-                if (typeof value === 'string') {
+                let type = typeof value;
+                if (type === 'string') {
+                    let result = value;
                     let getValue = this.getProp('getValue',{});
                     if (getValue[value]) { result = getValue[value]({ row, column, rowIndex }) }
                     else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
+                    return result === undefined ? def : result;
                 }
-                return result === undefined ? def : result;
-            },
-            setRows: (rows) => {
-                let onChange = this.getProp('onChange');
-                onChange(rows);
+                if (type === 'undefined') { return def }
+                if (type === 'function') { return value({ row, column, rowIndex }) }
             },
             setCell: (row, column, value) => {
-                if (column.onChange) { column.onChange({ value, row, column }) }
+                if(column.input && column.input.onChange) { column.input.onChange({ value, row, column }) }
                 else {
-                    let { setRows } = this.state;
-                    let rows = this.getProp('rows');
+                    let rows = this.getProp('value');
                     row = JSON.parse(JSON.stringify(row));
                     eval(`${column.value} = value`);
-                    setRows(rows.map((o) => o._id !== row._id ? o : row))
+                    this.getProp('onChange',()=>{})(rows.map((o) => o._id !== row._id ? o : row))
                 }
             }
         }
@@ -1279,22 +1299,18 @@ class Table extends Component {
         this.setState({ sorts: Sort.initiateSortsByColumns(columns) })
     }
     add() {
-        let onAdd = this.getProp('onAdd');
-        let rows = this.getProp('rows');
-        let { setRows } = this.state;
+        let onAdd = this.getProp('onAdd'),rows = this.getProp('value');
         if (typeof onAdd === 'function') { onAdd(); }
-        else if (typeof onAdd === 'object') { setRows([onAdd, ...rows]) }
+        else if (typeof onAdd === 'object') { this.getProp('onChange',()=>{})([onAdd, ...rows]) }
     }
     remove(row, index) {
-        let rows = this.getProp('rows');
-        let onRemove = this.getProp('onRemove');
-        let { setRows } = this.state;
+        let rows = this.getProp('value'),onRemove = this.getProp('onRemove');
         if (typeof onRemove === 'function') { onRemove(row); }
-        else if (onRemove === true) { setRows(rows.filter((o, i) => o._id !== row._id)); }
+        else if (onRemove === true) { this.getProp('onChange',()=>{})(rows.filter((o, i) => o._id !== row._id)); }
     }
     exportToExcel() {
         let excel = this.getProp('excel'), list = [];
-        let rows = this.getProp('rows');
+        let rows = this.getProp('value');
         let { getDynamics, columns } = this.state;
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i], json = {};
@@ -1312,14 +1328,13 @@ class Table extends Component {
     drop(e, row) {
         if (this.start._id === undefined) { return }
         if (this.start._id === row._id) { return }
-        let { setRows } = this.state;
-        let rows = this.getProp('rows');
+        let rows = this.getProp('value');
         let onSwap = this.getProp('onSwap');
         let newRows = rows.filter((o) => o._id !== this.start._id);
         let placeIndex = this.getIndexById(rows, row._id);
         newRows.splice(placeIndex, 0, this.start)
         if (typeof onSwap === 'function') { onSwap({ newRows, from: { ...this.start }, to: row }) }
-        else { setRows(newRows) }
+        else { this.getProp('onChange',()=>{})(newRows) }
     }
     getSearchedRows(rows) {
         let onSearch = this.getProp('onSearch');
@@ -1338,7 +1353,7 @@ class Table extends Component {
     }
     getRows() {
         let { Sort } = this.state;
-        let rows = this.getProp('rows');
+        let rows = this.getProp('value',[]);
         let p = this.getProp('paging');
         let searchedRows = this.getSearchedRows(rows);
         let sortedRows = Sort.getSortedRows(searchedRows);
@@ -1389,17 +1404,16 @@ class Table extends Component {
         let { getDynamics, setCell } = this.state;
         let template = getDynamics({ value: column.template, row, rowIndex, column });
         if (template !== undefined) { return template }
-        let p = {
-            ...column, blurChange: true,
-            value: getDynamics({ value: column.value, row, rowIndex, column }),
-            options: getDynamics({ value: column.options, row, rowIndex, column }),
-            type: getDynamics({ value: column.type, row, rowIndex, column, def: 'text' }),
-            subtext: getDynamics({ value: column.subtext, row, rowIndex, column }),
-            before: getDynamics({ value: column.before, row, rowIndex, column }),
-            after: getDynamics({ value: column.after, row, rowIndex, column }),
-            onChange: column.type ? (value) => setCell(row, column, value) : undefined,
-        }
-        return <AIOInput {...p} />
+        let input = getDynamics({ value: column.input, row, rowIndex, column });
+        if(!input){input = {type:'text'}}
+        for(let prop in input){input[prop] = getDynamics({ value: input[prop], row, rowIndex, column })}
+        return (
+            <AIOInput 
+                {...input} 
+                value={getDynamics({ value: column.value, row, rowIndex, column })}
+                onChange={column.input ? (value) => setCell(row, column, value) : undefined}
+            />
+        )
     }
     search(searchValue) {
         let onSearch = this.getProp('onSearch');
@@ -1610,20 +1624,19 @@ class SortClass {
             this.setState({ sorts });
             let activeSorts = sorts.filter((sort) => sort.active !== false);
             if (activeSorts.length) {
-                let { setRows } = this.getState();
-                let rows = this.getProp('rows');
-                setRows(this.sort(rows, activeSorts))
+                let rows = this.getProp('value');
+                this.getProp('onChange',()=>{})(this.sort(rows, activeSorts))
             }
         }
     }
     getSortedRows = (rows) => {
         if (this.initialSort) { return rows }
         let onChangeSort = this.getProp('onChangeSort');
-        let { setRows, sorts } = this.getState();
+        let { sorts } = this.getState();
         if (onChangeSort) { return rows }
         let activeSorts = sorts.filter((sort) => sort.active !== false);
         if (!activeSorts.length) { return rows }
-        if (rows.length) { this.initialSort = true; setRows(this.sort(rows, activeSorts)) }
+        if (rows.length) { this.initialSort = true; this.getProp('onChange',()=>{})(this.sort(rows, activeSorts)) }
         else { return rows; }
     }
     sort = (rows = [], sorts = []) => {
@@ -1659,14 +1672,13 @@ class SortClass {
     getSortOption = (sort) => {
         let { active, dir = 'dec', title, sortId } = sort;
         return {
-            text: title, checked: !!active, close: false,
+            text: title, checked: !!active, close: false,value:sortId,
             after: (
                 <Icon
                     path={dir === 'dec' ? mdiArrowDown : mdiArrowUp} size={0.8}
                     onClick={(e) => { e.stopPropagation(); this.setSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) }}
                 />
-            ),
-            onClick: () => this.setSort(sortId, { active: active ? false : true })
+            )
         }
     }
     getSortButton() {
@@ -1675,13 +1687,14 @@ class SortClass {
         let sortOptions = sorts.map((sort) => this.getSortOption(sort));
         return (
             <AIOInput
-                popover={{
-                    header: <div style={{ padding: '6px 12px' }}>sort</div>,
-                    pageSelector: '.aio-input-table'
-                }}
-                key='sortbutton' caret={false} type='select' options={sortOptions} className='aio-input-table-toolbar-icon'
+                popover={{header: {attrs:{className:'aio-input-table-toolbar-popover-header'},title:'Sort',onClose:false},pageSelector: '.aio-input-table'}}
+                key='sortbutton' caret={false} type='select' options={sortOptions} 
+                attrs={{className:'aio-input-table-toolbar-icon'}}
                 text={<Icon path={mdiSort} size={0.7} />}
                 onSwap={(from, to, swap) => this.setSorts(swap(sorts, from, to))}
+                onChange={(value,option)=>{
+                    this.setSort(value, { active: !option.checked })
+                }}
             />
         )
     }
@@ -1693,13 +1706,13 @@ class Layout extends Component {
         this.dom = createRef()
     }
     getClassName(label) {
-        let { getProp, getOptionProp, datauniqid } = this.context;
+        let { getProp, getOptionProp, datauniqid,isInput,isMultiple } = this.context;
         let { option } = this.props;
         let cls;
         let attrs;
         if (option !== undefined) {
             cls = `aio-input-option aio-input-${this.type}-option`
-            if (getProp('multiple')) { cls += ` aio-input-${this.type}-multiple-option` }
+            if (isMultiple()) { cls += ` aio-input-${this.type}-multiple-option` }
             if (getProp('isDropdown')) { cls += ` aio-input-dropdown-option` }
             if (getOptionProp(option,'disabled')) { cls += ' disabled' }
             attrs = getOptionProp(option, 'attrs')
@@ -1712,7 +1725,7 @@ class Layout extends Component {
                 else { cls += ' aio-input-slider-vertical' }
             }
             if (getProp('disabled') || getProp('loading')) { cls += ' disabled' }
-            if (getProp('isInput')) { cls += ` aio-input-input` }
+            if (isInput) { cls += ` aio-input-input` }
             attrs = getProp('attrs');
             let rtl = getProp('rtl');
             if (rtl) { cls += ' aio-input-rtl' }
@@ -1771,6 +1784,7 @@ class Layout extends Component {
                 tabIndex: getProp('tabIndex'),
                 attrs: getProp('attrs', {}),
                 caret: getProp('caret'),
+                justify: getProp('justify'),
                 text: text !== undefined ? text : getProp('text'),
                 checkIcon: getProp('checkIcon', [],undefined,true),
                 disabled: getProp('disabled'),
@@ -1797,32 +1811,39 @@ class Layout extends Component {
         }
         return className;        
     }
-    text_layout(text,subtext,placeholder,center){
+    text_layout(text,subtext,placeholder,center,justify){
         if(text === undefined && placeholder !== undefined){text = <div className='aio-input-placeholder'>{placeholder}</div>}
         if(text){
             if(subtext){
                 return (
                     <div className={`aio-input-content aio-input-${this.type}-content${center?' aio-input-content-center':''}`}>
-                        <div className={this.getItemClassName('value')}>{text}</div>
-                        <div className={this.getItemClassName('subtext')}>{subtext}</div>
+                        <div style={{textAlign:justify?'center':undefined}} className={`${this.getItemClassName('value')}${center?' aio-input-value-center':''}`}>{text}</div>
+                        <div style={{textAlign:justify?'center':undefined}} className={`${this.getItemClassName('subtext')}${center?' aio-input-value-center':''}`}>{subtext}</div>
                     </div>
                 )
             }
-            else{return <div className={`${this.getItemClassName('value')}${center?' aio-input-value-center':''}`}>{text}</div>}
+            else{
+                return (
+                    <div 
+                        style={{textAlign:justify?'center':undefined}} 
+                        className={`${this.getItemClassName('value')}${center?' aio-input-value-center':''}`}
+                    >{text}</div>
+                )
+            }
         }
         else{return <div className='flex-1'></div>}
     }
     render() {
-        let {getProp} = this.context;
-        this.type = getProp('type')
+        let {type} = this.context;
+        this.type = type;
         let { option } = this.props;
         this.properties = this.getProperties()
-        let { checked, checkIcon, before, text, subtext, after, caret,center, placeholder, loading } = this.properties;
+        let { checked, checkIcon, before, text, subtext, after, caret,center, placeholder, loading,justify } = this.properties;
         let content = (
             <>
                 <CheckIcon {...{ checked, checkIcon, type:this.type, option }} />
                 {before !== undefined && <div className={this.getItemClassName('before')}>{before}</div>}
-                {this.text_layout(text,subtext,placeholder,center)}
+                {this.text_layout(text,subtext,placeholder,center,justify)}
                 {after !== undefined && <div className={this.getItemClassName('after')}>{after}</div>}
                 {loading && <div className={this.getItemClassName('loading')}>{loading === true ? <Icon path={mdiLoading} spin={0.3} size={.8} /> : loading}</div>}
                 {caret && <div className='aio-input-caret'>{caret === true ? <Icon path={mdiChevronDown} size={.8} /> : caret}</div>}
@@ -1857,13 +1878,12 @@ function File() {
 export class InputFile extends Component {
     static contextType = AICTX;
     change(e) {
-        let { getProp } = this.context;
+        let { getProp,isMultiple } = this.context;
         let value = getProp('value',[]);
         let onChange = getProp('onChange',()=>{});
-        let multiple = getProp('multiple');
         let Files = e.target.files;
         let result;
-        if(multiple){
+        if(isMultiple()){
             result = [...value];
             let names = result.map(({ name }) => name);
             for (let i = 0; i < Files.length; i++) {
@@ -1878,8 +1898,8 @@ export class InputFile extends Component {
         onChange(result)
     }
     render() {
-        let { getProp } = this.context;
-        let multiple = getProp('multiple');
+        let { getProp,isMultiple } = this.context;
+        let multiple = isMultiple();
         let loading = getProp('loading');
         let disabled = getProp('disabled');
         let props = { disabled:disabled || loading, type: 'file', style: { display: 'none' }, multiple, onChange: (e) => this.change(e) }
@@ -2790,21 +2810,19 @@ class SliderScales extends Component {
         return (<div className='aio-slider-scales'>{scales}</div>);
     }
 }
-class SliderScale extends Component {
-    static contextType = SliderContext;
-    getStyle() {
-        var { scaleStyle } = this.context;
-        var { start, end, direction, getPercentByValue } = this.context, { value } = this.props;
-        var obj = typeof scaleStyle === 'function' ? scaleStyle(value, this.context) : scaleStyle;
+function SliderScale(props) {
+    let context = useContext(SliderContext);
+    function getStyle() {
+        var { scaleStyle } = context;
+        var { start, end, direction, getPercentByValue } = context, { value } = props;
+        var obj = typeof scaleStyle === 'function' ? scaleStyle(value, context) : scaleStyle;
         obj = !obj ? {} : { ...obj }
         if (!obj) { obj = {} }
         obj[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]] = getPercentByValue(value, start, end) + '%';
         return obj;
     }
-    render() {
-        let { getScaleHTML } = this.context, { value } = this.props;
-        return (<div className="aio-slider-scale" style={this.getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
-    }
+    let { getScaleHTML } = this.context, { value } = this.props;
+    return (<div className="aio-slider-scale" style={getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
 }
 class List extends Component {
     constructor(props) {
@@ -3104,7 +3122,6 @@ class AIOInputValidate{
                 options:'array|undefined',
                 maxLength:'number|undefined',
                 filter:'array',
-                justify:'boolean|undefined',
                 loading:'any',
                 before:'any',
                 after:'any',
@@ -3155,7 +3172,6 @@ class AIOInputValidate{
                 optionText:'any',
                 optionValue:'any',
                 optionAttrs:'any',
-                justify:'boolean|undefined',
                 loading:'any',
                 swip:'boolean|undefined',
                 popover:'object|undefined',
@@ -3173,7 +3189,6 @@ class AIOInputValidate{
                 value:'string|number|undefined',
                 maxLength:'number|undefined',
                 filter:'array',
-                justify:'boolean|undefined',
                 loading:'any',
                 before:'any',
                 after:'any',
@@ -3272,6 +3287,7 @@ class AIOInputValidate{
                 optionAfter:'any',
                 optionDisabled:'string|function|boolean|undefined',
                 optionCheckIcon:'any',
+                onSwap:'function|undefined',
             },
             file:{
                 type:'"file"',
@@ -3331,7 +3347,14 @@ class AIOInputValidate{
                 scaleStyle:'function|object|undefined',
                 min:'number|undefined',
                 max:'number|undefined',
-                multiple:'boolean|undefined'
+                multiple:'boolean|undefined',
+                getPointHTML:'function|undefined',
+                getScaleHTML:'function|undefined',
+                direction:'"left"|"right"|"top"|"bottom"|undefined',
+                labelStep:'number|array|undefined',
+                scaleStep:'number|array|undefined',
+                editLabel:'function|undefined',
+                labelRotate:'number|function|undefined'
             },
             form:{
                 type:'"form"',
@@ -3352,6 +3375,7 @@ class AIOInputValidate{
                 popover:'object|undefined',
                 calendarType:'"jalali"|"gregorian"|undefined',
                 unit:'"month"|"day"|"hour"',
+                pattern:'string|undefined',
             },
             image:{
                 type:'"image"',
@@ -3396,14 +3420,27 @@ class AIOInputValidate{
                 options:'array',
                 size:'number|undefined',
                 width:'number|undefined'
-                
-
+            },
+            table:{
+                type:'"table"',
+                placeholder:'any',
+                value:'array|undefined',
+                columns:'array|undefined',
+                onSwap:'function|undefined|true',
+                getValue:'object|undefined',
+                rowAttrs:'function|undefined',
+                excel:'boolean|undefined',
+                toolbar:'any',
+                toolbarAttrs:'function|object|undefined',
+                rowGap:'number|undefined',
+                columnGap:'number|undefined',
+                onAdd:'function|object|undefined',
             }
         }
         let privateObject = dic[type];
         if(!privateObject){return}
         let publicObject = {
-            attrs:'object|undefined',onChange:'function',rtl:'boolean|undefined',
+            attrs:'object|undefined',onChange:'function|undefined',rtl:'boolean|undefined',justify:'boolean|undefined'
         }
         return {...publicObject,...privateObject}
     }
