@@ -1,94 +1,52 @@
 import React, { Component,createRef } from 'react';
-import DOC from '../../resuse-components/doc';
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOMap from './../../npm/aio-map/aio-map';
-import AIOInput from './../../npm/aio-input/aio-input';
-import './index.css';
+import DOC from '../../../resuse-components/doc';
+import AIODoc from '../../../npm/aio-documentation/aio-documentation';
+import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
+import AIOInput from '../../../npm/aio-input/aio-input';
+import './doc-aio-input-map.css';
 import {Icon} from '@mdi/react';
 import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift } from '@mdi/js';
-export default class DOC_AIOMap extends Component {
+AIOInput.defaults.mapApiKeys = {
+    map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+    service:'service.09a2234e299a4ff585007b2894df9fca',
+}
+AIOInput.defaults.validate = true
+export default class DOC_AIOInput_map extends Component {
     render() {
         return (
             <DOC
                 {...this.props}
                 navId='apiKeys'
-                navs={[
-                    { text: 'apiKeys', id: 'apiKeys', COMPONENT: () => <APIKeys /> },
-                    { text: 'draggable', id: 'draggable', COMPONENT: () => <Draggable /> },
-                    { text: 'zoomable', id: 'zoomable', COMPONENT: () => <Zoomable /> },
-                    { text: 'traffic', id: 'traffic', COMPONENT: () => <Traffic /> },
-                    { text: 'onClick', id: 'onClick', COMPONENT: () => <OnClick /> },
-                    { text: 'onClose', id: 'onClose', COMPONENT: () => <OnClose /> },
-                    { text: 'title', id: 'title', COMPONENT: () => <Title /> },
-                    { text: 'showMarker', id: 'showMarker', COMPONENT: () => <ShowMarker /> },
-                    { text: 'latitude , longitude , zoom', id: 'latlngzoom', COMPONENT: () => <LatLngZoom /> },
-                    { text: 'onChange', id: 'onChange', COMPONENT: () => <OnChange /> },
-                    { text: 'onSubmit', id: 'onSubmit', COMPONENT: () => <OnSubmit /> },
-                    { text: 'area', id: 'area', COMPONENT: () => <Area /> },
-                    { text: 'markers', id: 'markers', COMPONENT: () => <Markers /> },
-                    { text: 'search', id: 'search', COMPONENT: () => <Search /> },
-                    { text: 'popup', id: 'popup', COMPONENT: () => <Popup /> },
-                ]}
+                nav={{
+                    items:[
+                        { text: 'apiKeys', id: 'apiKeys', render: () => <APIKeys /> },
+                        { text: 'zoomable', id: 'zoomable', render: () => <Zoomable /> },
+                        { text: 'traffic', id: 'traffic', render: () => <Traffic /> },
+                        { text: 'onClick', id: 'onClick', render: () => <OnClick /> },
+                        { text: 'title', id: 'title', render: () => <Title /> },
+                        { text: 'marker', id: 'showMarker', render: () => <Marker /> },
+                        { text: 'value zoom', id: 'valuezoom', render: () => <ValueZoom /> },
+                        { text: 'onChange', id: 'onChange', render: () => <OnChange /> },
+                        { text: 'area', id: 'area', render: () => <Area /> },
+                        { text: 'markers', id: 'markers', render: () => <Markers /> },
+                        { text: 'search', id: 'search', render: () => <Search /> },
+                        { text: 'popup', id: 'popup', render: () => <Popup /> },
+                    ]
+                }}
             />
         )
     }
 }
 class APIKeys extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
-    }
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render()}
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
-
-return map.render()
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    render() {return (<Example preview={() => this.preview()}/>)}
+AIOInput.defaults.mapApiKeys = {
+    map:'web.0a2aa5f83d314a8c9916473aa0e01438',
+    service:'service.09a2234e299a4ff585007b2894df9fca',
 }
-class Draggable extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
-    }
-    preview() {
-        return (
-            <div className='example'>
-                {this.mapInstance.render({draggable:false})}
-                {
-                    AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
-return map.render({draggable:false})
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -100,26 +58,14 @@ return map.render({draggable:false})
 class Zoomable extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
     }
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render({zoomable:false})}
+                <AIOInput type='map' mapConfig={{zoomable:false}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
-return map.render({zoomable:false})
+<AIOInput type='map' mapConfig={{zoomable:false}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -129,28 +75,13 @@ return map.render({zoomable:false})
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Traffic extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
-    }
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render({traffic:true})}
+                <AIOInput type='map' mapConfig={{traffic:true}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
-return map.render({traffic:true})
+<AIOInput type='map' mapConfig={{traffic:true}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -159,67 +90,14 @@ return map.render({traffic:true})
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-
 class OnClick extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onClick:()=>alert('you clicked map')
-        })
-    }
-    
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render()}
+                <AIOInput type='map' attrs={{onClick:()=>alert('you clicked map')}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onClick:()=>alert('you clicked map')
-})
-return map.render()
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    render() {return (<Example preview={() => this.preview()}/>)}
-}
-class OnClose extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onClose:()=>alert('you closed map')
-        })
-    }
-    
-    preview() {
-        return (
-            <div className='example'>
-                {this.mapInstance.render()}
-                {
-                    AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onClose:()=>alert('you closed map')                
-})
-return map.render()
+<AIOInput type='map' attrs={{onClick:()=>alert('you clicked map')}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -229,31 +107,13 @@ return map.render()
     render() {return (<Example preview={() => this.preview()}/>)}
 }
 class Title extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            title:'نمایش موقعیت'
-        })
-    }
-    
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render()}
+                <AIOInput type='map' mapConfig={{title:'نمایش موقعیت'}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    title:'نمایش موقعیت'
-})
-return map.render()
+<AIOInput type='map' mapConfig={{title:'نمایش موقعیت'}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -262,32 +122,14 @@ return map.render()
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class ShowMarker extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            showMarker:false
-        })
-    }
-    
+class Marker extends Component {
     preview() {
         return (
             <div className='example'>
-                {this.mapInstance.render()}
+                <AIOInput type='map' mapConfig={{marker:false}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    showMarker:false
-})
-return map.render()
+<AIOInput type='map' mapConfig={{marker:false}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -296,16 +138,10 @@ return map.render()
     }
     render() {return (<Example preview={() => this.preview()}/>)}
 }
-class LatLngZoom extends Component {
+class ValueZoom extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
-        this.state = {latitude:35.694739,longitude:51.394097,zoom:14}
+        this.state = {lat:35.694739,lng:51.394097,zoom:14}
     
     }
     change(dir,field,fixed){
@@ -314,7 +150,7 @@ class LatLngZoom extends Component {
         this.setState({[field]:result})
     }
     preview() {
-        let {latitude,longitude,zoom} = this.state;
+        let {lat,lng,zoom} = this.state;
         return (
             <div className='example'>
                 <RVD
@@ -327,9 +163,9 @@ class LatLngZoom extends Component {
                                     {size:12},
                                     {
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:latitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:lat,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'lat',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
                                 ]
@@ -342,9 +178,9 @@ class LatLngZoom extends Component {
                                     {size:12},
                                     {
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:longitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:lng,size:120,align:'vh'},
+                                            {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
                                 ]
@@ -367,16 +203,10 @@ class LatLngZoom extends Component {
                         ]
                     }}
                 />
-                {this.mapInstance.render({latitude,longitude,zoom})}
+                <AIOInput type='map' mapConfig={{zoom}} value={{lat,lng}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
-return map.render({latitude:${latitude},longitude:${longitude},zoom:${zoom}})
+<AIOInput type='map' mapConfig={{zoom:${zoom}}} value={{${lat},${lng}}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -388,77 +218,18 @@ return map.render({latitude:${latitude},longitude:${longitude},zoom:${zoom}})
 class OnChange extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onChange:(latitude,longitude)=>{
-                this.setState({latitude,longitude})
-            }
-        })
-        this.state = {latitude:35.694739,longitude:51.394097}
+        this.state = {lat:35.694739,lng:51.394097}
     }
     preview() {
-        let {latitude,longitude} = this.state;
+        let {lat,lng} = this.state;
         return (
             <div className='example'>
-                <span>{`latitude = ${latitude}`}</span>
-                <span>{`longitude = ${longitude}`}</span>
-                {this.mapInstance.render({latitude,longitude})}
+                <span>{`latitude = ${lat}`}</span>
+                <span>{`longitude = ${lng}`}</span>
+                <AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onChange:(latitude,longitude)=>{
-        this.setState({latitude,longitude})
-    }
-})
-....
-let {latitude,longitude} = this.state;
-return map.render({latitude,longitude})
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    render() {return (<Example preview={() => this.preview()}/>)}
-}
-class OnSubmit extends Component {
-    constructor(props){
-        super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onSubmit:(latitude,longitude)=>this.setState({latitude,longitude})
-        })
-        this.state = {latitude:35.694739,longitude:51.394097}
-    }
-    preview() {
-        let {latitude,longitude} = this.state;
-        return (
-            <div className='example'>
-                <span>{`latitude = ${latitude}`}</span>
-                <span>{`longitude = ${longitude}`}</span>
-                {this.mapInstance.render({latitude,longitude})}
-                {
-                    AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onSubmit:(latitude,longitude)=>this.setState({latitude,longitude})
-})
-....
-let {latitude,longitude} = this.state;
-return map.render()
+<AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -470,13 +241,7 @@ return map.render()
 class Area extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
-        this.state = {area:{latitude:35.694739,longitude:51.394097,radius:2000,color:'orange',opacity:0.2}}
+        this.state = {area:{lat:35.694739,lng:51.394097,radius:2000,color:'orange',opacity:0.2}}
     }
     change(dir,field,fixed){
         let result = this.state.area[field] + dir;
@@ -499,9 +264,9 @@ class Area extends Component {
                                             {size:12},
                                             {
                                                 row:[
-                                                    {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                                    {html:area.latitude,size:120,align:'vh'},
-                                                    {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                                    {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                                    {html:area.lat,size:120,align:'vh'},
+                                                    {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                                 ]
                                             }
                                         ]
@@ -514,9 +279,9 @@ class Area extends Component {
                                             {size:12},
                                             {
                                                 row:[
-                                                    {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                                    {html:area.longitude,size:120,align:'vh'},
-                                                    {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                                    {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                                    {html:area.lng,size:120,align:'vh'},
+                                                    {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                                 ]
                                             }
                                         ]
@@ -549,7 +314,7 @@ class Area extends Component {
                                                 flex:1,
                                                 html:(
                                                     <AIOInput
-                                                        type='slider' showValue='inline' style={{width:'100%'}} value={area.opacity} step={0.1} start={0} end={1}
+                                                        type='slider' showValue='inline' attrs={{style:{width:'100%'}}} value={area.opacity} step={0.1} start={0} end={1}
                                                         onChange={(opacity)=>this.setState({area:{...area,opacity}})}
                                                     />
                                                 )
@@ -567,7 +332,7 @@ class Area extends Component {
                                                 flex:1,
                                                 html:(
                                                     <AIOInput
-                                                        type='color' style={{width:'100%'}} value={area.color}
+                                                        type='color' attrs={{style:{width:'100%'}}} value={area.color}
                                                         onChange={(color)=>this.setState({area:{...area,color}})}
                                                     />
                                                 )
@@ -579,26 +344,18 @@ class Area extends Component {
                         ]
                     }}
                 />
-                {this.mapInstance.render({area})}
+                <AIOInput type='map' mapConfig={{area}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    }
-})
 ....
-let {area} = this.state;
-return map.render({
-    area:{
-        latitude:${area.latitude},
-        longitude:${area.longitude},
-        radius:${area.radius},
-        color:${area.color},
-        opacity:${area.opacity}
-    }
-})
+let = area:{
+    latitude:${area.latitude},
+    longitude:${area.longitude},
+    radius:${area.radius},
+    color:${area.color},
+    opacity:${area.opacity}
+}
+<AIOInput type='map'mapConfig={{area}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -610,27 +367,21 @@ return map.render({
 class Markers extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            }
-        })
         this.state = {
-            latitude:35.76025287,longitude:51.40858757,
+            lat:35.76025287,lng:51.40858757,
             markers:[
                 {
-                    latitude:35.76025388385241,longitude:51.40858858823776,size:30,color:'orange',
+                    lat:35.76025388385241,lng:51.40858858823776,size:30,color:'orange',
                     html:<Icon path={mdiOfficeBuilding} size={1}/>,
                     popup:({latitude,longitude})=>latitude
                 },
                 {
-                    latitude:35.76920327411297,longitude:51.40546649694443,size:30,color:'red',
+                    lat:35.76920327411297,lng:51.40546649694443,size:30,color:'red',
                     html:<Icon path={mdiOfficeBuilding} size={1}/>,
                     popup:({latitude,longitude})=>latitude
                 },
                 {
-                    latitude:35.78097175634515,longitude:51.39394909143448,size:30,color:'red',
+                    lat:35.78097175634515,lng:51.39394909143448,size:30,color:'red',
                     html:<Icon path={mdiGift} size={1}/>,text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
                     popup:({latitude,longitude})=>latitude
                 }
@@ -644,7 +395,7 @@ class Markers extends Component {
         this.setState({markers:markers.map((o,i)=>i === 0?{...markers[i],[field]:result}:o)})
     }
     preview() {
-        let {markers,latitude,longitude} = this.state; 
+        let {markers,lat,lng} = this.state; 
         return (
             <div className='example'>
                 <RVD
@@ -657,9 +408,9 @@ class Markers extends Component {
                                     {size:12},
                                     {
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'latitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
                                             {html:markers[0].latitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'latitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:<button onClick={()=>this.change(0.001,'lat',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
                                 ]
@@ -672,9 +423,9 @@ class Markers extends Component {
                                     {size:12},
                                     {
                                         row:[
-                                            {html:<button onClick={()=>this.change(-0.001,'longitude',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
+                                            {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
                                             {html:markers[0].longitude,size:120,align:'vh'},
-                                            {html:<button onClick={()=>this.change(0.001,'longitude',6)}><Icon size={1} path={mdiChevronRight}/></button>}
+                                            {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
                                 ]
@@ -697,46 +448,38 @@ class Markers extends Component {
                         ]
                     }}
                 />
-                {this.mapInstance.render({latitude,longitude,markers})}
+                <AIOInput type='map' value={{lat,lng}} mapConfig={{markers}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
+let lat = ${lat},lng = ${lng};
+ler markers = [
+    {
+        lat:${markers[0].lat},
+        lng:${markers[0].lng},
+        size:30,
+        color:'orange',
+        html:<Icon path={mdiOfficeBuilding} size={1}/>,
+        popup:(marker)=>marker.latitude
+    },
+    {
+        lat:35.76920327411297,
+        lng:51.40546649694443,
+        size:30,
+        color:'red',
+        html:<Icon path={mdiOfficeBuilding} size={1}/>,
+        popup:(marker)=>marker.latitude
+    },
+    {
+        lat:35.78097175634515,
+        lng:51.39394909143448,
+        size:30,
+        color:'red',
+        html:<Icon path={mdiGift} size={1}/>,
+        text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
+        popup:(marker)=>marker.latitude
     }
-})
-....
-return map.render({
-    latitude:${latitude},longitude:${longitude},
-    markers:[
-        {
-            latitude:35.76025388385241,
-            longitude:51.40858858823776,
-            size:30,
-            color:'orange',
-            html:<Icon path={mdiOfficeBuilding} size={1}/>,
-            popup:(marker)=>marker.latitude
-        },
-        {
-            latitude:35.76920327411297,
-            longitude:51.40546649694443,
-            size:30,
-            color:'red',
-            html:<Icon path={mdiOfficeBuilding} size={1}/>,
-            popup:(marker)=>marker.latitude
-        },
-        {
-            latitude:35.78097175634515,
-            longitude:51.39394909143448,
-            size:30,
-            color:'red',
-            html:<Icon path={mdiGift} size={1}/>,
-            text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
-            popup:(marker)=>marker.latitude
-        }
-    ]
-})
+]
+<AIOInput type='map' value={{lat,lng}} mapConfig={{markers}}/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -748,44 +491,26 @@ return map.render({
 class Search extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onChange:(latitude,longitude)=>{
-                this.setState({latitude,longitude})
-            },
-            search:true
-        })
         this.state = {
-            latitude:35.694739,longitude:51.394097
+            lat:35.694739,lng:51.394097
         }
     }
     preview() {
-        let {latitude,longitude} = this.state;
+        let {lat,lng} = this.state;
         return (
             <div className='example'>
-                <span>{`latitude = ${latitude}`}</span>
-                <span>{`longitude = ${longitude}`}</span>
-                {this.mapInstance.render({latitude,longitude})}
+                <span>{`latitude = ${lat}`}</span>
+                <span>{`longitude = ${lng}`}</span>
+                <AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})} mapConfig={{search:true}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onChange:(latitude,longitude)=>{
-        this.setState({latitude,longitude})
-    },
-    search:true
-})
-....
-return map.render({
-    latitude:${latitude},longitude:${longitude}
-    
-})
+let lat=${lat},lng=${lng};
+<AIOInput 
+    type='map'
+    value={{lat,lng}} 
+    onChange={({lat,lng})=>this.setState({lat,lng})}
+    mapConfig={{search:true}}
+/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -797,49 +522,25 @@ return map.render({
 class Popup extends Component {
     constructor(props){
         super(props);
-        this.mapInstance = new AIOMap({
-            apiKeys:{
-                map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-                service:'service.09a2234e299a4ff585007b2894df9fca',
-            },
-            onChange:(latitude,longitude)=>{
-                this.setState({latitude,longitude})
-            },
-            search:true,
-            popup:{
-                title:'انتخاب موقعیت'
-            }
-        })
         this.state = {
-            latitude:35.694739,longitude:51.394097
+            lat:35.694739,lng:51.394097
         }
     }
     preview() {
-        let {latitude,longitude} = this.state;
+        let {lat,lng} = this.state;
         return (
             <div className='example'>
-                <span>{`latitude = ${latitude}`}</span>
-                <span>{`longitude = ${longitude}`}</span>
-                {this.mapInstance.render({latitude,longitude})}
+                <span>{`latitude = ${lat}`}</span>
+                <span>{`longitude = ${lng}`}</span>
+                <AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})} popup={{title:'انتخاب موقعیت'}}/>
                 {
                     AIODoc().Code(`
-let map = new AIOMap({
-    apiKeys:{
-        map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-        service:'service.09a2234e299a4ff585007b2894df9fca',
-    },
-    onChange:(latitude,longitude)=>{
-        this.setState({latitude,longitude})
-    },
-    search:true,
-    popup={{
-        title:'انتخاب موقعیت'
-    }}
-})
-....
-return map.render({
-    latitude,longitude
-})
+<AIOInput 
+    type='map' 
+    value={{lat,lng}} 
+    onChange={({lat,lng})=>this.setState({lat,lng})} 
+    popup={{title:'انتخاب موقعیت'}}
+/>
                     `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>

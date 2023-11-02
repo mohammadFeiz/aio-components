@@ -7,6 +7,7 @@ import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-
 import DOC_AIOInput_Datepicker from './documents/aio-input/aio-input-datepicker/doc-aio-input-datepicker';
 import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
 import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
+import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading';
@@ -22,7 +23,6 @@ import DOC_AIOInput_List from './documents/aio-input/aio-input-list/doc-aio-inpu
 import DOC_ReactSuperApp from './documents/react-super-app/doc-react-super-app';
 import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
-import DOC_AIOMap from './documents/aio-map/doc-aio-map';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 
@@ -40,6 +40,7 @@ export default class AIOComponents extends Component{
         'aio-input-image':DOC_AIOInput_Image,
         'aio-input-list':DOC_AIOInput_List,
         'aio-input-form':DOC_AIOInput_Form,
+        'aio-input-map':DOC_AIOInput_Map,
         'aio-highlighter':DOC_AIOHighlighter,
         'aio-validation':DOC_AIOValidation,
         'aio-loading':DOC_AIOLoading,
@@ -54,7 +55,6 @@ export default class AIOComponents extends Component{
         'react-super-app':DOC_ReactSuperApp,
         'aio-service':DOC_AIOService,
         'aio-popup':DOC_AIOPopup,
-        'aio-map':DOC_AIOMap,
         'aio-canvas':DOC_AIOCanvas,
         'aio-login':DOC_AIOLogin
       }

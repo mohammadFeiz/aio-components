@@ -1,16 +1,24 @@
 import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect } from 'react';
 import AIODate from './../aio-date/aio-date';
 import RVD from './../react-virtual-dom/react-virtual-dom';
+import Axios from 'axios';
 import AIOValidation from "../aio-validation/aio-validation";
 import Search from '../aio-functions/search';
 import ExportToExcel from '../aio-functions/export-to-excel';
 import DownloadUrl from '../aio-functions/download-url';
+import JSXToHTML from './../aio-functions/jsx-to-html';
 import { Icon } from '@mdi/react';
-import { mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown, mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline } from "@mdi/js";
+import { 
+    mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown, 
+    mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
+    mdiCrosshairsGps
+} from "@mdi/js";
 import AIOSwip from '../aio-swip/aio-swip';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
+
+
 class Popover{
     constructor(getProp,id,toggle,getOptions){
         this.getProp = getProp;
@@ -92,6 +100,10 @@ class Popover{
 }
 const AICTX = createContext();
 export default class AIOInput extends Component {
+    static defaults = {
+        validate:false,
+        mapApiKeys:{}
+    };
     constructor(props) {
         super(props);
         this.type = props.type;
@@ -161,8 +173,13 @@ export default class AIOInput extends Component {
         let { type } = this.props;
         let propsResult = this.props[key] === 'function' ? this.props[key]() : this.props[key];
         if (key === 'value') {
+            if(propsResult === null){propsResult = undefined}
+            if(type === 'map'){
+                let {lat = 35.699739,lng = 51.338097} = propsResult || {};
+                return {lat,lng}
+            }
             if (this.isMultiple()) {
-                if (propsResult === undefined || propsResult === null) { propsResult = [] }
+                if (propsResult === undefined) { propsResult = [] }
                 if(!Array.isArray(propsResult)){
                     console.error(`aio-input error => in type="${type}" by multiple:true value should be an array but is ${propsResult}`)
                     return [propsResult]
@@ -298,7 +315,7 @@ export default class AIOInput extends Component {
         let getProp = this.getProp.bind(this);
         let getOptionProp = this.getOptionProp.bind(this);
         let type = this.type;
-        function getDefaultOptionChecked(value) {
+        let getDefaultOptionChecked = (value) => {
             if (type === 'multiselect' || type === 'radio') {
                 let Value = getProp('value');
                 return this.isMultiple() ? Value.indexOf(value) !== -1 : Value === value
@@ -345,6 +362,7 @@ export default class AIOInput extends Component {
     getContext() {
         return {
             ...this.props,
+            mapApiKeys:AIOInput.defaults.mapApiKeys,
             isMultiple:this.isMultiple.bind(this),
             isInput:this.isInput,
             type:this.type,
@@ -434,6 +452,7 @@ export default class AIOInput extends Component {
     render_checkbox() { return <Layout /> }
     render_datepicker() { return <Layout /> }
     render_image() { return <Layout text={<Image />} /> }
+    render_map() { return <Layout text={<Map getProp={this.getProp.bind(this)} />} /> }
     render_table() { return <Table getProp={this.getProp.bind(this)} /> }
     render_text() { return <Layout text={<Input/>} /> }
     render_password() { return <Layout text={<Input/>} /> }
@@ -444,8 +463,9 @@ export default class AIOInput extends Component {
     render_form() { return <Form getProp={this.getProp.bind(this)} /> }
     render() {
         let type = this.type;
-        let validate = this.getProp('validate',true);
-        if(validate){new AIOInputValidate(this.props)}
+        if(AIOInput.defaults.validate){
+            new AIOInputValidate(this.props)
+        }
         if (!type || !this['render_' + type]) { return null }
         return (
             <AICTX.Provider key={this.datauniqid} value={this.getContext()}>
@@ -1096,7 +1116,9 @@ class Form extends Component {
         let rtl = this.getProp('rtl');
         let disabled = this.getProp('disabled');
         let value = this.getValueByField(formItem.field, this.getDefault(input));
-        let updateInputProps = this.getProp('updateInputProps',(o)=>o)
+        let updateInput = this.getProp('updateInput',(o)=>o)
+        let inputStyle = this.getProp('inputStyle',{})
+        let inputClassName = this.getProp('inputClassName') 
         let props = {rtl,value,onChange: (value) => this.setValue(value, formItem)};
         for(let prop in input){
             props[prop] = this.getValueByField(input[prop])
@@ -1110,6 +1132,8 @@ class Form extends Component {
         for(let prop in attrs){
             props.attrs[prop] = this.getValueByField(attrs[prop])
         }
+        if(inputStyle){props.attrs.style = {...inputStyle,...props.attrs.style}}
+        if(inputClassName){props.attrs.className = props.attrs.className?`${props.attrs.className} ${inputClassName}`:inputClassName}
         if(disabled){props.disabled = true;}
         if(['text','number','password','textarea'].indexOf(props.type) !== -1){
             let {inputAttrs = {}} = input;
@@ -1118,7 +1142,7 @@ class Form extends Component {
                 props.inputAttrs[prop] = this.getValueByField(inputAttrs[prop])
             }
         }
-        return updateInputProps(props);
+        return updateInput(props);
     }
     input_layout(formItem) {
         let { label, footer, inlineLabel, input, flex, size, field } = formItem;
@@ -1740,7 +1764,7 @@ class Layout extends Component {
         let { dragStart, dragOver, drop, click, optionClick,open,getProp } = this.context;
         let { option, realIndex, renderIndex } = this.props;
         let { label, center, loading, attrs = {},disabled } = this.properties;
-        let zIndex = 0;
+        let zIndex;
         if(open && !option && ['text','number','textarea'].indexOf(this.type) !== -1){
             zIndex = 100000
         }
@@ -3043,6 +3067,375 @@ class List extends Component {
         );
     }
 }
+const MapContext = createContext();
+
+function Map(props){
+    let context = useContext(AICTX);
+    let mapApiKeys = context.mapApiKeys;
+    let {getProp} = props;
+    let popup = getProp('popup');
+    let isPopup = false;
+    let mapConfig = getProp('mapConfig',{})
+    let onClose = false;
+    let onChange = getProp('onChange');
+    let disabled = getProp('disabled');
+    let loading = getProp('loading');
+    let attrs = getProp('attrs',{});
+    let onChangeAddress = getProp('onChangeAddress',()=>{});
+    let value = getProp('value');
+    let p = {popup,isPopup,onClose,onChange,attrs,onChangeAddress,value,mapApiKeys,mapConfig,disabled:!!disabled || !!loading}
+    return <MapUnit {...p}/>
+}
+class MapUnit extends Component {
+    static contextType = AICTX;
+    constructor(props) {
+        super(props);
+        this.datauniqid = 'mp' + (Math.round(Math.random() * 10000000))
+        this.markers = []
+        this.dom = createRef();
+        let {mapConfig = {}} = props;
+        let {zoom = 14} = mapConfig;
+        this.state = { address:'',value:props.value,prevValue:props.value,zoom,prevZoom:zoom }
+    }
+    handleArea(){
+        if(this.area){this.area.remove()}
+        let {mapConfig = {}} = this.props;
+        let {area} = mapConfig;
+        if(area){
+            let {color = 'dodgerblue',opacity = 0.1,radius = 1000,lat,lng} = area;
+            this.area = this.L.circle([lat, lng], {color,fillColor: color,fillOpacity: opacity,radius}).addTo(this.map);
+        }
+    }
+    ipLookUp() {
+        $.ajax('http://ip-api.com/json')
+            .then(
+                (response) => {
+                    let { lat, lon } = response;
+                    this.flyTo(lat, lon,undefined,'ipLookUp')
+                },
+                (data, status) => {
+                    console.log('Request failed.  Returned status of', status);
+                }
+            );
+    }
+    handlePermission() {
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+            if (result.state === 'granted') {console.log(result.state);}
+            else if (result.state === 'prompt') {console.log(result.state);}
+            else if (result.state === 'denied') {console.log(result.state);}
+        });
+    }
+    async getAddress({lat, lng}){
+        let { mapApiKeys } = this.props;
+        try{
+            let res = await Axios.get(`https://api.neshan.org/v5/reverse?lat=${lat}&lng=${lng}`,{headers:{'Api-Key':mapApiKeys.service,Authorization:false}});
+            return res.status !== 200?'':res.data.formatted_address;
+        }
+        catch(err){return ''}
+    }
+    goToCurrent() {
+        if ("geolocation" in navigator) {
+            this.handlePermission();
+            // check if geolocation is supported/enabled on current browser
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    let { latitude:lat, longitude:lng } = position.coords;
+                    this.apis.flyTo(lat, lng,undefined,'goToCurrent');
+                },
+                (error_message) => {this.ipLookUp()}
+            )
+        }
+        else {this.ipLookUp()}
+    }
+    async route(from = [35.699739,51.338097],to=[35.699939,51.338497]){
+        let { mapApiKeys} = this.context;
+        try{
+            let param = {headers:{'Api-Key':mapApiKeys.service}}
+            let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
+            await Axios.get(url,param);
+        }
+        catch(err){return ''}
+    }
+    async showPath(path){
+        let { mapApiKeys } = this.props;
+        try{await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`,{headers:{'Api-Key':mapApiKeys.service}});}
+        catch(err){return ''}
+    }
+    flyTo(lat, lng,zoom = this.state.zoom) {
+        if(!lat || !lng){return}
+        this.map.flyTo([lat, lng], zoom,{animate: true,duration: 1.4});
+    }
+    panTo(lat, lng) {this.map.panTo({ lat, lng })}
+    async updateAddress({lat,lng}){
+        let {onChangeAddress = ()=>{}} = this.props;
+        let address = await this.getAddress({lat,lng});
+        this.setState({address});
+        onChangeAddress(address);
+    }
+    change({lat,lng}){
+        let {onChange = ()=>{}} = this.props;
+        onChange({lat,lng});
+        this.updateAddress({lat,lng})
+    }
+    move({lat, lng}){
+        let {mapConfig = {}} = this.props;
+        let {marker = true} = mapConfig;
+        if(marker){this.marker.setLatLng({ lat, lng })}
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(async () => this.setState({ value: {lat,lng} },()=>this.change({lat,lng})), 700);
+    }
+    //maptype: "dreamy" | 'standard-day'  
+    init(){
+        let { mapApiKeys,onChange,popup,isPopup,mapConfig = {},disabled,attrs = {}} = this.props;
+        let {marker = true,traffic = false,zoomControl = false,maptype = 'dreamy-gold',poi = true,zoomable = true} = mapConfig;
+        let { value,zoom } = this.state;
+        let config = {
+            key: mapApiKeys.map,maptype,poi,traffic,
+            center: [value.lat, value.lng],zoom,
+            dragging:!disabled,
+            scrollWheelZoom: 'center',
+            minZoom: zoomable ? undefined:zoom,
+            maxZoom: zoomable ? undefined:zoom,
+            zoomControl
+        }
+        let map = new window.L.Map(this.dom.current, config);
+        let L = window.L;
+        let myMap = map;
+        this.map = myMap;
+        this.L = L;
+        if(marker){this.marker = L.marker([value.lat, value.lng]).addTo(myMap);}
+        myMap.on('click', (e)=>{
+            if(attrs.onClick){return}
+            if(popup && !isPopup){this.setState({showPopup:true})}
+            else if(onChange){let { lat, lng } = e.latlng; this.map.panTo({ lat, lng })}
+        });
+        if(!disabled){
+            myMap.on('move', (e) => {
+                //marker.setLatLng(e.target.getCenter())
+                let { lat, lng } = e.target.getCenter()
+                this.move({lat,lng})
+            });
+        }
+        this.updateAddress(value);
+        this.handleMarkers()
+        this.handleArea()
+    }
+    componentDidMount(){
+        if(document.getElementById('aio-input-map-neshan') === null){
+            try{
+                const script = document.createElement("script");
+                script.src = `https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js`;
+                script.id = 'aio-input-map-neshan'
+                script.onload = () => this.init();
+                document.body.appendChild(script);
+            }
+            catch(err){console.log(err)}
+        }
+        else {this.init()}
+    }
+    componentDidUpdate(){
+        let {mapConfig = {}} = this.props;
+        let {zoom:pzoom} = mapConfig;
+        let {prevValue,prevZoom:szoom} = this.state;
+        let {value} = this.props;
+        if(JSON.stringify(prevValue) !== JSON.stringify(value) || pzoom !== szoom){
+            setTimeout(()=>{
+                this.flyTo(value.lat,value.lng,pzoom,'componentDidUpdate');
+                this.setState({prevValue:value,prevZoom:pzoom})
+            },0)
+        }
+        this.handleArea()
+        this.handleMarkers()
+    }
+    getMarkerDefaultOptions(marker){
+        let {mapConfig = {}} = this.props;
+        let {markerOptions = {}} = mapConfig;
+        let {size : dsize = 20,color : dcolor = 'orange',html : dhtml,text : dtext = ''} = markerOptions;
+        let {size = dsize,color = dcolor,html = dhtml,text = dtext} = marker;
+        return {size,color,html,text}
+    }
+    getMarker(marker){
+        let {size,color,html,text} = this.getMarkerDefaultOptions(marker);
+        let innerSize = size * 0.4;
+        let borderSize = Math.ceil(size / 10);
+        let innerTop = Math.round(size / 25);
+        let top = `-${(size / 2 + innerSize)}px`;
+        let style1 = `transform:translateY(${top});flex-shrink:0;color:${color};width:${size}px;height:${size}px;border:${borderSize}px solid;position:relative;border-radius:100%;display:flex;align-items:center;justify-content:center;`
+        let style2 = `position:absolute;left:calc(50% - ${innerSize}px);top:calc(100% - ${innerTop}px);border-top:${innerSize}px solid ${color};border-left:${innerSize}px solid transparent;border-right:${innerSize}px solid transparent;`
+        let innerHtml = '',innerText = '';
+        if(html){innerHtml = JSXToHTML(html)}
+        if(text){innerText = JSXToHTML(text)}
+        return (`<div class='aio-input-map-marker' data-parent='${this.datauniqid}' style="${style1}">${innerHtml}<div class='aio-input-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
+    }
+    handleMarkers(){
+        let {mapConfig = {}} = this.props;
+        let {markers = []} = mapConfig;
+        if(!markers){markers = []} 
+        if(this.markers.length){
+            for(let i = 0; i < this.markers.length; i++){this.markers[i].remove();}
+            this.markers = [];
+        }
+        for(let i = 0; i < markers.length; i++){
+            let marker = markers[i];
+            let {lat,lng,popup = ()=>''} = marker;
+            let pres = popup(marker)
+            if(typeof pres !== 'string'){try{pres = pres.toString()} catch{}}
+            this.markers.push(
+                this.L.marker([lat, lng],{icon:this.L.divIcon({html: this.getMarker(marker)})}).addTo(this.map).bindPopup(pres)
+            )
+        }
+    }
+    getContext(){
+        let {mapApiKeys} = this.props;
+        return {
+            mapApiKeys,
+            rootProps:{...this.props},
+            rootState:{...this.state},
+            flyTo:this.flyTo.bind(this),
+            goToCurrent:this.goToCurrent.bind(this)
+        }
+    }
+    renderPopup(){
+        let {showPopup} = this.state;
+        if(showPopup){
+            let {popup} = this.props;
+            let {attrs = {}} = popup;
+            if(popup === true){popup = {}}
+            let {value} = this.state;
+            let props = {
+                ...this.props,
+                ...popup,
+                value,
+                mapConfig:{...this.props.mapConfig,...popup.mapConfig},
+                isPopup:true,popup:false,
+                onClose:()=>this.setState({showPopup:false}),
+                attrs:{...attrs,style:{width:'100%',height:'100%',top:0,position:'fixed',left:0,zIndex:10,...attrs.style},onClick:undefined},
+                onChange:(obj,calledBySubmitButton)=>{this.move(obj);  if(calledBySubmitButton){this.setState({showPopup:false})}}
+            }
+            return <MapUnit {...props}/>
+        }
+        return null
+    }
+    render() {
+        let {attrs} = this.props;
+        return (
+            <>
+                <MapContext.Provider value={this.getContext()}>
+                    <div className='aio-input-map-container' style={attrs.style}>
+                        <div ref={this.dom} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 0  }} />
+                        <MapFooter/> <MapHeader/>
+                    </div>
+                </MapContext.Provider>
+                {this.renderPopup()}
+            </>
+        )
+    }
+}
+function MapHeader() {
+    let context = useContext(MapContext);
+    let {rootProps,rootState,flyTo,goToCurrent,mapApiKeys} = context;
+    let {mapConfig = {},onClose} = rootProps;
+    let {title,search} = mapConfig;
+    let [searchValue,setSearchValue] = useState('');
+    let [searchResult,setSearchResult] = useState([]);
+    let [loading,setLoading] = useState(false);
+    let [showResult,setShowResult] = useState(false);
+    let loadingIcon = <Icon path={mdiLoading} size={1} spin={0.4} />;
+    let closeIcon = <Icon path={mdiClose} size={0.8} onClick={() => setShowResult(false)} />;
+    let searchIcon = <Icon path={mdiMagnify} size={0.8} />;
+    let dom = createRef();
+    let timeout;
+    async function changeSearch(e) {
+        let { value } = rootState,{lat,lng} = value,searchValue = e.target.value;
+        setSearchValue(searchValue);
+        clearTimeout(timeout);
+        timeout = setTimeout(async () => {
+            try{
+                let param = {headers: {'Api-Key': mapApiKeys.service}}
+                let url = `https://api.neshan.org/v1/search?term=${searchValue}&lat=${lat}&lng=${lng}`;
+                setLoading(true); let res = await Axios.get(url, param); setLoading(false)
+                if (res.status !== 200) { return }
+                setSearchResult(res.data.items )
+            }
+            catch(err){}
+        }, 1000)
+    }
+    function SearchInput(){
+        return (<input ref={dom} value={searchValue} className='aio-input-map-serach-input' type='text' placeholder='جستجو' onChange={changeSearch} onClick={() => setShowResult(true)}/>)
+    }
+    function search_layout(){
+        let showCloseButton = !!showResult && !!searchResult.length;
+        return {
+            flex:1, row: [
+                {align: 'h', flex: 1,html: SearchInput()},
+                {show: !!loading, align: 'vh', className:'aio-input-map-serach-icon',html: loadingIcon},
+                {show: showCloseButton, align: 'vh', className:'aio-input-map-serach-icon',html: closeIcon},
+                {show: !showCloseButton && !loading, align: 'vh', className:'aio-input-map-serach-icon',html: searchIcon}
+            ]
+        }
+    }
+    function input_layout() {
+        if(!search){return false}
+        return {className: 'aio-input-map-search',row:[currentPoint_layout(),search_layout()]}
+    }
+    function result_layout() {
+        if (!searchResult || !searchResult.length || !showResult) { return false }
+        return {
+            className: 'aio-input-map-serach-results', 
+            column: searchResult.map(({ title, address, location }) => {
+                return {
+                    onClick: () => {setShowResult(false); flyTo(location.y, location.x, undefined,'result_layout')},
+                    className:'aio-input-map-search-result',
+                    column: [
+                        {html: title, className: 'aio-input-map-serach-result-text', align: 'v'},
+                        { html: address, className: 'aio-input-map-serach-result-subtext', align: 'v', style: { opacity: 0.5 } }
+                    ]
+                }
+            })
+        }
+    }
+    function header_layout(){
+        if(typeof title !== 'string' && !onClose){return false}
+        return {
+            row:[
+                {show:!!onClose,align:'vh',html:<Icon path={mdiChevronRight} size={1}/>,className:'aio-input-map-close',onClick:()=>onClose()},
+                {show:typeof title === 'string',html:title,className:'aio-input-map-title',align:'v'},
+            ]
+        }
+    }
+    function currentPoint_layout(){
+        return { className:'aio-input-map-current-point',html: <Icon path={mdiCrosshairsGps} size={0.8} onClick={() => goToCurrent()} />, align: 'vh' }
+    }
+    if(!search && !title && !onClose){return null}
+    return (
+        <RVD
+            layout={{
+                className:'aio-input-map-header of-visible' + (searchResult && searchResult.length && showResult?' aio-input-map-header-open':''),
+                column: [header_layout(),input_layout(),result_layout(),]
+            }}
+        />
+    )
+}
+function MapFooter(){
+    let context = useContext(MapContext);
+    let {rootProps,rootState} = context;
+    let {value,onChange} = rootState,{lat,lng} = value;
+    function submit_layout(){
+        if(!rootProps.isPopup){return false}
+        return {html: (<button className='aio-input-map-submit' onClick={async () => onChange(rootState.value,true)}>تایید موقعیت</button>)}
+    }
+    function details_layout(){
+        return {flex:1,column:[{html:rootState.address,className:'aio-input-map-address'},{show:!!lat && !!lng,html:()=>`${lat} - ${lng}`,className:'aio-input-map-coords'}]}
+    }
+    return (<RVD layout={{className: 'aio-input-map-footer',row:[details_layout(),submit_layout()]}}/>)
+}
+export function getDistance(p1,p2) {
+    let {lat:lat1,lng:lon1} = p1;
+    let {lat:lat2,lng:lon2} = p2;
+    let rad = Math.PI / 180;
+    let radius = 6371; //earth radius in kilometers
+    return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
+}
 class AIOInputValidate{
     constructor(props){
         this.props = props;
@@ -3065,7 +3458,7 @@ class AIOInputValidate{
     getTypes = ()=>{
         return [
             'text','number','textarea','color','password','file','image','select','multiselect','table','form',
-            'time','datepicker','list','checkbox','radio','tabs','slider','button'
+            'time','datepicker','list','checkbox','radio','tabs','slider','button','map'
         ]
     }
     getType = (v)=>{
@@ -3361,6 +3754,10 @@ class AIOInputValidate{
                 inputs:'object',
                 value:'object',
                 labelAttrs:'object|function|undefined',
+                lang:'"en"|"fa"|undefined',
+                updateInput:'function|undefined',
+                inputClassName:'string|function|undefined',
+                inputStyle:'object|function|undefined',
             },
             datepicker:{
                 value:'any',
@@ -3431,10 +3828,24 @@ class AIOInputValidate{
                 rowAttrs:'function|undefined',
                 excel:'boolean|undefined',
                 toolbar:'any',
+                disabled:'boolean|undefined',
+                loading:'any',
                 toolbarAttrs:'function|object|undefined',
                 rowGap:'number|undefined',
                 columnGap:'number|undefined',
                 onAdd:'function|object|undefined',
+            },
+            map:{
+                type:'"map"',
+                popup:'object|undefined',
+                mapConfig:'object|undefined',
+                before:'any',
+                after:'any',
+                subtext:'number|string|function',
+                disabled:'boolean|undefined',
+                loading:'any',
+                onChangeAddress:'function|undefined',
+                value:'object|undefined'
             }
         }
         let privateObject = dic[type];
