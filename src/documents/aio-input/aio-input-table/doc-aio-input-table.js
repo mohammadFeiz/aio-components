@@ -1368,7 +1368,7 @@ class OnSearchFunction extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -1393,7 +1393,7 @@ class OnSearchFunction extends Component {
 let rows = model;
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
@@ -1429,7 +1429,7 @@ class OnSearchTrue extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'},search:true},
-                {title:'Family',value:'row.family',input:{type:'text'},search:true},
+                {title:'Gender',value:'row.gender',input:{type:'text'},search:true},
                 {title:'Age',value:'row.age',input:{type:'number'},search:true},
             ]
         }
@@ -1455,7 +1455,7 @@ let rows = [
 ]
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'},search:true},
-    {title:'Family',value:'row.family',input:{type:'text'},search:true},
+    {title:'Gender',value:'row.gender',input:{type:'text'},search:true},
     {title:'Age',value:'row.age',input:{type:'number'},search:true},
 ]
 function setRows(newRows){
@@ -1796,7 +1796,7 @@ class RowAttrs extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -1831,7 +1831,7 @@ let rows = [
 ]
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 function setRows(newRows){
@@ -1949,7 +1949,7 @@ class Paging extends Component {
                     }
                 },
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
@@ -1991,7 +1991,7 @@ class Paging extends Component {
                     }
                 },
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
@@ -2044,7 +2044,7 @@ class Paging_ServerSide extends Component {
                     }
                 },
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
@@ -2099,7 +2099,7 @@ class Paging extends Component {
                     }
                 },
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
@@ -2155,23 +2155,10 @@ class RowTemplate extends Component {
         super(props);
         this.state = {
             rows:model,
-            columns:[
-                {
-                    title:'',size:42,justify:true,
-                    template:({rowIndex})=>{
-                        let {paging} = this.state;
-                        let {size,number} = paging;
-                        return rowIndex + 1 + (size * (number - 1))
-                    }
-                },
-                {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
-                {title:'Age',value:'row.age',input:{type:'number'}},
-            ]
         }
     }
     preview() {
-        let {rows,columns,paging} = this.state;
+        let {rows} = this.state;
         return (
             <div className='example'>
                 <AIOInput
@@ -2180,51 +2167,12 @@ class RowTemplate extends Component {
                     value={rows}
                     rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
                     onChange={(newRows)=>this.setState({rows:newRows})}
-                    paging={paging}
                 />                
                 {
                     AIODoc().Code(`
 
 class Paging extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            rows:[],
-            columns:[
-                {
-                    title:'',size:42,justify:true,
-                    template:({rowIndex})=>{
-                        let {paging} = this.state;
-                        let {size,number} = paging;
-                        return rowIndex + 1 + (size * (number - 1))
-                    }
-                },
-                {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
-                {title:'Age',value:'row.age',input:{type:'number'}},
-            ],
-            paging:{
-                serverSide:true,
-                number:1,
-                size:15,
-                sizes:[15,30,50],
-                length:model.length,
-                onChange:(paging)=>{
-                    this.setState({paging},()=>{
-                        this.setState({rows:this.getRowsByPaging()})
-                    })
-                }
-            }
-        }
-    }
-    componentDidMount(){
-        this.setState({rows:this.getRowsByPaging()})
-    }
-    getRowsByPaging(){
-        let {paging} = this.state;
-        let {size,number} = paging;
-        return model.slice((number - 1) * size,number * size)
-    }
+    ...
     render() {
         let {rows,columns,paging} = this.state;
         return (
@@ -2234,7 +2182,6 @@ class Paging extends Component {
                 value={rows}
                 rowTemplate={({row})=><div className='custom-row'>{row.name}</div>}
                 onChange={(newRows)=>this.setState({rows:newRows})}
-                paging={paging}
             />                
         )
     }
@@ -2263,7 +2210,7 @@ class RowsTemplate extends Component {
             },
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2305,7 +2252,7 @@ class App extends Component {
             rows:[],
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ],
             paging:{
@@ -2392,7 +2339,7 @@ class RowAfter extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2421,7 +2368,7 @@ class App extends Component {
             rows:[],
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2461,7 +2408,7 @@ class RowBefore extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2490,7 +2437,7 @@ class Paging extends Component {
             rows:[],
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'}},
-                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Gender',value:'row.gender',input:{type:'text'}},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2593,7 +2540,7 @@ class OnChangeSort extends Component {
             rows:model,
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'},sort:true},
-                {title:'Family',value:'row.family',input:{type:'text'},sort:true},
+                {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }
@@ -2627,7 +2574,7 @@ class Paging extends Component {
             rows:[],
             columns:[
                 {title:'Name',value:'row.name',input:{type:'text'},sort:true},
-                {title:'Family',value:'row.family',input:{type:'text'},sort:true},
+                {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
                 {title:'Age',value:'row.age',input:{type:'number'}},
             ]
         }

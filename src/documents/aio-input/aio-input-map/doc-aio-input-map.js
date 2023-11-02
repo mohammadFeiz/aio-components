@@ -373,17 +373,17 @@ class Markers extends Component {
                 {
                     lat:35.76025388385241,lng:51.40858858823776,size:30,color:'orange',
                     html:<Icon path={mdiOfficeBuilding} size={1}/>,
-                    popup:({latitude,longitude})=>latitude
+                    popup:({lat,lng})=>lat
                 },
                 {
                     lat:35.76920327411297,lng:51.40546649694443,size:30,color:'red',
                     html:<Icon path={mdiOfficeBuilding} size={1}/>,
-                    popup:({latitude,longitude})=>latitude
+                    popup:({lat,lng})=>lat
                 },
                 {
                     lat:35.78097175634515,lng:51.39394909143448,size:30,color:'red',
                     html:<Icon path={mdiGift} size={1}/>,text:<div style={{color:'#fff',background:'red',padding:'0 12px'}}>this is my text</div>,
-                    popup:({latitude,longitude})=>latitude
+                    popup:({lat,lng})=>lat
                 }
             ]
         }
@@ -409,7 +409,7 @@ class Markers extends Component {
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:markers[0].latitude,size:120,align:'vh'},
+                                            {html:markers[0].lat.toFixed(6),size:120,align:'vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lat',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -424,7 +424,7 @@ class Markers extends Component {
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:markers[0].longitude,size:120,align:'vh'},
+                                            {html:markers[0].lng.toFixed(6),size:120,align:'vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }

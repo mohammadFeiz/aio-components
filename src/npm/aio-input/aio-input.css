@@ -1565,6 +1565,10 @@
     overflow:hidden;
     border:1px solid #ddd;
     font-family: inherit;
+    min-height:240px;
+}
+.aio-input-map{
+    direction: rtl;
 }
 .leaflet-control{
     display: none;
@@ -1572,7 +1576,6 @@
 .aio-input-map-footer{
     width:100%;
     z-index:10;
-    position: absolute;
     background:#fff;
     bottom:0;
     width:calc(100% - 2px);
@@ -1628,7 +1631,6 @@
 }
 
 .aio-input-map-header{
-    position: absolute;
     direction:rtl;
     padding:12px;
     width: calc(100% - 2px);

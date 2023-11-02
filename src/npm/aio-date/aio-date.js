@@ -116,15 +116,18 @@ export default function AIODate() {
         return [year, month, day, hour, minute, second, tenthsecond]
       }
       else if (typeof date === 'object') {
-        let year = date.getFullYear();
-        let month = date.getMonth() + 1;
-        let day = date.getDate();
-        let hour = date.getHours();
-        let minute = date.getMinutes();
-        let second = date.getSeconds();
-        let miliseconds = date.getMilliseconds();
-        let tenthsecond = Math.round(miliseconds / 100);
-        return [year, month, day, hour, minute, second, tenthsecond]
+        if(typeof date.year === 'number'){return [date.year,date.month,date.day,date.hour]}
+        else {
+          let year = date.getFullYear();
+          let month = date.getMonth() + 1;
+          let day = date.getDate();
+          let hour = date.getHours();
+          let minute = date.getMinutes();
+          let second = date.getSeconds();
+          let miliseconds = date.getMilliseconds();
+          let tenthsecond = Math.round(miliseconds / 100);
+          return [year, month, day, hour, minute, second, tenthsecond]
+        }
       }
       else { return false }
     },

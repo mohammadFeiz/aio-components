@@ -1180,7 +1180,6 @@ class Form extends Component {
                     ]
                 },
                 {
-                    show:!!label,
                     flex: 1, className: 'aio-input-form-item-input-container of-visible',
                     column: [
                         this.label_layout(label, labelAttrs),
@@ -1306,6 +1305,7 @@ class Table extends Component {
                 }
                 if (type === 'undefined') { return def }
                 if (type === 'function') { return value({ row, column, rowIndex }) }
+                return value === undefined?def:value
             },
             setCell: (row, column, value) => {
                 if(column.input && column.input.onChange) { column.input.onChange({ value, row, column }) }
@@ -1512,7 +1512,7 @@ function TablePaging() {
             {
                 sizes.length &&
                 <AIOInput
-                    className='aio-input-table-paging-button aio-input-table-paging-size'
+                    attrs={{className:'aio-input-table-paging-button aio-input-table-paging-size'}}
                     type='select' value={size} options={sizes} optionText='option' optionValue='option'
                     onChange={(value) => changePaging({ size: value })}
                 />
@@ -2176,14 +2176,15 @@ class DPFooter extends Component {
     static contextType = DPContext;
     render() {
         let { getProp, changeActiveDate, translate } = this.context;
-        let onClear = getProp('onClear');
+        let remove = getProp('remove');
         let disabled = getProp('disabled');
+        let onChange = getProp('onChange',()=>{})
         let size = getProp('size',180);
         if (disabled) { return null }
         let buttonStyle = { padding: `${size / 20}px 0` };
         return (
             <div className='aio-input-datepicker-footer' style={{ fontSize: size / 13 }}>
-                {onClear && <button style={buttonStyle} onClick={() => onClear()}>{translate('Clear')}</button>}
+                {remove && <button style={buttonStyle} onClick={() => onChange(false)}>{translate('Clear')}</button>}
                 <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
             </div>
         )
@@ -2277,7 +2278,9 @@ class DPCell extends Component {
         let { isEqual, isMatch, getMonths, getToday } = AIODate();
         let isActive = !value ? false : AIODate().isEqual(dateArray, value);
         let isToday = isEqual(dateArray, getToday({ calendarType }))
-        let isDisabled = typeof disabled === 'boolean' ? disabled : isMatch({ date: dateArray, matchers: disabled })//notice
+        let dateDisabled = getProp('dateDisabled');
+        let isDateDisabled = !dateDisabled?false:isMatch({ date: dateArray, matchers: dateDisabled });
+        let isDisabled = disabled || isDateDisabled;
         let Attrs = {}
         if (dateAttrs) { Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) }) || {} }
         let className = this.getClassName(isActive, isToday, isDisabled, Attrs.className);
@@ -3113,9 +3116,7 @@ class MapUnit extends Component {
                     let { lat, lon } = response;
                     this.flyTo(lat, lon,undefined,'ipLookUp')
                 },
-                (data, status) => {
-                    console.log('Request failed.  Returned status of', status);
-                }
+                (data, status) => console.log('Request failed.  Returned status of', status)
             );
     }
     handlePermission() {
@@ -3162,8 +3163,9 @@ class MapUnit extends Component {
         catch(err){return ''}
     }
     flyTo(lat, lng,zoom = this.state.zoom) {
+        let animate = getDistance(this.state.value,{lat,lng}) > 0.3;
         if(!lat || !lng){return}
-        this.map.flyTo([lat, lng], zoom,{animate: true,duration: 1.4});
+        this.map.flyTo([lat, lng], zoom,{animate,duration: 1});
     }
     panTo(lat, lng) {this.map.panTo({ lat, lng })}
     async updateAddress({lat,lng}){
@@ -3287,29 +3289,19 @@ class MapUnit extends Component {
     }
     getContext(){
         let {mapApiKeys} = this.props;
-        return {
-            mapApiKeys,
-            rootProps:{...this.props},
-            rootState:{...this.state},
-            flyTo:this.flyTo.bind(this),
-            goToCurrent:this.goToCurrent.bind(this)
-        }
+        return {mapApiKeys,rootProps:{...this.props},rootState:{...this.state},flyTo:this.flyTo.bind(this),goToCurrent:this.goToCurrent.bind(this)}
     }
     renderPopup(){
         let {showPopup} = this.state;
         if(showPopup){
-            let {popup} = this.props;
-            let {attrs = {}} = popup;
+            let {popup} = this.props,{attrs = {}} = popup,{value} = this.state;
             if(popup === true){popup = {}}
-            let {value} = this.state;
             let props = {
-                ...this.props,
-                ...popup,
-                value,
+                ...this.props,...popup,value,
                 mapConfig:{...this.props.mapConfig,...popup.mapConfig},
                 isPopup:true,popup:false,
                 onClose:()=>this.setState({showPopup:false}),
-                attrs:{...attrs,style:{width:'100%',height:'100%',top:0,position:'fixed',left:0,zIndex:10,...attrs.style},onClick:undefined},
+                attrs:{...attrs,style:{width:'100%',height:'100%',top:0,position:'fixed',left:0,zIndex:1000000,...attrs.style},onClick:undefined},
                 onChange:(obj,calledBySubmitButton)=>{this.move(obj);  if(calledBySubmitButton){this.setState({showPopup:false})}}
             }
             return <MapUnit {...props}/>
@@ -3317,14 +3309,16 @@ class MapUnit extends Component {
         return null
     }
     render() {
-        let {attrs} = this.props;
+        let {attrs = {}} = this.props;
         return (
             <>
                 <MapContext.Provider value={this.getContext()}>
-                    <div className='aio-input-map-container' style={attrs.style}>
-                        <div ref={this.dom} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 0  }} />
-                        <MapFooter/> <MapHeader/>
-                    </div>
+                    <RVD
+                        layout={{
+                            className:'aio-input-map-container',style:attrs.style,
+                            column:[{html:<MapHeader/>},{flex:1,attrs:{ref:this.dom},html:''},{html:<MapFooter/>}]
+                        }}
+                    />
                 </MapContext.Provider>
                 {this.renderPopup()}
             </>
@@ -3506,231 +3500,142 @@ class AIOInputValidate{
         if(error){return error}
     }
     getValidateObject = (type)=>{
+        let options ='array|undefined',optionText = 'any',optionValue = 'any',optionBefore = 'any',optionAfter = 'any',optionSubtext = 'any',optionDisabled = 'any',optionAttrs = 'any';
         let dic = {
             text:{
-                type:'"text"',
+                type:'"text"',value:'string|number|undefined',
                 inputAttrs:"object|undefined",
-                justNumber:"boolean|array|undefined",
-                value:'string|number|undefined',
-                options:'array|undefined',
-                maxLength:'number|undefined',
-                filter:'array',
-                loading:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                options,optionText,optionValue,optionBefore,optionAfter,optionSubtext,optionDisabled,optionAttrs,
+                justNumber:"boolean|array|undefined",maxLength:'number|undefined',filter:'array',
+                before:'any',after:'any',subtext:'number|string|function',
                 caret:'any',
-                optionText:'any',
-                optionValue:'any',
-                optionAttrs:'any',
                 popover:'object|undefined',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 placeholder:'any',
-                optionSubtext:'string|number|function|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
-                optionDisabled:'string|function|boolean|undefined',
             },
             textarea:{
-                type:'"textarea"',
-                value:'string|number|undefined',
+                type:'"textarea"',value:'string|number|undefined',
                 inputAttrs:"object|undefined",
                 caret:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                before:'any',after:'any',subtext:'number|string|function',
                 loading:'any',
                 maxLength:'number|undefined',
-                options:'array|undefined',
-                optionText:'any',
-                optionValue:'any',
-                optionAttrs:'any',
+                options,optionText,optionValue,optionBefore,optionAfter,optionSubtext,optionDisabled,optionAttrs,
                 popover:'object|undefined',
                 disabled:'boolean|undefined',
-                placeholder:'any',
-                optionSubtext:'string|number|function|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
-                optionDisabled:'string|function|boolean|undefined',
+                placeholder:'any'
             },
             number:{
                 type:'"number"',
                 inputAttrs:"object|undefined",
                 value:'""|number|undefined',
                 caret:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                options:'array|undefined',
-                optionText:'any',
-                optionValue:'any',
-                optionAttrs:'any',
-                loading:'any',
+                before:'any',after:'any',subtext:'number|string|function',
+                options,optionText,optionValue,optionBefore,optionAfter,optionSubtext,optionDisabled,optionAttrs,
+                disabled:'boolean|undefined',loading:'any',
                 swip:'boolean|undefined',
                 popover:'object|undefined',
-                disabled:'boolean|undefined',
-                placeholder:'any',
-                optionBefore:'any',
-                optionAfter:'any',
-                optionDisabled:'string|function|boolean|undefined',
-
+                placeholder:'any'
             },
             password:{
-                type:'"password"',
+                type:'"password"',value:'string|number|undefined',
                 inputAttrs:"object|undefined",
                 justNumber:"boolean|array|undefined",
-                value:'string|number|undefined',
                 maxLength:'number|undefined',
                 filter:'array',
-                loading:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
+                before:'any',after:'any',subtext:'number|string|function',
                 visible:'boolean|undefined',
-                disabled:'boolean|undefined',
                 placeholder:'any',
-
             },
             color:{
-                type:'"color"',
+                type:'"color"',value:'string|number|undefined',
                 inputAttrs:"object|undefined",
-                value:'string|number|undefined',
-                loading:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                options:'array|undefined',
-                optionText:'any',
-                optionValue:'any',
-                optionAttrs:'any',
-                disabled:'boolean|undefined',
+                before:'any',after:'any',subtext:'number|string|function',
+                options,optionText,optionValue,optionAttrs,
+                disabled:'boolean|undefined',loading:'any',
             },
             checkbox:{
-                type:'"checkbox"',
+                type:'"checkbox"',value:'boolean|undefined',
                 text:'any',
-                value:'boolean|undefined',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                disabled:'boolean|undefined',
-                loading:'any',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
                 checkIcon:'any', 
             },
             radio:{
-                type:'"radio"',
-                options:'array',
-                value:'any',
-                multiple:'boolean|undefined',
-                before:'any',
-                after:'any',
-                optionText:'any',
-                optionValue:'any',
-                subtext:'number|string|function',
-                disabled:'boolean|undefined',
-                loading:'any',
-                optionAttrs:'any',
-                optionSubtext:'string|number|function|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
-                optionDisabled:'string|function|boolean|undefined',
+                type:'"radio"',value:'any',
+                options,optionText,optionValue,optionBefore,optionAfter,optionSubtext,optionDisabled,optionAttrs,
                 optionCheckIcon:'any',
-                
+                multiple:'boolean|undefined',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
             },
             tabs:{
-                type:'"tabs"',
-                options:'array',
-                value:'any',
-                before:'any',
-                after:'any',
-                optionText:'any',
-                optionValue:'any',
-                subtext:'number|string|function',
-                disabled:'boolean|undefined',
-                loading:'any',
+                type:'"tabs"',value:'any',
+                options:'array',optionText:'any',optionValue:'any',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
                 optionAttrs:'any',
                 optionSubtext:'string|number|function|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
+                optionBefore:'any',optionAfter:'any',
                 optionDisabled:'string|function|boolean|undefined',
                 optionCheckIcon:'any',
-                
             },
             select:{
-                type:'"select"',
+                type:'"select"',value:'number|string|undefined',
                 text:'any',
-                options:'array',
-                value:'number|string|undefined',
+                options:'array',optionText:'any',optionValue:'any',
                 search:'boolean|undefined',
                 caret:'any',
                 optionAttrs:'function|string|undefined|object',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                loading:'any',
-                optionText:'any',
-                optionValue:'any',
+                before:'any',after:'any',subtext:'number|string|function',
                 optionAttrs:'any',
                 popover:'object|undefined',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 placeholder:'any',
-                optionSubtext:'string|number|function|undefined',
                 optionClose:'boolean|function|string|undefined',
                 optionChecked:'string|function|boolean|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
+                optionBefore:'any',optionAfter:'any',optionSubtext:'string|number|function|undefined',
                 optionDisabled:'string|function|boolean|undefined',
                 optionCheckIcon:'any',
                 onSwap:'function|undefined',
             },
             file:{
-                type:'"file"',
+                type:'"file"',value:'any',
                 text:'any',
                 multiple:'boolean',
-                value:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                before:'any',after:'any',subtext:'number|string|function',
                 inputAttrs:"object|undefined",
-                loading:'any',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 center:'boolean|undefined',
             },
             multiselect:{
                 type:'"multiselect"',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                before:'any',after:'any',subtext:'number|string|function',
                 text:'any',
                 options:'array',
-                optionText:'any',
-                optionValue:'any',
+                optionText:'any',optionValue:'any',
                 optionAttrs:'any',
                 value:'array|undefined',
                 popover:'object|undefined',
                 hideTags:'boolean|undefined',
                 search:'boolean|undefined',
-                loading:'any',
                 caret:'any',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 optionTagBefore:'any',
                 optionTagAfter:'any',
                 optionTagAttrs:'any',
                 optionCheckIcon:'any',
                 optionSubtext:'string|number|function|undefined',
-                optionBefore:'any',
-                optionAfter:'any',
+                optionBefore:'any',optionAfter:'any',
                 optionDisabled:'string|function|boolean|undefined',
             },
             slider:{
                 value:'number|array|undefined',
                 type:'"slider"',
-                before:'any',
-                after:'any',
-                start:'number|undefined',
-                step:'number|undefined',
-                end:'number|undefined',
-                disabled:'boolean|undefined',
-                loading:'any',
+                before:'any',after:'any',
+                start:'number|undefined',step:'number|undefined',end:'number|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 showValue:'boolean|"inline"|undefined',
                 lineStyle:'function|object|undefined',
                 fillStyle:'function|object|undefined',
@@ -3763,65 +3668,50 @@ class AIOInputValidate{
                 value:'any',
                 type:'"datepicker"',
                 caret:'any',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                before:'any',after:'any',subtext:'number|string|function',
                 placeholder:'any',
-                loading:'any',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
                 popover:'object|undefined',
-                calendarType:'"jalali"|"gregorian"|undefined',
-                unit:'"month"|"day"|"hour"',
+                calendarType:'"jalali"|"gregorian"|undefined',unit:'"month"|"day"|"hour"',theme:'array|undefined',size:'number|undefined',startYear:'string|number|undefined',endYear:'string|number|undefined',
                 pattern:'string|undefined',
+                dateDisabled:'array|undefined',
+                dateAttrs:'function|undefined',
+                remove:'boolean|undefined'
             },
             image:{
-                type:'"image"',
-                value:'object|undefined',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
+                type:'"image"',value:'object|undefined',
+                before:'any',after:'any',subtext:'number|string|function',
                 placeholder:'any',
                 attrs:'object|undefined',
-                width:'string|number|undefined',
-                height:'string|number|undefined',
+                width:'string|number|undefined',height:'string|number|undefined',
                 preview:'boolean|undefined',
-                loading:'any',
-                disabled:'boolean|undefined',
+                disabled:'boolean|undefined',loading:'any',
             },
             time:{
-                type:'"time"',
-                value:'object|undefined',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                loading:'any',
-                disabled:'boolean|undefined',
-                
+                type:'"time"',value:'object|undefined',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
             },
             button:{
-                type:'"button"',
-                before:'any',
-                after:'any',
-                loading:'any',
-                disabled:'boolean|undefined',
-                subtext:'number|string|function',
+                type:'"button"',value:'any',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
                 caret:'any',
-                value:'any',
                 center:'boolean|undefined',
                 text:'any',
                 popover:'object|undefined',   
             },
             list:{
-                type:'"list"',
-                value:'any',
+                type:'"list"',value:'any',
                 options:'array',
                 size:'number|undefined',
-                width:'number|undefined'
+                width:'number|undefined',
+                decay:'number|undefined',
+                stop:'number|undefined',
             },
             table:{
-                type:'"table"',
+                type:'"table"',value:'array|undefined',
                 placeholder:'any',
-                value:'array|undefined',
                 columns:'array|undefined',
                 onSwap:'function|undefined|true',
                 getValue:'object|undefined',
@@ -3834,18 +3724,24 @@ class AIOInputValidate{
                 rowGap:'number|undefined',
                 columnGap:'number|undefined',
                 onAdd:'function|object|undefined',
+                onRemove:'function|boolean|undefined',
+                onSearch:'function|boolean|undefined',
+                headerAttrs:'function|object|undefined',
+                paging:'object|undefined',
+                rowTemplate:'function|undefined',
+                rowsTemplate:'function|undefined',
+                rowAfter:'function|undefined',
+                rowBefore:'function|undefined',
+                onChangeSort:'function|undefined'
             },
             map:{
-                type:'"map"',
+                type:'"map"',value:'object|undefined',
                 popup:'object|undefined',
                 mapConfig:'object|undefined',
-                before:'any',
-                after:'any',
-                subtext:'number|string|function',
-                disabled:'boolean|undefined',
-                loading:'any',
+                before:'any',after:'any',subtext:'number|string|function',
+                disabled:'boolean|undefined',loading:'any',
                 onChangeAddress:'function|undefined',
-                value:'object|undefined'
+                
             }
         }
         let privateObject = dic[type];

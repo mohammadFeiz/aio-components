@@ -7,16 +7,18 @@ export default class DOC_AIOForm extends Component{
             <DOC
                 {...this.props}
                 navId='calendarType'
-                navs={[
-                    {text:'calendarType',id:'calendarType',COMPONENT:()=><CalendarType/>},
-                    {text:'unit',id:'unit',COMPONENT:()=><Unit/>},
-                    {text:'theme',id:'theme',COMPONENT:()=><Theme/>},
-                    {text:'size',id:'size',COMPONENT:()=><Size/>},
-                    {text:'startYear,endYear',id:'startYear-endYear',COMPONENT:()=><StartYearEndYear/>},
-                    {text:'disabled',id:'disabled',COMPONENT:()=><Disabled/>},
-                    {text:'dateAttrs',id:'dateAttrs',COMPONENT:()=><DateAttrs/>},
-                    {text:'onClear',id:'onClear',COMPONENT:()=><OnClear/>},
-                ]}
+                nav={{
+                    items:[
+                        {text:'calendarType',id:'calendarType',render:()=><CalendarType/>},
+                        {text:'unit',id:'unit',render:()=><Unit/>},
+                        {text:'theme',id:'theme',render:()=><Theme/>},
+                        {text:'size',id:'size',render:()=><Size/>},
+                        {text:'startYear,endYear',id:'startYear-endYear',render:()=><StartYearEndYear/>},
+                        {text:'disabled',id:'disabled',render:()=><Disabled/>},
+                        {text:'dateAttrs',id:'dateAttrs',render:()=><DateAttrs/>},
+                        {text:'onClear',id:'onClear',render:()=><OnClear/>},
+                    ]
+                }}
             />
         )
     }

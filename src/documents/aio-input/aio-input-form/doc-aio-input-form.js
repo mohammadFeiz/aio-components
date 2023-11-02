@@ -377,7 +377,29 @@ function e_exist(type, prop) {
             loading: true, 
             // caret_false: true,caret_html:true,
             attrs:true,
-            popover:true
+            popover:true,
+            calendarType:true,
+            unit_month:true,
+            unit_hour:true,
+            theme:true,
+            size:true,
+            startYear_endYear__number___:true,
+            startYear_endYear__string___:true,
+            dateDisabled__between___:true,
+            dateDisabled__between_equal___:true,
+            dateDisabled__between_equal___:true,
+            dateDisabled__not_between___:true,
+            dateDisabled__not_between_equal___:true,
+            dateDisabled__equal___:true,
+            dateDisabled__not_equal___:true,
+            dateDisabled__greater___:true,
+            dateDisabled__greater_equal___:true,
+            dateDisabled__less___:true,
+            dateDisabled__less_equal___:true,
+            dateDisabled__weekday_equal___:true,
+            dateDisabled__weekday_not_equal___:true,
+            dateAttrs:true,
+            remove:true,
         },
         image:{
             placeholder:true,
@@ -615,7 +637,6 @@ optionAttrs: { style: { width: '100%' } }
             `
         ]
     }
-    
     if (prop === 'optionAttrs__function___') {
         return [
             {
@@ -1179,6 +1200,228 @@ value:{year:2022,month:6,day:25},
             {},
             `
 value:{year:2022,month:6,day:25,hour:12,minute:30}
+            `
+        ]
+    }
+    if (prop === 'calendarType') {
+        return [
+            {calendarType:'jalali'},
+            `
+calendarType:'jalali'
+            `
+        ]
+    }
+    if (prop === 'unit_month') {
+        return [
+            {unit:'month'},
+            `
+unit:'month'
+            `
+        ]
+    }
+    if (prop === 'unit_hour') {
+        return [
+            {unit:'hour'},
+            `
+unit:'hour'
+            `
+        ]
+    }
+    if (prop === 'theme') {
+        return [
+            {theme:['#add8e6','#777']},
+            `
+theme:['#add8e6','#777']
+            `
+        ]
+    }
+    if (prop === 'size') {
+        return [
+            {size:100},
+            `
+size:100
+            `
+        ]
+    }
+    if (prop === 'startYear_endYear__number___') {
+        return [
+            {startYear:2012,endYear:2030},
+            `
+startYear:2012,endYear:2030
+            `
+        ]
+    }
+    if (prop === 'startYear_endYear__string___') {
+        return [
+            {startYear:'-10',endYear:'+5'},
+            `
+startYear:'-10',endYear:'+5'
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__between___') {
+        return [
+            {dateDisabled:['<>,2022,2024']},
+            `
+dateDisabled:['<>,2022,2024']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__between_equal___') {
+        return [
+            {dateDisabled:['<=>,2022,2024']},
+            `
+dateDisabled:['<=>,2022,2024']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__not_between___') {
+        return [
+            {dateDisabled:['!<>,2022,2024']},
+            `
+dateDisabled:['!<>,2022,2024']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__not_between_equal___') {
+        return [
+            {dateDisabled:['!<=>,2022,2024']},
+            `
+dateDisabled:['!<=>,2022,2024']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__equal___') {
+        return [
+            {dateDisabled:['=,2022/4/5,2022/6/7,2022/8/12']},
+            `
+dateDisabled:['=,2022/4/5,2022/6/7,2022/8/12']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__not_equal___') {
+        return [
+            {dateDisabled:['!=,2022/4/5']},
+            `
+dateDisabled:['!=,2022/4/5']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__greater___') {
+        return [
+            {dateDisabled:['>,2022/4/5']},
+            `
+dateDisabled:['>,2022/4/5']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__greater_equal___') {
+        return [
+            {dateDisabled:['>=,2022/4/5']},
+            `
+dateDisabled:['>=,2022/4/5']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__less___') {
+        return [
+            {dateDisabled:['<,2022/4/5']},
+            `
+dateDisabled:['<,2022/4/5']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__less_equal___') {
+        return [
+            {dateDisabled:['<=,2022/4/5']},
+            `
+dateDisabled:['<=,2022/4/5']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__weekday_equal___') {
+        return [
+            {dateDisabled:['w,6,4']},
+            `
+dateDisabled:['w,6,4']
+            `
+        ]
+    }
+    if (prop === 'dateDisabled__weekday_not_equal___') {
+        return [
+            {dateDisabled:['!w,6']},
+            `
+dateDisabled:['!w,6']
+            `
+        ]
+    }
+    if (prop === 'dateAttrs') {
+        return [
+            {
+                dateAttrs:({isMatch,isActive,isToday})=>{
+                    if(isActive){
+                        return {
+                            style:{
+                                background:'dodgerblue',
+                                color:'#fff' 
+                            }
+                        }
+                    }
+                    if(isToday){
+                        return {
+                            style:{
+                                color:'red',fontSize:14,fontWeight:'bold',border:'1px solid',borderRadius:'100%'
+                            }
+                        }
+                    }
+                    let matchers = [
+                        '<>,2022/4/5,2022/4/18'
+                    ];
+                    if(isMatch(matchers)){
+                        return {
+                            style:{
+                                background:'orange'
+                            }
+                        }
+                    }
+                }
+            },
+            `
+dateAttrs:({isMatch,isActive,isToday})=>{
+    if(isActive){
+        return {
+            style:{
+                background:'dodgerblue',
+                color:'#fff' 
+            }
+        }
+    }
+    if(isToday){
+        return {
+            style:{
+                color:'red',fontSize:14,fontWeight:'bold',border:'1px solid',borderRadius:'100%'
+            }
+        }
+    }
+    let matchers = [
+        '<>,2022/4/5,2022/4/18'
+    ];
+    if(isMatch(matchers)){
+        return {
+            style:{
+                background:'orange'
+            }
+        }
+    }
+}
+            `
+        ]
+    }
+    if (prop === 'remove') {
+        return [
+            {remove:true},
+            `
+remove:true
             `
         ]
     }

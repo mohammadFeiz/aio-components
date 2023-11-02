@@ -38,7 +38,6 @@ class Basic extends Component {
                     type='form'
                     value={model}
                     labelAttrs={{style:{marginRight:12}}}
-                    inputAttrs={{style:{border:'none'}}}
                     inputs={{
                         gap:12,
                         row:[

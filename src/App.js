@@ -1,10 +1,8 @@
 import React,{Component} from "react";
 import './App.css'
 import AIOStorage from './npm/aio-storage/aio-storage';
-import DOC_AIOInput from "./documents/aio-input/doc-aio-input";
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
-import DOC_AIOInput_Datepicker from './documents/aio-input/aio-input-datepicker/doc-aio-input-datepicker';
 import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
 import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
 import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map';
@@ -33,10 +31,8 @@ export default class AIOComponents extends Component{
     this.state = {
       part:this.storage.load({name:'part',def:'aio-input'}),
       parts:{
-        'aio-input':DOC_AIOInput,
         'aio-input-table':DOC_AIOInput_Table,
         'aio-input-slider':DOC_AIOInput_Slider,
-        'aio-input-datepicker':DOC_AIOInput_Datepicker,
         'aio-input-image':DOC_AIOInput_Image,
         'aio-input-list':DOC_AIOInput_List,
         'aio-input-form':DOC_AIOInput_Form,
@@ -66,7 +62,11 @@ export default class AIOComponents extends Component{
   }
   part(){
     let {parts,part} = this.state;
-    let COMPONENT = parts[part]
+    let COMPONENT = parts[part];
+    if(!COMPONENT){
+      this.changePart(false);
+      return
+    }
     let props = {
       id:part,
       goToHome:()=>this.changePart(false),
