@@ -544,6 +544,7 @@ class Label extends Component {
                     onChange={(value)=>this.setState({value})}
                     labelStep={10}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -561,6 +562,7 @@ const [value,setValue] = useState(50);
                     onChange={(value)=>this.setState({value})}
                     labelStep={[0,50,70,100]}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -584,6 +586,7 @@ const [value,setValue] = useState(50);
                         else {return value}
                     }}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -608,6 +611,7 @@ const [value,setValue] = useState(50);
                     labelStep={10}
                     labelRotate={45}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -627,6 +631,7 @@ const [value,setValue] = useState(50);
                     labelStep={10}
                     labelRotate={(value)=>value === 0 || value === 100?90:0}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -646,6 +651,7 @@ const [value,setValue] = useState(50);
                     labelStep={10}
                     labelStyle={{top:40,fontSize:16,color:'dodgerblue'}}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);
@@ -663,10 +669,12 @@ const [value,setValue] = useState(50);
                     type='slider' value={value} 
                     onChange={(value)=>this.setState({value})}
                     labelStep={10}
-                    labelStyle={(value)=>{
-                        return {top:40,fontSize:16,color:value < 40?'red':'dodgerblue'}
+                    labelStyle={(v)=>{
+                        let active = Math.round(value / 10) * 10 === v;
+                        return {top:40,fontSize:active?24:16,color:v < 40?'red':'dodgerblue',fontWeight:active?'bold':undefined}
                     }}
                 />
+                {<div style={{height:60}}></div>}
                 {
                     AIODoc().Code(`
 const [value,setValue] = useState(50);

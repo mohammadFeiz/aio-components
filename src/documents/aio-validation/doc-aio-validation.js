@@ -1,6 +1,5 @@
 import React,{Component} from 'react';
-import AIOValidation from './../../npm/aio-validation/aio-validation';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput,{AIOValidation} from './../../npm/aio-input/aio-input';
 import DOC from '../../resuse-components/doc';
 export default class DOC_AIOValidation extends Component{
     constructor(props){

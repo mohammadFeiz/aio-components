@@ -14,12 +14,13 @@ export default class DOC_AIOForm extends Component {
             <DOC
                 {...this.props}
                 navId='testFocus'
-                navs={[
-                    { text: 'basic', id: 'basic', COMPONENT: () => <Basic /> },
-                    { text: 'mouse access', id: 'mouseAccess', COMPONENT: () => <MouseAccess /> },
-                    { text: 'test focus', id: 'testFocus', COMPONENT: () => <TestFocus /> }
-
-                ]}
+                nav={{
+                    items:[
+                        { text: 'basic', id: 'basic', render: () => <Basic /> },
+                        { text: 'mouse access', id: 'mouseAccess', render: () => <MouseAccess /> },
+                        { text: 'test focus', id: 'testFocus', render: () => <TestFocus /> }
+                    ]
+                }}
             />
         )
     }

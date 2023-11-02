@@ -553,15 +553,3 @@ export default function AIODate() {
     getDateByPattern: $$.getDateByPattern
   }
 }
-//  getToday {calendarType,pattern}
-// isMatch {matchers,date}
-// getWeekDay {calnedarType,date}
-// getDateOffset  getDelta({*date,otherDate,pattern}) return {day,hour,minute,second,tenthsecond}
-// getByOffset getNextTime {date,offset,pattern,jalali}
-// remove getPassedTime getRemainingTime
-// calendarType only in getWeekDays getMonths getToday
-// all functions get one object as parameter
-//gregorianToJalali => toJalali ({*date,pattern})
-//jalaliToGregorian => toGregorian ({*date,pattern})
-//getDaysBetween removed instead use getDelta
-//getMonthDaysLength ({*date})

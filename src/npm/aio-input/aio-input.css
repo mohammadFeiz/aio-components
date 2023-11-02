@@ -468,7 +468,9 @@
 .aio-input-slider-vertical .aio-input-slider-value {
     height: 100%;
 }
-
+.aio-input-slider-value{
+    overflow:visible;
+}
 .aio-input-number {
     height: 36px;
 }
