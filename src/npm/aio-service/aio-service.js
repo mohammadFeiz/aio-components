@@ -120,7 +120,7 @@ export default class AIOservice{
       ]
       for(let prop in p){
         if(properties.indexOf(prop) === -1){
-          let error = `aio-service with id:${id} error => ${prop} is not a valid property for request object. valid proprties for request object is ${properties.split(' | ')}`
+          let error = `aio-service with id:${id} error => ${prop} is not a valid property for request object. valid proprties for request object is ${properties.join(' | ')}`
           helper.showAlert({type:'error',text:error});
           return error
         }

@@ -6,7 +6,6 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './aio-popup.css';
 
-
 export default class AIOPopup {
   constructor(obj = {}){
     this.rtl = obj.rtl

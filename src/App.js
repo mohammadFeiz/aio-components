@@ -80,8 +80,8 @@ export default class AIOComponents extends Component{
     return (
       <div className='aio-components'>
         {
-          Object.keys(parts).map((o)=>{
-            return (<div className='aio-component' onClick={()=>this.changePart(o)}>{o}</div>)
+          Object.keys(parts).map((o,i)=>{
+            return (<div key={i} className='aio-component' onClick={()=>this.changePart(o)}>{o}</div>)
           })
         }
       </div>

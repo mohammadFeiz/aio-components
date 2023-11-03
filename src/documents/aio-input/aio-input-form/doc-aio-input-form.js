@@ -48,6 +48,46 @@ export default class DOC_AIOInput_Form extends Component {
             { type: 'color' },
             { 
                 type: 'file',
+                description:(
+                    <>
+                        <h3>value props</h3>
+                        <h5>value props can have this types:</h5>
+                        <ul>
+                            <li>object (if multiple props is false)</li>
+                            <li>array of objects (if multiple props is true)</li>
+                        </ul>
+                        <h5>each object can be:</h5>
+                        <ul>
+                            <li>standard file object (picked from input file)</li>
+                            {AIODoc().Code(`
+{
+    lastModified:1678315052406,
+    lastModifiedDate:Thu Mar 09 2023 02:07:32 GMT+0330 (Iran Standard Time),
+    name:"pasta_alferedo.png",
+    size:21829,
+    type:"image/png",
+    webkitRelativePath:""
+}
+                            `)}
+                            <li>or an object contain name size url (for example if file is read from api server)</li>
+                            If the URL is set, the file can be downloaded by the user
+                            {AIODoc().Code(`
+{
+    name:'this is my file name',
+    size:12334443,
+    url:'https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg'
+}
+                            `)}
+                        </ul>
+                        <h3>onChange props</h3>
+                        <h5>is a function</h5>
+                        <ul>
+                            <li>in multiple type (multiple:ture) will call by file objects array(picked by input type file) </li>
+                            <li>in single type (multiple:false) will call by file object or undefined (undefined means that the file has been deleted by the user) </li>
+                        </ul>
+                    </>
+                    
+                ),
                 model: {
                     value__multiple_file___:[
                         {
@@ -119,8 +159,16 @@ start:20,step:1,end:100,
             { type: 'checkbox',allInputProps:{text:'this is my text'} },
             {
                 type:'image',
-                allInputProps:{
-                    value:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'}
+                model:{
+                    before:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    after:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    subtext:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    width_height:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    width:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    height:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    attrs:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    disabled:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'},
+                    loading:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'}
                 },
                 allInputFooters:`
 value:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'}
@@ -1445,11 +1493,11 @@ remove:true
 }
 
 function getNavItems(items){
-    return items.map(({type,prop,model,allInputProps,allInputFooters})=>{
+    return items.map((o)=>{
         return { 
-            text: `${!!type?`type:${type}`:''} ${!!prop?`prop:${prop}`:''}`, 
-            id: type + prop, 
-            render: () => <AIOINPUT key={type+prop} type={type} prop={prop} initModel={model} allInputProps={allInputProps} allInputFooters={allInputFooters}/> 
+            text: `${!!o.type?`type:${o.type}`:''} ${!!o.prop?`prop:${o.prop}`:''}`, 
+            id: o.type + o.prop, 
+            render: () => <AIOINPUT key={o.type + o.prop} {...o}/> 
         }
     })
 }
@@ -1499,19 +1547,39 @@ function getInput(type, prop,Label,allInputProps,allInputFooters) {
     if(footer.indexOf(footerValue) === -1){footer += footerValue;}
     return { input, field: `value.${prop}`, footer: <Code code={footer}/>,label }
 }
-function AIOINPUT({type,prop,initModel = {},allInputProps,allInputFooters}) {
+function AIOINPUT({type,prop,initModel = {},allInputProps,allInputFooters,description}) {
     let [model,setModel] = useState(initModel);
+    let [tabs] = useState([
+        {value:'ex',text:'Examples'},
+        {value:'desc',text:'Description'},
+    ])
+    let [tab,setTab] = useState('ex')
     let [inputs,setInputs] = useState(getInputObjects(type,prop,allInputProps,allInputFooters))
     function preview() {
         console.log(model)
         return (
-            <div className='example'>
-                <AIOInput 
-                    type='form' 
-                    inputs={{ column: inputs }} 
-                    value={{...model}} 
-                    onChange={(newModel) => setModel({...newModel})} 
-                    labelAttrs={{style:{fontSize:14,fontWeight:'bold'}}}
+            <div className='example' style={{padding:0}}>
+                <RVD
+                    layout={{
+                        className:'h-100',
+                        column:[
+                            {html:<AIOInput type='tabs' options={tabs} value={tab} onChange={(v)=>setTab(v)} attrs={{style:{background:'#eee'}}}/>},
+                            {
+                                flex:1,
+                                show:tab === 'ex',
+                                html:(
+                                    <AIOInput 
+                                        type='form' 
+                                        inputs={{ column: inputs }} 
+                                        value={{...model}} 
+                                        onChange={(newModel) => setModel({...newModel})} 
+                                        labelAttrs={{style:{fontSize:14,fontWeight:'bold'}}}
+                                    />
+                                )
+                            },
+                            {flex:1,show:tab === 'desc',html:(description),style:{flexDirection:'column'},className:'ofy-auto'}
+                        ]
+                    }}
                 />
             </div>
         )

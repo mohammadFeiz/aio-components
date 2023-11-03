@@ -1,6 +1,6 @@
 import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect } from 'react';
-import AIODate from './../aio-date/aio-date';
-import RVD from './../react-virtual-dom/react-virtual-dom';
+import AIODate from 'aio-date';
+import RVD from 'react-virtual-dom';
 import Axios from 'axios';
 import Search from '../aio-functions/search';
 import ExportToExcel from '../aio-functions/export-to-excel';
