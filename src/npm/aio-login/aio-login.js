@@ -1,5 +1,5 @@
 import React, { Component, createRef } from 'react';
-import RVD from './../react-virtual-dom/react-virtual-dom';
+import RVD from 'react-virtual-dom';
 import AIOStorage from './../aio-storage/aio-storage';
 import AIOInput from './../aio-input/aio-input';
 import { Icon } from '@mdi/react';
@@ -328,13 +328,13 @@ class LoginForm extends Component {
                     show:type === 'phoneNumber',field: `value.forget.id`,label: labels.inputLabel,
                     input:{
                         type: 'text',justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
-                        placeholder: '09...',maxLength:11,style:{direction:'ltr'}
+                        placeholder: '09...',maxLength:11,attrs:{style:{direction:'ltr'}}
                     },  
                     validations: [['function', () => errorHandler({field:'phoneNumber', value:model.forget.id})]]
                 },
                 {
                     show:type === 'email',field: 'value.forget.id',label: labels.inputLabel, 
-                    input:{type: 'text',before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
+                    input:{type: 'text',before: <Icon path={mdiAccount} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
                     validations: [['function', () => errorHandler({field:'email', value:model.forget.id})]],
                 },
             ]
@@ -346,18 +346,18 @@ class LoginForm extends Component {
                     field: 'value.forget.code', label: labels.inputLabel,
                     input:{
                         maxLength: codeLength, justNumber: true, type: 'text', placeholder: Array(codeLength).fill('-').join(''),
-                        className:'aio-login-otp-code'
+                        attrs:{className:'aio-login-otp-code'}
                     },
                     validations: [['function', () => errorHandler({field:'code', value:model.forget.code, parameter:{codeLength}})]]
                 },
                 {
                     field: 'value.forget.password',label: 'رمز عبور جدید', 
-                    input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,style:{direction:'ltr'}}, 
+                    input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
                     validations: [['function', () => errorHandler({field:'password', value:model.forget.password})]]
                 },
                 {
                     field: 'value.forget.rePassword',label: 'تکرار رمز عبور جدید', 
-                    input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,style:{direction:'ltr'}}, 
+                    input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
                     validations: [['function', () => errorHandler({field:'rePassword', value:model.forget.rePassword,parameter:{password:model.forget.password}})]]
                 }
             ]
@@ -367,7 +367,7 @@ class LoginForm extends Component {
                 show:mode === 'userName',field: 'value.login.userId',label: labels.inputLabel, 
                 input:{
                     type: 'text', disabled:!!userId,placeholder: 'نام کاربری',before: <Icon path={mdiAccount} size={0.8} />,
-                    style:{direction:'ltr'}
+                    attrs:{style:{direction:'ltr'}}
                 },
                 validations: [['function', () => errorHandler({field:'userName', value:model.login.userId})]]
             },
@@ -375,26 +375,26 @@ class LoginForm extends Component {
                 show:mode === 'OTPNumber' || mode === 'phoneNumber',field: `value.login.userId`,label: labels.inputLabel,
                 input:{
                     type: 'text',disabled:!!userId,justNumber: true,before: <Icon path={mdiCellphone} size={0.8} />, 
-                    placeholder: '09...',maxLength:11,style:{direction:'ltr'}
+                    placeholder: '09...',maxLength:11,attrs:{style:{direction:'ltr'}}
                 },  
                 validations: [['function', () => errorHandler({field:'phoneNumber', value:model.login.userId})]]
             },
             {
                 show:mode === 'email',field: 'value.login.userId',label: labels.inputLabel, 
-                input:{type: 'text', disabled:!!userId,before: <Icon path={mdiAccount} size={0.8} />,style:{direction:'ltr'}}, 
+                input:{type: 'text', disabled:!!userId,before: <Icon path={mdiAccount} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
                 validations: [['function', () => errorHandler({field:'email', value:model.login.userId})]],
             },
             {
                 show:!!model.login.userId && mode === 'OTPCode',field: 'value.login.password', label: labels.inputLabel,
                 input:{
                     maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''),
-                    className:'aio-login-otp-code'
+                    attrs:{className:'aio-login-otp-code'}
                 },
                 validations: [['function', () => errorHandler({field:'code', value:model.login.password, parameter:{codeLength:otpLength}})]]
             },
             {
                 show:mode !== 'OTPNumber' && mode !== 'OTPCode',field: 'value.login.password',label: 'رمز عبور', 
-                input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,style:{direction:'ltr'}}, 
+                input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
                 validations: [['function', () => errorHandler({field:'password', value:model.login.password})]]
             }
         ];
