@@ -94,6 +94,11 @@ export default class DOC_AIOInput_Form extends Component {
                             name:'this is my file name',
                             size:12334443,
                             url:'https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg'
+                        },
+                        {
+                            name:'this is my other file name',
+                            size:123343,
+                            url:'https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg'
                         }
                     ],
                     value__single_file___:{
@@ -148,6 +153,9 @@ text:'this is my text,'
             },
             {
                 type:'slider',
+                model:{
+                    multiple__slider___:[100,200]
+                },
                 allInputProps:{
                     start:20,step:1,end:240,
                 },
@@ -212,6 +220,7 @@ function e_exist(type, prop) {
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
+            style:true,
             popover:true,
             optionSubtext__string___:true,
             optionSubtext__function___:true,
@@ -235,6 +244,7 @@ function e_exist(type, prop) {
             optionText_optionValue__number___: true, 
             optionAttrs__object___: true,optionAttrs__function___: true,
             attrs:true,
+            style:true,
             popover:true,
         },
         textarea: { 
@@ -244,11 +254,15 @@ function e_exist(type, prop) {
             disabled: true,
             loading: true, 
             maxLength: true,
+            filter:true,
+            justify: true, 
+            justNumber_true: true, justNumber_array: true,maxLength: true, filter: true,
             caret_false: true,caret_html:true,
             options:true,
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
+            style:true,
             popover:true,
             optionSubtext__string___:true,
             optionSubtext__function___:true,
@@ -266,9 +280,11 @@ function e_exist(type, prop) {
             disabled: true,
             justify: true, 
             loading: true, 
+            filter:true,
             justNumber_true: true, justNumber_array: true,maxLength: true, filter: true,
             visible:true,
             attrs:true,
+            style:true
         },
         color: {
             before: true,after: true,subtext: true, 
@@ -276,13 +292,16 @@ function e_exist(type, prop) {
             loading: true, 
             options__type_color___:true,
             attrs:true,
+            style:true,
         },
         file: {
             text:true,
-            before: true,after: true,subtext: true, 
+            before: true,after: true,
+            subtext: true, 
             disabled: true,
             loading: true, 
             attrs:true,
+            style:true,
             multiple__file___:true,
             value__single_file___:true,
             value__multiple_file___:true
@@ -299,6 +318,7 @@ function e_exist(type, prop) {
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
+            style:true,
             popover:true,
             popover__fitHorizontal___:true,
             placeholder:true,
@@ -327,6 +347,7 @@ function e_exist(type, prop) {
             optionText_optionValue: true, 
             optionAttrs__object___: true, optionAttrs__function___: true,
             attrs:true,
+            style:true,
             popover:true,
             search:true,
             optionTagBefore__html___:true,
@@ -396,6 +417,7 @@ function e_exist(type, prop) {
             disabled: true,
             loading: true, 
             attrs:true,
+            style:true,
             checkIcon__function___:true,
             checkIcon__object___:true, 
         },
@@ -405,6 +427,7 @@ function e_exist(type, prop) {
             disabled: true,
             loading: true, 
             attrs:true,
+            style:true,
             showValue__false___:true,
             showValue__true___:true,
             showValue__inline___:true,
@@ -423,7 +446,7 @@ function e_exist(type, prop) {
             disabled: true,
             placeholder: true,
             loading: true, 
-            // caret_false: true,caret_html:true,
+            caret_false: true,caret_html:true,
             attrs:true,
             popover:true,
             calendarType:true,
@@ -458,11 +481,9 @@ function e_exist(type, prop) {
             width:true,
             height:true,
             attrs:true,
+            style:true,
             disabled: true,
             loading: true, 
-            
-            
-            
         },
         time:{
             minute_second:true,
@@ -474,7 +495,8 @@ function e_exist(type, prop) {
             subtext:true,
             disabled:true,
             loading:true,
-            attrs:true
+            attrs:true,
+            style:true
         },
         list: {},
         table: {},
@@ -529,8 +551,12 @@ text: 'this is my text'
     }
     if (prop === 'subtext') {/////////////////////////////////////////////////////////////////////////////// subtext
         return [
-            { subtext: 'my subtext' },
+            { 
+                text:'my text',
+                subtext: 'my subtext' 
+            },
             `
+text:'my text',
 subtext:'my subtext'
             `
         ]
@@ -707,9 +733,21 @@ optionAttrs:(option)=>{
         ]
     }
     if (prop === 'caret_false') {
+        if(type === 'datepicker'){
+            return [
+                {
+                    caret: false
+                },
+                `
+caret:false
+                `
+            ]
+        }
         return [
             {
                 options: DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id',
                 caret: false
             },
             `
@@ -718,9 +756,21 @@ caret:false
         ]
     }
     if (prop === 'caret_html') {
+        if(type === 'datepicker'){
+            return [
+                {
+                    caret: <Icon path={mdiChevronDoubleDown} size={.7}/>
+                },
+                `
+caret:<Icon path={mdiChevronDoubleDown} size={.7}/>
+                `
+            ]
+        }
         return [
             {
                 options: DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id',
                 caret: <Icon path={mdiChevronDoubleDown} size={.7} />
             },
             `
@@ -760,9 +810,48 @@ attrs:{style:{boxShadow:'0 0 12px 2px lightblue'}}
             `
         ]
     }
+    if (prop === 'style') {
+        return [
+            {style:{boxShadow:'0 0 12px 2px lightblue'}},
+            `
+style:{boxShadow:'0 0 12px 2px lightblue'}
+            `
+        ]
+    }
     if (prop === 'popover') {///////////////////////////////////////////////////////////////////////////////////// popover
+        if(type === 'datepicker'){
+            return [
+                { 
+                    popover:{
+                        position:'center',
+                        backdrop:{
+                            attrs:{
+                                style:{
+                                    background:'rgba(0,0,0,0.8)'
+                                }
+                            }
+                        },
+                    }
+                },
+                `
+    popover:{
+        position:'center',
+        backdrop:{
+            attrs:{
+                style:{
+                    background:'rgba(0,0,0,0.8)'
+                }
+            }
+        },
+    }
+                `
+            ]
+        }
         return [
             { 
+                options:DOC_options,
+                optionText:'option.name',
+                optionValue:'option.id',
                 popover:{
                     position:'center',
                     backdrop:{
@@ -817,9 +906,7 @@ multiple:true
     }
     if (prop === 'value__multiple_file___') {
         return [
-            {
-                multiple:true,
-            },
+            {multiple:true},
             `
 value:[
     {
@@ -910,7 +997,11 @@ optionTagAttrs:{style:{background:'red'}}
                 }
             },
             `
-optionTagAttrs:{style:{background:'red'}}
+optionTagAttrs:(option)=>{
+    if(option.name === 'luis'){
+        return {style:{background:'red'}}
+    }
+}
             `
         ]
     }
@@ -1182,7 +1273,7 @@ min:60,max:220
     }
     if (prop === 'multiple__slider___') {
         return [
-            {multiple:true,value:[100,200]},
+            {multiple:true},
             `
 multiple:true,value:[100,200]
             `
@@ -1497,7 +1588,7 @@ function getNavItems(items){
         return { 
             text: `${!!o.type?`type:${o.type}`:''} ${!!o.prop?`prop:${o.prop}`:''}`, 
             id: o.type + o.prop, 
-            render: () => <AIOINPUT key={o.type + o.prop} {...o}/> 
+            render: () => <AIOINPUT key={o.type + o.prop} {...{...o,initModel:o.model}}/> 
         }
     })
 }
@@ -1556,7 +1647,6 @@ function AIOINPUT({type,prop,initModel = {},allInputProps,allInputFooters,descri
     let [tab,setTab] = useState('ex')
     let [inputs,setInputs] = useState(getInputObjects(type,prop,allInputProps,allInputFooters))
     function preview() {
-        console.log(model)
         return (
             <div className='example' style={{padding:0}}>
                 <RVD

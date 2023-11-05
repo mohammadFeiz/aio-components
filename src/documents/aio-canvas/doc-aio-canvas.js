@@ -323,7 +323,11 @@ function Item({item,level,active}){
     let {changeItem,setActiveItemId} = useContext(CTX)
     return (
         <AIOInput
-            className={'aioc-item' + (active?' active':'')}
+            attrs={{
+                className:'aioc-item' + (active?' active':''),
+                style:{paddingLeft:level * 12},
+                onClick:()=>setActiveItemId(item.id)
+            }}
             before={<Icon path={item.type === 'Group'?(item.open?mdiChevronDown:mdiChevronRight):mdiCircleMedium} size={.8} onClick={item.type !== 'Group'?undefined:(e)=>{
                 e.stopPropagation();
                 changeItem(item,{open:!item.open})
@@ -340,11 +344,8 @@ function Item({item,level,active}){
                     }}
                 />
             )}
-            type='text'
-            style={{paddingLeft:level * 12}}
-            value={item.name}
+            type='text' value={item.name}
             onChange={(name)=>changeItem(item,{name})}
-            onClick={()=>setActiveItemId(item.id)}
         />
     )
 }
@@ -524,10 +525,9 @@ function Setting({activeItem}){
             flex:1,
             html:(
                 <AIOInput
-                    type='form'
-                    className='aioc-setting-form'
-                    value={activeItem}
+                    type='form' attrs={{className:'aioc-setting-form'}} value={activeItem}
                     onChange={(value)=>changeItem(activeItem,value)}
+                    inputStyle={{background:'none'}}
                     inputs={{
                         props:{gap:12},
                         column:[
@@ -547,9 +547,9 @@ function Setting({activeItem}){
                             {
                                 row:[
                                     {input:{type:'color'},field:'value.fill',label:'fill'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{fill:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{fill:undefined})},
                                     {input:{type:'color'},field:'value.stroke',label:'stroke'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{stroke:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{stroke:undefined})},
                                     
                                 ]
                             },
@@ -557,7 +557,7 @@ function Setting({activeItem}){
                                 show:activeItem.type === 'Arc' || activeItem.type === 'NGon',
                                 row:[
                                     {input:{type:'number'},field:'value.r',label:'radius'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{r:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{r:undefined})},
                                 ]
                             },
                             {
@@ -568,11 +568,11 @@ function Setting({activeItem}){
                                     {
                                         input:{type:'number'},field:'value.lineWidth',label:'line width'
                                     },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{lineWidth:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{lineWidth:undefined})},
                                     {
                                         input:{type:'number'},field:'value.rotate',label:'rotate (deg)'
                                     },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{rotate:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{rotate:undefined})},
                                     
                                 ]
                             },
@@ -585,7 +585,7 @@ function Setting({activeItem}){
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[3]',label:'a',labelAttrs:{style:{opacity:0}}}, 
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
                                 ]
                             },
                             {
@@ -600,7 +600,7 @@ function Setting({activeItem}){
                                     {input:{type:'number'},field:'value.corner[1]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
                                 ]
                             },
                             {
@@ -608,21 +608,21 @@ function Setting({activeItem}){
                                 row:[
                                     {input:{type:'number'},field:'value.slice[0]',label:'slice from'},
                                     {input:{type:'number'},field:'value.slice[1]',label:'slice to'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{slice:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{slice:undefined})},
                                 ]
                             },
                             {
                                 row:[
                                     {input:{type:'number'},field:'value.dash[0]',label:'dash fill'},
                                     {input:{type:'number'},field:'value.dash[1]',label:'dash empty'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{dash:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{dash:undefined})},
                                 ]
                             },
                             {
                                 row:[
                                     {input:{type:'number'},field:'value.pivot[0]',label:'pivot x'},
                                     {input:{type:'number'},field:'value.pivot[1]',label:'pivot y'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingTop:16},onClick:()=>changeItem(activeItem,{pivot:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{pivot:undefined})},
                                 ]
                             },
                             {
@@ -657,14 +657,15 @@ function Setting({activeItem}){
                                 })
                             },
                             {
+                                show:activeItem.type === 'Group',
                                 row:[
                                     {
-                                        show:activeItem.type === 'Group',label:'Repeat Childs',
+                                        label:'Repeat Childs',
                                         input:{type:'checkbox'},field:'value.repeatChilds'
                                     },
                                     {
                                         label:'Repeat Count',
-                                        input:{type:'number',text:'Repeat'},field:'value.repeat'
+                                        input:{type:'number'},field:'value.repeat'
                                     },
                                 ]
                             },
@@ -683,7 +684,17 @@ function Setting({activeItem}){
                             {
                                 show:activeItem.type === 'Group',props:{gap:0},
                                 column:()=>activeItem.sequence.map((o,i)=>{
-                                    return {input:{type:'text'},field:`value.sequence[${i}]`}
+                                    return {
+                                        input:{
+                                            type:'text',
+                                            after:(
+                                                <div onClick={()=>changeItem(activeItem,{sequence:activeItem.sequence.filter((o,index)=>index !== i)})}>
+                                                    <Icon path={mdiDelete} size={.8}/>
+                                                </div>
+                                            )
+                                        },
+                                        field:`value.sequence[${i}]`
+                                    }
                                 })
                             }
                             

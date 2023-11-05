@@ -21,7 +21,6 @@ export default class DOC_AIOValidation extends Component{
                         {text:'multi use',id:'multiuse',render:()=><MultiUse/>},
                         {text:'id',id:'id',render:()=><Id/>},
                         {text:'mousePopsition',id:'mousePostion',render:()=><MousePosition/>},
-                        {text:'input number',id:'input number',render:()=><InputNumber/>},
                     ]
                 }}
             />
@@ -539,9 +538,6 @@ class Example1 extends Component{
         )
     }
 }
-
-
-
 class Id extends Component{
     constructor(props){
         super(props);
@@ -677,9 +673,10 @@ class Example1 extends Component{
 }
 class MousePosition extends Component{
     state = {mousePosition:{},view:'preview'}
-    componentDidMount(){
+    componentDidMount(){this.bindSwip();}
+    bindSwip(){
         AIOSwip({
-            dom:$('.parent'),
+            dom:()=>$('.parent'),
             start:({mousePosition})=>{
                 this.setState({mousePosition})
             },
@@ -692,7 +689,17 @@ class MousePosition extends Component{
         let {view,mousePosition} = this.state;
         return (
             <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
+                <AIOInput 
+                    type='radio' value={view} 
+                    options={[
+                        {text:'preview',value:'preview'},
+                        {text:'code',value:'code'}
+                    ]} 
+                    onChange={(view)=>{
+                        if(view === 'preview'){this.bindSwip()}
+                        this.setState({view})
+                    }}
+                />
                 {
                     view === 'preview' && 
                     (
@@ -751,81 +758,6 @@ class Example1 extends Component{
         )
     }
 }
-
-
-
-class InputNumber extends Component{
-    constructor(props){
-        super(props);
-        this.state = {value:100,view:'preview'}
-    }
-    componentDidMount(){
-        AIOSwip({
-            dom:$('.input'),
-            start:()=>{
-                let {value} = this.state;
-                return [value,value]
-            },
-            move:({y})=>{
-                this.changeValue(y)
-            },
-            stepY:10,
-            speedY:5,
-        })
-    }
-    changeValue(newValue){
-        this.setState({value:+newValue})
-    }
-    render(){
-        let {value,view} = this.state;
-        return (
-            <div className='example' style={{display:'flex',flexDirection:'column'}}>
-                <AIOInput type='radio' options={[{text:'preview',value:'preview'},{text:'code',value:'code'}]} value={view} onChange={(view)=>this.setState({view})}/>
-                {
-                    view === 'preview' && 
-                    <input className='input' type='number' value={value} onChange={(e)=>this.changeValue(e.target.value)}/>
-                }
-                {
-                    view === 'code' && 
-                    <pre style={{flex:1,overflowY:'auto'}}>{`
-import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
-
-class Example1 extends Component{
-    constructor(props){
-        super(props);
-        this.state = {boxes:[{left:100,top:100},{left:200,top:100},{left:300,top:100}]}
-    }
-    componentDidMount(){
-        AIOSwip({
-            dom:$('.input'),
-            start:()=>{
-                this.value = this.state.value;
-            },
-            move:({dy})=>{
-                this.changeValue(this.value + (-dy))
-            },
-            stepY:10,
-            speedY:5,
-        })
-    }
-    changeValue(newValue){
-        this.setState({value:+newValue})
-    }
-    render(){
-        let {left,top,view} = this.state;
-        return (
-            <input className='input' type='number' value={value} onChange={(e)=>this.changeValue(e.target.value)}/>
-        )
-    }
-}                    
-                    `}</pre>
-                }
-            </div>
-        )
-    }
-}
-
 
 
 

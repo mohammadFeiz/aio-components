@@ -2,8 +2,8 @@ import React, { Component,useReducer } from 'react';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOPopup from '../aio-popup/aio-popup';
+import RVD from 'react-virtual-dom';
+import AIOPopup from 'aio-popup';
 import './react-super-app.css';
 //type I_Sidemenu_props = {items:I_SideMenu_props_item[],header:()=>React.ReactNode,footer:()=>React.ReactNode,attrs:object}
 //type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}

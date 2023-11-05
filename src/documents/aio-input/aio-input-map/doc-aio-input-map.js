@@ -6,11 +6,6 @@ import AIOInput from '../../../npm/aio-input/aio-input';
 import './doc-aio-input-map.css';
 import {Icon} from '@mdi/react';
 import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift } from '@mdi/js';
-AIOInput.defaults.mapApiKeys = {
-    map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-    service:'service.09a2234e299a4ff585007b2894df9fca',
-}
-AIOInput.defaults.validate = true
 export default class DOC_AIOInput_map extends Component {
     render() {
         return (

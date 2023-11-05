@@ -1,8 +1,8 @@
-import React, { Component, Fragment, createRef, useEffect } from 'react';
+import React, { Component, createRef, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from 'react-virtual-dom';
 import $ from 'jquery';
 import './aio-popup.css';
 
@@ -486,7 +486,7 @@ function Align(dom,target,config = {}){
       let left = offset.left - window.pageXOffset;
       let top = offset.top - window.pageYOffset;
       if(pageSelector && type !== 'page'){
-        let page = dom.parents(pageSelector);
+        let page = $(pageSelector);
         try{
           let {left:l,top:t} = page.offset()
           left -= l;
@@ -501,7 +501,7 @@ function Align(dom,target,config = {}){
       return {left,top,right,bottom,width,height};
     },
     getPageLimit(dom){
-      let page = pageSelector?dom.parents(pageSelector):undefined;
+      let page = pageSelector?$(pageSelector):undefined;
       page = Array.isArray(page) && page.length === 0?undefined:page;
       let bodyWidth = window.innerWidth;
       let bodyHeight = window.innerHeight;

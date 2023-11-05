@@ -471,7 +471,8 @@ class CANVAS extends Component {
     if(item.repeatChilds){
       for(let i = 0; i < item.items.length; i++){
         let itm = item.items[i];
-        let {repeat = 0,showPivot} = itm;
+        let {repeat = 0} = item;
+        let {showPivot} = itm;
         for(let j = 0; j < repeat; j++){
           items.push({...itm,isRepeat:j > 0 ,showPivot:j === 0?showPivot:false})
         }
