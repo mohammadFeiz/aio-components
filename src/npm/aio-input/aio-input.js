@@ -845,14 +845,13 @@ class Form extends Component {
         if (!value) { return false }
         let {addToAttrs} = this.context;
         let cls = 'aio-input-form';
-        let className = {'inlineLabel':`${cls}-inline-label`,'label':`${cls}-label`,'footer':`${cls}-item-footer`,'error':`${cls}-error`}[key];
+        let className = {'label':`${cls}-label`,'footer':`${cls}-item-footer`,'error':`${cls}-error`}[key];
         attrs = addToAttrs(attrs,{className})
         return { html: value, align: 'v', attrs }
     }
     input_layout(formItem) {
         let {properties} = this.props;
-        let { label, footer, inlineLabel, input, flex, size, field } = formItem;
-        if (label) { inlineLabel = undefined };
+        let { label, footer, input, flex, size, field } = formItem;
         let value = this.getValueByField(field, this.getDefault(input));
         let error = this.getError(formItem, value)
         if (error) { this.errors[field] = error }
@@ -864,14 +863,6 @@ class Form extends Component {
         return {
             flex, size, className: 'aio-input-form-item',
             column: [
-                {
-                    show: !!inlineLabel,
-                    className: 'aio-input-form-item-body of-visible',
-                    row: [
-                        this.get_layout('inlineLabel',inlineLabel, labelAttrs),
-                        { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...inputProps} /> }
-                    ]
-                },
                 {
                     flex: 1, className: 'aio-input-form-item-input-container of-visible',
                     column: [
@@ -891,7 +882,7 @@ class Form extends Component {
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
         let a = {
-            value, title: o.label || o.inlineLabel, lang,
+            value, title: o.label, lang,
             validations: validations.map((a) => {
                 let params = a[2] || {};
                 let target = typeof a[1] === 'function' ? a[1] : this.getValueByField(a[1], '');
@@ -1471,7 +1462,8 @@ class Layout extends Component {
         return className;
     }
     text_layout() {
-        let { text, subtext,placeholder, justify,types } = this.properties;
+        let { text, subtext,placeholder, justify } = this.properties;
+        let {types} = this.context;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text) {
             if (subtext) {
@@ -2828,7 +2820,9 @@ class MapUnit extends Component {
                 isPopup: true, popup: false,
                 onClose: () => this.setState({ showPopup: false }),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
-                onChange: (obj, calledBySubmitButton) => { this.move(obj); if (calledBySubmitButton) { this.setState({ showPopup: false }) } }
+                onChange: (obj) => { 
+                    this.move(obj);  
+                }
             }
             return <MapUnit {...props} />
         }
@@ -2939,10 +2933,11 @@ function MapHeader() {
 function MapFooter() {
     let context = useContext(MapContext);
     let { rootProps, rootState } = context;
-    let { value, onChange } = rootState, { lat, lng } = value;
+    let { value } = rootState, { lat, lng } = value;
+    let { onClose, onChange } = rootProps;
     function submit_layout() {
         if (!rootProps.isPopup) { return false }
-        return { html: (<button className='aio-input-map-submit' onClick={async () => onChange(rootState.value, true)}>تایید موقعیت</button>) }
+        return { html: (<button className='aio-input-map-submit' onClick={async () => {onChange(rootState.value); onClose()}}>تایید موقعیت</button>) }
     }
     function details_layout() {
         return { flex: 1, column: [{ html: rootState.address, className: 'aio-input-map-address' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
