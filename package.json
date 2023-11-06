@@ -10,7 +10,7 @@
     "@testing-library/user-event": "^13.5.0",
     "aio-date": "^4.0.0",
     "aio-popup": "^2.0.1",
-    "aio-storage": "^2.0.0",
+    "aio-storage": "^4.0.0",
     "aio-swip": "^2.0.0",
     "animejs": "^3.2.1",
     "axios": "^1.4.0",
