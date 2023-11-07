@@ -4,9 +4,9 @@ import AIOStorage from 'aio-storage';
 import AIOInput from './../aio-input/aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
-import AIOService from './../aio-service/aio-service';
 
 import './aio-login.css';
+import AIOPopup from 'aio-popup';
 // type I_props = {
 //     id:string,
 //     onSubmit:(model:I_model,mode:I_mode)=>{nextMode:I_mode,error?:String,token?:string},
@@ -34,15 +34,14 @@ export default class AIOlogin{
         this.getStorage = () => {
             let token = storage.load({ name: 'token', def: false });
             let userId = storage.load({ name: 'userId', def: '' });
-            let isAuth = storage.load({ name: 'isAuth', def: false });
             let userInfo = storage.load({ name: 'userInfo' });
-            return {token,userId,isAuth,userInfo}                    
+            return {token,userId,userInfo}                    
         }
         this.setUserInfo = (userInfo)=>{this.setStorage('userInfo',userInfo)}
         this.getUserInfo = ()=>{return this.getStorage().userInfo}
-        this.removeToken = ()=>{storage.remove({name:'token'});}
-        this.getToken = () => {return this.getStorage().token;}
         this.setToken = (token) => {this.setStorage('token',token)}
+        this.getToken = () => {return this.getStorage().token;}
+        this.removeToken = ()=>{storage.remove({name:'token'});}
         this.getUserId = () => {return this.getStorage().userId}
         this.logout = () => { this.removeToken(); window.location.reload() }
         this.props = {
@@ -61,57 +60,48 @@ export default class AIOlogin{
 class AIOLOGIN extends Component {
     constructor(props) {
         super(props);
-        let {id, checkToken = ()=>true,onSubmit,removeToken,getStorage} = props;
-        this.valid = true
         this.state = {
-            isAuth: false,
+            isAuth:undefined,showReload:false,
             reportedAuthToParent:false,//prevent unlimit loop between aio login and parent
-            apis: new AIOService({
-                id: `AIOLoginApis-${id}`,
-                getToken:()=>{},
-                getApiFunctions: () => {
-                    return {
-                        checkToken: async () => {
-                            let {token,userId,isAuth,userInfo} = getStorage();
-                            if (typeof token !== 'string' || !isAuth) { return { result: false } }
-                            let result = await checkToken(token,{userId,userInfo});
-                            if(result === false){removeToken()}
-                            return { result }
-                        },
-                        onSubmit:async ({model,currentMode}) =>{
-                            let res = await onSubmit(model,currentMode);
-                            if(!res){return {result:{noAction:true}}}
-                            if(!res.nextMode){return {result:'aio-login error => onSubmit should returns an object contain nextMode property'}}
-                            let {nextMode,error,token} = res;
-                            if(nextMode === currentMode){return {result:false}}
-                            removeToken();
-                            if(nextMode === 'error'){
-                                if(error){return {result:error}}
-                                else {return {result:{nextMode:'error'}}}
-                            }
-                            return {result:{nextMode,token}}
-                        }
-                    }
-                },
-                onCatch: (res,service) => { 
-                    this.setState({ isAuth: false });
+        }
+    }
+    async checkToken(){
+        let {getStorage,checkToken,removeToken} = this.props;
+        let {token,userId,userInfo} = getStorage();
+        let result;
+        if (typeof token !== 'string') { result = false }
+        else {
+            try{result = await checkToken(token,{userId,userInfo});}
+            catch(err){
+                let text = 'بررسی توکن با خطا روبرو شد';
+                let subtext = this.getError(err)
+                new AIOPopup().addAlert({type:'error',text,subtext})
+            }
+        }
+        if(typeof result === 'string'){
+            let text = 'بررسی توکن با خطا روبرو شد',subtext = result;
+            new AIOPopup().addAlert({type:'error',text,subtext})
+        }
+        if(result === false){removeToken()}
+        if(typeof result !== 'boolean'){this.setState({showReload:true})}
+        else {this.setState({ isAuth:result });}
+    }
+    getError(err){
+        if(typeof err === 'string'){return err}
+        if(typeof err === 'object'){
+            if(typeof err.response === 'object'){
+                if(typeof err.response.data === 'object'){
+                    let {message,Message} = err.response.data;
+                    return Message || message;
                 }
-            })
+                else if(typeof err.response.data === 'string'){return err.response.data}
+                else {return 'error'}
+            }
+            else{return err.message || err.Message}
         }
     }
     async componentDidMount() {
-        if (!this.valid) { return }
-        let {apis} = this.state
-        let res = await apis.request({
-            api: 'checkToken', description: 'بررسی توکن',
-            message: {error:'اتصال خود را بررسی کنید'},
-        })
-        this.mounted = true;
-        if(res === false){
-            let {removeToken} = this.props;
-            removeToken()
-        }
-        this.setState({ isAuth: res });
+        this.checkToken();
     }
     handleOnsubmitError(currentMode,nextMode,modes,token){
         if(nextMode === 'auth' && !token){
@@ -162,21 +152,28 @@ class AIOLOGIN extends Component {
         }
     }
     async onSubmit(model,currentMode){
-        let { modes,setStorage } = this.props;
-        let { apis } = this.state;
-        let description = {
-            "OTPNumber":'ارسال شماره همراه',
-            "OTPCode":'ارسال کد یکبار مصرف',
-            "userName":'ارسال نام کاربری و رمز عبور',
-            "phoneNumber":'ارسال شماره همراه و رمز عبور',
-            "email":'ارسال آدرس ایمیل و رمز عبور',
-            "register":'عملیات ثبت نام'
-        }[currentMode];
-        let obj = await apis.request({api:'onSubmit', parameter: {model,currentMode}, description,loading:false})
-        if(typeof obj !== 'object'){return}
-        if(obj.noAction){return}
-        let {token,nextMode} = obj;
-        if(nextMode === 'error'){return 'error'}
+        let { modes,setStorage,removeToken,onSubmit } = this.props;
+        let res = await onSubmit(model,currentMode);
+        if(typeof res !== 'object'){return}
+        let {nextMode,error,token} = res;
+        if(!nextMode){return alert('aio-login error => onSubmit should returns an object contain nextMode property')}
+        if(nextMode === currentMode){return}
+        removeToken();
+        if(nextMode === 'error'){
+            if(error){
+                let text = {
+                    "OTPNumber":'ارسال شماره همراه',
+                    "OTPCode":'ارسال کد یکبار مصرف',
+                    "userName":'ارسال نام کاربری و رمز عبور',
+                    "phoneNumber":'ارسال شماره همراه و رمز عبور',
+                    "email":'ارسال آدرس ایمیل و رمز عبور',
+                    "register":'عملیات ثبت نام'
+                }[currentMode]
+                let subtext = error;
+                new AIOPopup().addAlert({type:'error',text,subtext})
+            }
+            return 'error'
+        }
         this.handleOnsubmitError(currentMode,nextMode,modes,token);
         if(['OTPNumber','phoneNumber','userName','email'].indexOf(currentMode) !== -1){
             setStorage('userId',model.login.userId);
@@ -186,22 +183,33 @@ class AIOLOGIN extends Component {
             this.setState({ token})
         }
         if(nextMode === 'auth'){
-            setStorage('isAuth',true);
             this.setState({isAuth:true})
         }
         else {return nextMode}
     }
     render() {
-        if (!this.valid) { return null }
-        if (!this.mounted) { return null }
-        let { layout, otpLength, onAuth, id, timer,modes,userId,register = {},attrs = {},forget,getStorage,logout } = this.props;
-        let { isAuth,reportedAuthToParent } = this.state;
-        if (isAuth && !reportedAuthToParent) {
-            let {token,userId,userInfo} = getStorage();
-            onAuth({token,userId,userInfo,logout})
-            this.setState({reportedAuthToParent:true})
-            return null
+        let { layout, otpLength, onAuth, id, timer,modes,userId,register = {},attrs = {},forget,getStorage,logout,splash = ()=>null } = this.props;
+        let { reportedAuthToParent,isAuth,showReload } = this.state;
+        if(showReload){
+            return (
+                <div className='aio-login-reload'>
+                    <button onClick={()=>window.location.reload()}>بارگذاری مجدد</button>
+                </div>
+            )
         }
+        //اگر هنوز توکن چک نشده ادامه نده
+        if(isAuth === undefined){return splash()}
+        //اگر توکن چک شده و توکن ولید بوده onAuth رو کال کن و ادامه نده
+        if (isAuth === true) {
+            //برای جلوگیری از لوپ بی نهایت فقط یکبار onAuth  رو کال کن
+            if (!reportedAuthToParent) {
+                let {token,userId,userInfo} = getStorage();
+                onAuth({token,userId,userInfo,logout})
+                this.setState({reportedAuthToParent:true})
+            }
+            return splash()
+        }
+        // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
         let fields = register.fields?register.fields.map(({ before, label, field, type,validation }) => {return { label, field, type, before,validation }}):undefined
         this.fields = fields;
         let registerText = register.text || 'ثبت نام'
@@ -624,11 +632,11 @@ class SubmitButton extends Component {
 function AIOMapValidator(props){
     let {id,onAuth,onSubmit,modes,timer, checkToken,register,userId = '',attrs,forget,otpLength} = props;
     for(let prop in props){
-        if(['id','onAuth','onSubmit','modes','timer','checkToken','register','userId','attrs','forget','otpLength'].indexOf(prop) === -1){
+        if(['id','onAuth','onSubmit','modes','timer','checkToken','register','userId','attrs','forget','otpLength','splash'].indexOf(prop) === -1){
             let error = `
                 aio-login error => invalid props 
                 ${prop} is not one of AIOLogin props,
-                valid props are 'id' | 'onAuth' | 'onSubmit' | 'modes' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength'
+                valid props are 'id' | 'onAuth' | 'onSubmit' | 'modes' | 'timer' | 'checkToken' | 'register' | 'userId' | 'attrs' | 'forget' | 'otpLength' | 'splash'
             `;
             alert(error); console.log(error); return;
         }
