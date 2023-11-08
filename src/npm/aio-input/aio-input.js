@@ -2842,7 +2842,7 @@ class MapUnit extends Component {
             if (popup === true) { popup = {} }
             let props = {
                 ...this.props, ...popup, value,
-                mapConfig: { ...this.props.mapConfig, ...popup.mapConfig },
+                mapConfig: {...popup.mapConfig },
                 isPopup: true, popup: false,
                 onClose: () => this.setState({ showPopup: false }),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },

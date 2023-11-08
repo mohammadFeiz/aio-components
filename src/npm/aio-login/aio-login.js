@@ -143,7 +143,7 @@ class AIOLOGIN extends Component {
         if(['OTPNumber','phoneNumber','userName','email'].indexOf(currentMode) !== -1){
             setStorage('userId',model.login.userId);
         }
-        if (token) {this.setState({ token},()=>setStorage('token',token))}
+        if (token) {setStorage('token',token)}
         if(nextMode === 'auth'){this.setState({isAuth:true})}
         else {return nextMode}
     }

@@ -305,8 +305,8 @@ export class AIOInputValidate {
                 scaleStep: 'number|array|undefined',editLabel: 'function|undefined',labelRotate: 'number|function|undefined'
             },
             form: {
-                type: '"form"',inputs: 'object',value: 'object',disabled,inputClassName: 'string|function|undefined',inputStyle: style,
-                labelAttrs: 'object|function|undefined',lang: '"en"|"fa"|undefined',updateInput: 'function|undefined'
+                type: '"form"',inputs: 'object',value: 'object',disabled,inputClassName: 'string|function|undefined',inputStyle: style,submitText:'string|undefined',closeText:'string|undefined',
+                labelAttrs: 'object|function|undefined',lang: '"en"|"fa"|undefined',updateInput: 'function|undefined',onSubmit:'function|undefined',resetText:'string|undefined'
             },
             datepicker: {
                 type: '"datepicker"', value: 'any',caret: 'any',popover: 'object|undefined',

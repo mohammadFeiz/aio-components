@@ -53,7 +53,10 @@ export default class AIOservice{
     this.getError = getError;
     this.setToken = (token)=>{
       let res = token || this.token;
-      if(res){Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`;}
+      if(res){
+        this.token = res;
+        Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`;
+      }
     }
     let param = {helper,storage:this.storage,baseUrl:this.baseUrl,id:this.id,Axios:this.Axios,setToken:this.setToken.bind(this)};
     this.apiFunctions = getApiFunctions(param);
@@ -314,9 +317,9 @@ function ValidateApi(schema,object,description){
           if(!schema || !object){return}
           for (let prop in object) {
               if (!schema[prop]) { return `${description} error, ${prop} is invalid props` }
-              let error = this.checkTypes(object[prop], validProps[prop])
+              let error = this.checkTypes(object[prop], schema[prop])
               if (error) {
-                  return `${description} in type="${type}", ${prop} props ${error}`
+                  return `${description}, ${prop} props ${error}`
               }
           }
       }
