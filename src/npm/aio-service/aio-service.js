@@ -39,7 +39,6 @@ export default class AIOservice{
       id,loader,baseUrl,token,
       getState = ()=>{return {}},
       getApiFunctions = ()=>{return {}},
-      getMockFunction = ()=> {return {}},
       onCatch = ()=>{},
       getError = ()=>{},
     } = props;
@@ -60,7 +59,6 @@ export default class AIOservice{
     }
     let param = {helper,storage:this.storage,baseUrl:this.baseUrl,id:this.id,Axios:this.Axios,setToken:this.setToken.bind(this)};
     this.apiFunctions = getApiFunctions(param);
-    this.mockFunctions = getMockFunction(param); 
   }
   handleCacheVersions = (cacheVersions) => {
     let def = {};
@@ -119,7 +117,7 @@ export default class AIOservice{
     if(type === 'request'){
       let properties = [
         'token','api','def','description','message','cache','onError','onSuccess',
-        'onCatch','getError','apiFunction','mockFunction','parameter','loading','loadingParent'
+        'onCatch','getError','apiFunction','parameter','loading','loadingParent'
       ]
       for(let prop in p){
         if(properties.indexOf(prop) === -1){
@@ -170,11 +168,6 @@ export default class AIOservice{
         }
       }
     }
-    if(type === 'mockFunction'){
-      let error = `aio-service with id:${id} error => apiFunction returns an object contain mock:true, but cannot find mockFunction. mockFunction should define in getMockFunctions props or request object`
-      helper.showAlert({type:'error',text:error});
-      return error;
-    }
   }
   getApisFunction(service){
     if(service.apiFunction){return service.apiFunction}
@@ -187,7 +180,6 @@ export default class AIOservice{
       api,parameter,
       onCatch = this.onCatch,
       getError = this.getError,
-      mockFunction = this.mockFunctions[api]
     } = service;
     try{
         let apiFunction = this.getApisFunction(service);
@@ -195,11 +187,7 @@ export default class AIOservice{
         let res = await apiFunction(parameter,this.getState());
         let resError = this.handleError('apiFunctionReturn',{res,service})
         if(resError){return resError;}
-        let {response,result,mock} = res;
-        if(mock){
-          if(mockFunction){return mockFunction(parameter);}
-          else {this.handleError('mockFunction',service)}
-        }
+        let {response,result} = res;
         if(response){
           let error = getError(response,service);
           if(typeof error === 'string'){return error}
@@ -261,17 +249,18 @@ export default class AIOservice{
 
 function AIOServiceValidate({id,loader,getApiFunctions,cacheVersions}){
   let error;
-  if(typeof getApiFunctions !== 'function'){
-    error = `
-      aio-service with id:${id} error => missing getApiFunctions props. getAPiFunctions is a function that returns an object contain apiFunctions.
-    `
-  }
   if(typeof id !== 'string'){
     error = `
       aio-service with id:${id} error => id props should be an string
     `
   }
-  if(loader && typeof loader !== 'function'){
+  else if(typeof getApiFunctions !== 'function'){
+    error = `
+      aio-service with id:${id} error => missing getApiFunctions props. getAPiFunctions is a function that returns an object contain apiFunctions.
+    `
+  }
+  
+  else if(loader && typeof loader !== 'function'){
     error = `
       aio-service with id:${id} error => loader props should be a function
     `

@@ -273,13 +273,20 @@ pre[class*="language-"] > code[class*="language-"] {
 	box-shadow: inset 5px 0 0 #f7d87c;
 	z-index: 0;
 }
+.desc-list li{
+	margin-bottom:6px;
+	font-size:11px;
+	font-weight: lighter;
+	color:#000;
+	line-height:16px;
+}
 .desc-list mark{
     background:lightblue;
     padding:0 3px;
     border-radius:4px;
     border:1px dotted dodgerblue;
 }
-.titr{
+.aio-doc-titr{
     font-size:20px;
     font-weight:bold;
     margin-bottom:12px;
