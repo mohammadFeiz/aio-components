@@ -292,7 +292,9 @@ class LoginForm extends Component {
         let { loading, formError,model,mode } = this.state;
         if (formError || loading) { return }
         this.setState({loading:true})
-        let nextMode = await onSubmit(model,mode);
+        let nextMode;
+        try{nextMode = await onSubmit(model,mode);}
+        catch{this.setState({loading:false})}
         this.setState({loading:false})
         if(!nextMode){return}
         this.setLastTry();
@@ -402,7 +404,7 @@ class LoginForm extends Component {
             },
             {
                 show:mode !== 'OTPNumber' && mode !== 'OTPCode',field: 'value.login.password',label: 'رمز عبور', 
-                input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,attrs:{style:{direction:'ltr'}}}, 
+                input:{type: 'password',before: <Icon path={mdiLock} size={0.8} />,attrs:{style:{direction:'ltr'}},visible:true}, 
                 validations: [['function', () => errorHandler({field:'password', value:model.login.password})]]
             }
         ];
@@ -612,13 +614,21 @@ class SubmitButton extends Component {
     state = { reload: false }
     async onClick() {
         let { onClick, loading } = this.props;
+        let {reload} = this.state;
         if (loading) { return; }
+        if(reload){window.location.reload()}
         await onClick();
     }
     render() {
         let { disabled, loading, text,outline } = this.props;
         let { reload } = this.state;
-        if (loading && !reload) { setTimeout(() => this.setState({ reload: true }), 16 * 1000) }
+        if(reload){setTimeout(()=>this.setState({reload:false}),0)}
+        else{
+            if (loading) { 
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout(() => this.setState({ reload: true }), 16 * 1000) 
+            }
+        }
         let loadingText = reload ? 'بارگزاری مجدد' : 'در حال ارسال';
         return (
             <button className={'aio-login-submit' + (outline?' aio-login-submit-outline':'')} disabled={disabled()} onClick={() => this.onClick()}>
