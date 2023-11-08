@@ -86,7 +86,7 @@
 }
 .aio-popup-position-center > .aio-popup{
   max-width: 100vw;
-  width:100%;
+  width:fit-content;
   opacity:1;
   max-height:100vh;
 }

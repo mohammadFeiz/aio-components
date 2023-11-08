@@ -402,8 +402,9 @@ class Popover {
         return (dom) => {
             let popover = { ...AIOInput.defaults.popover, ...this.getProp('popover', {}) }
             let render = this.getRender(popover);
-            let body = this.getBody(popover, render)
-            let { rtl, position = 'popover', header } = popover;
+            let body = this.getBody(popover, render);
+            let rtl = this.getProp('rtl');
+            let { position = 'popover', header } = popover;
             return {
                 onClose: () => this.toggle(false),
                 rtl, header, position, header,

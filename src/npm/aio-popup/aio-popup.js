@@ -78,12 +78,14 @@ class Popups extends Component {
     else{
       let { modals } = this.state;
       if(!modals.length){return}
+      if(arg === 'last'){arg = modals[modals.length - 1].id}
       this.mount(arg,false);
       setTimeout(()=>{
-        let modal = arg === 'last'?modals[modals.length - 1]:modals.find((o) => o.id === arg);
+        let { modals } = this.state;
+        console.log(modals);
+        let modal = modals.find((o) => o.id === arg);
         if(modal.onClose){modal.onClose()}
-        if(arg === 'last'){this.change({ modals: modals.slice(0,modals.length - 1) })}
-        else {this.change({ modals: modals.filter((o) => o.id !== arg) })}
+        this.change({ modals: modals.filter((o) => o.id !== arg) })
       },animate?300:0)
     }
   }
