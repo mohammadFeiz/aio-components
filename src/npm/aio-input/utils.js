@@ -10,7 +10,7 @@ export function getMainProperties(props,getProp,types){
     let disabled = p('disabled');
     let className = p('className');
     let style = p('style');
-    let onClick = p('onClick');
+    let onClick = p('onClick',undefined,true);
     let attrs = {...p('attrs',{})};
     let justify = {...p('justify')};
     if(className){attrs.className = className}
@@ -19,7 +19,7 @@ export function getMainProperties(props,getProp,types){
     let properties = {
         props:{...props},
         value,type,rtl,loading,disabled:loading || disabled,attrs,justify,
-        onChange: p('onChange'),
+        onChange: p('onChange',undefined,true),
         justify: p('justify'),
         text: p('text'),
         before: p('before'),after: p('after'),subtext: p('subtext'),label: p('label'),
@@ -44,7 +44,7 @@ export function getMainProperties(props,getProp,types){
     }
     if(types.isDropdown){
         properties = {...properties,caret: p('caret'),popover:p('popover')}
-        if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),}}
+        if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),onSwap:p('onSwap')}}
     }
     if(types.isInput){properties = {...properties,inputAttrs:p('inputAttrs'),blurChange:p('blurChange')}}
     if(types.hasPlaceholder){properties = {...properties,placeholder: p('placeholder')}}
@@ -266,7 +266,7 @@ export class AIOInputValidate {
             multiselect: {
                 type: '"multiselect"', value: 'array|undefined',before: 'any', after: 'any', subtext,text: 'any',
                 options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
-                popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',
+                popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',onSwap:'function|undefined',
                 caret: 'any',disabled, loading: 'any',optionTagBefore: 'any', optionTagAfter: 'any', optionTagAttrs: 'any',
             },
             password: {
