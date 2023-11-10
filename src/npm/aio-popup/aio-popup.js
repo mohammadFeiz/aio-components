@@ -82,8 +82,8 @@ class Popups extends Component {
       this.mount(arg,false);
       setTimeout(()=>{
         let { modals } = this.state;
-        console.log(modals);
         let modal = modals.find((o) => o.id === arg);
+        if(!modal){return}
         if(modal.onClose){modal.onClose()}
         this.change({ modals: modals.filter((o) => o.id !== arg) })
       },animate?300:0)

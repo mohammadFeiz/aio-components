@@ -9,21 +9,23 @@ export default class DOC_AIOForm extends Component{
             <DOC
                 {...this.props}
                 navId='spin4'
-                navs={[
-                    {icon:()=><AIOLoading config={{name:'spin1',size:24}} />,text:'spin1',id:'spin1',COMPONENT:()=><MSF key='spin1' name='spin1'/>},
-                    {icon:()=><AIOLoading config={{name:'spin2',size:24,thickness:3}} />,text:'spin2',id:'spin2',COMPONENT:()=><MSF key='spin2' name='spin2'/>},
-                    {icon:()=><AIOLoading config={{name:'spin3',size:24,thickness:3}} />,text:'spin3',id:'spin3',COMPONENT:()=><MSF key='spin3' name='spin3'/>},
-                    {icon:()=><AIOLoading config={{name:'spin4',size:34,thickness:[3,7]}} />,text:'spin4',id:'spin4',COMPONENT:()=><MSF key='spin4' name='spin4'/>},
-                    {icon:()=><AIOLoading config={{name:'spin5',size:34,thickness:3}} />,text:'spin5',id:'spin5',COMPONENT:()=><MSF key='spin5' name='spin5'/>},
-                    {icon:()=><AIOLoading config={{name:'dots1',size:24,thickness:8}} />,text:'dots1',id:'dots1',COMPONENT:()=><MSF key='dots1' name='dots1'/>},
-                    {icon:()=><AIOLoading config={{name:'dots2',size:24,count:8}} />,text:'dots2',id:'dots2',COMPONENT:()=><MSF key='dpts2' name='dots2'/>},
-                    {icon:()=><AIOLoading config={{name:'cubes1',size:34}} />,text:'cubes1',id:'cubes1',COMPONENT:()=><MSF key='cubes1' name='cubes1'/>},
-                    {icon:()=><AIOLoading config={{name:'cubes2',size:34}} />,text:'cubes2',id:'cubes2',COMPONENT:()=><MSF key='cubes2' name='cubes2'/>},
-                    {icon:()=><AIOLoading config={{name:'cubes3',size:34}} />,text:'cubes3',id:'cubes3',COMPONENT:()=><MSF key='cubes3' name='cubes3'/>},
-                    {icon:()=><AIOLoading config={{name:'orbit',size:36,thickness:1}} />,text:'orbit',id:'orbit',COMPONENT:()=><MSF key='orbit' name='orbit'/>},
-                    {icon:()=><AIOLoading config={{name:'puls',size:24,fill:'#000'}} />,text:'puls',id:'puls',COMPONENT:()=><MSF key='puls' name='puls'/>},
-                    {icon:()=><AIOLoading config={{name:'puls1',size:36}} />,text:'puls1',id:'puls1',COMPONENT:()=><MSF key='puls1' name='puls1'/>}
-                ]}
+                nav={{
+                    items:[
+                        {icon:()=><AIOLoading config={{name:'spin1',size:24}} />,text:'spin1',id:'spin1',render:()=><MSF key='spin1' name='spin1'/>},
+                        {icon:()=><AIOLoading config={{name:'spin2',size:24,thickness:3}} />,text:'spin2',id:'spin2',render:()=><MSF key='spin2' name='spin2'/>},
+                        {icon:()=><AIOLoading config={{name:'spin3',size:24,thickness:3}} />,text:'spin3',id:'spin3',render:()=><MSF key='spin3' name='spin3'/>},
+                        {icon:()=><AIOLoading config={{name:'spin4',size:34,thickness:[3,7]}} />,text:'spin4',id:'spin4',render:()=><MSF key='spin4' name='spin4'/>},
+                        {icon:()=><AIOLoading config={{name:'spin5',size:34,thickness:3}} />,text:'spin5',id:'spin5',render:()=><MSF key='spin5' name='spin5'/>},
+                        {icon:()=><AIOLoading config={{name:'dots1',size:24,thickness:8}} />,text:'dots1',id:'dots1',render:()=><MSF key='dots1' name='dots1'/>},
+                        {icon:()=><AIOLoading config={{name:'dots2',size:24,count:8}} />,text:'dots2',id:'dots2',render:()=><MSF key='dpts2' name='dots2'/>},
+                        {icon:()=><AIOLoading config={{name:'cubes1',size:34}} />,text:'cubes1',id:'cubes1',render:()=><MSF key='cubes1' name='cubes1'/>},
+                        {icon:()=><AIOLoading config={{name:'cubes2',size:34}} />,text:'cubes2',id:'cubes2',render:()=><MSF key='cubes2' name='cubes2'/>},
+                        {icon:()=><AIOLoading config={{name:'cubes3',size:34}} />,text:'cubes3',id:'cubes3',render:()=><MSF key='cubes3' name='cubes3'/>},
+                        {icon:()=><AIOLoading config={{name:'orbit',size:36,thickness:1}} />,text:'orbit',id:'orbit',render:()=><MSF key='orbit' name='orbit'/>},
+                        {icon:()=><AIOLoading config={{name:'puls',size:24,fill:'#000'}} />,text:'puls',id:'puls',render:()=><MSF key='puls' name='puls'/>},
+                        {icon:()=><AIOLoading config={{name:'puls1',size:36}} />,text:'puls1',id:'puls1',render:()=><MSF key='puls1' name='puls1'/>}
+                    ]
+                }}
             />
         )
     }

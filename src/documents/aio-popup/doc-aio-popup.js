@@ -15,14 +15,16 @@ export default class DOC_AIOForm extends Component {
             <DOC
                 {...this.props}
                 navId='popover'
-                navs={[
-                    { text: 'aio-popup documentation', id: 'instance', COMPONENT: () => <Instance /> },
-                    { text: 'addModal', id: 'addModal', COMPONENT: () => <AddModal /> },
-                    { text: 'modal position', id: 'modalposition', COMPONENT: () => <ModalPosition /> },
-                    { text: 'alert', id: 'alert', COMPONENT: () => <Alert /> },
-                    { text: 'snakebar', id: 'snakebar', COMPONENT: () => <Snakebar /> },
-                    { text: 'popover', id: 'popover', COMPONENT: () => <Popover /> },
-                ]}
+                nav={{
+                    items:[
+                        { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
+                        { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
+                        { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
+                        { text: 'alert', id: 'alert', render: () => <Alert /> },
+                        { text: 'snakebar', id: 'snakebar', render: () => <Snakebar /> },
+                        { text: 'popover', id: 'popover', render: () => <Popover /> },
+                    ]
+                }}
             />
         )
     }

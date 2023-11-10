@@ -8,12 +8,14 @@ export default class DOC_AIOFloater extends Component{
         <DOC
           {...this.props}
           navId='example4'
-          navs={[
-            {text:'Basic',id:'example',COMPONENT:()=><Example/>},
-            {text:'relations',id:'example2',COMPONENT:()=><Example2/>},
-            {text:'group',id:'example3',COMPONENT:()=><Example3/>},
-            {text:'snap',id:'example4',COMPONENT:()=><Example4/>}
-          ]}
+          nav={{
+            items:[
+              {text:'Basic',id:'example',render:()=><Example/>},
+              {text:'relations',id:'example2',render:()=><Example2/>},
+              {text:'group',id:'example3',render:()=><Example3/>},
+              {text:'snap',id:'example4',render:()=><Example4/>}
+            ]
+          }}
         />
       )
     }

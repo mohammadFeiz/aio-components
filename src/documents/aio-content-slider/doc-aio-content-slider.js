@@ -9,9 +9,11 @@ export default class DOC_AIOContentSlider extends Component{
             <DOC
                 {...this.props}
                 navId='autoSlide number'
-                navs={[
-                    {text:'example',id:'example',COMPONENT:()=><Preview/>}
-                ]}
+                nav={{
+                  items:[
+                    {text:'example',id:'example',render:()=><Preview/>}
+                ]
+                }}
 
             />
         )
