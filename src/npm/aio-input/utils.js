@@ -81,6 +81,12 @@ export function getMainProperties(props,getProp,types){
             close:p('close')
         }
     }
+    else if(type === 'time'){
+        properties = {
+            ...properties,
+            calendarType:p('calendarType','gregorian')
+        }
+    }
     else if(type === 'list'){
         properties = {
             ...properties,
@@ -319,9 +325,9 @@ export class AIOInputValidate {
                 placeholder: 'any',attrs: 'object|undefined',preview: 'boolean|undefined',disabled, loading: 'any',
                 width: 'string|number|undefined', height: 'string|number|undefined',
             },
-            time: {type: '"time"', value: 'object|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any'},
+            time: {type: '"time"', value: 'object|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any',calendarType:'jalali|gregorian'},
             button: {
-                type: '"button"', value: 'any',before: 'any', after: 'any', subtext,
+                type: '"button"', value: 'any',before: 'any', after: 'any', subtext,onClick:'function|undefined',
                 disabled, loading: 'any',caret: 'any',justify: 'boolean|undefined',popover: 'object|undefined',
             },
             list: {

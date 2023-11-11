@@ -164,7 +164,7 @@ class AIOLOGIN extends Component {
             return splash()
         }
         // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
-        let fields = register.fields?register.fields.map(({ before, label, field, type,validation }) => {return { label, field, type, before,validation }}):undefined
+        let fields = register.fields;
         this.fields = fields;
         let registerText = register.text || 'ثبت نام'
         let props = {forget,timer,otpLength,id,modes,attrs,userId,fields,registerText}
@@ -262,14 +262,20 @@ class LoginForm extends Component {
         let {register = {}} = model;
         let {otpLength} = this.props;
         if (mode === 'register') {
-            return [
+            let items = [
                 ...fields.map((o) => { 
                     let validations;
                     if(o.validation){validations = [['function', () => errorHandler({field:'register',value:register,parameter:{validation:o.validation}} )]]}
                     else if(o.validations){validations = o.validations}
-                    return {input:{...o,label:undefined},label:o.label, field: 'value.register.' + o.field,validations} 
+                    let input = {};
+                    for(let prop in o){
+                        if(['label','field','validation'].indexOf(prop) !== -1){continue}
+                        input[prop] = o[prop]
+                    }
+                    return {input,label:o.label, field: 'value.register.' + o.field,validations} 
                 })
             ]
+            return items
         }
         if(mode === 'forgetId'){
             let {type} = forget;
