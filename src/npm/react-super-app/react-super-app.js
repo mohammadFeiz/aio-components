@@ -25,9 +25,10 @@ export default class RSA {
     }  
   }
   render = () => <RSAAPP {...this.props}/>
-  addModal = (obj) => this.popup.addModal(obj);
-  removeModal = (obj) => this.popup.removeModal(obj);
-  addSnakebar = (obj) => this.popup.addSnakebar(obj);
+  addModal = (obj) => this.props.popup.addModal(obj);
+  addAlert = (obj) => this.props.popup.addAlert(obj);
+  removeModal = (obj) => this.props.popup.removeModal(obj);
+  addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
 }
 function REDUCER(state,action){
   return {...state,[action.key]:action.value}
