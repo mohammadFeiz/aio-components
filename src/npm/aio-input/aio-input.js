@@ -17,7 +17,7 @@ import './aio-input.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
-        validate: false, mapApiKeys: {}, popover: {} 
+        validate: false, mapApiKeys: {}, popover: {}
     };
     constructor(props) {
         super(props);

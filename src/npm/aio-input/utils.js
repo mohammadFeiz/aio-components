@@ -12,7 +12,7 @@ export function getMainProperties(props,getProp,types){
     let style = p('style');
     let onClick = p('onClick',undefined,true);
     let attrs = {...p('attrs',{})};
-    let justify = {...p('justify')};
+    let justify = p('justify');
     if(className){attrs.className = className}
     if(style){attrs.style = style}
     if(onClick){attrs.onClick = onClick}
@@ -20,7 +20,6 @@ export function getMainProperties(props,getProp,types){
         props:{...props},
         value,type,rtl,loading,disabled:loading || disabled,attrs,justify,
         onChange: p('onChange',undefined,true),
-        justify: p('justify'),
         text: p('text'),
         before: p('before'),after: p('after'),subtext: p('subtext'),label: p('label'),
         className: p('className'),style: p('style')
@@ -371,3 +370,35 @@ export class AIOInputValidate {
         }
     }
 } 
+
+export function getInput(type,input,formItem){
+    function getOptions(type){
+        return {
+            militaryservice:()=>[{text:'مشمول',value:'mashmool'},{text:'معاف',value:'moaf'},{text:'پایان خدمت',value:'payan_khedmat'}],
+            gender:()=>[{text:'آقا',value:'male'},{text:'خانم',value:'female'}],
+            married:()=>[{text:'مجرد',value:false},{text:'متاهل',value:true}],
+            
+        }[type]()
+    }
+    return {
+        fullname:()=>{return {input:{type:'text',...input},label:'نام و نام خانوادگی',field:'value.fullname',...formItem,validations:[['required']]}},
+        firstname:()=>{return {input:{type:'text',...input},label:'نام',field:'value.firstname',...formItem,validations:[['required']]}},
+        lastname:()=>{return {input:{type:'text',...input},label:'نام خانوادگی',field:'value.lastname',...formItem,validations:[['required']]}},
+        username:()=>{return {input:{type:'text',...input},label:'نام کاربری',field:'value.username',...formItem,validations:[['required']]}},
+        address:()=>{return {input:{type:'text',...input},label:'آدرس',field:'value.address',...formItem,validations:[['required']]}},
+        location:()=>{return {input:{type:'map',...input},label:'موقعیت',field:'value.location',...formItem,validations:[['required']]}},
+        email:()=>{return {input:{type:'text',...input},label:'ایمیل',field:'value.email',...formItem,validations:[['required']]}},
+        phone:()=>{return {input:{type:'text',...input},label:'شماره تلفن',field:'value.phone',...formItem,validations:[['required']]}},
+        mobile:()=>{return {input:{type:'text',...input},label:'شماره همراه',field:'value.mobile',...formItem,validations:[['required']]}},
+        postal:()=>{return {input:{type:'text',...input},label:'کد پستی',field:'value.postal',...formItem,validations:[['required']]}},
+        father:()=>{return {input:{type:'text',...input},label:'نام پدر',field:'value.father',...formItem,validations:[['required']]}},
+        idcode:()=>{return {input:{type:'text',...input},label:'شماره شناسنامه',field:'value.idcode',...formItem,validations:[['required']]}},
+        nationalcode:()=>{return {input:{type:'text',...input},label:'کد ملی',field:'value.nationalcode',...formItem,validations:[['required']]}},
+        cardbank:()=>{return {input:{type:'text',...input},label:'شماره کارت',field:'value.cardbank',...formItem,validations:[['required']]}},
+        state:()=>{return {input:{type:'text',...input},label:'استان',field:'value.state',...formItem,validations:[['required']]}},
+        city:()=>{return {input:{type:'text',...input},label:'شهر',field:'value.city',...formItem,validations:[['required']]}},
+        gender:()=>{return {input:{type:'radio',...input},label:'جنسیت',field:'value.gender',...formItem,validations:[['required']]}},
+        married:()=>{return {input:{type:'radio',...input},label:'وضعیت تاهل',field:'value.married',...formItem,validations:[['required']]}},
+        militaryservice:()=>{return {input:{type:'radio',...input},label:'وضعیت خدمت',field:'value.militaryservice',...formItem,validations:[['required']]}},
+    }[type]()
+}
