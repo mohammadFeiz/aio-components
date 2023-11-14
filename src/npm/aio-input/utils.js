@@ -241,36 +241,36 @@ export class AIOInputValidate {
         if (error) { return error }
     }
     getValidateObject = (type) => {
-        let options = 'array|undefined', optionText = 'any', optionValue = 'any', optionBefore = 'any', optionAfter = 'any', optionSubtext = 'any', optionDisabled = 'any', optionAttrs = 'any', optionCheckIcon = 'any';
+        let options = 'array|undefined', optionText = 'any', optionValue = 'any', optionBefore = 'any', optionAfter = 'any', optionSubtext = 'any', optionDisabled = 'any', optionAttrs = 'any', optionCheckIcon = 'any',optionClassName = 'any',optionStyle = 'any';
         let style = 'function|object|undefined',disabled = 'boolean|undefined',subtext = 'number|string|function';
         let dic = {
             text: {
                 type: '"text"', value: 'string|number|undefined',inputAttrs: "object|undefined",placeholder: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 justNumber: "boolean|array|undefined", maxLength: 'number|undefined', filter: 'array',
                 before: 'any', after: 'any', subtext,caret: 'any',popover: 'object|undefined',disabled, loading: 'any',
             },
             textarea: {
                 type: '"textarea"', value: 'string|number|undefined',maxLength: 'number|undefined',popover: 'object|undefined',filter:'array',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,justNumber: "boolean|array|undefined", 
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 inputAttrs: "object|undefined",disabled,placeholder: 'any',caret: 'any',before: 'any', after: 'any', subtext,loading: 'any',
             },
             number: {
                 type: '"number"',swip: 'boolean|undefined',popover: 'object|undefined',placeholder: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 inputAttrs: "object|undefined",value: '""|number|undefined',caret: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',
             },
             radio: {
                 type: '"radio"', value: 'any',multiple: 'boolean|undefined',before: 'any', after: 'any', subtext,disabled, loading: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             tabs: {
                 type: '"tabs"', value: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',optionAttrs: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             multiselect: {
                 type: '"multiselect"', value: 'array|undefined',before: 'any', after: 'any', subtext,text: 'any',
-                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle,
                 popover: 'object|undefined',hideTags: 'boolean|undefined',search: 'boolean|undefined',onSwap:'function|undefined',
                 caret: 'any',disabled, loading: 'any',optionTagBefore: 'any', optionTagAfter: 'any', optionTagAttrs: 'any',
             },
@@ -290,11 +290,10 @@ export class AIOInputValidate {
             },
             select: {
                 type: '"select"', value: 'number|string|undefined',
-                caret: 'any',placeholder: 'any',options: 'array', optionText: 'any', optionValue: 'any',
-                search: 'boolean|undefined',optionAttrs: 'function|string|undefined|object',disabled, loading: 'any',
-                before: 'any', after: 'any', subtext,optionAttrs: 'any',popover: 'object|undefined',onSwap: 'function|undefined',
-                optionClose: 'any',optionChecked: 'string|function|boolean|undefined',optionDisabled: 'any',optionCheckIcon: 'any',
-                optionBefore: 'any', optionAfter: 'any', optionSubtext: 'string|number|function|undefined'
+                caret: 'any',placeholder: 'any',
+                search: 'boolean|undefined',disabled, loading: 'any',
+                before: 'any', after: 'any', subtext,popover: 'object|undefined',onSwap: 'function|undefined',
+                options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             file: {
                 type: '"file"', value: 'any',multiple: 'boolean',before: 'any', after: 'any', subtext,
