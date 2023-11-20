@@ -265,7 +265,7 @@ export class AIOInputValidate {
                 options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             tabs: {
-                type: '"tabs"', value: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',optionAttrs: 'any',
+                type: '"tabs"', value: 'any',before: 'any', after: 'any', subtext,disabled, loading: 'any',
                 options, optionText, optionValue, optionBefore, optionAfter, optionSubtext, optionDisabled, optionAttrs, optionCheckIcon,optionClassName,optionStyle
             },
             multiselect: {

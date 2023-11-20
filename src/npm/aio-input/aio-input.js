@@ -669,7 +669,7 @@ class Input extends Component {
     getInputAttrs() {
         let { properties, showPassword, type, addToAttrs } = this.context;
         let { value = '' } = this.state;
-        let {disabled,placeholder,onChange,spin,justify,options} = properties;
+        let {disabled,placeholder,onChange,spin,justify,options,justNumber} = properties;
         let inputAttrs = addToAttrs(properties.inputAttrs, {
             className: !spin ? 'no-spin' : undefined,
             style: justify ? { textAlign: 'center' } : undefined
@@ -681,6 +681,10 @@ class Input extends Component {
         }
         if (type === 'color' && options) { p = { ...p, list: this.datauniqid } }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
+        if(justNumber === true){
+            p.pattern = "\d*";
+            p.inputMode = "numeric";
+        }
         return p;
     }
     render() {
@@ -737,7 +741,7 @@ class Form extends Component {
     header_layout() {
         let {properties} = this.props;
         let {header,title,subtitle,headerAttrs,onClose,onBack} = properties;
-        if (!header && !title && !onClose && !onBack) { return false }
+        if (!header && !title) { return false }
         return {
             className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
             row: [
@@ -1008,15 +1012,14 @@ class Table extends Component {
                 if (type === 'function') { return value({ row, column, rowIndex }) }
                 return value === undefined ? def : value
             },
-            setCell: (row, column, value) => {
-                if (column.input && column.input.onChange) { column.input.onChange({ value, row, column }) }
+            setCell: (row, column, cellNewValue) => {
+                if (column.input && column.input.onChange) { column.input.onChange({ value:cellNewValue, row, column }) }
                 else {
                     let {properties} = this.props;
                     let {value,onChange = ()=>{}} = properties;
-                    let rows = value;
                     row = JSON.parse(JSON.stringify(row));
-                    eval(`${column.value} = value`);
-                    onChange(rows.map((o) => o._id !== row._id ? o : row))
+                    eval(`${column.value} = cellNewValue`);
+                    onChange(value.map((o) => o._id !== row._id ? o : row))
                 }
             }
         }
@@ -1442,7 +1445,7 @@ class Layout extends Component {
         return cls;
     }
     getProps() {
-        let { dragStart, dragOver, drop, click, optionClick, open,addToAttrs } = this.context;
+        let { dragStart, dragOver, drop, click, optionClick, open,addToAttrs,getProp } = this.context;
         let { option, realIndex, renderIndex } = this.props;
         let { label, justify, attrs = {}, disabled,draggable } = this.properties;
         let zIndex;
@@ -2979,12 +2982,17 @@ function MapFooter() {
         return { html: (<button className='aio-input-map-submit' onClick={async () => {onChange(rootState.value); onClose()}}>تایید موقعیت</button>) }
     }
     function details_layout() {
+        let {mapConfig = {}} = rootProps;
+        if(mapConfig.showAddress === false){return false}
         if(rootState.addressLoading){
             return {flex:1,html:<Icon path={mdiLoading} size={1} spin={0.4}/>,align:'v'}
         }
         return { flex: 1, column: [{ html: rootState.address, className: 'aio-input-map-address' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
     }
-    return (<RVD layout={{ className: 'aio-input-map-footer', row: [details_layout(), submit_layout()] }} />)
+    let Submit = submit_layout()
+    let Details = details_layout();
+    if(!Submit && !Details){return null}
+    return (<RVD layout={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
 
 export function AIOValidation(props) {

@@ -255,11 +255,20 @@ class Navigation extends Component {
     let open = openDic[id] === undefined ? true : openDic[id]
     this.setState({ openDic: { ...openDic, [id]: !open } })
   }
+  text_layout({text,marquee},type) {
+    text = typeof text === 'function' ? text() : text; 
+    let html;
+    if (!marquee) { html = text }
+    else {
+      html = <marquee behavior='scroll' scrollamount={3} direction='right'>{text}</marquee>
+    }
+    if(type === 'side'){return { html, align: 'v' }}
+    if(type === 'bottom'){return { html, align: 'vh', className: 'rsa-bottom-menu-item-text' }}
+  }
   item_layout(o, level = 0) {
     let { setNavId, navId, rtl } = this.props;
     let { openDic } = this.state;
     let { id, icon, items } = o;
-    let text = typeof o.text === 'function' ? o.text() : o.text;
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
     return {
@@ -268,11 +277,12 @@ class Navigation extends Component {
         { size: level * 16 },
         { size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', align: 'vh' },
         { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh' },
-        { html: text, align: 'v' }
+        this.text_layout(o,'side')
       ]
     }
   }
-  bottomMenu_layout({ icon, text, id }) {
+  bottomMenu_layout(o) {
+    let { icon, id } = o;
     let { navId, setNavId } = this.props;
     let active = id === navId;
     return {
@@ -282,7 +292,7 @@ class Navigation extends Component {
         { show: !!icon,flex: 2 },
         { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh', className: 'of-visible' },
         { show: !!icon,flex: 1 },
-        { html: text, align: 'vh', className: 'rsa-bottom-menu-item-text' },
+        this.text_layout(o,'bottom'),
         { flex: 1 }
       ]
     }
