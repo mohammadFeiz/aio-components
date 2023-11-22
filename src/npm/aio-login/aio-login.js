@@ -1,7 +1,7 @@
 import React, { Component, createRef } from 'react';
 import RVD from 'react-virtual-dom';
 import AIOStorage from 'aio-storage';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from 'aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 
@@ -483,7 +483,7 @@ function AIOLoginValidator(props) {
     if (!onAuth) {
         let error = `
             aio-login error => missing onAuth props
-            onAuth type is => ({token:string,userId:string,logout:function})=>void
+            onAuth type is => ({token:string,userId:string,userInfo?:any,logout:function})=>void
         `;
         alert(error); console.log(error); return;
     }
@@ -525,7 +525,7 @@ function AIOLoginValidator(props) {
     }
     if (modes.indexOf('OTPNumber') !== -1) {
         if (!otpLength) {
-            let error = `aio-login error=> otpLength props is not an number (for define length of otp code)`
+            let error = `aio-login error => otpLength props is not an number (for define length of otp code)`
             alert(error); console.log(error); return;
         }
     }
@@ -538,28 +538,20 @@ function AIOLoginValidator(props) {
             !register.fields.length
         ) {
             let error = `
-                aio-login error=> register props should be an object contain: 
-                type: "tab" | "button" | "mode"
-                fields:[
-                    {
-                        type:"text" | "number" | "textarea" | "chechbox" | "radio" | "select" | "multiselect" ,
-                        before:html (for example an icon),
-                        label:string (form input label),
-                        validation:(value)=>string (error message) | undefined,
-                        field:string (register object property)
-                    },
-                    ...
-                ],
-                text:string
+                aio-login-error => register props should be an object contain :
+                type : "mode" | "tab" | "button"
+                text : string | undefined
+                fields:(
+                    "fullname","firstname","lastname","username","address","email","fathername","phone","mobile","postalcode",
+                    "nationalcode","idcode","cardbank","state","city","gender","married","militaryservice","location"
+                )[]
             `;
             alert(error); console.log(error); return;
         }
     }
     if (forget) {
-        if (typeof forget !== 'object') { alert(`aio-login error=> forget props should be an object`) }
-        if (['phoneNumber', 'email'].indexOf(forget.mode) === -1) {
-            let error = `aio-login error=> forget props object, mode property should be one of "phoneNumber" | "email"`;
-            alert(error); console.log(error); return;
-        }
+        let message = `aio-login error=> forget props should be an object contain mode:'phoneNumber | email'`
+        if (typeof forget !== 'object') { alert(message) }
+        if (['phoneNumber', 'email'].indexOf(forget.mode) === -1) {alert(message); console.log(message); return;}
     }
 }
