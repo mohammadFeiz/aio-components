@@ -3,7 +3,7 @@ import AIODate from 'aio-date';
 import RVD from 'react-virtual-dom';
 import Axios from 'axios';
 import AIOSwip from 'aio-swip';
-import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance} from './utils';
+import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance,getInput} from './utils';
 import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
@@ -17,7 +17,8 @@ import './aio-input.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
-        validate: false, mapApiKeys: {}, popover: {}
+        validate: false, mapApiKeys: {}, popover: {},
+        getInput
     };
     constructor(props) {
         super(props);
@@ -797,10 +798,11 @@ class Form extends Component {
     getDefault({ type, multiple }) {
         return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
     }
-    getValueByField(field, def) {
+    getValueByField(field, def,functional) {
         let {properties} = this.props;
         let props = properties.props, value = this.getValue(), a;
-        if (typeof field === 'string') {
+        if(functional && typeof field === 'function'){a = field(value);}
+        else if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
                 try { eval(`a = ${field}`); }
                 catch{}
@@ -848,7 +850,10 @@ class Form extends Component {
         let {rtl,disabled,updateInput = (o)=>o,inputStyle = {},inputClassName} = properties;
         let value = this.getValueByField(formItem.field, this.getDefault(input));
         let props = { rtl, value, onChange: (value) => this.setValue(value, formItem),attrs:{} };
-        for (let prop in input) { props[prop] = this.getValueByField(input[prop]) }
+        for (let prop in input) { 
+            let functional = ['options'].indexOf(prop) !== -1;
+            props[prop] = this.getValueByField(input[prop],undefined,functional) 
+        }
         props.value = value;
         if (input.type === 'slider' && props.showValue === undefined) { props.showValue = 'inline'; }
         let { attrs = {} } = input;
@@ -999,6 +1004,14 @@ class Table extends Component {
             searchColumns,
             sorts: [], Sort,
             getDynamics: ({ value, row, column, def, rowIndex }) => {
+                let {properties} = this.props;
+                if(properties.paging){
+                    let {serverSide,number,size} = properties.paging;
+                    if(!serverSide){
+                        rowIndex += ((number - 1) * size)
+                    }
+                    
+                }
                 let type = typeof value;
                 if (type === 'string') {
                     let result = value;
@@ -1088,7 +1101,7 @@ class Table extends Component {
     getRows() {
         let {properties} = this.props;
         let { Sort } = this.state;
-        let {value = [],pading:p} = properties;
+        let {value = [],paging:p} = properties;
         let searchedRows = this.getSearchedRows(value);
         let sortedRows = Sort.getSortedRows(searchedRows);
         let pagedRows = p && !p.serverSide ? sortedRows.slice((p.number - 1) * p.size, p.number * p.size) : sortedRows;
@@ -1126,7 +1139,10 @@ class Table extends Component {
         let input = getDynamics({ value: column.input, row, rowIndex, column });
         if (!input) { input = { type: 'text' } }
         let convertedInput = {}
-        for (let prop in input) { convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
+        for (let prop in input) { 
+            if(['onChange','onClick'].indexOf(prop) !== -1){convertedInput[prop] = input[prop]}
+            else {convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
+        }
         return (
             <AIOInput
                 {...convertedInput}

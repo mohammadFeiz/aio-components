@@ -15,6 +15,7 @@ export default class DOC_AIOInput_Table extends Component {
                 navId='rowsTemplate'
                 nav={{
                     items:[
+                        { text: 'performance', id: 'performance', render: () => <Performance /> },
                         { text: 'type ,placeholder', id: 'type', render: () => <TypePlaceholder /> },
                         { text: 'row,columns', id: 'rowscolumns', render: () => <RowsAndColumns /> },
                         { text: 'attrs', id: 'attrs', render: () => <Attrs /> },
@@ -63,6 +64,70 @@ export default class DOC_AIOInput_Table extends Component {
         )
     }
 }
+class Performance extends Component {
+    constructor(props){
+        super(props);
+        let rows = []
+        for(let i = 0; i < 10000; i++){
+            rows.push({
+                name:`name_${i + 1}`,family:`family_${i + 1}`,age:Math.round(Math.random() * 70) + 5,id:i + 1
+            })
+        }
+        this.state = {
+            rows,
+            columns:[
+                {title:'#',value:({rowIndex})=>rowIndex + 1,width:68},
+                {title:'Name',value:'row.name',input:{type:'text'}},
+                {title:'Family',value:'row.family',input:{type:'text'}},
+                {title:'Age',value:'row.age',input:{type:'number'}},
+            ],
+            paging:{size:100,number:1,sizes:[100,200,300],onChange:(paging)=>this.setState({paging})}
+        }
+    }
+    preview() {
+        let {rows,columns,paging} = this.state;
+        return (
+            <div className='example'>
+                <AIOInput
+                    type='table' style={{height:400}}
+                    value={rows}
+                    columns={columns}
+                    onChange={(value)=>this.setState({rows:value})}
+                    paging={paging}
+                />                
+                {
+                    AIODoc().Code(`
+
+let rows = [
+    {name:'mohammad',family:'feiz',age:38},
+    {name:'john',family:'doe',age:30},
+]
+let columns = [
+    {title:'Name',value:'row.name',input:{type:'text',onChange:({row,column,value})=>this.change(row,'name',value)}},
+    {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>this.change(row,'family',value)}},
+    {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>this.change(row,'age',value)}},
+]
+function change(){
+    let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
+    setRows(newRows)
+}
+return (
+    <AIOInput
+        type='table'
+        value={rows}
+        columns={columns}
+    />
+)
+                    `)
+                }
+                
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            </div>
+        )
+    }
+    render() {return (<Example preview={() => this.preview()}/>)}
+}
+
 class TypePlaceholder extends Component {
     preview() {
         return (
