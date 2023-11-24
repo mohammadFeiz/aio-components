@@ -408,7 +408,15 @@ export function getInput(field,path){
         gender:{input:{type:'radio'},label:'جنسیت'},
         married:{input:{type:'radio'},label:'وضعیت تاهل'},
         militaryservice:{input:{type:'radio'},label:'وضعیت خدمت'},
-        location:{input:{type:'map'},label:'موقعیت'}, 
+        location:{
+            input:{
+                type:'map',mapConfig:{draggable:false,zoomable:false,showAddress:false},
+                popup:{mapConfig:{search:true,title:'ثبت موقعیت جغرافیایی',zoomable:true,draggable:true}},
+                style:{height:90,minHeight:90}
+            },
+        label:'موقعیت جغرافیایی'
+    }, 
+        
     }[field];
     let inputProps = {...input}
     if(['select','radio'].indexOf(input.type) !== -1){inputProps = {...inputProps,optionText:'option',optionValue:'option',options:getOptions()}}

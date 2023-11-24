@@ -2735,26 +2735,28 @@ class MapUnit extends Component {
     }
     panTo(lat, lng) { this.map.panTo({ lat, lng }) }
     async updateAddress({ lat, lng }) {
-        clearTimeout(this.timeout);
+        clearTimeout(this.atimeout);
         this.setState({addressLoading:true})
-        this.timeout = setTimeout(async ()=>{
-            let { onChangeAddress = () => { } } = this.props;
+        this.atimeout = setTimeout(async ()=>{
+            let { onChange = () => { } } = this.props;
             let address = await this.getAddress({ lat, lng });
             this.setState({ address,addressLoading:false });
-            onChangeAddress(address);
-        },1000);
+            onChange({lat,lng,address});
+        },500);
     }
     change({ lat, lng }) {
         let { onChange = () => { } } = this.props;
-        onChange({ lat, lng });
+        let {address} = this.state;
+        onChange({ lat, lng,address });
         this.updateAddress({ lat, lng })
     }
     move({ lat, lng }) {
         let { mapConfig = {} } = this.props;
         let { marker = true } = mapConfig;
         if (marker) { this.marker.setLatLng({ lat, lng }) }
-        clearTimeout(this.timeout);
-        this.timeout = setTimeout(async () => this.setState({ value: { lat, lng } }, () => this.change({ lat, lng })), 700);
+        clearTimeout(this.atimeout);
+        clearTimeout(this.btimeout);
+        this.btimeout = setTimeout(async () => this.setState({ value: { lat, lng } }, () => this.change({ lat, lng })), 500);
     }
     //maptype: "dreamy" | 'standard-day'  
     init() {

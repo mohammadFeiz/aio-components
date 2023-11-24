@@ -4,9 +4,8 @@ import AIOStorage from 'aio-storage';
 import AIOInput from 'aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
-
-import './aio-login.css';
 import AIOPopup from 'aio-popup';
+import './aio-login.css';
 export default class AIOlogin {
     constructor(props) {
         let { id, onAuth, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength } = props;
