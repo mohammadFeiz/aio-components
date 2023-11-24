@@ -488,7 +488,8 @@
 }
 
 .aio-input-textarea {
-    height: 60px;
+    min-height: 60px;
+    height:fit-content;
 }
 
 .aio-input-radio {
@@ -601,7 +602,6 @@
 }
 
 .aio-input-form-footer {
-    border-top: 1px solid #ddd;
     display: flex;
     align-items: center;
     box-sizing: border-box;

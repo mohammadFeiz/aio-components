@@ -144,7 +144,8 @@ export function getMainProperties(props,getProp,types){
             inputStyle:p('inputStyle',{}),
             labelAttrs:p('labelAttrs'),
             lang:p('lang','en'),
-            updateInput:p('updateInput',(o)=>o)
+            updateInput:p('updateInput',(o)=>o),
+            initialDisabled:p('initialDisabled',true)
         }
     }
     else if(type === 'table'){
@@ -312,7 +313,7 @@ export class AIOInputValidate {
             form: {
                 type: '"form"',inputs: 'object',value: 'object',disabled,inputClassName: 'string|function|undefined',inputStyle: style,submitText:'string|undefined',closeText:'string|undefined',
                 labelAttrs: 'object|function|undefined',lang: '"en"|"fa"|undefined',updateInput: 'function|undefined',onSubmit:'function|undefined',resetText:'string|undefined',
-                footer:'function|undefined'
+                footer:'function|undefined',initialDisabled:'boolean|undefined'
             },
             datepicker: {
                 type: '"datepicker"', value: 'any',caret: 'any',popover: 'object|undefined',
@@ -371,57 +372,68 @@ export class AIOInputValidate {
         }
     }
 } 
-
-export function getInput(field,path){
-    function getOptions(){
+export function getFormInputs(fields,path){
+    function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}
+    return fields.map((o)=>Array.isArray(o)?{row:o.map((oo)=>getInput(oo))}:getInput(o))
+}
+export function getFormInput(Field,path){
+    function getOptions(field,path){
         return {
-            militaryservice:()=>['مشمول','معاف','پایان خدمت'],
-            gender:()=>['مرد','زن'],
-            married:()=>['مجرد','متاهل'],
+            militaryservice:()=>['مشمول','معاف','پایان خدمت'],gender:()=>['مرد','زن'],married:()=>['مجرد','متاهل'],state:()=>Object.keys(getCities()),
             city:()=>(value)=>{
                 let state;
                 try{eval(`state = value${path?'.' + path:''}.state`)} catch{}
-                if(!state){return []}
-                let cities = getCities()
-                return cities[state]
+                return !state?[]:getCities()[state]
             },
-            state:()=>Object.keys(getCities())
             
         }[field]()
     }
-    let {input,label} = {
-        fullname:{input:{type:'text'},label:'نام و نام خانوادگی'},
-        firstname:{input:{type:'text'},label:'نام'},
-        lastname:{input:{type:'text'},label:'نام خانوادگی'},
-        username:{input:{type:'text'},label:'نام کاربری'},
-        address:{input:{type:'text'},label:'آدرس'},
-        email:{input:{type:'text'},label:'ایمیل'},
-        father:{input:{type:'text'},label:'نام پدر'},
-        phone:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره تلفن'},
-        mobile:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره همراه'},
-        postal:{input:{type:'text',justNumber:true},label:'کد پستی'},
-        nationalcode:{input:{type:'text',maxLength:10,justNumber:true},label:'کد ملی'},
-        idcode:{input:{type:'text'},label:'شماره شناسنامه'}, 
-        cardbank:{input:{type:'text',justNumber:true,maxLength:16},label:'شماره کارت'},
-        state:{input:{type:'select'},label:'استان'},
-        city:{input:{type:'select'},label:'شهر'},
-        gender:{input:{type:'radio'},label:'جنسیت'},
-        married:{input:{type:'radio'},label:'وضعیت تاهل'},
-        militaryservice:{input:{type:'radio'},label:'وضعیت خدمت'},
-        location:{
-            input:{
-                type:'map',mapConfig:{draggable:false,zoomable:false,showAddress:false},
-                popup:{mapConfig:{search:true,title:'ثبت موقعیت جغرافیایی',zoomable:true,draggable:true}},
-                style:{height:90,minHeight:90}
+    function getField(field){return `value${path?`.${path}`:''}.${field}`}
+    function getBase(field){
+        let list = field.split('_');
+        if(list.length === 3){return {field:list[0],input:{type:list[1]},label:list[2],extra:{}}}
+        let {input,label,extra = {}} = {
+            fullname:{input:{type:'text'},label:'نام و نام خانوادگی'},
+            firstname:{input:{type:'text'},label:'نام'},
+            lastname:{input:{type:'text'},label:'نام خانوادگی'},
+            username:{input:{type:'text'},label:'نام کاربری'},
+            address:{input:{type:'textarea'},label:'آدرس'},
+            email:{input:{type:'text'},label:'ایمیل'},
+            father:{input:{type:'text'},label:'نام پدر'},
+            phone:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره تلفن'},
+            mobile:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره همراه'},
+            postal:{input:{type:'text',justNumber:true},label:'کد پستی'},
+            nationalcode:{input:{type:'text',maxLength:10,justNumber:true},label:'کد ملی'},
+            idnumber:{input:{type:'text'},label:'شماره شناسنامه'}, 
+            cardbank:{input:{type:'text',justNumber:true,maxLength:16},label:'شماره کارت'},
+            state:{input:{type:'select'},label:'استان'},
+            city:{input:{type:'select'},label:'شهر'},
+            gender:{input:{type:'radio'},label:'جنسیت'},
+            married:{input:{type:'radio'},label:'وضعیت تاهل'},
+            password:{input:{type:'password'},label:'رمز عبور'},
+            repassword:{
+                input:{type:'password'},label:'تکرار رمز عبور',
+                extra:{validations:[['=',getField('password'),{message:'تکرار رمز صحیح نیست'}]],show:`!!${getField('password')}`}
             },
-        label:'موقعیت جغرافیایی'
-    }, 
-        
-    }[field];
+            militaryservice:{input:{type:'radio'},label:'وضعیت خدمت'},
+            location:{
+                input:{
+                    type:'map',mapConfig:{draggable:false,zoomable:false,showAddress:false},
+                    popup:{mapConfig:{search:true,title:'ثبت موقعیت جغرافیایی',zoomable:true,draggable:true}},
+                    style:{height:90,minHeight:90}
+                },
+                label:'موقعیت جغرافیایی',extra:{addressField:getField('address')}
+            }, 
+        }[field];
+        return {input,label,extra,field}
+    }
+    let required = false;
+    if(Field.indexOf('*') === 0){Field = Field.slice(1,Field.length); required = true}
+    let {input,label,extra,field} = getBase(Field);
     let inputProps = {...input}
-    if(['select','radio'].indexOf(input.type) !== -1){inputProps = {...inputProps,optionText:'option',optionValue:'option',options:getOptions()}}
+    if(['select','radio'].indexOf(input.type) !== -1){inputProps = {...inputProps,optionText:'option',optionValue:'option',options:getOptions(field,path)}}
     if(['select'].indexOf(input.type) !== -1){inputProps = {...inputProps,popover:{fitHorizontal:true}}}
-    return {field:`value${path?`.${path}`:''}.${field}`,validations:[['required']],label,input:inputProps}     
+    return {field:`value${path?`.${path}`:''}.${field}`,validations:required?[['required']]:undefined,label,input:inputProps,...extra}     
 }
 function getCities() {
     return {

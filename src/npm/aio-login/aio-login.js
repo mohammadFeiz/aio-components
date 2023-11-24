@@ -1,7 +1,8 @@
 import React, { Component, createRef } from 'react';
 import RVD from 'react-virtual-dom';
 import AIOStorage from 'aio-storage';
-import AIOInput from 'aio-input';
+import AIOInput from './../../npm/aio-input/aio-input';
+import { getFormInputs } from './../../npm/aio-input/utils';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOPopup from 'aio-popup';
@@ -36,13 +37,34 @@ export default class AIOlogin {
             logout: this.logout
         }
     }
-    render = () => <AIOLOGIN {...this.props} getActions={({setMode})=>this.setMode = setMode}/>
+    render = (p = {}) => {
+        let { attrs = this.props.attrs, profile } = p;
+        if (profile) {
+            if (typeof profile !== 'object' || !Array.isArray(profile.fields) || !profile.fields.length || typeof profile.onSubmit !== 'function') {
+                let error = `
+                    aio-login-error => profile props should be an object contain :
+                    submitText : string | undefined,
+                    title : string | undefined,
+                    subtitle : string | undefined,
+                    fields : ( <default field> | string )[],
+                    model : { [ field : <default field>] : any },
+                    onClose : (() => void) | undefined,
+                    onSubmit : ( model : { [ field : <default field> ] : any } ) => void,
+                    <default field> : (
+                        "fullname" | "firstname" | "lastname" | "username" | "address" | "email" | "fathername" | "phone" | "mobile" | "postalcode",
+                        "nationalcode" | "idcode" | "cardbank" | "state" | "city" | "gender" | "married" | "militaryservice" | "location"
+                    )`;
+                alert(error); console.log(error); return null;
+            }
+        }
+        return <AIOLOGIN {...this.props} getActions={({ setMode }) => this.setMode = setMode} profile={profile} attrs={attrs} />
+    }
 }
 class AIOLOGIN extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state = { isTokenChecked:false,showReload: false, reportedAuthToParent: false,mode:props.modes[0],loading:false }
-        props.getActions({setMode:this.setMode.bind(this)})
+        this.state = { isTokenChecked: false, showReload: false, mode: props.mode || props.modes[0], loading: false }
+        props.getActions({ setMode: this.setMode.bind(this) })
     }
     async checkToken() {
         let { getStorage, checkToken, removeToken } = this.props;
@@ -53,13 +75,13 @@ class AIOLOGIN extends Component {
             try { result = await checkToken(token, { userId, userInfo }); }
             catch (err) { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: this.getError(err) }) }
         }
-        if(result === true){this.setMode('auth')}
+        if (result === true) { this.setMode('auth') }
         else if (result === false) { removeToken() }
-        else { 
+        else {
             if (typeof result === 'string') { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: result }) }
             this.setState({ showReload: true })
         }
-        this.setState({isTokenChecked:true})
+        this.setState({ isTokenChecked: true })
     }
     getError(err) {
         if (typeof err === 'string') { return err }
@@ -75,24 +97,30 @@ class AIOLOGIN extends Component {
             else { return err.message || err.Message }
         }
     }
-    async componentDidMount() { this.checkToken(); }
+    async componentDidMount() { 
+        let {profile} = this.props;
+        if(profile){return}
+        this.checkToken();
+    }
+    setLoading(loading){this.setState({loading})}
     async onSubmit(model) {
-        let { setStorage, removeToken, onSubmit } = this.props;
-        let {mode:currentMode} = this.state;
+        let { setStorage, onSubmit } = this.props;
+        let { mode: currentMode } = this.state;
         let res;
-        this.setState({loading:false})
-        try{res = await onSubmit(model, currentMode)}
-        catch{this.setState({loading:false}); return;}
-        this.setState({loading:false})
-        if (typeof res === 'string') { 
+        this.setLoading(true)
+        try { res = await onSubmit(model, currentMode) }
+        catch { this.setLoading(false); return; }
+        this.setLoading(false);
+        if (typeof res === 'string') {
             let text = {
                 "OTPNumber": 'ارسال شماره همراه',
                 "OTPCode": 'ارسال کد یکبار مصرف',
                 "userName": 'ارسال نام کاربری و رمز عبور',
                 "phoneNumber": 'ارسال شماره همراه و رمز عبور',
                 "email": 'ارسال آدرس ایمیل و رمز عبور',
-                "register": 'عملیات ثبت نام'
+                "register": 'عملیات ثبت نام',
             }[currentMode]
+            text = `${text} با خطا روبرو شد`
             let subtext = res;
             new AIOPopup().addAlert({ type: 'error', text, subtext })
         }
@@ -102,57 +130,71 @@ class AIOLOGIN extends Component {
             }
         }
     }
-    setMode(mode){
-        this.setState({mode})
+    async onSubmitProfile(model){
+        let { profile } = this.props;
+        let res;
+        this.setLoading(true);
+        try { res = await profile.onSubmit(model) }
+        catch { this.setLoading(false); return; }
+        this.setLoading(false);
+        if (typeof res === 'string') {new AIOPopup().addAlert({ type: 'error', text:'ویرایش پروفایل با خطا روبرو شد', subtext:res })}
+    }
+    setMode(mode) {
+        this.setState({ mode })
     }
     render() {
-        let { otpLength, onAuth, id, timer, modes, userId, register = {}, attrs = {}, forget, getStorage, logout, splash = () => null } = this.props;
-        let { reportedAuthToParent, isTokenChecked, showReload,mode,loading } = this.state;
+        let { otpLength, onAuth, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, splash = () => null } = this.props;
+        let { isTokenChecked, showReload, mode, loading } = this.state;
+        if(profile){
+            let props = { timer, id, attrs, userId,loading,profile,onSubmitProfile:this.onSubmitProfile.bind(this) }
+            return <LoginForm {...props}/>
+        }
         if (showReload) { return (<div className='aio-login-reload'><button onClick={() => window.location.reload()}>بارگذاری مجدد</button></div>) }
         //اگر هنوز توکن چک نشده ادامه نده
         if (!isTokenChecked) { return splash() }
         //اگر توکن چک شده و توکن ولید بوده onAuth رو کال کن و ادامه نده
         if (mode === 'auth') {
             //برای جلوگیری از لوپ بی نهایت فقط یکبار onAuth  رو کال کن
-            if (!reportedAuthToParent) {
+            if (!this.reportedAuthToParent) {
+                this.reportedAuthToParent = true;
                 let { token, userId, userInfo } = getStorage();
-                onAuth({ token, userId, userInfo, logout })
-                setTimeout(()=>{this.setState({ reportedAuthToParent: true })},0)
+                onAuth({ token, userId, userInfo, logout }); 
             }
             return splash()
         }
         // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
-        let fields = register.fields;
-        this.fields = fields;
-        let registerText = register.text || 'ثبت نام'
-        let props = { forget, timer, otpLength, id, modes, attrs, userId, fields, registerText }
-        let html = (
-            <LoginForm {...props} loading={loading}
-                registerButton={register.type === 'button' ? registerText : undefined}
-                registerTab={register.type === 'tab' ? registerText : undefined}
+        return (
+            <LoginForm {...{ forget, timer, otpLength, id, modes, attrs, userId,register,loading,mode }}
                 onSubmit={this.onSubmit.bind(this)}
-                onChangeMode={(mode)=>this.setMode(mode)} mode={mode}
+                onChangeMode={this.setMode.bind(this)}
             />
         )
-        return html
     }
 }
 class LoginForm extends Component {
     constructor(props) {
         super(props);
         this.storage = AIOStorage(`-AIOLogin-${props.id}`);
-        let { timer = 30, fields = [] } = props;
-        this.state = { fields, timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode) }
+        let { timer = 30 } = props;
+        this.state = { timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode) }
     }
     getLabels(mode) {
         let { model, tab } = this.state;
-        let { registerText, forget } = this.props;
+        let { register, profile, forget } = this.props;
+        if (profile) { 
+            let {title,onClose,submitText = 'ویرایش اطلاعات کاربری',subtitle = false} = profile;
+            if(!title && !onClose){return {inputLabel:false,title:false,subtitle:false,submitText,backButton:false}}
+            return { inputLabel: false, title: title || 'ویرایش اطلاعات کاربری', submitText, subtitle, backButton: !!onClose } 
+        }
         if (mode === 'OTPNumber') {
             let subtitle = 'شماره همراه خود را وارد کنید . پیامکی حاوی کد برای شما ارسال خواهد شد';
             return { inputLabel: 'شماره همراه', title: 'ورود با کد یکبار مصرف', submitText: 'ورود', subtitle }
         }
         if (mode === 'OTPCode') { return { inputLabel: 'کد پیامک شده', title: false, submitText: 'ورود', subtitle: `کد پیامک شده به شماره ی ${model.login.userId} را وارد کنید` } }
-        if (mode === 'register') { return { inputLabel: false, title: registerText, submitText: registerText, subtitle: false, backButton: tab !== 'register' } }
+        if (mode === 'register') { 
+            let {title,submitText = 'ثبت نام',subtitle = false} = register;
+            return { inputLabel: false, title, submitText, subtitle, backButton: tab !== 'register' } 
+        }
         if (mode === 'forgetUserId') {
             let subtitle = `${forget.mode === 'phoneNumber' ? 'شماره همراه' : 'ایمیل'} خود را وارد کنید . کد باز یابی رمز عبور برای شما ارسال خواهد شد`
             return { inputLabel: forget.mode === 'email' ? 'ایمیل' : 'شماره همراه', backButton: true, title: 'بازیابی رمز عبور', submitText: 'دریافت کد بازیابی رمز', subtitle }
@@ -166,23 +208,23 @@ class LoginForm extends Component {
         if (mode === 'email') { return { inputLabel: 'ایمیل', title: 'ورود با ایمیل', submitText: 'ورود', subtitle: false } }
         if (mode === 'phoneNumber') { return { inputLabel: 'شماره همراه', title: 'ورود با شماره همراه', submitText: 'ورود', subtitle: false } }
     }
-    changeMode(mode) { 
-        let {onChangeMode} = this.props;
+    changeMode(mode) {
+        let { onChangeMode } = this.props;
         onChangeMode(mode);
-        this.setState({ model: this.getInitialModel(mode) }) 
+        this.setState({ model: this.getInitialModel(mode) })
     }
     getInitialModel(mode) {
         if (!mode) { mode = this.props.mode }
-        let { userId } = this.props;
-        return { forget: {}, register: {}, login: { userId } };
+        let { userId, profile = {} } = this.props;
+        return { forget: {}, register: {}, profile: profile.model, login: { userId } };
     }
     title_layout({ title, backButton }) {
         if (!title) { return false }
-        let { modes } = this.props;
+        let { modes,profile } = this.props;
         return {
             className: 'aio-login-title', align: 'v',
             row: [
-                { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => this.changeMode(modes[0]) },
+                { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => profile?profile.onClose():this.changeMode(modes[0]) },
                 { html: title }
             ]
         }
@@ -191,7 +233,7 @@ class LoginForm extends Component {
         if (!subtitle) { return false }
         return { html: subtitle, className: 'aio-login-subtitle' }
     }
-    getInput_phoneNumber(field,getValue){
+    getInput_phoneNumber(field, getValue) {
         return {
             field, label: 'شماره همراه',
             input: {
@@ -207,18 +249,18 @@ class LoginForm extends Component {
             }]]
         }
     }
-    getInput_userName(field){
-        let {userId} = this.props;
+    getInput_userName(field) {
+        let { userId } = this.props;
         return {
-            field,label: 'نام کاربری',validations: [['required']],style: { direction: 'ltr' },
-            input: {type: 'text', disabled: !!userId, before: <Icon path={mdiAccount} size={0.8} />}
+            field, label: 'نام کاربری', validations: [['required']], style: { direction: 'ltr' },
+            input: { type: 'text', disabled: !!userId, before: <Icon path={mdiAccount} size={0.8} /> }
         }
     }
-    getInput_email(field,getValue){
-        let {userId} = this.props;
+    getInput_email(field, getValue) {
+        let { userId } = this.props;
         return {
-            field, label: 'ایمیل',style: { direction: 'ltr' } ,
-            input: { type: 'text', disabled: !!userId, before: <Icon path={mdiEmail} size={0.8} />},
+            field, label: 'ایمیل', style: { direction: 'ltr' },
+            input: { type: 'text', disabled: !!userId, before: <Icon path={mdiEmail} size={0.8} /> },
             validations: [['function', () => {
                 let value = getValue();
                 if (!value) { return 'ایمیل خود را وارد کنید' }
@@ -230,86 +272,86 @@ class LoginForm extends Component {
             }]],
         }
     }
-    getInput_otp(field,getValue){
-        let {otpLength} = this.props;
+    getInput_otp(field, getValue) {
+        let { otpLength } = this.props;
         return {
             field, label: 'رمز یکبار مصرف',
-            input: {maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''),className: 'aio-login-otp-code'},
+            input: { maxLength: otpLength, justNumber: true, type: 'text', placeholder: Array(otpLength).fill('-').join(''), className: 'aio-login-otp-code' },
             validations: [['function', () => {
-                let {otpLength} = this.props;
+                let { otpLength } = this.props;
                 let value = getValue();
-                if(!value){return 'رمز یکبار مصرف را وارد کنید'}
+                if (!value) { return 'رمز یکبار مصرف را وارد کنید' }
                 return value.length !== otpLength ? `رمز یکبار مصرف باید شامل ${otpLength} کاراکتر باشد` : false
             }]]
         }
     }
-    getInput_password(field,type){
+    getInput_password(field, type) {
         let validations;
-        if(type === 2){
-            validations = [['function',()=>{
-                let {model} = this.state;
+        if (type === 2) {
+            validations = [['function', () => {
+                let { model } = this.state;
                 let value = model.forget.reNewPassword;
-                if(!value){return 'تکرار رمز عبور جدید را وارد کنید'}
+                if (!value) { return 'تکرار رمز عبور جدید را وارد کنید' }
                 if (value.length < 1) { return 'رمز عبور را وارد کنید' }
                 if (value !== model.forget.newPassword) { return 'رمز با تکرار آن مطابقت ندارد' }
                 return false;
             }]]
         }
-        else{validations = [['required']]}
+        else { validations = [['required']] }
         return {
-            field, label: ['رمز عبور','رمز عبور جدید','تکرار رمز عبور جدید'][type],validations,
-            input: { type: 'password', before: <Icon path={mdiLock} size={0.8} />, style: { direction: 'ltr' } , visible: true }
+            field, label: ['رمز عبور', 'رمز عبور جدید', 'تکرار رمز عبور جدید'][type], validations,
+            input: { type: 'password', before: <Icon path={mdiLock} size={0.8} />, style: { direction: 'ltr' }, visible: true }
         }
     }
     getInputs() {
-        let { fields } = this.state;
-        let { forget,mode } = this.props;
-        if (mode === 'register') {return [...fields.map((o) => AIOInput.defaults.getInput(o,'register'))]}
+        let { forget, mode, profile,register } = this.props;
+        if (profile) { return getFormInputs(profile.fields, 'profile') }
+        if (mode === 'register') { return getFormInputs(register.fields, 'register') }
         if (mode === 'forgetUserId') {
-            return [this['getInput_' + forget.mode](`value.forget.userId`,()=>this.state.model.forget.userId)]
+            return [this['getInput_' + forget.mode](`value.forget.userId`, () => this.state.model.forget.userId)]
         }
         if (mode === 'forgetPassword') {
             return [
-                this.getInput_otp('value.forget.password',()=>this.state.model.forget.password),
-                this.getInput_password('value.forget.newPassword',1),
-                this.getInput_password('value.forget.reNewPassword',2),
+                this.getInput_otp('value.forget.password', () => this.state.model.forget.password),
+                this.getInput_password('value.forget.newPassword', 1),
+                this.getInput_password('value.forget.reNewPassword', 2),
             ]
         }
-        if(mode === 'OTPNumber'){return [this.getInput_phoneNumber(`value.login.userId`,()=>this.state.model.login.userId)]}
-        if(mode === 'OTPCode'){return [this.getInput_otp('value.login.password',()=>this.state.model.login.password)]}
+        if (mode === 'OTPNumber') { return [this.getInput_phoneNumber(`value.login.userId`, () => this.state.model.login.userId)] }
+        if (mode === 'OTPCode') { return [this.getInput_otp('value.login.password', () => this.state.model.login.password)] }
         return [
-            this['getInput_' + mode]('value.login.userId',()=>this.state.model.login.userId),
-            this.getInput_password('value.login.password',0)
+            this['getInput_' + mode]('value.login.userId', () => this.state.model.login.userId),
+            this.getInput_password('value.login.password', 0)
         ]
     }
     form_layout(labels) {
-        let { model } = this.state,{ mode } = this.props;
+        let { model } = this.state, { mode,userId } = this.props;
         return {
             className: 'ofy-auto',
             html: (
                 <AIOInput
-                    type='form' key={mode} lang='fa' value={model} rtl={true}
-                    onChange={(model) => this.setState({ model})}
+                    type='form' key={mode} lang='fa' value={model} rtl={true} initialDisabled={!userId}
+                    onChange={(model) => { this.setState({ model }) }}
                     inputs={{ props: { gap: 12 }, column: this.getInputs(labels) }}
-                    footer={({disabled})=>this.submit_layout({submitText:labels.submitText,disabled})}
+                    footer={({ disabled }) => this.submit_layout({ submitText: labels.submitText, disabled })}
                 />
             )
         }
     }
-    submit_layout({ submitText,disabled }) {
-        let { loading,timer,mode } = this.props;
+    submit_layout({ submitText, disabled }) {
+        let { loading, timer, mode } = this.props;
         let layout = {
             style: { padding: '0 12px' },
             html: (<SubmitButton mode={mode} timer={timer} text={submitText} loading={loading} disabled={() => !!disabled} onClick={() => this.onSubmit()} />)
         }
-        return <RVD layout={layout}/>
+        return <RVD layout={layout} />
     }
     async onSubmit() {
-        let { onSubmit } = this.props;
+        let { onSubmit, profile,onSubmitProfile } = this.props;
         let { model } = this.state;
-        onSubmit(model);
+        if (profile) { onSubmitProfile(model) }
+        else { onSubmit(model); }
     }
-    
     changeUserId_layout() {
         let { mode } = this.props;
         if (mode !== 'OTPCode') { return false }
@@ -317,7 +359,7 @@ class LoginForm extends Component {
     }
     recode_layout() {
         let { model } = this.state;
-        let { mode,onChangeMode } = this.props;
+        let { mode, onChangeMode } = this.props;
         if (mode !== 'OTPCode') { return false }
         return {
             className: 'aio-login-text m-b-12', html: `ارسال مجدد کد`, align: 'vh',
@@ -328,8 +370,8 @@ class LoginForm extends Component {
         }
     }
     changeMode_layout() {
-        let { mode,modes } = this.props;
-        if (mode === 'register' || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
+        let { mode, modes, profile } = this.props;
+        if (mode === 'register' || !!profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
         let others = []
         for (let i = 0; i < modes.length; i++) {
             let key = modes[i];
@@ -361,21 +403,22 @@ class LoginForm extends Component {
         }
     }
     registerButton_layout() {
-        let { registerButton,mode } = this.props;
-        if (!registerButton || mode === 'register') { return false }
-        return { align: 'vh', html: (<button onClick={() => this.changeMode('register')} className='aio-login-register-button'>{registerButton}</button>) }
+        let { register, mode } = this.props;
+        if ( mode === 'register') { return false }
+        if (!register.type !== 'button') { return false }
+        let {buttonText = 'ثبت نام'} = register
+        return { align: 'vh', html: (<button onClick={() => this.changeMode('register')} className='aio-login-register-button'>{buttonText}</button>) }
     }
     registerTab_layout() {
-        let { registerTab, modes,mode } = this.props;
-        if (registerTab === true) { registerTab = 'ثبت نام' }
-        if (!registerTab) { return false }
-        if (mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
+        let { register, modes, mode,profile } = this.props;
+        if(!register || register.type !== 'tab' || profile || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
+        let {tabText = 'ثبت نام'} = register;
         return {
             html: (
                 <AIOInput
                     className='aio-login-register-tabs'
                     type='tabs' value={mode === 'register' ? 'register' : 'login'}
-                    options={[{ text: 'ورود', value: 'login' }, { text: registerTab, value: 'register' }]}
+                    options={[{ text: 'ورود', value: 'login' }, { text: tabText, value: 'register' }]}
                     onChange={(tab) => {
                         if (tab === 'login') { this.changeMode(modes[0]) }
                         else if (tab === 'register') { this.changeMode('register') }
@@ -385,7 +428,8 @@ class LoginForm extends Component {
         }
     }
     forget_layout() {
-        let { forget,mode } = this.props;
+        let { forget, mode, profile } = this.props;
+        if (profile) { return false }
         if (!forget) { return false }
         if (mode === 'register' || mode === 'OTPCode' || mode === 'OTPNumber' || mode === 'forgetUserId' || mode === 'forgetPassword') { return false }
         let { text = [] } = forget
@@ -393,70 +437,68 @@ class LoginForm extends Component {
         return { className: 'aio-login-forget', html: buttonText, onClick: () => this.changeMode('forgetUserId') }
     }
     render() {
-        let { attrs,mode } = this.props, labels = this.getLabels(mode);
-        return (
-            <RVD
-                layout={{
-                    className: 'aio-login' + (attrs.className ? ' ' + attrs.className : ''), style: attrs.style,
-                    attrs: { ...attrs, onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } },
-                    column: [
-                        this.registerTab_layout(),
-                        { column: [this.title_layout(labels), this.subtitle_layout(labels)] },
-                        this.form_layout(labels),
-                        this.forget_layout(),
-                        { gap: 12, align: 'h', row: [this.recode_layout(), this.changeUserId_layout()] },
-                        this.changeMode_layout(),
-                        this.registerButton_layout()
-                    ]
-                }}
-            />
-        )
+        let { attrs, mode,profile } = this.props, labels = this.getLabels(mode);
+        let column;
+        if(profile){column = [{ column: [this.title_layout(labels), this.subtitle_layout(labels)] },this.form_layout(labels)]}
+        else {
+            column = [
+                this.registerTab_layout(),
+                { column: [this.title_layout(labels), this.subtitle_layout(labels)] },
+                this.form_layout(labels),this.forget_layout(),
+                { gap: 12, align: 'h', row: [this.recode_layout(), this.changeUserId_layout()] },
+                this.changeMode_layout(),this.registerButton_layout()
+            ]
+        }
+        let className = 'aio-login' + (attrs.className ? ' ' + attrs.className : '')
+        let style = attrs.style;
+        return (<RVD layout={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } }}}/>)
     }
 }
 class SubmitButton extends Component {
-    state = { 
-        time:this.getDelta()
-    }
+    state = {time: this.getDelta()}
     async onClick() {
         let { onClick, loading } = this.props;
         if (loading) { return; }
         this.setLastTry();
         await onClick();
     }
-    setLastTry(){
-        let {mode} = this.props;
-        AIOStorage('aiologinlasttrypermode').save({name:'dic',value:{...this.getLastTry(),[mode]:new Date().getTime()}})
+    setLastTry() {
+        let { mode } = this.props;
+        AIOStorage('aiologinlasttrypermode').save({ name: 'dic', value: { ...this.getLastTry(), [mode]: new Date().getTime() } })
         let delta = this.getDelta();
-        this.setState({time:delta})
+        this.setState({ time: delta })
     }
-    getLastTry(){
-        return AIOStorage('aiologinlasttrypermode').load({name:'dic',def:{}});
+    getLastTry() {
+        return AIOStorage('aiologinlasttrypermode').load({ name: 'dic', def: {} });
     }
-    getDelta(){
-        let {mode,timer} = this.props;
-        if(!timer){return 0}
+    getDelta() {
+        let { mode, timer } = this.props;
+        if (!timer) { return 0 }
         let lastTry = this.getLastTry();
         let lastTime = lastTry[mode]
-        if(!lastTime){return 0}
+        if (!lastTime) { return 0 }
         let delta = new Date().getTime() - lastTime;
         delta = delta / 1000;
         delta = timer - delta;
         delta = Math.round(delta)
-        if(delta < 0){delta = 0}
+        if (delta < 0) { delta = 0 }
         return delta
     }
     render() {
         let { disabled, loading, text, outline } = this.props;
         let isDisabled = disabled();
         let loadingText = 'در حال ارسال';
-        let {time} = this.state;
-        if(time > 0){
-            setTimeout(()=>this.setState({time:this.state.time - 1}),1000);
+        let { time } = this.state;
+        if (time > 0) {
+            setTimeout(() => this.setState({ time: this.state.time - 1 }), 1000);
         }
-        else if(time < 0){
-            setTimeout(()=>this.setState({time:0}),0);
+        else if (time < 0) {
+            setTimeout(() => this.setState({ time: 0 }), 0);
         }
-        if(time){isDisabled = true; text = `لطفا ${time} ثانیه صبر کنید`}
+        if (time) { 
+            isDisabled = true; 
+            if(!loading){text = `لطفا ${time} ثانیه صبر کنید` }
+        }
         return (
             <button className={'aio-login-submit' + (outline ? ' aio-login-submit-outline' : '')} disabled={isDisabled} onClick={() => this.onClick()}>
                 {!loading && text}
@@ -506,7 +548,7 @@ function AIOLoginValidator(props) {
             <model type> is {
                 login:{userId:string,password:string | number},
                 forget:{userId:string,password:string | number},
-                register:{[field:string]:any}
+                register:{[field:string]:any},
             }
             <mode type> is 'OTPNumber' | 'OTPCode' | 'userName' | 'email' | 'phoneNumber' | 'forgetUserId' | 'forgetPassword' | 'register' | 'auth'
         `;
@@ -532,25 +574,31 @@ function AIOLoginValidator(props) {
         if (
             typeof register !== 'object' ||
             ['mode', 'tab', 'button'].indexOf(register.type) === -1 ||
-            !register.text ||
             !Array.isArray(register.fields) ||
             !register.fields.length
         ) {
             let error = `
                 aio-login-error => register props should be an object contain :
                 type : "mode" | "tab" | "button"
-                text : string | undefined
-                fields:(
-                    "fullname","firstname","lastname","username","address","email","fathername","phone","mobile","postalcode",
-                    "nationalcode","idcode","cardbank","state","city","gender","married","militaryservice","location"
-                )[]
+                tabText : string | undefined
+                buttonText : string | undefined
+                submitText : string | undefined
+                title : string | undefined
+                subtitle : string | undefined
+                fields:(<default field> | object)[]
+
+                <default field>:(
+                    "fullname" | "firstname" | "lastname" | "username" | "address" | "email" | "fathername" | "phone" | "mobile" | "postalcode",
+                    "nationalcode" | "idcode" | "cardbank" | "state" | "city" | "gender" | "married" | "militaryservice" | "location"
+                )
             `;
             alert(error); console.log(error); return;
         }
     }
+
     if (forget) {
         let message = `aio-login error=> forget props should be an object contain mode:'phoneNumber | email'`
         if (typeof forget !== 'object') { alert(message) }
-        if (['phoneNumber', 'email'].indexOf(forget.mode) === -1) {alert(message); console.log(message); return;}
+        if (['phoneNumber', 'email'].indexOf(forget.mode) === -1) { alert(message); console.log(message); return; }
     }
 }

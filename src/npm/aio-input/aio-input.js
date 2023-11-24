@@ -3,7 +3,7 @@ import AIODate from 'aio-date';
 import RVD from 'react-virtual-dom';
 import Axios from 'axios';
 import AIOSwip from 'aio-swip';
-import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance,getInput} from './utils';
+import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance,getFormInput} from './utils';
 import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
@@ -13,12 +13,13 @@ import {
 import AIOPopup from 'aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
-
+export function GetFormInput(type,path){
+    return getFormInput(type,path)
+};
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
         validate: false, mapApiKeys: {}, popover: {},
-        getInput
     };
     constructor(props) {
         super(props);
@@ -727,15 +728,19 @@ class Form extends Component {
         for (let prop in this.errors) { if (prop !== field) { newErrors[prop] = this.errors[prop] } }
         this.errors = newErrors
     }
-    setValue(v, formItem) {
+    setValue({itemValue, formItem,field}) {
+        //اگر فرم آیتم ارسال شد یعنی در حال تغییر مستقیم توسط یک اینپوت هستیم
+        //اگر فیلد ارسال شد یعنی خارج از برنامه داریم یک پروپرتی را چنج می کنیم پس ارور هندلینگ نباید انجام شود
         let {properties} = this.props;
         let {onChange} = properties;
-        let { field } = formItem;
+        let Field = field || formItem.field
         let value = this.getValue();
-        let newValue = this.setValueByField(value, field, v);
-        let error = this.getError(formItem, v)
-        if (error) { this.errors[field] = error }
-        else { this.removeError(field) }
+        let newValue = this.setValueByField(value, Field, itemValue);
+        if(!field){
+            let error = this.getError(formItem, itemValue)
+            if (error) { this.errors[Field] = error }
+            else { this.removeError(Field) }
+        }
         if (onChange) { onChange(newValue, this.getErrors()) }
         else { this.setState({ value: newValue }) }
     }
@@ -776,11 +781,13 @@ class Form extends Component {
     }
     footer_layout() {
         let {properties} = this.props;
-        let {footer,onClose,onSubmit,footerAttrs,closeText,resetText,submitText,reset} = properties;
+        let {footer,onClose,onSubmit,footerAttrs,closeText,resetText,submitText,reset,initialDisabled} = properties;
         let { initialValue } = this.state;
         if (footer === false) { return false }
         if (!footer && !onSubmit && !onClose && !reset) { return false }
-        let disabled = !!this.getErrors().length || initialValue === JSON.stringify(this.getValue())
+        let disabled = false;
+        if(!!this.getErrors().length){disabled = true}
+        else if(initialDisabled && initialValue === JSON.stringify(this.getValue())){disabled = true}
         if (footer) {
             let html = typeof footer === 'function' ? footer({ onReset: () => this.reset(), disabled, errors: this.getErrors() }) : footer;
             let className = 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : '');
@@ -798,9 +805,9 @@ class Form extends Component {
     getDefault({ type, multiple }) {
         return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
     }
-    getValueByField(field, def,functional) {
+    getValueByField({field, def,functional,value = this.getValue()}) {
         let {properties} = this.props;
-        let props = properties.props, value = this.getValue(), a;
+        let props = properties.props, a;
         if(functional && typeof field === 'function'){a = field(value);}
         else if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
@@ -848,22 +855,30 @@ class Form extends Component {
         let { addToAttrs } = this.context;
         let {properties} = this.props;
         let {rtl,disabled,updateInput = (o)=>o,inputStyle = {},inputClassName} = properties;
-        let value = this.getValueByField(formItem.field, this.getDefault(input));
-        let props = { rtl, value, onChange: (value) => this.setValue(value, formItem),attrs:{} };
+        let value = this.getValueByField({field:formItem.field, def:this.getDefault(input)});
+        let props = { 
+            rtl, value, 
+            onChange: (value) => {
+                if(input.type === 'map' && formItem.addressField && value.address){
+                    this.setValue({itemValue:value.address,field:formItem.addressField})    
+                }
+                this.setValue({itemValue:value, formItem})
+            },attrs:{} 
+        };
         for (let prop in input) { 
             let functional = ['options'].indexOf(prop) !== -1;
-            props[prop] = this.getValueByField(input[prop],undefined,functional) 
+            props[prop] = this.getValueByField({field:input[prop],functional}) 
         }
         props.value = value;
         if (input.type === 'slider' && props.showValue === undefined) { props.showValue = 'inline'; }
         let { attrs = {} } = input;
-        for (let prop in attrs) { props.attrs[prop] = this.getValueByField(attrs[prop]) }
+        for (let prop in attrs) { props.attrs[prop] = this.getValueByField({field:attrs[prop]}) }
         props.attrs = addToAttrs({...props.attrs}, { style: inputStyle, stylePriority: false, className: inputClassName })
         if (disabled) { props.disabled = true; }
         if (['text', 'number', 'password', 'textarea'].indexOf(props.type) !== -1) {
             let { inputAttrs = {} } = input;
             props.inputAttrs = {};
-            for (let prop in inputAttrs) { props.inputAttrs[prop] = this.getValueByField(inputAttrs[prop]) }
+            for (let prop in inputAttrs) { props.inputAttrs[prop] = this.getValueByField({field:inputAttrs[prop]}) }
         }
         return updateInput(props);
     }
@@ -878,7 +893,7 @@ class Form extends Component {
     input_layout(formItem) {
         let {properties} = this.props;
         let { label, footer, input, flex, size, field } = formItem;
-        let value = this.getValueByField(field, this.getDefault(input));
+        let value = this.getValueByField({field, def:this.getDefault(input)});
         let error = this.getError(formItem, value)
         if (error) { this.errors[field] = error }
         else { this.errors[field] = undefined }
@@ -911,7 +926,7 @@ class Form extends Component {
             value, title: o.label, lang,
             validations: validations.map((a) => {
                 let params = a[2] || {};
-                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField(a[1], '');
+                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField({field:a[1], def:''});
                 let operator = a[0];
                 return [operator, target, params]
             })
@@ -926,7 +941,7 @@ class Form extends Component {
         return (
             <RVD
                 getLayout={(obj, parent = {}) => {
-                    let show = this.getValueByField(obj.show, true);
+                    let show = this.getValueByField({field:obj.show, def:true});
                     if (show === false) { return false }
                     if (obj.input) { return this.input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
                     if (parent.input) { obj.className = 'of-visible' }

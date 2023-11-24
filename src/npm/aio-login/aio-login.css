@@ -5,6 +5,7 @@
     direction:rtl;
     width:100%;
     min-height:fit-content;
+    min-width: 160px;
 }
 .aio-login-reload{
     width:100%;
@@ -25,9 +26,10 @@
 .aio-login .aio-form{
     background: none;
 }
-.aio-login .aio-form-body{
+.aio-login .aio-input-form-body{
     padding:12px;
     background: none;
+    overflow:visible;
 }
 .aio-login .aio-input-before{
     background:#f6f7f9;
@@ -101,7 +103,7 @@
 }
 .aio-login .aio-input{
     border:1px solid #ced9e0;
-    height:40px;
+    min-height:36px;
     outline:none;
     border-radius:6px; 
     font-size:inherit;
@@ -112,9 +114,7 @@
 .aio-login .aio-input-form{
     overflow:visible;
 }
-.aio-login .aio-input-form-body{
-    overflow:visible;
-}
+
 
 .aio-login-submit{
     height:40px;
