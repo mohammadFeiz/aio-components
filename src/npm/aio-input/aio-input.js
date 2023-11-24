@@ -3,7 +3,7 @@ import AIODate from 'aio-date';
 import RVD from 'react-virtual-dom';
 import Axios from 'axios';
 import AIOSwip from 'aio-swip';
-import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance,getFormInput} from './utils';
+import {getMainProperties,Search,ExportToExcel,DownloadUrl,JSXToHTML,AIOInputValidate,getDistance,GetFormInput} from './utils';
 import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
@@ -13,8 +13,8 @@ import {
 import AIOPopup from 'aio-popup';
 import $ from 'jquery';
 import './aio-input.css';
-export function GetFormInput(type,path){
-    return getFormInput(type,path)
+export function getFormInput(type,path){
+    return GetFormInput(type,path)
 };
 const AICTX = createContext();
 export default class AIOInput extends Component {

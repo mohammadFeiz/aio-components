@@ -372,7 +372,7 @@ export class AIOInputValidate {
         }
     }
 } 
-export function getFormInputs(fields,path){
+export function GetFormInputs(fields,path){
     function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}
     return fields.map((o)=>Array.isArray(o)?{row:o.map((oo)=>getInput(oo))}:getInput(o))
 }
