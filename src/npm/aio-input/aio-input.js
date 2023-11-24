@@ -441,7 +441,7 @@ function TimePopover(props) {
         return new Array(type === 'hour' ? 24 : 60).fill(0).map((o, i) => { return { text: i, value: i } })
     }
     function layout(type) {
-        if (!value[type]) { return false }
+        if (typeof value[type] !== 'number') { return false }
         return {
             column: [
                 { html: translate(type), align: 'vh', size: 36 },
