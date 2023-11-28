@@ -171,7 +171,7 @@ class Popup extends Component {
   header_layout() {
     let { rtl,header } = this.props;
     if (typeof header !== 'object') { return false }
-    return {html:<ModalHeader rtl={rtl} header={header} handleClose={()=>this.onClose()}/>}
+    return {html:<ModalHeader rtl={rtl} header={header} handleClose={()=>this.onClose()}/>,className:'of-visible'}
   }
   body_layout(){
     let {body = {}} = this.props;
