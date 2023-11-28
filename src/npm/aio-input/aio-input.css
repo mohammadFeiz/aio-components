@@ -489,7 +489,7 @@
 
 .aio-input-textarea {
     min-height: 60px;
-    height:fit-content;
+    height: fit-content;
 }
 
 .aio-input-radio {
@@ -1563,6 +1563,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .aio-input-image-value {
@@ -1579,6 +1580,7 @@
 
 .aio-input-form .aio-input-image .aio-input-file {
     border: none;
+    background: none;
 }
 
 .aio-input-content-justify {
@@ -1756,4 +1758,8 @@
 
 .aio-input-map-current-point {
     width: 36px;
+}
+
+.aio-input-file-value{
+	justify-content: center;
 }

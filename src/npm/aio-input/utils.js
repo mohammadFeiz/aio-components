@@ -413,7 +413,7 @@ export function getFormInput(Field,path){
             password:{input:{type:'password'},label:'رمز عبور'},
             repassword:{
                 input:{type:'password'},label:'تکرار رمز عبور',
-                extra:{validations:[['=',getField('password'),{message:'تکرار رمز صحیح نیست'}]],show:`!!${getField('password')}`}
+                extra:{validations:[['=',getField('password'),{message:'تکرار رمز صحیح نیست'}]]}
             },
             militaryservice:{input:{type:'radio'},label:'وضعیت خدمت'},
             location:{
