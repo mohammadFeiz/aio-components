@@ -12,7 +12,7 @@ import {
 } from "@mdi/js";
 import AIOPopup from 'aio-popup';
 import $ from 'jquery';
-import './aio-input.css';
+import './index.css';
 export function getFormInputs(type,path){
     return GetFormInputs(type,path)
 };
@@ -1210,7 +1210,6 @@ class Table extends Component {
     }
 }
 function TablePaging() {
-    let { ROWS, properties } = useContext(AITableContext)
     function fix(paging) {
         let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
         if (!serverSide) { length = ROWS.sortedRows.length }
@@ -1222,16 +1221,34 @@ function TablePaging() {
         let end = number + 3;
         return { ...paging, length, pages, number, size, sizes, start, end }
     }
-    let paging = fix(properties.paging)
-    function changePaging(obj) { paging.onChange({ ...paging, ...obj }) }
+    let { ROWS, properties } = useContext(AITableContext)
+    let [paging,setPaging] = useState(fix(properties.paging));
+    let [timeout,settimeout] = useState()
+    useEffect(()=>{
+        setPaging(fix(properties.paging));
+    },[properties.paging])
+    function changePaging(obj) { 
+        let newPaging = fix({ ...paging, ...obj });
+        setPaging(newPaging);
+        if(newPaging.serverSide){
+            clearTimeout(timeout);
+            settimeout(setTimeout(()=>newPaging.onChange(newPaging),800));
+        }
+        else{newPaging.onChange(newPaging)}
+    }
     let { rtl, pages, number, size, sizes, start, end } = paging;
     let buttons = [];
+    let isFirst = true
     for (let i = start; i <= end; i++) {
         if (i < 1 || i > pages) {
             buttons.push(<button key={i} className={'aio-input-table-paging-button aio-input-table-paging-button-hidden'}>{i}</button>)
         }
         else {
-            buttons.push(<button key={i} className={'aio-input-table-paging-button' + (i === number ? ' active' : '')} onClick={() => changePaging({ number: i })}>{i}</button>)
+            let index;
+            if(isFirst){index = 1; isFirst = false;}
+            else if(i === Math.min(end,pages)){index = pages}
+            else{index = i;}
+            buttons.push(<button key={index} className={'aio-input-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
         }
     }
     return (
