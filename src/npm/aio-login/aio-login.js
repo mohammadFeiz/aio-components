@@ -5,7 +5,7 @@ import AIOInput,{getFormInputs} from 'aio-input';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOPopup from 'aio-popup';
-import './aio-login.css';
+import './index.css';
 export default class AIOlogin {
     constructor(props) {
         let { id, onAuth, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength } = props;
@@ -20,8 +20,6 @@ export default class AIOlogin {
         }
         this.setUserInfo = (userInfo) => { this.setStorage('userInfo', userInfo) }
         this.getUserInfo = () => { return this.getStorage().userInfo }
-        this.setToken = (token) => { this.setStorage('token', token) }
-        this.getToken = () => { return this.getStorage().token; }
         this.removeToken = () => { storage.remove({ name: 'token' }); }
         this.getUserId = () => { return this.getStorage().userId }
         this.logout = () => { this.removeToken(); window.location.reload() }
@@ -30,8 +28,6 @@ export default class AIOlogin {
             getStorage: this.getStorage,
             setStorage: this.setStorage,
             removeToken: this.removeToken,
-            setToken: this.setToken,
-            getToken: this.getToken,
             getUserId: this.getUserId,
             logout: this.logout
         }

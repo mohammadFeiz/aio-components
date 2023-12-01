@@ -73,7 +73,9 @@ export default class ReactHTMLSlider extends Component {
       let {left} = this.state;  
       if(dir > 0 && left >= newLeft){this.stopScroll(offset)}
       else if(dir < 0 && left <= newLeft){this.stopScroll(offset)}
-      else{this.setState({left:left + dir})}
+      else{
+        this.setState({left:left + dir})
+      }
     },speed)
   }
   mouseMove(e){

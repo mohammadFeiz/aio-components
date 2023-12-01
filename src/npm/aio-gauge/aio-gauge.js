@@ -68,7 +68,9 @@ export default class RGauger extends Component{
     var labels = {};
     for(let i = 0; i < label.length; i++){
       if(!label[i].step){continue}
-      let {step,edit,min = start,max = end} = label[i];
+      let {step,edit,min,max} = label[i];
+      if(typeof min !== 'number'){min = start}
+      if(typeof max !== 'number'){max = end}
       step = this.getValueByField(step);
       min = this.getValueByField(min);
       max = this.getValueByField(max);
@@ -88,7 +90,7 @@ export default class RGauger extends Component{
           
           labels[value] = {
             rotate:angle,pivot:[pivot,0],type:'Group',
-            items:[{type:'Text',text:edit?edit(value):value,fill:color,rotate:-angle,fontSize}]
+            items:[{type:'Text',text:edit?edit(value):value,fill:color,stroke:'transparent',rotate:-angle,fontSize}]
           }
         }
         value+=step;
@@ -105,7 +107,9 @@ export default class RGauger extends Component{
     let scales = {}
     for(let i = 0; i < scale.length; i++){
       if(!scale[i].step){continue}
-      let {step,min = start,max = end} = scale[i];
+      let {step,min,max} = scale[i];
+      if(typeof min !== 'number'){min = start}
+      if(typeof max !== 'number'){max = end}
       step = this.getValueByField(step);
       min = this.getValueByField(min);
       max = this.getValueByField(max);
@@ -150,8 +154,8 @@ export default class RGauger extends Component{
     return { 
       type:'Group',
       items:[
-        {type:'Line',fill:color,points:[[0,-width / 2],[height,0],[0,width / 2]],lineWidth:0,pivot:[-offset,0],rotate:angle,close:true},
-        {type:'Arc',r:handleRadius,fill:color}
+        {type:'Line',fill:color,points:[[0,-width / 2],[height,0],[0,width / 2]],lineWidth:0,pivot:[-offset,0],rotate:angle,close:true,stroke:'transparent'},
+        {type:'Arc',r:handleRadius,fill:color,stroke:'transparent'}
       ] 
     }
   }

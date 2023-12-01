@@ -447,18 +447,37 @@ export default function AIODate() {
       }
       return pattern
     },
-    getDif(dif) {
-      let miliseconds = dif;
-      let day = Math.floor(dif / (24 * 60 * 60 * 1000));
-      dif -= day * (24 * 60 * 60 * 1000);
-      let hour = Math.floor(dif / (60 * 60 * 1000));
-      dif -= hour * (60 * 60 * 1000);
-      let minute = Math.floor(dif / (60 * 1000));
-      dif -= minute * (60 * 1000);
-      let second = Math.floor(dif / (1000));
-      dif -= second * (1000);
-      let tenthsecond = Math.floor(dif / (100));
-      return { day, hour, minute, second, tenthsecond, miliseconds }
+    convertMiliseconds({miliseconds = 0,unit = 'day',pattern}) {
+      let type;
+      if(miliseconds < 0){type = 'passed'; miliseconds = -miliseconds}
+      else if(miliseconds > 0){type = 'remaining'}
+      else {type = 'now'}
+      let index = ['day','hour','minute','second','tenthsecond','milisecond'].indexOf(unit);
+      let day = 0, hour = 0, minute = 0,second = 0, tenthsecond = 0; 
+      let dif = miliseconds;
+      if(index <= 0){
+        day = Math.floor(dif / (24 * 60 * 60 * 1000));
+        dif -= day * (24 * 60 * 60 * 1000);
+      }
+      if(index <= 1){
+        hour = Math.floor(dif / (60 * 60 * 1000));
+        dif -= hour * (60 * 60 * 1000);
+      }
+      if(index <= 2){
+        minute = Math.floor(dif / (60 * 1000));
+        dif -= minute * (60 * 1000);
+      }
+      if(index <= 3){
+        second = Math.floor(dif / (1000));
+        dif -= second * (1000);
+      }
+      if(index <= 4){
+        tenthsecond = Math.floor(dif / (100));
+      }
+      if (pattern) {
+        return $$.pattern([0, 0, day, hour, minute, second, tenthsecond], pattern)
+      }
+      return { day, hour, minute, second, tenthsecond, miliseconds,type }
     },
     getDelta(obj) {
       if (!obj || !obj.date) {
@@ -467,21 +486,14 @@ export default function AIODate() {
           {
             *date:number | string | array,
             otherDate:number | string | array, (default is now),
-            pattern:string (example: '{year}/{month}/{day}')
+            pattern:string (example: '{year}/{month}/{day}'),
+            unit:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond'
           }`)
         return false;
       }
-      let { date, otherDate = new Date().getTime(), pattern } = obj;
+      let { date, otherDate = new Date().getTime(), pattern,unit } = obj;
       let dif = $$.getTime({ date }) - $$.getTime({ date: otherDate });
-      let res;
-      if (dif === 0) { res = { day: 0, hour: 0, minute: 0, second: 0, tenthsecond: 0, type: 'now' } }
-      if (dif < 0) { res = { ...$$.getDif(-dif), type: 'passed' } }
-      if (dif > 0) { res = { ...$$.getDif(dif), type: 'remaining' } }
-      if (pattern) {
-        let { day, hour, minute, second, tenthsecond } = res;
-        return $$.pattern([0, 0, day, hour, minute, second, tenthsecond], pattern)
-      }
-      return res
+      return $$.convertMiliseconds({miliseconds:-dif,unit,pattern})
     },
     getByOffset({ date, offset, unit = 'day', calendarType = 'gregorian' }) {
       if (!offset) { return date }
@@ -540,6 +552,7 @@ export default function AIODate() {
     isEqual: $$.isEqual,
     isGreater: $$.isGreater,
     getDelta: $$.getDelta,
+    convertMiliseconds:$$.convertMiliseconds,
     isLess: $$.isLess,
     isBetween: $$.isBetween,
     getMonthDaysLength: $$.getMonthDaysLength,

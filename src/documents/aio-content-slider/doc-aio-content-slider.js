@@ -28,13 +28,13 @@ class Preview extends Component{
             <ACS
                 items={[
                     <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',}}>
-                    <img src="https://media.slidesgo.com/storage/15750445/futuristic-background-infographics1640619679.jpg" width='100%'/>
+                    <img src="https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg?size=626&ext=jpg&ga=GA1.1.1803636316.1701302400&semt=sph" width='100%'/>
                     </div>,
                     <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',}}>
-                    <img src="https://media.slidesgo.com/storage/92014/upload.png" width='100%'/>
+                    <img src="https://img.freepik.com/premium-photo/serene-lakes-mirrors-nature_78365-3772.jpg" width='100%'/>
                     </div>,
                     <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'center',}}>
-                    <img src="https://media.slidesgo.com/storage/23211385/cyber-futuristic-ai-technology-thesis-defense1658931324.jpg" width='100%'/>
+                    <img src="https://img.freepik.com/premium-photo/wilderness-majesty-scenic-journey_893610-7179.jpg" width='100%'/>
                     </div>,
                 ]}
                 speed={speed}
