@@ -11,24 +11,25 @@ export default class AIOlogin {
         let { id, onAuth, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength } = props;
         AIOLoginValidator(props);
         let storage = AIOStorage(`-AIOLogin-${id}`);
-        this.setStorage = (key, value) => { storage.save({ name: key, value }); }
-        this.getStorage = () => {
+        this.setStorage = (key, value) => { 
+            if(typeof key === 'object'){for(let prop in key){storage.save({ name: prop, value:key[prop] });}}
+            else {storage.save({ name: key, value }); }
+        }
+        this.getStorage = (key) => {
             let token = storage.load({ name: 'token', def: false });
             let userId = storage.load({ name: 'userId', def: '' });
             let userInfo = storage.load({ name: 'userInfo' });
-            return { token, userId, userInfo }
+            let res = { token, userId, userInfo }
+            if(key){return res[key]}
+            return res
         }
-        this.setUserInfo = (userInfo) => { this.setStorage('userInfo', userInfo) }
-        this.getUserInfo = () => { return this.getStorage().userInfo }
-        this.removeToken = () => { storage.remove({ name: 'token' }); }
-        this.getUserId = () => { return this.getStorage().userId }
-        this.logout = () => { this.removeToken(); window.location.reload() }
+        this.removeStorage = (key)=>storage.remove({name:key})
+        this.logout = () => { this.removeStorage('token'); window.location.reload() }
         this.props = {
             id, checkToken, onAuth, onSubmit, modes, register, userId, attrs, timer, forget, otpLength,
-            getStorage: this.getStorage,
-            setStorage: this.setStorage,
-            removeToken: this.removeToken,
-            getUserId: this.getUserId,
+            getStorage: this.getStorage.bind(this),
+            setStorage: this.setStorage.bind(this),
+            removeStorage:this.removeStorage.bind(this),
             logout: this.logout
         }
     }
@@ -62,7 +63,7 @@ class AIOLOGIN extends Component {
         props.getActions({ setMode: this.setMode.bind(this) })
     }
     async checkToken() {
-        let { getStorage, checkToken, removeToken } = this.props;
+        let { getStorage, checkToken, removeStorage } = this.props;
         let { token, userId, userInfo } = getStorage();
         let result;
         if (typeof token !== 'string') { result = false }
@@ -71,7 +72,7 @@ class AIOLOGIN extends Component {
             catch (err) { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: this.getError(err) }) }
         }
         if (result === true) { this.setMode('auth') }
-        else if (result === false) { removeToken() }
+        else if (result === false) { removeStorage('token') }
         else {
             if (typeof result === 'string') { new AIOPopup().addAlert({ type: 'error', text: 'بررسی توکن با خطا روبرو شد', subtext: result }) }
             this.setState({ showReload: true })
@@ -99,7 +100,7 @@ class AIOLOGIN extends Component {
     }
     setLoading(loading){this.setState({loading})}
     async onSubmit(model) {
-        let { setStorage, onSubmit } = this.props;
+        let { onSubmit } = this.props;
         let { mode: currentMode } = this.state;
         let res;
         this.setLoading(true)
@@ -118,11 +119,6 @@ class AIOLOGIN extends Component {
             text = `${text} با خطا روبرو شد`
             let subtext = res;
             new AIOPopup().addAlert({ type: 'error', text, subtext })
-        }
-        else {
-            if (['OTPNumber', 'phoneNumber', 'userName', 'email'].indexOf(currentMode) !== -1) {
-                setStorage('userId', model.login.userId);
-            }
         }
     }
     async onSubmitProfile(model){
@@ -171,7 +167,7 @@ class LoginForm extends Component {
         super(props);
         this.storage = AIOStorage(`-AIOLogin-${props.id}`);
         let { timer = 30 } = props;
-        this.state = { timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode) }
+        this.state = { timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode),error:!props.userId }
     }
     getLabels(mode) {
         let { model, tab } = this.state;
@@ -326,7 +322,7 @@ class LoginForm extends Component {
             html: (
                 <AIOInput
                     type='form' key={mode} lang='fa' value={model} rtl={true} initialDisabled={!userId}
-                    onChange={(model) => { this.setState({ model }) }}
+                    onChange={(model,errors) => { this.setState({ model,error:!!errors.length }) }}
                     inputs={{ props: { gap: 12 }, column: this.getInputs(labels) }}
                     footer={({ disabled }) => this.submit_layout({ submitText: labels.submitText, disabled })}
                 />
@@ -343,7 +339,8 @@ class LoginForm extends Component {
     }
     async onSubmit() {
         let { onSubmit, profile,onSubmitProfile } = this.props;
-        let { model } = this.state;
+        let { model,error } = this.state;
+        if(error){return}
         if (profile) { onSubmitProfile(model) }
         else { onSubmit(model); }
     }
