@@ -22,7 +22,13 @@ export default class RSA {
         this.closeSide = closeSide;
         this.SetState = SetState;
       }
-    }  
+    }
+    window.history.pushState({}, '')
+    window.history.pushState({}, '')
+    window.onpopstate = () => {
+      window.history.pushState({}, '');
+      this.removeModal()
+    };  
   }
   render = () => <RSAAPP {...this.props}/>
   addModal = (obj) => this.props.popup.addModal(obj);
@@ -103,6 +109,7 @@ class ReactSuperApp extends Component {
   initNavId(id) {
     let { nav } = this.props;
     if (!nav) { return false }
+    this.navItems = typeof nav.items === 'function'?nav.items():nav.items;
     if (id) {
       let res = this.getNavById(id);
       if (res !== false) { return id }
@@ -111,8 +118,8 @@ class ReactSuperApp extends Component {
       let res = this.getNavById(nav.id);
       if (res !== false) { return nav.id }
     }
-    if (!nav.items.length) { return false }
-    return nav.items.filter(({ show = () => true }) => show())[0].id;
+    if (!this.navItems && !this.navItems.length) { return false }
+    return this.navItems.filter(({ show = () => true }) => show())[0].id;
   }
   header_layout(activeNav) {
     let { header} = this.props;
@@ -135,14 +142,13 @@ class ReactSuperApp extends Component {
           ]
         },
         {show:!!title || !!side ,flex:1},
-        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => headerContent(), className: 'of-visible' },
+        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => headerContent({...this.state}), className: 'of-visible' },
       ]
     }
   }
   getNavById(id) {
-    let { nav } = this.props;
     this.res = false;
-    this.getNavById_req(nav.items, id);
+    this.getNavById_req(this.navItems, id);
     return this.res;
   }
   getNavById_req(items, id) {
@@ -153,7 +159,10 @@ class ReactSuperApp extends Component {
       let { show = () => true } = item;
       if (!show()) { continue }
       if (item.id === id) { this.res = item; break; }
-      if (item.items) { this.getNavById_req(item.items, id); }
+      let navItems = typeof item.items === 'function'?item.items():item.items
+      if (navItems) { 
+        this.getNavById_req(navItems, id); 
+      }
     }
   }
   getMainClassName() {
@@ -164,11 +173,11 @@ class ReactSuperApp extends Component {
     return className;
   }
   navigation_layout(type) {
-    let { nav, rtl } = this.props;
-    if (!nav || !nav.items.length) { return false }
+    let { nav,rtl } = this.props;
+    if (!nav || !this.navItems || !this.navItems.length) { return false }
     let { navId } = this.state;
     let props = { nav, navId, setNavId: (navId) => this.setNavId(navId), type, rtl }
-    return { className: 'of-visible', html: (<Navigation {...props} />) };
+    return { className: 'of-visible', html: (<Navigation {...props} navItems={this.navItems}/>) };
   }
   page_layout({render}) {
     let { body = () => '' } = this.props;
@@ -188,6 +197,7 @@ class ReactSuperApp extends Component {
   renderMain() {
     let { navId } = this.state;
     let { nav, style } = this.props;
+    this.navItems = typeof nav.items === 'function'?nav.items():nav.items
     let navItem = nav ? this.getNavById(navId) : false;
     let layout = { style, className: this.getMainClassName() }
     layout.row = [this.navigation_layout('side'), this.page_layout(navItem)]
@@ -207,7 +217,8 @@ class ReactSuperApp extends Component {
   }
   renderSide(close) {
     let { side = {}, rtl } = this.props;
-    return <SideMenu {...side} rtl={rtl} onClose={() => close()} />
+    let items = typeof side.items === 'function'?side.items():side.items;
+    return <SideMenu {...side} items={items} rtl={rtl} onClose={() => close()} />
   }
   render() {
     let { splash } = this.state;
@@ -298,11 +309,11 @@ class Navigation extends Component {
     }
   }
   render() {
-    let { type, nav } = this.props;
+    let { type, navItems } = this.props;
     if (type === 'bottom') {
-      return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: nav.items.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
+      return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
     }
-    return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(nav.items, 0),this.footer_layout()] }} />);
+    return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navItems, 0),this.footer_layout()] }} />);
   }
 }
 class SideMenu extends Component {
@@ -316,11 +327,11 @@ class SideMenu extends Component {
     return {
       flex: 1,
       column: items.map((o, i) => {
-        let { icon = () => <div style={{ width: 12 }}></div>, text, className,style, onClick = () => { }, show = () => true } = o;
+        let { icon = () => <div style={{ width: 12 }}></div>, text, attrs = {}, onClick = () => { }, show = () => true } = o;
         let Show = show();
         return {
-          style,
-          show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (className ? ' ' + className : ''), onClick: () => { onClick(o); onClose() },
+          style:attrs.style,
+          show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (attrs.className ? ' ' + attrs.className : ''), onClick: () => { onClick(o); onClose() },
           row: [
             { size: 48, html: typeof icon === 'function'?icon():icon, align: 'vh' },
             { html: text, align: 'v' }
@@ -374,12 +385,12 @@ function RSAValidate(props){
 }
 
 function RSAValidateError(props){
-  let validProps = ['id','rtl','title','nav','initialState','subtitle','AppContext','actions','body','header','headerContent']
+  let validProps = ['id','rtl','title','nav','initialState','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side']
   for(let prop in props){
     if(validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid props (${prop}). 
-        valid nav properties are 'items','header','footer','attrs'
+        valid properties are 'id','rtl','title','nav','initialState','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side'
       `
     }
   }
@@ -442,17 +453,17 @@ function RSAValidateSide(side){
       `
     }
   }
-  let sideItemError = 'each side item should be an object cointan {icon?:React.ReactNode | ()=>React.ReactNode,text:String,attrs?:object,show?:()=>boolean}'
-  if(!side.items || !Array.isArray(side.items)){
+  let sideItemError = 'each side item should be an object cointan {icon?:React.ReactNode | ()=>React.ReactNode,text:String,attrs?:object,show?:()=>boolean,onClick:function|undefined}'
+  if(!side.items || (!Array.isArray(side.items) && typeof side.items !== 'function')){
     return `
-      react-super-app error => side.items should be an array of objects 
+      react-super-app error => side.items should be an array of objects or function that returns array of objects 
       ${sideItemError}
     `
   }
   for(let i = 0; i < side.items.length; i++){
     let item = side.items[i];
     let {text,show = ()=>true,attrs = {}} = item;
-    let sideItem_validProps = ['text','icon','attrs','show']
+    let sideItem_validProps = ['text','icon','attrs','show','onClick']
     for(let prop in item){
       if(sideItem_validProps.indexOf(prop) === -1){
         return `
@@ -493,8 +504,8 @@ function RSAValidateNav(nav){
     }
   }
   if(nav.id && typeof nav.id !== 'string'){return `react-super-app error => exist nav.id should be an string`}
-  if(!nav.items || !Array.isArray(nav.items)){return `
-    react-super-app error => nav.items should be an array.
+  if(!nav.items || (!Array.isArray(nav.items) && typeof nav.items !== 'function')){return `
+    react-super-app error => nav.items should be an array or function.
   `}
   let itemsError = RSAValidateNavItems(nav.items)
   if(itemsError){return itemsError}
