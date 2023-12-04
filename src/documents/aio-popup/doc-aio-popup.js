@@ -496,7 +496,7 @@ class AddModal extends Component {
         this.popup.addModal({
             position:'center',
             header:{title:'my confirm title'},
-            body:{render:()=>'my confirm text'},
+            body:{render:()=>'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text '},
             footer:{
                 buttons:[
                     ['yes',{onClick:({close})=>{console.log('yes'); close()}}],

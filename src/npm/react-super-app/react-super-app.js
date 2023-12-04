@@ -5,12 +5,11 @@ import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/j
 import RVD from 'react-virtual-dom';
 import AIOPopup from 'aio-popup';
 import './index.css';
-//type I_Sidemenu_props = {items:I_SideMenu_props_item[],header:()=>React.ReactNode,footer:()=>React.ReactNode,attrs:object}
-//type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}
 export default class RSA {
   constructor(props = {}) {
     RSAValidate(props);
     let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id } = props;
+    this.backbuttonCallback = true;
     this.props = {
       rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,
       popup:new AIOPopup({ rtl }),
@@ -25,9 +24,15 @@ export default class RSA {
     window.history.pushState({}, '')
     window.onpopstate = () => {
       window.history.pushState({}, '');
-      this.removeModal()
+      if(this.backbuttonCallback === true){
+        this.removeModal()
+      }
+      else if(typeof this.backbuttonCallback === 'function'){
+        this.backbuttonCallback()
+      }
     };  
   }
+  setBackbuttonCallBack = (backbuttonCallback)=>this.backbuttonCallback = backbuttonCallback;
   render = () => <RSAAPP {...this.props}/>
   addModal = (obj) => this.props.popup.addModal(obj);
   addAlert = (obj) => this.props.popup.addAlert(obj);

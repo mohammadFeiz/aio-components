@@ -4,7 +4,7 @@ import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import RVD from 'react-virtual-dom';
 import $ from 'jquery';
-import './aio-popup.css';
+import './index.css';
 
 export default class AIOPopup {
   constructor(obj = {}){
@@ -320,20 +320,21 @@ function ModalFooter({type,closeText = 'Close',submitText = 'Submit',footer,hand
   let {attrs = {}} = footer;
   let {buttons = []} = footer;
   function buttons_layout(){
-    if(!buttons.length){return false}
-    return {
-      gap:6,align:'vh',
-      row:()=>buttons.map(([text,attrs = {}])=>{
-        let {onClick = ()=>{},className} = attrs;
-        attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
-        attrs.onClick = ()=> onClick({close:handleClose})
-        return {html:(<button {...attrs}>{text}</button>),align:'vh'}
-      })
-    }
+    if(!buttons.length){return null}
+    return buttons.map(([text,attrs = {}])=>{
+      let {onClick = ()=>{},className} = attrs;
+      attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
+      attrs.onClick = ()=> onClick({close:handleClose})
+      return <button {...attrs}>{text}</button>
+    })
   }
   let className = 'aio-popup-footer' + (attrs.className?' ' + attrs.className:'')
   let style = attrs.style;
-  return (<RVD layout={{className,style,...buttons_layout()}}/>)
+  return (
+    <div className={className} style={style}>
+      {buttons_layout()}
+    </div>
+  )
 }
 
 
