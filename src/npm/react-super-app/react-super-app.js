@@ -4,23 +4,21 @@ import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import RVD from 'react-virtual-dom';
 import AIOPopup from 'aio-popup';
-import './react-super-app.css';
+import './index.css';
 //type I_Sidemenu_props = {items:I_SideMenu_props_item[],header:()=>React.ReactNode,footer:()=>React.ReactNode,attrs:object}
 //type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}
 export default class RSA {
   constructor(props = {}) {
     RSAValidate(props);
-    let { rtl, maxWidth,initialState = {},AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id } = props;
+    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id } = props;
     this.props = {
-      rtl,maxWidth,AppContext,initialState,nav,side,title,subtitle,headerContent,actions,header,body,id,
+      rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,
       popup:new AIOPopup({ rtl }),
-      getActions:({getNavId,setNavId,openSide,closeSide,SetState,GetState})=>{
+      getActions:({getNavId,setNavId,openSide,closeSide})=>{
         this.getNavId = getNavId;
-        this.GetState = GetState;
         this.setNavId = setNavId;
         this.openSide = openSide;
         this.closeSide = closeSide;
-        this.SetState = SetState;
       }
     }
     window.history.pushState({}, '')
@@ -36,18 +34,9 @@ export default class RSA {
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
 }
-function REDUCER(state,action){
-  return {...state,[action.key]:action.value}
-}
 function RSAAPP(props){
-  let [state,dispatch] = useReducer(REDUCER,props.initialState)
-  function SetState(key,value){dispatch({key,value})}
-  function GetState(key){return key?state[key]:{...state}}
-  function getContext(){return {actions:props.actions,SetState,GetState,...props.popup}}
-  let PROPS = {...props,getActions:(obj)=>props.getActions({...obj,SetState,GetState})} 
-  let {AppContext} = props;
-  if(AppContext){return (<AppContext.Provider value={getContext()}><ReactSuperApp {...PROPS}/></AppContext.Provider>);}
-  else {return <ReactSuperApp {...PROPS}/>}
+  let PROPS = {...props,getActions:(obj)=>props.getActions({...obj})} 
+  return <ReactSuperApp {...PROPS}/>
 }
 
 class ReactSuperApp extends Component {
@@ -385,19 +374,14 @@ function RSAValidate(props){
 }
 
 function RSAValidateError(props){
-  let validProps = ['id','rtl','title','nav','initialState','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side']
+  let validProps = ['id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side']
   for(let prop in props){
     if(validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid props (${prop}). 
-        valid properties are 'id','rtl','title','nav','initialState','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side'
+        valid properties are 'id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side'
       `
     }
-  }
-  if(props.initialState !== undefined && (typeof props.initialState !== 'object' || Array.isArray(props.initialState))){
-    return `
-        react-super-app error => initialState props should be an object. 
-      `
   }
   if(props.actions !== undefined && (typeof props.actions !== 'object' || Array.isArray(props.actions))){
     return `
