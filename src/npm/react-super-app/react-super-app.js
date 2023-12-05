@@ -78,7 +78,8 @@ export default class RSA {
     return (
       <RVD
           layout={{
-            onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
+            attrs,
+            onClick:attrs.onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
             column: [
               { show: !!header && !Array.isArray(header), html: header, className: this.cls('card-header') },
               {
