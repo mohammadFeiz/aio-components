@@ -74,11 +74,11 @@ export default class RSA {
     }
     this.addModal(config)
   }
-  renderCard = ({text,subtext,uptext,onClick,before,after,header,footer,rtl,justify})=>{
+  renderCard = ({text,subtext,uptext,attrs = {},before,after,header,footer,justify})=>{
     return (
       <RVD
           layout={{
-            onClick, className: this.cls('card') + (justify ? ' justify' : ''), style: { direction: rtl ? 'rtl' : '' },
+            onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
             column: [
               { show: !!header && !Array.isArray(header), html: header, className: this.cls('card-header') },
               {
