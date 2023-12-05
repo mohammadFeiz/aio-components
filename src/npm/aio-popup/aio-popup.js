@@ -103,11 +103,11 @@ class Popups extends Component {
     if (!modals.length) { return null }
     return modals.map((modal, i) => {
       let {
-        popover,position,text,onSubmit, rtl = this.props.rtl, attrs = {}, onClose,backdrop, header,
+        popover,position,text,onSubmit, rtl = this.props.rtl, attrs = {},backdrop, header,state,
         footer, closeType, body, id,mounted 
       } = modal;  
       let props = {
-        id,backdrop,footer,text,onSubmit,header,popover,
+        id,backdrop,footer,text,onSubmit,header,popover,state,
         position, rtl, attrs, closeType, body,index: i,isLast: i === modals.length - 1,mounted,
         onClose: () => this.removeModal(id),
         removeModal:this.removeModal.bind(this),//use for remove lastModal by esc keyboard
@@ -124,11 +124,11 @@ class Popup extends Component {
     super(props);    
     this.dom = createRef();
     this.backdropDom = createRef()
-    this.state = {popoverStyle:undefined}
+    this.state = {popoverStyle:undefined,state:props.state}
   }
-  async onClose() {
+  async onClose(obj) {
     let { onClose } = this.props;
-    onClose();
+    onClose(obj);
   }
   componentWillUnmount(){
     $(window).unbind('click',this.handleBackClick)
@@ -171,16 +171,19 @@ class Popup extends Component {
   header_layout() {
     let { rtl,header } = this.props;
     if (typeof header !== 'object') { return false }
-    return {html:<ModalHeader rtl={rtl} header={header} handleClose={()=>this.onClose()}/>,className:'of-visible'}
+    let {state} = this.state;
+    return {html:<ModalHeader rtl={rtl} header={header} handleClose={(obj)=>this.onClose(obj)} state={state} setState={(value)=>this.setState({state:value})}/>,className:'of-visible'}
   }
   body_layout(){
     let {body = {}} = this.props;
-    return { flex:1,html:<ModalBody body={body} handleClose={this.onClose.bind(this)} updatePopoverStyle={()=>this.updatePopoverStyle()}/> }
+    let {state} = this.state;
+    return { flex:1,html:<ModalBody body={body} state={state} setState={(value)=>this.setState({state:value})} handleClose={this.onClose.bind(this)} updatePopoverStyle={()=>this.updatePopoverStyle()}/> }
   }
   footer_layout() {
     let {closeText,submitText,onSubmit,footer,type} = this.props;
+    let {state} = this.state;
     let handleClose = this.onClose.bind(this);
-    let props = {closeText,submitText,onSubmit,footer,type,handleClose};
+    let props = {closeText,submitText,onSubmit,footer,type,handleClose,state,setState:(value)=>this.setState({state:value})};
     return {html:<ModalFooter {...props}/>}
   }
   getBackDropClassName() {
@@ -256,16 +259,16 @@ class Popup extends Component {
     )
   }
 }
-function ModalHeader({rtl,header,handleClose}){
+function ModalHeader({rtl,header,handleClose,state,setState}){
   if(typeof header !== 'object'){return null}
   let {title,subtitle,buttons = [],onClose,backButton,attrs = {}} = header;
-  function close(e){if(onClose){onClose(e)} else{handleClose()}}
+  function close(){if(onClose){onClose({state,setState})} else{handleClose({state,setState})}}
   function backButton_layout(){
     if(!backButton || onClose === false){return false}
     let path,style;
     if(rtl){path = mdiChevronRight; style = {marginLeft:12}}
     else {path = mdiChevronLeft; style = {marginRight:12}}
-    return { html: <Icon path={path} size={1} />, align: 'vh', onClick: () => onClose() ,style}
+    return { html: <Icon path={path} size={1} />, align: 'vh', onClick: () => close() ,style}
   }
   function title_layout(){
     if(!title){return false}
@@ -288,24 +291,25 @@ function ModalHeader({rtl,header,handleClose}){
       gap:6,align:'vh',
       row:()=>buttons.map(([text,attrs = {}])=>{
         let {onClick = ()=>{},className} = attrs;
-        attrs.className = 'aio-popup-header-button' + (className?' ' + className:'');
-        attrs.onClick = ()=> onClick({close:handleClose})
-        return {html:(<button {...attrs}>{text}</button>),align:'vh'}
+        let Attrs = {...attrs};
+        Attrs.className = 'aio-popup-header-button' + (className?' ' + className:'');
+        Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
+        return {html:(<button {...Attrs}>{text}</button>),align:'vh'}
       })
     }
   }
   function close_layout(){
     if(backButton || onClose === false){return false}
-    return { html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: (e) => close(e),className:'aio-popup-header-close-button' }
+    return { html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: () => close(),className:'aio-popup-header-close-button' }
   }
   let className = 'aio-popup-header' + (attrs.className?' ' + attrs.className:'')
   let style = attrs.style;
   return (<RVD layout={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
 }
 function ModalBody(props){
-    let {handleClose,body,updatePopoverStyle} = props;
+    let {handleClose,body,updatePopoverStyle,state,setState} = props;
     let {render,attrs = {}} = body;
-    let content = typeof render === 'function'?render({close:handleClose}):render;
+    let content = typeof render === 'function'?render({close:handleClose,state,setState}):render;
     useEffect(()=>{
       updatePopoverStyle()
     },[content])
@@ -315,7 +319,7 @@ function ModalBody(props){
       </div>
     )
 }
-function ModalFooter({type,closeText = 'Close',submitText = 'Submit',footer,handleClose,onSubmit}){
+function ModalFooter({footer,handleClose,state,setState}){
   if(typeof footer !== 'object'){return null}
   let {attrs = {}} = footer;
   let {buttons = []} = footer;
@@ -323,9 +327,10 @@ function ModalFooter({type,closeText = 'Close',submitText = 'Submit',footer,hand
     if(!buttons.length){return null}
     return buttons.map(([text,attrs = {}])=>{
       let {onClick = ()=>{},className} = attrs;
-      attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
-      attrs.onClick = ()=> onClick({close:handleClose})
-      return <button {...attrs}>{text}</button>
+      let Attrs = {...attrs};
+      Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
+      Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
+      return <button {...Attrs}>{text}</button>
     })
   }
   let className = 'aio-popup-footer' + (attrs.className?' ' + attrs.className:'')

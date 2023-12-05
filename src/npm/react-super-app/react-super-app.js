@@ -8,10 +8,10 @@ import './index.css';
 export default class RSA {
   constructor(props = {}) {
     RSAValidate(props);
-    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id } = props;
+    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme = 'default-theme' } = props;
     this.backbuttonCallback = true;
     this.props = {
-      rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,
+      rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme,
       popup:new AIOPopup({ rtl }),
       getActions:({getNavId,setNavId,openSide,closeSide})=>{
         this.getNavId = getNavId;
@@ -38,6 +38,37 @@ export default class RSA {
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
+  addConfirm = (obj) => {
+    let {title,subtitle,text,buttons} = obj;
+    let config = {
+      position:'center',
+      attrs:{className:`${this.props.theme}-confirm`},
+      header:{title,subtitle},
+      backdrop:{attrs:{className:`${this.props.theme}-backdrop`}},
+      body:{render:()=>text},
+      footer:{buttons}
+    }
+    this.addModal(config)
+  }
+  addPrompt = (obj) => {
+    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
+    let config = {
+      position:'center',
+      attrs:{className:`${this.props.theme}-prompt`},
+      state:{temp:''},
+      header:{title,subtitle},
+      backdrop:{attrs:{className:`${this.props.theme}-backdrop`}},
+      body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
+      footer:{
+        buttons:[
+          [canselText,{onClick:()=>this.removeModal()}],
+          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:`${this.props.theme}-active`}],
+          
+        ]
+      }
+    }
+    this.addModal(config)
+  }
 }
 function RSAAPP(props){
   let PROPS = {...props,getActions:(obj)=>props.getActions({...obj})} 
@@ -379,12 +410,12 @@ function RSAValidate(props){
 }
 
 function RSAValidateError(props){
-  let validProps = ['id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side']
+  let validProps = ['id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side','theme']
   for(let prop in props){
     if(validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid props (${prop}). 
-        valid properties are 'id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side'
+        valid properties are 'id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side','theme'
       `
     }
   }

@@ -24,6 +24,7 @@ import DOC_AIOService from './documents/aio-service/doc-aio-service';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
+import Versions from './versions';
 AIOInput.defaults.mapApiKeys = {
   map:'web.0a2aa5f83d314a8c9916473aa0e01438',
   service:'service.09a2234e299a4ff585007b2894df9fca',
@@ -40,6 +41,7 @@ export default class AIOComponents extends Component{
     this.state = {
       part:this.storage.load({name:'part',def:'aio-input'}),
       parts:{
+        'versions':Versions,
         'aio-input-table':DOC_AIOInput_Table,
         'aio-input-slider':DOC_AIOInput_Slider,
         'aio-input-image':DOC_AIOInput_Image,

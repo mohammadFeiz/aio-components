@@ -370,7 +370,6 @@ class AddModal extends Component {
     constructor(props){
         super(props);
         this.popup = new AIOPopup()
-        this.state = {temp:''}
     }
     modal1(){
         this.popup.addModal({
@@ -509,12 +508,12 @@ class AddModal extends Component {
         this.popup.addModal({
             position:'center',
             header:{title:'my prompt title'},
+            state:{temp:''},
             body:{
-                render:()=>{
-                    let {temp} = this.state;
+                render:({state,setState})=>{
                     return (
                         <textarea
-                            value={temp} onChange={(e)=>this.setState({temp:e.target.value})}
+                            value={state.temp} onChange={(e)=>setState({...state,temp:e.target.value})}
                             style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
                         />
                     )
@@ -524,9 +523,8 @@ class AddModal extends Component {
                     [
                         'yes',
                         {
-                            onClick:({close})=>{
-                                let {temp} = this.state;
-                                console.log(temp); 
+                            onClick:({close,state,setState})=>{
+                                console.log(state.temp); 
                                 close();
                             }
                         }
@@ -534,7 +532,7 @@ class AddModal extends Component {
                     [
                         'no',
                         {
-                            onClick:({close})=>{
+                            onClick:({close,state,setState})=>{
                                 close()
                             },
                             style:{background:'#999'}
@@ -662,12 +660,12 @@ instance.addModal({
 instance.addModal({
     position:'center',
     header:{title:'my prompt title'},
+    state:{temp:''},
     body:{
-        render:()=>{
-            let {temp} = this.state;
+        render:({state,setState})=>{
             return (
                 <textarea
-                    value={temp} onChange={(e)=>this.setState({temp:e.target.value})}
+                    value={state.temp} onChange={(e)=>setState({temp:e.target.value})}
                     style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
                 />
             )
@@ -677,9 +675,8 @@ instance.addModal({
             [
                 'yes',
                 {
-                    onClick:({close})=>{
-                        let {temp} = this.state;
-                        console.log(temp); 
+                    onClick:({close,state})=>{
+                        console.log(state.temp); 
                         close();
                     }
                 }

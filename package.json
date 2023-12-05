@@ -9,9 +9,9 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "aio-date": "^4.0.0",
-    "aio-input": "^8.0.0",
-    "aio-popup": "^3.0.3",
-    "aio-login": "^6.0.0",
+    "aio-input": "^8.0.1",
+    "aio-popup": "^3.0.5",
+    "aio-login": "^6.0.1",
     "aio-storage": "^4.0.1",
     "aio-swip": "^2.0.0",
     "animejs": "^3.2.1",
@@ -23,6 +23,7 @@
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "react-virtual-dom": "^4.0.1",
+    "react-super-app": "^4.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

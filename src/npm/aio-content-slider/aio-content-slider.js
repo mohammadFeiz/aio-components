@@ -1,7 +1,7 @@
 import React,{Component,createRef} from 'react';
 import $ from 'jquery';
 import "./index.css";
-export default class ReactHTMLSlider extends Component {
+export default class AIOContentSlider extends Component {
   constructor(props){
     super(props);
     this.dom = createRef();
@@ -176,7 +176,7 @@ export default class ReactHTMLSlider extends Component {
   );
   }
 }
-ReactHTMLSlider.defaultProps = {
+AIOContentSlider.defaultProps = {
   items:[],
   speed:96,
   arrow:true,
