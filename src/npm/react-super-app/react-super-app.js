@@ -38,9 +38,10 @@ export default class RSA {
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
-  cls = (key)=>{
+  cls = (key,CLASSNAME)=>{
     let className = `rsa-theme-${key}`;
     if(this.props.theme){className += ` ${this.props.theme}-${key}`}
+    if(CLASSNAME){className += ' ' + CLASSNAME}
     return className;
   }
   addConfirm = (obj) => {
@@ -78,8 +79,7 @@ export default class RSA {
     return (
       <RVD
           layout={{
-            attrs,
-            onClick:attrs.onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
+            attrs,onClick:attrs.onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
             column: [
               { show: !!header && !Array.isArray(header), html: header, className: this.cls('card-header') },
               {
