@@ -1,6 +1,6 @@
 import React,{Component,Fragment} from "react";
 import $ from 'jquery';
-import "./react-virtual-dom.css";
+import "./index.css";
 let RVDCLS = {
   rvd:'rvd',pointer:'rvd-pointer',gap:'rvd-gap',justify:'rvd-justify',align:'rvd-align',
   row:'rvd-row',column:'rvd-column',hidexs:'rvd-hide-xs',hidesm:'rvd-hide-sm',hidemd:'rvd-hide-md',hidelg:'rvd-hide-lg'

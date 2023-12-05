@@ -2,15 +2,12 @@ import RVD from 'react-virtual-dom';
 export default function Versions({goToHome}){
     const components = {
         'aio-input':{
-            version:'8.0.2',
+            version:'8.0.3',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
                 "jquery": "3.6.1",
-                "react": "18.2.0",
-                "react-dom": "18.2.0",
-                "react-scripts": "5.0.1",
-                "react-virtual-dom": "4.0.1",
+                "react-virtual-dom": "4.0.2",
                 "aio-date": "4.0.0",
                 "axios": "1.2.1",
                 "aio-swip": "2.0.0",
@@ -18,31 +15,25 @@ export default function Versions({goToHome}){
             }
         },
         'aio-login':{
-            version:'6.0.2',
+            version:'6.0.3',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
-                "react": "18.2.0",
-                "react-dom": "18.2.0",
-                "react-scripts": "5.0.1",
-                "react-virtual-dom": "4.0.1",
+                "react-virtual-dom": "4.0.2",
                 "aio-popup": "3.0.5",
                 "aio-storage": "4.0.1",
-                "aio-input": "8.0.2"
+                "aio-input": "8.0.3"
             }
         },
         'react-super-app':{
-            version:'4.0.3',
+            version:'4.0.5',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
-                "react": "18.2.0",
-                "react-dom": "18.2.0",
-                "react-scripts": "5.0.1",
-                "aio-popup": "3.0.5",
-                "aio-storage": "4.0.1",
-                "react-virtual-dom": "4.0.1"
-            }            
+                "aio-popup": "latest",
+                "aio-storage": "latest",
+                "react-virtual-dom": "latest"
+              },            
         },
         'aio-service':{
             version:'6.1.2',
@@ -54,23 +45,18 @@ export default function Versions({goToHome}){
             }
         },
         'aio-popup':{
-            version:'3.0.5',
+            version:'3.0.6',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
                 "jquery": "3.6.1",
-                "react": "18.2.0",
-                "react-dom": "18.2.0",
-                "react-scripts": "5.0.1",
-                "react-virtual-dom": "4.0.1"
-            }            
+                "react-virtual-dom": "4.0.2"
+            }             
         },
         'react-virtual-dom':{
-            version:'4.0.1',
+            version:'4.0.2',
             "dependencies": {
-                "jquery": "3.6.0",
-                "react": "17.0.0",
-                "react-dom": "17.0.0"
+                "jquery": "3.6.0"
             }
         },
         'aio-content-slider':{

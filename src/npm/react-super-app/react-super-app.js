@@ -69,6 +69,43 @@ export default class RSA {
     }
     this.addModal(config)
   }
+  renderCard = ({text,subtext,uptext,onClick,before,after,header,footer,rtl,justify})=>{
+    let cls = (key)=>`${this.props.theme}-card-${key}`
+    return (
+      <RVD
+          layout={{
+            onClick, className: cls('card') + (justify ? ' justify' : ''), style: { direction: rtl ? 'rtl' : '' },
+            column: [
+              { show: !!header && !Array.isArray(header), html: header, className: cls('header') },
+              {
+                show: !!Array.isArray(header), className: cls('header'),
+                row: () => [{ html: header[0] },{ flex: 1 },{ html: header[1] }]
+              },
+              {
+                className: cls('body'),
+                row: [
+                  { show: !!before, html: () => before, align: 'vh', className: cls('before') },
+                  {
+                    flex: 1, align: 'v',
+                    column: [
+                      { show: !!uptext, html: uptext, className: cls('uptext') },
+                      { html: text, className: cls('text') },
+                      { show: !!subtext, html: () => subtext, className: cls('subtext') }
+                    ]
+                  },
+                  { html: after, align: 'vh', className: cls('after') }
+                ]
+              },
+              { show: !!footer && !Array.isArray(footer), html: header, className: cls('footer') },
+              {
+                show: !!Array.isArray(footer), className: cls('footer'),
+                row: () => [{ html: footer[0] },{ flex: 1 },{ html: footer[1] }]
+              }
+            ]
+          }}
+        />
+    )
+  }
 }
 function RSAAPP(props){
   let PROPS = {...props,getActions:(obj)=>props.getActions({...obj})} 
