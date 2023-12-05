@@ -8,7 +8,7 @@ import './index.css';
 export default class RSA {
   constructor(props = {}) {
     RSAValidate(props);
-    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme = 'rsa-theme' } = props;
+    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme } = props;
     this.backbuttonCallback = true;
     this.props = {
       rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme,
@@ -38,13 +38,18 @@ export default class RSA {
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
+  cls = (key)=>{
+    let className = `rsa-theme-${key}`;
+    if(this.props.theme){className += ` ${this.props.theme}-${key}`}
+    return className;
+  }
   addConfirm = (obj) => {
     let {title,subtitle,text,buttons} = obj;
     let config = {
       position:'center',
-      attrs:{className:`${this.props.theme}-confirm`},
+      attrs:{className:this.cls('confirm')},
       header:{title,subtitle},
-      backdrop:{attrs:{className:`${this.props.theme}-backdrop`}},
+      backdrop:{attrs:{className:this.cls('backdrop')}},
       body:{render:()=>text},
       footer:{buttons}
     }
@@ -54,15 +59,15 @@ export default class RSA {
     let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
     let config = {
       position:'center',
-      attrs:{className:`${this.props.theme}-prompt`},
+      attrs:{className:this.cls('prompt')},
       state:{temp:''},
       header:{title,subtitle},
-      backdrop:{attrs:{className:`${this.props.theme}-backdrop`}},
+      backdrop:{attrs:{className:this.cls('backdrop')}},
       body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
       footer:{
         buttons:[
           [canselText,{onClick:()=>this.removeModal()}],
-          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:`${this.props.theme}-active`}],
+          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:this.cls('active')}],
           
         ]
       }
@@ -70,35 +75,34 @@ export default class RSA {
     this.addModal(config)
   }
   renderCard = ({text,subtext,uptext,onClick,before,after,header,footer,rtl,justify})=>{
-    let cls = (key)=>`${this.props.theme}-card${key?'-' + key:''}`
     return (
       <RVD
           layout={{
-            onClick, className: cls() + (justify ? ' justify' : ''), style: { direction: rtl ? 'rtl' : '' },
+            onClick, className: this.cls('card') + (justify ? ' justify' : ''), style: { direction: rtl ? 'rtl' : '' },
             column: [
-              { show: !!header && !Array.isArray(header), html: header, className: cls('header') },
+              { show: !!header && !Array.isArray(header), html: header, className: this.cls('card-header') },
               {
-                show: !!Array.isArray(header), className: cls('header'),
+                show: !!Array.isArray(header), className: this.cls('card-header'),
                 row: () => [{ html: header[0] },{ flex: 1 },{ html: header[1] }]
               },
               {
-                className: cls('body'),
+                className: this.cls('card-body'),
                 row: [
-                  { show: !!before, html: () => before, align: 'vh', className: cls('before') },
+                  { show: !!before, html: () => before, align: 'vh', className: this.cls('card-before') },
                   {
                     flex: 1, align: 'v',
                     column: [
-                      { show: !!uptext, html: uptext, className: cls('uptext') },
-                      { html: text, className: cls('text') },
-                      { show: !!subtext, html: () => subtext, className: cls('subtext') }
+                      { show: !!uptext, html: uptext, className: this.cls('card-uptext') },
+                      { html: text, className: this.cls('card-text') },
+                      { show: !!subtext, html: () => subtext, className: this.cls('card-subtext') }
                     ]
                   },
-                  { html: after, align: 'vh', className: cls('after') }
+                  { html: after, align: 'vh', className: this.cls('card-after') }
                 ]
               },
-              { show: !!footer && !Array.isArray(footer), html: header, className: cls('footer') },
+              { show: !!footer && !Array.isArray(footer), html: header, className: this.cls('card-footer') },
               {
-                show: !!Array.isArray(footer), className: cls('footer'),
+                show: !!Array.isArray(footer), className: this.cls('card-footer'),
                 row: () => [{ html: footer[0] },{ flex: 1 },{ html: footer[1] }]
               }
             ]
@@ -239,7 +243,7 @@ class ReactSuperApp extends Component {
     if (!nav || !this.navItems || !this.navItems.length) { return false }
     let { navId } = this.state;
     let props = { nav, navId, setNavId: (navId) => this.setNavId(navId), type, rtl }
-    return { className: 'of-visible', html: (<Navigation {...props} navItems={this.navItems}/>) };
+    return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={this.navItems}/>) };
   }
   page_layout({render}) {
     let { body = () => '' } = this.props;
@@ -284,9 +288,9 @@ class ReactSuperApp extends Component {
   }
   render() {
     let { splash } = this.state;
-    let { style, className, maxWidth, popup,rtl } = this.props;
+    let { style, className, maxWidth, popup,rtl,theme } = this.props;
     return (
-      <div className={`rsa-container` + (className ? ' ' + className : '')} style={{...style,direction:rtl?'rtl':'ltr'}}>
+      <div className={`rsa-container` + (className ? ' ' + className : '') + (theme ? ' ' + theme : '')} style={{...style,direction:rtl?'rtl':'ltr'}}>
         <div className='rsa' style={{ maxWidth }}>
           {this.renderMain()}
           {popup.render()}
