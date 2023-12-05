@@ -8,7 +8,7 @@ import './index.css';
 export default class RSA {
   constructor(props = {}) {
     RSAValidate(props);
-    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme = 'default-theme' } = props;
+    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme = 'rsa-theme' } = props;
     this.backbuttonCallback = true;
     this.props = {
       rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme,
