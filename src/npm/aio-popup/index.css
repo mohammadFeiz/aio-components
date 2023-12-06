@@ -92,7 +92,6 @@
 }
 
 .aio-popup {
-  background:#fff;
   border-radius: 4px;
   font-size:14px;
   transition:0.3s;
@@ -107,6 +106,7 @@
 
 .aio-popup-header {
   border-bottom:1px solid #e7e9ec;
+  background:#fff;
   color: #323130;
   padding:6px 12px;
   font-size: 16px;
@@ -118,12 +118,14 @@
   opacity:0.5;
 }
 .aio-popup-body {
+  background:#fff;
   flex: 1;
   width: 100%;
   padding:12px;
   overflow-y:auto;
 }
 .aio-popup-footer{
+  background:#fff;
   padding:12px;
   width:100%;
   gap:12px;
