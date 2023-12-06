@@ -1,9 +1,9 @@
 import React, { Component,useReducer } from 'react';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOStorage from 'aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD,{} from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOPopup from './../../npm/aio-popup/aio-popup';
+import RVD,{} from 'react-virtual-dom';
+import AIOPopup from 'aio-popup';
 import './index.css';
 export default class RSA {
   constructor(props = {}) {
