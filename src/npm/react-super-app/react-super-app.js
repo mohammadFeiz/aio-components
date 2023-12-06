@@ -1,9 +1,9 @@
 import React, { Component,useReducer } from 'react';
-import AIOStorage from 'aio-storage';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD from 'react-virtual-dom';
-import AIOPopup from 'aio-popup';
+import RVD,{} from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOPopup from './../../npm/aio-popup/aio-popup';
 import './index.css';
 export default class RSA {
   constructor(props = {}) {
@@ -38,19 +38,13 @@ export default class RSA {
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
-  cls = (key,CLASSNAME)=>{
-    let className = `rsa-theme-${key}`;
-    if(this.props.theme){className += ` ${this.props.theme}-${key}`}
-    if(CLASSNAME){className += ' ' + CLASSNAME}
-    return className;
-  }
   addConfirm = (obj) => {
     let {title,subtitle,text,buttons} = obj;
     let config = {
       position:'center',
-      attrs:{className:this.cls('confirm')},
+      attrs:{className:'rsa-confirm'},
       header:{title,subtitle},
-      backdrop:{attrs:{className:this.cls('backdrop')}},
+      backdrop:{attrs:{className:'rsa-backdrop'}},
       body:{render:()=>text},
       footer:{buttons}
     }
@@ -60,57 +54,22 @@ export default class RSA {
     let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
     let config = {
       position:'center',
-      attrs:{className:this.cls('prompt')},
+      attrs:{className:'rsa-prompt'},
       state:{temp:''},
       header:{title,subtitle},
-      backdrop:{attrs:{className:this.cls('backdrop')}},
+      backdrop:{attrs:{className:'rsa-backdrop'}},
       body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
       footer:{
         buttons:[
           [canselText,{onClick:()=>this.removeModal()}],
-          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:this.cls('active')}],
+          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:'active'}],
           
         ]
       }
     }
     this.addModal(config)
   }
-  renderCard = ({text,subtext,uptext,attrs = {},before,after,header,footer,justify})=>{
-    return (
-      <RVD
-          layout={{
-            attrs,onClick:attrs.onClick, className: this.cls('card',attrs.className) + (justify ? ' justify' : ''),style:attrs.style,
-            column: [
-              { show: !!header && !Array.isArray(header), html: header, className: this.cls('card-header') },
-              {
-                show: !!Array.isArray(header), className: this.cls('card-header'),
-                row: () => [{ html: header[0] },{ flex: 1 },{ html: header[1] }]
-              },
-              {
-                className: this.cls('card-body'),
-                row: [
-                  { show: !!before, html: () => before, align: 'vh', className: this.cls('card-before') },
-                  {
-                    flex: 1, align: 'v',
-                    column: [
-                      { show: !!uptext, html: uptext, className: this.cls('card-uptext') },
-                      { html: text, className: this.cls('card-text') },
-                      { show: !!subtext, html: () => subtext, className: this.cls('card-subtext') }
-                    ]
-                  },
-                  { html: after, align: 'vh', className: this.cls('card-after') }
-                ]
-              },
-              { show: !!footer && !Array.isArray(footer), html: header, className: this.cls('card-footer') },
-              {
-                show: !!Array.isArray(footer), className: this.cls('card-footer'),
-                row: () => [{ html: footer[0] },{ flex: 1 },{ html: footer[1] }]
-              }
-            ]
-          }}
-        />
-    )
-  }
+  
 }
 function RSAAPP(props){
   let PROPS = {...props,getActions:(obj)=>props.getActions({...obj})} 

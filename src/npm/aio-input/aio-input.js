@@ -238,6 +238,7 @@ export default class AIOInput extends Component {
                 checked: this.getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
                 before: this.getOptionProp(option, 'before'),
                 after: this.getOptionProp(option, 'after'),
+                justify: this.getOptionProp(option, 'justify'),
                 subtext: this.getOptionProp(option, 'subtext'),
                 onClick: this.getOptionProp(option, 'onClick',undefined,true),
                 className: this.getOptionProp(option, 'className'),
@@ -791,11 +792,13 @@ class Form extends Component {
         }
         return {
             className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
-            row: [
-                { show: !!onClose, html: <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button> },
-                { show: !!reset, html: <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button> },
-                { show: !!onSubmit, html: <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> },
-            ]
+            html:(
+                <>
+                    { !!onClose && <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button>}
+                    { !!reset && <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button> }
+                    { !!onSubmit && <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> }
+                </>
+            )
         }
     }
     getDefault({ type, multiple }) {
@@ -1511,7 +1514,7 @@ class Layout extends Component {
         }
         attrs = addToAttrs(attrs,{
             className:this.getClassName(label),
-            style: { justifyContent: justify ? 'center' : undefined, zIndex }
+            style: { ...this.properties.style,justifyContent: justify ? 'center' : undefined, zIndex }
         })
         let p = {...attrs, onClick, ref: this.dom, disabled, 'data-label': label}
         if (draggable) {
@@ -2056,12 +2059,11 @@ function InputSlider() {
     let {onChange,value} = properties;
     function change(value) {
         if (isMultiple()) { onChange([...value]) }
-        else { onChange(value[0]) }
+        else {onChange(value[0])}
     }
     let props = {...properties,value,onChange: !onChange ? undefined : change}
     return (<Slider {...props} />)
 }
-
 const SliderContext = createContext();
 export class Slider extends Component {
     constructor(props) {
@@ -3263,7 +3265,7 @@ export function getFormInputs(fields,path){
     function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}
     return fields.map((o)=>Array.isArray(o)?{row:o.map((oo)=>getInput(oo))}:getInput(o))
 }
-function getFormInput(Field,path){
+export function getFormInput(Field,path){
     function getOptions(field,path){
         return {
             militaryservice:()=>['مشمول','معاف','پایان خدمت'],gender:()=>['مرد','زن'],married:()=>['مجرد','متاهل'],state:()=>Object.keys(getCities()),

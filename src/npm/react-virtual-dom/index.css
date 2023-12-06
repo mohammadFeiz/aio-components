@@ -588,6 +588,73 @@ input.no-spin::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+.rvd-cards-container{
+  overflow:visible;
+  width:100%;
+}
+.rvd-cards{
+  display:flex;
+  width:100%;
+  border-radius:var(--brm);
+}
+.rvd-cards-row-container{
+  overflow-x:auto;
+  padding:12px;
+}
+.rvd-card{
+  background:#f6f6f6;
+  color:#fff;
+  border-radius:6px;
+  font-size:16px;
+  padding:12px;
+  box-sizing: border-box;
+  gap:12px;
+}
+.rvd-cards .rvd-card{
+  box-shadow: none;
+  border-radius:0;
+}
+
+.rvd-card-body{
+  gap:12px;
+}
+.rvd-card-subtext{
+  opacity:0.6;
+  font-size:80%;
+}
+.rvd-card-uptext{
+  font-size:90%;
+  color:dodgerblue;
+}
+.rvd-card-header{
+  gap:6px;
+  align-items: center;
+}
+.rvd-card-footer{
+  gap:6px;
+  align-items: center;
+}
+.rvd-card.justify .rvd-card-uptext{
+  justify-content: center;
+}
+.rvd-card.justify .rvd-card-text{
+  justify-content: center;
+}
+.rvd-card.justify .rvd-card-subtext{
+  justify-content: center;
+}
+.bf-1{backdrop-filter: 1px;}
+.bf-2{backdrop-filter: 1px;}
+.bf-3{backdrop-filter: 1px;}
+.bf-4{backdrop-filter: 1px;}
+.bf-6{backdrop-filter: 1px;}
+.bf-8{backdrop-filter: 1px;}
+.bf-12{backdrop-filter: 1px;}
+.bf-16{backdrop-filter: 1px;}
+.bf-24{backdrop-filter: 1px;}
+.bf-36{backdrop-filter: 1px;}
+.bf-48{backdrop-filter: 1px;}
+
 
 /* Firefox */
 input.no-spin[type=number] {
