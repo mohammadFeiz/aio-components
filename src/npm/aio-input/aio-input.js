@@ -450,7 +450,7 @@ function TimePopover(props) {
     return (
         <RVD
             layout={{
-                style: { direction: 'ltr' },
+                className: 'aio-input-time-popover',
                 column: [
                     { align: 'h', className: 'm-b-12', row: [layout('year'), layout('month'), layout('day'), layout('hour'), layout('minute'), layout('second')] },
                     { html: <button className='ai-style-3' style={{ height: 36, fontSize: 12 }} onClick={submit}>{translate('Submit')}</button> }

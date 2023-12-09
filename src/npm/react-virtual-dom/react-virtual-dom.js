@@ -304,7 +304,7 @@ export function renderCard({ text, subtext, uptext, attrs = {}, before, after, h
               { show:!!after,html: ()=>after, align: 'vh', className: Cls('card-after',classes.after) }
             ]
           },
-          { show: !!footer && !Array.isArray(footer), html: header, className: Cls('card-footer',classes.footer) },
+          { show: !!footer && !Array.isArray(footer), html: footer, className: Cls('card-footer',classes.footer) },
           {
             show: !!Array.isArray(footer), className: Cls('card-footer',classes.footer),
             row: () => [{ html: footer[0] }, { flex: 1 }, { html: footer[1] }]
