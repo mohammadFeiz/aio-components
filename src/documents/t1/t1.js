@@ -3,10 +3,10 @@ import RSA from './../../npm/react-super-app/react-super-app';
 import AIOInput from './../../npm/aio-input/aio-input';
 import RVD,{renderCard,renderCards,renderCardsRow} from './../../npm/react-virtual-dom/react-virtual-dom';
 import { Icon } from '@mdi/react';
-import { mdiChevronRight, mdiAccount, mdiDelete, mdiMinus, mdiPlus } from '@mdi/js';
+import { mdiChevronRight, mdiAccount, mdiDelete, mdiMinus, mdiPlus,mdiHome } from '@mdi/js';
 import './t1.css';
 const AppContext = createContext();
-export default function App() {
+export default function App({goToHome}) {
   let [rsa] = useState(new RSA({
     theme: 't1',
     id: 't1',
@@ -21,6 +21,17 @@ export default function App() {
     },
     body: ({ render }) => {
       return render()
+    },
+    headerContent:()=>{
+      return (
+        <RVD
+          layout={{
+            row:[
+              {html:<Icon path={mdiHome} size={1}/>,onClick:()=>goToHome()}
+            ]
+          }}
+        />
+      )
     }
   }))
   function getContext() {

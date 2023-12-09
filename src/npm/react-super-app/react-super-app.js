@@ -1,9 +1,9 @@
-import React, { Component,useReducer } from 'react';
-import AIOStorage from 'aio-storage';
+import React, { Component } from 'react';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD,{} from 'react-virtual-dom';
-import AIOPopup from 'aio-popup';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOPopup from './../../npm/aio-popup/aio-popup';
 import './index.css';
 export default class RSA {
   constructor(props = {}) {
@@ -38,37 +38,8 @@ export default class RSA {
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
   addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
-  addConfirm = (obj) => {
-    let {title,subtitle,text,buttons} = obj;
-    let config = {
-      position:'center',
-      attrs:{className:'rsa-confirm'},
-      header:{title,subtitle},
-      backdrop:{attrs:{className:'rsa-backdrop'}},
-      body:{render:()=>text},
-      footer:{buttons}
-    }
-    this.addModal(config)
-  }
-  addPrompt = (obj) => {
-    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
-    let config = {
-      position:'center',
-      attrs:{className:'rsa-prompt'},
-      state:{temp:''},
-      header:{title,subtitle},
-      backdrop:{attrs:{className:'rsa-backdrop'}},
-      body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
-      footer:{
-        buttons:[
-          [canselText,{onClick:()=>this.removeModal()}],
-          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:'active'}],
-          
-        ]
-      }
-    }
-    this.addModal(config)
-  }
+  addConfirm = (obj) => this.props.popup.addConfirm(obj);
+  addPrompt = (obj) => this.props.popup.addPrompt(obj);
   
 }
 function RSAAPP(props){

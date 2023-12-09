@@ -2,31 +2,31 @@ import RVD from 'react-virtual-dom';
 export default function Versions({goToHome}){
     const components = {
         'aio-input':{
-            version:'8.0.3',
+            version:'8.0.7',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
                 "jquery": "3.6.1",
-                "react-virtual-dom": "4.0.2",
-                "aio-date": "4.0.0",
+                "react-virtual-dom": "latest",
+                "aio-date": "latest",
                 "axios": "1.2.1",
-                "aio-swip": "2.0.0",
-                "aio-popup": "3.0.5"
+                "aio-swip": "latest",
+                "aio-popup": "latest"
             }
         },
         'aio-login':{
-            version:'6.0.3',
+            version:'6.0.4',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
-                "react-virtual-dom": "4.0.2",
-                "aio-popup": "3.0.5",
-                "aio-storage": "4.0.1",
-                "aio-input": "8.0.3"
+                "react-virtual-dom": "latest",
+                "aio-popup": "latest",
+                "aio-storage": "latest",
+                "aio-input": "latest"
             }
         },
         'react-super-app':{
-            version:'4.0.5',
+            version:'4.0.18',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -36,25 +36,25 @@ export default function Versions({goToHome}){
               },            
         },
         'aio-service':{
-            version:'6.1.2',
+            version:'6.1.3',
             "dependencies": {
                 "jquery": "3.6.1",
-                "aio-date": "4.0.0",
-                "aio-storage": "4.0.1",
+                "aio-date": "latest",
+                "aio-storage": "latest",
                 "axios": "1.2.1"
             }
         },
         'aio-popup':{
-            version:'3.0.6',
+            version:'3.0.9',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
                 "jquery": "3.6.1",
-                "react-virtual-dom": "4.0.2"
+                "react-virtual-dom": "latest"
             }             
         },
         'react-virtual-dom':{
-            version:'4.0.2',
+            version:'4.0.4',
             "dependencies": {
                 "jquery": "3.6.0"
             }
@@ -120,7 +120,7 @@ export default function Versions({goToHome}){
                                                 style:{padding:12,background:'#f7f7f7'},gap:2,
                                                 column:dependenciesList.map((key)=>{
                                                     let version = dependencies[key];
-                                                    let isUpToDate = !components[key]?true:(version === components[key].version);
+                                                    let isUpToDate = !components[key] || version === 'latest'?true:(version === components[key].version);
                                                     let background = isUpToDate?'green':'red';
                                                     return {
                                                         style:{background:'#fff',padding:6},

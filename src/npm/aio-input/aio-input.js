@@ -1,16 +1,16 @@
 import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import AIODate from 'aio-date';
-import RVD from 'react-virtual-dom';
+import AIODate from './../../npm/aio-date/aio-date';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Axios from 'axios';
-import AIOSwip from 'aio-swip';
+import AIOSwip from './../../npm/aio-swip/aio-swip';
 import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
     mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
     mdiCrosshairsGps
 } from "@mdi/js";
-import AIOPopup from 'aio-popup';
+import AIOPopup from './../../npm/aio-popup/aio-popup';
 import $ from 'jquery';
 import './index.css';
 const AICTX = createContext();
