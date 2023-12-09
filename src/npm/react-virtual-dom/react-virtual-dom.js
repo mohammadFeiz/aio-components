@@ -251,10 +251,10 @@ export function renderCards({ items = [], gap, attrs = {} }) {
         className: Cls('cards-container', attrs.className),
         column: [
           {
-            className: Cls('cards'), gap,
+            className: Cls('cards'), style:{gap},
             column: items.map((o) => {
               return {
-                gap, row: o.map((card) => {return {className: 'of-visible', flex: 1, html: renderCard(card)}})
+                style:{gap}, row: o.map((card) => {return {className: 'of-visible', flex: 1, html: renderCard(card)}})
               }
             })
           }
@@ -270,7 +270,7 @@ export function renderCardsRow(rows = [], gap) {
         className: Cls('cards-row-container'),
         column: [
           {
-            className: Cls('cards-row', 'of-visible'), gap,
+            className: Cls('cards-row', 'of-visible'), style:{gap},
             row: rows.map((card) => {return {className: 'of-visible',html: renderCard(card)}})
           }
         ]
@@ -278,35 +278,35 @@ export function renderCardsRow(rows = [], gap) {
     />
   )
 }
-export function renderCard({ text, subtext, uptext, attrs = {}, before, after, header, footer, justify }) {
+export function renderCard({ text, subtext, uptext, attrs = {}, before, after, header, footer, justify,classes = {} }) {
   return (
     <ReactVirtualDom
       layout={{
         attrs, onClick: attrs.onClick, className: Cls('card', attrs.className) + (justify ? ' justify' : ''), style: attrs.style,
         column: [
-          { show: !!header && !Array.isArray(header), html: header, className: Cls('card-header') },
+          { show: !!header && !Array.isArray(header), html: header, className: Cls('card-header',classes.header) },
           {
-            show: !!Array.isArray(header), className: Cls('card-header'),
+            show: !!Array.isArray(header), className: Cls('card-header',classes.header),
             row: () => [{ html: header[0] }, { flex: 1 }, { html: header[1] }]
           },
           {
-            className: Cls('card-body'),
+            className: Cls('card-body',classes.body),
             row: [
-              { show: !!before, html: () => before, align: 'vh', className: Cls('card-before') },
+              { show: !!before, html: () => before, align: 'vh', className: Cls('card-before',classes.before) },
               {
                 flex: 1, align: 'v',
                 column: [
-                  { show: !!uptext, html: uptext, className: Cls('card-uptext') },
-                  { html: text, className: Cls('card-text') },
-                  { show: !!subtext, html: () => subtext, className: Cls('card-subtext') }
+                  { show: !!uptext, html: uptext, className: Cls('card-uptext',classes.uptext) },
+                  { html: text, className: Cls('card-text',classes.text) },
+                  { show: !!subtext, html: () => subtext, className: Cls('card-subtext',classes.subtext) }
                 ]
               },
-              { html: after, align: 'vh', className: Cls('card-after') }
+              { show:!!after,html: ()=>after, align: 'vh', className: Cls('card-after',classes.after) }
             ]
           },
-          { show: !!footer && !Array.isArray(footer), html: header, className: Cls('card-footer') },
+          { show: !!footer && !Array.isArray(footer), html: header, className: Cls('card-footer',classes.footer) },
           {
-            show: !!Array.isArray(footer), className: Cls('card-footer'),
+            show: !!Array.isArray(footer), className: Cls('card-footer',classes.footer),
             row: () => [{ html: footer[0] }, { flex: 1 }, { html: footer[1] }]
           }
         ]

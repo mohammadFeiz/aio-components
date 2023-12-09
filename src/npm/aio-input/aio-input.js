@@ -991,10 +991,12 @@ function Options(props) {
     let options = props.options || getOptions();
     if (!options.length) { return null }
     let renderOptions = getRenderOptions(options);
+    let className = `aio-input-options aio-input-${type}-options`
+    if(types.isDropdown){className += ' aio-input-dropdown-options'}
     return (
         <>
             {renderSearchBox(options)}
-            <div className={`aio-input-options aio-input-${type}-options`}>{renderOptions}</div>
+            <div className={className}>{renderOptions}</div>
         </>
     )
 }
