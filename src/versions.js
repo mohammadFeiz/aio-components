@@ -2,7 +2,7 @@ import RVD from 'react-virtual-dom';
 export default function Versions({goToHome}){
     const components = {
         'aio-input':{
-            version:'8.0.7',
+            version:'8.0.9',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -54,7 +54,7 @@ export default function Versions({goToHome}){
             }             
         },
         'react-virtual-dom':{
-            version:'4.0.4',
+            version:'4.0.5',
             "dependencies": {
                 "jquery": "3.6.0"
             }
