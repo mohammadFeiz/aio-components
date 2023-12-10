@@ -32,6 +32,37 @@ export default class AIOPopup {
     if(obj.id === undefined){obj.id = 'popup' + Math.round(Math.random() * 1000000)}
     this._addModal(obj,animate)
   }
+  addConfirm = (obj) => {
+    let {title,subtitle,text,buttons} = obj;
+    let config = {
+      position:'center',
+      attrs:{className:'rsa-confirm'},
+      header:{title,subtitle},
+      backdrop:{attrs:{className:'rsa-backdrop'}},
+      body:{render:()=>text},
+      footer:{buttons}
+    }
+    this.addModal(config)
+  }
+  addPrompt = (obj) => {
+    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
+    let config = {
+      position:'center',
+      attrs:{className:'rsa-prompt'},
+      state:{temp:''},
+      header:{title,subtitle},
+      backdrop:{attrs:{className:'rsa-backdrop'}},
+      body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
+      footer:{
+        buttons:[
+          [canselText,{onClick:()=>this.removeModal()}],
+          [submitText,{onClick:({state})=>{onSubmit(state.temp); this.removeModal()},className:'active'}],
+          
+        ]
+      }
+    }
+    this.addModal(config)
+  }
   removeModal = (arg,animate = true)=>{if(this._removeModal){this._removeModal(arg,animate)}};
   addAlert = (obj = {}) => {
     let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن' } = obj
