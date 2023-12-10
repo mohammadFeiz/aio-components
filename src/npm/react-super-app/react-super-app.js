@@ -21,9 +21,8 @@ export default class RSA {
       }
     }
     window.history.pushState({}, '')
-    window.history.pushState({}, '')
     window.onpopstate = () => {
-      window.history.pushState({}, '');
+      setTimeout(()=>window.history.pushState({}, ''),100)
       try{
         if(this.backbuttonCallback === true){
           this.removeModal()
