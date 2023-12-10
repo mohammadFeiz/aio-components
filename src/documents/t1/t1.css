@@ -4,38 +4,39 @@
     --color3:#7186ff;
     --color4:#fff;
     --error:red;
-    --warning:#d89211;
+    --warning:#f79b11;
     --info:dodgerblue;
     --success:#35ab35;
     --shadow:0 0 12px 0px rgba(0,0,0,0.3);
     --brh:8px;
     --brm:6px;
     --brl:4px;
+    --t-fs-lg:24px;
+    --t-fs-md:16px;
+    --t-fs-sm:12px;
+    --t-fs-xs:10px;
+    
   }
-  .t1 .t-color1{
-    color:var(--color1);
-  }
-  .t1 .t-bg1{
-    background:var(--color1);
-  }
-  .t1 .t-color2{
-    color:var(--color1);
-  }
-  .t1 .t-bg2{
-    background:var(--color1);
-  }
-  .t1 .t-color3{
-    color:var(--color1);
-  }
-  .t1 .t-bg3{
-    background:var(--color1);
-  }
-  .t1 .t-color4{
-    color:var(--color1);
-  }
-  .t1 .t-bg4{
-    background:var(--color1);
-  }
+  .t1 .t-fs-xs{font-size:var(--t-fs-xs);}
+  .t1 .t-fs-sm{font-size:var(--t-fs-sm);}
+  .t1 .t-fs-md{font-size:var(--t-fs-md);}
+  .t1 .t-fs-lg{font-size:var(--t-fs-lg);}
+  .t1 .t-color1{color:var(--color1);}
+  .t1 .t-color2{color:var(--color2);}
+  .t1 .t-color3{color:var(--color3);}
+  .t1 .t-color4{color:var(--color4);}
+  .t1 .t-bg1{background:var(--color1);}
+  .t1 .t-bg2{background:var(--color2);}
+  .t1 .t-bg3{background:var(--color3);}
+  .t1 .t-bg4{background:var(--color4);}
+  .t1 .t-color-error{color:var(--error);}
+  .t1 .t-color-warning{color:var(--warning);}
+  .t1 .t-color-info{color:var(--info);}
+  .t1 .t-color-success{color:var(--success);}
+  .t1 .t-bg-error{background:var(--error);}
+  .t1 .t-bg-warning{background:var(--warning);}
+  .t1 .t-bg-info{background:var(--info);}
+  .t1 .t-bg-success{background:var(--success);}
   .t1 .t-page{
     background:var(--color1);
     height:100%;
@@ -226,8 +227,21 @@
     align-items: center;
     border-radius:1px;
     background:orange;
+    width:fit-content;
   }
-  
+  .t-notif{
+    position:relative;
+  }
+  .t-notif:after{
+    content: '';
+    width:7px;
+    height:7px;
+    border-radius:100%;
+    background:red;
+    position: absolute;
+    top:4px;
+    right:4px;
+  }
   .t1 .aio-input-table{
     background:var(--color2);
     color:#fff;
