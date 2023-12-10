@@ -34,7 +34,9 @@
 * {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
 }
-
+body{
+  overscroll-behavior-y: contain;
+}
 .rsa-container {
   position: fixed;
   left: 0;

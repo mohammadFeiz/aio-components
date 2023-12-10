@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import RVD from './npm/react-virtual-dom/react-virtual-dom';
+import Icon from '@mdi/react';
+import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 export default function Versions({goToHome}){
-    const components = {
+    let [components,setComponents] = useState({
         'aio-input':{
-            version:'8.0.9',
+            open:false,
+            version:'8.0.10',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -15,6 +19,7 @@ export default function Versions({goToHome}){
             }
         },
         'aio-login':{
+            open:false,
             version:'6.0.4',
             "dependencies": {
                 "@mdi/js": "7.0.96",
@@ -26,7 +31,8 @@ export default function Versions({goToHome}){
             }
         },
         'react-super-app':{
-            version:'4.0.18',
+            open:false,
+            version:'4.0.19',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -36,6 +42,7 @@ export default function Versions({goToHome}){
               },            
         },
         'aio-service':{
+            open:false,
             version:'6.1.3',
             "dependencies": {
                 "jquery": "3.6.1",
@@ -45,7 +52,8 @@ export default function Versions({goToHome}){
             }
         },
         'aio-popup':{
-            version:'3.0.9',
+            open:false,
+            version:'3.0.10',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -54,12 +62,14 @@ export default function Versions({goToHome}){
             }             
         },
         'react-virtual-dom':{
-            version:'4.0.5',
+            open:false,
+            version:'4.0.6',
             "dependencies": {
                 "jquery": "3.6.0"
             }
         },
         'aio-content-slider':{
+            open:false,
             version:'1.0.0',
             "dependencies": {
                 "jquery": "3.6.1",
@@ -69,21 +79,24 @@ export default function Versions({goToHome}){
             }
         },
         'aio-swip':{
+            open:false,
             version:'2.0.0',
             "dependencies": {
                 "jquery": "3.6.1"
             }
         },
         'aio-date':{
+            open:false,
             version:'4.0.0',
             dependencies:{}
         },
         'aio-storage':{
+            open:false,
             version:'4.0.1',
             dependencies:{}
         },
         
-    }
+    })
     let componentsList = Object.keys(components);
     return (
         <RVD
@@ -93,7 +106,7 @@ export default function Versions({goToHome}){
                     {size:36,html:<button onClick={()=>goToHome()}>Go To Home</button>,align:'v',className:'p-h-12'},
                     {
                         column:componentsList.map((key)=>{
-                            let {version,dependencies} = components[key];
+                            let {version,dependencies,open} = components[key];
                             let dependenciesList = Object.keys(dependencies);
                             let dependedTo = [];
                             for(let i = 0; i < componentsList.length; i++){
@@ -106,11 +119,18 @@ export default function Versions({goToHome}){
                                 style:{border:'1px solid dodgerblue',marginBottom:3},
                                 column:[
                                     {
-                                        style:{background:'dodgerblue',color:'#fff',padding:6},
-                                        row:[{html:key,flex:1},{html:version}]
+                                        style:{background:'dodgerblue',color:'#fff',padding:6},align:'v',
+                                        row:[
+                                            {
+                                                html:<Icon path={open?mdiChevronDown:mdiChevronRight} size={1}/>,size:36,align:'vh',
+                                                onClick:()=>setComponents({...components,[key]:{...components[key],open:!open}})
+                                            },
+                                            {html:key,flex:1},
+                                            {html:version}
+                                        ]
                                     },
                                     {
-                                        show:!!dependenciesList.length,
+                                        show:!!dependenciesList.length && !!open,
                                         column:[
                                             {
                                                 style:{padding:6,paddingBottom:0,background:'#f7f7f7',color:'dodgerblue',fontWeight:'bold',fontSize:12},
@@ -134,7 +154,7 @@ export default function Versions({goToHome}){
                                         ]
                                     },
                                     {
-                                        show:!!dependedTo.length,
+                                        show:!!dependedTo.length && !!open,
                                         column:[
                                             {
                                                 style:{padding:6,paddingBottom:0,background:'#f7f7f7',color:'dodgerblue',fontWeight:'bold',fontSize:12},

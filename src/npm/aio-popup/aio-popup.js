@@ -32,7 +32,7 @@ export default class AIOPopup {
     if(obj.id === undefined){obj.id = 'popup' + Math.round(Math.random() * 1000000)}
     this._addModal(obj,animate)
   }
-  removeModal = (arg,animate = true)=> this._removeModal(arg,animate);
+  removeModal = (arg,animate = true)=>{if(this._removeModal){this._removeModal(arg,animate)}};
   addAlert = (obj = {}) => {
     let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن' } = obj
     Alert({icon,type,text,subtext,time,className,closeText})

@@ -647,7 +647,10 @@ input.no-spin::-webkit-inner-spin-button {
 .bf-36{backdrop-filter: 1px !important;}
 .bf-48{backdrop-filter: 1px !important;}
 
-
+.hide-scroll::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+}
 /* Firefox */
 input.no-spin[type=number] {
   -moz-appearance: textfield;

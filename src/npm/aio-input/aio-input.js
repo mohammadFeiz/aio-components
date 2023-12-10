@@ -309,12 +309,15 @@ export default class AIOInput extends Component {
             for (let prop in value) { if (value[prop] === true) { value[prop] = todayObject[prop] } }
             let popover = this.properties.popover || {};
             let onChange = this.properties.onChange;
-            return { text: this.getTimeText(value), attrs: this.addToAttrs(this.properties.attrs, { style: { direction: 'ltr' } }), popover, onChange, value }
+            let className = 'aio-input-time';
+            className += this.properties.className?' ' + this.properties.className:'';
+            let style = this.properties.style;
+            return { text: this.getTimeText(value), attrs: this.addToAttrs(this.properties.attrs, { style: { direction: 'ltr' } }), popover, onChange, value,className,style }
         }
-        let { text, attrs, popover = {}, onChange } = getProps()
+        let { text, attrs, popover = {}, onChange,className,style } = getProps()
         return (
             <AIOInput
-                caret={false} text={text} {...this.props} attrs={attrs} type='button'
+                caret={false} text={text} {...this.props} attrs={attrs} type='button' className={className} style={style}
                 popover={!onChange ? undefined : {
                     position: 'center', ...popover, attrs: this.addToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
                     render: ({ close }) => <TimePopover value={getProps().value} onChange={(obj) => onChange(obj)} onClose={() => close()} />

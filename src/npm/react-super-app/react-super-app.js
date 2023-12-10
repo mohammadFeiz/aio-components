@@ -24,12 +24,15 @@ export default class RSA {
     window.history.pushState({}, '')
     window.onpopstate = () => {
       window.history.pushState({}, '');
-      if(this.backbuttonCallback === true){
-        this.removeModal()
+      try{
+        if(this.backbuttonCallback === true){
+          this.removeModal()
+        }
+        else if(typeof this.backbuttonCallback === 'function'){
+          this.backbuttonCallback()
+        }
       }
-      else if(typeof this.backbuttonCallback === 'function'){
-        this.backbuttonCallback()
-      }
+      catch{}
     };  
   }
   setBackbuttonCallBack = (backbuttonCallback)=>this.backbuttonCallback = backbuttonCallback;
