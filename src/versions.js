@@ -1,4 +1,4 @@
-import RVD from 'react-virtual-dom';
+import RVD from './npm/react-virtual-dom/react-virtual-dom';
 export default function Versions({goToHome}){
     const components = {
         'aio-input':{

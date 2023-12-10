@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import ReactDOM from 'react-dom/client';
 import { Icon } from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiClose } from "@mdi/js";
-import RVD from 'react-virtual-dom';
-import AIOStorage from 'aio-storage';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import "./index.css";
 import $ from 'jquery';
-import AIOInput from "aio-input";
+import AIOInput from "./../../npm/aio-input/aio-input";
 
 export default class Logs {
     constructor(id) {

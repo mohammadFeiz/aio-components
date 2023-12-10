@@ -1,7 +1,7 @@
 import Axios from "axios";
-import AIODate from "aio-date";
-import AIOStorage from 'aio-storage';
-import AIOPopup from "aio-popup";
+import AIODate from "./../../npm/aio-date/aio-date";
+import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOPopup from "./../../npm/aio-popup/aio-popup";
 import './index.css';
 import $ from "jquery";
 export let helper = {

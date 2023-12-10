@@ -2,7 +2,7 @@ import React, { Component, createRef, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
-import RVD from 'react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';
 

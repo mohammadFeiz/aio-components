@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import AIOInput from './../../npm/aio-input/aio-input';
 import Gauge from './../../npm/aio-gauge/aio-gauge';
-import AIOStorage from 'aio-storage';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOJson from './../../npm/aio-json/aio-json';
 import { Icon } from '@mdi/react';
 import { mdiDelete, mdiPlusThick, mdiClose } from '@mdi/js';
