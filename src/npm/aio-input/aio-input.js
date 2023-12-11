@@ -630,8 +630,7 @@ class Input extends Component {
     }
     change(value, onChange) {
         let { properties, types } = this.context;
-        let {blurChange,maxLength = Infinity,justNumber,filter = []} = properties;
-        let delay = 400;
+        let {blurChange,maxLength = Infinity,justNumber,filter = [],delay = 400} = properties;
         if (types.type === 'number') { if (value) { value = +value; } }
         else if (types.hasKeyboard) {
             if (value) {
@@ -3407,7 +3406,7 @@ function getMainProperties(props,getProp,types){
         properties = {...properties,caret: p('caret'),popover:p('popover')}
         if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),onSwap:p('onSwap')}}
     }
-    if(types.isInput){properties = {...properties,inputAttrs:p('inputAttrs'),blurChange:p('blurChange')}}
+    if(types.isInput){properties = {...properties,inputAttrs:p('inputAttrs'),blurChange:p('blurChange'),delay:p('delay')}}
     if(types.hasPlaceholder){properties = {...properties,placeholder: p('placeholder')}}
     if(types.hasMultiple){properties = {...properties,multiple: p('multiple')}}
     if(types.hasSearch){properties = {...properties,search: p('search')}}
