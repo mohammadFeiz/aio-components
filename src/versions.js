@@ -32,7 +32,7 @@ export default function Versions({goToHome}){
         },
         'react-super-app':{
             open:false,
-            version:'4.0.19',
+            version:'4.0.20',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",

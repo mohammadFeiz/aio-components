@@ -300,7 +300,7 @@ class Navigation extends Component {
       column: [
         { show: !icon,flex: 1 },
         { show: !!icon,flex: 2 },
-        { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh', className: 'of-visible' },
+        { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh', className: 'of-visible rsa-bottom-menu-item-icon' },
         { show: !!icon,flex: 1 },
         this.text_layout(o,'bottom'),
         { flex: 1 }
