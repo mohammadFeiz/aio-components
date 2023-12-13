@@ -36,7 +36,7 @@ export default class AIOPopup {
     let {title,subtitle,text,buttons} = obj;
     let config = {
       position:'center',
-      attrs:{className:'rsa-confirm'},
+      attrs:{className:'aio-popup-confirm'},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},
       body:{render:()=>text},
@@ -48,7 +48,7 @@ export default class AIOPopup {
     let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
     let config = {
       position:'center',
-      attrs:{className:'rsa-prompt'},
+      attrs:{className:'aio-popup-prompt'},
       state:{temp:''},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},
