@@ -11,12 +11,13 @@ export default function App({ goToHome }) {
     theme: 't1',
     id: 't1',
     nav: {
+      nested:false,
       id: 'other',
       items: [
-        { text: 'Popups', id: 'popups', render: () => <Popups /> },
-        { text: 'Cards', id: 'cards', render: () => <Cards /> },
-        { text: 'Inputs', id: 'inputs', render: () => <Inputs /> },
-        { text: 'Other', id: 'other', render: () => <Other /> },
+        { text: 'Popups', id: 'popups', render: () => <Popups />,icon:<Icon path={mdiAccount} size={1}/> },
+        { text: 'Cards', id: 'cards', render: () => <Cards />,icon:<Icon path={mdiAccount} size={1}/> },
+        { text: 'Inputs', id: 'inputs', render: () => <Inputs />,icon:<Icon path={mdiAccount} size={1}/> },
+        { text: 'Other', id: 'other', render: () => <Other />,icon:<Icon path={mdiAccount} size={1}/> },
       ]
     },
     body: ({ render }) => {
@@ -288,11 +289,12 @@ function Inputs() {
   let [tab, setTab] = useState('tab1');
   let [checked, setChecked] = useState(false);
   let [form, setForm] = useState({})
+  let [date,setDate] = useState();
   return (
     <RVD
       layout={{
         className: 't-page', gap: 12,
-        column: [
+        column:[
           {
             html: (
               <AIOInput
@@ -307,113 +309,132 @@ function Inputs() {
             )
           },
           {
-            className: 'p-12', gap: 12,
-            column: [
-              { html: <button className='t-link'>t-link</button> },
+            className:'ofy-auto',flex:1,column: [
               {
-                style: { background: '#fff', padding: 6 },
-                row: [
-                  { html: <button className='t-dark'>t-dark</button> },
-                  { html: <button className='t-dark t-outline'>t-dark t-outline</button> }
+                className: 'p-12', gap: 12,
+                column: [
+                  { html: <button className='t-link'>t-link</button> },
+                  {
+                    style: { background: '#fff', padding: 6 },
+                    row: [
+                      { html: <button className='t-dark'>t-dark</button> },
+                      { html: <button className='t-dark t-outline'>t-dark t-outline</button> }
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-light'>t-light</button> },
+                      { html: <button className='t-light t-outline'>t-light t-outline</button> },
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-ulight'>t-ulight</button> },
+                      { html: <button className='t-ulight t-outline'>t-ulight t-outline</button> },
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-error'>t-error</button> },
+                      { html: <button className='t-outline t-error'>t-outline t-error</button> },
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-warning'>t-warning</button> },
+                      { html: <button className='t-outline t-warning'>t-outline t-warning</button> }
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-info'>t-info</button> },
+                      { html: <button className='t-outline t-info'>t-outline t-info</button> }
+                    ]
+                  },
+                  {
+                    row: [
+                      { html: <button className='t-success'>t-success</button> },
+                      { html: <button className='t-outline t-success'>t-outline t-success</button> }
+                    ]
+                  },
+                  { html: <button className='t-ulight t-round'>t-ulight t-round</button> },
+                  { html: <button className='t-ulight t-outline t-round'>t-ulight t-outline t-round</button> },
                 ]
               },
               {
-                row: [
-                  { html: <button className='t-light'>t-light</button> },
-                  { html: <button className='t-light t-outline'>t-light t-outline</button> },
-                ]
+                className: 'p-12',
+                html: (
+                  <AIOInput
+                    type='select'
+                    options={[
+                      { text: 'My Select 1', value: 'tab1', after: <div className='t-badge'>12</div> },
+                      { text: 'Select2', value: 'tab2' },
+                    ]}
+                    value={tab}
+                    onChange={(tab) => setTab(tab)}
+                  />
+                )
               },
               {
-                row: [
-                  { html: <button className='t-ulight'>t-ulight</button> },
-                  { html: <button className='t-ulight t-outline'>t-ulight t-outline</button> },
-                ]
+                className: 'p-12',
+                html: (
+                  <AIOInput
+                    type='datepicker'
+                    value={date}
+                    onChange={(date) => setDate(date)}
+                  />
+                )
               },
               {
-                row: [
-                  { html: <button className='t-error'>t-error</button> },
-                  { html: <button className='t-outline t-error'>t-outline t-error</button> },
-                ]
-              },
-              {
-                row: [
-                  { html: <button className='t-warning'>t-warning</button> },
-                  { html: <button className='t-outline t-warning'>t-outline t-warning</button> }
-                ]
-              },
-              {
-                row: [
-                  { html: <button className='t-info'>t-info</button> },
-                  { html: <button className='t-outline t-info'>t-outline t-info</button> }
-                ]
-              },
-              {
-                row: [
-                  { html: <button className='t-success'>t-success</button> },
-                  { html: <button className='t-outline t-success'>t-outline t-success</button> }
-                ]
-              },
-              { html: <button className='t-ulight t-round'>t-ulight t-round</button> },
-              { html: <button className='t-ulight t-outline t-round'>t-ulight t-outline t-round</button> },
-            ]
-          },
-          {
-            className: 'p-12',
-            html: (
-              <AIOInput
-                type='select'
-                options={[
-                  { text: 'My Select 1', value: 'tab1', after: <div className='t-badge'>12</div> },
-                  { text: 'Select2', value: 'tab2' },
-                ]}
-                value={tab}
-                onChange={(tab) => setTab(tab)}
-              />
-            )
-          },
-          {
-            className: 'p-12',
-            html: (
-              <AIOInput
-                type='form'
-                onSubmit={() => { }}
-                value={{ ...form }}
-                onChange={(form) => setForm(form)}
-                inputs={{
-                  props: { gap: 12 },
-                  column: [
-                    { input: { type: 'checkbox', text: 'Active' }, label: 'Active', before: <Icon path={mdiAccount} size={1} /> },
-                    {
-                      row: [
-                        { input: { type: 'text' }, label: 'Name', field: 'value.name', validations: [['required']] },
-                        { input: { type: 'text' }, label: 'Family', field: 'value.family' }
+                className: 'p-12',
+                html: (
+                  <AIOInput
+                    type='form'
+                    onSubmit={() => { }}
+                    value={{ ...form }}
+                    onChange={(form) => setForm(form)}
+                    inputs={{
+                      props: { gap: 12 },
+                      column: [
+                        {
+                          row:[
+                            { input: { type: 'checkbox', text: 'Active' }, label: 'Active',field:'value.active', before: <Icon path={mdiAccount} size={1} /> },
+                            { input: { type: 'datepicker', text: 'Select Date' }, label: 'Date',field:'value.date', before: <Icon path={mdiAccount} size={1} /> }
+                          ]
+                        },
+                        {
+                          row: [
+                            { input: { type: 'text' }, label: 'Name', field: 'value.name', validations: [['required']] },
+                            { input: { type: 'text' }, label: 'Family', field: 'value.family' }
+                          ]
+                        },
+                        { input: { type: 'textarea' }, label: 'Address', field: 'value.address' },
+                        { input: { type: 'slider', start: 0, end: 10 }, label: 'Level', field: 'value.level' },
                       ]
-                    },
-                    { input: { type: 'textarea' }, label: 'Address', field: 'value.address' },
-                    { input: { type: 'slider', start: 0, end: 10 }, label: 'Level', field: 'value.level' },
-                  ]
-                }}
-              />
-            )
-          },
-          {
-            className: 'p-12',
-            html: (
-              <AIOInput
-                type='table'
-                columns={[
-                  { title: 'Name', value: 'row.name', input: { type: 'text' }, justify: true },
-                  { title: 'Gender', value: 'row.gender', input: { type: 'text' }, justify: true },
-                  { title: 'Age', value: 'row.age', input: { type: 'number' }, justify: true },
-                ]}
-                value={[
-                  { "name": "save", "gender": "female", "age": 26, "date": "2021/1/21" },
-                  { "name": "frame", "gender": "female", "age": 43, "date": "2020/10/25" },
-                  { "name": "may", "gender": "male", "age": 22, "date": "2020/5/1", },
-                  { "name": "rain", "gender": "female", "age": 26, "date": "2021/9/3" },
-                ]}
-              />
-            )
+                    }}
+                  />
+                )
+              },
+              {
+                className: 'p-12',
+                html: (
+                  <AIOInput
+                    type='table'
+                    columns={[
+                      { title: 'Name', value: 'row.name', input: { type: 'text' }, justify: true },
+                      { title: 'Gender', value: 'row.gender', input: { type: 'text' }, justify: true },
+                      { title: 'Age', value: 'row.age', input: { type: 'number' }, justify: true },
+                    ]}
+                    value={[
+                      { "name": "save", "gender": "female", "age": 26, "date": "2021/1/21" },
+                      { "name": "frame", "gender": "female", "age": 43, "date": "2020/10/25" },
+                      { "name": "may", "gender": "male", "age": 22, "date": "2020/5/1", },
+                      { "name": "rain", "gender": "female", "age": 26, "date": "2021/9/3" },
+                    ]}
+                  />
+                )
+              }
+            ]
           }
         ]
       }}

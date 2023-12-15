@@ -537,6 +537,11 @@ export default function AIODate() {
     },
     getNextMonth([year, month, day, hour]) { return month < 12 ? [year, month + 1, day, hour] : [year + 1, 1, 1]; },
     getPrevMonth([year, month, day, hour]) { return month > 1 ? [year, month - 1, day, hour] : [year - 1, 12, 1]; },
+    get2Digit(n) {
+      let ns = n.toString();
+      if (ns.length === 1) { ns = '0' + n }
+      return ns
+    }
   }
   return {
     getDaysOfWeek: $$.getDaysOfWeek,
@@ -563,6 +568,7 @@ export default function AIODate() {
     isMatch: $$.isMatch,
     getNextTime: $$.getNextTime,
     getDatesBetween: $$.getDatesBetween,
-    getDateByPattern: $$.getDateByPattern
+    getDateByPattern: $$.getDateByPattern,
+    get2Digit:$$.get2Digit
   }
 }

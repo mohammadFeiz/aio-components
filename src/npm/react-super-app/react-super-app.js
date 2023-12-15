@@ -276,7 +276,7 @@ class Navigation extends Component {
     if(type === 'bottom'){return { html, align: 'vh', className: 'rsa-bottom-menu-item-text' }}
   }
   item_layout(o, level = 0) {
-    let { setNavId, navId, rtl } = this.props;
+    let { setNavId, navId, rtl,nav } = this.props;
     let { openDic } = this.state;
     let { id, icon, items } = o;
     let active = id === navId;
@@ -285,7 +285,7 @@ class Navigation extends Component {
       className: 'rsa-navigation-item' + (active ? ' active' : ''), attrs: { onClick: () => items ? this.toggle(id) : setNavId(id) },
       row: [
         { size: level * 16 },
-        { size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', align: 'vh' },
+        { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', align: 'vh' },
         { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh' },
         this.text_layout(o,'side')
       ]
@@ -488,12 +488,12 @@ function RSAValidateNav(nav){
       each nav item should be an object contain ${RSANavItemInterface}
     `
   }
-  let nav_validProps = ['id','items','header','footer','cache']
+  let nav_validProps = ['id','items','header','footer','cache','nested']
   for(let prop in nav){
     if(nav_validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid nav property (${prop}). 
-        valid nav properties are 'id','items','header','footer','cache'
+        valid nav properties are ${nav_validProps.split(' - ')}
       `
     }
   }

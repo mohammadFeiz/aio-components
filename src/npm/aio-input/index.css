@@ -1765,3 +1765,6 @@
 .aio-input-file-value{
 	justify-content: center;
 }
+.aio-input-textarea-value{
+    height:100%;
+}
