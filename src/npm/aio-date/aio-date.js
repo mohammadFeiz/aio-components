@@ -431,12 +431,12 @@ export default function AIODate() {
       let [year, month, day, hour, minute, second, tenthsecond] = date;
       let calendarType = $$.getCalendarType(date);
       pattern = pattern.replace('{year}', year);
-      pattern = pattern.replace('{month}', $$.get2Digit(month));
-      pattern = pattern.replace('{day}', $$.get2Digit(day));
-      pattern = pattern.replace('{hour}', $$.get2Digit(hour));
-      pattern = pattern.replace('{minute}', $$.get2Digit(minute));
-      pattern = pattern.replace('{second}', $$.get2Digit(second));
-      pattern = pattern.replace('{tenthsecond}', $$.get2Digit(tenthsecond));
+      if(typeof month === 'number'){pattern = pattern.replace('{month}', $$.get2Digit(month));}
+      if(typeof day === 'number'){pattern = pattern.replace('{day}', $$.get2Digit(day));}
+      if(typeof hour === 'number'){pattern = pattern.replace('{hour}', $$.get2Digit(hour));}
+      if(typeof minute === 'number'){pattern = pattern.replace('{minute}', $$.get2Digit(minute));}
+      if(typeof second === 'number'){pattern = pattern.replace('{second}', $$.get2Digit(second));}
+      if(typeof tenthsecond === 'number'){pattern = pattern.replace('{tenthsecond}', $$.get2Digit(tenthsecond));}
       if (pattern.indexOf('{monthString}') !== -1) {
         pattern = pattern.replace('{monthString}', $$.getMonths({ calendarType })[month - 1]);
       }
@@ -538,7 +538,9 @@ export default function AIODate() {
     getNextMonth([year, month, day, hour]) { return month < 12 ? [year, month + 1, day, hour] : [year + 1, 1, 1]; },
     getPrevMonth([year, month, day, hour]) { return month > 1 ? [year, month - 1, day, hour] : [year - 1, 12, 1]; },
     get2Digit(n) {
-      let ns = n.toString();
+      let ns;
+      try{ns = n.toString()}
+      catch{return n}
       if (ns.length === 1) { ns = '0' + n }
       return ns
     }
