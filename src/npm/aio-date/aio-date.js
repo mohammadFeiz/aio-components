@@ -431,12 +431,12 @@ export default function AIODate() {
       let [year, month, day, hour, minute, second, tenthsecond] = date;
       let calendarType = $$.getCalendarType(date);
       pattern = pattern.replace('{year}', year);
-      pattern = pattern.replace('{month}', month);
-      pattern = pattern.replace('{day}', day);
-      pattern = pattern.replace('{hour}', hour);
-      pattern = pattern.replace('{minute}', minute);
-      pattern = pattern.replace('{second}', second);
-      pattern = pattern.replace('{tenthsecond}', tenthsecond);
+      pattern = pattern.replace('{month}', $$.get2Digit(month));
+      pattern = pattern.replace('{day}', $$.get2Digit(day));
+      pattern = pattern.replace('{hour}', $$.get2Digit(hour));
+      pattern = pattern.replace('{minute}', $$.get2Digit(minute));
+      pattern = pattern.replace('{second}', $$.get2Digit(second));
+      pattern = pattern.replace('{tenthsecond}', $$.get2Digit(tenthsecond));
       if (pattern.indexOf('{monthString}') !== -1) {
         pattern = pattern.replace('{monthString}', $$.getMonths({ calendarType })[month - 1]);
       }
