@@ -764,7 +764,7 @@
     justify-content: center;
 }
 
-.aio-input-table-cell-justify .aio-input input {
+.aio-input-table-cell-justify > .aio-input input {
     text-align: center;
 }
 

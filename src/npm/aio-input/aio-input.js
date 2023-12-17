@@ -1291,9 +1291,14 @@ function TableRows() {
                 return (<Fragment key={id}>{rowBefore({ row: o, rowIndex: i })}{Row}{rowAfter({ row: o, rowIndex: i })}</Fragment>)
             })
         }
-        return <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
+        if(placeholder){
+            return <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
+        }
+        return false
     }
-    return <div className='aio-input-table-rows'>{getContent()}</div>
+    let content = getContent();
+    if(content === false){return null}
+    return <div className='aio-input-table-rows'>{content}</div>
 }
 function TableToolbar() {
     let { add, exportToExcel, RowGap, properties, state, search,addToAttrs } = useContext(AITableContext);
