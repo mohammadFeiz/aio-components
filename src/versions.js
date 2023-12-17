@@ -32,7 +32,7 @@ export default function Versions({goToHome}){
         },
         'react-super-app':{
             open:false,
-            version:'4.0.20',
+            version:'4.0.21',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -63,7 +63,7 @@ export default function Versions({goToHome}){
         },
         'react-virtual-dom':{
             open:false,
-            version:'4.0.6',
+            version:'4.0.7',
             "dependencies": {
                 "jquery": "3.6.0"
             }
@@ -87,7 +87,7 @@ export default function Versions({goToHome}){
         },
         'aio-date':{
             open:false,
-            version:'4.0.0',
+            version:'4.0.1',
             dependencies:{}
         },
         'aio-storage':{
