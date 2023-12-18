@@ -42,6 +42,9 @@
   padding-bottom:0;
   background:var(--color1);
 }
+.t1 .aio-popup-body{
+  background:var(--color2);
+}
 .t1 .aio-popup-confirm .aio-popup-body{
   padding:24px;
   background:var(--color1);
@@ -187,7 +190,6 @@
   background:var(--color2);
   border:none;
   color:#fff;
-  font-size:14px;
 }
 .t1 .aio-input-select{
   padding: 0 12px;
@@ -276,9 +278,6 @@
 }
 .t1 .aio-input-form-error{
   color:orange;
-}
-.t1 button{
-  padding:6px 24px;
 }
 .t1 .t-link{
   background:none;
