@@ -357,7 +357,7 @@ function ModalFooter({footer,handleClose,state,setState}){
   function buttons_layout(){
     if(!buttons.length){return null}
     return buttons.map(([text,attrs = {}])=>{
-      let {onClick = ()=>{},className} = attrs;
+      let {onClick = ()=>{},className} = typeof attrs === 'function'?attrs({state}):attrs;
       let Attrs = {...attrs};
       Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
       Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
