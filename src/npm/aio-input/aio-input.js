@@ -1074,8 +1074,9 @@ class Table extends Component {
     remove(row, index) {
         let {properties} = this.props;
         let {value,onRemove,onChange = ()=>{}} = properties;
-        if (typeof onRemove === 'function') { onRemove(row); }
-        else if (onRemove === true) { onChange(value.filter((o, i) => o._id !== row._id)); }
+        let action = ()=>onChange(value.filter((o, i) => o._id !== row._id));
+        if (typeof onRemove === 'function') { onRemove({row,action,rowIndex:index}); }
+        else if (onRemove === true) { action(); }
     }
     exportToExcel() {
         let {properties} = this.props;
