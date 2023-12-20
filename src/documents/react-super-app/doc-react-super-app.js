@@ -7,13 +7,14 @@ export default class DOC_AIOForm extends Component{
             <DOC
                 {...this.props}
                 navId='body'
-                navs={[
-                    {text:'navs',id:'navs',COMPONENT:()=><Navs/>},
-                    {text:'navId',id:'navId',COMPONENT:()=><NavId/>},
-                    {text:'navHeader',id:'navHeader',COMPONENT:()=><NavHeader/>},
-                    {text:'body',id:'body',COMPONENT:()=><Body/>},
-
-                ]}
+                nav={{
+                    items:[
+                        {text:'navs',id:'navs',render:()=><Navs/>},
+                        {text:'navId',id:'navId',render:()=><NavId/>},
+                        {text:'navHeader',id:'navHeader',render:()=><NavHeader/>},
+                        {text:'body',id:'body',render:()=><Body/>},
+                    ]
+                }}
             />
         )
     }

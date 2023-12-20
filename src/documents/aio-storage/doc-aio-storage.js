@@ -2,7 +2,6 @@ import React,{Component} from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import RVD,{RVDRemoveV} from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from './../../npm/aio-input/aio-input';
-import $ from 'jquery';
 import './index.css';
 export default class DOC_AIOStorage extends Component{
     constructor(props){
@@ -51,12 +50,13 @@ export default class DOC_AIOStorage extends Component{
     }
     render(){
         let {list,name,age} = this.state;
-        
+        let {goToHome} = this.props;
         return (
             <RVD
                 layout={{
                     style:{width:'50%',marginLeft:'25%',border:'1px solid',padding:12},
                     column:[
+                        {html:'exit',align:'v',size:48,onClick:()=>goToHome()},
                         {html:'Add Member',align:'v',size:48},
                         {html:'name',align:'v'},               
                         {

@@ -4,7 +4,7 @@ import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from './../../npm/aio-input/aio-input';
-import { ExportToExcel,GetClient } from '../aio-functions/aio-functions';
+import { ExportToExcel,GetClient } from './../../npm/aio-utils/aio-utils';
 import $ from 'jquery';
 import './index.css';
 let TableContext = createContext();

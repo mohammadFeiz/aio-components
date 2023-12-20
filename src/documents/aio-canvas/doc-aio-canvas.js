@@ -2,7 +2,7 @@ import React,{useReducer,createContext,useContext,useState,createRef,useEffect} 
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import AIOCanvas from './../../npm/aio-canvas/aio-canvas';
-import AIOSwip from './../../npm/aio-swip/aio-swip';
+import {Swip} from '../../npm/aio-utils/aio-utils';
 import {Icon} from '@mdi/react';
 import AIODoc from './../../npm/aio-documentation/aio-documentation';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
@@ -405,7 +405,7 @@ class PointController extends Component{
         let {Canvas} = this.context;
         let {x,y} = this.props;
         this.setState({coords:Canvas.canvasToClient([x,y])})
-        AIOSwip({
+        Swip({
             dom:$(this.moveDom.current),
             start:()=>{
                 let {coords} = this.state;
@@ -421,7 +421,7 @@ class PointController extends Component{
                 changeActivePoint(p)
             }
         })
-        AIOSwip({
+        Swip({
             dom:$(this.drawDom.current),
             start:()=>{
                 let {coords} = this.state;
@@ -465,7 +465,7 @@ class PointController extends Component{
 //     let [coords,setCoords] = useState(Canvas.canvasToClient([props.x,props.y]));
 //     useEffect(()=>{
 //         let tempx,tempy;
-//         AIOSwip({
+//         Swip({
 //             dom:$(dom.current),
 //             start:()=>{tempx = coords[0]; tempy = coords[1];},
 //             move:({dx,dy})=>{

@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import AIOSwip from './../../npm/aio-swip/aio-swip';
+import {Swip} from '../../npm/aio-utils/aio-utils';
 import DOC from '../../resuse-components/doc';
 import $ from 'jquery';
 import AIOInput from '../../npm/aio-input/aio-input';
@@ -35,7 +35,7 @@ class StartMoveEnd extends Component{
     }
     componentDidMount(){this.bindSwip();}
     bindSwip(){
-        AIOSwip({
+        Swip({
             dom:()=>$('.box'),
             parent:'.parent',
             start:()=>{
@@ -85,7 +85,7 @@ class StartMoveEnd extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -93,7 +93,7 @@ class Example1 extends Component{
         this.state = {left:0,top:0}
     }
     componentDidMount(){
-        AIOSwip({
+        Swip({
             dom:$('.box'),
             start:()=>{
                 let {left,top} = this.state;
@@ -158,7 +158,7 @@ class StepXStepY extends Component{
     }
     componentDidMount(){this.bindSwip();}
     bindSwip(){
-        AIOSwip({
+        Swip({
             dom:()=>$('.box'),
             start:()=>{
                 let {left,top} = this.state;
@@ -205,7 +205,7 @@ class StepXStepY extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -213,7 +213,7 @@ class Example1 extends Component{
         this.state = {left:0,top:0}
     }
     componentDidMount(){
-        AIOSwip({
+        Swip({
             dom:$('.box'),
             start:()=>{
                 let {left,top} = this.state;
@@ -280,7 +280,7 @@ class SpeedXSpeedY extends Component{
     }
     componentDidMount(){this.bindSwip();}
     bindSwip(){
-        AIOSwip({
+        Swip({
             dom:()=>$('.box'),
             start:()=>{
                 let {left,top} = this.state;
@@ -327,7 +327,7 @@ class SpeedXSpeedY extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -335,7 +335,7 @@ class Example1 extends Component{
         this.state = {left:0,top:0}
     }
     componentDidMount(){
-        AIOSwip({
+        Swip({
             dom:$('.box'),
             start:()=>{
                 let {left,top} = this.state;
@@ -406,7 +406,7 @@ class MultiUse extends Component{
     bindSwip(){
         let {boxes} = this.state;
         for(let i = 0; i < boxes.length; i++){
-            AIOSwip({
+            Swip({
                 dom:()=>$('.box-' + i),
                 start:()=>{
                     let {left,top} = boxes[i];
@@ -464,7 +464,7 @@ class MultiUse extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -474,7 +474,7 @@ class Example1 extends Component{
     componentDidMount(){
         let {boxes} = this.state;
         for(let i = 0; i < boxes.length; i++){
-            AIOSwip({
+            Swip({
                 dom:$('.box-' + i),
                 start:()=>{
                     let {left,top} = boxes[i];
@@ -547,7 +547,7 @@ class Id extends Component{
     bindSwip(){
         let {boxes} = this.state;
         for(let i = 0; i < boxes.length; i++){
-            AIOSwip({
+            Swip({
                 id:i,
                 dom:()=>$('.box-' + i),
                 start:({id})=>{
@@ -596,7 +596,7 @@ class Id extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -606,7 +606,7 @@ class Example1 extends Component{
     componentDidMount(){
         let {boxes} = this.state;
         for(let i = 0; i < boxes.length; i++){
-            AIOSwip({
+            Swip({
                 parameter:{index:i},
                 dom:$('.box-' + i),
                 start:()=>{
@@ -675,7 +675,7 @@ class MousePosition extends Component{
     state = {mousePosition:{},view:'preview'}
     componentDidMount(){this.bindSwip();}
     bindSwip(){
-        AIOSwip({
+        Swip({
             dom:()=>$('.parent'),
             start:({mousePosition})=>{
                 this.setState({mousePosition})
@@ -719,7 +719,7 @@ class MousePosition extends Component{
                     view === 'code' && 
                     <pre style={{flex:1,overflowY:'auto'}}>{`
 import React,{Component} from 'react';
-import AIOSwip from 'aio-swip';
+import Swip from 'aio-swip';
 
 class Example1 extends Component{
     constructor(props){
@@ -727,7 +727,7 @@ class Example1 extends Component{
         this.state = {mousePosition:{}}
     }
     componentDidMount(){
-        AIOSwip({
+        Swip({
             dom:$('.parent'),
             start:({mousePosition})=>{
                 this.setState({mousePosition})

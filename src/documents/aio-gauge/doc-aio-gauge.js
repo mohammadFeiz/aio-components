@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import AIOInput from './../../npm/aio-input/aio-input';
-import Gauge from './../../npm/aio-gauge/aio-gauge';
+import {Gauge} from './../../npm/aio-chart/aio-chart';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOJson from './../../npm/aio-json/aio-json';
 import { Icon } from '@mdi/react';

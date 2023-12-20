@@ -6,7 +6,7 @@ export default function Versions({goToHome}){
     let [components,setComponents] = useState({
         'aio-input':{
             open:false,
-            version:'8.0.13',
+            version:'8.0.14',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -14,7 +14,6 @@ export default function Versions({goToHome}){
                 "react-virtual-dom": "latest",
                 "aio-date": "latest",
                 "axios": "1.2.1",
-                "aio-swip": "latest",
                 "aio-popup": "latest"
             }
         },
@@ -78,12 +77,13 @@ export default function Versions({goToHome}){
                 "react-scripts": "5.0.1"
             }
         },
-        'aio-swip':{
+        'aio-utils':{
             open:false,
-            version:'2.0.0',
+            version:'1.0.0',
             "dependencies": {
-                "jquery": "3.6.1"
-            }
+                "jquery": "^3.6.1",
+                "react-dom/server":"latest"
+            },
         },
         'aio-date':{
             open:false,

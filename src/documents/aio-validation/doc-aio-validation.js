@@ -12,11 +12,13 @@ export default class DOC_AIOValidation extends Component{
             <DOC
                 {...this.props}
                 navId='!='
-                navs={[
-                    {text:'try it',id:'try it',COMPONENT:()=><TryIt/>},
-                    {text:'=',id:'=',COMPONENT:()=><Equal/>},
-                    {text:'!=',id:'!=',COMPONENT:()=><NotEqual/>}
-                ]}
+                nav={{
+                    items:[
+                        {text:'try it',id:'try it',render:()=><TryIt/>},
+                        {text:'=',id:'=',render:()=><Equal/>},
+                        {text:'!=',id:'!=',render:()=><NotEqual/>}
+                    ]
+                }}
             />
         )
     }
