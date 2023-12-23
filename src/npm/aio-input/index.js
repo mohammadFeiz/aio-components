@@ -1951,8 +1951,8 @@ class DPCell extends Component {
         return str;
     }
     render() {
-        let { properties, translate } = this.context;
-        let {disabled,dateAttrs,theme,onChange = ()=>{},value,calendarType,unit,dateDisabled} = properties;
+        let { properties, translate,onChange } = this.context;
+        let {disabled,dateAttrs,theme,value,calendarType,unit,dateDisabled} = properties;
         let { dateArray } = this.props;
         let { isEqual, isMatch, getMonths, getToday } = AIODate();
         let isActive = !value ? false : AIODate().isEqual(dateArray, value);
