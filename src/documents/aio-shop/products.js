@@ -2,14 +2,14 @@ let products = [
     {
         id:'123432',
         name:'تیشرت مردانه پوما',
+        image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
         price:180000,
-        discountpercent:10,
+        discountPercent:[10,20],
         description:'جنس نخی . آستین کوتاه',
         review:'تیشرت مردانه پوما تهیه شده از بهتری نوع نخ یکی از محصولات جدید شرکت میباشد که سالها به عنوان یکی از محصولات پر فروش در دسته پوشاک آقایان قرار دارد. خاصیت حفظ رنگ و عدم پرز دهی از ویژگی های منحصر به فرد این محصول می باشد.',
         optionTypes: [
             {
                 name: 'رنگ', id: 'color',
-                iconKey: { 'white': 'white', 'black': 'black', 'grey': 'grey' },
                 optionValues: [
                     { name: 'زرد', id: 'yellow' },
                     { name: 'سفید', id: 'white' },
@@ -18,7 +18,6 @@ let products = [
             },
             {
                 name: 'سایز', id: 'size',
-                iconKey: 'size',
                 optionValues: [
                     { name: 'L', id: 'l' },
                     { name: 'M', id: 'm' },

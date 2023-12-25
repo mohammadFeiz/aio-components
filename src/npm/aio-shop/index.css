@@ -446,6 +446,10 @@
 }
 .as-list-products{
     padding:var(--as-gap);
+    overflow-x:visible !important;
+}
+.as-list-products .aio-input-table-unit{
+    overflow:visible;
 }
 .as-list .as-product-card.horizontal{
     margin-bottom:var(--as-gap);

@@ -21,7 +21,7 @@ export function FileToBase64(file, callback) {return _FileToBase64(file, callbac
 export function HandleBackButton(callback) {return _HandleBackButton(callback)}
 export function GetClient(e) {return _GetClient(e)}
 export function ExportToExcel(rows, config) {return _ExportToExcel(rows, config)}
-export function SplitNumber(price, count, splitter) {_SplitNumber(price, count, splitter)}
+export function SplitNumber(price, count, splitter) {return _SplitNumber(price, count, splitter)}
 export function Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id }) {
     _Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id })
 }

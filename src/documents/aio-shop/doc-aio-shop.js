@@ -3,7 +3,8 @@ import DOC from '../../resuse-components/doc';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import products from './products';
-import AIOShop from './../../npm/aio-shop/aio-shop';
+import AIOShop from './../../npm/aio-shop/aio-shop.js';
+import './index.css';
 export default class DOC_AIOShop extends Component {
     render() {
         return (
@@ -70,7 +71,7 @@ function CreateShop() {
     }
     function preview() {
         return (
-            <div className='example'>
+            <div className='example' style={{padding:0}}>
                 <div className='my-shop'>
                     <div className='my-product-list'>
                         {Shop.renderList({
@@ -79,12 +80,9 @@ function CreateShop() {
                             })
                         })}
                     </div>
-                    <div className='my-cart'>
-                        {Shop.renderCart()}
-                    </div>
-                    <div className='my-checkout'>
-                        {Shop.renderShipping()}
-                    </div>    
+                    <div className='my-cart'>{Shop.renderCart()}</div>
+                    <div className='my-checkout'>{Shop.renderShipping()}</div>
+                    {Shop.renderPopups()}    
                 </div>
                 {
                     AIODoc().Code(`
