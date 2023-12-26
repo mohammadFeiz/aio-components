@@ -94,8 +94,7 @@ export default function Versions({goToHome}){
             open:false,
             version:'4.0.1',
             dependencies:{}
-        },
-        
+        }
     })
     let componentsList = Object.keys(components);
     return (

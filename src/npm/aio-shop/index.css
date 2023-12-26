@@ -322,6 +322,11 @@
 }
 .as-shipping-item{
     width:100%;
+    padding:0px;
+}
+.as-shipping-item .aio-input-radio-option{
+    padding:0;
+    width:100%;
 }
 .as-shipping-option{
     font-weight:bold;
@@ -537,7 +542,11 @@
 }
 .as-box-content{
 }
-
+.as-box-title{
+    font-size:14px;
+    font-weight:bold;
+    
+}
 .as-box-subtitle{
     margin-right:6px;
     font-weight: normal;

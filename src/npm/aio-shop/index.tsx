@@ -1345,7 +1345,7 @@ class Box extends Component<I_P_Box, I_S_Box>{
                     className: 'as-box',
                     column: [
                         this.header_layout(title, subtitle, toggle, showAll),
-                        { size: 12, show: !!open && !!title },
+                        { size: 6, show: !!open && !!title },
                         { show: !!open && !!content, html: typeof content === 'function' ? content(toggleShowAll) : content, className: 'as-fs-m as-fc-m as-box-content' }
                     ]
                 }}

@@ -1374,7 +1374,7 @@ class Box extends Component {
     header_layout(title, subtitle, toggle, showAll) {
         let { toggleShowAll } = this.state;
         return {
-            className: 'as-fs-l as-fc-d as-bold',
+            className: 'as-box-title',
             onClick: toggle ? () => this.setState({ open: !this.state.open }) : undefined,
             row: [
                 this.toggle_layout(toggle),
@@ -1397,7 +1397,7 @@ class Box extends Component {
                 className: 'as-box',
                 column: [
                     this.header_layout(title, subtitle, toggle, showAll),
-                    { size: 12, show: !!open && !!title },
+                    { size: 6, show: !!open && !!title },
                     { show: !!open && !!content, html: typeof content === 'function' ? content(toggleShowAll) : content, className: 'as-fs-m as-fc-m as-box-content' }
                 ]
             }}/>);

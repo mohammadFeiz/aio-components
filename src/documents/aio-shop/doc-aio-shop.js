@@ -1,4 +1,4 @@
-import React, { Component,useState } from 'react';
+import React, { Component,Fragment,useState } from 'react';
 import DOC from '../../resuse-components/doc';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
@@ -12,6 +12,7 @@ export default class DOC_AIOShop extends Component {
                 {...this.props}
                 nav={{
                     items:[
+                        { text: 'renderProductCard', id: 'renderProductCard', render: () => <RenderProductCard /> },
                         { text: 'Create Shop', id: 'createshop', render: () => <CreateShop /> }
                     ]
                 }}
@@ -19,12 +20,173 @@ export default class DOC_AIOShop extends Component {
         )
     }
 }
+function RenderProductCard(){
+    let [Shop] = useState(
+        new AIOShop({
+            id: 'mytestrenderproductcard',
+            unit: 'تومان',
+            addToCartText: 'سفارش',
+        })
+    )
+    function preview() {
+        return (
+            <div className='example' style={{padding:12,direction:'rtl',background:'#aaa'}}>
+                <div style={{width:400}}>
+                    {Shop.renderProductCard({
+                        product:{
+                            name:'تیشرت مردانه پوما',
+                            description:'جنس نخی . آستین کوتاه',
+                            price:123000,
+                            discountPercent:12,
+                            image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+                        }
+                    })}
+                </div>
+                {
+                    AIODoc().Code(`
+Shop.renderProductCard({
+    product:{
+        name:'تیشرت مردانه پوما',
+        description:'جنس نخی . آستین کوتاه',
+        price:123000,
+        discountPercent:12,
+        image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+    }
+})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{width:400}}>
+                    {Shop.renderProductCard({
+                        product:{
+                            name:'تیشرت مردانه پوما',
+                            description:'جنس نخی . آستین کوتاه',
+                            price:123000,
+                            discountPercent:[12,10],
+                            image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80'
+                        }
+                    })}
+                </div>
+                {
+                    AIODoc().Code(`
+Shop.renderProductCard({
+    product:{
+        name:'تیشرت مردانه پوما',
+        description:'جنس نخی . آستین کوتاه',
+        price:123000,
+        discountPercent:[12,10],
+        image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+    }
+})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{width:400}}>
+                    {Shop.renderProductCard({
+                        product:{
+                            name:'تیشرت مردانه پوما',
+                            description:'جنس نخی . آستین کوتاه',
+                            price:123000,
+                            discountPercent:12,
+                            image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80'
+                        },
+                        addToCart:true
+                    })}
+                </div>
+                {
+                    AIODoc().Code(`
+Shop.renderProductCard({
+    product:{
+        name:'تیشرت مردانه پوما',
+        description:'جنس نخی . آستین کوتاه',
+        price:123000,
+        discountPercent:12,
+        image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+    },
+    addToCart:true
+})
+                    `)
+                }
+                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{width:400}}>
+                    {Shop.renderProductCard({
+                        product:{
+                            name:'تیشرت مردانه پوما',
+                            description:'جنس نخی . آستین کوتاه',
+                            price:123000,
+                            discountPercent:12,
+                            image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+                            optionTypes: [
+                                {
+                                    name: 'رنگ', id: 'color',
+                                    optionValues: [
+                                        { name: 'زرد', id: 'yellow' },
+                                        { name: 'سفید', id: 'white' },
+                                        { name: 'خاکستری', id: 'grey' },
+                                    ]
+                                },
+                                {
+                                    name: 'سایز', id: 'size',
+                                    optionValues: [
+                                        { name: 'L', id: 'l' },
+                                        { name: 'M', id: 'm' },
+                                        { name: 'S', id: 's' },
+                                    ]
+                                }
+                            ],
+                            variants: [
+                                {
+                                    id: '512634', 
+                                    key: 'white_s'
+                                },
+                                {
+                                    id: '674473',
+                                    key: 'white_m'
+                                },
+                                { 
+                                    id: '9535463', 
+                                    key: 'grey_l'
+                                }
+                            ],
+                        },
+                        addToCart:true
+                    })}
+                </div>
+                {
+                    AIODoc().Code(`
+Shop.renderProductCard({
+    product:{
+        name:'تیشرت مردانه پوما',
+        description:'جنس نخی . آستین کوتاه',
+        price:123000,
+        discountPercent:12,
+        image:'https://dkstatics-public.digikala.com/digikala-products/117515968.jpg?x-oss-process=image/resize,m_lfit,h_300,w_300/quality,q_80',
+    },
+    addToCart:true
+})
+                    `)
+                }
+            </div>
+        )
+    }
+    return (<Fragment style={{direction:'rtl'}}>
+        <Example preview={() => preview()}/>
+        {Shop.renderPopups()}
+    </Fragment>)
+}
 function CreateShop() {
     //use useState To create instance only once
     let [Shop] = useState(
         new AIOShop({
-            id: 'mytest',unit: 'تومان',addToCartText: 'سفارش', cartCache: true,
-            getShippingOptions,getDiscounts,getExtras,checkDiscountCode,payment
+            id: 'mytest',
+            unit: 'تومان',
+            addToCartText: 'سفارش', 
+            cartCache: true,
+            getShippingOptions,
+            getDiscounts,
+            getExtras,
+            checkDiscountCode,
+            payment
         })
     )
     function getShippingOptions(){
