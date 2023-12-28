@@ -52,7 +52,7 @@ export default function Versions({goToHome}){
         },
         'aio-popup':{
             open:false,
-            version:'3.0.19',
+            version:'3.0.20',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",

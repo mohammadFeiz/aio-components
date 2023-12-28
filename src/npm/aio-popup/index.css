@@ -151,7 +151,7 @@
   border-radius: 4px;
 }
 .aio-popup-footer-button:disabled{
-  opacity:0.7;
+  opacity:0.4;
   background:#ddd;
   cursor:not-allowed;
 }

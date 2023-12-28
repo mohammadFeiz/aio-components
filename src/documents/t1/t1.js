@@ -68,6 +68,7 @@ function Popups() {
       submitText: 'تایید',
       canselText: 'بستن',
       onSubmit: (text) => {
+        return false
         alert(text)
       }
     })

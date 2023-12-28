@@ -52,7 +52,7 @@ export default class AIOPopup {
       state:{temp:''},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},
-      body:{render:({state,setState})=><textarea placeholder={text} onChange={(e)=>setState({temp:e.target.value})}>{state.temp}</textarea>},
+      body:{render:({state,setState})=><textarea placeholder={text} value={state.temp} onChange={(e)=>setState({temp:e.target.value})}/>},
       footer:{
         buttons:[
           [canselText,{onClick:()=>this.removeModal()}],
@@ -367,8 +367,8 @@ function ModalFooter({footer,handleClose,state,setState}){
   function buttons_layout(){
     if(!buttons.length){return null}
     return buttons.map(([text,attrs = {}])=>{
-      let {onClick = ()=>{},className} = typeof attrs === 'function'?attrs({state,setState}):attrs;
-      let Attrs = {...attrs};
+      let Attrs = typeof attrs === 'function'?{...attrs({state,setState})}:{...attrs};
+      let {onClick = ()=>{},className} = Attrs;
       Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
       Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
       return <button {...Attrs}>{text}</button>
