@@ -33,19 +33,33 @@ export default class AIOPopup {
     this._addModal(obj,animate)
   }
   addConfirm = (obj) => {
-    let {title,subtitle,text,buttons} = obj;
+    let {title,subtitle,text,submitText = 'بله',canselText = 'خیر',onSubmit,onCansel = ()=>{}} = obj;
     let config = {
       position:'center',
       attrs:{className:'aio-popup-confirm'},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},
       body:{render:()=>text},
-      footer:{buttons}
+      footer:{
+        buttons:[
+          [canselText,{onClick:()=>{onCansel(); this.removeModal()}}],
+          [
+            submitText,
+            {
+              onClick:async ()=>{
+                let res = await onSubmit(); 
+                if(res !== false){this.removeModal()}
+              },
+              className:'active'
+            }
+          ]
+        ]
+      }
     }
     this.addModal(config)
   }
   addPrompt = (obj) => {
-    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit} = obj;
+    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit,onCansel = ()=>{}} = obj;
     let config = {
       position:'center',
       attrs:{className:'aio-popup-prompt'},
@@ -55,7 +69,7 @@ export default class AIOPopup {
       body:{render:({state,setState})=><textarea placeholder={text} value={state.temp} onChange={(e)=>setState({temp:e.target.value})}/>},
       footer:{
         buttons:[
-          [canselText,{onClick:()=>this.removeModal()}],
+          [canselText,{onClick:()=>{onCansel(); this.removeModal()}}],
           [
             submitText,
             ({state,setState})=>{
