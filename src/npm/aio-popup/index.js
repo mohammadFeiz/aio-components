@@ -56,8 +56,18 @@ export default class AIOPopup {
       footer:{
         buttons:[
           [canselText,{onClick:()=>this.removeModal()}],
-          [submitText,({state})=>{return {onClick:({state})=>{onSubmit(state.temp); this.removeModal()},disabled:!state.temp,className:'active'}}],
-          
+          [
+            submitText,
+            ({state})=>{
+              return {
+                onClick:async ({state})=>{
+                  let res = await onSubmit(state.temp); 
+                  if(res !== false){this.removeModal()}
+                },
+                disabled:!state.temp,className:'active'
+              }
+            }
+          ]
         ]
       }
     }

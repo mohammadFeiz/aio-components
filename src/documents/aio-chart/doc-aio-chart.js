@@ -1,7 +1,7 @@
 import React,{Component} from 'react';
 import DOC from '../../resuse-components/doc';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import Chart from './../../npm/aio-chart/aio-chart';
+import Chart,{getFakeData} from './../../npm/aio-chart/aio-chart';
 import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 export default class DOC_AIOForm extends Component{
@@ -23,7 +23,9 @@ export default class DOC_AIOForm extends Component{
         <DOC
           {...this.props}
           nav={{
+            id:'performance',
             items:[
+              {text:'performance',id:'performance',render:()=><Performance/>},
               {text:'data',id:'data',render:()=><Data points={points} keys={keys}/>},
               {text:'MultiData',id:'MultiData',render:()=><MultiData points={points} keys={keys}/>},
               {text:'data.color',id:'data.color',render:()=><Data_color points={points} keys={keys}/>},
@@ -51,7 +53,49 @@ export default class DOC_AIOForm extends Component{
     }
 }
 
-
+class Performance extends Component{
+  constructor(props){
+    super(props);
+    let {keys,points} = getFakeData(10000,100)
+    this.state = {keys,points}
+  }
+  preview(){
+    let {points,keys} = this.state;
+    return (
+      <Chart
+        data={[
+          {
+            points,
+          }
+        ]}
+        keyAxis={{
+          zoom:true
+        }}
+        keys={keys}
+      />
+    )
+  }
+  code(){
+    return (`
+      <Chart
+        data={[
+          {
+            points
+          }
+        ]}
+        keys={keys}
+      />
+    `)
+  }
+  render(){
+    return (
+      <ChartExample
+        preview={()=>this.preview()}
+        code={()=>this.code()}
+      />
+    )
+  }
+}
 
   
 

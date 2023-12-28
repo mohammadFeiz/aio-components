@@ -676,12 +676,12 @@ class CANVAS extends Component {
     this.setScreenPosition([x, y]);
   }
   onMouseDown(e) {
-    const { events } = this.props;
+    const { events,onPan } = this.props;
     this.mousePosition = this.getMousePosition(e);
     this.eventMode = "onMouseDown";
     this.update();
     if (this.item) {this.item.onMouseDown(e, this.mousePosition,this.item, this.props)} 
-    else if (this.setScreenPosition) {this.panmousedown(e)} 
+    else if (onPan && this.setScreenPosition) {this.panmousedown(e)} 
     else if (events.onMouseDown) {events.onMouseDown(e, this.mousePosition)}
     this.item = false; this.eventMode = false;
   }
