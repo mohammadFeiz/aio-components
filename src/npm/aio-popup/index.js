@@ -58,11 +58,12 @@ export default class AIOPopup {
           [canselText,{onClick:()=>this.removeModal()}],
           [
             submitText,
-            ({state})=>{
+            ({state,setState})=>{
               return {
                 onClick:async ({state})=>{
                   let res = await onSubmit(state.temp); 
                   if(res !== false){this.removeModal()}
+                  else {setState({temp:''})}
                 },
                 disabled:!state.temp,className:'active'
               }
@@ -366,7 +367,7 @@ function ModalFooter({footer,handleClose,state,setState}){
   function buttons_layout(){
     if(!buttons.length){return null}
     return buttons.map(([text,attrs = {}])=>{
-      let {onClick = ()=>{},className} = typeof attrs === 'function'?attrs({state}):attrs;
+      let {onClick = ()=>{},className} = typeof attrs === 'function'?attrs({state,setState}):attrs;
       let Attrs = {...attrs};
       Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
       Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
