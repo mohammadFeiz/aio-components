@@ -281,17 +281,15 @@ export default class AIOInput extends Component {
     }
     D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
     getTimeText(obj) {
-        obj = { ...obj }
-        for (let prop in obj) { obj[prop] = this.D2S(obj[prop]) }
         let text = [], dateArray = [];
-        if (obj.year !== undefined) { dateArray.push(obj.year) }
-        if (obj.month !== undefined) { dateArray.push(obj.month) }
-        if (obj.day !== undefined) { dateArray.push(obj.day) }
+        if (obj.year !== undefined) { dateArray.push(this.D2S(obj.year)) }
+        if (obj.month !== undefined) { dateArray.push(this.D2S(obj.month)) }
+        if (obj.day !== undefined) { dateArray.push(this.D2S(obj.day)) }
         if (dateArray.length) { text.push(dateArray.join('/')) }
         let timeArray = []
-        if (obj.hour !== undefined) { timeArray.push(obj.hour) }
-        if (obj.minute !== undefined) { timeArray.push(obj.minute) }
-        if (obj.second !== undefined) { timeArray.push(obj.second) }
+        if (obj.hour !== undefined) { timeArray.push(this.D2S(obj.hour)) }
+        if (obj.minute !== undefined) { timeArray.push(this.D2S(obj.minute)) }
+        if (obj.second !== undefined) { timeArray.push(this.D2S(obj.second)) }
         if (timeArray.length) { text.push(timeArray.join(':')) }
         return text.join(' ');
     }
