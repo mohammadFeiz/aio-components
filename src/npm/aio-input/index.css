@@ -486,10 +486,6 @@
     overflow: visible;
 }
 
-.aio-input-number {
-    height: 36px;
-}
-
 .aio-input-textarea {
     min-height: 60px;
     height: fit-content;
