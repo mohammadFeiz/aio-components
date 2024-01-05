@@ -25,6 +25,7 @@ import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop';
+import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1";
 import T1 from './documents/t1/t1';
 import Versions from './versions';
 AIOInput.defaults.mapApiKeys = {
@@ -67,6 +68,7 @@ export default class AIOComponents extends Component{
         'aio-canvas':DOC_AIOCanvas,
         'aio-login':DOC_AIOLogin,
         'aio-shop':DOC_AIOShop,
+        'msfloading1':DOC_MSFLoading1,
         't1':T1
       }
     }
