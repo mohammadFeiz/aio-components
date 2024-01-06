@@ -327,7 +327,10 @@
     width: 100%;
     border: none;
 }
-
+.aio-input-tabs.aio-input-touch ::-webkit-scrollbar{
+    width: 0px !important;
+    height: 0px !important;    
+}
 .aio-input-radio-option:not(.aio-input-radio-multiple-option) .aio-input-check-out {
     border-radius: 100%;
 }
@@ -797,6 +800,12 @@
 }
 
 .aio-input-table-remove {
+    border: none;
+    width: 36px;
+    background: none;
+    color: inherit;
+}
+.aio-input-table-remove-title {
     border: none;
     width: 36px;
     background: none;

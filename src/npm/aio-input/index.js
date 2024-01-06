@@ -277,6 +277,7 @@ export default class AIOInput extends Component {
             getProp: this.getProp.bind(this),
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
+            touch:'ontouchstart' in document.documentElement
         }
     }
     D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
@@ -763,9 +764,12 @@ class Form extends Component {
     }
     body_layout() {
         let {properties} = this.props;
-        let {inputs} = properties;
+        let {inputs,bodyAttrs = {}} = properties;
         if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => this.input_layout(o)) } }
-        let res = { flex: 1, className: 'aio-input-form-body', ...inputs }
+        let className = 'aio-input-form-body';
+        if(bodyAttrs.className){className += ' ' + bodyAttrs.className}
+        let style = bodyAttrs.style;
+        let res = { flex: 1, className,style, ...inputs }
         return res
     }
     reset() {
@@ -1321,13 +1325,13 @@ function TableToolbar() {
     )
 }
 function TableHeader() {
-    let { RowGap, properties, state,addToAttrs } = useContext(AITableContext);
+    let { RowGap,ColumnGap, properties, state,addToAttrs } = useContext(AITableContext);
     let {headerAttrs,onRemove} = properties;
     headerAttrs = addToAttrs(headerAttrs,{className:'aio-input-table-header'})
     let { columns } = state;
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
-    let RemoveTitle = !onRemove ? null : <button className='aio-input-table-remove'></button>;
-    return (<><div {...headerAttrs}>{Titles}{RemoveTitle}{RowGap}</div></>)
+    let RemoveTitle = !onRemove ? null : <>{ColumnGap}<div className='aio-input-table-remove-title'></div></>;
+    return <div {...headerAttrs}>{Titles}{RemoveTitle}{RowGap}</div>
 }
 function TableTitle({ column, isLast }) {
     let { ColumnGap, getCellAttrs } = useContext(AITableContext);
@@ -1340,7 +1344,7 @@ function TableTitle({ column, isLast }) {
     )
 }
 function TableRow({ row, isLast, rowIndex }) {
-    let { remove, RowGap, properties, state, getRowAttes } = useContext(AITableContext);
+    let { remove, RowGap,ColumnGap, properties, state, getRowAttes } = useContext(AITableContext);
     function getCells() {
         return state.columns.map((column, i) => {
             let key = row._id + ' ' + column._id;
@@ -1353,7 +1357,7 @@ function TableRow({ row, isLast, rowIndex }) {
         <>
             <div key={row._id} {...getRowAttes(row, rowIndex)}>
                 {getCells(row, rowIndex)}
-                {onRemove ? <button className='aio-input-table-remove' onClick={() => remove(row)}><Icon path={mdiClose} size={0.8} /></button> : null}
+                {onRemove ? <>{ColumnGap}<button className='aio-input-table-remove' onClick={() => remove(row)}><Icon path={mdiClose} size={0.8} /></button></> : null}
             </div>
             {RowGap}
         </>
@@ -1480,7 +1484,7 @@ class Layout extends Component {
         this.dom = createRef()
     }
     getClassName(label) {
-        let { properties, getOptionProp, datauniqid, types, isMultiple } = this.context;
+        let { properties, getOptionProp, datauniqid, types, isMultiple,touch } = this.context;
         let {direction,disabled,rtl} = properties;
         let { option } = this.props;
         let cls;
@@ -1491,7 +1495,7 @@ class Layout extends Component {
             if (getOptionProp(option, 'disabled')) { cls += ' disabled' }
         }
         else {
-            cls = `aio-input aio-input-${this.properties.type}`;
+            cls = `aio-input aio-input-${this.properties.type}${touch?' aio-input-touch':''}`;
             if (this.properties.type === 'slider') {
                 if (direction === 'top' || direction === 'bottom') { cls += ' aio-input-slider-vertical' }
                 else { cls += ' aio-input-slider-horizontal' }
@@ -3579,6 +3583,7 @@ function getMainProperties(props,getProp,types){
             inputClassName:p('inputClassName'),
             inputStyle:p('inputStyle',{}),
             labelAttrs:p('labelAttrs'),
+            bodyAttrs:p('bodyAttrs',{}),
             lang:p('lang','en'),
             updateInput:p('updateInput',(o)=>o),
             initialDisabled:p('initialDisabled',true)
