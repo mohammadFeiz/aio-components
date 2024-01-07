@@ -646,7 +646,21 @@ class Input extends Component {
                 if (filter.length) {
                     value = value.toString();
                     let lastChar = value[value.length - 1];
-                    if (filter.indexOf(lastChar) !== -1) { value = value.slice(0, value.length - 1) }
+                    for(let i = 0; i < filter.length; i++){
+                        let char = filter[i].toString();
+                        if(char === 'symbol'){
+                            if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)){value = value.slice(0, value.length - 1); break}
+                        }
+                        else if(char === 'number'){
+                            if(!isNaN(+lastChar)){value = value.slice(0, value.length - 1); break}
+                        }
+                        else if(char === 'string'){
+                            if(isNaN(+lastChar)){value = value.slice(0, value.length - 1); break}
+                        }
+                        else {
+                            if (char === lastChar){value = value.slice(0, value.length - 1); break}
+                        }
+                    }
                 }
                 if (value.toString().length > maxLength) {
                     value = value.toString().slice(0, maxLength);
