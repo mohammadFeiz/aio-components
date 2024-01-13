@@ -629,6 +629,7 @@
     background: dodgerblue;
     color: #fff;
     border: none;
+    font-family:inherit;
 }
 
 .aio-input-form-header {
