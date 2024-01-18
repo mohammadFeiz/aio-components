@@ -94,8 +94,8 @@ export default class AIOPopup {
     Alert({icon,type,text,subtext,time,className,closeText})
   }
   addSnakebar = (obj = {})=>{
-    let {text,index,type,subtext,action = {},time = 6,rtl,close = true} = obj;
-    this._addSnakebar({text,index,type,subtext,action,time,rtl,close})
+    let {text,index,type,subtext,action = {},time = 6,rtl,onClose} = obj;
+    this._addSnakebar({text,index,type,subtext,action,time,rtl,onClose})
   }
 }
 class Popups extends Component {
