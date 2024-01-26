@@ -64,13 +64,17 @@ export default class AIOservice{
     let def = {};
     for(let prop in cacheVersions){def[prop] = 0}
     let storedCacheVersions = this.getCache('storedCacheVersions',def);
+    let diffrences = {};
     for(let prop in cacheVersions){
+      if(storedCacheVersions[prop] === undefined){continue}
       if (storedCacheVersions[prop] !== cacheVersions[prop]) {
-        if(prop === 'all'){localStorage.clear()}
-        else{this.removeCache(prop)}
+        diffrences[prop] = true;
+        this.removeCache(prop)
       }
+      else {diffrences[prop] = false;}
     }
-    this.setCache('storedCacheVersions',cacheVersions)
+    this.setCache('storedCacheVersions',cacheVersions);
+    return diffrences;
   }
   removeCache = (name) => this.storage.remove({name});
   setCache = (name,value) => this.storage.save({name,value})
@@ -216,7 +220,7 @@ export default class AIOservice{
   }
   
   validate = (result,service)=>{
-    let {api,def,description,message = {}} = service
+    let {api,description,message = {}} = service
     description = (typeof description === 'function'?description():description) || api;
     if(typeof result === 'string'){
       if(message.error !== false){
@@ -224,7 +228,7 @@ export default class AIOservice{
         if(text === undefined){text = `${description} با خطا روبرو شد`}
         helper.showAlert({type:'error',text,subtext:result});
       }
-      return def === undefined?result:def;
+      return result;
     }
     else{
       if(message.success){
@@ -236,15 +240,17 @@ export default class AIOservice{
     return result;
   } 
   request = async (service)=> {
-    let { onSuccess,cache,onError} = service;
+    let { onSuccess,cache,onError,def} = service;
     if(this.handleError('request',service)){return}
     let result = await this.fetchData(service);
     result = this.validate(result,service);
-    if(cache){this.storage.save({name:cache.name,value:result})}
     if(typeof result === 'string'){
       if(onError){onError(result);}
+      return def
     }
     else {
+      if(result === undefined){result = def}
+      if(cache){this.storage.save({name:cache.name,value:result})}
       if(onSuccess){onSuccess(result);}
       return result;
     }

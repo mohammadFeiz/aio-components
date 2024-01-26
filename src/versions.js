@@ -6,7 +6,7 @@ export default function Versions({goToHome}){
     let [components,setComponents] = useState({
         'aio-input':{
             open:false,
-            version:'8.0.18',
+            version:'8.1.0',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -19,7 +19,7 @@ export default function Versions({goToHome}){
         },
         'aio-login':{
             open:false,
-            version:'7.0.1',
+            version:'7.1.0',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -31,7 +31,7 @@ export default function Versions({goToHome}){
         },
         'react-super-app':{
             open:false,
-            version:'4.0.21',
+            version:'4.0.22',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -42,7 +42,7 @@ export default function Versions({goToHome}){
         },
         'aio-service':{
             open:false,
-            version:'6.1.3',
+            version:'6.2.0',
             "dependencies": {
                 "jquery": "3.6.1",
                 "aio-date": "latest",
@@ -52,7 +52,7 @@ export default function Versions({goToHome}){
         },
         'aio-popup':{
             open:false,
-            version:'3.0.21',
+            version:'3.1.0',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
