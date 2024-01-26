@@ -34,7 +34,7 @@ export default class AIOlogin {
         }
     }
     render = (p = {}) => {
-        let { attrs = this.props.attrs, profile } = p;
+        let { attrs = this.props.attrs, profile,appState } = p;
         if (profile) {
             if (typeof profile !== 'object' || !Array.isArray(profile.fields) || !profile.fields.length || typeof profile.onSubmit !== 'function') {
                 let error = `
@@ -53,7 +53,7 @@ export default class AIOlogin {
                 alert(error); console.log(error); return null;
             }
         }
-        return <AIOLOGIN {...this.props} getActions={({ setMode }) => this.setMode = setMode} profile={profile} attrs={attrs} />
+        return <AIOLOGIN {...this.props} getActions={({ setMode }) => this.setMode = setMode} profile={profile} attrs={attrs} appState={appState} />
     }
 }
 class AIOLOGIN extends Component {
@@ -133,7 +133,7 @@ class AIOLOGIN extends Component {
         this.setState({ mode })
     }
     render() {
-        let { otpLength, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, renderSplash = () => null,renderApp,renderLogin } = this.props;
+        let { otpLength, id, timer, modes, userId, register = {}, profile, attrs = {}, forget, getStorage, logout, renderSplash = () => null,renderApp,renderLogin,appState } = this.props;
         let { isTokenChecked, showReload, mode, loading,showSplash } = this.state;
         if(profile){
             let props = { timer, id, attrs, userId,loading,profile,onSubmitProfile:this.onSubmitProfile.bind(this) }
@@ -147,7 +147,7 @@ class AIOLOGIN extends Component {
         //اگر توکن چک شده و توکن ولید بوده renderApp رو کال کن و ادامه نده
         if (mode === 'auth') {
             let { token, userId, userInfo } = getStorage();
-            return renderApp({ token, userId, userInfo, logout }); 
+            return renderApp({ token, userId, userInfo, logout,appState }); 
         }
         // وقتی به اینجا رسیدی یعنی توکن قطعا چک شده و ولید نبوده پس لاگین رو رندر کن
         let content = (

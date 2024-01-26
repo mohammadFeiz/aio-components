@@ -11,11 +11,12 @@ import $ from 'jquery';
 import AIODate from './../../npm/aio-date/aio-date';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
+import AIOStorage from 'aio-storage';
 import './index.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
     static defaults = { 
-        validate: false, mapApiKeys: {}, popover: {},
+        validate: false, popover: {},
     };
     constructor(props) {
         super(props);
@@ -259,7 +260,6 @@ export default class AIOInput extends Component {
             ...this.props,
             properties:this.properties,
             addToAttrs: this.addToAttrs.bind(this),
-            mapApiKeys: AIOInput.defaults.mapApiKeys,
             isMultiple: this.isMultiple.bind(this),
             types: this.types,
             type: this.types.type,
@@ -587,18 +587,17 @@ class Input extends Component {
     }
     componentDidMount() {
         let { properties, type } = this.context;
-        let {min,max,swip,value} = properties;
+        let {min,max,swip,value,onChange} = properties;
         this.setState({ value, prevValue: value })
         if (type === 'number' && swip) {
             AIOSwip({
-                speedY: 0.2,
+                speedY: 0.2,reverseY:true,minY:min,maxY:max,
                 dom: ()=>$(this.dom.current),
                 start: () => [0,this.state.value || 0],
                 move: ({ y }) => {
-                    let newValue = -y;
-                    if (min !== undefined && newValue < min) { return }
-                    if (max !== undefined && newValue > max) { return }
-                    this.change(newValue)
+                    if (min !== undefined && y < min) { y = min; }
+                    if (max !== undefined && y > max) { y = max }
+                    this.change(y,onChange)
                 }
             })
         }
@@ -1183,10 +1182,11 @@ class Table extends Component {
             if(['onChange','onClick'].indexOf(prop) !== -1){convertedInput[prop] = input[prop]}
             else {convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
         }
+        let value = getDynamics({ value: column.value, row, rowIndex, column })
         return (
             <AIOInput
                 {...convertedInput}
-                value={getDynamics({ value: column.value, row, rowIndex, column })}
+                value={value}
                 onChange={column.input ? (value) => setCell(row, column, value) : undefined}
             />
         )
@@ -2706,8 +2706,8 @@ class List extends Component {
 }
 const MapContext = createContext();
 function Map(props) {
-    let context = useContext(AICTX);
-    let mapApiKeys = context.mapApiKeys;
+    let storage = AIOStorage('aio-input-storage');
+    let mapApiKeys = storage.load({name:'mapApiKeys',def:{map:'',service:''}});
     let { properties } = props;
     let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
     let isPopup = false;
@@ -3072,7 +3072,7 @@ function MapFooter() {
     if(!Submit && !Details){return null}
     return (<RVD layout={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
-function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,id}){
+function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,id,reverseY,reverseX,minY,maxY,minX,maxX}){
     let a = {
       timeout:undefined,
       count:0,
@@ -3125,8 +3125,8 @@ function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speed
         let client = this.getClient(e);
         let dx = client.x - this.so.client.x;
         let dy = client.y - this.so.client.y;
-        dx = Math.round(dx * speedX)
-        dy = Math.round(dy * speedY)
+        dx = Math.round(dx * speedX) * (reverseX?-1:1)
+        dy = Math.round(dy * speedY) * (reverseY?-1:1)
         dx = Math.floor(dx / stepX) * stepX;
         dy = Math.floor(dy / stepY) * stepY;
         if(dx === this.dx && dy === this.dy){return}
@@ -3138,6 +3138,10 @@ function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speed
         if(this.so.x !== undefined && this.so.y !== undefined){
           x = this.so.x + dx;
           y = this.so.y + dy;
+          if(minX !== undefined && x < minX){x = minX}
+          if(maxX !== undefined && x > maxX){x = maxX}
+          if(minY !== undefined && y < minY){y = minY}
+          if(maxY !== undefined && y > maxY){y = maxY} 
         }
         move({dx,dy,dist,x,y,id,mousePosition:{...this.getMousePosition(e)},e});
       },
@@ -3362,6 +3366,10 @@ export function AIOValidation(props) {
     try { validation = $$.getValidation() } catch { validation = '' }
     return validation;
 }
+export function AIOInputSetStorage(name,value){
+    let storage = AIOStorage('aio-input-storage');
+    storage.save({name,value})
+}
 export function getFormInputs(fields,path){
     function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}
     return fields.map((o)=>Array.isArray(o)?{row:o.map((oo)=>getInput(oo))}:getInput(o))
@@ -3508,7 +3516,7 @@ function getMainProperties(props,getProp,types){
     if(types.hasMultiple){properties = {...properties,multiple: p('multiple')}}
     if(types.hasSearch){properties = {...properties,search: p('search')}}
     if(types.hasKeyboard){properties = {...properties,maxLength: p('maxLength'),filter: p('filter'),justNumber: p('justNumber')}}
-    if(type === 'number'){properties = {...properties,swip:p('swip'),spin:p('spin',true)}}
+    if(type === 'number'){properties = {...properties,swip:p('swip'),spin:p('spin',true),min:p('min'),max:p('max')}}
     else if(type === 'password'){properties = {...properties,visible:p('visible')}}
     else if(type === 'checkbox'){properties = {...properties,checkIcon:p('checkIcon'),checked:!!value}}
     else if(type === 'image'){properties = {...properties,preview:p('preview'),width:p('width'),height:p('height')}}
