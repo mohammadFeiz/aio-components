@@ -196,6 +196,9 @@ export function JSXToHTML(jsx) {
 export async function Copy(text) {
     window.navigator.clipboard.writeText(text);
 }
+export function IsTouch(){
+    return "ontouchstart" in document.documentElement
+}
 export async function Paste() {
     try {
         return window.navigator.clipboard.read();
