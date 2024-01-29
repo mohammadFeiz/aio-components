@@ -1,4 +1,4 @@
-/**varsion 8.1.2 */
+/**varsion 8.1.3 */
 import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import Axios from 'axios';
@@ -2714,10 +2714,10 @@ function Map(props) {
     let storage = AIOStorage('aio-input-storage');
     let mapApiKeys = storage.load({name:'mapApiKeys',def:{map:'',service:''}});
     let { properties } = props;
+    let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
     if(!value){value = { lat:35.699739, lng:51.338097 }}
     if(!value.lat){value.lat = 35.699739}
     if(!value.lng){value.lng = 51.338097}       
-    let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
     let isPopup = false;
     let onClose = false;
     let p = { popup, isPopup, onClose, onChange, attrs, onChangeAddress, value, mapApiKeys, mapConfig, disabled }
