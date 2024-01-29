@@ -6,7 +6,7 @@ export default function Versions({goToHome}){
     let [components,setComponents] = useState({
         'aio-input':{
             open:false,
-            version:'8.1.0',
+            version:'8.1.2',
             "dependencies": {
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
@@ -14,7 +14,8 @@ export default function Versions({goToHome}){
                 "react-virtual-dom": "latest",
                 "aio-date": "latest",
                 "axios": "1.2.1",
-                "aio-popup": "latest"
+                "aio-popup": "latest",
+                "aio-storage":"latest"
             }
         },
         'aio-login':{

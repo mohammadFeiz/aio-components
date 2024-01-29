@@ -1,3 +1,4 @@
+/**varsion 8.1.2 */
 import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import Axios from 'axios';
@@ -101,6 +102,7 @@ export default class AIOInput extends Component {
     getProp(key, def,preventFunction) {
         let { type } = this.props;
         let propsResult = this.props[key] === 'function' && !preventFunction ? this.props[key]() : this.props[key];
+        if(propsResult === null){propsResult = undefined}
         if (key === 'value') {
             if (propsResult === null) { propsResult = undefined }
             
@@ -117,7 +119,8 @@ export default class AIOInput extends Component {
                     propsResult = propsResult[0]
                 }
                 if (type === 'map') {
-                    let { lat = 35.699739, lng = 51.338097 } = propsResult || {};
+                    let { lat, lng } = propsResult || {};
+                    if(lat === null){lat = 35.699739} if(lng === null){lng = 51.338097}
                     propsResult = { lat, lng }
                 }
             }
@@ -943,6 +946,8 @@ class Form extends Component {
         let { validations = [], input } = o;
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
+        //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
+        if(input.type === 'map'){value = !!value.lat && !!value.lng}
         let a = {
             value, title: o.label, lang,
             validations: validations.map((a) => {
@@ -2709,6 +2714,9 @@ function Map(props) {
     let storage = AIOStorage('aio-input-storage');
     let mapApiKeys = storage.load({name:'mapApiKeys',def:{map:'',service:''}});
     let { properties } = props;
+    if(!value){value = { lat:35.699739, lng:51.338097 }}
+    if(!value.lat){value.lat = 35.699739}
+    if(!value.lng){value.lng = 51.338097}       
     let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
     let isPopup = false;
     let onClose = false;
