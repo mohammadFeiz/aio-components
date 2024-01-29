@@ -6,7 +6,8 @@ import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
     mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
-    mdiCrosshairsGps
+    mdiCrosshairsGps,
+    mdiDotsHorizontal
 } from "@mdi/js";
 import $ from 'jquery';
 import AIODate from './../../npm/aio-date/aio-date';
