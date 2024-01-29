@@ -33,10 +33,12 @@ export default class AIOPopup {
     this._addModal(obj,animate)
   }
   addConfirm = (obj) => {
-    let {title,subtitle,text,submitText = 'بله',canselText = 'خیر',onSubmit,onCansel = ()=>{}} = obj;
+    let {title,subtitle,text,submitText = 'بله',canselText = 'خیر',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
+    let className = 'aio-popup-confirm';
+    if(attrs.className){className += ' ' + attrs.className}
     let config = {
       position:'center',
-      attrs:{className:'aio-popup-confirm'},
+      attrs:{...attrs,className},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},
       body:{render:()=>text},
@@ -59,10 +61,12 @@ export default class AIOPopup {
     this.addModal(config)
   }
   addPrompt = (obj) => {
-    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit,onCansel = ()=>{}} = obj;
+    let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
+    let className = 'aio-popup-prompt';
+    if(attrs.className){className += ' ' + attrs.className}
     let config = {
       position:'center',
-      attrs:{className:'aio-popup-prompt'},
+      attrs:{...attrs,className},
       state:{temp:''},
       header:{title,subtitle},
       backdrop:{attrs:{className:'rsa-backdrop'}},

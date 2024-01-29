@@ -806,6 +806,8 @@
     width: 36px;
     background: none;
     color: inherit;
+    align-items: center;
+    display: flex;
 }
 .aio-input-table-remove-title {
     border: none;
