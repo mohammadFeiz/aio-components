@@ -1795,3 +1795,49 @@
 .aio-input-acardion-content{
     background:rgba(0,0,0,0.1);
 }
+
+.aio-input-tree{
+    font-size:12px;
+    display:flex;
+    flex-direction: column;
+}
+.aio-input-tree-header{
+    background:rgba(0,0,0,0.2);
+    padding:6px 12px;
+}
+.aio-input-tree-header button{
+    height:30px;
+    gap:6px;
+    display: flex;
+    padding:3px 16px;
+    align-items: center;
+    justify-content: center;
+    background:rgb(23, 105, 187);
+    border:none;
+    border-radius:4px;
+    color:#fff;    
+}
+.aio-input-tree-body{
+    flex:1;
+    overflow-y:auto !important;
+    padding:6px;
+}
+.aio-input-tree-row{
+    border:1px solid;
+    margin-bottom:6px;
+    padding:6px;
+    gap:6px;
+    border-radius:6px;
+}
+.aio-input-tree-subtext{
+    font-size:85%;
+    opacity:0.75;
+}
+.aio-input-tree-toggle{
+    width:30px;
+}
+.back-office .aio-input-tree{
+    color:#fff;
+    flex:1;
+    overflow-y:auto;
+}

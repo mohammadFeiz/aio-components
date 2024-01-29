@@ -3222,6 +3222,92 @@ export function Acardion(props = {}){
         }}
       />
     )
+}
+export function Tree(props = {}){
+    let {getText,getBefore,getOptions,getSubtext,onAdd,onRemove,data,indent = 12,getOptionBefore,onChange} = props;
+    let [openDic,setOpenDic] = useState({})
+    function getColumn() {return getColumn_req([...data], 0, undefined);}
+    function getColumn_req(model, level, parent) {
+      return model.map((o, i) => {
+        let childs = o.childs || []
+        return {
+          style: { paddingRight: level * indent },
+          column: [
+            row_layout(o, parent),
+            { show: !!childs.length && openDic[o.id] !== false, column: getColumn_req(childs, level + 1, o) }
+          ]
+        }
+      })
+    }
+    async function add(parent) {
+      debugger
+        let obj = await onAdd(parent);
+        if(!obj){return}
+        if (parent) { parent.childs = parent.childs || []; parent.childs.push(obj); }
+        else { data.push(obj) }
+        onChange(data);
+    }
+    async function remove(o, parent) {
+      let res = await onRemove(o,parent);
+      if(!res){return}
+      if (!parent) { data = data.filter((row) => row.id !== o.id) }
+      else { parent.childs = parent.childs.filter((row) => row.id !== o.id); }
+      onChange(data)
+    }
+    function GetOptions(row,parent){
+      let res = [];
+      if(onAdd){
+        res.push({ text: 'افزودن', value: 'add', before: getOptionBefore?getOptionBefore('add'):undefined,onClick:()=>add(row) })
+      }
+      let options = getOptions?getOptions(row):[];
+      for(let i = 0; i < options.length; i++){
+        let {text,value,onClick} = options[i];
+        res.push({text,value,before:getOptionBefore?getOptionBefore(value):undefined,onClick})
+      }
+      if(onRemove){
+        res.push({ text: 'حذف', value: 'remove', before: getOptionBefore?getOptionBefore('remove'):undefined,onClick:()=>remove(row,parent) })
+      }
+      return res
+    }
+    function row_layout(o, parent) {
+      
+      let toggle = o.childs.length ? <Icon path={openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown} size={1} /> : ''
+      let Options = () => {
+        let options = GetOptions(o,parent)
+        if(!options.length){return false}
+        return (<AIOInput key={o.id} type='select' caret={false} style={{ background: 'none' }} options={options} text={<Icon path={mdiDotsHorizontal} size={0.8} />}/>)
+      }
+      let before = getBefore?getBefore(o,parent):undefined
+      let subtext = getSubtext?getSubtext(o,parent):undefined
+      let text = getText?getText(o,parent):undefined
+      let options = Options()
+      return {
+        className: 'aio-input-tree-row',
+        row: [
+          { className: 'aio-input-tree-toggle', align: 'vh', html: toggle, onClick: () => setOpenDic({...openDic,[o.id]:openDic[o.id] === undefined?false:!openDic[o.id]}) },
+          { className:'aio-input-tree-before',show:!!before,align: 'vh', html: before},
+          {
+            flex: 1,className:'aio-input-tree-texts',align:'v',
+            column: [
+              { align: 'v', html: text, className: 'aio-input-tree-text' },
+              { show:!!subtext,align: 'v', html: subtext, className: 'aio-input-tree-subtext' }
+            ]
+          },
+          {show:!!options,html:()=>options,align:'vh',className:'aio-input-tree-options'}
+        ]
+      }
+    }
+    function header_layout(){
+      if(!onAdd){return false}
+      return {
+        className:'aio-input-tree-header', align: 'v',
+        html: ()=><button onClick={() => add()}><Icon path={mdiPlusThick} size={.8} />افزودن</button>
+      }
+    }
+    function body_layout(){
+      return { className: 'aio-input-tree-body', column: getColumn() }
+    }
+    return (<RVD layout={{className:'aio-input-tree',column: [header_layout(),body_layout()]}}/>)
   }
 export function AIOValidation(props) {
     let $$ = {
