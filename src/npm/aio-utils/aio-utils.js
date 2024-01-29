@@ -22,8 +22,8 @@ export function HandleBackButton(callback) {return _HandleBackButton(callback)}
 export function GetClient(e) {return _GetClient(e)}
 export function ExportToExcel(rows, config) {return _ExportToExcel(rows, config)}
 export function SplitNumber(price, count, splitter) {return _SplitNumber(price, count, splitter)}
-export function Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id }) {
-    _Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id })
+export function Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id,reverseX,reverseY,maxX,maxY,minX,minY }) {
+    _Swip({ dom, start, move, end, speedX, speedY, stepX, stepY, id,reverseX,reverseY,maxX,maxY,minX,minY })
 }
 export function URLToJSON(url) {return _URLToJSON(url)}
 export function JSXToHTML(jsx) {return _JSXToHTML(jsx)}

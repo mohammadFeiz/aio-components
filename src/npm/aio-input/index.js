@@ -12,25 +12,25 @@ import $ from 'jquery';
 import AIODate from './../../npm/aio-date/aio-date';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
-import AIOStorage from 'aio-storage';
+import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
 const AICTX = createContext();
 export default class AIOInput extends Component {
-    static defaults = { 
+    static defaults = {
         validate: false, popover: {},
     };
     constructor(props) {
         super(props);
         this.types = {
-            type:props.type,
-            isInput : ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1,
-            isDropdown : ['text', 'number', 'textarea', 'select', 'multiselect','button','datepicker'].indexOf(props.type) !== -1,
-            hasOption : ['text', 'number', 'textarea','color', 'select', 'multiselect','radio','tabs','list'].indexOf(props.type) !== -1,
-            hasPlaceholder : ['text', 'number', 'textarea','color', 'select', 'table','image','datepicker'].indexOf(props.type) !== -1,
-            hasMultiple : ['radio', 'file', 'slider'].indexOf(props.type) !== -1,
-            hasKeyboard : ['text', 'textarea', 'number', 'password'].indexOf(props.type) !== -1,
-            hasText : ['multiselect', 'checkbox', 'button','select'].indexOf(props.type) !== -1,
-            hasSearch : ['multiselect', 'table','select'].indexOf(props.type) !== -1
+            type: props.type,
+            isInput: ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1,
+            isDropdown: ['text', 'number', 'textarea', 'select', 'multiselect', 'button', 'datepicker'].indexOf(props.type) !== -1,
+            hasOption: ['text', 'number', 'textarea', 'color', 'select', 'multiselect', 'radio', 'tabs', 'list'].indexOf(props.type) !== -1,
+            hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'datepicker'].indexOf(props.type) !== -1,
+            hasMultiple: ['radio', 'file', 'slider'].indexOf(props.type) !== -1,
+            hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(props.type) !== -1,
+            hasText: ['multiselect', 'checkbox', 'button', 'select'].indexOf(props.type) !== -1,
+            hasSearch: ['multiselect', 'table', 'select'].indexOf(props.type) !== -1
         }
         this.handleIsMultiple(props.type);
         this.dom = createRef();
@@ -64,7 +64,7 @@ export default class AIOInput extends Component {
     }
     getSelectText() {
         //cannot use this.properties here 
-        let options = this.getProp('options',[]);
+        let options = this.getProp('options', []);
         let value = this.getProp('value');
         let option = options.find((option) => value === undefined ? false : this.getOptionProp(option, 'value') === value);
         if (option === undefined) { return }
@@ -73,10 +73,10 @@ export default class AIOInput extends Component {
     getDatepickerText() {
         //cannot use this.properties here 
         let value = this.getProp('value');
-        let unit = this.getProp('unit','day');
+        let unit = this.getProp('unit', 'day');
         let Pattern = this.getProp('pattern');
         let calendarType = this.getProp('calendarType');
-        let placeholder = this.getProp('placeholder'); 
+        let placeholder = this.getProp('placeholder');
         if (value) {
             let list = AIODate().convertToArray({ date: value });
             let [year, month = 1, day = 1, hour = 0] = list;
@@ -99,13 +99,13 @@ export default class AIOInput extends Component {
         let newStyle = stylePriority ? { ...attrs.style, ...style } : { ...style, ...attrs.style };
         return { ...attrs, className: newClassName, style: newStyle }
     }
-    getProp(key, def,preventFunction) {
+    getProp(key, def, preventFunction) {
         let { type } = this.props;
         let propsResult = this.props[key] === 'function' && !preventFunction ? this.props[key]() : this.props[key];
-        if(propsResult === null){propsResult = undefined}
+        if (propsResult === null) { propsResult = undefined }
         if (key === 'value') {
             if (propsResult === null) { propsResult = undefined }
-            
+
             if (this.isMultiple()) {
                 if (propsResult === undefined) { propsResult = [] }
                 if (!Array.isArray(propsResult)) {
@@ -120,11 +120,11 @@ export default class AIOInput extends Component {
                 }
                 if (type === 'map') {
                     let { lat, lng } = propsResult || {};
-                    if(lat === null){lat = 35.699739} if(lng === null){lng = 51.338097}
+                    if (lat === null) { lat = 35.699739 } if (lng === null) { lng = 51.338097 }
                     propsResult = { lat, lng }
                 }
             }
-            if(type === 'slider'){
+            if (type === 'slider') {
                 if (!Array.isArray(propsResult)) {
                     if (typeof propsResult !== 'number') { propsResult = [] }
                     else { propsResult = [propsResult] }
@@ -168,7 +168,7 @@ export default class AIOInput extends Component {
                 eval('value = ' + prop);
                 return value;
             }
-            catch {}
+            catch { }
         }
         if (typeof prop === 'function' && !preventFunction) {
             let res = prop(option, this.props);
@@ -201,7 +201,7 @@ export default class AIOInput extends Component {
         let onChange = this.properties.onChange || (() => { });
         let type = this.types.type;
         let Value = this.properties.value;
-        let { value, attrs = {},onClick, close, text } = option;
+        let { value, attrs = {}, onClick, close, text } = option;
         if (onClick) { onClick(value, option); }
         else if (attrs.onClick) { attrs.onClick(value, option); }
         else if (type && ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1) { onChange(text, option) }
@@ -236,14 +236,14 @@ export default class AIOInput extends Component {
             let value = this.getOptionProp(option, 'value')
             let attrs = this.getOptionProp(option, 'attrs', {});
             let obj = {
-                attrs,text, value,disabled,draggable,
+                attrs, text, value, disabled, draggable,
                 checkIcon: this.getOptionProp(option, 'checkIcon', [], true),
                 checked: this.getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
                 before: this.getOptionProp(option, 'before'),
                 after: this.getOptionProp(option, 'after'),
                 justify: this.getOptionProp(option, 'justify'),
                 subtext: this.getOptionProp(option, 'subtext'),
-                onClick: this.getOptionProp(option, 'onClick',undefined,true),
+                onClick: this.getOptionProp(option, 'onClick', undefined, true),
                 className: this.getOptionProp(option, 'className'),
                 style: this.getOptionProp(option, 'style'),
                 tagAttrs: this.getOptionProp(option, 'tagAttrs'),
@@ -261,7 +261,7 @@ export default class AIOInput extends Component {
     getContext() {
         return {
             ...this.props,
-            properties:this.properties,
+            properties: this.properties,
             addToAttrs: this.addToAttrs.bind(this),
             isMultiple: this.isMultiple.bind(this),
             types: this.types,
@@ -280,7 +280,7 @@ export default class AIOInput extends Component {
             getProp: this.getProp.bind(this),
             getOptionProp: this.getOptionProp.bind(this),
             parentDom: this.dom,
-            touch:'ontouchstart' in document.documentElement
+            touch: 'ontouchstart' in document.documentElement
         }
     }
     D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
@@ -311,11 +311,11 @@ export default class AIOInput extends Component {
             let popover = this.properties.popover || {};
             let onChange = this.properties.onChange;
             let className = 'aio-input-time';
-            className += this.properties.className?' ' + this.properties.className:'';
+            className += this.properties.className ? ' ' + this.properties.className : '';
             let style = this.properties.style;
-            return { text: this.getTimeText(value), attrs: this.addToAttrs(this.properties.attrs, { style: { direction: 'ltr' } }), popover, onChange, value,className,style }
+            return { text: this.getTimeText(value), attrs: this.addToAttrs(this.properties.attrs, { style: { direction: 'ltr' } }), popover, onChange, value, className, style }
         }
-        let { text, attrs, popover = {}, onChange,className,style } = getProps()
+        let { text, attrs, popover = {}, onChange, className, style } = getProps()
         return (
             <AIOInput
                 caret={false} text={text} {...this.props} attrs={attrs} type='button' className={className} style={style}
@@ -345,7 +345,7 @@ export default class AIOInput extends Component {
     render_form() { return <Form properties={this.properties} /> }
     render() {
         let type = this.types.type;
-        this.properties = getMainProperties(this.props,this.getProp.bind(this),this.types);
+        this.properties = getMainProperties(this.props, this.getProp.bind(this), this.types);
         if (!type || !this['render_' + type]) { return null }
         return (
             <AICTX.Provider key={this.datauniqid} value={this.getContext()}>
@@ -466,7 +466,7 @@ function TimePopover(props) {
 function Image() {
     let { properties } = useContext(AICTX);
     let [popup] = useState(new AIOPopup());
-    let {value = {},width,height,onChange,disabled,loading,placeholder,preview} = properties;
+    let { value = {}, width, height, onChange, disabled, loading, placeholder, preview } = properties;
     let [url, setUrl] = useState();
     let dom = createRef()
     // if(typeof value === 'object'){
@@ -541,7 +541,7 @@ function Image() {
 }
 function Multiselect() {
     let { properties } = useContext(AICTX);
-    let {style = {}} = properties.attrs;
+    let { style = {} } = properties.attrs;
     return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags /></div>)
 }
 function Tags() {
@@ -590,17 +590,17 @@ class Input extends Component {
     }
     componentDidMount() {
         let { properties, type } = this.context;
-        let {min,max,swip,value,onChange} = properties;
+        let { min, max, swip, value, onChange } = properties;
         this.setState({ value, prevValue: value })
         if (type === 'number' && swip) {
             AIOSwip({
-                speedY: 0.2,reverseY:true,minY:min,maxY:max,
-                dom: ()=>$(this.dom.current),
-                start: () => [0,this.state.value || 0],
+                speedY: 0.2, reverseY: true, minY: min, maxY: max,
+                dom: () => $(this.dom.current),
+                start: () => [0, this.state.value || 0],
                 move: ({ y }) => {
                     if (min !== undefined && y < min) { y = min; }
                     if (max !== undefined && y > max) { y = max }
-                    this.change(y,onChange)
+                    this.change(y, onChange)
                 }
             })
         }
@@ -613,24 +613,24 @@ class Input extends Component {
             this.rrt = setTimeout(() => this.setState({ value: propsValue, prevValue: propsValue }), 0)
         }
     }
-    convertPersianDigits(value){
-        try{
+    convertPersianDigits(value) {
+        try {
             value = value.toString();
             let res = '';
-            for(let i = 0; i < value.length; i++){
+            for (let i = 0; i < value.length; i++) {
                 let dic = {
-                    "۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9"
+                    "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9"
                 }
                 res += dic[value[i]] || value[i];
             }
             value = res;
         }
-        catch{}
+        catch { }
         return value
     }
     change(value, onChange) {
         let { properties, types } = this.context;
-        let {blurChange,maxLength = Infinity,justNumber,filter = [],delay = 400} = properties;
+        let { blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400 } = properties;
         if (types.type === 'number') { if (value) { value = +value; } }
         else if (types.hasKeyboard) {
             if (value) {
@@ -648,19 +648,19 @@ class Input extends Component {
                 if (filter.length) {
                     value = value.toString();
                     let lastChar = value[value.length - 1];
-                    for(let i = 0; i < filter.length; i++){
+                    for (let i = 0; i < filter.length; i++) {
                         let char = filter[i].toString();
-                        if(char === 'symbol'){
-                            if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)){value = value.slice(0, value.length - 1); break}
+                        if (char === 'symbol') {
+                            if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)) { value = value.slice(0, value.length - 1); break }
                         }
-                        else if(char === 'number'){
-                            if(!isNaN(+lastChar)){value = value.slice(0, value.length - 1); break}
+                        else if (char === 'number') {
+                            if (!isNaN(+lastChar)) { value = value.slice(0, value.length - 1); break }
                         }
-                        else if(char === 'string'){
-                            if(isNaN(+lastChar)){value = value.slice(0, value.length - 1); break}
+                        else if (char === 'string') {
+                            if (isNaN(+lastChar)) { value = value.slice(0, value.length - 1); break }
                         }
                         else {
-                            if (char === lastChar){value = value.slice(0, value.length - 1); break}
+                            if (char === lastChar) { value = value.slice(0, value.length - 1); break }
                         }
                     }
                 }
@@ -677,14 +677,14 @@ class Input extends Component {
     }
     blur(onChange) {
         let { properties } = this.context;
-        let {blurChange} = properties;
+        let { blurChange } = properties;
         if (!blurChange) { return }
         onChange(this.state.value)
     }
     getInputAttrs() {
         let { properties, showPassword, type, addToAttrs } = this.context;
         let { value = '' } = this.state;
-        let {disabled,placeholder,onChange,spin,justify,options,justNumber} = properties;
+        let { disabled, placeholder, onChange, spin, justify, options, justNumber } = properties;
         let inputAttrs = addToAttrs(properties.inputAttrs, {
             className: !spin ? 'no-spin' : undefined,
             style: justify ? { textAlign: 'center' } : undefined
@@ -696,7 +696,7 @@ class Input extends Component {
         }
         if (type === 'color' && options) { p = { ...p, list: this.datauniqid } }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
-        if(justNumber === true){
+        if (justNumber === true) {
             p.pattern = "\d*";
             p.inputMode = "numeric";
         }
@@ -725,15 +725,15 @@ class Form extends Component {
     constructor(props) {
         super(props);
         let { properties } = props;
-        let {value = {},onChange} = properties;
+        let { value = {}, onChange } = properties;
         this.state = { initialValue: JSON.stringify(value) }
         if (!onChange) { this.state.value = value; }
         this.errors = {}
     }
-    getValue() { 
-        let {properties} = this.props;
-        let {onChange,value = {}} = properties;
-        return onChange? value : this.state.value 
+    getValue() {
+        let { properties } = this.props;
+        let { onChange, value = {} } = properties;
+        return onChange ? value : this.state.value
     }
     getErrors() { return [...Object.keys(this.errors).filter((o) => !!this.errors[o]).map((o) => this.errors[o])] }
     removeError(field) {
@@ -741,15 +741,15 @@ class Form extends Component {
         for (let prop in this.errors) { if (prop !== field) { newErrors[prop] = this.errors[prop] } }
         this.errors = newErrors
     }
-    setValue({itemValue, formItem,field}) {
+    setValue({ itemValue, formItem, field }) {
         //اگر فرم آیتم ارسال شد یعنی در حال تغییر مستقیم توسط یک اینپوت هستیم
         //اگر فیلد ارسال شد یعنی خارج از برنامه داریم یک پروپرتی را چنج می کنیم پس ارور هندلینگ نباید انجام شود
-        let {properties} = this.props;
-        let {onChange} = properties;
+        let { properties } = this.props;
+        let { onChange } = properties;
         let Field = field || formItem.field
         let value = this.getValue();
         let newValue = this.setValueByField(value, Field, itemValue);
-        if(!field){
+        if (!field) {
             let error = this.getError(formItem, itemValue)
             if (error) { this.errors[Field] = error }
             else { this.removeError(Field) }
@@ -758,8 +758,8 @@ class Form extends Component {
         else { this.setState({ value: newValue }) }
     }
     header_layout() {
-        let {properties} = this.props;
-        let {header,title,subtitle,headerAttrs,onClose,onBack} = properties;
+        let { properties } = this.props;
+        let { header, title, subtitle, headerAttrs, onClose, onBack } = properties;
         if (!header && !title) { return false }
         return {
             className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
@@ -779,31 +779,31 @@ class Form extends Component {
         }
     }
     body_layout() {
-        let {properties} = this.props;
-        let {inputs,bodyAttrs = {}} = properties;
+        let { properties } = this.props;
+        let { inputs, bodyAttrs = {} } = properties;
         if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => this.input_layout(o)) } }
         let className = 'aio-input-form-body';
-        if(bodyAttrs.className){className += ' ' + bodyAttrs.className}
+        if (bodyAttrs.className) { className += ' ' + bodyAttrs.className }
         let style = bodyAttrs.style;
-        let res = { flex: 1, className,style, ...inputs }
+        let res = { flex: 1, className, style, ...inputs }
         return res
     }
     reset() {
-        let {properties} = this.props;
-        let {onChange} = properties;
+        let { properties } = this.props;
+        let { onChange } = properties;
         let { initialValue } = this.state;
         if (onChange) { onChange(JSON.parse(initialValue)) }
         else { this.setState({ value: JSON.parse(initialValue) }) }
     }
     footer_layout() {
-        let {properties} = this.props;
-        let {footer,onClose,onSubmit,footerAttrs,closeText,resetText,submitText,reset,initialDisabled} = properties;
+        let { properties } = this.props;
+        let { footer, onClose, onSubmit, footerAttrs, closeText, resetText, submitText, reset, initialDisabled } = properties;
         let { initialValue } = this.state;
         if (footer === false) { return false }
         if (!footer && !onSubmit && !onClose && !reset) { return false }
         let disabled = false;
-        if(!!this.getErrors().length){disabled = true}
-        else if(initialDisabled && initialValue === JSON.stringify(this.getValue())){disabled = true}
+        if (!!this.getErrors().length) { disabled = true }
+        else if (initialDisabled && initialValue === JSON.stringify(this.getValue())) { disabled = true }
         if (footer) {
             let html = typeof footer === 'function' ? footer({ onReset: () => this.reset(), disabled, errors: this.getErrors() }) : footer;
             let className = 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : '');
@@ -811,11 +811,11 @@ class Form extends Component {
         }
         return {
             className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
-            html:(
+            html: (
                 <>
-                    { !!onClose && <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button>}
-                    { !!reset && <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button> }
-                    { !!onSubmit && <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button> }
+                    {!!onClose && <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button>}
+                    {!!reset && <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button>}
+                    {!!onSubmit && <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button>}
                 </>
             )
         }
@@ -823,14 +823,14 @@ class Form extends Component {
     getDefault({ type, multiple }) {
         return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
     }
-    getValueByField({field, def,functional,value = this.getValue()}) {
-        let {properties} = this.props;
+    getValueByField({ field, def, functional, value = this.getValue() }) {
+        let { properties } = this.props;
         let props = properties.props, a;
-        if(functional && typeof field === 'function'){a = field(value);}
-        else if (typeof field === 'string') {        
+        if (functional && typeof field === 'function') { a = field(value); }
+        else if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
                 try { eval(`a = ${field}`); }
-                catch{}
+                catch { }
             }
             else { a = field }
         }
@@ -838,12 +838,12 @@ class Form extends Component {
         return a === undefined ? def : a;
     }
     setValueByField(obj = {}, field, value) {
-        try{
-            field = field.replaceAll('[','.');
-            field = field.replaceAll(']','');
-            
+        try {
+            field = field.replaceAll('[', '.');
+            field = field.replaceAll(']', '');
+
         }
-        catch{}
+        catch { }
         var fields = field.split('.');
         var node = obj;
         for (let i = 0; i < fields.length - 1; i++) {
@@ -862,8 +862,8 @@ class Form extends Component {
     componentDidMount() { this.reportErrors() }
     componentDidUpdate() { this.reportErrors() }
     reportErrors() {
-        let {properties} = this.props;
-        let {getErrors} = properties;
+        let { properties } = this.props;
+        let { getErrors } = properties;
         if (!getErrors) { return }
         let errors = this.getErrors();
         if (JSON.stringify(errors) !== this.reportedErrors) {
@@ -877,47 +877,47 @@ class Form extends Component {
     }
     getInputProps(input, formItem) {
         let { addToAttrs } = this.context;
-        let {properties} = this.props;
-        let {rtl,disabled,updateInput = (o)=>o,inputStyle = {},inputClassName} = properties;
-        let value = this.getValueByField({field:formItem.field, def:this.getDefault(input)});
-        let props = { 
-            rtl, value, 
+        let { properties } = this.props;
+        let { rtl, disabled, updateInput = (o) => o, inputStyle = {}, inputClassName } = properties;
+        let value = this.getValueByField({ field: formItem.field, def: this.getDefault(input) });
+        let props = {
+            rtl, value,
             onChange: (value) => {
-                if(input.type === 'map' && formItem.addressField && value.address){
-                    this.setValue({itemValue:value.address,field:formItem.addressField})    
+                if (input.type === 'map' && formItem.addressField && value.address) {
+                    this.setValue({ itemValue: value.address, field: formItem.addressField })
                 }
-                this.setValue({itemValue:value, formItem})
-            },attrs:{} 
+                this.setValue({ itemValue: value, formItem })
+            }, attrs: {}
         };
-        for (let prop in input) { 
+        for (let prop in input) {
             let functional = ['options'].indexOf(prop) !== -1;
-            props[prop] = this.getValueByField({field:input[prop],functional}) 
+            props[prop] = this.getValueByField({ field: input[prop], functional })
         }
         props.value = value;
         if (input.type === 'slider' && props.showValue === undefined) { props.showValue = 'inline'; }
         let { attrs = {} } = input;
-        for (let prop in attrs) { props.attrs[prop] = this.getValueByField({field:attrs[prop]}) }
-        props.attrs = addToAttrs({...props.attrs}, { style: inputStyle, stylePriority: false, className: inputClassName })
+        for (let prop in attrs) { props.attrs[prop] = this.getValueByField({ field: attrs[prop] }) }
+        props.attrs = addToAttrs({ ...props.attrs }, { style: inputStyle, stylePriority: false, className: inputClassName })
         if (disabled) { props.disabled = true; }
         if (['text', 'number', 'password', 'textarea'].indexOf(props.type) !== -1) {
             let { inputAttrs = {} } = input;
             props.inputAttrs = {};
-            for (let prop in inputAttrs) { props.inputAttrs[prop] = this.getValueByField({field:inputAttrs[prop]}) }
+            for (let prop in inputAttrs) { props.inputAttrs[prop] = this.getValueByField({ field: inputAttrs[prop] }) }
         }
         return updateInput(props);
     }
-    get_layout(key,value,attrs){
+    get_layout(key, value, attrs) {
         if (!value) { return false }
-        let {addToAttrs} = this.context;
+        let { addToAttrs } = this.context;
         let cls = 'aio-input-form';
-        let className = {'label':`${cls}-label`,'footer':`${cls}-item-footer`,'error':`${cls}-error`}[key];
-        attrs = addToAttrs(attrs,{className})
+        let className = { 'label': `${cls}-label`, 'footer': `${cls}-item-footer`, 'error': `${cls}-error` }[key];
+        attrs = addToAttrs(attrs, { className })
         return { html: value, align: 'v', attrs }
     }
     input_layout(formItem) {
-        let {properties} = this.props;
+        let { properties } = this.props;
         let { label, footer, input, flex, size, field } = formItem;
-        let value = this.getValueByField({field, def:this.getDefault(input)});
+        let value = this.getValueByField({ field, def: this.getDefault(input) });
         let error = this.getError(formItem, value)
         if (error) { this.errors[field] = error }
         else { this.errors[field] = undefined }
@@ -931,28 +931,28 @@ class Form extends Component {
                 {
                     flex: 1, className: 'aio-input-form-item-input-container of-visible',
                     column: [
-                        this.get_layout('label',label, labelAttrs),
+                        this.get_layout('label', label, labelAttrs),
                         { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...inputProps} /> },
                     ]
                 },
-                this.get_layout('footer',footer, footerAttrs),
-                this.get_layout('error',error, errorAttrs)
+                this.get_layout('footer', footer, footerAttrs),
+                this.get_layout('error', error, errorAttrs)
             ]
         }
     }
     getError(o, value, options) {
-        let {properties} = this.props;
-        let {lang} = properties;
+        let { properties } = this.props;
+        let { lang } = properties;
         let { validations = [], input } = o;
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
         //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
-        if(input.type === 'map'){value = !!value.lat && !!value.lng}
+        if (input.type === 'map') { value = !!value.lat && !!value.lng }
         let a = {
             value, title: o.label, lang,
             validations: validations.map((a) => {
                 let params = a[2] || {};
-                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField({field:a[1], def:''});
+                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField({ field: a[1], def: '' });
                 let operator = a[0];
                 return [operator, target, params]
             })
@@ -960,20 +960,20 @@ class Form extends Component {
         return AIOValidation(a);
     }
     render() {
-        let {addToAttrs} = this.context;
-        let {properties} = this.props;
-        let {rtl,attrs} = properties;
-        attrs = addToAttrs(attrs,{className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '')})
+        let { addToAttrs } = this.context;
+        let { properties } = this.props;
+        let { rtl, attrs } = properties;
+        attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') })
         return (
             <RVD
                 getLayout={(obj, parent = {}) => {
-                    let show = this.getValueByField({field:obj.show, def:true});
+                    let show = this.getValueByField({ field: obj.show, def: true });
                     if (show === false) { return false }
                     if (obj.input) { return this.input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
                     if (parent.input) { obj.className = 'of-visible' }
                     return { ...obj }
                 }}
-                layout={{attrs,column: [this.header_layout(), this.body_layout(), this.footer_layout()]}}
+                layout={{ attrs, column: [this.header_layout(), this.body_layout(), this.footer_layout()] }}
             />
         )
     }
@@ -984,7 +984,7 @@ function Options(props) {
     let type = properties.type;
     let [searchValue, setSearchValue] = useState('');
     function renderSearchBox(options) {
-        let {search} = properties;
+        let { search } = properties;
         if (type === 'tabs' || types.isInput || search === false) { return null }
         if (type === 'radio' && !search) { return null }
         if (typeof search !== 'string') { search = 'Search' }
@@ -1013,7 +1013,7 @@ function Options(props) {
     if (!options.length) { return null }
     let renderOptions = getRenderOptions(options);
     let className = `aio-input-options aio-input-${type}-options`
-    if(types.isDropdown){className += ' aio-input-dropdown-options'}
+    if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <>
             {renderSearchBox(options)}
@@ -1031,7 +1031,7 @@ class Table extends Component {
         let { properties } = p;
         this.dom = createRef();
         let Sort = new SortClass({ properties, getState: () => this.state, setState: (obj) => this.setState(obj) })
-        let {columns} = properties;
+        let { columns } = properties;
         let searchColumns = [];
         let updatedColumns = columns.map((o) => {
             let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search } = o;
@@ -1047,19 +1047,19 @@ class Table extends Component {
             searchColumns,
             sorts: [], Sort,
             getDynamics: ({ value, row, column, def, rowIndex }) => {
-                let {properties} = this.props;
-                if(properties.paging){
-                    let {serverSide,number,size} = properties.paging;
-                    if(!serverSide){
+                let { properties } = this.props;
+                if (properties.paging) {
+                    let { serverSide, number, size } = properties.paging;
+                    if (!serverSide) {
                         rowIndex += ((number - 1) * size)
                     }
-                    
+
                 }
                 let type = typeof value;
                 if (type === 'string') {
                     let result = value;
-                    let {properties} = this.props;
-                    let {getValue} = properties;
+                    let { properties } = this.props;
+                    let { getValue } = properties;
                     if (getValue[value]) { result = getValue[value]({ row, column, rowIndex }) }
                     else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
                     return result === undefined ? def : result;
@@ -1069,10 +1069,10 @@ class Table extends Component {
                 return value === undefined ? def : value
             },
             setCell: (row, column, cellNewValue) => {
-                if (column.input && column.input.onChange) { column.input.onChange({ value:cellNewValue, row, column }) }
+                if (column.input && column.input.onChange) { column.input.onChange({ value: cellNewValue, row, column }) }
                 else {
-                    let {properties} = this.props;
-                    let {value,onChange = ()=>{}} = properties;
+                    let { properties } = this.props;
+                    let { value, onChange = () => { } } = properties;
                     row = JSON.parse(JSON.stringify(row));
                     eval(`${column.value} = cellNewValue`);
                     onChange(value.map((o) => o._id !== row._id ? o : row))
@@ -1085,21 +1085,21 @@ class Table extends Component {
         this.setState({ sorts: Sort.initiateSortsByColumns(columns) })
     }
     add() {
-        let {properties} = this.props;
-        let {onAdd,value,onChange = ()=>{}} = properties;
+        let { properties } = this.props;
+        let { onAdd, value, onChange = () => { } } = properties;
         if (typeof onAdd === 'function') { onAdd(); }
         else if (typeof onAdd === 'object') { onChange([onAdd, ...value]) }
     }
     remove(row, index) {
-        let {properties} = this.props;
-        let {value,onRemove,onChange = ()=>{}} = properties;
-        let action = ()=>onChange(value.filter((o, i) => o._id !== row._id));
-        if (typeof onRemove === 'function') { onRemove({row,action,rowIndex:index}); }
+        let { properties } = this.props;
+        let { value, onRemove, onChange = () => { } } = properties;
+        let action = () => onChange(value.filter((o, i) => o._id !== row._id));
+        if (typeof onRemove === 'function') { onRemove({ row, action, rowIndex: index }); }
         else if (onRemove === true) { action(); }
     }
     exportToExcel() {
-        let {properties} = this.props;
-        let {excel,value} = properties;
+        let { properties } = this.props;
+        let { excel, value } = properties;
         let list = [];
         let { getDynamics, columns } = this.state;
         for (let i = 0; i < value.length; i++) {
@@ -1118,8 +1118,8 @@ class Table extends Component {
     drop(e, row) {
         if (this.start._id === undefined) { return }
         if (this.start._id === row._id) { return }
-        let {properties} = this.props;
-        let {value,onSwap,onChange = ()=>{}} = properties;
+        let { properties } = this.props;
+        let { value, onSwap, onChange = () => { } } = properties;
         let newValue = value.filter((o) => o._id !== this.start._id);
         let placeIndex = this.getIndexById(value, row._id);
         newValue.splice(placeIndex, 0, this.start)
@@ -1127,8 +1127,8 @@ class Table extends Component {
         else { onChange(newValue) }
     }
     getSearchedRows(rows) {
-        let {properties} = this.props;
-        let {onSearch} = properties;
+        let { properties } = this.props;
+        let { onSearch } = properties;
         if (onSearch !== true) { return rows }
         let { searchColumns, searchValue, getDynamics } = this.state;
         if (!searchColumns.length || !searchValue) { return rows }
@@ -1143,13 +1143,13 @@ class Table extends Component {
         })
     }
     getRows() {
-        let {properties} = this.props;
+        let { properties } = this.props;
         let { Sort } = this.state;
-        let {value = [],paging:p} = properties;
+        let { value = [], paging: p } = properties;
         let searchedRows = this.getSearchedRows(value);
         let sortedRows = Sort.getSortedRows(searchedRows);
         let pagedRows = p && !p.serverSide ? sortedRows.slice((p.number - 1) * p.size, p.number * p.size) : sortedRows;
-        return { rows:value, searchedRows, sortedRows, pagedRows }
+        return { rows: value, searchedRows, sortedRows, pagedRows }
     }
     //calculate style of cells and title cells
     getCellStyle(column) {
@@ -1158,20 +1158,20 @@ class Table extends Component {
         let minWidth = getDynamics({ value: column.minWidth });
         return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth }
     }
-    getCellAttrs({ row, rowIndex, column,type }){
-        let {addToAttrs} = this.context;
+    getCellAttrs({ row, rowIndex, column, type }) {
+        let { addToAttrs } = this.context;
         let { getDynamics } = this.state;
-        let attrs = getDynamics({ value: column[`${type}Attrs`], column, def: {},row,rowIndex });
+        let attrs = getDynamics({ value: column[`${type}Attrs`], column, def: {}, row, rowIndex });
         let justify = getDynamics({ value: column.justify, def: false });
         let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '')
-        attrs = addToAttrs(attrs,{className:cls,style:this.getCellStyle(column)});
-        if(type === 'title'){attrs.title = getDynamics({ value: column.title, def: '' })}
+        attrs = addToAttrs(attrs, { className: cls, style: this.getCellStyle(column) });
+        if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
         return { ...attrs }
     }
     getRowAttrs(row, rowIndex) {
-        let {properties} = this.props;
-        let { addToAttrs,rowAttrs = ()=>{return {}} } = this.context;
-        let {onSwap} = properties;
+        let { properties } = this.props;
+        let { addToAttrs, rowAttrs = () => { return {} } } = this.context;
+        let { onSwap } = properties;
         let obj = addToAttrs(rowAttrs({ row, rowIndex }), { className: 'aio-input-table-row' })
         if (!!onSwap) { obj = { ...obj, draggable: true, onDragStart: (e) => this.dragStart(e, row), onDragOver: (e) => this.dragOver(e, row), onDrop: (e) => this.drop(e, row) } }
         return obj;
@@ -1183,9 +1183,9 @@ class Table extends Component {
         let input = getDynamics({ value: column.input, row, rowIndex, column });
         if (!input) { input = { type: 'text' } }
         let convertedInput = {}
-        for (let prop in input) { 
-            if(['onChange','onClick'].indexOf(prop) !== -1){convertedInput[prop] = input[prop]}
-            else {convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
+        for (let prop in input) {
+            if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = input[prop] }
+            else { convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
         }
         let value = getDynamics({ value: column.value, row, rowIndex, column })
         return (
@@ -1197,17 +1197,17 @@ class Table extends Component {
         )
     }
     search(searchValue) {
-        let {properties} = this.props;
-        let {onSearch} = properties;
+        let { properties } = this.props;
+        let { onSearch } = properties;
         if (onSearch === true) { this.setState({ searchValue }) }
         else { onSearch(searchValue) }
     }
     getContext(ROWS) {
-        let {addToAttrs} = this.context;
-        let {properties} = this.props;
-        let {rowGap,columnGap} = properties;
+        let { addToAttrs } = this.context;
+        let { properties } = this.props;
+        let { rowGap, columnGap } = properties;
         let context = {
-            ROWS,addToAttrs,
+            ROWS, addToAttrs,
             properties,
             state: { ...this.state },
             parentDom: this.dom,
@@ -1225,8 +1225,8 @@ class Table extends Component {
         return context
     }
     render() {
-        let {properties} = this.props;
-        let {paging,attrs} = properties;
+        let { properties } = this.props;
+        let { paging, attrs } = properties;
         let ROWS = this.getRows();
         return (
             <AITableContext.Provider value={this.getContext(ROWS)}>
@@ -1252,19 +1252,19 @@ function TablePaging() {
         return { ...paging, length, pages, number, size, sizes, start, end }
     }
     let { ROWS, properties } = useContext(AITableContext)
-    let [paging,setPaging] = useState(fix(properties.paging));
-    let [timeout,settimeout] = useState()
-    useEffect(()=>{
+    let [paging, setPaging] = useState(fix(properties.paging));
+    let [timeout, settimeout] = useState()
+    useEffect(() => {
         setPaging(fix(properties.paging));
-    },[properties.paging])
-    function changePaging(obj) { 
+    }, [properties.paging])
+    function changePaging(obj) {
         let newPaging = fix({ ...paging, ...obj });
         setPaging(newPaging);
-        if(newPaging.serverSide){
+        if (newPaging.serverSide) {
             clearTimeout(timeout);
-            settimeout(setTimeout(()=>newPaging.onChange(newPaging),800));
+            settimeout(setTimeout(() => newPaging.onChange(newPaging), 800));
         }
-        else{newPaging.onChange(newPaging)}
+        else { newPaging.onChange(newPaging) }
     }
     let { rtl, pages, number, size, sizes, start, end } = paging;
     let buttons = [];
@@ -1275,9 +1275,9 @@ function TablePaging() {
         }
         else {
             let index;
-            if(isFirst){index = 1; isFirst = false;}
-            else if(i === Math.min(end,pages)){index = pages}
-            else{index = i;}
+            if (isFirst) { index = 1; isFirst = false; }
+            else if (i === Math.min(end, pages)) { index = pages }
+            else { index = i; }
             buttons.push(<button key={index} className={'aio-input-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
         }
     }
@@ -1290,7 +1290,7 @@ function TablePaging() {
                     attrs={{ className: 'aio-input-table-paging-button aio-input-table-paging-size' }}
                     type='select' value={size} options={sizes} optionText='option' optionValue='option'
                     onChange={(value) => changePaging({ size: value })}
-                    popover={{fitHorizontal:true}}
+                    popover={{ fitHorizontal: true }}
                 />
             }
         </div>
@@ -1298,7 +1298,7 @@ function TablePaging() {
 }
 function TableRows() {
     let { properties, ROWS } = useContext(AITableContext)
-    let {rowTemplate,rowAfter = () => null,rowBefore = () => null,rowsTemplate,placeholder = 'there is not any items'} = properties;
+    let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = properties;
     function getContent() {
         let rows = ROWS.pagedRows || [];
         if (rowsTemplate) { return rowsTemplate(rows) }
@@ -1312,19 +1312,19 @@ function TableRows() {
                 return (<Fragment key={id}>{rowBefore({ row: o, rowIndex: i })}{Row}{rowAfter({ row: o, rowIndex: i })}</Fragment>)
             })
         }
-        if(placeholder){
+        if (placeholder) {
             return <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
         }
         return false
     }
     let content = getContent();
-    if(content === false){return null}
+    if (content === false) { return null }
     return <div className='aio-input-table-rows'>{content}</div>
 }
 function TableToolbar() {
-    let { add, exportToExcel, RowGap, properties, state, search,addToAttrs } = useContext(AITableContext);
-    let {toolbarAttrs,toolbar,onAdd,excel,onSearch} = properties;
-    toolbarAttrs = addToAttrs(toolbarAttrs,{className:'aio-input-table-toolbar'})
+    let { add, exportToExcel, RowGap, properties, state, search, addToAttrs } = useContext(AITableContext);
+    let { toolbarAttrs, toolbar, onAdd, excel, onSearch } = properties;
+    toolbarAttrs = addToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
     let { sorts } = state;
     if (!onAdd && !excel && !toolbar && !onSearch && !sorts.length) { return null }
     return (
@@ -1344,9 +1344,9 @@ function TableToolbar() {
     )
 }
 function TableHeader() {
-    let { RowGap,ColumnGap, properties, state,addToAttrs } = useContext(AITableContext);
-    let {headerAttrs,onRemove} = properties;
-    headerAttrs = addToAttrs(headerAttrs,{className:'aio-input-table-header'})
+    let { RowGap, ColumnGap, properties, state, addToAttrs } = useContext(AITableContext);
+    let { headerAttrs, onRemove } = properties;
+    headerAttrs = addToAttrs(headerAttrs, { className: 'aio-input-table-header' })
     let { columns } = state;
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
     let RemoveTitle = !onRemove ? null : <>{ColumnGap}<div className='aio-input-table-remove-title'></div></>;
@@ -1354,7 +1354,7 @@ function TableHeader() {
 }
 function TableTitle({ column, isLast }) {
     let { ColumnGap, getCellAttrs } = useContext(AITableContext);
-    let attrs = getCellAttrs({column,type:'title'});
+    let attrs = getCellAttrs({ column, type: 'title' });
     return (
         <>
             <div {...attrs}>{attrs.title}</div>
@@ -1363,7 +1363,7 @@ function TableTitle({ column, isLast }) {
     )
 }
 function TableRow({ row, isLast, rowIndex }) {
-    let { remove, RowGap,ColumnGap, properties, state, getRowAttes } = useContext(AITableContext);
+    let { remove, RowGap, ColumnGap, properties, state, getRowAttes } = useContext(AITableContext);
     function getCells() {
         return state.columns.map((column, i) => {
             let key = row._id + ' ' + column._id;
@@ -1371,7 +1371,7 @@ function TableRow({ row, isLast, rowIndex }) {
             return (<TableCell isLast={isLast} key={key} row={row} rowIndex={rowIndex} column={column} />)
         })
     }
-    let {onRemove} = properties;
+    let { onRemove } = properties;
     return (
         <>
             <div key={row._id} {...getRowAttes(row, rowIndex)}>
@@ -1388,7 +1388,7 @@ const TableCell = ({ row, rowIndex, column, isLast }) => {
     let content = getCellContent({ row, rowIndex, column });
     return (
         <Fragment key={row._id + ' ' + column._id}>
-            <div {...getCellAttrs({ row, rowIndex, column,type:'cell' })} >{content}</div>
+            <div {...getCellAttrs({ row, rowIndex, column, type: 'cell' })} >{content}</div>
             {!isLast && ColumnGap}
         </Fragment>
     )
@@ -1412,7 +1412,7 @@ class SortClass {
         this.setSorts(newSorts)
     }
     setSorts = async (sorts) => {
-        let {onChangeSort} = this.properties;
+        let { onChangeSort } = this.properties;
         if (onChangeSort) {
             let res = await onChangeSort(sorts)
             if (res !== false) { this.setState({ sorts }); }
@@ -1421,14 +1421,14 @@ class SortClass {
             this.setState({ sorts });
             let activeSorts = sorts.filter((sort) => sort.active !== false);
             if (activeSorts.length) {
-                let {value ,onChange = ()=>{}} = this.properties;
+                let { value, onChange = () => { } } = this.properties;
                 onChange(this.sort(value, activeSorts))
             }
         }
     }
     getSortedRows = (rows) => {
         if (this.initialSort) { return rows }
-        let {onChangeSort,onChange = ()=>{}} = this.properties;
+        let { onChangeSort, onChange = () => { } } = this.properties;
         let { sorts } = this.getState();
         if (onChangeSort) { return rows }
         let activeSorts = sorts.filter((sort) => sort.active !== false);
@@ -1503,8 +1503,8 @@ class Layout extends Component {
         this.dom = createRef()
     }
     getClassName(label) {
-        let { properties, getOptionProp, datauniqid, types, isMultiple,touch } = this.context;
-        let {direction,disabled,rtl} = properties;
+        let { properties, getOptionProp, datauniqid, types, isMultiple, touch } = this.context;
+        let { direction, disabled, rtl } = properties;
         let { option } = this.props;
         let cls;
         if (option !== undefined) {
@@ -1514,7 +1514,7 @@ class Layout extends Component {
             if (getOptionProp(option, 'disabled')) { cls += ' disabled' }
         }
         else {
-            cls = `aio-input aio-input-${this.properties.type}${touch?' aio-input-touch':''}`;
+            cls = `aio-input aio-input-${this.properties.type}${touch ? ' aio-input-touch' : ''}`;
             if (this.properties.type === 'slider') {
                 if (direction === 'top' || direction === 'bottom') { cls += ' aio-input-slider-vertical' }
                 else { cls += ' aio-input-slider-horizontal' }
@@ -1529,9 +1529,9 @@ class Layout extends Component {
         return cls;
     }
     getProps() {
-        let { dragStart, dragOver, drop, click, optionClick, open,addToAttrs } = this.context;
+        let { dragStart, dragOver, drop, click, optionClick, open, addToAttrs } = this.context;
         let { option, realIndex, renderIndex } = this.props;
-        let { label, justify, attrs = {}, disabled,draggable } = this.properties;
+        let { label, justify, attrs = {}, disabled, draggable } = this.properties;
         let zIndex;
         if (open && !option && ['text', 'number', 'textarea'].indexOf(this.properties.type) !== -1) {
             zIndex = 100000
@@ -1539,14 +1539,14 @@ class Layout extends Component {
         let onClick;
         //ممکنه این یک آپشن باشه باید دیزیبل پرنتش هم چک بشه تا دیزیبل بشه
         if (!disabled) {
-            if (option === undefined) {onClick = (e) => { e.stopPropagation(); click(e, this.dom) }}
-            else {onClick = (e) => { e.stopPropagation(); optionClick(option) }}
+            if (option === undefined) { onClick = (e) => { e.stopPropagation(); click(e, this.dom) } }
+            else { onClick = (e) => { e.stopPropagation(); optionClick(option) } }
         }
-        attrs = addToAttrs(attrs,{
-            className:this.getClassName(label),
-            style: { ...this.properties.style,justifyContent: justify ? 'center' : undefined, zIndex }
+        attrs = addToAttrs(attrs, {
+            className: this.getClassName(label),
+            style: { ...this.properties.style, justifyContent: justify ? 'center' : undefined, zIndex }
         })
-        let p = {...attrs, onClick, ref: this.dom, disabled, 'data-label': label}
+        let p = { ...attrs, onClick, ref: this.dom, disabled, 'data-label': label }
         if (draggable) {
             p.datarealindex = realIndex;
             p.datarenderindex = renderIndex;
@@ -1561,14 +1561,14 @@ class Layout extends Component {
         if (this.properties.type === 'checkbox') { return !!this.properties.value }
     }
     getItemClassName(key) {
-        let { option } = this.props,className = `aio-input-${key}`;
-        if (option) {className += ` aio-input-${this.properties.type}-option-${key}`}
-        else {className += ` aio-input-${this.properties.type}-${key}`}
+        let { option } = this.props, className = `aio-input-${key}`;
+        if (option) { className += ` aio-input-${this.properties.type}-option-${key}` }
+        else { className += ` aio-input-${this.properties.type}-${key}` }
         return className;
     }
     text_layout() {
-        let { text, subtext,placeholder, justify } = this.properties;
-        let {types} = this.context;
+        let { text, subtext, placeholder, justify } = this.properties;
+        let { types } = this.context;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text) {
             if (subtext) {
@@ -1590,24 +1590,24 @@ class Layout extends Component {
         }
         else { return <div className='flex-1'></div> }
     }
-    getProperties(){
-        let { properties,type } = this.context;
-        let { option,text } = this.props;
-        let res = option?option:properties;
-        if(text !== undefined){res.text = text}
-        return {...res,type}
+    getProperties() {
+        let { properties, type } = this.context;
+        let { option, text } = this.props;
+        let res = option ? option : properties;
+        if (text !== undefined) { res.text = text }
+        return { ...res, type }
     }
-    getDragIcon(){
+    getDragIcon() {
         return (
-            <svg viewBox="8 4 10 13" role="presentation" style={{width: 12,height: '1.8rem'}}>
-                <path d="M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z" style={{fill: 'currentcolor'}}></path>
+            <svg viewBox="8 4 10 13" role="presentation" style={{ width: 12, height: '1.8rem' }}>
+                <path d="M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z" style={{ fill: 'currentcolor' }}></path>
             </svg>
         )
     }
     render() {
         let { option } = this.props;
         this.properties = this.getProperties();
-        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, after, caret, loading,type,draggable } = this.properties;
+        let { checked, checkIcon = AIOInput.defaults.checkIcon, before, after, caret, loading, type, draggable } = this.properties;
         let content = (
             <>
                 {draggable && this.getDragIcon()}
@@ -1637,12 +1637,12 @@ class CheckIcon extends Component {
         );
     }
 }
-function File() {return (<div className='aio-input-file-container'><Layout /><FileItems /></div>)}
+function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
 class InputFile extends Component {
     static contextType = AICTX;
     change(e) {
         let { properties, isMultiple } = this.context;
-        let {value = [],onChange = ()=>{}} = properties;
+        let { value = [], onChange = () => { } } = properties;
         let Files = e.target.files;
         let result;
         if (isMultiple()) {
@@ -1654,12 +1654,12 @@ class InputFile extends Component {
                 result.push({ name: file.name, size: file.size, file })
             }
         }
-        else {result = Files.length ? Files[0] : undefined}
+        else { result = Files.length ? Files[0] : undefined }
         onChange(result)
     }
     render() {
         let { properties, isMultiple } = this.context;
-        let {disabled} = properties;
+        let { disabled } = properties;
         let multiple = isMultiple();
         let props = { disabled, type: 'file', style: { display: 'none' }, multiple, onChange: (e) => this.change(e) }
         return <input {...props} />
@@ -1669,7 +1669,7 @@ class FileItems extends Component {
     static contextType = AICTX;
     render() {
         let { properties } = this.context;
-        let {value,rtl} = properties;
+        let { value, rtl } = properties;
         let files = [];
         if (Array.isArray(value)) { files = value }
         else if (value) { files = [value] }
@@ -1704,11 +1704,11 @@ class FileItem extends Component {
             else { sizeString = size + ' byte' }
             return { minName, sizeString }
         }
-        catch {return { minName: 'untitle', sizeString: false }}
+        catch { return { minName: 'untitle', sizeString: false } }
     }
     remove(index) {
         let { properties } = this.context;
-        let {onChange = ()=>{},value = []} = properties;
+        let { onChange = () => { }, value = [] } = properties;
         let newValue = [];
         for (let i = 0; i < value.length; i++) {
             if (i === index) { continue }
@@ -1755,7 +1755,7 @@ class Calendar extends Component {
     constructor(props) {
         super(props);
         let { properties } = props;
-        let {calendarType,value} = properties;
+        let { calendarType, value } = properties;
         let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
         let today = getToday({ calendarType });
         if (!value) { value = today }
@@ -1769,7 +1769,7 @@ class Calendar extends Component {
     }
     translate(text) {
         let { properties, translate = (text) => text } = this.props;
-        let {calendarType,unit} = properties;
+        let { calendarType, unit } = properties;
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
@@ -1784,7 +1784,7 @@ class Calendar extends Component {
         if (obj === 'today') {
             let { today } = this.state;
             let { properties } = this.props;
-            let {unit} = properties;
+            let { unit } = properties;
             let [year, month, day] = today;
             newActiveDate = { year, month, day: unit === 'month' ? 1 : day };
         }
@@ -1794,7 +1794,7 @@ class Calendar extends Component {
     getYears() {
         let start, end;
         let { properties } = this.props;
-        let {calendarType,startYear,endYear} = properties
+        let { calendarType, startYear, endYear } = properties
         let today = AIODate().getToday({ calendarType });
         if (typeof startYear === 'string' && startYear.indexOf('-') === 0) {
             start = today[0] - parseInt(startYear.slice(1, startYear.length));
@@ -1810,7 +1810,7 @@ class Calendar extends Component {
     }
     getPopupStyle() {
         let { properties } = this.props;
-        let {disabled,size,theme} = properties;
+        let { disabled, size, theme } = properties;
         return {
             width: size, fontSize: size / 17, background: theme[1], color: theme[0], stroke: theme[0],
             cursor: disabled === true ? 'not-allowed' : undefined,
@@ -1826,7 +1826,7 @@ class Calendar extends Component {
             SetState: (obj) => this.setState(obj),
             onChange: ({ year, month, day, hour }) => {
                 let { properties, onClose } = this.props;
-                let {calendarType,unit,onChange = ()=>{},close,value} = properties;
+                let { calendarType, unit, onChange = () => { }, close, value } = properties;
                 let { months } = this.state;
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = calendarType === 'gregorian' ? AIODate().toJalali({ date: dateArray }) : dateArray;
@@ -1871,7 +1871,7 @@ class DPToday extends Component {
     static contextType = DPContext;
     render() {
         let { properties, translate, today, todayWeekDay, thisMonthString } = this.context;
-        let {theme,calendarType,unit,size} = properties;
+        let { theme, calendarType, unit, size } = properties;
         return (
             <div className='aio-input-datepicker-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
                 <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
@@ -1894,7 +1894,7 @@ class DPFooter extends Component {
     static contextType = DPContext;
     render() {
         let { properties, changeActiveDate, translate } = this.context;
-        let {remove,disabled,onChange = ()=>{},size} = properties;
+        let { remove, disabled, onChange = () => { }, size } = properties;
         if (disabled) { return null }
         let buttonStyle = { padding: `${size / 20}px 0` };
         return (
@@ -1909,20 +1909,20 @@ class DPBody extends Component {
     static contextType = DPContext;
     getStyle() {
         let { properties } = this.context;
-        let {size,calendarType,unit} = properties;
+        let { size, calendarType, unit } = properties;
         var columnCount = { hour: 4, day: 7, month: 3 }[unit];
         var rowCount = { hour: 6, day: 7, month: 4 }[unit];
-        var padding = size / 18, fontSize = size / 15,a = (size - padding * 2) / columnCount;
+        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
         var rowHeight = { hour: size / 7, day: a, month: size / 6, year: size / 7 }[unit];
         var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) {gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '')}
-        for (let i = 1; i <= rowCount; i++) {gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '')}
+        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
+        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
         let direction = calendarType === 'gregorian' ? 'ltr' : 'rtl';
         return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
     }
     render() {
         let { properties, activeDate } = this.context;
-        let {unit} = properties;
+        let { unit } = properties;
         return (
             <div className='aio-input-datepicker-body' style={this.getStyle()}>
                 {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
@@ -1936,7 +1936,7 @@ class DPBodyDay extends Component {
     static contextType = DPContext;
     render() {
         let { properties, activeDate } = this.context;
-        let {theme,calendarType} = properties;
+        let { theme, calendarType } = properties;
         let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
         var daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
         let weekDays = AIODate().getWeekDays({ calendarType });
@@ -1952,7 +1952,7 @@ class DPCellWeekday extends Component {
     static contextType = DPContext;
     render() {
         let { properties, translate } = this.context;
-        let {theme,calendarType} = properties;
+        let { theme, calendarType } = properties;
         let { weekDay } = this.props;
         return (
             <div className='aio-input-datepicker-weekday aio-input-datepicker-cell' style={{ background: theme[1], color: theme[0] }}>
@@ -1972,8 +1972,8 @@ class DPCell extends Component {
         return str;
     }
     render() {
-        let { properties, translate,onChange } = this.context;
-        let {disabled,dateAttrs,theme,value,calendarType,unit,dateDisabled} = properties;
+        let { properties, translate, onChange } = this.context;
+        let { disabled, dateAttrs, theme, value, calendarType, unit, dateDisabled } = properties;
         let { dateArray } = this.props;
         let { isEqual, isMatch, getMonths, getToday } = AIODate();
         let isActive = !value ? false : AIODate().isEqual(dateArray, value);
@@ -2014,7 +2014,7 @@ class DPHeader extends Component {
     }
     getMonths() {
         let { properties, activeDate, changeActiveDate, months, translate } = this.context;
-        let {calendarType} = properties;
+        let { calendarType } = properties;
         let props = {
             value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
             options: months.map((o, i) => { return { value: i + 1, text: translate(calendarType === 'gregorian' ? o.slice(0, 3) : o) } })
@@ -2030,7 +2030,7 @@ class DPHeader extends Component {
     }
     render() {
         let { properties } = this.context;
-        let {size,unit} = properties
+        let { size, unit } = properties
         return (
             <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
                 <DPArrow type='minus' />
@@ -2051,11 +2051,11 @@ class DPHeaderDropdown extends Component {
         let { value, options, onChange } = this.props;
         if (this.props.options.length === 1) { return this.props.options[0] }
         let { properties } = this.context;
-        let {size,theme} = properties
+        let { size, theme } = properties
         let props = {
-            value, options, onChange, search: false,caret: false, type: 'select',
-            attrs: {className: 'aio-input-datepicker-dropdown'},
-            optionAttrs: {style: { height: size / 6, background: theme[1], color: theme[0] }}
+            value, options, onChange, search: false, caret: false, type: 'select',
+            attrs: { className: 'aio-input-datepicker-dropdown' },
+            optionAttrs: { style: { height: size / 6, background: theme[1], color: theme[0] } }
         }
         return (<AIOInput {...props} />)
     }
@@ -2064,7 +2064,7 @@ class DPArrow extends Component {
     static contextType = DPContext;
     change() {
         let { properties, years, changeActiveDate, activeDate } = this.context;
-        let {calendarType,unit} = properties;
+        let { calendarType, unit } = properties;
         let { type } = this.props;
         let offset = (calendarType === 'gregorian' ? 1 : -1) * (type === 'minus' ? -1 : 1);
         let date = [activeDate.year, activeDate.month, activeDate.day]
@@ -2076,7 +2076,7 @@ class DPArrow extends Component {
     }
     getIcon() {
         let { properties } = this.context, { type } = this.props;
-        let {theme} = properties;
+        let { theme } = properties;
         return <Icon path={type === 'minus' ? mdiChevronLeft : mdiChevronRight} size={1} style={{ color: theme[0] }} />
     }
     render() {
@@ -2086,12 +2086,12 @@ class DPArrow extends Component {
 }
 function InputSlider() {
     let { properties, isMultiple } = useContext(AICTX)
-    let {onChange,value} = properties;
+    let { onChange, value } = properties;
     function change(value) {
         if (isMultiple()) { onChange([...value]) }
-        else {onChange(value[0])}
+        else { onChange(value[0]) }
     }
-    let props = {...properties,value,onChange: !onChange ? undefined : change}
+    let props = { ...properties, value, onChange: !onChange ? undefined : change }
     return (<Slider {...props} />)
 }
 const SliderContext = createContext();
@@ -2201,7 +2201,7 @@ class Slider extends Component {
             let current = this.value[index];
             let before = index === 0 ? min : this.value[index - 1];
             let after = index === this.value.length - 1 ? max : this.value[index + 1]
-            this.startOffset = {x, y, size, index: [index], value: [current],startLimit: before - current, endLimit: after - current}
+            this.startOffset = { x, y, size, index: [index], value: [current], startLimit: before - current, endLimit: after - current }
         }
         else {
             let pointContainer1 = pointContainers.eq(index - 1);
@@ -2272,7 +2272,7 @@ class Slider extends Component {
         };
     }
     getStyle() {
-        return {direction:'ltr',flexDirection:this.flexDirection}
+        return { direction: 'ltr', flexDirection: this.flexDirection }
     }
     getClassName() {
         let { attrs, disabled } = this.props, { className } = attrs;
@@ -2326,15 +2326,15 @@ class SliderFill extends Component {
         var { mouseDown, rangeEvents = {}, fillStyle, getText, textStyle, touch, value } = this.context;
         var { index } = this.props;
         var containerProps = {
-            'data-index': index, className: 'aio-slider-fill-container',style: this.getContainerStyle(),
+            'data-index': index, className: 'aio-slider-fill-container', style: this.getContainerStyle(),
             [touch ? 'onTouchStart' : 'onMouseDown']: (e) => mouseDown(e, index, 'fill')
         }
-        for (let prop in rangeEvents) {containerProps[prop] = () => rangeEvents[prop](index)}
-        let text = getText(index, this.context),style, active;
-        if (typeof fillStyle === 'function') {style = fillStyle(index, this.context);}
+        for (let prop in rangeEvents) { containerProps[prop] = () => rangeEvents[prop](index) }
+        let text = getText(index, this.context), style, active;
+        if (typeof fillStyle === 'function') { style = fillStyle(index, this.context); }
         else {
-            if (value.length === 1 && index === 0) {style = fillStyle; active = true}
-            if (value.length > 1 && index !== 0 && index !== value.length) {style = fillStyle; active = true;}
+            if (value.length === 1 && index === 0) { style = fillStyle; active = true }
+            if (value.length > 1 && index !== 0 && index !== value.length) { style = fillStyle; active = true; }
         }
         return (
             <div {...containerProps}>
@@ -2348,7 +2348,7 @@ class SliderPoint extends Component {
     static contextType = SliderContext;
     getContainerStyle() {
         var { direction } = this.context, { percent } = this.props;
-        return {[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]]: percent[1] + '%'};
+        return { [{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]]: percent[1] + '%' };
     }
     getValueStyle() {
         var { showValue, isDown, valueStyle } = this.context;
@@ -2527,7 +2527,7 @@ class List extends Component {
         this.getOptionProp = getOptionProp;
         this.touch = 'ontouchstart' in document.documentElement;
         this.dom = createRef();
-        let {count,move} = properties;
+        let { count, move } = properties;
         if (move) { move(this.move.bind(this)) }
         this.state = { count }
     }
@@ -2539,18 +2539,18 @@ class List extends Component {
         if (type === 'bind') { element.bind(event, action) }
     }
     getClient(e) {
-        try {return this.touch && e.changedTouches? [e.changedTouches[0].clientX, e.changedTouches[0].clientY]: [e.clientX, e.clientY];}
-        catch {return this.touch && e.changedTouches? [e.changedTouches[0].clientX, e.changedTouches[0].clientY]: [e.clientX, e.clientY]}
+        try { return this.touch && e.changedTouches ? [e.changedTouches[0].clientX, e.changedTouches[0].clientY] : [e.clientX, e.clientY]; }
+        catch { return this.touch && e.changedTouches ? [e.changedTouches[0].clientX, e.changedTouches[0].clientY] : [e.clientX, e.clientY] }
     }
     getStyle() {
-        let {properties} = this.props;
-        let {size,width} = properties;
-        var { count } = this.state,height = count * (size);
+        let { properties } = this.props;
+        let { size, width } = properties;
+        var { count } = this.state, height = count * (size);
         return { width, height }
     }
     getOptions() {
-        let {properties} = this.props;
-        let {size,options = [],value:propsValue} = properties;
+        let { properties } = this.props;
+        let { size, options = [], value: propsValue } = properties;
         this.activeIndex = 0;
         return options.map((option, i) => {
             let value = this.getOptionProp(option, 'value');
@@ -2561,21 +2561,21 @@ class List extends Component {
         })
     }
     getIndexByTop(top) {
-        let {properties} = this.props;
-        let {size} = properties;
+        let { properties } = this.props;
+        let { size } = properties;
         let { count } = this.state;
         return Math.round(((count * size) - size - (2 * top)) / (2 * size));
     }
     getTopByIndex(index) {
-        let {properties} = this.props;
-        let {size} = properties;
+        let { properties } = this.props;
+        let { size } = properties;
         let { count } = this.state;
         return (count - 2 * index - 1) * size / 2;
     }
-    getContainerStyle() {return {top: this.getTopByIndex(this.activeIndex)};}
+    getContainerStyle() { return { top: this.getTopByIndex(this.activeIndex) }; }
     moveDown() {
-        let {properties} = this.props;
-        let {options = []} = properties;
+        let { properties } = this.props;
+        let { options = [] } = properties;
         if (this.activeIndex >= options.length - 1) { return }
         this.activeIndex++;
         var newTop = this.getTopByIndex(this.activeIndex);
@@ -2594,28 +2594,28 @@ class List extends Component {
         this.setBoldStyle(this.activeIndex);
     }
     keyDown(e) {
-        let {properties} = this.props;
-        let {editable} = properties;
+        let { properties } = this.props;
+        let { editable } = properties;
         if (!editable) { return }
-        if (e.keyCode === 38) {this.moveUp();}
-        else if (e.keyCode === 40) {this.moveDown();}
+        if (e.keyCode === 38) { this.moveUp(); }
+        else if (e.keyCode === 40) { this.moveDown(); }
     }
     getLimit() {
-        let {properties} = this.props;
-        let {options = []} = properties;
-        return {top: this.getTopByIndex(-1),bottom: this.getTopByIndex(options.length)}
+        let { properties } = this.props;
+        let { options = [] } = properties;
+        return { top: this.getTopByIndex(-1), bottom: this.getTopByIndex(options.length) }
     }
     getTrueTop(top) {
-        let {properties} = this.props;
-        let {options = []} = properties;
+        let { properties } = this.props;
+        let { options = [] } = properties;
         let index = this.getIndexByTop(top);
         if (index < 0) { index = 0 }
         if (index > options.length - 1) { index = options.length - 1 }
         return this.getTopByIndex(index);
     }
     mouseDown(e) {
-        let {properties} = this.props;
-        let {options = [],onChange = ()=>{},editable} = properties;
+        let { properties } = this.props;
+        let { options = [], onChange = () => { }, editable } = properties;
         if (!editable) { return }
         this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
         this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this));
@@ -2657,7 +2657,7 @@ class List extends Component {
         this.setBoldStyle(index);
         this.setStyle({ top: newTop });
     }
-    setStyle(obj) {$(this.dom.current).find('.aio-input-list-options').css(obj);}
+    setStyle(obj) { $(this.dom.current).find('.aio-input-list-options').css(obj); }
     mouseUp(e) {
         this.eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
         this.eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
@@ -2667,8 +2667,8 @@ class List extends Component {
         this.move(this.deltaY, this.so.newTop)
     }
     move(deltaY, startTop = this.getTop()) {
-        let {properties} = this.props;
-        let {options = [],onChange = ()=>{},stop,decay} = properties;
+        let { properties } = this.props;
+        let { options = [], onChange = () => { }, stop, decay } = properties;
         if (decay < 0) { decay = 0 }
         if (decay > 99) { decay = 99 }
         decay = parseFloat(1 + decay / 1000)
@@ -2689,11 +2689,11 @@ class List extends Component {
             this.setStyle({ top: startTop });
         }, 20)
     }
-    componentDidUpdate() {this.setBoldStyle(this.activeIndex);}
-    componentDidMount() {this.setBoldStyle(this.activeIndex);}
+    componentDidUpdate() { this.setBoldStyle(this.activeIndex); }
+    componentDidMount() { this.setBoldStyle(this.activeIndex); }
     render() {
-        let {properties} = this.props;
-        let {attrs} = properties;
+        let { properties } = this.props;
+        let { attrs } = properties;
         let options = this.getOptions();
         return (
             <div
@@ -2712,12 +2712,12 @@ class List extends Component {
 const MapContext = createContext();
 function Map(props) {
     let storage = AIOStorage('aio-input-storage');
-    let mapApiKeys = storage.load({name:'mapApiKeys',def:{map:'',service:''}});
+    let mapApiKeys = storage.load({ name: 'mapApiKeys', def: { map: '', service: '' } });
     let { properties } = props;
-    let {popup,mapConfig,onChange,disabled,attrs,onChangeAddress,value} = properties;
-    if(!value){value = { lat:35.699739, lng:51.338097 }}
-    if(!value.lat){value.lat = 35.699739}
-    if(!value.lng){value.lng = 51.338097}       
+    let { popup, mapConfig, onChange, disabled, attrs, onChangeAddress, value } = properties;
+    if (!value) { value = { lat: 35.699739, lng: 51.338097 } }
+    if (!value.lat) { value.lat = 35.699739 }
+    if (!value.lng) { value.lng = 51.338097 }
     let isPopup = false;
     let onClose = false;
     let p = { popup, isPopup, onClose, onChange, attrs, onChangeAddress, value, mapApiKeys, mapConfig, disabled }
@@ -2804,18 +2804,18 @@ class MapUnit extends Component {
     panTo(lat, lng) { this.map.panTo({ lat, lng }) }
     async updateAddress({ lat, lng }) {
         clearTimeout(this.atimeout);
-        this.setState({addressLoading:true})
-        this.atimeout = setTimeout(async ()=>{
+        this.setState({ addressLoading: true })
+        this.atimeout = setTimeout(async () => {
             let { onChange = () => { } } = this.props;
             let address = await this.getAddress({ lat, lng });
-            this.setState({ address,addressLoading:false });
-            onChange({lat,lng,address});
-        },500);
+            this.setState({ address, addressLoading: false });
+            onChange({ lat, lng, address });
+        }, 500);
     }
     change({ lat, lng }) {
         let { onChange = () => { } } = this.props;
-        let {address} = this.state;
-        onChange({ lat, lng,address });
+        let { address } = this.state;
+        onChange({ lat, lng, address });
         this.updateAddress({ lat, lng })
     }
     move({ lat, lng }) {
@@ -2841,7 +2841,7 @@ class MapUnit extends Component {
             zoomControl
         }
         let map = new window.L.Map(this.dom.current, config);
-        let L = window.L,myMap = map;
+        let L = window.L, myMap = map;
         this.map = myMap; this.L = L;
         if (marker && myMap) { this.marker = L.marker([value.lat, value.lng]).addTo(myMap); }
         myMap.on('click', (e) => {
@@ -2876,15 +2876,15 @@ class MapUnit extends Component {
         let { prevValue, prevZoom: szoom } = this.state;
         let { value } = this.props;
         if (
-            JSON.stringify(prevValue) !== JSON.stringify(value) 
+            JSON.stringify(prevValue) !== JSON.stringify(value)
             //|| pzoom !== szoom
         ) {
             setTimeout(() => {
                 this.flyTo(
-                    value.lat, 
+                    value.lat,
                     value.lng, szoom, 'componentDidUpdate');
-                this.setState({ 
-                    prevValue: value, 
+                this.setState({
+                    prevValue: value,
                     //prevZoom: pzoom 
                 })
             }, 0)
@@ -2941,12 +2941,12 @@ class MapUnit extends Component {
             if (popup === true) { popup = {} }
             let props = {
                 ...this.props, ...popup, value,
-                mapConfig: {...popup.mapConfig },
+                mapConfig: { ...popup.mapConfig },
                 isPopup: true, popup: false,
                 onClose: () => this.setState({ showPopup: false }),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
-                onChange: (obj) => { 
-                    this.move(obj);  
+                onChange: (obj) => {
+                    this.move(obj);
                 }
             }
             return <MapUnit {...props} />
@@ -2954,14 +2954,14 @@ class MapUnit extends Component {
         return null
     }
     render() {
-        let { attrs = {},mapConfig = {},popup,isPopup } = this.props;
+        let { attrs = {}, mapConfig = {}, popup, isPopup } = this.props;
         return (
             <>
                 <MapContext.Provider value={this.getContext()}>
                     <RVD
                         layout={{
-                            className: 'aio-input-map-container' + (mapConfig.draggable === false?' not-draggable':''), style: attrs.style,
-                            onClick:()=>{
+                            className: 'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : ''), style: attrs.style,
+                            onClick: () => {
                                 if (popup && !isPopup) { this.setState({ showPopup: true }) }
                             },
                             column: [{ html: <MapHeader /> }, { flex: 1, attrs: { ref: this.dom }, html: '' }, { html: <MapFooter /> }]
@@ -2993,7 +2993,7 @@ function MapHeader() {
         clearTimeout(timeout);
         timeout = setTimeout(async () => {
             try {
-                let param = { headers: { 'Api-Key': mapApiKeys.service,'Authorization':false } }
+                let param = { headers: { 'Api-Key': mapApiKeys.service, 'Authorization': false } }
                 let url = `https://api.neshan.org/v1/search?term=${decodeURI(searchValue)}&lat=${lat}&lng=${lng}`;
                 setLoading(true); let res = await Axios.get(url, param); setLoading(false)
                 if (res.status !== 200) { return }
@@ -3065,106 +3065,106 @@ function MapFooter() {
     let { onClose, onChange } = rootProps;
     function submit_layout() {
         if (!rootProps.isPopup) { return false }
-        return { html: (<button className='aio-input-map-submit' onClick={async () => {onChange(rootState.value); onClose()}}>تایید موقعیت</button>) }
+        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(rootState.value); onClose() }}>تایید موقعیت</button>) }
     }
     function details_layout() {
-        let {mapConfig = {}} = rootProps;
-        if(mapConfig.showAddress === false){return false}
-        if(rootState.addressLoading){
-            return {flex:1,html:<Icon path={mdiLoading} size={1} spin={0.4}/>,align:'v'}
+        let { mapConfig = {} } = rootProps;
+        if (mapConfig.showAddress === false) { return false }
+        if (rootState.addressLoading) {
+            return { flex: 1, html: <Icon path={mdiLoading} size={1} spin={0.4} />, align: 'v' }
         }
         return { flex: 1, column: [{ html: rootState.address, className: 'aio-input-map-address' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
     }
     let Submit = submit_layout()
     let Details = details_layout();
-    if(!Submit && !Details){return null}
+    if (!Submit && !Details) { return null }
     return (<RVD layout={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
-function AIOSwip({dom,start = ()=>{},move = ()=>{},end = ()=>{},speedX = 1,speedY = 1,stepX = 1,stepY = 1,id,reverseY,reverseX,minY,maxY,minX,maxX}){
+function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, speedX = 1, speedY = 1, stepX = 1, stepY = 1, id, reverseY, reverseX, minY, maxY, minX, maxX }) {
     let a = {
-      timeout:undefined,
-      count:0,
-      getDom(){return dom()},
-      getClient(e){return 'ontouchstart' in document.documentElement?{x: e.changedTouches[0].clientX,y:e.changedTouches[0].clientY }:{x:e.clientX,y:e.clientY}},
-      eventHandler(selector, event, action,type = 'bind'){
-        var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" }; 
-        event = 'ontouchstart' in document.documentElement ? me[event] : event;
-        var element = typeof selector === "string"?(selector === "window"?$(window):$(selector)):selector; 
-        element.unbind(event, action); 
-        if(type === 'bind'){element.bind(event, action)}
-      },
-      init(){
-        a.count++;
-        if(a.count > 10){clearTimeout(a.timeout); return}
-        let res = dom();
-        if(!res.length){a.timeout = setTimeout(()=>a.init(),400)}
-        else {
-          clearTimeout(a.timeout);
-          this.eventHandler(a.getDom(),'mousedown',$.proxy(this.mouseDown,this))
+        timeout: undefined,
+        count: 0,
+        getDom() { return dom() },
+        getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
+        eventHandler(selector, event, action, type = 'bind') {
+            var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
+            event = 'ontouchstart' in document.documentElement ? me[event] : event;
+            var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
+            element.unbind(event, action);
+            if (type === 'bind') { element.bind(event, action) }
+        },
+        init() {
+            a.count++;
+            if (a.count > 10) { clearTimeout(a.timeout); return }
+            let res = dom();
+            if (!res.length) { a.timeout = setTimeout(() => a.init(), 400) }
+            else {
+                clearTimeout(a.timeout);
+                this.eventHandler(a.getDom(), 'mousedown', $.proxy(this.mouseDown, this))
+            }
+        },
+        getPercentByValue(value, start, end) { return 100 * (value - start) / (end - start) },
+        getMousePosition(e) {
+            let client = this.getClient(e), x = client.x - this.left, y = client.y - this.top;
+            let xp = this.getPercentByValue(x, 0, this.width), yp = this.getPercentByValue(y, 0, this.height);
+            return { xp, yp, clientX: client.x, clientY: client.y, x, y }
+        },
+        mouseDown(e) {
+            let dom = a.getDom();
+            let offset = dom.offset();
+            this.width = dom.width();
+            this.height = dom.height();
+            this.left = offset.left;
+            this.top = offset.top;
+            let mp = this.getMousePosition(e)
+            this.so = {
+                client: { x: mp.clientX, y: mp.clientY }
+            };
+            let res = start({ mousePosition: { ...mp }, id });
+            if (!Array.isArray(res)) { return; }
+            let x = res[0];
+            let y = res[1];
+            this.so.x = x;
+            this.so.y = y;
+            this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
+            this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this))
+        },
+        mouseMove(e) {
+            let client = this.getClient(e);
+            let dx = client.x - this.so.client.x;
+            let dy = client.y - this.so.client.y;
+            dx = Math.round(dx * speedX) * (reverseX ? -1 : 1)
+            dy = Math.round(dy * speedY) * (reverseY ? -1 : 1)
+            dx = Math.floor(dx / stepX) * stepX;
+            dy = Math.floor(dy / stepY) * stepY;
+            if (dx === this.dx && dy === this.dy) { return }
+            this.dx = dx;
+            this.dy = dy;
+            let dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)))
+            this.dist = dist;
+            let x, y;
+            if (this.so.x !== undefined && this.so.y !== undefined) {
+                x = this.so.x + dx;
+                y = this.so.y + dy;
+                if (minX !== undefined && x < minX) { x = minX }
+                if (maxX !== undefined && x > maxX) { x = maxX }
+                if (minY !== undefined && y < minY) { y = minY }
+                if (maxY !== undefined && y > maxY) { y = maxY }
+            }
+            move({ dx, dy, dist, x, y, id, mousePosition: { ...this.getMousePosition(e) }, e });
+        },
+        mouseUp(e) {
+            this.eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
+            this.eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
+            end({ dx: this.dx, dy: this.dy, dist: this.dist, id, e })
         }
-      },
-      getPercentByValue(value,start,end){return 100 * (value - start) / (end - start)},
-      getMousePosition(e){
-          let client = this.getClient(e),x = client.x - this.left,y = client.y - this.top;
-          let xp = this.getPercentByValue(x,0,this.width),yp = this.getPercentByValue(y,0,this.height);
-          return {xp,yp,clientX:client.x,clientY:client.y,x,y}
-      },
-      mouseDown(e){
-        let dom = a.getDom();
-        let offset = dom.offset();
-        this.width = dom.width();
-        this.height = dom.height(); 
-        this.left = offset.left;
-        this.top = offset.top;
-        let mp = this.getMousePosition(e)
-        this.so = {
-          client:{x:mp.clientX,y:mp.clientY}
-        };
-        let res = start({mousePosition:{...mp},id});
-        if(!Array.isArray(res)){return;}
-        let x = res[0];
-        let y = res[1];
-        this.so.x = x;
-        this.so.y = y;
-        this.eventHandler('window','mousemove',$.proxy(this.mouseMove,this));
-        this.eventHandler('window','mouseup',$.proxy(this.mouseUp,this))
-      },
-      mouseMove(e){
-        let client = this.getClient(e);
-        let dx = client.x - this.so.client.x;
-        let dy = client.y - this.so.client.y;
-        dx = Math.round(dx * speedX) * (reverseX?-1:1)
-        dy = Math.round(dy * speedY) * (reverseY?-1:1)
-        dx = Math.floor(dx / stepX) * stepX;
-        dy = Math.floor(dy / stepY) * stepY;
-        if(dx === this.dx && dy === this.dy){return}
-        this.dx = dx;
-        this.dy = dy;
-        let dist = Math.round(Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)))
-        this.dist = dist;
-        let x,y;
-        if(this.so.x !== undefined && this.so.y !== undefined){
-          x = this.so.x + dx;
-          y = this.so.y + dy;
-          if(minX !== undefined && x < minX){x = minX}
-          if(maxX !== undefined && x > maxX){x = maxX}
-          if(minY !== undefined && y < minY){y = minY}
-          if(maxY !== undefined && y > maxY){y = maxY} 
-        }
-        move({dx,dy,dist,x,y,id,mousePosition:{...this.getMousePosition(e)},e});
-      },
-      mouseUp(e){
-        this.eventHandler('window','mousemove',this.mouseMove,'unbind');
-        this.eventHandler('window','mouseup',this.mouseUp,'unbind');
-        end({dx:this.dx,dy:this.dy,dist:this.dist,id,e})
-      }
     }
     a.init();
-  }
-function AIOInputSearch(items,searchValue,getValue = (o) =>o){if(!searchValue){return items}function isMatch(keys,value){for(let i = 0; i < keys.length; i++){if(value.indexOf(keys[i]) === -1){return false}} return true}let keys = searchValue.split(' ');return items.filter((o,i)=>isMatch(keys,getValue(o,i)))}
-function ExportToExcel(rows,config = {}){let {promptText = 'Inter Excel File Name'} = config;let o = {fixPersianAndArabicNumbers (str){if(typeof str !== 'string'){return str} let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; for(var i=0; i<10; i++){str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);}return str;},getJSON(rows){let result = [];for (let i = 0; i < rows.length; i++) {let json = rows[i],fixedJson = {};for(let prop in json){fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} result.push(fixedJson);}return result;},export() {let name = window.prompt(promptText);if (!name || name === null || !name.length) {return};var data = this.getJSON(rows);var arrData = typeof data != "object" ? JSON.parse(data) : data;var CSV = "";CSV += '\r\n\n';if (true) {let row = "";for (let index in arrData[0]) { row += index + ","; }row = row.slice(0, -1);CSV += row + "\r\n";}for (var i = 0; i < arrData.length; i++) {let row = "";for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; }row.slice(0, row.length - 1);CSV += row + "\r\n";}if (CSV === "") { alert("Invalid data"); return; }var fileName = name.replace(/ /g, "_");var universalBOM = "\uFEFF";var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV);var link = document.createElement("a");link.href = uri;link.style = "visibility:hidden";link.download = fileName + ".csv";document.body.appendChild(link);link.click();document.body.removeChild(link);}}; return o.export();}
-async function DownloadUrl(url, name) {fetch(url, {mode: 'no-cors',}).then(resp => resp.blob()).then(blob => {let url = window.URL.createObjectURL(blob);let a = document.createElement('a');a.style.display = 'none';a.href = url;a.download = name;document.body.appendChild(a);a.click();window.URL.revokeObjectURL(url);}).catch(() => alert('oh no!'));}
-function JSXToHTML(html){return ReactDOMServer.renderToStaticMarkup(html)}
+}
+function AIOInputSearch(items, searchValue, getValue = (o) => o) { if (!searchValue) { return items } function isMatch(keys, value) { for (let i = 0; i < keys.length; i++) { if (value.indexOf(keys[i]) === -1) { return false } } return true } let keys = searchValue.split(' '); return items.filter((o, i) => isMatch(keys, getValue(o, i))) }
+function ExportToExcel(rows, config = {}) { let { promptText = 'Inter Excel File Name' } = config; let o = { fixPersianAndArabicNumbers(str) { if (typeof str !== 'string') { return str } let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g], arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; for (var i = 0; i < 10; i++) { str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i); } return str; }, getJSON(rows) { let result = []; for (let i = 0; i < rows.length; i++) { let json = rows[i], fixedJson = {}; for (let prop in json) { fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop]) } result.push(fixedJson); } return result; }, export() { let name = window.prompt(promptText); if (!name || name === null || !name.length) { return }; var data = this.getJSON(rows); var arrData = typeof data != "object" ? JSON.parse(data) : data; var CSV = ""; CSV += '\r\n\n'; if (true) { let row = ""; for (let index in arrData[0]) { row += index + ","; } row = row.slice(0, -1); CSV += row + "\r\n"; } for (var i = 0; i < arrData.length; i++) { let row = ""; for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; } row.slice(0, row.length - 1); CSV += row + "\r\n"; } if (CSV === "") { alert("Invalid data"); return; } var fileName = name.replace(/ /g, "_"); var universalBOM = "\uFEFF"; var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV); var link = document.createElement("a"); link.href = uri; link.style = "visibility:hidden"; link.download = fileName + ".csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }; return o.export(); }
+async function DownloadUrl(url, name) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
+function JSXToHTML(html) { return ReactDOMServer.renderToStaticMarkup(html) }
 function GetDistance(p1, p2) {
     let { lat: lat1, lng: lon1 } = p1;
     let { lat: lat2, lng: lon2 } = p2;
@@ -3374,274 +3374,274 @@ export function AIOValidation(props) {
     try { validation = $$.getValidation() } catch { validation = '' }
     return validation;
 }
-export function AIOInputSetStorage(name,value){
+export function AIOInputSetStorage(name, value) {
     let storage = AIOStorage('aio-input-storage');
-    storage.save({name,value})
+    storage.save({ name, value })
 }
-export function getFormInputs(fields,path){
-    function getInput(input){return typeof input === 'string'?getFormInput(input,path):input}
-    return fields.map((o)=>Array.isArray(o)?{row:o.map((oo)=>getInput(oo))}:getInput(o))
+export function getFormInputs(fields, path) {
+    function getInput(input) { return typeof input === 'string' ? getFormInput(input, path) : input }
+    return fields.map((o) => Array.isArray(o) ? { row: o.map((oo) => getInput(oo)) } : getInput(o))
 }
-export function getFormInput(Field,path){
-    function getOptions(field,path){
+export function getFormInput(Field, path) {
+    function getOptions(field, path) {
         return {
-            militaryservice:()=>['مشمول','معاف','پایان خدمت'],gender:()=>['مرد','زن'],married:()=>['مجرد','متاهل'],state:()=>Object.keys(getCities()),
-            city:()=>(value)=>{
+            militaryservice: () => ['مشمول', 'معاف', 'پایان خدمت'], gender: () => ['مرد', 'زن'], married: () => ['مجرد', 'متاهل'], state: () => Object.keys(getCities()),
+            city: () => (value) => {
                 let state;
-                try{eval(`state = value${path?'.' + path:''}.state`)} catch{}
-                return !state?[]:getCities()[state]
+                try { eval(`state = value${path ? '.' + path : ''}.state`) } catch { }
+                return !state ? [] : getCities()[state]
             },
-            
+
         }[field]()
     }
-    function getField(field){return `value${path?`.${path}`:''}.${field}`}
-    function getBase(field){
+    function getField(field) { return `value${path ? `.${path}` : ''}.${field}` }
+    function getBase(field) {
         let list = field.split('_');
-        if(list.length === 3){return {field:list[0],input:{type:list[1]},label:list[2],extra:{}}}
-        let {input,label,extra = {}} = {
-            fullname:{input:{type:'text'},label:'نام و نام خانوادگی'},
-            firstname:{input:{type:'text'},label:'نام'},
-            lastname:{input:{type:'text'},label:'نام خانوادگی'},
-            username:{input:{type:'text'},label:'نام کاربری'},
-            address:{input:{type:'textarea'},label:'آدرس'},
-            email:{input:{type:'text'},label:'ایمیل'},
-            father:{input:{type:'text'},label:'نام پدر'},
-            phone:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره تلفن'},
-            mobile:{input:{type:'text',maxLength:11,justNumber:true},label:'شماره همراه'},
-            postal:{input:{type:'text',justNumber:true},label:'کد پستی'},
-            nationalcode:{input:{type:'text',maxLength:10,justNumber:true},label:'کد ملی'},
-            idnumber:{input:{type:'text'},label:'شماره شناسنامه'}, 
-            cardbank:{input:{type:'text',justNumber:true,maxLength:16},label:'شماره کارت'},
-            state:{input:{type:'select'},label:'استان'},
-            city:{input:{type:'select'},label:'شهر'},
-            gender:{input:{type:'radio'},label:'جنسیت'},
-            married:{input:{type:'radio'},label:'وضعیت تاهل'},
-            password:{input:{type:'password'},label:'رمز عبور'},
-            repassword:{
-                input:{type:'password'},label:'تکرار رمز عبور',
-                extra:{validations:[['=',getField('password'),{message:'تکرار رمز صحیح نیست'}]]}
+        if (list.length === 3) { return { field: list[0], input: { type: list[1] }, label: list[2], extra: {} } }
+        let { input, label, extra = {} } = {
+            fullname: { input: { type: 'text' }, label: 'نام و نام خانوادگی' },
+            firstname: { input: { type: 'text' }, label: 'نام' },
+            lastname: { input: { type: 'text' }, label: 'نام خانوادگی' },
+            username: { input: { type: 'text' }, label: 'نام کاربری' },
+            address: { input: { type: 'textarea' }, label: 'آدرس' },
+            email: { input: { type: 'text' }, label: 'ایمیل' },
+            father: { input: { type: 'text' }, label: 'نام پدر' },
+            phone: { input: { type: 'text', maxLength: 11, justNumber: true }, label: 'شماره تلفن' },
+            mobile: { input: { type: 'text', maxLength: 11, justNumber: true }, label: 'شماره همراه' },
+            postal: { input: { type: 'text', justNumber: true }, label: 'کد پستی' },
+            nationalcode: { input: { type: 'text', maxLength: 10, justNumber: true }, label: 'کد ملی' },
+            idnumber: { input: { type: 'text' }, label: 'شماره شناسنامه' },
+            cardbank: { input: { type: 'text', justNumber: true, maxLength: 16 }, label: 'شماره کارت' },
+            state: { input: { type: 'select' }, label: 'استان' },
+            city: { input: { type: 'select' }, label: 'شهر' },
+            gender: { input: { type: 'radio' }, label: 'جنسیت' },
+            married: { input: { type: 'radio' }, label: 'وضعیت تاهل' },
+            password: { input: { type: 'password' }, label: 'رمز عبور' },
+            repassword: {
+                input: { type: 'password' }, label: 'تکرار رمز عبور',
+                extra: { validations: [['=', getField('password'), { message: 'تکرار رمز صحیح نیست' }]] }
             },
-            militaryservice:{input:{type:'radio'},label:'وضعیت خدمت'},
-            location:{
-                input:{
-                    type:'map',mapConfig:{draggable:false,zoomable:false,showAddress:false},
-                    popup:{mapConfig:{search:true,title:'ثبت موقعیت جغرافیایی',zoomable:true,draggable:true}},
-                    style:{height:90,minHeight:90}
+            militaryservice: { input: { type: 'radio' }, label: 'وضعیت خدمت' },
+            location: {
+                input: {
+                    type: 'map', mapConfig: { draggable: false, zoomable: false, showAddress: false },
+                    popup: { mapConfig: { search: true, title: 'ثبت موقعیت جغرافیایی', zoomable: true, draggable: true } },
+                    style: { height: 90, minHeight: 90 }
                 },
-                label:'موقعیت جغرافیایی',extra:{addressField:getField('address')}
-            }, 
+                label: 'موقعیت جغرافیایی', extra: { addressField: getField('address') }
+            },
         }[field];
-        return {input,label,extra,field}
+        return { input, label, extra, field }
     }
     let required = false;
-    if(Field.indexOf('*') === 0){Field = Field.slice(1,Field.length); required = true}
-    let {input,label,extra,field} = getBase(Field);
-    let inputProps = {...input}
-    if(['select','radio'].indexOf(input.type) !== -1){inputProps = {...inputProps,optionText:'option',optionValue:'option',options:getOptions(field,path)}}
-    if(['select'].indexOf(input.type) !== -1){inputProps = {...inputProps,popover:{fitHorizontal:true}}}
-    return {field:`value${path?`.${path}`:''}.${field}`,validations:required?[['required']]:undefined,label,input:inputProps,...extra}     
+    if (Field.indexOf('*') === 0) { Field = Field.slice(1, Field.length); required = true }
+    let { input, label, extra, field } = getBase(Field);
+    let inputProps = { ...input }
+    if (['select', 'radio'].indexOf(input.type) !== -1) { inputProps = { ...inputProps, optionText: 'option', optionValue: 'option', options: getOptions(field, path) } }
+    if (['select'].indexOf(input.type) !== -1) { inputProps = { ...inputProps, popover: { fitHorizontal: true } } }
+    return { field: `value${path ? `.${path}` : ''}.${field}`, validations: required ? [['required']] : undefined, label, input: inputProps, ...extra }
 }
 function getCities() {
     return {
         "آذربایجان شرقی": ["اسکو", "اهر", "ایلخچی", "آبش احمد", "آذرشهر", "آقکند", "باسمنج", "بخشایش", "بستان آباد", "بناب", "بناب جدید", "تبریز", "ترک", "ترکمانچای", "تسوج", "تیکمه داش", "جلفا", "خاروانا", "خامنه", "خراجو", "خسروشهر", "خضرلو", "خمارلو", "خواجه", "دوزدوزان", "زرنق", "زنوز", "سراب", "سردرود", "سهند", "سیس", "سیه رود", "شبستر", "شربیان", "شرفخانه", "شندآباد", "صوفیان", "عجب شیر", "قره آغاج", "کشکسرای", "کلوانق", "کلیبر", "کوزه کنان", "گوگان", "لیلان", "مراغه", "مرند", "ملکان", "ملک کیان", "ممقان", "مهربان", "میانه", "نظرکهریزی", "هادی شهر", "هرگلان", "هریس", "هشترود", "هوراند", "وایقان", "ورزقان", "یامچی"],
-        "آذربایجان غربی": ["ارومیه", "اشنویه", "ایواوغلی", "آواجیق", "باروق", "بازرگان", "بوکان", "پلدشت", "پیرانشهر", "تازه شهر", "تکاب", "چهاربرج", "خوی", "دیزج دیز", "ربط", "سردشت", "سرو", "سلماس","سیلوانه", "سیمینه", "سیه چشمه", "شاهین دژ", "شوط", "فیرورق", "قره ضیاءالدین", "قطور", "قوشچی", "کشاورز", "گردکشانه", "ماکو", "محمدیار", "محمودآباد", "مهاباد", "میاندوآب","میرآباد", "نالوس", "نقده", "نوشین"],
-        "اردبیل": ["اردبیل", "اصلاندوز", "آبی بیگلو", "بیله سوار", "پارس آباد", "تازه کند", "تازه کندانگوت", "جعفرآباد", "خلخال", "رضی", "سرعین", "عنبران", "فخرآباد", "کلور", "کوراییم","گرمی", "گیوی", "لاهرود", "مشگین شهر", "نمین", "نیر", "هشتجین", "هیر"],
+        "آذربایجان غربی": ["ارومیه", "اشنویه", "ایواوغلی", "آواجیق", "باروق", "بازرگان", "بوکان", "پلدشت", "پیرانشهر", "تازه شهر", "تکاب", "چهاربرج", "خوی", "دیزج دیز", "ربط", "سردشت", "سرو", "سلماس", "سیلوانه", "سیمینه", "سیه چشمه", "شاهین دژ", "شوط", "فیرورق", "قره ضیاءالدین", "قطور", "قوشچی", "کشاورز", "گردکشانه", "ماکو", "محمدیار", "محمودآباد", "مهاباد", "میاندوآب", "میرآباد", "نالوس", "نقده", "نوشین"],
+        "اردبیل": ["اردبیل", "اصلاندوز", "آبی بیگلو", "بیله سوار", "پارس آباد", "تازه کند", "تازه کندانگوت", "جعفرآباد", "خلخال", "رضی", "سرعین", "عنبران", "فخرآباد", "کلور", "کوراییم", "گرمی", "گیوی", "لاهرود", "مشگین شهر", "نمین", "نیر", "هشتجین", "هیر"],
         "اصفهان": ["ابریشم", "ابوزیدآباد", "اردستان", "اژیه", "اصفهان", "افوس", "انارک", "ایمانشهر", "آران وبیدگل", "بادرود", "باغ بهادران", "بافران", "برزک", "برف انبار", "بهاران شهر", "بهارستان", "بوئین و میاندشت", "پیربکران", "تودشک", "تیران", "جندق", "جوزدان", "جوشقان و کامو", "چادگان", "چرمهین", "چمگردان", "حبیب آباد", "حسن آباد", "حنا", "خالدآباد", "خمینی شهر", "خوانسار", "خور", "خورزوق", "داران", "دامنه", "درچه", "دستگرد", "دهاقان", "دهق", "دولت آباد", "دیزیچه", "رزوه", "رضوانشهر", "زاینده رود", "زرین شهر", "زواره", "زیباشهر", "سده لنجان", "سفیدشهر", "سگزی", "سمیرم", "شاهین شهر", "شهرضا", "طالخونچه", "عسگران", "علویجه", "فرخی", "فریدونشهر", "فلاورجان", "فولادشهر", "قمصر", "قهجاورستان", "قهدریجان", "کاشان", "کرکوند", "کلیشاد و سودرجان", "کمشچه", "کمه", "کهریزسنگ", "کوشک", "کوهپایه", "گرگاب", "گزبرخوار", "گلپایگان", "گلدشت", "گلشهر", "گوگد", "لای بید", "مبارکه", "مجلسی", "محمدآباد", "مشکات", "منظریه", "مهاباد", "میمه", "نائین", "نجف آباد", "نصرآباد", "نطنز", "نوش آباد", "نیاسر", "نیک آباد", "هرند", "ورزنه", "ورنامخواست", "وزوان", "ونک"],
-        "البرز": ["اسارا", "اشتهارد", "تنکمان","تهران دشت", "چهارباغ","ساوجبلاغ", "سعید آباد", "شهر جدید هشتگرد", "طالقان","فردیس", "کرج","کردان", "کمال شهر", "کوهسار", "گرمدره","گلبهار", "ماهدشت", "محمدشهر", "مشکین دشت", "نظرآباد", "هشتگرد"],
-        "ایلام": ["ارکواز","ایلام","ایوان","آبدانان","آسمان آباد","بدره","پهله","توحید","چوار","دره شهر","دلگشا","دهلران","زرنه","سراب باغ","سرابله","صالح آباد","لومار","مهران","مورموری","موسیان","میمه" ],
-        "بوشهر": ["امام حسن","انارستان","اهرم","آب پخش","آبدان","برازجان","بردخون","بندردیر","بندردیلم","بندرریگ","بندرکنگان","بندرگناوه","بنک","بوشهر","تنگ ارم","جم","چغادک","خارک","خورموج","دالکی","دلوار","ریز","سعدآباد","سیراف","شبانکاره","شنبه","عسلویه","کاکی","کلمه","نخل تقی","وحدتیه"],
-        "تهران":["ارجمند","اسلامشهر","اندیشه","آبسرد","آبعلی","باغستان","باقرشهر","بومهن","پاکدشت","پردیس","پرند","پیشوا","تهران","جوادآباد","چهاردانگه","حسن آباد","دماوند","دیزین","شهر ری","رباط کریم","رودهن","شاهدشهر","شریف آباد","شمشک","شهریار","صالح آباد","صباشهر","صفادشت","فردوسیه","فشم","فیروزکوه","قدس","قرچک","قیامدشت","کهریزک","کیلان","گلستان","لواسان","مارلیک","ملارد","میگون","نسیم شهر","نصیرآباد","وحیدیه","ورامین"],
-        "چهارمحال و بختیاری": ["اردل","آلونی","باباحیدر","بروجن","بلداجی","بن","جونقان","چلگرد","سامان","سفیددشت","سودجان","سورشجان","شلمزار","شهرکرد","طاقانک","فارسان","فرادنبه","فرخ شهر","کیان","گندمان","گهرو","لردگان","مال خلیفه","ناغان","نافچ","نقنه","هفشجان"],
-        "خراسان جنوبی": ["ارسک","اسدیه","اسفدن","اسلامیه","آرین شهر","آیسک","بشرویه","بیرجند","حاجی آباد","خضری دشت بیاض","خوسف","زهان","سرایان","سربیشه","سه قلعه","شوسف","طبس ","فردوس","قاین","قهستان","محمدشهر","مود","نهبندان","نیمبلوک"],
-        "خراسان رضوی": ["احمدآباد صولت","انابد","باجگیران","باخرز","بار","بایگ","بجستان","بردسکن","بیدخت","بینالود","تایباد","تربت جام","تربت حیدریه","جغتای","جنگل","چاپشلو","چکنه","چناران","خرو","خلیل آباد","خواف","داورزن","درگز","در رود","دولت آباد","رباط سنگ","رشتخوار","رضویه","روداب","ریوش","سبزوار","سرخس","سفیدسنگ","سلامی","سلطان آباد","سنگان","شادمهر","شاندیز","ششتمد","شهرآباد","شهرزو","صالح آباد","طرقبه","عشق آباد","فرهادگرد","فریمان","فیروزه","فیض آباد","قاسم آباد","قدمگاه","قلندرآباد","قوچان","کاخک","کاریز","کاشمر","کدکن","کلات","کندر","گلمکان","گناباد","لطف آباد","مزدآوند","مشهد","ملک آباد","نشتیفان","نصرآباد","نقاب","نوخندان","نیشابور","نیل شهر","همت آباد","یونسی" ],
-        "خراسان شمالی": ["اسفراین","ایور","آشخانه","بجنورد","پیش قلعه","تیتکانلو","جاجرم","حصارگرمخان","درق","راز","سنخواست","شوقان","شیروان","صفی آباد","فاروج","قاضی","گرمه","لوجلی"],
-        "خوزستان": ["اروندکنار","الوان","امیدیه","اندیمشک","اهواز","ایذه","آبادان","آغاجاری","باغ ملک","بستان","بندرامام خمینی","بندرماهشهر","بهبهان","ترکالکی","جایزان","چمران","چویبده","حر","حسینیه","حمزه","حمیدیه","خرمشهر","دارخوین","دزآب","دزفول","دهدز","رامشیر","رامهرمز","رفیع","زهره","سالند","سردشت","سوسنگرد","شادگان","شاوور","شرافت","شوش","شوشتر","شیبان","صالح شهر","صفی آباد","صیدون","قلعه تل","قلعه خواجه","گتوند","لالی","مسجدسلیمان","ملاثانی","میانرود","مینوشهر","هفتگل","هندیجان","هویزه","ویس"],
-        "زنجان": ["ابهر","ارمغان خانه","آب بر","چورزق","حلب","خرمدره","دندی","زرین آباد","زرین رود","زنجان","سجاس","سلطانیه","سهرورد","صائین قلعه","قیدار","گرماب","ماه نشان","هیدج"],
-        "سمنان": ["امیریه","ایوانکی","آرادان","بسطام","بیارجمند","دامغان","درجزین","دیباج","سرخه","سمنان","شاهرود","شهمیرزاد","کلاته خیج","گرمسار","مجن","مهدی شهر","میامی"],
-        "سیستان و بلوچستان": ["ادیمی","اسپکه","ایرانشهر","بزمان","بمپور","بنت","بنجار","پیشین","جالق","چابهار","خاش","دوست محمد","راسک","زابل","زابلی","زاهدان","زهک","سراوان","سرباز","سوران","سیرکان","علی اکبر","فنوج","قصرقند","کنارک","گشت","گلمورتی","محمدان","محمدآباد","محمدی","میرجاوه","نصرت آباد","نگور","نوک آباد","نیک شهر","هیدوچ"],
-        "فارس": ["اردکان","ارسنجان","استهبان","اشکنان","افزر","اقلید","امام شهر","اهل","اوز","ایج","ایزدخواست","آباده","آباده طشک","باب انار","بالاده","بنارویه","بهمن","بوانات","بیرم","بیضا","جنت شهر","جهرم","جویم","زرین دشت","حسن آباد","خان زنیان","خاوران","خرامه","خشت","خنج","خور","داراب","داریان","دبیران","دژکرد","دهرم","دوبرجی","رامجرد","رونیز","زاهدشهر","زرقان","سده","سروستان","سعادت شهر","سورمق","سیدان","ششده","شهرپیر","شهرصدرا","شیراز","صغاد","صفاشهر","علامرودشت","فدامی","فراشبند","فسا","فیروزآباد","قائمیه","قادرآباد","قطب آباد","قطرویه","قیر","کارزین (فتح آباد)","کازرون","کامفیروز","کره ای","کنارتخته","کوار","گراش","گله دار","لار","لامرد","لپویی","لطیفی","مبارک آباددیز","مرودشت","مشکان","مصیری","مهر","میمند","نوبندگان","نوجین","نودان","نورآباد","نی ریز","وراوی"],
-        "قزوین": ["ارداق","اسفرورین","اقبالیه","الوند","آبگرم","آبیک","آوج","بوئین زهرا","بیدستان","تاکستان","خاکعلی","خرمدشت","دانسفهان","رازمیان","سگزآباد","سیردان","شال","شریفیه","ضیاآباد","قزوین","کوهین","محمدیه","محمودآباد نمونه","معلم کلایه","نرجه"],
-        "قم": ["جعفریه","دستجرد","سلفچگان","قم","قنوات","کهک"],
-        "کردستان": ["آرمرده","بابارشانی","بانه","بلبان آباد","بوئین سفلی","بیجار","چناره","دزج","دلبران","دهگلان","دیواندره","زرینه","سروآباد","سریش آباد","سقز","سنندج","شویشه","صاحب","قروه","کامیاران","کانی دینار","کانی سور","مریوان","موچش","یاسوکند"],
-        "کرمان": ["اختیارآباد","ارزوئیه","امین شهر","انار","اندوهجرد","باغین","بافت","بردسیر","بروات","بزنجان","بم","بهرمان","پاریز","جبالبارز","جوپار","جوزم","جیرفت","چترود","خاتون آباد","خانوک","خورسند","درب بهشت","دهج","رابر","راور","راین","رفسنجان","رودبار","ریحان شهر","زرند","زنگی آباد","زیدآباد","سیرجان","شهداد","شهربابک","صفائیه","عنبرآباد","فاریاب","فهرج","قلعه گنج","کاظم آباد","کرمان","کشکوئیه","کهنوج","کوهبنان","کیانشهر","گلباف","گلزار","لاله زار","ماهان","محمدآباد","محی آباد","مردهک","مس سرچشمه","منوجان","نجف شهر","نرماشیر","نظام شهر","نگار","نودژ","هجدک","یزدان شهر"],
-        "کرمانشاه": ["ازگله","اسلام آباد غرب","باینگان","بیستون","پاوه","تازه آباد","جوان رود","حمیل","ماهیدشت","روانسر","سرپل ذهاب","سرمست","سطر","سنقر","سومار","شاهو","صحنه","قصرشیرین","کرمانشاه","کرندغرب","کنگاور","کوزران","گهواره","گیلانغرب","میان راهان","نودشه","نوسود","هرسین","هلشی"],
-        "کهگیلویه و بویراحمد": ["باشت","پاتاوه","چرام","چیتاب","دهدشت","دوگنبدان","دیشموک","سوق","سی سخت","قلعه رئیسی","گراب سفلی","لنده","لیکک","مادوان","مارگون","یاسوج"],
-        "گلستان": ["انبارآلوم","اینچه برون","آزادشهر","آق قلا","بندرترکمن","بندرگز","جلین","خان ببین","دلند","رامیان","سرخنکلاته","سیمین شهر","علی آباد کتول","فاضل آباد","کردکوی","کلاله","گالیکش","گرگان","گمیش تپه","گنبدکاووس","مراوه","مینودشت","نگین شهر","نوده خاندوز","نوکنده"],
-        "لرستان": ["ازنا","اشترینان","الشتر","الیگودرز","بروجرد","پلدختر","چالانچولان","چغلوندی","چقابل","خرم آباد","درب گنبد","دورود","زاغه","سپیددشت","سراب دوره","فیروزآباد","کونانی","کوهدشت","گراب","معمولان","مومن آباد","نورآباد","ویسیان"],
-        "گیلان": ["احمدسرگوراب","اسالم","اطاقور","املش","آستارا","آستانه اشرفیه","بازار جمعه","بره سر","بندرانزلی","پره سر","پیربازار","تالش","توتکابن","جیرنده","چابکسر","چاف و چمخاله","چوبر","حویق","خشکبیجار","خمام","دیلمان","زیباکنار","رانکوه","رحیم آباد","رستم آباد","رشت","رضوانشهر","رودبار","رودبنه","رودسر","سنگر","سیاهکل","شفت","شلمان","صومعه سرا","فومن","کلاچای","کوچصفهان","کومله","کیاشهر","گوراب زرمیخ","لاهیجان","لشت نشا","لنگرود","لوشان","لولمان","لوندویل","لیسار","ماسال","ماسوله","مرجقل","منجیل","واجارگاه"],
-        "مازندران": ["امیرکلا","ایزدشهر","آلاشت","آمل","بابل","بابلسر","بلده","بهشهر","بهنمیر","پل سفید","تنکابن","جویبار","چالوس","چمستان","خرم آباد","خلیل شهر","خوش رودپی","دابودشت","رامسر","رستمکلا","رویان","رینه","زرگرمحله","زیرآب","سادات شهر","ساری","سرخرود","سلمان شهر","سورک","شیرگاه","شیرود","عباس آباد","فریدونکنار","فریم","قائم شهر","کتالم","کلارآباد","کلاردشت","کله بست","کوهی خیل","کیاسر","کیاکلا","گتاب","گزنک","گلوگاه","محمودآباد","مرزن آباد","مرزیکلا","نشتارود","نکا","نور","نوشهر"],
-        "مرکزی": ["اراک","آستانه","آشتیان","پرندک","تفرش","توره","جاورسیان","خشکرود","خمین","خنداب","داودآباد","دلیجان","رازقان","زاویه","ساروق","ساوه","سنجان","شازند","غرق آباد","فرمهین","قورچی باشی","کرهرود","کمیجان","مامونیه","محلات","مهاجران","میلاجرد","نراق","نوبران","نیمور","هندودر"],
-        "هرمزگان": ["ابوموسی","بستک","بندرجاسک","بندرچارک","بندرخمیر","بندرعباس","بندرلنگه","بیکا","پارسیان","تخت","جناح","حاجی آباد","درگهان","دهبارز","رویدر","زیارتعلی","سردشت","سندرک","سوزا","سیریک","فارغان","فین","قشم","قلعه قاضی","کنگ","کوشکنار","کیش","گوهران","میناب","هرمز","هشتبندی"],
-        "همدان": ["ازندریان","اسدآباد","برزول","بهار","تویسرکان","جورقان","جوکار","دمق","رزن","زنگنه","سامن","سرکان","شیرین سو","صالح آباد","فامنین","فرسفج","فیروزان","قروه درجزین","قهاوند","کبودر آهنگ","گل تپه","گیان","لالجین","مریانج","ملایر","نهاوند","همدان"],
-        "یزد": ["ابرکوه","احمدآباد","اردکان","اشکذر","بافق","بفروئیه","بهاباد","تفت","حمیدیا","خضرآباد","دیهوک","رضوانشهر","زارچ","شاهدیه","طبس","عقدا","مروست","مهردشت","مهریز","میبد","ندوشن","نیر","هرات","یزد"]
-    }  
+        "البرز": ["اسارا", "اشتهارد", "تنکمان", "تهران دشت", "چهارباغ", "ساوجبلاغ", "سعید آباد", "شهر جدید هشتگرد", "طالقان", "فردیس", "کرج", "کردان", "کمال شهر", "کوهسار", "گرمدره", "گلبهار", "ماهدشت", "محمدشهر", "مشکین دشت", "نظرآباد", "هشتگرد"],
+        "ایلام": ["ارکواز", "ایلام", "ایوان", "آبدانان", "آسمان آباد", "بدره", "پهله", "توحید", "چوار", "دره شهر", "دلگشا", "دهلران", "زرنه", "سراب باغ", "سرابله", "صالح آباد", "لومار", "مهران", "مورموری", "موسیان", "میمه"],
+        "بوشهر": ["امام حسن", "انارستان", "اهرم", "آب پخش", "آبدان", "برازجان", "بردخون", "بندردیر", "بندردیلم", "بندرریگ", "بندرکنگان", "بندرگناوه", "بنک", "بوشهر", "تنگ ارم", "جم", "چغادک", "خارک", "خورموج", "دالکی", "دلوار", "ریز", "سعدآباد", "سیراف", "شبانکاره", "شنبه", "عسلویه", "کاکی", "کلمه", "نخل تقی", "وحدتیه"],
+        "تهران": ["ارجمند", "اسلامشهر", "اندیشه", "آبسرد", "آبعلی", "باغستان", "باقرشهر", "بومهن", "پاکدشت", "پردیس", "پرند", "پیشوا", "تهران", "جوادآباد", "چهاردانگه", "حسن آباد", "دماوند", "دیزین", "شهر ری", "رباط کریم", "رودهن", "شاهدشهر", "شریف آباد", "شمشک", "شهریار", "صالح آباد", "صباشهر", "صفادشت", "فردوسیه", "فشم", "فیروزکوه", "قدس", "قرچک", "قیامدشت", "کهریزک", "کیلان", "گلستان", "لواسان", "مارلیک", "ملارد", "میگون", "نسیم شهر", "نصیرآباد", "وحیدیه", "ورامین"],
+        "چهارمحال و بختیاری": ["اردل", "آلونی", "باباحیدر", "بروجن", "بلداجی", "بن", "جونقان", "چلگرد", "سامان", "سفیددشت", "سودجان", "سورشجان", "شلمزار", "شهرکرد", "طاقانک", "فارسان", "فرادنبه", "فرخ شهر", "کیان", "گندمان", "گهرو", "لردگان", "مال خلیفه", "ناغان", "نافچ", "نقنه", "هفشجان"],
+        "خراسان جنوبی": ["ارسک", "اسدیه", "اسفدن", "اسلامیه", "آرین شهر", "آیسک", "بشرویه", "بیرجند", "حاجی آباد", "خضری دشت بیاض", "خوسف", "زهان", "سرایان", "سربیشه", "سه قلعه", "شوسف", "طبس ", "فردوس", "قاین", "قهستان", "محمدشهر", "مود", "نهبندان", "نیمبلوک"],
+        "خراسان رضوی": ["احمدآباد صولت", "انابد", "باجگیران", "باخرز", "بار", "بایگ", "بجستان", "بردسکن", "بیدخت", "بینالود", "تایباد", "تربت جام", "تربت حیدریه", "جغتای", "جنگل", "چاپشلو", "چکنه", "چناران", "خرو", "خلیل آباد", "خواف", "داورزن", "درگز", "در رود", "دولت آباد", "رباط سنگ", "رشتخوار", "رضویه", "روداب", "ریوش", "سبزوار", "سرخس", "سفیدسنگ", "سلامی", "سلطان آباد", "سنگان", "شادمهر", "شاندیز", "ششتمد", "شهرآباد", "شهرزو", "صالح آباد", "طرقبه", "عشق آباد", "فرهادگرد", "فریمان", "فیروزه", "فیض آباد", "قاسم آباد", "قدمگاه", "قلندرآباد", "قوچان", "کاخک", "کاریز", "کاشمر", "کدکن", "کلات", "کندر", "گلمکان", "گناباد", "لطف آباد", "مزدآوند", "مشهد", "ملک آباد", "نشتیفان", "نصرآباد", "نقاب", "نوخندان", "نیشابور", "نیل شهر", "همت آباد", "یونسی"],
+        "خراسان شمالی": ["اسفراین", "ایور", "آشخانه", "بجنورد", "پیش قلعه", "تیتکانلو", "جاجرم", "حصارگرمخان", "درق", "راز", "سنخواست", "شوقان", "شیروان", "صفی آباد", "فاروج", "قاضی", "گرمه", "لوجلی"],
+        "خوزستان": ["اروندکنار", "الوان", "امیدیه", "اندیمشک", "اهواز", "ایذه", "آبادان", "آغاجاری", "باغ ملک", "بستان", "بندرامام خمینی", "بندرماهشهر", "بهبهان", "ترکالکی", "جایزان", "چمران", "چویبده", "حر", "حسینیه", "حمزه", "حمیدیه", "خرمشهر", "دارخوین", "دزآب", "دزفول", "دهدز", "رامشیر", "رامهرمز", "رفیع", "زهره", "سالند", "سردشت", "سوسنگرد", "شادگان", "شاوور", "شرافت", "شوش", "شوشتر", "شیبان", "صالح شهر", "صفی آباد", "صیدون", "قلعه تل", "قلعه خواجه", "گتوند", "لالی", "مسجدسلیمان", "ملاثانی", "میانرود", "مینوشهر", "هفتگل", "هندیجان", "هویزه", "ویس"],
+        "زنجان": ["ابهر", "ارمغان خانه", "آب بر", "چورزق", "حلب", "خرمدره", "دندی", "زرین آباد", "زرین رود", "زنجان", "سجاس", "سلطانیه", "سهرورد", "صائین قلعه", "قیدار", "گرماب", "ماه نشان", "هیدج"],
+        "سمنان": ["امیریه", "ایوانکی", "آرادان", "بسطام", "بیارجمند", "دامغان", "درجزین", "دیباج", "سرخه", "سمنان", "شاهرود", "شهمیرزاد", "کلاته خیج", "گرمسار", "مجن", "مهدی شهر", "میامی"],
+        "سیستان و بلوچستان": ["ادیمی", "اسپکه", "ایرانشهر", "بزمان", "بمپور", "بنت", "بنجار", "پیشین", "جالق", "چابهار", "خاش", "دوست محمد", "راسک", "زابل", "زابلی", "زاهدان", "زهک", "سراوان", "سرباز", "سوران", "سیرکان", "علی اکبر", "فنوج", "قصرقند", "کنارک", "گشت", "گلمورتی", "محمدان", "محمدآباد", "محمدی", "میرجاوه", "نصرت آباد", "نگور", "نوک آباد", "نیک شهر", "هیدوچ"],
+        "فارس": ["اردکان", "ارسنجان", "استهبان", "اشکنان", "افزر", "اقلید", "امام شهر", "اهل", "اوز", "ایج", "ایزدخواست", "آباده", "آباده طشک", "باب انار", "بالاده", "بنارویه", "بهمن", "بوانات", "بیرم", "بیضا", "جنت شهر", "جهرم", "جویم", "زرین دشت", "حسن آباد", "خان زنیان", "خاوران", "خرامه", "خشت", "خنج", "خور", "داراب", "داریان", "دبیران", "دژکرد", "دهرم", "دوبرجی", "رامجرد", "رونیز", "زاهدشهر", "زرقان", "سده", "سروستان", "سعادت شهر", "سورمق", "سیدان", "ششده", "شهرپیر", "شهرصدرا", "شیراز", "صغاد", "صفاشهر", "علامرودشت", "فدامی", "فراشبند", "فسا", "فیروزآباد", "قائمیه", "قادرآباد", "قطب آباد", "قطرویه", "قیر", "کارزین (فتح آباد)", "کازرون", "کامفیروز", "کره ای", "کنارتخته", "کوار", "گراش", "گله دار", "لار", "لامرد", "لپویی", "لطیفی", "مبارک آباددیز", "مرودشت", "مشکان", "مصیری", "مهر", "میمند", "نوبندگان", "نوجین", "نودان", "نورآباد", "نی ریز", "وراوی"],
+        "قزوین": ["ارداق", "اسفرورین", "اقبالیه", "الوند", "آبگرم", "آبیک", "آوج", "بوئین زهرا", "بیدستان", "تاکستان", "خاکعلی", "خرمدشت", "دانسفهان", "رازمیان", "سگزآباد", "سیردان", "شال", "شریفیه", "ضیاآباد", "قزوین", "کوهین", "محمدیه", "محمودآباد نمونه", "معلم کلایه", "نرجه"],
+        "قم": ["جعفریه", "دستجرد", "سلفچگان", "قم", "قنوات", "کهک"],
+        "کردستان": ["آرمرده", "بابارشانی", "بانه", "بلبان آباد", "بوئین سفلی", "بیجار", "چناره", "دزج", "دلبران", "دهگلان", "دیواندره", "زرینه", "سروآباد", "سریش آباد", "سقز", "سنندج", "شویشه", "صاحب", "قروه", "کامیاران", "کانی دینار", "کانی سور", "مریوان", "موچش", "یاسوکند"],
+        "کرمان": ["اختیارآباد", "ارزوئیه", "امین شهر", "انار", "اندوهجرد", "باغین", "بافت", "بردسیر", "بروات", "بزنجان", "بم", "بهرمان", "پاریز", "جبالبارز", "جوپار", "جوزم", "جیرفت", "چترود", "خاتون آباد", "خانوک", "خورسند", "درب بهشت", "دهج", "رابر", "راور", "راین", "رفسنجان", "رودبار", "ریحان شهر", "زرند", "زنگی آباد", "زیدآباد", "سیرجان", "شهداد", "شهربابک", "صفائیه", "عنبرآباد", "فاریاب", "فهرج", "قلعه گنج", "کاظم آباد", "کرمان", "کشکوئیه", "کهنوج", "کوهبنان", "کیانشهر", "گلباف", "گلزار", "لاله زار", "ماهان", "محمدآباد", "محی آباد", "مردهک", "مس سرچشمه", "منوجان", "نجف شهر", "نرماشیر", "نظام شهر", "نگار", "نودژ", "هجدک", "یزدان شهر"],
+        "کرمانشاه": ["ازگله", "اسلام آباد غرب", "باینگان", "بیستون", "پاوه", "تازه آباد", "جوان رود", "حمیل", "ماهیدشت", "روانسر", "سرپل ذهاب", "سرمست", "سطر", "سنقر", "سومار", "شاهو", "صحنه", "قصرشیرین", "کرمانشاه", "کرندغرب", "کنگاور", "کوزران", "گهواره", "گیلانغرب", "میان راهان", "نودشه", "نوسود", "هرسین", "هلشی"],
+        "کهگیلویه و بویراحمد": ["باشت", "پاتاوه", "چرام", "چیتاب", "دهدشت", "دوگنبدان", "دیشموک", "سوق", "سی سخت", "قلعه رئیسی", "گراب سفلی", "لنده", "لیکک", "مادوان", "مارگون", "یاسوج"],
+        "گلستان": ["انبارآلوم", "اینچه برون", "آزادشهر", "آق قلا", "بندرترکمن", "بندرگز", "جلین", "خان ببین", "دلند", "رامیان", "سرخنکلاته", "سیمین شهر", "علی آباد کتول", "فاضل آباد", "کردکوی", "کلاله", "گالیکش", "گرگان", "گمیش تپه", "گنبدکاووس", "مراوه", "مینودشت", "نگین شهر", "نوده خاندوز", "نوکنده"],
+        "لرستان": ["ازنا", "اشترینان", "الشتر", "الیگودرز", "بروجرد", "پلدختر", "چالانچولان", "چغلوندی", "چقابل", "خرم آباد", "درب گنبد", "دورود", "زاغه", "سپیددشت", "سراب دوره", "فیروزآباد", "کونانی", "کوهدشت", "گراب", "معمولان", "مومن آباد", "نورآباد", "ویسیان"],
+        "گیلان": ["احمدسرگوراب", "اسالم", "اطاقور", "املش", "آستارا", "آستانه اشرفیه", "بازار جمعه", "بره سر", "بندرانزلی", "پره سر", "پیربازار", "تالش", "توتکابن", "جیرنده", "چابکسر", "چاف و چمخاله", "چوبر", "حویق", "خشکبیجار", "خمام", "دیلمان", "زیباکنار", "رانکوه", "رحیم آباد", "رستم آباد", "رشت", "رضوانشهر", "رودبار", "رودبنه", "رودسر", "سنگر", "سیاهکل", "شفت", "شلمان", "صومعه سرا", "فومن", "کلاچای", "کوچصفهان", "کومله", "کیاشهر", "گوراب زرمیخ", "لاهیجان", "لشت نشا", "لنگرود", "لوشان", "لولمان", "لوندویل", "لیسار", "ماسال", "ماسوله", "مرجقل", "منجیل", "واجارگاه"],
+        "مازندران": ["امیرکلا", "ایزدشهر", "آلاشت", "آمل", "بابل", "بابلسر", "بلده", "بهشهر", "بهنمیر", "پل سفید", "تنکابن", "جویبار", "چالوس", "چمستان", "خرم آباد", "خلیل شهر", "خوش رودپی", "دابودشت", "رامسر", "رستمکلا", "رویان", "رینه", "زرگرمحله", "زیرآب", "سادات شهر", "ساری", "سرخرود", "سلمان شهر", "سورک", "شیرگاه", "شیرود", "عباس آباد", "فریدونکنار", "فریم", "قائم شهر", "کتالم", "کلارآباد", "کلاردشت", "کله بست", "کوهی خیل", "کیاسر", "کیاکلا", "گتاب", "گزنک", "گلوگاه", "محمودآباد", "مرزن آباد", "مرزیکلا", "نشتارود", "نکا", "نور", "نوشهر"],
+        "مرکزی": ["اراک", "آستانه", "آشتیان", "پرندک", "تفرش", "توره", "جاورسیان", "خشکرود", "خمین", "خنداب", "داودآباد", "دلیجان", "رازقان", "زاویه", "ساروق", "ساوه", "سنجان", "شازند", "غرق آباد", "فرمهین", "قورچی باشی", "کرهرود", "کمیجان", "مامونیه", "محلات", "مهاجران", "میلاجرد", "نراق", "نوبران", "نیمور", "هندودر"],
+        "هرمزگان": ["ابوموسی", "بستک", "بندرجاسک", "بندرچارک", "بندرخمیر", "بندرعباس", "بندرلنگه", "بیکا", "پارسیان", "تخت", "جناح", "حاجی آباد", "درگهان", "دهبارز", "رویدر", "زیارتعلی", "سردشت", "سندرک", "سوزا", "سیریک", "فارغان", "فین", "قشم", "قلعه قاضی", "کنگ", "کوشکنار", "کیش", "گوهران", "میناب", "هرمز", "هشتبندی"],
+        "همدان": ["ازندریان", "اسدآباد", "برزول", "بهار", "تویسرکان", "جورقان", "جوکار", "دمق", "رزن", "زنگنه", "سامن", "سرکان", "شیرین سو", "صالح آباد", "فامنین", "فرسفج", "فیروزان", "قروه درجزین", "قهاوند", "کبودر آهنگ", "گل تپه", "گیان", "لالجین", "مریانج", "ملایر", "نهاوند", "همدان"],
+        "یزد": ["ابرکوه", "احمدآباد", "اردکان", "اشکذر", "بافق", "بفروئیه", "بهاباد", "تفت", "حمیدیا", "خضرآباد", "دیهوک", "رضوانشهر", "زارچ", "شاهدیه", "طبس", "عقدا", "مروست", "مهردشت", "مهریز", "میبد", "ندوشن", "نیر", "هرات", "یزد"]
+    }
 }
-function getMainProperties(props,getProp,types){
+function getMainProperties(props, getProp, types) {
     let p = getProp;
-    let {type,rtl} = props;
+    let { type, rtl } = props;
     let value = p('value');
     let loading = p('loading');
     let disabled = p('disabled');
     let className = p('className');
     let style = p('style');
-    let onClick = p('onClick',undefined,true);
-    let attrs = {...p('attrs',{})};
+    let onClick = p('onClick', undefined, true);
+    let attrs = { ...p('attrs', {}) };
     let justify = p('justify');
-    if(className){attrs.className = className}
-    if(style){attrs.style = style}
-    if(onClick){attrs.onClick = onClick}
+    if (className) { attrs.className = className }
+    if (style) { attrs.style = style }
+    if (onClick) { attrs.onClick = onClick }
     let properties = {
-        props:{...props},
-        value,type,rtl,loading,disabled:loading || disabled,attrs,justify,
-        onChange: p('onChange',undefined,true),
+        props: { ...props },
+        value, type, rtl, loading, disabled: loading || disabled, attrs, justify,
+        onChange: p('onChange', undefined, true),
         text: p('text'),
-        before: p('before'),after: p('after'),subtext: p('subtext'),label: p('label'),
-        className: p('className'),style: p('style')
+        before: p('before'), after: p('after'), subtext: p('subtext'), label: p('label'),
+        className: p('className'), style: p('style')
     }
-    if(types.hasOption){
+    if (types.hasOption) {
         properties = {
             ...properties,
-            options:p('options'),
-            optionText:p('optionText'),
-            optionValue:p('optionValue'),
-            optionAttrs:p('optionAttrs'),
-            optionDisabled:p('optionDisabled'),
-            optionClassName:p('optionClassName'),
-            optionStyle:p('optionStyle'),
-            optionShow:p('optionShow'),
-            optionSubtext:p('optionSubtext'),
-            optionCheckIcon:p('optionCheckIcon'),
-            optionBefore:p('optionBefore'),
-            optionAfter:p('optionAfter')
+            options: p('options'),
+            optionText: p('optionText'),
+            optionValue: p('optionValue'),
+            optionAttrs: p('optionAttrs'),
+            optionDisabled: p('optionDisabled'),
+            optionClassName: p('optionClassName'),
+            optionStyle: p('optionStyle'),
+            optionShow: p('optionShow'),
+            optionSubtext: p('optionSubtext'),
+            optionCheckIcon: p('optionCheckIcon'),
+            optionBefore: p('optionBefore'),
+            optionAfter: p('optionAfter')
         }
     }
-    if(types.isDropdown){
-        properties = {...properties,caret: p('caret'),popover:p('popover')}
-        if(types.hasOption){properties = {...properties,optionClose:p('optionClose'),onSwap:p('onSwap')}}
+    if (types.isDropdown) {
+        properties = { ...properties, caret: p('caret'), popover: p('popover') }
+        if (types.hasOption) { properties = { ...properties, optionClose: p('optionClose'), onSwap: p('onSwap') } }
     }
-    if(types.isInput){properties = {...properties,inputAttrs:p('inputAttrs'),blurChange:p('blurChange'),delay:p('delay')}}
-    if(types.hasPlaceholder){properties = {...properties,placeholder: p('placeholder')}}
-    if(types.hasMultiple){properties = {...properties,multiple: p('multiple')}}
-    if(types.hasSearch){properties = {...properties,search: p('search')}}
-    if(types.hasKeyboard){properties = {...properties,maxLength: p('maxLength'),filter: p('filter'),justNumber: p('justNumber')}}
-    if(type === 'number'){properties = {...properties,swip:p('swip'),spin:p('spin',true),min:p('min'),max:p('max')}}
-    else if(type === 'password'){properties = {...properties,visible:p('visible')}}
-    else if(type === 'checkbox'){properties = {...properties,checkIcon:p('checkIcon'),checked:!!value}}
-    else if(type === 'image'){properties = {...properties,preview:p('preview'),width:p('width'),height:p('height')}}
-    else if(type === 'map'){properties = {...properties,onChangeAddress:p('onChangeAddress'),popup:p('popup'),mapConfig:p('mapConfig',{})}}
-    else if(type === 'multiselect'){
+    if (types.isInput) { properties = { ...properties, inputAttrs: p('inputAttrs'), blurChange: p('blurChange'), delay: p('delay') } }
+    if (types.hasPlaceholder) { properties = { ...properties, placeholder: p('placeholder') } }
+    if (types.hasMultiple) { properties = { ...properties, multiple: p('multiple') } }
+    if (types.hasSearch) { properties = { ...properties, search: p('search') } }
+    if (types.hasKeyboard) { properties = { ...properties, maxLength: p('maxLength'), filter: p('filter'), justNumber: p('justNumber') } }
+    if (type === 'number') { properties = { ...properties, swip: p('swip'), spin: p('spin', true), min: p('min'), max: p('max') } }
+    else if (type === 'password') { properties = { ...properties, visible: p('visible') } }
+    else if (type === 'checkbox') { properties = { ...properties, checkIcon: p('checkIcon'), checked: !!value } }
+    else if (type === 'image') { properties = { ...properties, preview: p('preview'), width: p('width'), height: p('height') } }
+    else if (type === 'map') { properties = { ...properties, onChangeAddress: p('onChangeAddress'), popup: p('popup'), mapConfig: p('mapConfig', {}) } }
+    else if (type === 'multiselect') {
         properties = {
             ...properties,
-            optionTagAttrs:p('optionTagAttrs'),
-            optionTagBefore:p('optionTagBefore'),
-            optionTagAfter:p('optionTagAfter'),
-            hideTags:p('hideTags')
+            optionTagAttrs: p('optionTagAttrs'),
+            optionTagBefore: p('optionTagBefore'),
+            optionTagAfter: p('optionTagAfter'),
+            hideTags: p('hideTags')
         }
     }
-    else if(type === 'datepicker'){
+    else if (type === 'datepicker') {
         properties = {
             ...properties,
-            calendarType:p('calendarType','gregorian'),
-            unit:p('unit','day'),
-            theme:p('theme',[]),
-            size:p('size',180),
-            startYear:p('startYear','-10'),
-            endYear:p('endYear','+10'),
-            pattern:p('pattern'),
-            dateDisabled:p('dateDisabled'),
-            dateAttrs:p('dateAttrs'),
-            remove:p('remove'),
-            close:p('close')
+            calendarType: p('calendarType', 'gregorian'),
+            unit: p('unit', 'day'),
+            theme: p('theme', []),
+            size: p('size', 180),
+            startYear: p('startYear', '-10'),
+            endYear: p('endYear', '+10'),
+            pattern: p('pattern'),
+            dateDisabled: p('dateDisabled'),
+            dateAttrs: p('dateAttrs'),
+            remove: p('remove'),
+            close: p('close')
         }
     }
-    else if(type === 'time'){
-        properties = {...properties,calendarType:p('calendarType','gregorian')}
+    else if (type === 'time') {
+        properties = { ...properties, calendarType: p('calendarType', 'gregorian') }
     }
-    else if(type === 'list'){
+    else if (type === 'list') {
         properties = {
             ...properties,
-            size:p('size',48),
-            width:p('width',200),
-            decay:p('decay',8),
-            stop:p('stop',3),
-            count:p('count',3),
-            move:p('move'),
-            editable:p('editable',true)
+            size: p('size', 48),
+            width: p('width', 200),
+            decay: p('decay', 8),
+            stop: p('stop', 3),
+            count: p('count', 3),
+            move: p('move'),
+            editable: p('editable', true)
         }
     }
-    else if(type === 'slider'){
+    else if (type === 'slider') {
         properties = {
             ...properties,
-            showValue:p('showValue'),
-            lineStyle:p('lineStyle'),
-            fillStyle:p('fillStyle'),
-            pointStyle:p('pointStyle'),
-            valueStyle:p('valueStyle'),
-            labelStyle:p('labelStyle'),
-            scaleStyle:p('scaleStyle'),
-            getPointHTML:p('getPointHTML'),
-            getScaleHTML:p('getScaleHTML'),
-            direction:p('direction',rtl?'left':'right'),
-            scaleStep:p('scaleStep'),
-            labelStep:p('labelStep'),
-            editLabel:p('editLabel'),
-            start:p('start'),
-            step:p('step'),
-            end:p('end'),
-            min:p('min'),
-            max:p('max'),
-            labelRotate:p('labelRotate'),
+            showValue: p('showValue'),
+            lineStyle: p('lineStyle'),
+            fillStyle: p('fillStyle'),
+            pointStyle: p('pointStyle'),
+            valueStyle: p('valueStyle'),
+            labelStyle: p('labelStyle'),
+            scaleStyle: p('scaleStyle'),
+            getPointHTML: p('getPointHTML'),
+            getScaleHTML: p('getScaleHTML'),
+            direction: p('direction', rtl ? 'left' : 'right'),
+            scaleStep: p('scaleStep'),
+            labelStep: p('labelStep'),
+            editLabel: p('editLabel'),
+            start: p('start'),
+            step: p('step'),
+            end: p('end'),
+            min: p('min'),
+            max: p('max'),
+            labelRotate: p('labelRotate'),
         }
     }
-    else if(type === 'form'){
+    else if (type === 'form') {
         properties = {
             ...properties,
-            onClose:p('onClose'),
-            onBack:p('onBack'),
-            headerAttrs:p('headerAttrs',{}),
-            subtitle:p('subtitle'),
-            header:p('header'),
-            footer:p('footer'),
-            getErrors:p('getErrors'),
-            onSubmit:p('onSubmit'),
-            footerAttrs:p('footerAttrs',{}),
-            closeText:p('closeText','Close'),
-            resetText:p('resetText','Reset'),
-            submitText:p('submitText','Submit'),
-            reset:p('reset'),
-            inputs:p('inputs'),
-            inputClassName:p('inputClassName'),
-            inputStyle:p('inputStyle',{}),
-            labelAttrs:p('labelAttrs'),
-            bodyAttrs:p('bodyAttrs',{}),
-            lang:p('lang','en'),
-            updateInput:p('updateInput',(o)=>o),
-            initialDisabled:p('initialDisabled',true)
+            onClose: p('onClose'),
+            onBack: p('onBack'),
+            headerAttrs: p('headerAttrs', {}),
+            subtitle: p('subtitle'),
+            header: p('header'),
+            footer: p('footer'),
+            getErrors: p('getErrors'),
+            onSubmit: p('onSubmit'),
+            footerAttrs: p('footerAttrs', {}),
+            closeText: p('closeText', 'Close'),
+            resetText: p('resetText', 'Reset'),
+            submitText: p('submitText', 'Submit'),
+            reset: p('reset'),
+            inputs: p('inputs'),
+            inputClassName: p('inputClassName'),
+            inputStyle: p('inputStyle', {}),
+            labelAttrs: p('labelAttrs'),
+            bodyAttrs: p('bodyAttrs', {}),
+            lang: p('lang', 'en'),
+            updateInput: p('updateInput', (o) => o),
+            initialDisabled: p('initialDisabled', true)
         }
     }
-    else if(type === 'table'){
+    else if (type === 'table') {
         properties = {
             ...properties,
-            columns:p('columns',[]),
-            getValue:p('getValue',{}),
-            rowAttrs:p('rowAttrs'),
-            toolbar:p('toolbar'),
-            excel:p('excel'),
-            toolbarAttrs:p('toolbarAttrs'),
-            paging:p('paging'),
-            rowGap:p('rowGap'),
-            columnGap:p('columnGap'),
-            onAdd:p('onAdd'),
-            onRemove:p('onRemove'),
-            onSearch:p('onSearch'),
-            onSwap:p('onSwap'),
-            onChangeSort:p('onChangeSort'),
-            headerAttrs:p('headerAttrs'),
-            rowTemplate:p('rowTemplate'),
-            rowsTemplate:p('rowsTemplate'),
-            rowAfter:p('rowAfter'),
-            rowBefore:p('rowBefore')
+            columns: p('columns', []),
+            getValue: p('getValue', {}),
+            rowAttrs: p('rowAttrs'),
+            toolbar: p('toolbar'),
+            excel: p('excel'),
+            toolbarAttrs: p('toolbarAttrs'),
+            paging: p('paging'),
+            rowGap: p('rowGap'),
+            columnGap: p('columnGap'),
+            onAdd: p('onAdd'),
+            onRemove: p('onRemove'),
+            onSearch: p('onSearch'),
+            onSwap: p('onSwap'),
+            onChangeSort: p('onChangeSort'),
+            headerAttrs: p('headerAttrs'),
+            rowTemplate: p('rowTemplate'),
+            rowsTemplate: p('rowsTemplate'),
+            rowAfter: p('rowAfter'),
+            rowBefore: p('rowBefore')
         }
     }
-    return {...properties}
+    return { ...properties }
 }

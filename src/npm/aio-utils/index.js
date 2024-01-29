@@ -109,7 +109,7 @@ export function SplitNumber(price, count = 3, splitter = ',') {
     }
     return res
 }
-export function Swip({ dom, start = () => { }, move = () => { }, end = () => { }, speedX = 1, speedY = 1, stepX = 1, stepY = 1, id }) {
+export function Swip({ dom, start = () => { }, move = () => { }, end = () => { }, speedX = 1, speedY = 1, stepX = 1, stepY = 1, id, reverseY, reverseX, minY, maxY, minX, maxX }) {
     let a = {
         timeout: undefined,
         count: 0,
@@ -162,8 +162,8 @@ export function Swip({ dom, start = () => { }, move = () => { }, end = () => { }
             let client = this.getClient(e);
             let dx = client.x - this.so.client.x;
             let dy = client.y - this.so.client.y;
-            dx = Math.round(dx * speedX)
-            dy = Math.round(dy * speedY)
+            dx = Math.round(dx * speedX) * (reverseX ? -1 : 1)
+            dy = Math.round(dy * speedY) * (reverseY ? -1 : 1)
             dx = Math.floor(dx / stepX) * stepX;
             dy = Math.floor(dy / stepY) * stepY;
             if (dx === this.dx && dy === this.dy) { return }
@@ -175,6 +175,10 @@ export function Swip({ dom, start = () => { }, move = () => { }, end = () => { }
             if (this.so.x !== undefined && this.so.y !== undefined) {
                 x = this.so.x + dx;
                 y = this.so.y + dy;
+                if (minX !== undefined && x < minX) { x = minX }
+                if (maxX !== undefined && x > maxX) { x = maxX }
+                if (minY !== undefined && y < minY) { y = minY }
+                if (maxY !== undefined && y > maxY) { y = maxY }
             }
             move({ dx, dy, dist, x, y, id, mousePosition: { ...this.getMousePosition(e) }, e });
         },
