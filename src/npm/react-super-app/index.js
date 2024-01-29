@@ -54,11 +54,11 @@ class ReactSuperApp extends Component {
     super(props);
     let { touch = 'ontouchstart' in document.documentElement, splash, splashTime = 7000,id,nav } = props;
     this.storage = AIOStorage('rsa-cache-' + id);
-    window.oncontextmenu = function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
-    };
+    // window.oncontextmenu = function (event) {
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    //   return false;
+    // };
     let navId = nav?(nav.cache?this.initNavId(this.storage.load({name:'navId',def:this.initNavId()})):this.initNavId()):false
     this.state = {
       navId,

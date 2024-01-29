@@ -3172,6 +3172,57 @@ function GetDistance(p1, p2) {
     let radius = 6371; //earth radius in kilometers
     return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
 }
+export function Acardion(props = {}){
+    let {items,singleOpen} = props;
+    let [openDic,setOpenDic] = useState({})
+    function toggle(id){
+      let open = !!openDic[id]
+      if(singleOpen){setOpenDic(open?{}:{[id]:true})}
+      else {setOpenDic({...openDic,[id]:!openDic[id]})}
+    }
+    function item_layout(o){
+      let {id} = o;
+      let open = !!openDic[id];
+      return {
+        className:'aio-input-acardion-item',
+        column:[
+          item_header_layout(o,open),
+          item_content_layout(o,open)
+        ]
+      }
+    }
+    function item_header_layout(o,open){
+      let {name,after,id,headerAttrs = {}} = o;
+      let className = 'aio-input-acardion-header';
+      if(open){className += ' open'}
+      if(headerAttrs.className){className += ' ' + headerAttrs.className}
+      return {
+        className:'aio-input-acardion-header' + (open?' open':''),align:'v',
+        row:[
+          {html:<Icon path={open?mdiChevronDown:mdiChevronLeft} size={0.8}/>,className:'aio-input-acardion-toggle',align:'vh',onClick:()=>toggle(id)},
+          {html:name,flex:1,className:'aio-input-acardion-name'},
+          {show:!!after,html:()=>typeof after === 'function'?after(open):after,align:'vh',className:'aio-input-acardion-after'}
+        ]
+      }
+    }
+    function item_content_layout(o,open){
+      let {content,contentAttrs = {}} = o;
+      if(!open){return false}
+      return {
+        style:contentAttrs.style,
+        className:'aio-input-acardion-content' + (contentAttrs.className?' ' + contentAttrs.className:''),
+        html:content()
+      }
+    }
+    return (
+      <RVD
+        layout={{
+          className:'aio-input-acardion',
+          column:items.map((o)=>item_layout(o))
+        }}
+      />
+    )
+  }
 export function AIOValidation(props) {
     let $$ = {
         translate(text) {
@@ -3397,7 +3448,13 @@ export function getFormInput(Field, path) {
     function getField(field) { return `value${path ? `.${path}` : ''}.${field}` }
     function getBase(field) {
         let list = field.split('_');
-        if (list.length === 3) { return { field: list[0], input: { type: list[1] }, label: list[2], extra: {} } }
+        if (list.length >= 3) { 
+            let inputProps = {}
+            if(list[3]){
+                try{inputProps = JSON.parse(list[3])}catch{}
+            }    
+            return { field: list[0], input: { type: list[1],...inputProps }, label: list[2], extra: {} } 
+        }
         let { input, label, extra = {} } = {
             fullname: { input: { type: 'text' }, label: 'نام و نام خانوادگی' },
             firstname: { input: { type: 'text' }, label: 'نام' },

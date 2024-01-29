@@ -1776,3 +1776,22 @@
 .aio-input-textarea-value{
     height:100%;
 }
+.aio-input-acardion{
+    padding:12px;
+    gap:12px;
+    font-size:12px;
+    flex:none !important;
+    width:100%;
+    height:fit-content;
+}
+.aio-input-acardion-header{
+    background:rgb(35, 106, 177);
+    border-radius:4px;
+    min-height:30px;
+}
+.aio-input-acardion-toggle{
+    width:36px;
+}
+.aio-input-acardion-content{
+    background:rgba(0,0,0,0.1);
+}
