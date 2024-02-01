@@ -85,11 +85,11 @@ export default function AIODate() {
           }`, obj)
         return false
       }
-      let { date } = obj;
-      if (!date) { return [] }
-      if (Array.isArray(date)) { return [...date] }
+      let { date,jalali } = obj;
+      if (!date) { return false }
+      let list;
+      if (Array.isArray(date)) { list = [...date] }
       else if (typeof date === 'string') {
-        let list;
         if (date.indexOf("T") !== -1) {
           //"2015-03-25T12:00:00Z"
           let [d, t] = date.split("T");
@@ -101,7 +101,7 @@ export default function AIODate() {
         else {
           list = date.split($$.getSplitter(date));
         }
-        return list.map((date) => parseInt(date))
+        list = list.map((date) => parseInt(date))
       }
       else if (typeof date === 'number') {
         let d = new Date(date);
@@ -113,7 +113,7 @@ export default function AIODate() {
         let second = d.getSeconds();
         let miliseconds = d.getMilliseconds();
         let tenthsecond = Math.round(miliseconds / 100);
-        return [year, month, day, hour, minute, second, tenthsecond]
+        list = [year, month, day, hour, minute, second, tenthsecond]
       }
       else if (typeof date === 'object') {
         if(typeof date.year === 'number'){return [date.year,date.month,date.day,date.hour]}
@@ -126,10 +126,15 @@ export default function AIODate() {
           let second = date.getSeconds();
           let miliseconds = date.getMilliseconds();
           let tenthsecond = Math.round(miliseconds / 100);
-          return [year, month, day, hour, minute, second, tenthsecond]
+          list = [year, month, day, hour, minute, second, tenthsecond]
         }
       }
       else { return false }
+      if(jalali){
+        let [year,month,day] = $$.toJalali({date:[list[0],list[1],list[2]]});
+        list[0] = year; list[1] = month; list[2] = day;
+      }
+      return list
     },
     toJalali(obj) {
       if (!obj || obj.date === undefined) {
@@ -442,11 +447,11 @@ export default function AIODate() {
         console.error(`AIODate().getDateByPattern should get an object as parameter. {*date:number | string | array,*pattern:string}`)
         return false;
       }
-      let { date, pattern } = obj
-      return $$.pattern(date, pattern)
+      let { date, pattern,jalali } = obj
+      return $$.pattern(date, pattern,jalali)
     },
-    pattern(date, pattern) {
-      date = $$.convertToArray({ date });
+    pattern(date, pattern,jalali) {
+      date = $$.convertToArray({ date,jalali });
       let [year, month, day, hour, minute, second, tenthsecond] = date;
       let calendarType = $$.getCalendarType(date);
       pattern = pattern.replace('{year}', year);

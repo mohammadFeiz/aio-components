@@ -88,7 +88,7 @@ export default function Versions({goToHome}){
         },
         'aio-date':{
             open:false,
-            version:'4.0.3',
+            version:'4.1.0',
             dependencies:{}
         },
         'aio-storage':{
