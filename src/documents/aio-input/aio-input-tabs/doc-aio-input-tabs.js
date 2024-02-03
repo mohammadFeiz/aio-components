@@ -2,6 +2,7 @@ import React, { Component, useState } from 'react';
 import DOC from '../../../resuse-components/doc';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation';
 import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
+import AIOStorage from './../../../npm/aio-storage/aio-storage';
 import AIOInput from '../../../npm/aio-input/aio-input';
 import './doc-aio-input-tabs.css';
 import {Icon} from '@mdi/react';
@@ -38,8 +39,13 @@ function Base({props = {}}){
         />
     )
 }
-function Code(id,text){
-    let [show,setShow] = useState(false)
+function Code({id,text}){
+    let [show,setShow] = useState(AIOStorage('docaioinputtabs').load({name:'showCode',def:{}}))
+    function changeShow(){
+        let all = AIOStorage('docaioinputtabs').load({name:'showCode',def:{}})
+        let newAll = {...show,[id]:!}
+        AIOStorage('docaioinputtabs').save({name:'showCode',value:{}})
+    }
     function getCode(){
         return AIODoc().Code(`
 import React,{useState} from 'react';
@@ -89,6 +95,7 @@ function Basic(){
     function preview() {
         return (
             <div className='example'>
+                <Base/>
                 {Code()}
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
             </div>
