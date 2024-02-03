@@ -3241,7 +3241,6 @@ export function Tree(props = {}){
       })
     }
     async function add(parent) {
-      debugger
         let obj = await onAdd(parent);
         if(!obj){return}
         if (parent) { parent.childs = parent.childs || []; parent.childs.push(obj); }
