@@ -23,7 +23,7 @@ export default function StorageClass(key){
           if(prop !== lastField){newParent[prop] = parent[prop]}
         }
         fields.pop();
-        this.setValueByField(fields.join('.'),newParent)
+        return this.setValueByField(fields.join('.'),newParent)
       },
       getValueByField(field,def){
         let fields = field.split('.');
@@ -46,6 +46,7 @@ export default function StorageClass(key){
           parent = parent[f];
         }
         parent[fields[fields.length - 1]] = value;
+        return this.getValueByField(fields[0])
       },
       init(){
         let storage = localStorage.getItem('storageClass' + key);
@@ -83,9 +84,10 @@ export default function StorageClass(key){
         let {name,value,callback = ()=>{}} = obj;
         try{value = JSON.parse(JSON.stringify(value))} catch{value = value;}
         if(!name || name === null){return}
-        this.setValueByField(name,value)
+        let res = this.setValueByField(name,value)
         this.addTime(name)
         this.saveStorage();
+        return res;
       },
       remove(obj){
         if(typeof obj !== 'object' || Array.isArray(obj)){
@@ -97,10 +99,11 @@ export default function StorageClass(key){
           return;
         }
         let {name,callback = ()=>{}} = obj;
-        this.removeValueByField(name);
+        let res = this.removeValueByField(name);
         this.removeTime(name);
         this.saveStorage();
         callback();
+        return res;
       },
       load(obj){
         if(typeof obj !== 'object' || Array.isArray(obj) || typeof obj.name !== 'string'){

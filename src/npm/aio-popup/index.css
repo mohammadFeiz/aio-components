@@ -427,3 +427,7 @@
   border: none;
   background: none;
 }
+
+.aio-popup-confirm .aio-popup-body{
+  padding:12px;
+}
