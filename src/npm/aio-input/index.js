@@ -948,7 +948,7 @@ class Form extends Component {
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
         //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
-        if (input.type === 'map') { value = !!value.lat && !!value.lng }
+        if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
         let a = {
             value, title: o.label, lang,
             validations: validations.map((a) => {
