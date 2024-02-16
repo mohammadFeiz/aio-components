@@ -43,7 +43,7 @@ function Code({id,text}){
     let [show,setShow] = useState(AIOStorage('docaioinputtabs').load({name:'showCode',def:{}}))
     function changeShow(){
         let all = AIOStorage('docaioinputtabs').load({name:'showCode',def:{}})
-        let newAll = {...show,[id]:!}
+        let newAll = {...show,[id]:!all[id]}
         AIOStorage('docaioinputtabs').save({name:'showCode',value:{}})
     }
     function getCode(){

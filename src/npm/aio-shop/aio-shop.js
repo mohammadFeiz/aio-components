@@ -1,2 +1,2 @@
-import AIOShop from './index.js';
+import AIOShop from './index.tsx';
 export default AIOShop
