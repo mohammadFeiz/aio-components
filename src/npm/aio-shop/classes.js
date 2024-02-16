@@ -46,16 +46,17 @@ const classes = {
     'pp':'aio-shop-product-page',//
     'pp-body':'aio-shop-product-page-body',//
     'pp-footer':'aio-shop-product-page-footer',//
+    'pp-not-exist':'aio-shop-product-page-not-exist',//
     'pp-label-row':'aio-show-product-page-label-row',//
     'pp-show-more':'aio-shopw-product-page-show-more',//
     'pp-desc':'aio-shop-product-page-description',//
     'pp-desc-text':'aio-shop-product-page-description-text',//
     'pp-rates':'aio-shop-product-page-rates',//
-    'pp-rate-items':'aio-shop-product-page-rate-items',//
-    'pp-rate-item':'aio-shop-product-page-rate-item',//
-    'pp-rate-item-text':'aio-shop-product-page-rate-item-text',//
-    'pp-rate-item-value':'aio-shop-product-page-rate-item-value',//
-    'pp-rate-item-slider':'aio-shop-product-page-rate-item-slider',//
+    'rate-items':'aio-shop-product-page-rate-items',//
+    'rate-item':'aio-shop-rate-item',//
+    'rate-item-text':'aio-shop-rate-item-text',//
+    'rate-item-value':'aio-shop-rate-item-value',//
+    'rate-item-slider':'aio-shop-rate-item-slider',//
     'pp-image_layout':'aio-shop-product-page-image-layout',//
     'pp-image-arrow':'aio-shop-product-page-image-arrow',//
     'pp-image-arrow-up':'aio-shop-product-page-image-arrow-up',//

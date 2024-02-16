@@ -272,6 +272,14 @@
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
+.t-0{top:0 !important;}
+.t-100{top:100% !important;}
+.b-0{bottom:0 !important;}
+.b-100{bottom:100% !important;}
+.l-0{left:0 !important;}
+.l-100{left:100% !important;}
+.r-0{right:0 !important;}
+.r-100{right:100% !important;}
 
 .fs-8{font-size:8px !important;}
 .fs-9{font-size:9px !important;}

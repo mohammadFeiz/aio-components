@@ -200,31 +200,37 @@
     margin-bottom:6px;
     overflow:visible !important;
 }
-.aio-shop-product-page-rate-items{
+.aio-shop-rate-items{
     background:rgba(0,0,0,0.03);
     padding:6px 0;
 }
-.aio-shop-product-page-rate-item-text{
+.aio-shop-rate-item-text{
     width:96px;
     justify-content: flex-end;
     font-size:90%;
 }
-.aio-shop-product-page-rate-item-value{
+.aio-shop-rate-item-value{
     width:30px;
     font-weight:bold;
     font-size:90%;
 }
-.aio-shop-product-page-rate-item-slider{
+.aio-shop-rate-item-slider{
     height:24px;
     background:none;
 }
-.aio-shop-product-page-rate-item-slider .aio-slider-point{
+.aio-shop-rate-item-slider .aio-slider-point{
     display:none;
 }
-.aio-shop-product-page-rate-item-slider .aio-slider-fill-active{
+.aio-shop-rate-item-slider .aio-slider-fill-active{
     background:green;
     height:4px !important;
     border-radius:6px;
+}
+.aio-shop-product-page-not-exist{
+    font-size:14px;
+    color:red;
+    gap:6px;
+    font-weight:bold;
 }
 .aio-shop-cart-button{
     overflow:visible;
