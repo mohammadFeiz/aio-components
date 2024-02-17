@@ -160,7 +160,7 @@ export type I_v_label = [key:string,value:string]
 export type I_renderProductCard = (p:I_ProductCard)=>React.ReactNode;
 export type I_renderProductPage = (p:I_ProductPage)=>React.ReactNode;
 export type I_renderProductSlider = (p:I_ProductSlider)=>React.ReactNode;
-export type I_renderCart = (P:I_Cart)=>React.ReactNode;
+export type I_renderCart = (P?:I_Cart)=>React.ReactNode;
 export type I_renderCheckout = (P:I_Checkout)=>React.ReactNode;
 export type I_renderCartButton = (p:I_CartButton)=>React.ReactNode;
 export type I_renderRates = (P:I_Rates)=>React.ReactNode;
@@ -176,6 +176,7 @@ export type I_ProductSlider = {
     title?:string,
     action?:I_action,
     products:I_pr[],
+    icon?:()=>React.ReactNode,
     cartButton:I_ProductCard_cartButton
 }
 export type I_ProductPage = {
@@ -186,14 +187,13 @@ export type I_ProductCard = {
     product:I_pr,
     variantId?:any,
     type:I_ProductCard_type,
-    content?:(product:I_pr,variantId?:any)=>React.ReactNode,
-    cartButton:I_ProductCard_cartButton,
+    cartButton?:I_ProductCard_cartButton,
     attrs?:any,
     title?:string,
     getContext?:()=>I_AIOShop_context 
 }
 export type I_Checkout = {getContext?:()=>I_AIOShop_context}
-export type I_Factor = {renderIn:'cart' | 'checkout',getContext?:()=>I_AIOShop_context,mode:'details' | 'amount'}
+export type I_Factor = {renderIn:'cart' | 'checkout',getContext?:()=>I_AIOShop_context,mode:'details' | 'payment'}
 export type I_DiscountPercent = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context}
 export type I_FinalPrice = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context}
 export type I_VariantLabels = {product:I_pr,variantId,getContext?:()=>I_AIOShop_context,type:'h' | 'v'}

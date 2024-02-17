@@ -5,8 +5,9 @@
     --panel-bg:#fff;
     --panel-br:6px;
     --panel-p:6px;
-    --panel-bs:0 3px 6px 0 rgba(0,0,0,0.1);
+    --panel-bs:0 0px 6px 0 rgba(0,0,0,0.15);
     --important-color:orange;
+    --as-link:rgb(26, 80, 143);
 }
 .aio-shop-product-card{
     background:#fff;
@@ -27,6 +28,15 @@
     background:rgba(0,0,0,0.1);
     padding:3px 6px;
     width: 100%;
+}
+.aio-shop-product-card-variants{
+    padding:3px;
+    gap:3px;
+}
+.aio-shop-product-card-variant{
+    padding:0 6px;
+    background:rgba(0,0,0,0.1);
+    border-radius:4px;
 }
 .aio-shop-final-price{
     font-size:100%;
@@ -107,15 +117,6 @@
     font-weight: bold;
     margin-bottom:6px;
 }
-.aio-shop-product-page-option-types{}
-.aio-shop-product-page-option-type{
-    background:var(--panel-bg);
-    border-radius:var(--panel-br);
-    padding:var(--panel-p);
-    box-shadow: var(--panel-bs);
-    margin-bottom:6px;
-    overflow:visible !important;
-}
 .aio-shop-product-page-option-value-buttons{
     overflow-x: auto;
     width:100%;
@@ -141,14 +142,6 @@
     padding:0 6px;
     align-items: center;
 }
-.aio-shop-product-page-details{
-    background:var(--panel-bg);
-    border-radius:var(--panel-br);
-    padding:var(--panel-p);
-    box-shadow: var(--panel-bs);
-    margin-bottom:6px;
-    overflow:visible !important;
-}
 .aio-shop-product-page-detail{
     gap:6px;
     border-bottom:1px solid #ddd;
@@ -173,32 +166,23 @@
 .aio-shop-product-page-detail-value{
     font-size:90%;
 }
-.aio-shop-product-page-description{
-    background:var(--panel-bg);
-    border-radius:var(--panel-br);
-    padding:var(--panel-p);
-    box-shadow: var(--panel-bs);
-    margin-bottom:6px;
-    overflow:visible !important;
-}
 .aio-shop-product-page-description-text{
     background:rgba(0,0,0,0.03);
     padding:6px;
 }
-.aio-shop-product-page-content{}
-.aio-shopw-product-page-show-more{
-    color:rgb(26, 80, 143);
-    font-size:80%;
-    font-weight:bold;
-    padding:0 6px;
-}
-.aio-shop-product-page-rates{
+.aio-shop-product-page-box{
     background:var(--panel-bg);
     border-radius:var(--panel-br);
     padding:var(--panel-p);
     box-shadow: var(--panel-bs);
     margin-bottom:6px;
     overflow:visible !important;
+}   
+.aio-shopw-product-page-show-more{
+    color:var(--as-link);
+    font-size:80%;
+    font-weight:bold;
+    padding:0 6px;
 }
 .aio-shop-rate-items{
     background:rgba(0,0,0,0.03);
@@ -292,4 +276,123 @@
 }
 .aio-shop-cart-button-footer{
     gap:3px;
+    justify-content: center;
+    border-radius:2px;
+    height:12px;
+    background:rgba(0,0,0,0.1);
+    margin-bottom:3px;
+}
+.aio-shop-product-slider{
+    width: 100%;
+    background:#f2f2f2;
+    padding:12px;
+}
+.aio-shop-cart-footer{
+    overflow:visible;
+}
+.aio-shop-product-slider-body{
+    width:100%;
+    overflow-x:auto;
+    gap:6px;
+}
+.aio-shop-product-slider-products{
+    gap:6px;
+}
+.aio-shop-product-slider-header{
+    padding:0 6px;
+    margin-bottom:6px;
+}
+.aio-shop-product-slider-title{
+    font-weight:bold;
+    font-size:14px;
+}
+.aio-shop-product-slider-action{
+    font-weight:bold;
+    font-size:12px;
+    color:var(--as-link);
+}
+.aio-shop-cart{
+    background:#fff;
+    font-size:12px;
+    min-height:120px;
+    background:#f2f2f2;
+}
+.aio-shop-cart-body{
+    padding:12px;
+}
+.aio-shop-cart-products{
+    overflow:visible;
+    margin-bottom:6px;
+}
+.aio-shop-factor{
+
+}
+.aio-shop-factor-total{
+    gap:3px;
+}
+.aio-shop-factor-products-discount{
+    gap:3px;
+}
+.aio-shop-factor-discount{
+    gap:3px;
+    color:red;
+}
+.aio-shop-factor-extra{
+    color:green;
+    gap:3px;
+}
+.aio-shop-factor-key{
+    font-size:10px;
+}
+.aio-shop-factor-value{
+    font-size:12px;
+    font-weight:bold;
+}
+.aio-shop-factor-unit{
+    font-size:10px;
+}
+.aio-shop-factor-plus{
+
+}
+.aio-shop-factor-minus{
+
+}
+.aio-shop-factor-max-discount{
+    font-size:9px;
+    color:red;
+}
+.aio-shop-factor-continue{
+
+}
+.aio-shop-factor-payment{
+    background:#fff;
+    padding:6px 12px;
+    box-shadow: var(--panel-bs);
+    overflow:visible;
+}
+.aio-shop-factor-payment button{
+    font-size:12px;
+    font-family:inherit;
+    border:none;
+    background:orange;
+    color:#fff;
+    border-radius:4px;
+    height:30px;
+    padding:0 24px;
+}
+.aio-shop-factor-payment-text{
+    font-size:10px;
+}
+.aio-shop-factor-payment-value{
+    font-size:16px;
+    font-weight:bold;
+}
+.aio-shop-factor-payment-unit{
+    font-size:10px;
+}
+.aio-shop-factor-discount-code{
+
+}
+.aio-shop-factor-discount-code-error{
+
 }

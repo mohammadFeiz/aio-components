@@ -18,6 +18,7 @@ const classes = {
     'pc-discount-layout':'aio-shop-product-card-discount-layout',//
     'pc-finalPrice_layout':'aio-shop-product-card-final-price_layout',//
     'price':'aio-shop-price',
+    'pc-variants':'aio-shop-product-card-variants',//
     'pc-variant':'aio-shop-product-card-variant',//
     'pc-content':'aio-shop-product-card-content',//product card info
     'fp':'aio-shop-final-price',//final price
@@ -43,6 +44,11 @@ const classes = {
     'cb-max':'aio-shop-cart-button-max',//
     'cb-body':'aio-shop-cart-button-body',//
     'cb-footer':'aio-shop-cart-button-footer',//
+    'cart':'aio-shop-cart',//
+    'cart-factor':'aio-shop-cart-factor',//
+    'cart-body':'aio-shop-cart-body',//
+    'cart-footer':'aio-shop-cart-footer',//
+    'cart-products':'aio-shop-cart-products',//
     'pp':'aio-shop-product-page',//
     'pp-body':'aio-shop-product-page-body',//
     'pp-footer':'aio-shop-product-page-footer',//
@@ -58,6 +64,7 @@ const classes = {
     'rate-item-value':'aio-shop-rate-item-value',//
     'rate-item-slider':'aio-shop-rate-item-slider',//
     'pp-image_layout':'aio-shop-product-page-image-layout',//
+    'pp-box':'aio-shop-product-page-box',//
     'pp-image-arrow':'aio-shop-product-page-image-arrow',//
     'pp-image-arrow-up':'aio-shop-product-page-image-arrow-up',//
     'pp-image-arrow-down':'aio-shop-product-page-image-arrow-down',//
@@ -81,5 +88,25 @@ const classes = {
     'ps-product':'aio-shop-product-slider-product',//
     'ps-before':'aio-shop-product-slider-before',//
     'ps-after':'aio-shop-product-slider-after',//
+    'ps-title':'aio-shop-product-slider-title',//
+    'ps-action':'aio-shop-product-slider-action',//
+    'factor':'aio-shop-factor',//
+    'factor-total':'aio-shop-factor-total',//
+    'factor-products-discount':'aio-shop-factor-products-discount',//
+    'factor-discount':'aio-shop-factor-discount',//
+    'factor-extra':'aio-shop-factor-extra',//
+    'factor-key':'aio-shop-factor-key',//
+    'factor-value':'aio-shop-factor-value',//
+    'factor-unit':'aio-shop-factor-unit',//
+    'factor-plus':'aio-shop-factor-plus',//
+    'factor-minus':'aio-shop-factor-minus',//
+    'factor-max-discount':'aio-shop-factor-max-discount',//
+    'factor-couninue':'aio-shop-factor-continue',//
+    'factor-payment':'aio-shop-factor-payment',//
+    'factor-payment-text':'aio-shop-factor-payment-text',//
+    'factor-payment-value':'aio-shop-factor-payment-value',//
+    'factor-payment-unit':'aio-shop-factor-payment-unit',//
+    'factor-discount-code':'aio-shop-factor-discount-code',//
+    'factor-discount-code-error':'aio-shop-factor-discount-code-error',//
 }
 export default classes;

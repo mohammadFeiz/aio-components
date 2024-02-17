@@ -8,7 +8,7 @@ import {SplitNumber} from './../../npm/aio-utils/aio-utils.js';
 import { makeAutoObservable,toJS } from "mobx"
 import { observer } from "mobx-react-lite"
 import {Icon} from '@mdi/react';
-import { mdiAlert, mdiAlertBox, mdiArrowDown, mdiArrowUp, mdiCart, mdiChevronDown, mdiChevronUp, mdiDelete, mdiInformation, mdiMinus, mdiPlus, mdiPlusMinus } from '@mdi/js';
+import { mdiAlert, mdiAlertBox, mdiArrowDown, mdiArrowUp, mdiCart, mdiCash, mdiChevronDown, mdiChevronUp, mdiDelete, mdiInformation, mdiMinus, mdiPlus, mdiPlusMinus } from '@mdi/js';
 import classes from './classes';
 import './index.css';
 import { 
@@ -238,7 +238,7 @@ export default class AIOShop implements I_AIOShop{
         this.renderCartButton = (p:I_CartButton)=><CartButton {...p} getContext={this.getContext}/>;
         this.renderProductPage = (p:I_ProductPage)=><ProductPage {...p} getContext={this.getContext}/>;
         this.renderProductSlider = (p:I_ProductSlider)=><ProductSlider {...p} getContext={this.getContext}/>;
-        this.renderCart = (p:I_Cart)=><Cart {...p} getContext={this.getContext}/>;
+        this.renderCart = ()=><Cart getContext={this.getContext}/>;
         this.renderRates = (p:I_Rates)=><Rates {...p} getContext={this.getContext}/>;
         this.renderCheckout = (p:I_Checkout)=><Checkout {...p} getContext={this.getContext}/>;
         this.openModal = (p)=>{
@@ -338,7 +338,7 @@ const Checkout = observer((props: I_Checkout) => {
         return { html: <Factor {...props}/>,className:'checkout-factor' }
     }
     function footer_layout():I_RVD_node {
-        let props:I_Factor = {getContext,renderIn:'checkout',mode:'amount'}
+        let props:I_Factor = {getContext,renderIn:'checkout',mode:'payment'}
         return { html: <Factor {...props}/>,className:'checkout-footer' }
     }
     return (
@@ -371,7 +371,7 @@ const Cart = observer((props:I_Cart) => {
     }
     useEffect(()=>{getContent()},[cart])
     function body_layout():I_RVD_node{return {className:cls['cart-body'],column:[cartProducts_layout(),content_layout(),factor_layout()]}}
-    function cartProducts_layout() {return { className: 'of-visible p-h-12', column: cart.map((o:I_cart_product) => cartProduct_layout(o)) }}
+    function cartProducts_layout() {return { className: cls['cart-products'], column: cart.map((o:I_cart_product) => cartProduct_layout(o)) }}
     function cartProduct_layout(cartProduct:I_cart_product) {
         let {product} = cartProduct;
         let props:I_ProductCard = {product,type:'hs',cartButton:true,getContext}
@@ -381,11 +381,11 @@ const Cart = observer((props:I_Cart) => {
     function content_layout():I_RVD_node{return !content?false:{className:'c-content',html:content}}
     function factor_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'details'}
-        return {className:'c-factor-details',html:<Factor {...props}/>}
+        return {className:`${cls['cart-factor']} ${cls['pp-box']}`,html:<Factor {...props}/>}
     }
     function footer_layout():I_RVD_node{
-        let props:I_Factor = {renderIn:'cart',getContext,mode:'amount'}
-        return {className:'c-factor-footer',html:<Factor {...props}/>}
+        let props:I_Factor = {renderIn:'cart',getContext,mode:'payment'}
+        return {className:cls['cart-footer'],html:<Factor {...props}/>}
     }
     if (!cart.length) {return (<RVD layout={{className: cls['cart'],html: 'سبد خرید شما خالی است', align: 'vh'}}/>)}
     return (<RVD layout={{className: cls['cart'],column: [body_layout(),footer_layout()]}}/>)
@@ -454,13 +454,14 @@ const Factor = observer((props:I_Factor) => {
     }
     function discountCodeError_layout():I_RVD_node {
         if (typeof fetchedDiscountCode !== 'string') { return false }
-        return { className: cls['checkout-discount-code-error'], html: fetchedDiscountCode }
+        return { className: cls['factor-discount-code-error'], html: fetchedDiscountCode }
     }
     
     function price_layout(price:number):I_RVD_node{
         return {
-            className:cls['c-products-total'],align:'v',
+            className:cls['factor-total'],align:'v',
             row:[
+                {className:cls['factor-icon'],html:<Icon path={mdiCash} size={0.6}/>},
                 {className:cls['factor-key'],html:'جمع سبد خرید',flex:1},
                 {className:cls['factor-value'],html:SplitNumber(price)},
                 {className:cls['factor-unit'],html:unit},
@@ -469,7 +470,7 @@ const Factor = observer((props:I_Factor) => {
     }
     function products_discount_layout(amount):I_RVD_node{
         return {
-            className:cls['c-products-discount'],align:'v',
+            className:cls['factor-products-discount'],align:'v',
             row:[
                 {className:cls['factor-key'],html:'تخفیف کالا',flex:1},
                 {className:cls['factor-value'],html:SplitNumber(amount)},
@@ -484,13 +485,25 @@ const Factor = observer((props:I_Factor) => {
                 {
                     className:cls['factor-discount'],align:'v',
                     row:[
-                        {className:cls['factor-key'],html:discount.title,flex:1},
-                        {className:cls['factor-value'],html:`${SplitNumber(amount)} (${discount.discountPercent})%`},
+                        {
+                            column:[
+                                {
+                                    gap:3,align:'v',
+                                    row:[
+                                        {className:cls['factor-minus'],html:<Icon path={mdiMinus} size={0.6}/>},
+                                        {className:cls['factor-key'],html:`${discount.title}`},
+                                        {className:cls['dp'],html:`${discount.discountPercent}%`},
+                                    ]
+                                },
+                                {className:cls['factor-max-discount'],show:!!discount.maxDiscount && discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount)} ${unit}`}
+                            ]
+                        },
+                        {flex:1},
+                        {className:cls['factor-value'],html:`${SplitNumber(amount)}`},
                         {className:cls['factor-unit'],html:unit},
-                        {className:cls['factor-minus'],html:<Icon path={mdiMinus} size={0.8}/>}
                     ]
                 },
-                {className:cls['factor-max-discount'],show:discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount)} ${unit}`}
+                
             ]
         }
     }
@@ -499,10 +512,10 @@ const Factor = observer((props:I_Factor) => {
         return {
             className:cls['factor-extra'],align:'v',  
             row:[
+                {className:cls['factor-icon'],html:<Icon path={mdiPlus} size={0.6}/>},
                 {className:cls['factor-key'],html:title,flex:1},
                 {className:cls['factor-value'],html:`${SplitNumber(amount)}`},
-                {className:cls['factor-unit'],html:unit},
-                {className:cls['factor-plus'],html:<Icon path={mdiPlus} size={0.8}/>},
+                {className:cls['factor-icon'],html:unit}
             ]
         }
     }
@@ -511,24 +524,24 @@ const Factor = observer((props:I_Factor) => {
     }
     function button_layout():I_RVD_node{
         let text = renderIn === 'cart'?'تکمیل خرید':`پرداخت ${details.payment} ${unit}`
-        return {className:cls['factor-continue-button'],html:<button onClick={()=>onSubmit()}>{text}</button>,align:'vh'}
+        return {className:cls['factor-continue'],html:<button onClick={()=>onSubmit()}>{text}</button>,align:'vh'}
     }
     function amount_layout():I_RVD_node{
         return {
-            className:cls['factor-amount'],align:'v',flex:1,
+            align:'v',flex:1,
             column:[
                 {
                     row:[
                         {flex:1},
-                        {html:'مبلغ قابل پرداخت',className:cls['factor-amount-text']},
+                        {html:'مبلغ قابل پرداخت',className:cls['factor-payment-text']},
                     ]
                 },
                 {
-                    gap:6,
+                    gap:3,align:'v',
                     row:[
                         {flex:1},
-                        {html:SplitNumber(details.payment),className:cls['factor-amount-value']},
-                        {html:SplitNumber(details.payment),className:cls['factor-amount-unit']},
+                        {html:SplitNumber(details.payment),className:cls['factor-payment-value']},
+                        {html:unit,className:cls['factor-payment-unit']},
                     ]
                 }
             ]
@@ -543,18 +556,22 @@ const Factor = observer((props:I_Factor) => {
         let Extras = !details.extras.length?false:{column:details.extras.map((extra:I_extra)=>extra_layout(extra))}
         return (<RVD layout={{className:cls['factor'],column:[DiscountCode,DiscountCodeError,Price,ProductsDiscount,Discounts,Extras]}}/>)
     }
-    else if(mode === 'amount'){
-        return (<RVD layout={{className:cls['factor'],row:[button_layout(),amount_layout()]}}/>)
+    else if(mode === 'payment'){
+        return (<RVD layout={{className:`${cls['factor']} ${cls['factor-payment']}`,row:[button_layout(),amount_layout()]}}/>)
     }
 })
 function ProductSlider(props:I_ProductSlider){
-    let {title = '',action,before = () => false,after = () => false,products,getContext,cartButton} = props,context = getContext();
+    let {title = '',action,before = () => false,after = () => false,products,getContext,cartButton = false,icon} = props,context = getContext();
     let {cls} = context;
     function header_layout():I_RVD_node{
         if(!title && !action){return false}
-        let row:I_RVD_node[] = [{align:'v',flex:1,html:title}]
-        if(action){row.push({html:action.text})}
-        return {className:'ps-header',row}
+        let row:I_RVD_node[] = [
+            
+        ]
+        if(icon){row.push({align:'vh',html:icon})}
+        row.push({align:'v',flex:1,html:title,className:cls['ps-title']})
+        if(action){row.push({html:action.text,className:cls['ps-action'],onClick:action.onClick})}
+        return {align:'v',className:cls['ps-header'],row}
     }
     function body_layout():I_RVD_node{
         return {className:cls['ps-body'],row:[before_layout(),products_layout(),after_layout()]}
@@ -586,11 +603,11 @@ const ProductPage = observer((props:I_ProductPage) => {
     let [showFull,setShowFull] = useState<{[key:string]:boolean}>({});
     async function getImageContent(){
         if(typeof context.productPageImageContent !== 'function'){return}
-        setImageContent(await context.productPageImageContent(product,props.variantId))
+        setImageContent(await context.productPageImageContent(product,variant?variant.id:undefined))
     }
     async function getContent(){
         if(typeof context.productPageContent !== 'function'){return}
-        setContent(await context.productPageContent(product,props.variantId))
+        setContent(await context.productPageContent(product,variant?variant.id:undefined))
     }
     useEffect(()=>{getImageContent(); getContent()},[])
     let {cls,trans} = context;
@@ -624,7 +641,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     }
     function name_layout():I_RVD_node{return {html:product.name,className:cls['pp-name']}}
     function optionTypes_layout():I_RVD_node{
-        return {className:`of-visible ${cls['pp-optionTypes']}`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
+        return {className:`of-visible ${cls['pp-optionTypes']} ${cls['pp-box']}`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
     }
     
     function optionType_layout(optionType:I_pr_optionType):I_RVD_node{
@@ -664,7 +681,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     function details_layout():I_RVD_node{
         if(!details.length){return false}
         let Details:I_pr_detail[] = showFull.details?details:details.slice(0,3);
-        return {className:cls['pp-details'],column:[label_layout('مشخصات','details'),{column:Details.map((o:I_pr_detail)=>detail_layout(o))}]}
+        return {className:`${cls['pp-details']} ${cls['pp-box']}`,column:[label_layout('مشخصات','details'),{column:Details.map((o:I_pr_detail)=>detail_layout(o))}]}
     }
     function detail_layout(detail:I_pr_detail):I_RVD_node{
         let [key,value] = detail;
@@ -675,14 +692,14 @@ const ProductPage = observer((props:I_ProductPage) => {
     function description_layout():I_RVD_node{
         if(!description){return false}
         let Description = showFull.description?description:description.slice(0,64) + ' ...';
-        return {className:cls['pp-desc'],column:[label_layout('توضیحات','description'),{className:cls['pp-desc-text'],html:Description}]}
+        return {className:`${cls['pp-desc']} ${cls['pp-box']}`,column:[label_layout('توضیحات','description'),{className:cls['pp-desc-text'],html:Description}]}
     }
     function bullet_layout():I_RVD_node{return {html:<div className={cls['pp-detail-bullet']}></div>,align:'vh'}}
-    function content_layout():I_RVD_node{return !content?false:{className:cls['pp-content'],html:content}}
+    function content_layout():I_RVD_node{return !content?false:{className:`${cls['pp-content']} ${cls['pp-box']}`,html:content}}
     function rates_layout():I_RVD_node{
         if(!rates.length){return false}
         let props:I_Rates = {getContext,rates}
-        return {className:cls['pp-rates'],column:[label_layout('امتیاز'),{html:<Rates {...props}/>}]}
+        return {className:`${cls['pp-rates']} ${cls['pp-box']}`,column:[label_layout('امتیاز'),{html:<Rates {...props}/>}]}
     }
     function footer_layout():I_RVD_node{return {className:cls['pp-footer'],row:[cartButton_layout(),{flex:1},amounts_layout()]}}
     function amounts_layout():I_RVD_node{return !variant?false:{className:cls['pp-amounts'],column:[discount_layout(),finalPrice_layout()]}}
@@ -764,7 +781,7 @@ const CartButton = observer((props:I_CartButton) => {
     return (<RVD layout={{className:`${cls['cb']}`,column:[body_layout(),footer_layout()]}}/>)
 })
 const ProductCard = observer((props:I_ProductCard) => {
-    let {product,type,title,variantId,getContext,cartButton} = props,context = getContext(),{cls} = context;
+    let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{cls} = context;
     let {name,images} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
@@ -810,14 +827,17 @@ const ProductCard = observer((props:I_ProductCard) => {
     function variants_layout():I_RVD_node{
         if(cartButton === false){return false}
         let cvs:I_cart_variant[] = context.getCartVariants(product.id)
-        return !cvs.length?false:{column:cvs.map((cv:I_cart_variant)=>variant_layout(cv))} 
+        return !cvs.length?false:{className:cls['pc-variants'],column:cvs.concat(cvs,cvs,cvs,cvs,cvs).map((cv:I_cart_variant)=>variant_layout(cv))} 
     }
     function variant_layout(cv:I_cart_variant):I_RVD_node{return {align:'v',className:cls['pc-variant'],row:[variantLabel_layout(cv),cartButton_layout(cv)]}}
     function variantLabel_layout(cv:I_cart_variant):I_RVD_node{
         let props:I_VariantLabels = {type:'h',product,variantId:cv.id,getContext};
         return {flex:1,html:<VariantLabels {...props}/>}
     }
-    function cartButton_layout(cv:I_cart_variant):I_RVD_node{return {align:'vh',html:<CartButton product={product} variantId={cv.id} readonly={cartButton === 'readonly'}/>}}
+    function cartButton_layout(cv:I_cart_variant):I_RVD_node{
+        let props:I_CartButton = {product,variantId:cv.id,readonly:cartButton === 'readonly',getContext}
+        return {align:'vh',html:<CartButton {...props}/>}
+    }
     function click(){
         const render = ()=>{
             let props:I_ProductPage = {getContext,product,variantId}
@@ -924,20 +944,32 @@ function VariantLabels(props:I_VariantLabels){
         }
         return res
     }
-    function row_layout(vl:I_v_label):I_RVD_node{return {className:cls['vl-row'],row:[bullet_layout(),icon_layout(vl),key_layout(vl),{html:':',align:'vh'},value_layout(vl)]}}
+    function row_layout(vl:I_v_label):I_RVD_node{
+        return {
+            className:cls['vl-row'],row:[type === 'h'?false:bullet_layout(),icon_layout(vl),key_layout(vl),{html:':',align:'vh'},value_layout(vl)]
+        }
+    }
     function key_layout(vl:I_v_label):I_RVD_node{return {html:vl[0],className:cls['vl-row-key'],align:'v'}}
     function value_layout(vl:I_v_label):I_RVD_node{return {html:vl[1],className:cls['vl-row-value'],align:'v'}}
     function icon_layout(vl:I_v_label):I_RVD_node{
         let icon = getVariantIcon(vl);
         return !icon?false:{html:icon,align:'vh',className:cls['vl-icon']}
     }
-    function bullet_layout():I_RVD_node{return type === 'h'?false:{html:<div className={cls['vl-bullet']}></div>,align:'vh'}}
-    return (
-        <RVD
-            layout={{
-                className:`${cls['vl-rows']} ${cls[`vl-rows-${type}`]}${type === 'h'?' p-0':''}`,gap:type === 'h'?8:undefined,gapHtml:type === 'h'?()=>'-':undefined,gapAttrs:{className:'align-vh'},
-                [type === 'h'?'row':'column']:items.map((item:I_v_label)=>row_layout(item))
-            }}
-        />
-    )
+    function bullet_layout():I_RVD_node{return {html:<div className={cls['vl-bullet']}></div>,align:'vh'}}
+    function h_layout(){
+        return {
+            className:`${cls['vl-rows']} ${cls[`vl-rows-${type}`]} p-0`,gap:3,
+            row:[
+                bullet_layout(),
+                {align:'v',row:items.map((item:I_v_label)=>row_layout(item)),gap:8,gapHtml:()=>'-',gapAttrs:{className:'align-vh'}}
+            ]
+        }
+    }
+    function v_layout(){
+        return {
+            className:`${cls['vl-rows']} ${cls[`vl-rows-${type}`]}`,
+            column:[items.map((item:I_v_label)=>row_layout(item))]
+        }
+    }
+    return (<RVD layout={type === 'h'?h_layout():v_layout()}/>)
 }
