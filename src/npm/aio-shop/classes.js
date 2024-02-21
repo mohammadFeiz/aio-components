@@ -108,5 +108,15 @@ const classes = {
     'factor-payment-unit':'aio-shop-factor-payment-unit',//
     'factor-discount-code':'aio-shop-factor-discount-code',//
     'factor-discount-code-error':'aio-shop-factor-discount-code-error',//
+    'checkout':'aio-shop-checkout',//
+    'checkout-body':'aio-shop-checkout-body',//
+    'checkout-products':'aio-shop-checkout-products',//
+    'checkout-items':'aio-shop-checkout-items',//
+    'checkout-item':'aio-shop-checkout-item',//
+    'checkout-title':'aio-shop-checkout-title',//
+    'checkout-subtitle':'aio-shop-checkout-subtitle',//
+    'checkout-item-radio':'aio-shop-checkout-item-radio',//
+    'checkout-content':'aio-shop-checkout-content',//
+    'checkout-item-radio-option':'aio-shop-checkout-item-radio-option',//
 }
 export default classes;

@@ -7,7 +7,7 @@ import AIOShop from '../../npm/aio-shop/aio-shop.js';
 import './index.css';
 import { I_AIOShop, I_AIOShop_props } from '../../npm/aio-shop/types.js';
 import {Icon} from '@mdi/react';
-import { mdiArrowLeftBoldCircle, mdiGift } from '@mdi/js';
+import { mdiArrowLeftBoldCircle, mdiCircleMedium, mdiGift } from '@mdi/js';
 export default function DOC_AIOShop(props){
     return (
         <DOC
@@ -527,6 +527,31 @@ function RenderCart(){
             return [
                 {title:'هزینه ارسال',amount:100000}
             ]
+        },
+        cartContent:async ()=>{
+            return 'محتوی سبد خرید'
+        },
+        checkoutContent:async ()=>{
+            return 'محتوی چک اوت'
+        },
+        getCheckoutItems:(context)=>{
+            return [
+                {
+                    type:'radio',title:'نحوه ارسال',subtitle:'توصیحات',field:'deliveryType',value:'carier',
+                    options:[
+                        {text:'پست پیشتاز',value:'post',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'ارسال پستی'},
+                        {text:'پیک',value:'carier',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'ارسال پیک'},
+                    ]
+                },
+                {
+                    type:'radio',title:'نحوه پرداخت',subtitle:'توصیحات',field:'paymentType',value:'online',
+                    options:[
+                        {text:'آنلاین',value:'online',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت آنلاین'},
+                        {text:'درمحل',value:'in location',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت پس از تحویل'},
+                    ]
+                }
+            ]
+             
         }
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
@@ -536,6 +561,8 @@ function RenderCart(){
             {Shop.renderProductCard({product,type:'h'})}
             <div style={{height:12}}></div>
             {Shop.renderCart()}
+            <div style={{height:24}}></div>
+            {Shop.renderCheckout()}
             {Shop.renderPopup()}
         </div>
     )

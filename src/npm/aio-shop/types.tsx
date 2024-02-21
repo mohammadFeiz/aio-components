@@ -85,7 +85,7 @@ export type I_checkout_html = {
     show?:(context:I_AIOShop_context)=>boolean
 }
 export type I_checkout_radio = {
-    type:'radio',title: string,subtitle?: string,field: string,value: any,options?: I_checkout_option[],multiple?:boolean,
+    type:'radio',title: string,subtitle?: string,field: string,value: any,options: I_checkout_option[],multiple?:boolean,
     show?:(context:I_AIOShop_context)=>boolean
 }
 export type I_checkout = {[key:string]:any}
@@ -161,7 +161,7 @@ export type I_renderProductCard = (p:I_ProductCard)=>React.ReactNode;
 export type I_renderProductPage = (p:I_ProductPage)=>React.ReactNode;
 export type I_renderProductSlider = (p:I_ProductSlider)=>React.ReactNode;
 export type I_renderCart = (P?:I_Cart)=>React.ReactNode;
-export type I_renderCheckout = (P:I_Checkout)=>React.ReactNode;
+export type I_renderCheckout = ()=>React.ReactNode;
 export type I_renderCartButton = (p:I_CartButton)=>React.ReactNode;
 export type I_renderRates = (P:I_Rates)=>React.ReactNode;
 export type I_renderPopup = ()=>React.ReactNode;
@@ -194,7 +194,7 @@ export type I_ProductCard = {
 }
 export type I_Checkout = {getContext?:()=>I_AIOShop_context}
 export type I_Factor = {renderIn:'cart' | 'checkout',getContext?:()=>I_AIOShop_context,mode:'details' | 'payment'}
-export type I_DiscountPercent = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context}
+export type I_DiscountPercent = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context,showPrice?:boolean}
 export type I_FinalPrice = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context}
 export type I_VariantLabels = {product:I_pr,variantId,getContext?:()=>I_AIOShop_context,type:'h' | 'v'}
 export type I_Rates = {getContext?:()=>I_AIOShop_context,rates:I_pr_rate[]}

@@ -74,6 +74,7 @@ export default class AIOShop implements I_AIOShop{
         let cart = storage.load({name:'cart',def:[]});
         this.cart = cart;
         this.storage = storage;
+        this.checkout = {};
         this.cls = classes;
         this.renderPopup = ()=>this.popup.render()
         this.getOptionTypes = (variants:I_v[]) => {
@@ -240,7 +241,7 @@ export default class AIOShop implements I_AIOShop{
         this.renderProductSlider = (p:I_ProductSlider)=><ProductSlider {...p} getContext={this.getContext}/>;
         this.renderCart = ()=><Cart getContext={this.getContext}/>;
         this.renderRates = (p:I_Rates)=><Rates {...p} getContext={this.getContext}/>;
-        this.renderCheckout = (p:I_Checkout)=><Checkout {...p} getContext={this.getContext}/>;
+        this.renderCheckout = ()=><Checkout getContext={this.getContext}/>;
         this.openModal = (p)=>{
             let {title,render,position,backdrop} = p;
             let header = title?{title}:false;
@@ -251,7 +252,7 @@ export default class AIOShop implements I_AIOShop{
 }
 const Checkout = observer((props: I_Checkout) => {
     let {getContext} = props,context = getContext();
-    let {cart,getCheckoutItems,checkout,setCheckout,cls,checkoutContent = ()=> false} = context;
+    let {cart,getCheckoutItems = ()=>[],checkout,setCheckout,cls,checkoutContent = ()=> false} = context;
     let checkoutItems:I_checkout_item[] = getCheckoutItems(context);
     let [content,setContent] = useState<React.ReactNode>();
     async function getContent(){
@@ -287,6 +288,7 @@ const Checkout = observer((props: I_Checkout) => {
     function items_layout():I_RVD_node {
         if (!checkoutItems.length) { return false }
         return {
+            className:cls['checkout-items'],
             column: checkoutItems.map((checkoutItem: I_checkout_item, i) => {
                 let { show = ()=> true,type} = checkoutItem;
                 if (show(context) === false) { return false }
@@ -297,6 +299,7 @@ const Checkout = observer((props: I_Checkout) => {
     }
     function label_layout(title:string,subtitle?:string):I_RVD_node{
         return {
+            align:'v',
             row:[
                 {html:title,className:cls['checkout-title']},
                 {show:!!subtitle,html:()=>`( ${subtitle} )`,className:cls['checkout-subtitle']}, 
@@ -323,7 +326,7 @@ const Checkout = observer((props: I_Checkout) => {
                     type='radio'
                     multiple={multiple}
                     options={options.map((o) => { return { ...o, before: o.icon } })}
-                    optionClassName="as-shipping-option"
+                    optionAttrs={()=>{return {className:cls["checkout-item-radio-option"]}}}
                     value={checkout[field]}
                     onChange={(value:any) => change({ [field]: value })}
                 />
@@ -331,11 +334,11 @@ const Checkout = observer((props: I_Checkout) => {
         }
     }
     function content_layout():I_RVD_node{
-        return !content?false:{className:cls['checkout-content'],html:content}
+        return !content?false:{className:`${cls['checkout-content']} ${cls['pp-box']}`,html:content}
     }
     function factor_layout():I_RVD_node {
         let props:I_Factor = {getContext,renderIn:'checkout',mode:'details'}
-        return { html: <Factor {...props}/>,className:'checkout-factor' }
+        return { html: <Factor {...props}/>,className:`${cls['checkout-factor']} ${cls['pp-box']}` }
     }
     function footer_layout():I_RVD_node {
         let props:I_Factor = {getContext,renderIn:'checkout',mode:'payment'}
@@ -347,7 +350,7 @@ const Checkout = observer((props: I_Checkout) => {
                 className:cls['checkout'],
                 column: [
                     {
-                        flex: 1, className: 'checkout-body',
+                        flex: 1, className: cls['checkout-body'],
                         column: [
                             cartProducts_layout(),
                             items_layout(),
@@ -366,6 +369,7 @@ const Cart = observer((props:I_Cart) => {
     let {cart,cls,unit} = context;    
     let [content,setContent] = useState<React.ReactNode>();
     async function getContent(){
+        if(typeof context.cartContent !== 'function'){return}
         let content:React.ReactNode = await context.cartContent(cart);
         setContent(content);
     }
@@ -378,7 +382,7 @@ const Cart = observer((props:I_Cart) => {
         let productCard = <ProductCard {...props}/>
         return { className: cls['c-product'], html: productCard }
     }
-    function content_layout():I_RVD_node{return !content?false:{className:'c-content',html:content}}
+    function content_layout():I_RVD_node{return !content?false:{className:`${cls['cart-content']} ${cls['pp-box']}`,html:content}}
     function factor_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'details'}
         return {className:`${cls['cart-factor']} ${cls['pp-box']}`,html:<Factor {...props}/>}
@@ -472,7 +476,8 @@ const Factor = observer((props:I_Factor) => {
         return {
             className:cls['factor-products-discount'],align:'v',
             row:[
-                {className:cls['factor-key'],html:'تخفیف کالا',flex:1},
+                {className:cls['factor-icon'],html:<Icon path={mdiMinus} size={0.6}/>},
+                {className:cls['factor-key'],html:'تخفیف کالا ها',flex:1},
                 {className:cls['factor-value'],html:SplitNumber(amount)},
                 {className:cls['factor-unit'],html:unit},
             ]
@@ -520,10 +525,16 @@ const Factor = observer((props:I_Factor) => {
         }
     }
     function onSubmit(){
-
+        if(renderIn === 'cart'){
+            const render = ()=>{
+                let props:I_Checkout = {getContext}
+                return <Checkout {...props}/>
+            }
+            context.openModal({title:'تکمیل خرید',render})
+        }
     }
     function button_layout():I_RVD_node{
-        let text = renderIn === 'cart'?'تکمیل خرید':`پرداخت ${details.payment} ${unit}`
+        let text = renderIn === 'cart'?'تکمیل خرید':`پرداخت ${SplitNumber(details.payment)} ${unit}`
         return {className:cls['factor-continue'],html:<button onClick={()=>onSubmit()}>{text}</button>,align:'vh'}
     }
     function amount_layout():I_RVD_node{
@@ -735,8 +746,8 @@ const CartButton = observer((props:I_CartButton) => {
     let cartVariant = getCartVariant({product,variantId})
     let count = !cartVariant?0:cartVariant.count;
     function notExist_layout():I_RVD_node{return {className:`${cls['cb']}`,html:<span className='cb-not-exist'>{trans.notExist}</span>}}
-    function icon_layout():I_RVD_node{return {html:<Icon path={mdiCart} size={0.8}/>,className:cls['cb-icon']}}
-    function count_layout():I_RVD_node{return {html:count,align:'vh',className:cls['cb-count']}}
+    function icon_layout():I_RVD_node{return {html:<Icon path={mdiCart} size={0.6}/>,className:cls['cb-icon']}}
+    function count_layout(style?:any):I_RVD_node{return {html:count,align:'vh',className:cls['cb-count'],style}}
     function changeStep(offset){
         let newCount = count + offset;
         if(newCount < min){newCount = min}
@@ -776,12 +787,12 @@ const CartButton = observer((props:I_CartButton) => {
     let [variant] = useState<I_v>(product.variants.find((o:I_v)=>o.id === variantId));
     let {min,max,step} = getCartInfo();
     if(!max){return <RVD layout={notExist_layout()}/>}
-    if(readonly){return !count?null:<RVD layout={{className:`${cls['cb']} ${cls['cb-readonly']}`,row:[icon_layout(),count_layout()]}}/>}
+    if(readonly){return !count?null:<RVD layout={{className:`${cls['cb']} ${cls['cb-readonly']}`,align:'v',row:[icon_layout(),count_layout({width:'fit-content',padding:'0 3px',fontSize:14})]}}/>}
     if(!count){return <RVD layout={{className:`${cls['cb']}`,html:<button className={cls['cb-add']} onClick={()=>changeStep(step)}>{trans.addToCart}</button>}}/>}
     return (<RVD layout={{className:`${cls['cb']}`,column:[body_layout(),footer_layout()]}}/>)
 })
 const ProductCard = observer((props:I_ProductCard) => {
-    let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{cls} = context;
+    let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{cls,unit} = context;
     let {name,images} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
@@ -827,12 +838,27 @@ const ProductCard = observer((props:I_ProductCard) => {
     function variants_layout():I_RVD_node{
         if(cartButton === false){return false}
         let cvs:I_cart_variant[] = context.getCartVariants(product.id)
-        return !cvs.length?false:{className:cls['pc-variants'],column:cvs.concat(cvs,cvs,cvs,cvs,cvs).map((cv:I_cart_variant)=>variant_layout(cv))} 
+        return !cvs.length?false:{className:cls['pc-variants'],column:cvs.map((cv:I_cart_variant)=>variant_layout(cv))} 
     }
-    function variant_layout(cv:I_cart_variant):I_RVD_node{return {align:'v',className:cls['pc-variant'],row:[variantLabel_layout(cv),cartButton_layout(cv)]}}
-    function variantLabel_layout(cv:I_cart_variant):I_RVD_node{
+    function variant_layout(cv:I_cart_variant):I_RVD_node{return {align:'v',className:cls['pc-variant'],row:[variantDetails_layout(cv),cartButton_layout(cv)]}}
+    function variantDetails_layout(cv:I_cart_variant):I_RVD_node{
         let props:I_VariantLabels = {type:'h',product,variantId:cv.id,getContext};
-        return {flex:1,html:<VariantLabels {...props}/>}
+        let fpProps:I_FinalPrice = {getContext,product,variantId:cv.id}
+        let dpProps:I_DiscountPercent = {getContext,product,variantId:cv.id,showPrice:false}
+        return {
+            flex:1,
+            column:[
+                {flex:1,html:<VariantLabels {...props}/>},
+                {
+                    gap:6,style:{fontSize:10},align:'v',
+                    row:[
+                        {html:<DiscountPercent {...dpProps}/>},
+                        {html:<FinalPrice {...fpProps}/>},
+                        {html:`(جمع ${SplitNumber(cv.count * cv.finalPrice)} ${unit})`,className:'fs-9'}
+                    ]
+                }
+            ]
+        }
     }
     function cartButton_layout(cv:I_cart_variant):I_RVD_node{
         let props:I_CartButton = {product,variantId:cv.id,readonly:cartButton === 'readonly',getContext}
@@ -849,15 +875,21 @@ const ProductCard = observer((props:I_ProductCard) => {
         let column = [title_layout(),image_layout(),body_layout_v()]
         return {className,onClick:()=>click(),column}
     }
-    function body_layout_v(){
-        let column = [name_layout(),description_layout(),content_layout(),{flex:1},discount_layout(),finalPrice_layout()]
-        return {className:cls['pc-body'],flex:1,column}
+    function body_layout_v():I_RVD_node{
+        return {className:cls['pc-body'],align:'v',flex:1,column:[name_layout(),description_layout(),content_layout(),{flex:1},productAmounts_layout()]}
     }
     function body_layout_h():I_RVD_node{
-        return {className:cls['pc-body'],flex:1,column:[name_layout(),description_layout(),content_layout(),{flex:1},discount_layout(),finalPrice_layout()]}
+        return {className:cls['pc-body'],align:'v',flex:1,column:[name_layout(),description_layout(),content_layout(),{flex:1},productAmounts_layout()]}
     }
     function body_layout_hs():I_RVD_node{
-        return {className:cls['pc-body'],flex:1,column:[name_layout(),description_layout(),{gap:6,row:[finalPrice_layout(),{flex:1},discount_layout()]}]}
+        return {className:cls['pc-body'],align:'v',flex:1,column:[name_layout(),description_layout(),productAmounts_layout()]}
+    }
+    function productAmounts_layout(){
+        if(cartButton){return false}
+        if(type === 'v'){return {column:[discount_layout(),finalPrice_layout()]}}
+        if(type === 'h'){return {column:[discount_layout(),finalPrice_layout()]}}
+        if(type === 'hs'){return {gap:6,row:[finalPrice_layout(),{flex:1},discount_layout()]}}
+        return false
     }
     function h_layout():I_RVD_node{
         let body;
@@ -874,7 +906,7 @@ const ProductCard = observer((props:I_ProductCard) => {
     return (<RVD layout={type === 'v'?v_layout():h_layout()}/>)
 })
 function DiscountPercent(props:I_DiscountPercent){
-    let {product,getContext} = props,context = getContext(),{cls} = context;
+    let {product,getContext,showPrice} = props,context = getContext(),{cls} = context;
     let [variant] = useState<I_v>(getVariant())
     let [items] = useState<I_discountPercent[]>(getItems(variant))
     function getVariant(){
@@ -892,7 +924,7 @@ function DiscountPercent(props:I_DiscountPercent){
             })
         }}
     }
-    function price_layout():I_RVD_node{return {className:cls['price'],html:SplitNumber(variant.price)}}
+    function price_layout():I_RVD_node{return showPrice === false?false:{className:cls['price'],html:SplitNumber(variant.price)}}
     return !items.length?null:<RVD layout={{align:'v',className:cls['dr'],row:[{flex:1},price_layout(),percents_layout()]}}/>
 }
 type I_DiscountPercentModal = {context?:I_AIOShop_context,item:I_discountPercent}
