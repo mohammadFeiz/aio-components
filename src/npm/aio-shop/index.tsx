@@ -13,13 +13,14 @@ import classes from './classes';
 import './index.css';
 import { 
     I_Cart,I_CartButton,I_Checkout,I_DiscountPercent,I_Factor,I_Factor_details,I_FinalPrice,I_ProductCard,I_pr_detail,I_pr_optionType, 
-    I_ProductCard_content,I_ProductPage,I_ProductPage_content,I_ProductSlider,I_RVD_node,I_AIOShop, I_AIOShop_changeCart, I_AIOShop_context, 
+    I_ProductCard_content,I_ProductPage,I_ProductPage_content,I_ProductSlider,I_AIOShop, I_AIOShop_changeCart, I_AIOShop_context, 
     I_getVariantIcon, I_AIOShop_props, I_VariantLabels, I_cart,I_cart_content, I_cart_product, I_cart_variant, I_checkDiscountCode, 
     I_checkout, I_checkout_content, I_checkout_html, I_checkout_item, I_checkout_radio, I_discount, I_discountPercent, I_extra, I_getCartLength, 
     I_getCartVariant, I_getCartVariants, I_getCheckoutItems, I_getDiscounts, I_getExtras, I_getOptionTypes, I_getVariantByOptionValues, 
     I_openModal, I_pr, I_productCardImageContent, I_productPageImageContent, I_renderCart, I_renderCartButton, I_renderCheckout,
     I_renderProductCard, I_renderProductPage, I_renderProductSlider, I_setCheckout, I_trans, I_v, I_v_ov, I_v_label, I_pr_rate, I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartVariant, I_Rates, I_renderRates 
 } from './types';
+import { I_RVD_node } from '../react-virtual-dom/types.js';
 //////rvd
 export default class AIOShop implements I_AIOShop{
     unit:string;

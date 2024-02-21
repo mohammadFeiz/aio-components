@@ -134,20 +134,6 @@ export type I_cart_variant = {id:any,count:number,price:number,finalPrice:number
 export type I_cart_product = {product:I_pr,cartVariants:I_cart_variant[]}
 export type I_cart = I_cart_product[];
 //////rvd
-export type I_RVD_node = {
-    align?:'v' | 'h' | 'vh',
-    gap?:number,
-    size?:number,
-    flex?:number,
-    html?:React.ReactNode | (()=>React.ReactNode),
-    row?:I_RVD_node[],
-    column?:I_RVD_node[],
-    attrs?:any,
-    className?:string,
-    style?:any,
-    onClick?:(e:any)=>void,
-    show?:boolean
-} | false
 export type I_Factor_details = {
     price:number,payment:number,productsDiscount:number,
     discounts:{discount:I_discount,amount:number}[],
