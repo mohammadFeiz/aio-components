@@ -64,7 +64,9 @@ const classes = {
     'rate-item-value':'aio-shop-rate-item-value',//
     'rate-item-slider':'aio-shop-rate-item-slider',//
     'pp-image_layout':'aio-shop-product-page-image-layout',//
-    'pp-box':'aio-shop-product-page-box',//
+    'box':'aio-shop-box',//
+    'box-title':'aio-shop-box-title',//
+    'box-subtitle':'aio-shop-box-subtitle',//
     'pp-image-arrow':'aio-shop-product-page-image-arrow',//
     'pp-image-arrow-up':'aio-shop-product-page-image-arrow-up',//
     'pp-image-arrow-down':'aio-shop-product-page-image-arrow-down',//
@@ -94,6 +96,7 @@ const classes = {
     'factor-total':'aio-shop-factor-total',//
     'factor-products-discount':'aio-shop-factor-products-discount',//
     'factor-discount':'aio-shop-factor-discount',//
+    'factor-total-discount':'aio-shop-factor-total-discount',//
     'factor-extra':'aio-shop-factor-extra',//
     'factor-key':'aio-shop-factor-key',//
     'factor-value':'aio-shop-factor-value',//
@@ -102,19 +105,20 @@ const classes = {
     'factor-minus':'aio-shop-factor-minus',//
     'factor-max-discount':'aio-shop-factor-max-discount',//
     'factor-couninue':'aio-shop-factor-continue',//
+    'factor-rows':'aio-shop-factor-rows',//
+    'factor-row':'aio-shop-factor-row',//
     'factor-payment':'aio-shop-factor-payment',//
     'factor-payment-text':'aio-shop-factor-payment-text',//
-    'factor-payment-value':'aio-shop-factor-payment-value',//
     'factor-payment-unit':'aio-shop-factor-payment-unit',//
     'factor-discount-code':'aio-shop-factor-discount-code',//
     'factor-discount-code-error':'aio-shop-factor-discount-code-error',//
+    'factor-discount-code-success':'aio-shop-factor-discount-code-success',//
     'checkout':'aio-shop-checkout',//
     'checkout-body':'aio-shop-checkout-body',//
+    'checkout-factor':'aio-shop-checkout-factor',//
     'checkout-products':'aio-shop-checkout-products',//
     'checkout-items':'aio-shop-checkout-items',//
     'checkout-item':'aio-shop-checkout-item',//
-    'checkout-title':'aio-shop-checkout-title',//
-    'checkout-subtitle':'aio-shop-checkout-subtitle',//
     'checkout-item-radio':'aio-shop-checkout-item-radio',//
     'checkout-content':'aio-shop-checkout-content',//
     'checkout-item-radio-option':'aio-shop-checkout-item-radio-option',//

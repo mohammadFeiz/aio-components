@@ -45,6 +45,7 @@ function RenderProductCard(){
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -114,6 +115,7 @@ function RenderProductPage(){
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -140,7 +142,8 @@ function ProductPageContent(){
             return (
                 <div style={{color:'orange'}} className='align-vh p-24 w-100'>با خرید این محصول 100 امتیاز دریافت کنید</div>
             )
-        }
+        },
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -189,7 +192,8 @@ function ProductPageImageContent(){
                     >{dp + '%'}</div>
                 </div>
             )
-        }
+        },
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -227,7 +231,8 @@ function ProductCardContent(){
             return (
                 <div style={{color:'red'}} className='w-100 fs-10'>با خرید این محصول 100 امتیاز دریافت کنید</div>
             )
-        }
+        },
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -270,7 +275,8 @@ function ProductCardImageContent(){
                     >{product.variants[0].discountPercent[0].value + '%'}</div>
                 </div>
             )
-        }
+        },
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -307,6 +313,7 @@ function DiscountPercent(){
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product1 = products[0]
@@ -423,6 +430,7 @@ function CartInfo(){
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product = products[0]
@@ -456,6 +464,7 @@ function RenderProductSlider(){
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let items = [products[0],products[0],products[0],products[0],products[0],products[0],products[0],products[0],]
@@ -534,6 +543,18 @@ function RenderCart(){
         checkoutContent:async ()=>{
             return 'محتوی چک اوت'
         },
+        onPayment:async(context)=>{
+            debugger
+            return false
+        },
+        checkDiscountCode:async (code,context)=>{
+            if(code === '123456'){
+                return {
+                    discountPercent:100,maxDiscount:50000,title:'کد تخفیف'
+                }
+            }
+            return 'کد معتبر نیست'
+        },
         getCheckoutItems:(context)=>{
             return [
                 {
@@ -549,6 +570,17 @@ function RenderCart(){
                         {text:'آنلاین',value:'online',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت آنلاین'},
                         {text:'درمحل',value:'in location',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت پس از تحویل'},
                     ]
+                },
+                {
+                    type:'html',title:'نحوه پرداخت',subtitle:'توصیحات',field:'paymentType',value:'online',
+                    html:(value,onChange)=>{
+                        return (
+                            <select style={{width:'100%',fontFamily:'inherit',border:'1px solid #ddd',outline:'none'}} value={value} onChange={(e)=>onChange(e.target.value)}>
+                                <option value='online'>آنلاین</option>
+                                <option value='in location'>درمحل</option>
+                            </select>
+                        )
+                    }
                 }
             ]
              
@@ -558,10 +590,13 @@ function RenderCart(){
     let product = products[0];
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
+            renderProductCard
             {Shop.renderProductCard({product,type:'h'})}
             <div style={{height:12}}></div>
+            renderCart
             {Shop.renderCart()}
             <div style={{height:24}}></div>
+            renderCheckout
             {Shop.renderCheckout()}
             {Shop.renderPopup()}
         </div>

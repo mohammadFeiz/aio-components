@@ -8,7 +8,7 @@ import {SplitNumber} from './../../npm/aio-utils/aio-utils.js';
 import { makeAutoObservable,toJS } from "mobx"
 import { observer } from "mobx-react-lite"
 import {Icon} from '@mdi/react';
-import { mdiAlert, mdiAlertBox, mdiArrowDown, mdiArrowUp, mdiCart, mdiCash, mdiChevronDown, mdiChevronUp, mdiDelete, mdiInformation, mdiMinus, mdiPlus, mdiPlusMinus } from '@mdi/js';
+import { mdiAlert, mdiAlertBox, mdiArrowDown, mdiArrowUp, mdiCart, mdiCash, mdiCheck, mdiCheckBold, mdiChevronDown, mdiChevronUp, mdiClose, mdiDelete, mdiInformation, mdiMinus, mdiPlus, mdiPlusMinus } from '@mdi/js';
 import classes from './classes';
 import './index.css';
 import { 
@@ -18,7 +18,7 @@ import {
     I_checkout, I_checkout_content, I_checkout_html, I_checkout_item, I_checkout_radio, I_discount, I_discountPercent, I_extra, I_getCartLength, 
     I_getCartVariant, I_getCartVariants, I_getCheckoutItems, I_getDiscounts, I_getExtras, I_getOptionTypes, I_getVariantByOptionValues, 
     I_openModal, I_pr, I_productCardImageContent, I_productPageImageContent, I_renderCart, I_renderCartButton, I_renderCheckout,
-    I_renderProductCard, I_renderProductPage, I_renderProductSlider, I_setCheckout, I_trans, I_v, I_v_ov, I_v_label, I_pr_rate, I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartVariant, I_Rates, I_renderRates 
+    I_renderProductCard, I_renderProductPage, I_renderProductSlider, I_setCheckout, I_trans, I_v, I_v_ov, I_v_label, I_pr_rate, I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartVariant, I_Rates, I_renderRates, I_onPayment, I_closeModal 
 } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types.js';
 //////rvd
@@ -59,6 +59,7 @@ export default class AIOShop implements I_AIOShop{
     getOptionTypes:I_getOptionTypes;
     getVariantByOptionValues:I_getVariantByOptionValues;
     openModal:I_openModal;
+    closeModal:I_closeModal;
     productPageImageContent:I_productPageImageContent;
     productCardImageContent:I_productCardImageContent;
     cartContent:I_cart_content;
@@ -67,6 +68,7 @@ export default class AIOShop implements I_AIOShop{
     getExtras:I_getExtras;
     productCardContent:I_ProductCard_content;
     productPageContent:I_ProductPage_content;
+    onPayment:I_onPayment;
     constructor(props:I_AIOShop_props){
         for(let prop in props){this[prop] = props[prop]}
         this.setCheckout = (checkout:I_checkout)=>{this.checkout = checkout};
@@ -110,10 +112,12 @@ export default class AIOShop implements I_AIOShop{
                 getDiscounts:this.getDiscounts,
                 getExtras:this.getExtras, 
                 openModal:this.openModal.bind(this),
+                closeModal:this.closeModal.bind(this),
                 checkout:this.checkout,
                 getCheckoutItems:this.getCheckoutItems,
                 setCheckout:this.setCheckout,
                 checkDiscountCode:this.checkDiscountCode,  
+                onPayment:this.onPayment,
                 trans:this.trans,
             }
             return context;
@@ -138,15 +142,15 @@ export default class AIOShop implements I_AIOShop{
         this.getCartVariants = (productId)=>{
             let cartProduct:I_cart_product = this.cart.find((o:I_cart_product)=>o.product.id === productId)
             if(!cartProduct){return []}
-            let cartVariants:I_cart_variant[] = cartProduct.cartVariants;
+            let cartVariants:I_cart_variant[] = cartProduct.variants;
             return cartVariants
         }
         this.getCartLength = ()=>{
             let res = 0;
             for(let i = 0; i < this.cart.length; i++){
-                let {cartVariants}:I_cart_product = this.cart[i];
-                for(let j = 0; j < cartVariants.length; j++){
-                    let {count}:I_cart_variant = cartVariants[j]
+                let {variants}:I_cart_product = this.cart[i];
+                for(let j = 0; j < variants.length; j++){
+                    let {count}:I_cart_variant = variants[j]
                     res += count;
                 } 
             }
@@ -172,17 +176,16 @@ export default class AIOShop implements I_AIOShop{
         this.getNewCartVariant = (p)=>{
             let {product,variantId,count} = p;
             let variant = product.variants.find((v:I_v)=>v.id === variantId);
-            let {price,cartInfo,id} = variant;
-            let {min,max,step} = cartInfo;
+            let {price,id} = variant;
             let finalPrice = this.getFinalPrice(variant);
-            let cartVariant:I_cart_variant = {id,count,price,finalPrice,min,max,step,productId:product.id};
+            let cartVariant:I_cart_variant = {id,count,price,finalPrice};
             return cartVariant; 
         }
         this.addProductToCart = (p)=>{
             let cart = toJS(this.cart);
             let {product} = p;
             let newCartVariant:I_cart_variant = this.getNewCartVariant(p);
-            let newCartProduct:I_cart_product = {product,cartVariants:[newCartVariant]}
+            let newCartProduct:I_cart_product = {product,variants:[newCartVariant]}
             let newCart:I_cart = [...cart,newCartProduct] 
             return newCart;
         }
@@ -192,7 +195,7 @@ export default class AIOShop implements I_AIOShop{
             let newCart:I_cart = cart.map((o:I_cart_product)=>{
                 if(o.product.id !== product.id){return o}
                 let newCartVariant:I_cart_variant = this.getNewCartVariant(p);
-                let newCartProduct:I_cart_product = {...o,cartVariants:[...o.cartVariants,newCartVariant]}
+                let newCartProduct:I_cart_product = {...o,variants:[...o.variants,newCartVariant]}
                 return newCartProduct;
             })
             return newCart;
@@ -201,13 +204,13 @@ export default class AIOShop implements I_AIOShop{
             let cart = toJS(this.cart);
             let {product,variantId} = p;
             let cartProduct:I_cart_product = cart.find((o:I_cart_product)=>o.product.id === product.id);
-            let newCartVariants = cartProduct.cartVariants.filter((o:I_cart_variant)=>o.id !== variantId);
+            let newCartVariants = cartProduct.variants.filter((o:I_cart_variant)=>o.id !== variantId);
             let newCart:I_cart;
             if(!newCartVariants.length){
                 newCart = cart.filter((o:I_cart_product)=>o.product.id !== product.id);
             }
             else {
-                let newCartProduct:I_cart_product = {...cartProduct,cartVariants:newCartVariants}
+                let newCartProduct:I_cart_product = {...cartProduct,variants:newCartVariants}
                 newCart = cart.map((o:I_cart_product)=>o.product.id === product.id?newCartProduct:o)
             }
             return newCart;
@@ -215,8 +218,8 @@ export default class AIOShop implements I_AIOShop{
         this.changeCartVariant = (cartProduct,cartVariant,count)=>{
             let cart = toJS(this.cart),{product} = cartProduct,variantId = cartVariant.id;
             let p = {product,variantId,count};
-            let newCartVariants:I_cart_variant[] = cartProduct.cartVariants.map((o:I_cart_variant)=>o.id !== variantId?o:this.getNewCartVariant(p));
-            let newCartProduct:I_cart_product = {...cartProduct,cartVariants:newCartVariants}
+            let newCartVariants:I_cart_variant[] = cartProduct.variants.map((o:I_cart_variant)=>o.id !== variantId?o:this.getNewCartVariant(p));
+            let newCartProduct:I_cart_product = {...cartProduct,variants:newCartVariants}
             let newCart:I_cart = cart.map((o:I_cart_product)=>o.product.id !== product.id?o:newCartProduct)
             return newCart;
         }
@@ -229,7 +232,7 @@ export default class AIOShop implements I_AIOShop{
                 let cartProduct:I_cart_product = cart.find((o:I_cart_product)=>o.product.id === product.id);
                 if(!cartProduct){newCart = this.addProductToCart(p);}
                 else{
-                    let cartVariant:I_cart_variant = cartProduct.cartVariants.find((o:I_cart_variant)=>o.id === variantId);
+                    let cartVariant:I_cart_variant = cartProduct.variants.find((o:I_cart_variant)=>o.id === variantId);
                     if(!cartVariant){newCart = this.addVariantToCart(p);}
                     else{newCart = this.changeCartVariant(cartProduct,cartVariant,count);    }
                 }
@@ -244,10 +247,11 @@ export default class AIOShop implements I_AIOShop{
         this.renderRates = (p:I_Rates)=><Rates {...p} getContext={this.getContext}/>;
         this.renderCheckout = ()=><Checkout getContext={this.getContext}/>;
         this.openModal = (p)=>{
-            let {title,render,position,backdrop} = p;
+            let {title,render,position,backdrop,id} = p;
             let header = title?{title}:false;
-            this.popup.addModal({position,header,body:{render,attrs:{style:{height:'100%'}}},backdrop})
+            this.popup.addModal({id,position,header,body:{render,attrs:{style:{height:'100%'}}},backdrop})
         }
+        this.closeModal = (id?:string)=>this.popup.removeModal(id);
         makeAutoObservable(this)
     }
 }
@@ -298,30 +302,44 @@ const Checkout = observer((props: I_Checkout) => {
             })
         }
     }
-    function label_layout(title:string,subtitle?:string):I_RVD_node{
-        return {
-            align:'v',
-            row:[
-                {html:title,className:cls['checkout-title']},
-                {show:!!subtitle,html:()=>`( ${subtitle} )`,className:cls['checkout-subtitle']}, 
-            ]
-        }
-    }
     function itemHtml_layout(checkoutItem:I_checkout_html):I_RVD_node {
         let { title, subtitle, html,field } = checkoutItem;
         let content:React.ReactNode = html(checkout[field],(newValue)=>change({[field]:newValue}))
-        let className = `${cls['checkout-item']} ${cls['checkout-item-html']}`;
-        return {column:[label_layout(title,subtitle),{ html: content,className }]}
+        let className = `${cls['checkout-item']} ${cls['checkout-item-html']} ${cls['box']}`;
+        return {
+            className,
+            column:[
+                {
+                    gap:3,align:'v',
+                    row:[
+                        {html:title,className:cls['box-title']},
+                        {show:!!subtitle,html:()=>subtitle,className:cls['box-subtitle']}
+                    ]
+                },
+                { html: content }
+            ]
+        }
     }
     function itemRadio_layout(checkoutItem:I_checkout_radio):I_RVD_node {
         let { title, subtitle } = checkoutItem;
-        return {column:[label_layout(title,subtitle),radio_layout(checkoutItem)]}
+        let className = `${cls['checkout-item']} ${cls['checkout-item-radio']} ${cls['box']}`;
+        return {
+            className,
+            column:[
+                {
+                    gap:3,align:'v',
+                    row:[
+                        {html:title,className:cls['box-title']},
+                        {show:!!subtitle,html:()=>subtitle,className:cls['box-subtitle']}
+                    ]
+                },
+                radio_layout(checkoutItem)
+            ]
+        }
     }
     function radio_layout(checkoutItem:I_checkout_radio):I_RVD_node{
         let { options, field, multiple } = checkoutItem;
-        let className = `${cls['checkout-item']} ${cls['checkout-item-radio']}`;
         return {
-            className,
             html: (
                 <AIOInput
                     type='radio'
@@ -335,11 +353,11 @@ const Checkout = observer((props: I_Checkout) => {
         }
     }
     function content_layout():I_RVD_node{
-        return !content?false:{className:`${cls['checkout-content']} ${cls['pp-box']}`,html:content}
+        return !content?false:{className:`${cls['checkout-content']} ${cls['box']}`,html:content}
     }
     function factor_layout():I_RVD_node {
         let props:I_Factor = {getContext,renderIn:'checkout',mode:'details'}
-        return { html: <Factor {...props}/>,className:`${cls['checkout-factor']} ${cls['pp-box']}` }
+        return { html: <Factor {...props}/>,className:`${cls['checkout-factor']}` }
     }
     function footer_layout():I_RVD_node {
         let props:I_Factor = {getContext,renderIn:'checkout',mode:'payment'}
@@ -383,10 +401,10 @@ const Cart = observer((props:I_Cart) => {
         let productCard = <ProductCard {...props}/>
         return { className: cls['c-product'], html: productCard }
     }
-    function content_layout():I_RVD_node{return !content?false:{className:`${cls['cart-content']} ${cls['pp-box']}`,html:content}}
+    function content_layout():I_RVD_node{return !content?false:{className:`${cls['cart-content']} ${cls['box']}`,html:content}}
     function factor_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'details'}
-        return {className:`${cls['cart-factor']} ${cls['pp-box']}`,html:<Factor {...props}/>}
+        return {className:`${cls['cart-factor']} ${cls['box']}`,html:<Factor {...props}/>}
     }
     function footer_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'payment'}
@@ -397,10 +415,10 @@ const Cart = observer((props:I_Cart) => {
 })
 const Factor = observer((props:I_Factor) => {
     let {renderIn,getContext,mode} = props,context = getContext();
-    let {cart,checkout,cls,unit,checkDiscountCode} = context;
-    let [details,setDetails] = useState<I_Factor_details>({price:0,payment:0,productsDiscount:0,discounts:[],extras:[]})
+    let {cart,checkout,cls,unit,checkDiscountCode,onPayment} = context;
+    let [details,setDetails] = useState<I_Factor_details>({total:0,totalDiscount:0,payment:0,productsDiscount:0,discounts:[],extras:[]})
     let [discountCodeTemp, setDiscountCodeTemp] = useState<string>('');
-    let [fetchedDiscountCode, setFetchedDiscountCode] = useState<I_discount | string>();
+    let [fetchedDiscountCode, setFetchedDiscountCode] = useState<I_discount | string>('');
     async function getDetails(){
         let {getDiscounts = ()=>[],getExtras = ()=>[]} = context;
         let Discounts:I_discount[] = await getDiscounts(renderIn,context);
@@ -409,79 +427,107 @@ const Factor = observer((props:I_Factor) => {
         }
         
         let Extras:I_extra[] = await getExtras(renderIn,context);
-        let price = 0,payment = 0,productsDiscount = 0;
+        let totalDiscount = 0,total = 0,payment = 0,productsDiscount = 0;
         for(let i = 0; i < cart.length; i++){
-            let {cartVariants}:I_cart_product = cart[i];
-            for(let j = 0; j < cartVariants.length; j++){
-                let cv:I_cart_variant = cartVariants[j];
-                price += cv.price; payment += cv.finalPrice;
+            let {variants}:I_cart_product = cart[i];
+            for(let j = 0; j < variants.length; j++){
+                let cv:I_cart_variant = variants[j];
+                total += cv.price; payment += cv.finalPrice;
             }
         }
-        productsDiscount = price - payment;
+        productsDiscount = total - payment;
+        totalDiscount += productsDiscount;
         let discounts = Discounts.map((discount:I_discount)=>{
             let {discountPercent,maxDiscount = Infinity} = discount;
             let amount = Math.min(maxDiscount,Math.round(payment * discountPercent / 100));
+            totalDiscount += amount;
             payment -= amount;
             return {discount,amount}
         })
         let extras = Extras.map((extra:I_extra)=>{payment += extra.amount; return extra})
-        let details:I_Factor_details = {price,payment,productsDiscount,discounts,extras}
+        let details:I_Factor_details = {total,payment,productsDiscount,discounts,extras,totalDiscount}
         setDetails(details)
     }
     useEffect(()=>{getDetails()},[cart,checkout,fetchedDiscountCode])  
     function discountCode_layout():I_RVD_node {
-        if (!checkDiscountCode) { return false }
+        if (!checkDiscountCode || renderIn !== 'checkout') { return false }
+        let inputClassName,buttonText,buttonClassName;
+        let type = typeof fetchedDiscountCode;
+        if(fetchedDiscountCode){
+            if(type === 'object'){
+                inputClassName = 'has-success'; 
+                buttonText = <Icon path={mdiCheckBold} size={0.8}/>;
+                buttonClassName = 'has-success';
+            }
+            else if(type === 'string'){
+                inputClassName = 'has-error';  
+                buttonText = <Icon path={mdiClose} size={0.8}/>;
+                buttonClassName = 'has-error';
+            }
+        }
+        else {
+            buttonText = 'ثبت'
+        }
         return {
-            className: 'factor-discount-code',
-            row: [
+            className: `${cls['box']}`,
+            column:[
+                {align:'v',row:[{html:'کد تخفیف',className:cls['box-title']}]},
                 {
-                    flex: 1,
-                    html: (
-                        <input
-                            disabled={typeof fetchedDiscountCode === 'object'} placeholder='کد تخفیف' type='text' value={discountCodeTemp}
-                            onChange={(e) => { setDiscountCodeTemp(e.target.value); setFetchedDiscountCode(undefined) }}
-                        />
-                    )
+                    className:`${cls['factor-discount-code']}`,
+                    row: [
+                        {
+                            flex: 1,
+                            html: (
+                                <input
+                                    className={inputClassName}
+                                    disabled={!!fetchedDiscountCode} placeholder='کد تخفیف را وارد کنید' type='text' value={discountCodeTemp}
+                                    onChange={(e) => { setDiscountCodeTemp(e.target.value); setFetchedDiscountCode(undefined) }}
+                                />
+                            )
+                        },
+                        {
+                            html: (
+                                <button
+                                    disabled={!fetchedDiscountCode && !discountCodeTemp} className={buttonClassName}
+                                    onClick={async () => {
+                                        if(fetchedDiscountCode){
+                                            setFetchedDiscountCode('');
+                                            setDiscountCodeTemp('');
+                                            return;    
+                                        }
+                                        let discountCode:I_discount | string = await checkDiscountCode(discountCodeTemp, context);
+                                        setFetchedDiscountCode(discountCode)
+                                    }}
+                                >{buttonText}</button>
+                            )
+                        }
+                    ]
                 },
-                {
-                    html: (
-                        <button
-                            disabled={typeof fetchedDiscountCode === 'object' || !discountCodeTemp}
-                            onClick={async () => {
-                                let discountCode:I_discount | string = await checkDiscountCode(discountCodeTemp, context);
-                                setFetchedDiscountCode(discountCode)
-                            }}
-                        >ثبت کد تخفیف</button>
-                    )
-                }
+                discountCodeError_layout()
             ]
         }
     }
     function discountCodeError_layout():I_RVD_node {
-        if (typeof fetchedDiscountCode !== 'string') { return false }
-        return { className: cls['factor-discount-code-error'], html: fetchedDiscountCode }
-    }
-    
-    function price_layout(price:number):I_RVD_node{
-        return {
-            className:cls['factor-total'],align:'v',
-            row:[
-                {className:cls['factor-icon'],html:<Icon path={mdiCash} size={0.6}/>},
-                {className:cls['factor-key'],html:'جمع سبد خرید',flex:1},
-                {className:cls['factor-value'],html:SplitNumber(price)},
-                {className:cls['factor-unit'],html:unit},
-            ]
+        if(!fetchedDiscountCode){return false}
+        if (typeof fetchedDiscountCode === 'string') { return { className: cls['factor-discount-code-error'], html: fetchedDiscountCode } }
+        if (typeof fetchedDiscountCode === 'object') { 
+            let {maxDiscount,discountPercent} = fetchedDiscountCode;
+            let html:string;
+            if(maxDiscount){
+                if(discountPercent === 100){html = `کد تخفیف ${maxDiscount} ${unit}`}
+                else{html = `کد تخفیف ${discountPercent} درصدی تا سقف ${maxDiscount} تومان`}
+            }
+            else{html = `کد تخفیف ${discountPercent} درصدی`}
+            return {className: cls['factor-discount-code-success'],html} 
         }
+    }
+    function total_layout(total:number):I_RVD_node{
+        return {className:`${cls['factor-total']} ${cls['factor-row']}`,align:'v',row:[icon_layout(mdiCash),key_layout('جمع سبد خرید'),amount_layout(total)]}
     }
     function products_discount_layout(amount):I_RVD_node{
         return {
-            className:cls['factor-products-discount'],align:'v',
-            row:[
-                {className:cls['factor-icon'],html:<Icon path={mdiMinus} size={0.6}/>},
-                {className:cls['factor-key'],html:'تخفیف کالا ها',flex:1},
-                {className:cls['factor-value'],html:SplitNumber(amount)},
-                {className:cls['factor-unit'],html:unit},
-            ]
+            className:`${cls['factor-products-discount']} ${cls['factor-row']}`,align:'v',
+            row:[icon_layout(mdiMinus),key_layout('تخفیف کالا ها'),amount_layout(amount)]
         }
     }
     function discount_layout(o:{discount:I_discount,amount:number}):I_RVD_node{
@@ -489,24 +535,16 @@ const Factor = observer((props:I_Factor) => {
         return {
             column:[
                 {
-                    className:cls['factor-discount'],align:'v',
+                    className:`${cls['factor-discount']} ${cls['factor-row']}`,align:'v',
                     row:[
                         {
                             column:[
-                                {
-                                    gap:3,align:'v',
-                                    row:[
-                                        {className:cls['factor-minus'],html:<Icon path={mdiMinus} size={0.6}/>},
-                                        {className:cls['factor-key'],html:`${discount.title}`},
-                                        {className:cls['dp'],html:`${discount.discountPercent}%`},
-                                    ]
-                                },
+                                {gap:3,align:'v',row:[icon_layout(mdiMinus),key_layout(discount.title),dp_layout(discount)]},
                                 {className:cls['factor-max-discount'],show:!!discount.maxDiscount && discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount)} ${unit}`}
                             ]
                         },
                         {flex:1},
-                        {className:cls['factor-value'],html:`${SplitNumber(amount)}`},
-                        {className:cls['factor-unit'],html:unit},
+                        amount_layout(amount)
                     ]
                 },
                 
@@ -515,62 +553,61 @@ const Factor = observer((props:I_Factor) => {
     }
     function extra_layout(extra:I_extra):I_RVD_node{
         let {title,amount} = extra;
-        return {
-            className:cls['factor-extra'],align:'v',  
-            row:[
-                {className:cls['factor-icon'],html:<Icon path={mdiPlus} size={0.6}/>},
-                {className:cls['factor-key'],html:title,flex:1},
-                {className:cls['factor-value'],html:`${SplitNumber(amount)}`},
-                {className:cls['factor-icon'],html:unit}
-            ]
-        }
+        return {className:`${cls['factor-extra']} ${cls['factor-row']}`,align:'v',row:[icon_layout(mdiPlus),key_layout(title),amount_layout(amount)]}
     }
-    function onSubmit(){
+    function amount_layout(amount:number):I_RVD_node{
+        return {align:'v',gap:3,row:[{className:cls['factor-value'],html:`${SplitNumber(amount)}`},{className:cls['factor-unit'],html:unit}]}
+    }
+    function dp_layout(discount:I_discount){return {className:cls['dp'],html:`${discount.discountPercent}%`}}
+    function icon_layout(path:any){return {className:cls['factor-icon'],html:<Icon path={path} size={0.6}/>}}
+    function key_layout(text:string):I_RVD_node{return {className:cls['factor-key'],html:text,flex:1}}
+    async function onSubmit(){
         if(renderIn === 'cart'){
             const render = ()=>{
                 let props:I_Checkout = {getContext}
                 return <Checkout {...props}/>
             }
-            context.openModal({title:'تکمیل خرید',render})
+            context.openModal({title:'تکمیل خرید',render,id:'checkout'})
+        }
+        if(renderIn === 'checkout'){
+            let res = await onPayment({factor:details,checkout:toJS(checkout)})
+            if(res === true){context.closeModal('checkout')}
+        }
+    }
+    function totalDiscount_layout():I_RVD_node{
+        return {
+            className:cls['factor-total-discount'],align:'v',
+            row:[icon_layout(mdiMinus),key_layout('مجموع تخفیف های سبد خرید'),amount_layout(details.totalDiscount)]
         }
     }
     function button_layout():I_RVD_node{
         let text = renderIn === 'cart'?'تکمیل خرید':`پرداخت ${SplitNumber(details.payment)} ${unit}`
         return {className:cls['factor-continue'],html:<button onClick={()=>onSubmit()}>{text}</button>,align:'vh'}
     }
-    function amount_layout():I_RVD_node{
+    function payment_layout():I_RVD_node{
         return {
             align:'v',flex:1,
             column:[
-                {
-                    row:[
-                        {flex:1},
-                        {html:'مبلغ قابل پرداخت',className:cls['factor-payment-text']},
-                    ]
-                },
-                {
-                    gap:3,align:'v',
-                    row:[
-                        {flex:1},
-                        {html:SplitNumber(details.payment),className:cls['factor-payment-value']},
-                        {html:unit,className:cls['factor-payment-unit']},
-                    ]
-                }
+                {row:[{flex:1},{html:'مبلغ قابل پرداخت',className:cls['factor-payment-text']}]},
+                {gap:3,align:'v',row:[{flex:1},amount_layout(details.payment)]}
             ]
         }
     }
     if(mode === 'details'){
-        let DiscountCode = discountCode_layout()
-        let DiscountCodeError = discountCodeError_layout()
-        let Price = price_layout(details.price)
-        let ProductsDiscount = products_discount_layout(details.productsDiscount);
-        let Discounts = !details.discounts.length?false:{column:details.discounts.map((o)=>discount_layout(o))}
-        let Extras = !details.extras.length?false:{column:details.extras.map((extra:I_extra)=>extra_layout(extra))}
-        return (<RVD layout={{className:cls['factor'],column:[DiscountCode,DiscountCodeError,Price,ProductsDiscount,Discounts,Extras]}}/>)
+        let rows:I_RVD_node = false;
+        rows = {
+            className:`${cls['factor-rows']} ${cls['box']}`,
+            column:[
+                total_layout(details.total),
+                products_discount_layout(details.productsDiscount),
+                !details.discounts.length?false:{column:details.discounts.map((o)=>discount_layout(o))},
+                !details.extras.length?false:{column:details.extras.map((extra:I_extra)=>extra_layout(extra))},
+                !details.totalDiscount?false:totalDiscount_layout(),
+            ]
+        }
+        return (<RVD layout={{className:`${cls['factor']}`,column:[discountCode_layout(),rows]}}/>)
     }
-    else if(mode === 'payment'){
-        return (<RVD layout={{className:`${cls['factor']} ${cls['factor-payment']}`,row:[button_layout(),amount_layout()]}}/>)
-    }
+    return (<RVD layout={{className:`${cls['factor']} ${cls['factor-payment']}`,row:[button_layout(),payment_layout()]}}/>)
 })
 function ProductSlider(props:I_ProductSlider){
     let {title = '',action,before = () => false,after = () => false,products,getContext,cartButton = false,icon} = props,context = getContext();
@@ -653,7 +690,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     }
     function name_layout():I_RVD_node{return {html:product.name,className:cls['pp-name']}}
     function optionTypes_layout():I_RVD_node{
-        return {className:`of-visible ${cls['pp-optionTypes']} ${cls['pp-box']}`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
+        return {className:`of-visible ${cls['pp-optionTypes']} ${cls['box']}`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
     }
     
     function optionType_layout(optionType:I_pr_optionType):I_RVD_node{
@@ -693,7 +730,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     function details_layout():I_RVD_node{
         if(!details.length){return false}
         let Details:I_pr_detail[] = showFull.details?details:details.slice(0,3);
-        return {className:`${cls['pp-details']} ${cls['pp-box']}`,column:[label_layout('مشخصات','details'),{column:Details.map((o:I_pr_detail)=>detail_layout(o))}]}
+        return {className:`${cls['pp-details']} ${cls['box']}`,column:[label_layout('مشخصات','details'),{column:Details.map((o:I_pr_detail)=>detail_layout(o))}]}
     }
     function detail_layout(detail:I_pr_detail):I_RVD_node{
         let [key,value] = detail;
@@ -704,14 +741,14 @@ const ProductPage = observer((props:I_ProductPage) => {
     function description_layout():I_RVD_node{
         if(!description){return false}
         let Description = showFull.description?description:description.slice(0,64) + ' ...';
-        return {className:`${cls['pp-desc']} ${cls['pp-box']}`,column:[label_layout('توضیحات','description'),{className:cls['pp-desc-text'],html:Description}]}
+        return {className:`${cls['pp-desc']} ${cls['box']}`,column:[label_layout('توضیحات','description'),{className:cls['pp-desc-text'],html:Description}]}
     }
     function bullet_layout():I_RVD_node{return {html:<div className={cls['pp-detail-bullet']}></div>,align:'vh'}}
-    function content_layout():I_RVD_node{return !content?false:{className:`${cls['pp-content']} ${cls['pp-box']}`,html:content}}
+    function content_layout():I_RVD_node{return !content?false:{className:`${cls['pp-content']} ${cls['box']}`,html:content}}
     function rates_layout():I_RVD_node{
         if(!rates.length){return false}
         let props:I_Rates = {getContext,rates}
-        return {className:`${cls['pp-rates']} ${cls['pp-box']}`,column:[label_layout('امتیاز'),{html:<Rates {...props}/>}]}
+        return {className:`${cls['pp-rates']} ${cls['box']}`,column:[label_layout('امتیاز'),{html:<Rates {...props}/>}]}
     }
     function footer_layout():I_RVD_node{return {className:cls['pp-footer'],row:[cartButton_layout(),{flex:1},amounts_layout()]}}
     function amounts_layout():I_RVD_node{return !variant?false:{className:cls['pp-amounts'],column:[discount_layout(),finalPrice_layout()]}}
@@ -870,7 +907,7 @@ const ProductCard = observer((props:I_ProductCard) => {
             let props:I_ProductPage = {getContext,product,variantId}
             return <ProductPage {...props}/>
         }
-        context.openModal({title:'جزییات',render})
+        context.openModal({title:'جزییات',render,id:'product-page'})
     }
     function v_layout():I_RVD_node{
         let column = [title_layout(),image_layout(),body_layout_v()]
@@ -920,6 +957,7 @@ function DiscountPercent(props:I_DiscountPercent){
         return {html:`${item.value}%`,className:cls['dp'],attrs:item.attrs,onClick:(e)=>{
             e.stopPropagation();
             context.openModal({
+                id:'discount-percent',
                 position:'center',backdrop:{attrs:{style:{backdropFilter:'blur(3px)'}}},
                 render:()=><DiscountPercentModal item={item} context={context}/>
             })
