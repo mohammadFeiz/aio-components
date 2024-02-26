@@ -9,15 +9,35 @@ import {Icon} from '@mdi/react';
 import { mdiAccount } from '@mdi/js';
 export default class DOC_AIOInput_Tabs extends Component {
     render() {
+        let items = [
+            ['basic',Basic],
+            ['before',Before],
+            ['after',After],
+            ['optionStyle',[['object',OptionStyleOBJ],['function',OptionStyleFN]]],
+            ['optionJustify',OptionJustify],
+            ['optionText(function)',OptionTextFN],
+            ['optionValue(function)',OptionValueFN],
+            ['optionBefore',[['function',OptionBeforeFN],['html',OptionBeforeHTML],['string',OptionBeforeSTR]]],
+            ['optionAfter',[['function',OptionAfterFN],['html',OptionAfterHTML],['string',OptionAfterSTR]]]
+            
+
+        ]
+
         return (
             <DOC
                 {...this.props}
                 navId='apiKeys'
                 nav={{
-                    items:[
-                        { text: 'Basic', id: 'basic', render: () => <Basic/> },
-                        //{ text: 'before', id: 'before', render: () => <Before/> }
-                    ]
+                    nested:true,
+                    items:items.map(([title,Comp])=>{
+                        if(Array.isArray(Comp)){
+                            return { text: title, id: title, items: Comp.map(([Title,COMP])=>{return { text: Title, id: title + Title, render: () => <COMP/> }}) }
+                        }
+                        else {
+                            return { text: title, id: title, render: () => <Comp/> }
+                        }
+                        
+                    })
                 }}
             />
         )
@@ -29,23 +49,18 @@ function Base({props = {}}){
         <AIOInput
             type='tabs' value={tab} onChange={(tab)=>setTab(tab)}
             options={[
-                {text:'my option 1',value:'1'},
-                {text:'my option 2',value:'2'},
-                {text:'my option 3',value:'3'},
-                {text:'my option 4',value:'4'},
-                {text:'my option 5',value:'5'}
+                {name:'Google',id:'1'},
+                {name:'Microsoft',id:'2'},
+                {name:'Oracle',id:'3'},
+                {name:'Facebook',id:'4'},
             ]}
+            optionText='option.name'
+            optionValue='option.id'
             {...props}
         />
     )
 }
-function Code({id,text}){
-    let [show,setShow] = useState(AIOStorage('docaioinputtabs').load({name:'showCode',def:{}}))
-    function changeShow(){
-        let all = AIOStorage('docaioinputtabs').load({name:'showCode',def:{}})
-        let newAll = {...show,[id]:!all[id]}
-        AIOStorage('docaioinputtabs').save({name:'showCode',value:{}})
-    }
+function Code({text}){
     function getCode(){
         return AIODoc().Code(`
 import React,{useState} from 'react';
@@ -58,122 +73,238 @@ export default function App(){
             value={tab}
             onChange={(tab)=>setTab(tab)}
             options={[
-                {text:'my option 1',value:'1'},
-                {text:'my option 2',value:'2'},
-                {text:'my option 3',value:'3'},
-                {text:'my option 4',value:'4'},
-                {text:'my option 5',value:'5'}
+                {name:'Google',id:'1'},
+                {name:'Microsoft',id:'2'},
+                {name:'Oracle',id:'3'},
+                {name:'Facebook',id:'4'},
             ]}
+            optionText='option.name'
+            optionValue='option.id'
+            ////////////// this part changes /////////////////
             ${text?text:''}
+            //////////////////////////////////////////////////
         />
     )
 }
     `)
     }
     function code_layout(){
-        if(!show){return false}
         return {html:getCode()}
-    }
-    function button_layout(){
-        return {
-            html:show?'Hide Code':'Show Code',style:{fontSize:10,color:'blue'},
-            onClick:()=>setShow(!show)
-        }
     }
     return (
         <RVD
             layout={{
                 column:[
                     code_layout(),
-                    button_layout()
                 ]
             }}
         />
     )
 }
+function Splitter(){
+    return <div style={{marginTop:24}} className='aio-component-splitter'></div>
+}
 function Basic(){
-    function preview() {
-        return (
-            <div className='example'>
-                <Base/>
-                {Code()}
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
-    return (<Example preview={() => preview()}/>)
+    return (
+        <div className='example'>
+            <Base/>
+            <Code text=''/>
+        </div>
+    )
 }
-// function Before(){
-//     function preview() {
-//         return (
-//             <div className='example'>
-//                 <Base props={{
-//                     before:<Icon path={mdiAccount} size={1}/>
-//                 }}/>
-//                 {Code(`
-//                 before:<Icon path={mdiAccount} size={1}/>
-//                 `)}
-//                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-//             </div>
-//         )
-//     }
-//     return (<Example preview={() => preview()}/>)
-// }
-
-class Example extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tab: 'preview',
-            tabs: [
-                { text: 'Preview', value: 'preview' },
-                { text: 'Code', value: 'code' }
-            ]
-        }
-    }
-    body_layout() {
-        let { tab } = this.state;
-        return tab === 'preview' ? this.preview_layout() : this.code_layout()
-    }
-    preview_layout() {
-        let { preview } = this.props;
-        return {
-            flex: 1,
-            className: 'p-12',
-            html: preview()
-        }
-    }
-    code_layout() {
-        let { code, rtl = false } = this.props;
-        return {
-            flex: 1,
-            html: (
-                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'auto' }}>
-                    <pre style={{ padding: 12 }}>{AIODoc().Code(code())}</pre>
-                </div>
-            )
-        }
-    }
-    toolbar_layout() {
-        let { toolbar } = this.props;
-        if (!toolbar) { return false }
-        return {
-            html: toolbar()
-        }
-    }
-    render() {
-        return (
-            <RVD
-                layout={{
-                    column: [
-                        this.toolbar_layout(),
-                        this.body_layout()
-                    ]
-                }}
+function Before(){
+    return (
+        <div className='example'>
+            <Base props={{
+                before:<Icon path={mdiAccount} size={1}/>
+            }}/>
+            <Code 
+                text={
+`before={<Icon path={mdiAccount} size={1}/>}`
+                }
             />
-        )
-    }
+        </div>
+    )
 }
+function After(){
+    return (
+        <div className='example'>
+            <Base props={{
+                after:<button>after</button>
+            }}/>
+            <Code 
+                text={
+`after={<button>after</button>}`
+                }
+            />
+        </div>
+    )
+}
+function OptionStyleOBJ(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionStyle:{flex:1},
+            }}/>
+            <Code 
+                text={
+`optionStyle={{flex:1}}`
+                }
+            />
+        </div>
+    )
+}
+function OptionStyleFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionStyle:(option)=>{
+                    if(option.name === 'Microsoft'){return {fontWeight:'bold'}}
+                },
+            }}/>
+            <Code 
+                text={
+`optionStyle={(option)=>{
+                if(option.name === 'Microsoft'){return {fontWeight:'bold'}}
+            }}`
+                }
+            />
+        </div>
+    )
+}
+function OptionJustify(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionStyle:{flex:1},
+                optionJustify:true
+            }}/>
+            <Code 
+                text={
+`optionStyle={{flex:1}}
+            optionJustify={true}`
+                }
+            />
+        </div>
+    )
+}
+function OptionTextFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionText:(option)=>option.name
+            }}/>
+            <Code 
+                text={
+`optionText={(option)=>option.name}`
+                }
+            />
+        </div>
+    )
+}
+function OptionValueFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionValue:(option)=>option.id
+            }}/>
+            <Code 
+                text={
+`optionValue={(option)=>option.id}`
+                }
+            />
+        </div>
+    )
+}
+
+function OptionBeforeFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionBefore:(option)=><div className='badge'>{option.id}</div>
+            }}/>
+            <Code 
+                text={
+`optionBefore={(option)=><div className='badge'>{option.id}</div>}`
+                }
+            />
+        </div>
+    )
+}
+
+function OptionBeforeHTML(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionBefore:<Icon path={mdiAccount} size={.8}/>
+            }}/>
+            <Code 
+                text={
+`optionBefore={<Icon path={mdiAccount} size={.8}/>}`
+                }
+            />
+        </div>
+    )
+}
+function OptionBeforeSTR(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionBefore:'option.id'
+            }}/>
+            <Code 
+                text={
+`optionBefore='option.id'`
+                }
+            />
+        </div>
+    )
+}
+
+function OptionAfterFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionAfter:(option)=><div className='badge'>{option.id}</div>
+            }}/>
+            <Code 
+                text={
+`optionAfter={(option)=><div className='badge'>{option.id}</div>}`
+                }
+            />
+        </div>
+    )
+}
+
+function OptionAfterHTML(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionAfter:<Icon path={mdiAccount} size={.8}/>
+            }}/>
+            <Code 
+                text={
+`optionAfter={<Icon path={mdiAccount} size={.8}/>}`
+                }
+            />
+        </div>
+    )
+}
+function OptionAfterSTR(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionAfter:'option.id'
+            }}/>
+            <Code 
+                text={
+`optionAfter='option.id'`
+                }
+            />
+        </div>
+    )
+}
+
 
 
 

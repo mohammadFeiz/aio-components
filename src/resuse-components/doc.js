@@ -11,6 +11,7 @@ export default class DOC extends Component{
                 nav:{...props.nav,cache:true,header:()=><div className='part-title'>{props.name}</div>},
                 body:({navId,render})=>{
                     if(navId === 'props'){return <PropsList props={this.propsList}/>}
+                    if(!render){return null}
                     return render()
                 },
                 headerContent:()=><button id='go-to-home' onClick={()=>props.goToHome()}>Home</button>

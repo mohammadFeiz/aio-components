@@ -13,12 +13,14 @@ import classes from './classes';
 import './index.css';
 import { 
     I_Cart,I_CartButton,I_Checkout,I_DiscountPercent,I_Factor,I_Factor_details,I_FinalPrice,I_ProductCard,I_pr_detail,I_pr_optionType, 
-    I_ProductCard_content,I_ProductPage,I_ProductPage_content,I_ProductSlider,I_AIOShop, I_AIOShop_changeCart, I_AIOShop_context, 
+    I_ProductCard_content,I_ProductPage,I_ProductPage_content,I_ProductSlider,I_AIOShop, I_changeCart, I_AIOShop_context, 
     I_getVariantIcon, I_AIOShop_props, I_VariantLabels, I_cart,I_cart_content, I_cart_product, I_cart_variant, I_checkDiscountCode, 
     I_checkout, I_checkout_content, I_checkout_html, I_checkout_item, I_checkout_radio, I_discount, I_discountPercent, I_extra, I_getCartLength, 
-    I_getCartVariant, I_getCartVariants, I_getCheckoutItems, I_getDiscounts, I_getExtras, I_getOptionTypes, I_getVariantByOptionValues, 
+    I_getCartVariants, I_getCheckoutItems, I_getDiscounts, I_getExtras, I_getOptionTypes, I_getVariantByOptionValues, 
     I_openModal, I_pr, I_productCardImageContent, I_productPageImageContent, I_renderCart, I_renderCartButton, I_renderCheckout,
-    I_renderProductCard, I_renderProductPage, I_renderProductSlider, I_setCheckout, I_trans, I_v, I_v_ov, I_v_label, I_pr_rate, I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartVariant, I_Rates, I_renderRates, I_onPayment, I_closeModal 
+    I_renderProductCard, I_renderProductPage, I_renderProductSlider, I_setCheckout, I_trans, I_v, I_v_ov, I_v_label, I_pr_rate, 
+    I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartCount, I_Rates, I_renderRates, 
+    I_onPayment, I_closeModal, I_getFinalPrice, I_cart_product_hasVariant, I_cart_product_hasNotVariant, I_getCartCount, I_cartInfo, I_getCartInfo 
 } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types.js';
 //////rvd
@@ -44,16 +46,17 @@ export default class AIOShop implements I_AIOShop{
     renderCartButton:I_renderCartButton;
     renderPopup:()=>React.ReactNode;
     getVariantIcon:I_getVariantIcon;
-    changeCart:I_AIOShop_changeCart;
+    getCartInfo:I_getCartInfo;
+    changeCart:I_changeCart;
     setCart:(newCart:I_cart)=>void;
     addProductToCart:I_addProductToCart;
     addVariantToCart:I_addVariantToCart;
     getNewCartVariant:I_getNewCartVariant;
     removeVariantFromCart:I_removeVariantFromCart;
-    changeCartVariant:I_changeCartVariant;
-    getFinalPrice:(variant:I_v)=>number;
+    changeCartCount:I_changeCartCount;
+    getFinalPrice:I_getFinalPrice;
     getDiscountPercent:(discountPercent:I_discountPercent[])=>number;
-    getCartVariant:I_getCartVariant;
+    getCartCount:I_getCartCount;
     getCartVariants:I_getCartVariants;
     getCartLength:I_getCartLength;
     getOptionTypes:I_getOptionTypes;
@@ -74,7 +77,10 @@ export default class AIOShop implements I_AIOShop{
         this.setCheckout = (checkout:I_checkout)=>{this.checkout = checkout};
         this.popup = new AIOPopup();
         let storage = AIOStorage(`ShopClass_${this.shopId}`);
-        let cart = storage.load({name:'cart',def:[]});
+        let cart:I_cart;
+        if(props.cart === 'cache'){cart = storage.load({name:'cart',def:[]})}
+        else if(Array.isArray(props.cart)){cart = props.cart}
+        else {cart = []}
         this.cart = cart;
         this.storage = storage;
         this.checkout = {};
@@ -86,10 +92,10 @@ export default class AIOShop implements I_AIOShop{
                 let {optionValues} = variants[i];
                 for(let j = 0; j < optionValues.length; j++){
                     let optionValue:I_v_ov = optionValues[j];
-                    let {optionType:ot,optionValue:ov} = optionValue;
-                    if(!dic[ot.id.toString()]){dic[ot.id.toString()] = {id:ot.id,name:ot.name,values:[]}} 
-                    if(!dic[ot.id.toString()].values.find((o)=>o.id === ov.id)){
-                        dic[ot.id.toString()].values.push({id:ov.id,name:ov.name})
+                    let {typeId,typeName,valueId,valueName} = optionValue;
+                    if(!dic[typeId.toString()]){dic[typeId.toString()] = {id:typeId,name:typeName,values:[]}} 
+                    if(!dic[typeId.toString()].values.find((o)=>o.id === valueId)){
+                        dic[typeId.toString()].values.push({id:valueId,name:valueName})
                     }
                 }
             }
@@ -99,7 +105,7 @@ export default class AIOShop implements I_AIOShop{
             let context:I_AIOShop_context = {
                 unit:this.unit,cart:this.cart,
                 cls:this.cls,changeCart:this.changeCart.bind(this),
-                getCartVariant:this.getCartVariant.bind(this),
+                getCartCount:this.getCartCount.bind(this),
                 getCartVariants:this.getCartVariants.bind(this),
                 getVariantByOptionValues:this.getVariantByOptionValues.bind(this),
                 getOptionTypes:this.getOptionTypes.bind(this),
@@ -108,9 +114,11 @@ export default class AIOShop implements I_AIOShop{
                 productCardContent:this.productCardContent,
                 productPageContent:this.productPageContent,
                 cartContent:this.cartContent,
+                getCartInfo:this.getCartInfo.bind(this),
                 checkoutContent:this.checkoutContent,
                 getDiscounts:this.getDiscounts,
                 getExtras:this.getExtras, 
+                getFinalPrice:this.getFinalPrice.bind(this),
                 openModal:this.openModal.bind(this),
                 closeModal:this.closeModal.bind(this),
                 checkout:this.checkout,
@@ -122,25 +130,38 @@ export default class AIOShop implements I_AIOShop{
             }
             return context;
         }
+        this.getCartInfo = (product:I_pr,variantId?:any) => {
+            if(!product.hasVariant){return product.cartInfo}
+            if(variantId === undefined){variantId = product.defaultVariantId}
+            let variant:I_v = product.variants.find((o:I_v)=>o.id === variantId);
+            return variant.cartInfo
+        }
         this.getDiscountPercent = (discountPercent:I_discountPercent[])=>{
             let dp = 0;
             for(let i = 0; i < discountPercent.length; i++){dp += discountPercent[i].value;}
             return dp;
         }
-        this.getFinalPrice = (variant)=>{
-            let dp = this.getDiscountPercent(variant.discountPercent);
-            return variant.price - (variant.price * dp / 100)
+        this.getFinalPrice = (cartInfo)=>{
+            let dp = this.getDiscountPercent(cartInfo.discountPercent);
+            return cartInfo.price - (cartInfo.price * dp / 100)
         }
-        this.getCartVariant = (p:{product:I_pr,variantId?:any})=>{
-            let {product,variantId} = p;
-            let cartVariants:I_cart_variant[] = this.getCartVariants(product.id);
-            if(!cartVariants.length){return false}
-            let cartVariant:I_cart_variant = cartVariants.find((o:I_cart_variant)=>o.id === variantId)
-            if(!cartVariant){return false}
-            return cartVariant
+        this.getCartCount = (product:I_pr,variantId?:any)=>{
+            if(product.hasVariant){
+                if(!variantId){alert('aio-shop error : in calling getCartCount missing variantId parameter for product by hasVariant=true'); return 0}
+                let cartVariants:I_cart_variant[] = this.getCartVariants(product.id);
+                if(!cartVariants.length){return 0}
+                let cartVariant:I_cart_variant = cartVariants.find((o:I_cart_variant)=>o.id === variantId)
+                if(!cartVariant){return 0}
+                return cartVariant.count
+            }
+            else {
+                let cartProduct:I_cart_product_hasNotVariant = this.cart.find((o:I_cart_product)=>o.product.id === product.id) as I_cart_product_hasNotVariant;
+                if(!cartProduct){return 0}
+                return cartProduct.count;
+            }
         }
         this.getCartVariants = (productId)=>{
-            let cartProduct:I_cart_product = this.cart.find((o:I_cart_product)=>o.product.id === productId)
+            let cartProduct:I_cart_product_hasVariant = this.cart.find((o:I_cart_product)=>o.product.id === productId) as I_cart_product_hasVariant
             if(!cartProduct){return []}
             let cartVariants:I_cart_variant[] = cartProduct.variants;
             return cartVariants
@@ -148,25 +169,32 @@ export default class AIOShop implements I_AIOShop{
         this.getCartLength = ()=>{
             let res = 0;
             for(let i = 0; i < this.cart.length; i++){
-                let {variants}:I_cart_product = this.cart[i];
-                for(let j = 0; j < variants.length; j++){
-                    let {count}:I_cart_variant = variants[j]
+                let cartProduct:I_cart_product = this.cart[i];
+                if(cartProduct.product.hasVariant){
+                    let {variants} = cartProduct as I_cart_product_hasVariant;
+                    for(let j = 0; j < variants.length; j++){
+                        let {count}:I_cart_variant = variants[j]
+                        res += count;
+                    }
+                }
+                else {
+                    let {count} = cartProduct as I_cart_product_hasNotVariant;
                     res += count;
-                } 
+                }
             }
             return res;
         }
         this.getVariantByOptionValues = (product:I_pr,optionValues:I_v_ov[])=>{
             let dic = {}
             for(let i = 0; i < optionValues.length; i++){
-                let {optionType:ot,optionValue:ov} = optionValues[i];
-                dic[ot.id.toString()] = ov.id;
+                let {typeId,valueId} = optionValues[i];
+                dic[typeId.toString()] = valueId;
             }
             let variant:I_v = product.variants.find((variant:I_v)=>{
                 let {optionValues} = variant;
                 for(let i = 0; i < optionValues.length; i++){
-                    let {optionType:ot,optionValue:ov} = optionValues[i];
-                    if(dic[ot.id.toString()] !== ov.id){return false}
+                    let {typeId,valueId} = optionValues[i];
+                    if(dic[typeId.toString()] !== valueId){return false}
                 }
                 return true
             })
@@ -176,26 +204,32 @@ export default class AIOShop implements I_AIOShop{
         this.getNewCartVariant = (p)=>{
             let {product,variantId,count} = p;
             let variant = product.variants.find((v:I_v)=>v.id === variantId);
-            let {price,id} = variant;
-            let finalPrice = this.getFinalPrice(variant);
-            let cartVariant:I_cart_variant = {id,count,price,finalPrice};
+            let {id} = variant;
+            let cartVariant:I_cart_variant = {id,count};
             return cartVariant; 
         }
         this.addProductToCart = (p)=>{
             let cart = toJS(this.cart);
-            let {product} = p;
-            let newCartVariant:I_cart_variant = this.getNewCartVariant(p);
-            let newCartProduct:I_cart_product = {product,variants:[newCartVariant]}
+            let newCartProduct:I_cart_product;
+            if(p.product.hasVariant){
+                let {product,count,variantId} = p;
+                let newCartVariant:I_cart_variant = this.getNewCartVariant({product,count,variantId});
+                newCartProduct = {product,variants:[newCartVariant]} as I_cart_product_hasVariant
+            }
+            else {
+                let {product,count} = p;
+                newCartProduct = {product,count} as I_cart_product_hasNotVariant
+            }
             let newCart:I_cart = [...cart,newCartProduct] 
             return newCart;
         }
         this.addVariantToCart = (p)=>{
             let cart = toJS(this.cart);
             let {product} = p;
-            let newCart:I_cart = cart.map((o:I_cart_product)=>{
+            let newCart:I_cart = cart.map((o:I_cart_product_hasVariant)=>{
                 if(o.product.id !== product.id){return o}
                 let newCartVariant:I_cart_variant = this.getNewCartVariant(p);
-                let newCartProduct:I_cart_product = {...o,variants:[...o.variants,newCartVariant]}
+                let newCartProduct:I_cart_product_hasVariant = {...o,variants:[...o.variants,newCartVariant]}
                 return newCartProduct;
             })
             return newCart;
@@ -203,7 +237,7 @@ export default class AIOShop implements I_AIOShop{
         this.removeVariantFromCart = (p)=>{
             let cart = toJS(this.cart);
             let {product,variantId} = p;
-            let cartProduct:I_cart_product = cart.find((o:I_cart_product)=>o.product.id === product.id);
+            let cartProduct:I_cart_product_hasVariant = cart.find((o:I_cart_product)=>o.product.id === product.id) as I_cart_product_hasVariant;
             let newCartVariants = cartProduct.variants.filter((o:I_cart_variant)=>o.id !== variantId);
             let newCart:I_cart;
             if(!newCartVariants.length){
@@ -215,27 +249,38 @@ export default class AIOShop implements I_AIOShop{
             }
             return newCart;
         }
-        this.changeCartVariant = (cartProduct,cartVariant,count)=>{
-            let cart = toJS(this.cart),{product} = cartProduct,variantId = cartVariant.id;
-            let p = {product,variantId,count};
-            let newCartVariants:I_cart_variant[] = cartProduct.variants.map((o:I_cart_variant)=>o.id !== variantId?o:this.getNewCartVariant(p));
-            let newCartProduct:I_cart_product = {...cartProduct,variants:newCartVariants}
-            let newCart:I_cart = cart.map((o:I_cart_product)=>o.product.id !== product.id?o:newCartProduct)
-            return newCart;
+        this.changeCartCount = (p):I_cart=>{
+            let {cartProduct,cartVariant,count} = p;
+            let cart = toJS(this.cart),{product} = cartProduct,newCartProduct:I_cart_product;
+            if(cartVariant){
+                let {variants:cvs} = cartProduct as I_cart_product_hasVariant;
+                let {id:variantId} = cartVariant;
+                let newCartVariants:I_cart_variant[] = cvs.map((o:I_cart_variant)=>{
+                    if(o.id !== variantId){return o}
+                    return this.getNewCartVariant({product,variantId,count})
+                });
+                newCartProduct = {...cartProduct,variants:newCartVariants} as I_cart_product_hasVariant;
+            }
+            else {newCartProduct = {...cartProduct,count} as I_cart_product_hasNotVariant;}
+            return cart.map((o:I_cart_product)=>o.product.id !== product.id?o:newCartProduct);
         }
         this.changeCart = (p)=>{
             let {product,variantId,count} = p;
+            let {hasVariant} = product;
             let newCart:I_cart;
-            if(count === 0){newCart = this.removeVariantFromCart(p)}
+            let cart = toJS(this.cart);
+            if(count === 0){
+                let p = {product,variantId,count};
+                newCart = hasVariant ? this.removeVariantFromCart(p) : cart.filter((o:I_cart_product)=>o.product.id !== product.id)
+            }
             else {
-                let cart = toJS(this.cart);
                 let cartProduct:I_cart_product = cart.find((o:I_cart_product)=>o.product.id === product.id);
-                if(!cartProduct){newCart = this.addProductToCart(p);}
-                else{
-                    let cartVariant:I_cart_variant = cartProduct.variants.find((o:I_cart_variant)=>o.id === variantId);
-                    if(!cartVariant){newCart = this.addVariantToCart(p);}
-                    else{newCart = this.changeCartVariant(cartProduct,cartVariant,count);    }
+                if(!cartProduct){newCart = this.addProductToCart({product,variantId,count});}
+                else if(hasVariant){
+                    let cartVariant:I_cart_variant = (cartProduct as I_cart_product_hasVariant).variants.find((o:I_cart_variant)=>o.id === variantId);
+                    newCart = !cartVariant ? this.addVariantToCart({product,variantId,count}) : this.changeCartCount({cartProduct,cartVariant,count});
                 }
+                else {newCart = this.changeCartCount({cartProduct,count})}
             }
             this.setCart(newCart);
         }
@@ -386,6 +431,7 @@ const Checkout = observer((props: I_Checkout) => {
 const Cart = observer((props:I_Cart) => {
     let { getContext } = props,context = getContext();
     let {cart,cls,unit} = context;    
+    console.log(toJS(cart))
     let [content,setContent] = useState<React.ReactNode>();
     async function getContent(){
         if(typeof context.cartContent !== 'function'){return}
@@ -404,7 +450,7 @@ const Cart = observer((props:I_Cart) => {
     function content_layout():I_RVD_node{return !content?false:{className:`${cls['cart-content']} ${cls['box']}`,html:content}}
     function factor_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'details'}
-        return {className:`${cls['cart-factor']} ${cls['box']}`,html:<Factor {...props}/>}
+        return {className:`${cls['cart-factor']}`,html:<Factor {...props}/>}
     }
     function footer_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'payment'}
@@ -421,19 +467,33 @@ const Factor = observer((props:I_Factor) => {
     let [fetchedDiscountCode, setFetchedDiscountCode] = useState<I_discount | string>('');
     async function getDetails(){
         let {getDiscounts = ()=>[],getExtras = ()=>[]} = context;
-        let Discounts:I_discount[] = await getDiscounts(renderIn,context);
+        let Discounts:I_discount[] = await getDiscounts({renderIn,cart:toJS(cart),checkout:toJS(checkout)});
+        if(!Array.isArray(Discounts)){Discounts = []}
         if(typeof fetchedDiscountCode === 'object' && fetchedDiscountCode.discountPercent && fetchedDiscountCode.maxDiscount){
             Discounts.push({...fetchedDiscountCode,title:'کد تخفیف'})
         }
-        
-        let Extras:I_extra[] = await getExtras(renderIn,context);
+        let Extras:I_extra[] = await getExtras({renderIn,cart:toJS(cart),checkout:toJS(checkout)});
+        if(!Array.isArray(Extras)){Extras = []}
         let totalDiscount = 0,total = 0,payment = 0,productsDiscount = 0;
         for(let i = 0; i < cart.length; i++){
-            let {variants}:I_cart_product = cart[i];
-            for(let j = 0; j < variants.length; j++){
-                let cv:I_cart_variant = variants[j];
-                total += cv.price; payment += cv.finalPrice;
+            let {product} = cart[i];
+            let {hasVariant} = product;
+            if(hasVariant){
+                let {variants}:I_cart_product_hasVariant = cart[i] as I_cart_product_hasVariant;
+                for(let j = 0; j < variants.length; j++){
+                    let cv:I_cart_variant = variants[j];
+                    let variant:I_v = product.variants.find((o:I_v)=>o.id === cv.id);
+                    let finalPrice = context.getFinalPrice(variant.cartInfo);
+                    total += variant.cartInfo.price * cv.count; payment += finalPrice * cv.count;
+                }
             }
+            else {
+                let cartItem = toJS(cart[i]) as I_cart_product_hasNotVariant
+                let {count}:I_cart_product_hasNotVariant = cartItem;
+                let finalPrice = context.getFinalPrice(product.cartInfo);
+                total += product.cartInfo.price * count; payment += finalPrice * count;
+            }
+            
         }
         productsDiscount = total - payment;
         totalDiscount += productsDiscount;
@@ -446,6 +506,7 @@ const Factor = observer((props:I_Factor) => {
         })
         let extras = Extras.map((extra:I_extra)=>{payment += extra.amount; return extra})
         let details:I_Factor_details = {total,payment,productsDiscount,discounts,extras,totalDiscount}
+        console.log('Factor.getDetails')
         setDetails(details)
     }
     useEffect(()=>{getDetails()},[cart,checkout,fetchedDiscountCode])  
@@ -575,9 +636,10 @@ const Factor = observer((props:I_Factor) => {
         }
     }
     function totalDiscount_layout():I_RVD_node{
+        if(renderIn !== 'checkout'){return false}
         return {
             className:cls['factor-total-discount'],align:'v',
-            row:[icon_layout(mdiMinus),key_layout('مجموع تخفیف های سبد خرید'),amount_layout(details.totalDiscount)]
+            row:[icon_layout(mdiMinus),key_layout('مجموع تخفیف ها'),amount_layout(details.totalDiscount)]
         }
     }
     function button_layout():I_RVD_node{
@@ -610,7 +672,7 @@ const Factor = observer((props:I_Factor) => {
     return (<RVD layout={{className:`${cls['factor']} ${cls['factor-payment']}`,row:[button_layout(),payment_layout()]}}/>)
 })
 function ProductSlider(props:I_ProductSlider){
-    let {title = '',action,before = () => false,after = () => false,products,getContext,cartButton = false,icon} = props,context = getContext();
+    let {title = '',action,before = () => false,after = () => false,products,getContext,icon} = props,context = getContext();
     let {cls} = context;
     function header_layout():I_RVD_node{
         if(!title && !action){return false}
@@ -633,8 +695,10 @@ function ProductSlider(props:I_ProductSlider){
         return {
             className:cls['ps-products'],
             row:products.map((product:I_pr)=>{
-                let props:I_ProductCard = {type:'v',product,cartButton,getContext}
-                return {className:cls['ps-product'],html:<ProductCard {...props}/>}
+                let cartButton = props.cartButton;
+                if(product.hasVariant && cartButton){cartButton = false}
+                let p:I_ProductCard = {type:'v',product,cartButton,getContext}
+                return {className:cls['ps-product'],html:<ProductCard {...p}/>}
             })
         }
     }
@@ -645,33 +709,38 @@ function ProductSlider(props:I_ProductSlider){
     return (<RVD layout={{className:cls['ps'],column:[header_layout(),body_layout()]}}/>)
 }
 const ProductPage = observer((props:I_ProductPage) => {
-    let {product,variantIds = product.variants.map((o:I_v)=>o.id),getContext} = props,context = getContext();
-    let {images,details = [],description,rates = []} = product;
+    let {product,variantIds = !product.hasVariant?[]:product.variants.map((o:I_v)=>o.id),getContext} = props,context = getContext();
+    let {images,details = [],description,rates = [],hasVariant} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
     let [showFull,setShowFull] = useState<{[key:string]:boolean}>({});
     async function getImageContent(){
         if(typeof context.productPageImageContent !== 'function'){return}
-        setImageContent(await context.productPageImageContent(product,variant?variant.id:undefined))
+        setImageContent(await context.productPageImageContent(product,typeof variant === 'object'?variant.id:undefined))
     }
     async function getContent(){
         if(typeof context.productPageContent !== 'function'){return}
-        setContent(await context.productPageContent(product,variant?variant.id:undefined))
+        setContent(await context.productPageContent(product,typeof variant === 'object'?variant.id:undefined))
     }
     useEffect(()=>{getImageContent(); getContent()},[])
     let {cls,trans} = context;
-    let [variants] = useState<I_v[]>(product.variants.filter((o:I_v)=>variantIds.indexOf(o.id) !== -1 && !!o.cartInfo.inStock));
+    let [variants] = useState<I_v[]>(getVariants);
+    function getVariants(){
+        if(!hasVariant){return []}
+        return product.variants.filter((o:I_v)=>variantIds.indexOf(o.id) !== -1 && !!o.cartInfo.inStock)
+    }
     let [selectedOptionValues,setSelectedOptionValues] = useState<I_v_ov[]>(getInitialOptionValues(variants));
-    let [optionTypes] = useState<I_pr_optionType[]>(context.getOptionTypes(variants));
-    let variant = context.getVariantByOptionValues(product,selectedOptionValues)
+    let [optionTypes] = useState<I_pr_optionType[]>(hasVariant?context.getOptionTypes(variants):[]);
+    let variant = hasVariant?context.getVariantByOptionValues(product,selectedOptionValues):false
     
     function changeVariant(optionType:I_pr_optionType,value:{name:string,id:any}){        
         let newOptionValues:I_v_ov[] = selectedOptionValues.map((o:I_v_ov)=>{
-            return o.optionType.id === optionType.id?{optionType:{id:optionType.id,name:optionType.name},optionValue:{id:value.id,name:value.name}}:o
+            return o.typeId === optionType.id?{typeId:optionType.id,typeName:optionType.name,valueId:value.id,valueName:value.name}:o
         })
         setSelectedOptionValues(newOptionValues); 
     }
     function getInitialOptionValues(variants:I_v[]){
+        if(!hasVariant){return []}
         let variantId = props.variantId || product.defaultVariantId;
         let variant = variants.find((o:I_v)=>o.id === variantId) || variants[0];
         return JSON.parse(JSON.stringify(variant.optionValues))
@@ -690,23 +759,24 @@ const ProductPage = observer((props:I_ProductPage) => {
     }
     function name_layout():I_RVD_node{return {html:product.name,className:cls['pp-name']}}
     function optionTypes_layout():I_RVD_node{
+        if(!hasVariant){return false}
         return {className:`of-visible ${cls['pp-optionTypes']} ${cls['box']}`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
     }
     
     function optionType_layout(optionType:I_pr_optionType):I_RVD_node{
         let {id:optionTypeId,name:optionTypeName,values} = optionType;
-        let selectedOptionValue:I_v_ov = selectedOptionValues.find((o:I_v_ov)=>o.optionType.id === optionTypeId)
+        let selectedOptionValue:I_v_ov = selectedOptionValues.find((o:I_v_ov)=>o.typeId === optionTypeId)
         return {
             className:cls['pp-optionType'],
             column:[
-                {className:cls['pp-label'],html:`${optionTypeName} : ${selectedOptionValue.optionValue.name}`},
+                {className:cls['pp-label'],html:`${optionTypeName} : ${selectedOptionValue.valueName}`},
                 {className:cls['pp-optionValue-buttons'],row:values.map((value:{name:string,id:any})=>optionValueButton_layout(optionType,value,selectedOptionValue))}
             ]
         }
     }
     function optionValueButton_layout(optionType:I_pr_optionType,value:{name:string,id:any},selectedOptionValue:I_v_ov):I_RVD_node{
         let {name:optionValueName,id:optionValueId} = value;
-        let active = selectedOptionValue.optionValue.id === optionValueId
+        let active = selectedOptionValue.valueId === optionValueId
         let className = cls['pp-optionValue-button'] + (active?' active':'');
         let button = <button className={className} onClick={()=>changeVariant(optionType,value)}>{optionValueName}</button>
         return {html:button}
@@ -754,8 +824,8 @@ const ProductPage = observer((props:I_ProductPage) => {
     function amounts_layout():I_RVD_node{return !variant?false:{className:cls['pp-amounts'],column:[discount_layout(),finalPrice_layout()]}}
     function icon_layout(path:any,size:number){return {html:<Icon path={path} size={size}/>}}
     function cartButton_layout():I_RVD_node{
-        if(!variant){return {className:cls['pp-not-exist'],align:'vh',row:[icon_layout(mdiInformation,0.9),{html:trans.notExist}]}}
-        let props:I_CartButton = {product,variantId:variant.id,readonly:false,getContext}
+        if(hasVariant && !variant){return {className:cls['pp-not-exist'],align:'vh',row:[icon_layout(mdiInformation,0.9),{html:trans.notExist}]}}
+        let props:I_CartButton = {product,variantId:hasVariant?(variant as I_v).id:undefined,readonly:false,getContext}
         return {className:'of-visible',align:'vh',html:<CartButton {...props}/>}
     }
     function discount_layout():I_RVD_node{let props:I_DiscountPercent = {product,getContext}; return {html:<DiscountPercent {...props}/>}}
@@ -780,13 +850,13 @@ function Rates(props:I_Rates){
 }
 const CartButton = observer((props:I_CartButton) => {
     let {product,variantId,readonly,getContext} = props;
-    let {cls,trans,changeCart,getCartVariant} = getContext();
-    let cartVariant = getCartVariant({product,variantId})
-    let count = !cartVariant?0:cartVariant.count;
+    let {hasVariant} = product;
+    let {cls,trans,changeCart,getCartCount} = getContext();
+    let count:number = getCartCount(product,variantId);
     function notExist_layout():I_RVD_node{return {className:`${cls['cb']}`,html:<span className='cb-not-exist'>{trans.notExist}</span>}}
     function icon_layout():I_RVD_node{return {html:<Icon path={mdiCart} size={0.6}/>,className:cls['cb-icon']}}
     function count_layout(style?:any):I_RVD_node{return {html:count,align:'vh',className:cls['cb-count'],style}}
-    function changeStep(offset){
+    function changeStep(offset:number){
         let newCount = count + offset;
         if(newCount < min){newCount = min}
         if(newCount > max){newCount = max}
@@ -799,7 +869,13 @@ const CartButton = observer((props:I_CartButton) => {
         let html:React.ReactNode = <Icon path={path} size={size}/>
         let className = `of-visible ${dir > 0?cls['cb-plus']:cls['cb-minus']}`;
         if(disabled){className += ` ${cls['cb-disabled']}`}
-        return {html,align:'vh',className,onClick:disabled?undefined:()=>del?changeCart({product,variantId,count:0}):changeStep(dir)}
+        return {html,align:'vh',className,onClick:(e)=>click(e,dir,del,disabled)}
+    }
+    function click(event:any,dir:number,del:boolean,disabled:boolean){
+        event.stopPropagation();
+        if(disabled){return}
+        if(del){changeCart({product,variantId,count:0})}
+        else{changeStep(dir)}
     }
     function body_layout():I_RVD_node{return {className:cls['cb-body'],row:[button_layout(step,{disabled:count >= max}),count_layout(),button_layout(-step,{del:count === Math.max(min,1)})]}}
     function footer_layout():I_RVD_node{
@@ -815,23 +891,24 @@ const CartButton = observer((props:I_CartButton) => {
         }
     }
     function getCartInfo(){
-        let {min = 0,max = Infinity,step = 1,inStock} = variant.cartInfo;
+        let cartInfo:I_cartInfo = hasVariant?product.variants.find((o:I_v)=>o.id === variantId).cartInfo:product.cartInfo;
+        let {min = 0,max = Infinity,step = 1,inStock} = cartInfo
         if(inStock === true){inStock = Infinity}
         else if(inStock === false){inStock = 0;}
+        else if(!inStock){inStock = 0;}    
         if(min > inStock){min = inStock}
         if(max > inStock){max = inStock}
         return {min,max,step}
     }
-    let [variant] = useState<I_v>(product.variants.find((o:I_v)=>o.id === variantId));
     let {min,max,step} = getCartInfo();
     if(!max){return <RVD layout={notExist_layout()}/>}
     if(readonly){return !count?null:<RVD layout={{className:`${cls['cb']} ${cls['cb-readonly']}`,align:'v',row:[icon_layout(),count_layout({width:'fit-content',padding:'0 3px',fontSize:14})]}}/>}
-    if(!count){return <RVD layout={{className:`${cls['cb']}`,html:<button className={cls['cb-add']} onClick={()=>changeStep(step)}>{trans.addToCart}</button>}}/>}
+    if(!count){return <RVD layout={{className:`${cls['cb']}`,html:<button className={cls['cb-add']} onClick={(e)=>{e.stopPropagation(); changeStep(step)}}>{trans.addToCart}</button>}}/>}
     return (<RVD layout={{className:`${cls['cb']}`,column:[body_layout(),footer_layout()]}}/>)
 })
 const ProductCard = observer((props:I_ProductCard) => {
     let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{cls,unit} = context;
-    let {name,images} = product;
+    let {name,images,hasVariant} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
     async function getImageContent(){
@@ -860,7 +937,7 @@ const ProductCard = observer((props:I_ProductCard) => {
     function title_layout():I_RVD_node{return typeof title !== 'string'?false:{html:title,className:cls['pc-title'],align:'v'}}
     function name_layout():I_RVD_node{return {html:name,className:cls['pc-name']}}
     function description_layout():I_RVD_node{
-        if(!variantId){return false}
+        if(!hasVariant || !variantId){return false}
         let props:I_VariantLabels = {product,variantId,getContext,type:type === 'hs'?'h':'v'}
         return {html:<VariantLabels {...props}/>}
     }
@@ -874,7 +951,7 @@ const ProductCard = observer((props:I_ProductCard) => {
         return {className:cls['pc-finalPrice_layout'],row:[{flex:1},{html:<FinalPrice {...props}/>}]}
     }
     function variants_layout():I_RVD_node{
-        if(cartButton === false){return false}
+        if(!hasVariant || cartButton === false){return false}
         let cvs:I_cart_variant[] = context.getCartVariants(product.id)
         return !cvs.length?false:{className:cls['pc-variants'],column:cvs.map((cv:I_cart_variant)=>variant_layout(cv))} 
     }
@@ -883,6 +960,8 @@ const ProductCard = observer((props:I_ProductCard) => {
         let props:I_VariantLabels = {type:'h',product,variantId:cv.id,getContext};
         let fpProps:I_FinalPrice = {getContext,product,variantId:cv.id}
         let dpProps:I_DiscountPercent = {getContext,product,variantId:cv.id,showPrice:false}
+        let variant = product.variants.find((o:I_v)=>o.id === cv.id);
+        let finalPrice = context.getFinalPrice(variant.cartInfo);
         return {
             flex:1,
             column:[
@@ -892,15 +971,15 @@ const ProductCard = observer((props:I_ProductCard) => {
                     row:[
                         {html:<DiscountPercent {...dpProps}/>},
                         {html:<FinalPrice {...fpProps}/>},
-                        {html:`(جمع ${SplitNumber(cv.count * cv.finalPrice)} ${unit})`,className:'fs-9'}
+                        {html:`(جمع ${SplitNumber(cv.count * finalPrice)} ${unit})`,className:'fs-9'}
                     ]
                 }
             ]
         }
     }
-    function cartButton_layout(cv:I_cart_variant):I_RVD_node{
-        let props:I_CartButton = {product,variantId:cv.id,readonly:cartButton === 'readonly',getContext}
-        return {align:'vh',html:<CartButton {...props}/>}
+    function cartButton_layout(cv?:I_cart_variant):I_RVD_node{
+        let props:I_CartButton = {product,variantId:cv?cv.id:undefined,readonly:cartButton === 'readonly' || type === 'hs',getContext}
+        return {align:'vh',className:'w-fit',html:<CartButton {...props}/>}
     }
     function click(){
         const render = ()=>{
@@ -922,12 +1001,13 @@ const ProductCard = observer((props:I_ProductCard) => {
     function body_layout_hs():I_RVD_node{
         return {className:cls['pc-body'],align:'v',flex:1,column:[name_layout(),description_layout(),productAmounts_layout()]}
     }
-    function productAmounts_layout(){
-        if(cartButton){return false}
-        if(type === 'v'){return {column:[discount_layout(),finalPrice_layout()]}}
-        if(type === 'h'){return {column:[discount_layout(),finalPrice_layout()]}}
-        if(type === 'hs'){return {gap:6,row:[finalPrice_layout(),{flex:1},discount_layout()]}}
-        return false
+    function productAmounts_layout():I_RVD_node{
+        //در حالت واریانت دار چون قیمت ها در پایین کارت رندر میشه پس قیمت ها رو در بادی کارت نمایش نده
+        if(hasVariant && cartButton === true){return false}
+        let d = discount_layout(),f = finalPrice_layout(),c = hasVariant?false:cartButton_layout();
+        if(type === 'v'){return {align:'v',gap:6,column:[{flex:1,column:[d,f]},c]}}
+        if(type === 'h'){return {align:'v',row:[c,{flex:1,column:[d,f]}]}}
+        if(type === 'hs'){return {gap:6,row:[f,{flex:1},d,c]}}
     }
     function h_layout():I_RVD_node{
         let body;
@@ -944,14 +1024,7 @@ const ProductCard = observer((props:I_ProductCard) => {
     return (<RVD layout={type === 'v'?v_layout():h_layout()}/>)
 })
 function DiscountPercent(props:I_DiscountPercent){
-    let {product,getContext,showPrice} = props,context = getContext(),{cls} = context;
-    let [variant] = useState<I_v>(getVariant())
-    let [items] = useState<I_discountPercent[]>(getItems(variant))
-    function getVariant(){
-        let variantId = props.variantId?props.variantId:product.defaultVariantId;
-        return product.variants.find((o:I_v)=>o.id === variantId); 
-    }
-    function getItems(variant:I_v){return (variant.discountPercent || []).filter((o:I_discountPercent)=>!!o.value)}
+    let {product,getContext,showPrice} = props,context = getContext(),{cls,getCartInfo} = context;
     function percents_layout():I_RVD_node{return {align:'v',row:items.map((item)=>percent_layout(item)),className:cls['dps']}}
     function percent_layout(item:I_discountPercent):I_RVD_node{
         return {html:`${item.value}%`,className:cls['dp'],attrs:item.attrs,onClick:(e)=>{
@@ -963,8 +1036,10 @@ function DiscountPercent(props:I_DiscountPercent){
             })
         }}
     }
-    function price_layout():I_RVD_node{return showPrice === false?false:{className:cls['price'],html:SplitNumber(variant.price)}}
-    return !items.length?null:<RVD layout={{align:'v',className:cls['dr'],row:[{flex:1},price_layout(),percents_layout()]}}/>
+    function price_layout(price:number):I_RVD_node{return showPrice === false?false:{className:cls['price'],html:SplitNumber(price)}}
+    let {discountPercent = [],price} = getCartInfo(product,props.variantId);
+    let items = discountPercent.filter((o:I_discountPercent)=>!!o.value);
+    return !items.length?null:<RVD layout={{align:'v',className:cls['dr'],row:[{flex:1},price_layout(price),percents_layout()]}}/>
 }
 type I_DiscountPercentModal = {context?:I_AIOShop_context,item:I_discountPercent}
 function DiscountPercentModal(props:I_DiscountPercentModal){
@@ -984,11 +1059,10 @@ function DiscountPercentModal(props:I_DiscountPercentModal){
 }
 function FinalPrice(props:I_FinalPrice){
     let {getContext,product} = props,context = getContext();
-    let {cls,unit} = context
+    let {cls,unit,getCartInfo} = context
     function price_layout():I_RVD_node{
-        let variantId = props.variantId || product.defaultVariantId;
-        let variant = product.variants.find((o:I_v)=>o.id === variantId);
-        let {price,discountPercent:dps = []} = variant;
+        let cartInfo:I_cartInfo = getCartInfo(product,props.variantId);
+        let {price,discountPercent:dps = []} = cartInfo;
         let dp = 0;
         for(let i = 0; i < dps.length; i++){dp += dps[i].value}
         let finalPrice = Math.round(price - (price * dp / 100))
@@ -1007,9 +1081,9 @@ function VariantLabels(props:I_VariantLabels){
         let optionTypes = getOptionTypes(product.variants);
         let {optionValues} = variant;
         for(let i = 0; i < optionValues.length; i++){
-            let {optionType,optionValue}:I_v_ov = optionValues[i];
-            let {name:optionTypeName,values}:I_pr_optionType = optionTypes.find((o:I_pr_optionType)=>o.id === optionType.id);
-            let {name:optionValueName} = values.find((o)=>o.id === optionValue.id)
+            let {typeId,valueId}:I_v_ov = optionValues[i];
+            let {name:optionTypeName,values}:I_pr_optionType = optionTypes.find((o:I_pr_optionType)=>o.id === typeId);
+            let {name:optionValueName} = values.find((o)=>o.id === valueId)
             let item:I_v_label = [optionTypeName,optionValueName]
             res.push(item)
         }

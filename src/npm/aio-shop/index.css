@@ -18,6 +18,9 @@
 .aio-shop-product-card-body{
     padding:6px;
 }
+.aio-shop-product-card-content{
+    margin:6px 0;
+}
 .aio-shop-product-card-name{
     font-size:100%;
     font-weight:bold;
@@ -311,7 +314,6 @@
     gap:6px;
 }
 .aio-shop-product-slider-header{
-    padding:0 6px;
     margin-bottom:6px;
 }
 .aio-shop-product-slider-title{
@@ -326,10 +328,13 @@
 .aio-shop-cart{
     font-size:12px;
     min-height:120px;
+    background:#f2f2f2;
+    height:100%;
 }
 .aio-shop-cart-body{
     flex:1;
     overflow-y:auto;
+    padding:12px;
 }
 .aio-shop-cart-products{
     overflow:visible;

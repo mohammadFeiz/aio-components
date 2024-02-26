@@ -682,8 +682,9 @@ const [value,setValue] = useState(50);
     type='slider' value={value} 
     onChange={(value)=>this.setState({value})}
     labelStep={10}
-    labelStyle={(value)=>{
-        return {top:40,fontSize:16,color:value < 40?'red':'dodgerblue'}
+    labelStyle={(v)=>{
+        let active = Math.round(value / 10) * 10 === v;
+        return {top:40,fontSize:active?24:16,color:v < 40?'red':'dodgerblue',fontWeight:active?'bold':undefined}
     }}
 />
                     `)

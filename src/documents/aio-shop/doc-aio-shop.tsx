@@ -5,7 +5,7 @@ import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
 import products from './products.tsx';
 import AIOShop from '../../npm/aio-shop/aio-shop.js';
 import './index.css';
-import { I_AIOShop, I_AIOShop_props } from '../../npm/aio-shop/types.js';
+import { I_AIOShop, I_AIOShop_props, I_discount, I_pr, I_v } from '../../npm/aio-shop/types.js';
 import {Icon} from '@mdi/react';
 import { mdiArrowLeftBoldCircle, mdiCircleMedium, mdiGift } from '@mdi/js';
 export default function DOC_AIOShop(props){
@@ -13,17 +13,86 @@ export default function DOC_AIOShop(props){
         <DOC
             {...props}
             nav={{
+                nested:true,
                 items:[
-                    { text: 'renderProductCard', id: 'renderProductCard', render: () => <RenderProductCard /> },
-                    { text: 'productCardContent', id: 'productCardContent', render: () => <ProductCardContent /> },
-                    { text: 'productCardImageContent', id: 'productCardImageContent', render: () => <ProductCardImageContent /> },
-                    { text: 'renderProductPage', id: 'renderProductPage', render: () => <RenderProductPage /> },
-                    { text: 'productPageContent', id: 'productPageContent', render: () => <ProductPageContent /> },
-                    { text: 'productPageImageContent', id: 'productPageImageContent', render: () => <ProductPageImageContent /> },
-                    { text: 'discountPercent', id: 'discountPercent', render: () => <DiscountPercent /> },
-                    { text: 'cartInfo', id: 'cartinfo', render: () => <CartInfo /> },
-                    { text: 'renderProductSlider', id: 'renderProductSlider', render: () => <RenderProductSlider /> },
-                    { text: 'renderCart', id: 'renderCart', render: () => <RenderCart /> },
+                    { 
+                        text: 'product structure', id: 'product structure',
+                        items:[
+                            { text: 'with variant', id: 'product structure v', render: () => <Product v={true} key='v'/> },
+                            { text: 'without variant', id: 'product structure nv', render: () => <Product v={false} key='nv'/> },
+                        ]
+                    },
+                    { 
+                        text: 'renderProductCard', id: 'renderProductCard', 
+                        items:[
+                            { text: 'with variant', id: 'renderProductCard v', render: () => <RenderProductCard v={true} key='v'/> },
+                            { text: 'without variant', id: 'renderProductCard nv', render: () => <RenderProductCard v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'productCardContent', id: 'productCardContent',
+                        items:[
+                            { text: 'with variant', id: 'productCardContent v', render: () => <ProductCardContent v={true} key='v' /> },
+                            { text: 'without variant', id: 'productCardContent nv', render: () => <ProductCardContent v={false} key='nv' /> }
+                        ] 
+                    },
+                    { 
+                        text: 'productCardImageContent', id: 'productCardImageContent',
+                        items:[
+                            { text: 'with variant', id: 'productCardImageContent v', render: () => <ProductCardImageContent v={true} key='v'/> },
+                            { text: 'without variant', id: 'productCardImageContent nv', render: () => <ProductCardImageContent v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'renderProductPage', id: 'renderProductPage',
+                        items:[
+                            { text: 'with variant', id: 'renderProductPage v', render: () => <RenderProductPage v={true} key='v' /> },
+                            { text: 'without variant', id: 'renderProductPage nv', render: () => <RenderProductPage v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'productPageContent', id: 'productPageContent',
+                        items:[
+                            { text: 'with variant', id: 'productPageContent v', render: () => <ProductPageContent v={true} key='v' /> },
+                            { text: 'without variant', id: 'productPageContent nv', render: () => <ProductPageContent v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'productPageImageContent', id: 'productPageImageContent',
+                        items:[
+                            { text: 'with variant', id: 'productPageImageContent v', render: () => <ProductPageImageContent v={true} key='v' /> },
+                            { text: 'without variant', id: 'productPageImageContent nv', render: () => <ProductPageImageContent v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'discountPercent', id: 'discountPercent', 
+                        items:[
+                            { text: 'with variant', id: 'discountPercent v', render: () => <DiscountPercent /> },
+                            { text: 'without variant', id: 'discountPercent nv', render: () => <DiscountPercentNoVariant/> },
+                    
+                        ]
+                    },
+                    { 
+                        text: 'renderProductSlider', id: 'renderProductSlider',
+                        items:[
+                            { text: 'with variant', id: 'renderProductSlider v', render: () => <RenderProductSlider v={true} key='v' /> },
+                            { text: 'without variant', id: 'renderProductSlider nv', render: () => <RenderProductSlider v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'renderCart', id: 'renderCart', 
+                        items:[
+                            { text: 'with variant', id: 'renderCart v', render: () => <RenderCart v={true} key='v' /> },
+                            { text: 'without variant', id: 'renderCart nv', render: () => <RenderCart v={false} key='nv' /> }
+                        ]
+                    },
+                    { 
+                        text: 'renderCheckout', id: 'renderCheckout',
+                        items:[
+                            { text: 'with variant', id: 'renderCheckout v', render: () => <RenderCheckout v={true} key='v' /> },
+                            { text: 'without variant', id: 'renderCheckout nv', render: () => <RenderCheckout v={false} key='nv' /> }
+                        ]
+                    }
                 ]
             }}
         />
@@ -40,7 +109,21 @@ function Part(p:{content?:any,code?:string}){
         </>
     )
 }
-function RenderProductCard(){
+function Product({v}){
+    let product = products[v?0:1]
+    return (
+        <div className='example' style={{direction:'rtl',background:'#aaa'}}>
+            <Part
+                content={`product structure ${v?'with':'without'} variant`}
+                code={`
+${JSON.stringify(product,null,4)}
+                `}
+            />            
+        </div>
+    )
+}
+const a = {typeId:'color',valueId:'grey',typeName:'رنگ',valueName:'خاکستری'}
+function RenderProductCard({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -48,13 +131,25 @@ function RenderProductCard(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
                 content={Shop.renderProductCard({product,type:'h',cartButton:false})}
                 code={
 `Shop.renderProductCard({product,type:'h',cartButton:false})`                    
+                }
+            />
+            <Part
+                content={Shop.renderProductCard({product,type:'h',cartButton:true})}
+                code={
+`Shop.renderProductCard({product,type:'h',cartButton:true})`                    
+                }
+            />
+            <Part
+                content={Shop.renderProductCard({product,type:'h',cartButton:'readonly'})}
+                code={
+`Shop.renderProductCard({product,type:'h',cartButton:'readonly'})`                    
                 }
             />
             <Part
@@ -110,7 +205,7 @@ function RenderProductCard(){
         </div>
     )
 }
-function RenderProductPage(){
+function RenderProductPage({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -118,7 +213,7 @@ function RenderProductPage(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
@@ -133,7 +228,7 @@ Shop.renderProductPage({product})
         </div>
     )
 }
-function ProductPageContent(){
+function ProductPageContent({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -146,7 +241,7 @@ function ProductPageContent(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
@@ -172,16 +267,23 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductPageImageContent(){
+function ProductPageImageContent({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
         productPageImageContent:async (product,variantId)=>{
-            let variant = product.variants.find((o)=>o.id === variantId)
+            let cartInfo;
+            if(product.hasVariant){
+                let variant = product.variants.find((o)=>o.id === variantId)
+                cartInfo = variant.cartInfo;
+            }
+            else{
+                cartInfo = product.cartInfo
+            }
             let dp = 0;
-            for(let i = 0; i < variant.discountPercent.length; i++){
-                let {value} = variant.discountPercent[i];
+            for(let i = 0; i < cartInfo.discountPercent.length; i++){
+                let {value} = cartInfo.discountPercent[i];
                 dp += value;
             }
             return (
@@ -196,7 +298,7 @@ function ProductPageImageContent(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
@@ -205,14 +307,29 @@ function ProductPageImageContent(){
 `...
 let Shop = new AIOShop({
     ...
-    productPageContent:async (product)=>{
+    productPageImageContent:async (product,variantId)=>{
+        let cartInfo;
+        if(product.hasVariant){
+            let variant = product.variants.find((o)=>o.id === variantId)
+            cartInfo = variant.cartInfo;
+        }
+        else{
+            cartInfo = product.cartInfo
+        }
+        let dp = 0;
+        for(let i = 0; i < cartInfo.discountPercent.length; i++){
+            let {value} = cartInfo.discountPercent[i];
+            dp += value;
+        }
         return (
-            <div 
-                style={{color:'orange'}} 
-                className='align-vh p-24 w-100'
-            >با خرید این محصول 100 امتیاز دریافت کنید</div>
+            <div className='p-6 absolute r-0 t-0'>
+                <div 
+                    style={{background:'orange',color:'#fff'}} 
+                    className='br-4 p-h-3'
+                >{dp + '%'}</div>
+            </div>
         )
-    }
+    },
     ...
 })
 ...`
@@ -222,7 +339,7 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductCardContent(){
+function ProductCardContent({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -235,7 +352,7 @@ function ProductCardContent(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
@@ -261,7 +378,7 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductCardImageContent(){
+function ProductCardImageContent({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -272,14 +389,14 @@ function ProductCardImageContent(){
                     <div 
                         style={{background:'orange',color:'#fff'}} 
                         className='br-4 p-h-3'
-                    >{product.variants[0].discountPercent[0].value + '%'}</div>
+                    >{product.variants[0].cartInfo.discountPercent[0].value + '%'}</div>
                 </div>
             )
         },
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
+    let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
@@ -321,17 +438,23 @@ function DiscountPercent(){
         ...product1,
         variants:[{
             ...product1.variants[0],
-            discountPercent: [{text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}}], 
+            cartInfo:{
+                ...product1.variants[0].cartInfo,
+                discountPercent: [{text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}}]
+            }, 
         }]
     }
     let product3 = {
         ...product1,
         variants:[{
             ...product1.variants[0],
-            discountPercent: [
-                {text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}},
-                {text:'تخفیف مشتری خوش حساب',value:10,attrs:{style:{background:'orange'}}}
-            ], 
+            cartInfo:{
+                ...product1.variants[0].cartInfo,
+                discountPercent: [
+                    {text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}},
+                    {text:'تخفیف مشتری خوش حساب',value:10,attrs:{style:{background:'orange'}}}
+                ],
+            } 
         }]
     }
     return (
@@ -425,7 +548,7 @@ Shop.renderProductCard({product,type:'h',cartButton:false})`
         </div>
     )
 }
-function CartInfo(){
+function DiscountPercentNoVariant(){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -433,33 +556,104 @@ function CartInfo(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0]
-    let product1 = {...product,variants:[{...product.variants[0],cartInfo:{inStock: 25, max: 10, min: 5, step: 5}}]}
+    let product1 = products[1]
+    let product2 = {
+        ...product1,
+        cartInfo:{
+            ...product1.cartInfo,
+            discountPercent: [{text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}}], 
+        }
+    }
+    let product3 = {
+        ...product1,
+        cartInfo:{
+            ...product1.cartInfo,
+            discountPercent: [
+                {text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}},
+                {text:'تخفیف مشتری خوش حساب',value:10,attrs:{style:{background:'orange'}}}
+            ], 
+        }
+    }
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
             <Part
-                content={Shop.renderProductPage({product})}
+                content={Shop.renderProductCard({product:product1,type:'h',cartButton:false})}
                 code={
-`...
-cartInfo:{inStock: 25},
-...`                 
+`let product = {
+    ...
+    defaultVariantId:'165',
+    cartInfo: {
+        ...
+        id:'165',
+        discountPercent: [
+            {
+                text:'تخفیف شب یلدا',
+                value:12
+            }
+        ], 
+        ...
+    }
+    ...
+}
+Shop.renderProductCard({product,type:'h',cartButton:false})`
                 }
             />
             <Part
-                content={Shop.renderProductPage({product:product1})}
+                content={Shop.renderProductCard({product:product2,type:'h',cartButton:false})}
                 code={
-`...
-cartInfo:{inStock: 25, max: 10, min: 5, step: 5},
-...` 
+`let product = {
+    ...
+    defaultVariantId:'165',
+    cartInfo: {
+        ...
+        id:'165',
+        discountPercent: [
+            {
+                text:'تخفیف شب یلدا',
+                value:12,
+                attrs:{style:{background:'green'}}
+            }
+        ], 
+        ...
+    }
+    ...
+}
+Shop.renderProductCard({product,type:'h',cartButton:false})`
+                }
+            />
+            <Part
+                content={Shop.renderProductCard({product:product3,type:'h',cartButton:false})}
+                code={
+`let product = {
+    ...
+    defaultVariantId:'165',
+    cartInfo: {
+        ...
+        id:'165',
+        discountPercent: [
+            {
+                text:'تخفیف شب یلدا',
+                value:12,
+                attrs:{style:{background:'green'}}
+            },
+            {
+                text:'تخفیف مشتری خوش حساب',
+                value:10,
+                attrs:{style:{background:'orange'}}
+            }
+        ], 
+        ...
+    }
+    ...
+}
+Shop.renderProductCard({product,type:'h',cartButton:false})`
                 }
             />
             {Shop.renderPopup()}
         </div>
     )
 }
-
-
-function RenderProductSlider(){
+function RenderProductSlider({v}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -467,7 +661,8 @@ function RenderProductSlider(){
         onPayment:async ()=>true
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let items = [products[0],products[0],products[0],products[0],products[0],products[0],products[0],products[0],]
+    let p = products[v?0:1]
+    let items = [p,p,p,p,p,p,p,p,]
     function Before(){
         return (
             <div style={{background:'red',color:'#fff',width:120}} className='align-vh t-a-center br-6 p-12 border-box'>محصولات منتخب</div>
@@ -522,31 +717,73 @@ Shop.renderProductSlider({
     )
 }
 
-function RenderCart(){
+function RenderCart({v}){
+    let product:I_pr = products[v?0:1];
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
-        getDiscounts:async ()=>{
-            return [
-                {title:'تخفیف جشنواره',discountPercent:12,maxDiscount:100000}
-            ]
+        getDiscounts:async ()=>[{title:'تخفیف جشنواره',discountPercent:12,maxDiscount:100000}],
+        cartContent:async ()=>'محتوی سبد خرید',
+        onPayment:async(context)=>true,
+        cart:v?[{product,variants: [{"id": "165","count": 5}]}]:[{product,count: 5}]
+    }
+    let [Shop] = useState<I_AIOShop>(new AIOShop(props))
+    let productToCode = {...product,rates:'...',details:'...'};
+    return (
+        <div className='example' style={{direction:'rtl',background:'#aaa'}}>
+            {Shop.renderCart()}
+            {Shop.renderPopup()}
+            {
+                AIODoc().Code(`
+const product = ${JSON.stringify(productToCode,null,4)}
+                `)
+            }
+            {
+                AIODoc().Code(`
+function RenderCart({product}){
+    let props:I_AIOShop_props = {
+        shopId: 'test-render-cart',
+        unit: 'تومان',
+        trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        getDiscounts:async ()=>[{title:'تخفیف جشنواره',discountPercent:12,maxDiscount:100000}],
+        cartContent:async ()=>'محتوی سبد خرید',
+        onPayment:async(context)=>true,
+        cart:[{product,"variants": [{"id": "165","count": 5}]}]
+    }
+    let [Shop] = useState<I_AIOShop>(new AIOShop(props))
+    return (
+        <div className='example' style={{direction:'rtl',background:'#aaa'}}>
+            {Shop.renderCart()}
+            {Shop.renderPopup()}
+        </div>
+    )
+}
+                `)
+            }
+            
+        </div>
+    )
+}
+function RenderCheckout({v}){
+    let product:I_pr = products[v?0:1];
+    let props:I_AIOShop_props = {
+        shopId: 'testrendercheckout',unit: 'تومان',
+        trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        getDiscounts:async ({renderIn,checkout,cart})=>{
+            let discounts:I_discount[] = [{title:'تخفیف جشنواره',discountPercent:12,maxDiscount:100000}]
+            if(checkout.paymentType === 'in location'){
+                discounts.push({title:'پرداخت در محل',discountPercent:75})
+            }
+            return discounts
         },
-        getExtras:async ()=>{
-            return [
-                {title:'هزینه ارسال',amount:100000}
-            ]
+        getExtras:async ({renderIn,checkout,cart})=>{
+            if(renderIn !== 'checkout'){return }
+            return [{title:'هزینه ارسال',amount:{post:50000,carier:75000}[checkout.deliveryType || 'post']}]
         },
-        cartContent:async ()=>{
-            return 'محتوی سبد خرید'
-        },
-        checkoutContent:async ()=>{
-            return 'محتوی چک اوت'
-        },
-        onPayment:async(context)=>{
-            debugger
-            return false
-        },
+        checkoutContent:async ()=>'محتوی چک اوت',
+        onPayment:async(context)=>true,
+        cart:v?[{product,variants: [{"id": "165","count": 5}]}]:[{product,count: 5}],
         checkDiscountCode:async (code,context)=>{
             if(code === '123456'){
                 return {
@@ -560,15 +797,15 @@ function RenderCart(){
                 {
                     type:'radio',title:'نحوه ارسال',subtitle:'توصیحات',field:'deliveryType',value:'carier',
                     options:[
-                        {text:'پست پیشتاز',value:'post',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'ارسال پستی'},
-                        {text:'پیک',value:'carier',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'ارسال پیک'},
+                        {text:'پست پیشتاز',value:'post',after:'50 هزار تومان'},
+                        {text:'پیک',value:'carier',after:'75 هزار تومان'},
                     ]
                 },
                 {
                     type:'radio',title:'نحوه پرداخت',subtitle:'توصیحات',field:'paymentType',value:'online',
                     options:[
-                        {text:'آنلاین',value:'online',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت آنلاین'},
-                        {text:'درمحل',value:'in location',icon:<Icon path={mdiCircleMedium} size={1}/>,after:'پرداخت پس از تحویل'},
+                        {text:'آنلاین',value:'online',after:'پرداخت کامل'},
+                        {text:'درمحل',value:'in location',after:'پرداخت 25%'},
                     ]
                 },
                 {
@@ -587,18 +824,77 @@ function RenderCart(){
         }
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
-    let product = products[0];
+    let productToCode = {...product,rates:'...',details:'...'};
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
-            renderProductCard
-            {Shop.renderProductCard({product,type:'h'})}
-            <div style={{height:12}}></div>
-            renderCart
-            {Shop.renderCart()}
-            <div style={{height:24}}></div>
-            renderCheckout
             {Shop.renderCheckout()}
             {Shop.renderPopup()}
+            {
+                AIODoc().Code(`
+const product = ${JSON.stringify(productToCode,null,4)}
+                `)
+            }
+            {AIODoc().Code(`
+function RenderCheckout({product}){
+    let props:I_AIOShop_props = {
+        shopId: 'testrendercheckout',unit: 'تومان',
+        trans:{addToCart:'سفارش',notExist:'ناموجود'},
+        getDiscounts:async ()=>[{title:'تخفیف جشنواره',discountPercent:12,maxDiscount:100000}],
+        getExtras:async ({renderIn,checkout,cart})=>{
+            if(renderIn !== 'checkout'){return }
+            return [{title:'هزینه ارسال',amount:{post:50000,carier:75000}[checkout.deliveryType || 'post']}]
+        },
+        checkoutContent:async ()=>'محتوی چک اوت',
+        onPayment:async(context)=>true,
+        cart:[{product,variants: [{"id": "165","count": 5}]}],
+        checkDiscountCode:async (code,context)=>{
+            if(code === '123456'){
+                return {
+                    discountPercent:100,maxDiscount:50000,title:'کد تخفیف'
+                }
+            }
+            return 'کد معتبر نیست'
+        },
+        getCheckoutItems:(context)=>{
+            return [
+                {
+                    type:'radio',title:'نحوه ارسال',subtitle:'توصیحات',field:'deliveryType',value:'carier',
+                    options:[
+                        {text:'پست پیشتاز',value:'post',after:'50 هزار تومان'},
+                        {text:'پیک',value:'carier',after:'75 هزار تومان'},
+                    ]
+                },
+                {
+                    type:'radio',title:'نحوه پرداخت',subtitle:'توصیحات',field:'paymentType',value:'online',
+                    options:[
+                        {text:'آنلاین',value:'online',after:'پرداخت کامل'},
+                        {text:'درمحل',value:'in location',after:'پرداخت 25%'},
+                    ]
+                },
+                {
+                    type:'html',title:'نحوه پرداخت',subtitle:'توصیحات',field:'paymentType',value:'online',
+                    html:(value,onChange)=>{
+                        return (
+                            <select style={{width:'100%',fontFamily:'inherit',border:'1px solid #ddd',outline:'none'}} value={value} onChange={(e)=>onChange(e.target.value)}>
+                                <option value='online'>آنلاین</option>
+                                <option value='in location'>درمحل</option>
+                            </select>
+                        )
+                    }
+                }
+            ]
+                
+        }
+    }
+    let [Shop] = useState<I_AIOShop>(new AIOShop(props))
+    return (
+        <div className='example' style={{direction:'rtl',background:'#aaa'}}>
+            {Shop.renderCheckout()}
+            {Shop.renderPopup()}
+        </div>
+    )
+}
+            `)}
         </div>
     )
 }

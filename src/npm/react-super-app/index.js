@@ -278,11 +278,11 @@ class Navigation extends Component {
   item_layout(o, level = 0) {
     let { setNavId, navId, rtl,nav } = this.props;
     let { openDic } = this.state;
-    let { id, icon, items } = o;
+    let { id, icon, items ,disabled} = o;
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
     return {
-      className: 'rsa-navigation-item' + (active ? ' active' : ''), attrs: { onClick: () => items ? this.toggle(id) : setNavId(id) },
+      className: 'rsa-navigation-item' + (active ? ' active' : ''), onClick: disabled?undefined:() => items ? this.toggle(id) : setNavId(id),
       row: [
         { size: level * 16 },
         { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', align: 'vh' },
@@ -292,11 +292,11 @@ class Navigation extends Component {
     }
   }
   bottomMenu_layout(o) {
-    let { icon, id } = o;
+    let { icon, id,disabled } = o;
     let { navId, setNavId } = this.props;
     let active = id === navId;
     return {
-      flex: 1, className: 'rsa-bottom-menu-item of-visible' + (active ? ' active' : ''), attrs: { onClick: () => setNavId(id) },
+      flex: 1, className: 'rsa-bottom-menu-item of-visible' + (active ? ' active' : ''), onClick: disabled?undefined:() => setNavId(id),
       column: [
         { show: !icon,flex: 1 },
         { show: !!icon,flex: 2 },
@@ -366,7 +366,8 @@ const RSANavInterface = `
   items:[],
   header?:()=>React.ReactNode,
   footer?:()=>React.ReactNode,
-  cache?:boolean
+  cache?:boolean,
+  disabled?:boolean
 }
 `
 const RSANavItemInterface = `
@@ -443,7 +444,7 @@ function RSAValidateSide(side){
     if(side_validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid side property (${prop}). 
-        valid nav properties are 'items','header','footer','attrs'
+        valid side properties are 'items','header','footer','attrs'
       `
     }
   }
@@ -513,7 +514,7 @@ function RSAValidateNavItems(items = [],path = 'nav'){
     let item = items[i];
     let {id,text,show = ()=>true,render} = item;
     let usedIds = [];
-    let navItem_validProps = ['id','items','icon','show','text','render']
+    let navItem_validProps = ['id','items','icon','show','text','render','disabled']
     for(let prop in item){
       if(navItem_validProps.indexOf(prop) === -1){
         return `
