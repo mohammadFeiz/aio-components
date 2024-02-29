@@ -384,6 +384,7 @@ function ProductCardImageContent({v}){
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
         productCardImageContent:async (product,variantId)=>{
+            let cartInfo;
             return (
                 <div className='p-6 absolute r-0 t-0'>
                     <div 
@@ -846,7 +847,8 @@ function RenderCheckout({product}){
         },
         checkoutContent:async ()=>'محتوی چک اوت',
         onPayment:async(context)=>true,
-        cart:[{product,variants: [{"id": "165","count": 5}]}],
+        //initiate shop cart
+        ${v?'cart:[{product,variants: [{"id": "165","count": 5}]}],':'cart:[{product,count:5}],'}
         checkDiscountCode:async (code,context)=>{
             if(code === '123456'){
                 return {

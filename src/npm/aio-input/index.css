@@ -48,9 +48,6 @@
 }
 
 
-.aio-input-tabs-content {
-    overflow-x: hidden;
-}
 
 .aio-input-value {
     display: flex;
@@ -152,15 +149,6 @@
     flex-wrap: wrap;
 }
 
-.aio-input-tabs-options {
-    display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
 .aio-input-option {
     height: 36px;
     padding: 0 12px;
@@ -184,33 +172,6 @@
 
 
 
-.aio-input-tabs-option {
-    justify-content: center;
-    overflow: hidden;
-    margin: 0 6px;
-    padding: 6px;
-    height: 100%;
-    background: none;
-    position: relative;
-}
-
-.aio-input-tabs-option:after {
-    content: '';
-    position: absolute;
-    top: calc(100% - 2px);
-    width: 0%;
-    height: 2px;
-    background: dodgerblue;
-}
-
-.aio-input-tabs-option.active {
-    color: dodgerblue;
-}
-
-.aio-input-tabs-option.active:after {
-    width: 100%;
-    transition: 0.3s;
-}
 
 .aio-input-search {
     padding: 0 6px;
@@ -322,17 +283,6 @@
     border-radius: 100%;
 }
 
-.aio-input-tabs {
-    padding-bottom: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    width: 100%;
-    border: none;
-}
-.aio-input-tabs.aio-input-touch ::-webkit-scrollbar{
-    width: 0px !important;
-    height: 0px !important;    
-}
 .aio-input-radio-option:not(.aio-input-radio-multiple-option) .aio-input-check-out {
     border-radius: 100%;
 }
@@ -415,11 +365,59 @@
 .aio-input-radio-subtext {
     padding: 0 12px;
 }
-
-.aio-input-tabs::-webkit-scrollbar {
-    /* display: none; */
+.aio-input-tabs {
+    padding-bottom: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    width: 100%;
+    border: none;
+    font-size:12px;
+}
+.aio-input-tabs-content {
+    overflow-x: hidden;
 }
 
+.aio-input-tabs-options {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.aio-input-tabs-option {
+    justify-content: center;
+    overflow: hidden;
+    margin: 0 6px;
+    padding: 6px;
+    height: 100%;
+    background: none;
+    position: relative;
+}
+
+.aio-input-tabs-option-bar {
+    content: '';
+    position: absolute;
+    top: calc(100% - 2px);
+    width: 0%;
+    height: 0;
+    border-bottom: 2px solid;
+}
+
+.aio-input-tabs-option.active {
+    color: dodgerblue;
+}
+
+.aio-input-tabs-option.active .aio-input-tabs-option-bar{
+    width: 100%;
+    transition: 0.3s;
+}
+
+.aio-input-tabs.aio-input-touch ::-webkit-scrollbar{
+    width: 0px !important;
+    height: 0px !important;    
+}
 .aio-input-text input {
     border: none;
     width: 100%;

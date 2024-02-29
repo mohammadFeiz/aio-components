@@ -1622,7 +1622,15 @@ class Layout extends Component {
         )
         let props = this.getProps();
         if (type === 'file') { return (<label {...props}>{content}<InputFile /></label>) }
-        return (<div {...props}>{content}</div>)
+        return (
+            <div {...props}>
+                {content}
+                {
+                    !!option && type === 'tabs' &&
+                    <div className='aio-input-tabs-option-bar'></div>
+                }
+            </div>
+        )
     }
 }
 class CheckIcon extends Component {

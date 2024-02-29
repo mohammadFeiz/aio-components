@@ -46,7 +46,6 @@ export type I_getOptionTypes = (variants:I_v[])=>I_pr_optionType[];
 export type I_onPayment = (p:{factor:I_Factor_details,checkout:I_checkout})=>Promise<boolean>
 export type I_AIOShop_context = {
     unit:string,cart:I_cart,
-    cls:{[key:string]:string},
     getVariantIcon?:I_getVariantIcon,
     getCartInfo:I_getCartInfo,
     changeCart:I_changeCart,

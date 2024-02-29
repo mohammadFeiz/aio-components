@@ -18,7 +18,8 @@ export default class DOC_AIOInput_Tabs extends Component {
             ['optionText(function)',OptionTextFN],
             ['optionValue(function)',OptionValueFN],
             ['optionBefore',[['function',OptionBeforeFN],['html',OptionBeforeHTML],['string',OptionBeforeSTR]]],
-            ['optionAfter',[['function',OptionAfterFN],['html',OptionAfterHTML],['string',OptionAfterSTR]]]
+            ['optionAfter',[['function',OptionAfterFN],['html',OptionAfterHTML],['string',OptionAfterSTR]]],
+            ['optionSubtext',[['function',OptionSubtextFN],['html',OptionSubtextHTML],['string',OptionSubtextSTR]]]
             
 
         ]
@@ -304,6 +305,51 @@ function OptionAfterSTR(){
         </div>
     )
 }
+function OptionSubtextFN(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionSubtext:(option)=>option.name
+            }}/>
+            <Code 
+                text={
+`optionAfter={(option)=>option.name}`
+                }
+            />
+        </div>
+    )
+}
+
+function OptionSubtextHTML(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionSubtext:'subtext'
+            }}/>
+            <Code 
+                text={
+`optionAfter='subtext'`
+                }
+            />
+        </div>
+    )
+}
+function OptionSubtextSTR(){
+    return (
+        <div className='example'>
+            <Base props={{
+                optionSubtext:'"option " + option.id',
+            }}/>
+            <Code 
+                text={
+`optionAfter='"option " + option.id'`
+                }
+            />
+        </div>
+    )
+}
+
+
 
 
 
