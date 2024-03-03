@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom.js';
+import RVD,{I_RVD_node} from './../../npm/react-virtual-dom/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage.js';
 import AIOPopup from './../../npm/aio-popup/aio-popup.js';
 import AIOInput from './../../npm/aio-input/aio-input.js';
@@ -21,7 +21,6 @@ import {
     I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartCount, I_Rates, I_renderRates, 
     I_onPayment, I_closeModal, I_getFinalPrice, I_cart_product_hasVariant, I_cart_product_hasNotVariant, I_getCartCount, I_cartInfo, I_getCartInfo 
 } from './types';
-import { I_RVD_node } from '../react-virtual-dom/types.js';
 //////rvd
 export default class AIOShop implements I_AIOShop{
     unit:string;
@@ -329,12 +328,12 @@ const Checkout = observer((props: I_Checkout) => {
         }
     }
     function items_layout():I_RVD_node {
-        if (!checkoutItems.length) { return false }
+        if (!checkoutItems.length) { return {} }
         return {
             className:'aio-shop-checkout-items',
             column: checkoutItems.map((checkoutItem: I_checkout_item, i) => {
                 let { show = ()=> true,type} = checkoutItem;
-                if (show(context) === false) { return false }
+                if (show(context) === false) { return {} }
                 if (type === 'html') { return itemHtml_layout(checkoutItem as I_checkout_html) }
                 else if(type === 'radio'){return itemRadio_layout(checkoutItem as I_checkout_radio)}
             })
@@ -389,7 +388,7 @@ const Checkout = observer((props: I_Checkout) => {
             )
         }
     }
-    function content_layout():I_RVD_node{return !content?false:{className:`aio-shop-checkout-content aio-shop-box`,html:content}}
+    function content_layout():I_RVD_node{return !content?{}:{className:`aio-shop-checkout-content aio-shop-box`,html:content}}
     function factor_layout():I_RVD_node {
         let props:I_Factor = {getContext,renderIn:'checkout',mode:'details'}
         return { html: <Factor {...props}/>,className:'aio-shop-checkout-factor' }
@@ -429,7 +428,7 @@ const Cart = observer((props:I_Cart) => {
         let productCard = <ProductCard {...props}/>
         return { className: 'aio-shop-cart-product', html: productCard }
     }
-    function content_layout():I_RVD_node{return !content?false:{className:`aio-shop-cart-content aio-shop-box`,html:content}}
+    function content_layout():I_RVD_node{return !content?{}:{className:`aio-shop-cart-content aio-shop-box`,html:content}}
     function factor_layout():I_RVD_node{
         let props:I_Factor = {renderIn:'cart',getContext,mode:'details'}
         return {className:'aio-shop-cart-factor',html:<Factor {...props}/>}
@@ -493,7 +492,7 @@ const Factor = observer((props:I_Factor) => {
     }
     useEffect(()=>{getDetails()},[cart,checkout,fetchedDiscountCode])  
     function discountCode_layout():I_RVD_node {
-        if (!checkDiscountCode || renderIn !== 'checkout') { return false }
+        if (!checkDiscountCode || renderIn !== 'checkout') { return {} }
         let inputClassName,buttonText,buttonClassName;
         let type = typeof fetchedDiscountCode;
         if(fetchedDiscountCode){
@@ -551,7 +550,7 @@ const Factor = observer((props:I_Factor) => {
         }
     }
     function discountCodeError_layout():I_RVD_node {
-        if(!fetchedDiscountCode){return false}
+        if(!fetchedDiscountCode){return {}}
         if (typeof fetchedDiscountCode === 'string') { return { className: 'aio-shop-factor-discount-code-error', html: fetchedDiscountCode } }
         if (typeof fetchedDiscountCode === 'object') { 
             let {maxDiscount,discountPercent} = fetchedDiscountCode;
@@ -618,7 +617,7 @@ const Factor = observer((props:I_Factor) => {
         }
     }
     function totalDiscount_layout():I_RVD_node{
-        if(renderIn !== 'checkout'){return false}
+        if(renderIn !== 'checkout'){return {}}
         return {
             className:'aio-shop-factor-total-discount',align:'v',
             row:[icon_layout(mdiMinus),key_layout('مجموع تخفیف ها'),amount_layout(details.totalDiscount)]
@@ -638,15 +637,15 @@ const Factor = observer((props:I_Factor) => {
         }
     }
     if(mode === 'details'){
-        let rows:I_RVD_node = false;
+        let rows:I_RVD_node = {};
         rows = {
             className:`aio-shop-factor-rows aio-shop-box`,
             column:[
                 total_layout(details.total),
                 products_discount_layout(details.productsDiscount),
-                !details.discounts.length?false:{column:details.discounts.map((o)=>discount_layout(o))},
-                !details.extras.length?false:{column:details.extras.map((extra:I_extra)=>extra_layout(extra))},
-                !details.totalDiscount?false:totalDiscount_layout(),
+                !details.discounts.length?{}:{column:details.discounts.map((o)=>discount_layout(o))},
+                !details.extras.length?{}:{column:details.extras.map((extra:I_extra)=>extra_layout(extra))},
+                !details.totalDiscount?{}:totalDiscount_layout(),
             ]
         }
         return (<RVD layout={{className:`aio-shop-factor`,column:[discountCode_layout(),rows]}}/>)
@@ -656,7 +655,7 @@ const Factor = observer((props:I_Factor) => {
 function ProductSlider(props:I_ProductSlider){
     let {title = '',action,before = () => false,after = () => false,products,getContext,icon} = props,context = getContext();
     function header_layout():I_RVD_node{
-        if(!title && !action){return false}
+        if(!title && !action){return {}}
         let row:I_RVD_node[] = [
             
         ]
@@ -669,7 +668,7 @@ function ProductSlider(props:I_ProductSlider){
         return {className:'aio-shop-product-slider-body',row:[before_layout(),products_layout(),after_layout()]}
     }
     function before_layout():I_RVD_node{
-        let res = before(); if(!res){return false}
+        let res = before(); if(!res){return {}}
         return {className:'aio-shop-product-slider-before',html:res}
     }
     function products_layout():I_RVD_node{
@@ -684,7 +683,7 @@ function ProductSlider(props:I_ProductSlider){
         }
     }
     function after_layout():I_RVD_node{
-        let res = after(); if(!res){return false}
+        let res = after(); if(!res){return {}}
         return {className:'aio-shop-product-slider-after',html:res}
     }
     return (<RVD layout={{className:'aio-shop-product-slider',column:[header_layout(),body_layout()]}}/>)
@@ -741,7 +740,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     }
     function name_layout():I_RVD_node{return {html:product.name,className:'aio-shop-product-page-name'}}
     function optionTypes_layout():I_RVD_node{
-        if(!hasVariant){return false}
+        if(!hasVariant){return {}}
         return {className:`of-visible aio-shop-product-page-option-types aio-shop-box`,column:optionTypes.map((o:I_pr_optionType)=>optionType_layout(o))}
     }
     
@@ -780,7 +779,7 @@ const ProductPage = observer((props:I_ProductPage) => {
         }
     }
     function details_layout():I_RVD_node{
-        if(!details.length){return false}
+        if(!details.length){return {}}
         let Details:I_pr_detail[] = showFull.details?details:details.slice(0,3);
         return {className:`aio-shop-product-page-details aio-shop-box`,column:[label_layout('مشخصات','details'),{column:Details.map((o:I_pr_detail)=>detail_layout(o))}]}
     }
@@ -791,19 +790,19 @@ const ProductPage = observer((props:I_ProductPage) => {
         return {align:'v',className:'aio-shop-product-page-detail',row:[bullet_layout(),KEY,VALUE]}
     }
     function description_layout():I_RVD_node{
-        if(!description){return false}
+        if(!description){return {}}
         let Description = showFull.description?description:description.slice(0,64) + ' ...';
         return {className:`aio-shop-product-page-description aio-shop-box`,column:[label_layout('توضیحات','description'),{className:'aio-shop-product-page-description-text',html:Description}]}
     }
     function bullet_layout():I_RVD_node{return {html:<div className='aio-shop-product-page-detail-bullet'></div>,align:'vh'}}
-    function content_layout():I_RVD_node{return !content?false:{className:`aio-shop-product-page-content aio-shop-box`,html:content}}
+    function content_layout():I_RVD_node{return !content?{}:{className:`aio-shop-product-page-content aio-shop-box`,html:content}}
     function rates_layout():I_RVD_node{
-        if(!rates.length){return false}
+        if(!rates.length){return {}}
         let props:I_Rates = {getContext,rates}
         return {className:`aio-shop-product-page-rates aio-shop-box`,column:[label_layout('امتیاز'),{html:<Rates {...props}/>}]}
     }
     function footer_layout():I_RVD_node{return {className:'aio-shop-product-page-footer',row:[cartButton_layout(),{flex:1},amounts_layout()]}}
-    function amounts_layout():I_RVD_node{return !variant?false:{className:'aio-shop-product-page-amounts',column:[discount_layout(),finalPrice_layout()]}}
+    function amounts_layout():I_RVD_node{return !variant?{}:{className:'aio-shop-product-page-amounts',column:[discount_layout(),finalPrice_layout()]}}
     function icon_layout(path:any,size:number){return {html:<Icon path={path} size={size}/>}}
     function cartButton_layout():I_RVD_node{
         if(hasVariant && !variant){return {className:'aio-shop-product-page-not-exist',align:'vh',row:[icon_layout(mdiInformation,0.9),{html:trans.notExist}]}}
@@ -862,7 +861,7 @@ const CartButton = observer((props:I_CartButton) => {
     function body_layout():I_RVD_node{return {className:'aio-shop-cart-button-body',row:[button_layout(step,{disabled:count >= max}),count_layout(),button_layout(-step,{del:count === Math.max(min,1)})]}}
     function footer_layout():I_RVD_node{
         let showMin = min > 0,showMax = max !== Infinity,showStep = step > 1;
-        if(!showMin && !showMax && !showStep){return false}
+        if(!showMin && !showMax && !showStep){return {}}
         return {
             className:'aio-shop-cart-button-footer',align:'v',
             row:[
@@ -916,14 +915,14 @@ const ProductCard = observer((props:I_ProductCard) => {
             </>)
         }
     }
-    function title_layout():I_RVD_node{return typeof title !== 'string'?false:{html:title,className:'aio-shop-product-card-title',align:'v'}}
+    function title_layout():I_RVD_node{return typeof title !== 'string'?{}:{html:title,className:'aio-shop-product-card-title',align:'v'}}
     function name_layout():I_RVD_node{return {html:name,className:'aio-shop-product-card-name'}}
     function description_layout():I_RVD_node{
-        if(!hasVariant || !variantId){return false}
+        if(!hasVariant || !variantId){return {}}
         let props:I_VariantLabels = {product,variantId,getContext,type:type === 'hs'?'h':'v'}
         return {html:<VariantLabels {...props}/>}
     }
-    function content_layout():I_RVD_node{return !content || type === 'hs'?false:{html:content,className:'aio-shop-product-card-content'}}
+    function content_layout():I_RVD_node{return !content || type === 'hs'?{}:{html:content,className:'aio-shop-product-card-content'}}
     function discount_layout():I_RVD_node{
         let props:I_DiscountPercent = {product,variantId,getContext}
         return {className:'aio-shop-product-card-discount-layout',row:[{flex:1},{html:<DiscountPercent {...props}/>}]}
@@ -933,9 +932,9 @@ const ProductCard = observer((props:I_ProductCard) => {
         return {className:'aio-shop-product-card-final-price_layout',row:[{flex:1},{html:<FinalPrice {...props}/>}]}
     }
     function variants_layout():I_RVD_node{
-        if(!hasVariant || cartButton === false){return false}
+        if(!hasVariant || cartButton === false){return {}}
         let cvs:I_cart_variant[] = context.getCartVariants(product.id)
-        return !cvs.length?false:{className:'aio-shop-product-card-variants',column:cvs.map((cv:I_cart_variant)=>variant_layout(cv))} 
+        return !cvs.length?{}:{className:'aio-shop-product-card-variants',column:cvs.map((cv:I_cart_variant)=>variant_layout(cv))} 
     }
     function variant_layout(cv:I_cart_variant):I_RVD_node{return {align:'v',className:'aio-shop-product-card-variant',row:[variantDetails_layout(cv),cartButton_layout(cv)]}}
     function variantDetails_layout(cv:I_cart_variant):I_RVD_node{
@@ -985,8 +984,8 @@ const ProductCard = observer((props:I_ProductCard) => {
     }
     function productAmounts_layout():I_RVD_node{
         //در حالت واریانت دار چون قیمت ها در پایین کارت رندر میشه پس قیمت ها رو در بادی کارت نمایش نده
-        if(hasVariant && cartButton === true){return false}
-        let d = discount_layout(),f = finalPrice_layout(),c = hasVariant?false:cartButton_layout();
+        if(hasVariant && cartButton === true){return {}}
+        let d = discount_layout(),f = finalPrice_layout(),c = hasVariant?{}:cartButton_layout();
         if(type === 'v'){return {align:'v',gap:6,column:[{flex:1,column:[d,f]},c]}}
         if(type === 'h'){return {align:'v',row:[c,{flex:1,column:[d,f]}]}}
         if(type === 'hs'){return {gap:6,row:[c,f,{flex:1},d]}}
@@ -1018,7 +1017,7 @@ function DiscountPercent(props:I_DiscountPercent){
             })
         }}
     }
-    function price_layout(price:number):I_RVD_node{return showPrice === false?false:{className:'aio-shop-price',html:SplitNumber(price)}}
+    function price_layout(price:number):I_RVD_node{return showPrice === false?{}:{className:'aio-shop-price',html:SplitNumber(price)}}
     let {discountPercent = [],price} = getCartInfo(product,props.variantId);
     let items = discountPercent.filter((o:I_discountPercent)=>!!o.value);
     return !items.length?null:<RVD layout={{align:'v',className:'aio-shop-discount-row',row:[{flex:1},price_layout(price),percents_layout()]}}/>
@@ -1072,29 +1071,29 @@ function VariantLabels(props:I_VariantLabels){
     }
     function row_layout(vl:I_v_label):I_RVD_node{
         return {
-            className:'aio-shop-variant-label-row',row:[type === 'h'?false:bullet_layout(),icon_layout(vl),key_layout(vl),{html:':',align:'vh'},value_layout(vl)]
+            className:'aio-shop-variant-label-row',row:[type === 'h'?{}:bullet_layout(),icon_layout(vl),key_layout(vl),{html:':',align:'vh'},value_layout(vl)]
         }
     }
     function key_layout(vl:I_v_label):I_RVD_node{return {html:vl[0],className:'aio-shop-variant-label-row-key',align:'v'}}
     function value_layout(vl:I_v_label):I_RVD_node{return {html:vl[1],className:'aio-shop-variant-label-row-value',align:'v'}}
     function icon_layout(vl:I_v_label):I_RVD_node{
         let icon = getVariantIcon(vl);
-        return !icon?false:{html:icon,align:'vh',className:'aio-shop-variant-label-icon'}
+        return !icon?{}:{html:icon,align:'vh',className:'aio-shop-variant-label-icon'}
     }
     function bullet_layout():I_RVD_node{return {html:<div className='aio-shop-variant-label-row-bullet'></div>,align:'vh'}}
-    function h_layout(){
+    function h_layout():I_RVD_node{
         return {
             className:`aio-shop-variant-label-rows aio-shop-variant-label-rows-${type} p-0`,gap:3,
-            row:[
-                bullet_layout(),
-                {align:'v',row:items.map((item:I_v_label)=>row_layout(item)),gap:8,gapHtml:()=>'-',gapAttrs:{className:'align-vh'}}
-            ]
+            row:[bullet_layout(),rows_layout()]
         }
     }
-    function v_layout(){
+    function rows_layout():I_RVD_node{
+        return {align:'v',row:items.map((item:I_v_label)=>row_layout(item)),gap:{size:8,content:'-',attrs:{className:'align-vh'}}}
+    }
+    function v_layout():I_RVD_node{
         return {
             className:`aio-shop-variant-label-rows aio-shop-variant-label-rows${type}`,
-            column:[items.map((item:I_v_label)=>row_layout(item))]
+            column:items.map((item:I_v_label)=>row_layout(item))
         }
     }
     return (<RVD layout={type === 'h'?h_layout():v_layout()}/>)

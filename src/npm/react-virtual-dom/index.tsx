@@ -7,7 +7,8 @@ let RVDCLS = {
 }
 export type I_RVD_node = {
     align?: 'v' | 'h' | 'vh' | 'hv',
-    gap?: number,
+    gap?: number | {size:number,content?:React.ReactNode,attrs?:any} | ((node:I_RVD_node,parent:I_RVD_node,index:number)=>{size:number,content?:React.ReactNode,attrs?:any}),
+    data?:any,
     size?: number,
     flex?: number,
     html?: React.ReactNode | (() => React.ReactNode),
@@ -17,11 +18,13 @@ export type I_RVD_node = {
     layout?: string,
     attrs?: any,
     className?: string,
+    nodeClass?:string,
+    nodeClasses?:string[],
     style?: any,
     onClick?: (e: any) => void,
     show?: boolean | (() => boolean),
     loading?: boolean,
-} | false
+}
 
 export type I_RVD_props = {
     layout: I_RVD_node,
@@ -30,27 +33,37 @@ export type I_RVD_props = {
     onSwap?: (fromDragId: string, toDragId: string) => void,
     onDrop?: (toDragId: string) => void,
     layouts?: { [key: string]: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node | React.ReactNode },
+    classes?:{[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
     rtl?: boolean,
+    state?:any,
     editNode?: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node
 }
 type I_RVD_temp = { dragId?: string | false, lt?: string, time?: number, eggCounter?: number, timeOut?: any }
 export default function ReactVirtualDom(props: I_RVD_props) {
-    let { layout, dragHandleClassName, onDragStart = () => { }, onSwap = () => { }, onDrop = () => { }, layouts = {}, rtl, editNode } = props;
+    let { layout, dragHandleClassName, onDragStart = () => { }, onSwap = () => { }, onDrop = () => { }, layouts = {}, rtl, editNode,classes = {} } = props;
     let [temp] = useState<I_RVD_temp>({});
+    let [state,setState] = useState<any>(props.state)
     function getAlignClassName(node: I_RVD_node): string {
-        if (node === false) { return '' }
         let res;
         if (node.align === 'v') { res = node.column ? RVDCLS.justify : RVDCLS.align; }
         else if (node.align === 'h') { res = node.column ? RVDCLS.align : RVDCLS.justify; }
         else if (node.align === 'vh' || node.align === 'hv') { res = `${RVDCLS.justify} ${RVDCLS.align}`; }
         return res
     }
-    function getClassName(isRoot, node: I_RVD_node, attrs: any = {}) {
-        if (node === false) { return '' }
+    function getClassName(node: I_RVD_node,parent:I_RVD_node,isRoot:boolean, attrs: any = {}) {
         let res = RVDCLS.rvd;
         if (isRoot) { res += ' rvd-root' }
         let className = node.className || attrs.className
-        if (className) { res += ' ' + className }
+        if (className) {
+            let cls:string = className; 
+            let dcls = classes[className];
+            if(typeof dcls === 'function'){cls = dcls(node,parent)}
+            else if(typeof dcls === 'string'){cls = dcls;}
+            if(cls && typeof cls === 'string'){res += ' ' + cls;}  
+        }
+        if(node.nodeClass){
+            res += ' ' + node.nodeClasses.join(' ')
+        }
         if (!!attrs.onClick) { res += ' ' + RVDCLS.pointer; }
         let alignClassName = getAlignClassName(node);
         if (alignClassName) { res += ' ' + alignClassName }
@@ -62,11 +75,11 @@ export default function ReactVirtualDom(props: I_RVD_props) {
     }
     function getChilds(node) {
         let childs = [];
-        if (node.row) { childs = typeof node.row === 'function' ? node.row() : node.row; }
-        else if (node.column) { childs = typeof node.column === 'function' ? node.column() : node.column }
+        if (node.row) { childs = typeof node.row === 'function' ? node.row({state,setState}) : node.row; }
+        else if (node.column) { childs = typeof node.column === 'function' ? node.column({state,setState}) : node.column }
         else if (node.grid) {
             let { gridCols = 2 } = node;
-            let grid = typeof node.grid === 'function' ? node.grid() : node.grid;
+            let grid = typeof node.grid === 'function' ? node.grid({state,setState}) : node.grid;
             for (let i = 0; i < grid.length; i += gridCols) {
                 let row = [];
                 let gridRow = typeof node.gridRow === 'function' ? node.gridRow(i) : node.gridRow;
@@ -139,62 +152,65 @@ export default function ReactVirtualDom(props: I_RVD_props) {
         eventHandler('mouseup', longTouchMouseUp, 'unbind');
         clearInterval(temp[temp.lt + 'interval']);
     }
-    function getAttrs(node, isRoot) {
+    function getAttrs(node, parent,isRoot) {
         let attrs = node.attrs ? { ...node.attrs } : {};
         let dataId = 'a' + Math.random()
         attrs['data-id'] = dataId;
         attrs.style = getStyle(node, parent, attrs)
         attrs.onClick = getOnClick(node);
         attrs = { ...attrs, ...getDragAttrs(node) };
-        attrs.className = getClassName(isRoot, node, attrs);
+        attrs.className = getClassName(node,parent,isRoot, attrs);
         attrs = { ...attrs, ...getLongTouchAttrs(node, dataId) };
         return attrs
     }
     function getHtml(node, parent) {
         let { html = '', loading } = node;
-        html = typeof html === 'function' ? html() : html;
+        html = typeof html === 'function' ? html({state,setState}) : html;
         if (typeof html === 'string' && layouts[html]) { html = layouts[html](node, parent) }
         if (loading && html) { html = (<><div style={{ opacity: 0 }}>{html}</div><div className='rvd-loading'></div></>) }
         return html
     }
     function isLoading(node: I_RVD_node, parent: I_RVD_node): boolean {
-        if (node === false) { return false }
         if (typeof node.loading === 'boolean') { return node.loading }
         return parent ? !!parent.loading : false;
     }
     function getNode(node: I_RVD_node, parent: I_RVD_node) {
-        if (!node || node === null) { return false }
-        if (Array.isArray(node)) { alert('rvd error => node cannot be an array'); return false }
-        if (typeof node !== 'object') { alert('rvd error => node should be an object'); return false }
+        if (!node || node === null) { return {} }
+        if (Array.isArray(node)) { alert('rvd error => node cannot be an array'); return {} }
+        if (typeof node !== 'object') { alert('rvd error => node should be an object'); return {} }
         if (typeof node.layout === 'string') {
             if (layouts[node.layout]) {
                 let res = layouts[node.layout](node, parent) as I_RVD_node
                 return getNode(res, parent)
             }
-            else { return false }
+            else { return {} }
         }
         return node
     }
+    function getNodeClasses(node:I_RVD_node,parent:I_RVD_node){
+        let res:string[] = [];
+        if(parent && parent.nodeClasses){res = [...parent.nodeClasses]}
+        if(node.nodeClass){res = [...res,node.nodeClass]}
+        return res; 
+    }
     function getLayout(obj: I_RVD_node, index: number, parent: I_RVD_node, isRoot: boolean) {
-        let node: I_RVD_node = getNode(obj as I_RVD_node, parent);
-        if (node === false) { return null }
-        else {
-            if ((typeof node.show === 'function' ? node.show() : node.show) === false) { return null }
-            if (editNode) { node = editNode(node, parent) }
-            if(node !== false){node.loading = isLoading(node, parent);}
-            let content;
-            let childs = getChilds(node);
-            if (childs.length) {
-                content = childs.map((o, i) => {
-                    let parent = node;
-                    return <Fragment key={i}>{getLayout(o, i, parent, false)}</Fragment>
-                })
-            }
-            else { content = getHtml(node, parent) }
-            let attrs = getAttrs(node, isRoot);
-            let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl, index });
-            return (<Fragment key={index}><div {...attrs}>{content}</div>{gap !== false && <div {...gap.attrs}>{gap.content}</div>}</Fragment>)
+        let node: I_RVD_node = getNode(obj, parent);
+        if ((typeof node.show === 'function' ? node.show() : node.show) === false) { return null }
+        if (editNode) { node = editNode(node, parent) }
+        node.loading = isLoading(node, parent);
+        node.nodeClasses = getNodeClasses(node,parent)
+        let content:React.ReactNode;
+        let childs = getChilds(node);
+        if (childs.length) {
+            content = childs.map((o, i) => {
+                let parent = node;
+                return <Fragment key={i}>{getLayout(o, i, parent, false)}</Fragment>
+            })
         }
+        else { content = getHtml(node, parent) }
+        let attrs = getAttrs(node,parent, isRoot);
+        let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl, index,state,setState });
+        return (<Fragment key={index}><div {...attrs}>{content}</div>{gap !== false && <div {...gap.attrs}>{gap.content}</div>}</Fragment>)
     }
     function eggHandler({ callback = () => { }, count = 10 }) {
         temp.eggCounter = temp.eggCounter || 0;
@@ -219,8 +235,8 @@ function eventHandler(event, action, type = 'bind') {
     $(window).unbind(event, action);
     if (type === 'bind') { $(window).bind(event, action) }
 }
-function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number }) {
-    let { node, parent = {}, dataId, rtl, index } = p;
+function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,state:any,setState:(p:any)=>void }) {
+    let { node, parent = {}, dataId, rtl, index,state,setState } = p;
     let $$ = {
         getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
         mouseMove(e) {
@@ -235,8 +251,8 @@ function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index
         mouseUp() {
             eventHandler('mousemove', this.mouseMove, 'unbind');
             eventHandler('mouseup', this.mouseUp, 'unbind');
-            var { onResize, newSize } = this.so;
-            onResize(newSize);
+            let { onResize, newSize } = this.so;
+            onResize({size:newSize,state,setState});
         },
         getClassName(cls) {
             let className = RVDCLS.gap;
