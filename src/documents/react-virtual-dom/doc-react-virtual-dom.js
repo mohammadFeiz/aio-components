@@ -1009,6 +1009,12 @@ function NodeClass() {
                 )}
                 code={`
 css
+.table-row1{
+    border:3px solid pink;
+}
+.table-row2{
+    border:3px solid yellow;
+}
 .table-row1-col1{
     background:red;
 }

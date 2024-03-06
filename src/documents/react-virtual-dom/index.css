@@ -16,3 +16,9 @@
 .table-row2-col2{
     background:green;
 }
+.table-row1{
+    border:3px solid pink;
+}
+.table-row2{
+    border:3px solid yellow;
+}
