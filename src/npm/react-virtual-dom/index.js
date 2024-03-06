@@ -47,11 +47,11 @@ export default function ReactVirtualDom(props) {
     return childs;
   }
   function getStyle(node,parent,attrs){
-    let { size, flex } = node,{row,column,grid} = parent;
+    let { size, flex } = node;
     let style = {...(node.style || attrs.style || {})};
     if(size !== undefined){
-      if (row) {style.width = size; flex = undefined}
-      else if (column || grid) {style.height = size; flex = undefined }
+      if (parent && parent.row) {style.width = size; flex = undefined}
+      else if (parent && (parent.column || parent.grid)) {style.height = size; flex = undefined }
     }
     return { flex, ...style }
   }
@@ -108,7 +108,7 @@ export default function ReactVirtualDom(props) {
     eventHandler('mouseup', longTouchMouseUp, 'unbind');
     clearInterval(temp[temp.lt + 'interval']);
   }
-  function getAttrs(node,isRoot){
+  function getAttrs(node,parent,isRoot){
     let attrs = node.attrs?{...node.attrs}:{};
     let dataId = 'a' + Math.random()
     attrs['data-id'] = dataId;
@@ -142,7 +142,7 @@ export default function ReactVirtualDom(props) {
     }
     return node 
   }
-  function getLayout(obj, index, parent, isRoot) {
+  function GetLayout(obj, index, parent, isRoot) {
     let node = getNode(obj);
     if (node === false) { return '' }
     if ((typeof node.show === 'function' ? node.show() : node.show) === false) { return '' }
@@ -152,10 +152,10 @@ export default function ReactVirtualDom(props) {
     let childs = getChilds(node);
     if(childs.length){content = childs.map((o, i) => {
       let parent = node;
-      return <Fragment key={i}>{getLayout(o, i, parent, false)}</Fragment>
+      return <Fragment key={i}>{GetLayout(o, i, parent, false)}</Fragment>
     })}
     else {content = getHtml(node,parent)}
-    let attrs = getAttrs(node,isRoot);
+    let attrs = getAttrs(node,parent,isRoot);
     let gap = getGap({node, parent, dataId:attrs['data-id'],rtl,index});
     return (<Fragment key={index}><div {...attrs}>{content}</div>{ gap !== false && <div {...gap.attrs}>{gap.content}</div>}</Fragment>)
   }
@@ -166,7 +166,7 @@ export default function ReactVirtualDom(props) {
     clearTimeout(temp.timeOut);
     temp.timeOut = setTimeout(() => temp.eggCounter = 0, 500)
   }
-  return getLayout(layout, 0, undefined, true);
+  return GetLayout(layout, 0, undefined, true);
 }
 export function RVDRemoveV(selector, callback) {
   $(selector).animate({ opacity: 0 }, 100).animate({ height: 0, padding: 0 }, 150, callback);

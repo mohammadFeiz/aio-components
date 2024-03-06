@@ -1,0 +1,18 @@
+.panel{
+    background:#ddd;
+}
+.table{
+    color:#fff;
+}
+.table-row1-col1{
+    background:red;
+}
+.table-row1-col2{
+    background:orange;
+}
+.table-row2-col1{
+    background:blue;
+}
+.table-row2-col2{
+    background:green;
+}
