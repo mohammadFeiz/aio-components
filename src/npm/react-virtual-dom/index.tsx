@@ -230,7 +230,7 @@ export default function ReactVirtualDom(props: I_RVD_props) {
     return getLayout(layout, 0, undefined, true);
 }
 export function RVDRemoveV(selector, callback) {
-    $(selector).animate({ opacity: 0 }, 100).animate({ height: 0, padding: 0 }, 150, callback);
+    $(selector).animate({ height: 0 }, 150, callback);
 }
 export function RVDRemoveH(selector, callback) {
     $(selector).animate({ opacity: 0 }, 100).animate({ width: 0, padding: 0 }, 150, callback);

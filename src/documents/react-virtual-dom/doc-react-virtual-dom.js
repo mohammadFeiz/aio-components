@@ -1,10 +1,11 @@
 import React, { Component, Fragment, useState } from 'react';
 import DOC from '../../resuse-components/doc.js';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../npm/react-virtual-dom/index.tsx';
+import RVD,{RVDRemoveV} from '../../npm/react-virtual-dom/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiChevronRight, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
+import $ from 'jquery';
 export default function DOC_AIOShop(props) {
     return (
         <DOC
@@ -18,8 +19,7 @@ export default function DOC_AIOShop(props) {
                             { text: 'example 1', id: 'example1', render: () => <Layout1 /> },
                             { text: 'example 2', id: 'example2', render: () => <Layout2 /> },
                             { text: 'example 3', id: 'example3', render: () => <Layout3 /> },
-                            { text: 'example 6', id: 'example6', render: () => <Layout6 /> },
-                            
+                            { text: 'example 6', id: 'example6', render: () => <Layout6 /> }
                         ]
                     },
                     { text: 'sizing', id: 'sizing', render: () => <Sizing /> },
@@ -27,19 +27,19 @@ export default function DOC_AIOShop(props) {
                     { text: 'gap', id: 'gap', render: () => <Gap /> },
                     { text: 'Css Classes', id: 'css classes', render: () => <CssClasses /> },
                     { text: 'nodeClass', id: 'node class', render: () => <NodeClass /> },
-
-
-
+                    { text: 'RVDRemoveV', id: 'rvdremovev', render: () => <RVDREMOVEV /> },
+                    
                 ]
             }}
         />
     )
 }
 function Part(p) {
-    let { content, code } = p;
+    let { content, code,title } = p;
     if (!content) { return null }
     return (
         <>
+            {title && <h3>{title}</h3>}
             <div>{content}</div>
             {AIODoc().Code(code)}
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
@@ -90,6 +90,64 @@ function Layout1() {
     return (
         <div className='example' style={{background:'#f2f2f2'}}>
             <Part
+                title='Generate a card width react virtual dom'
+                content={(
+                    <RVD 
+                        layout={{
+                            style: { background: '#fff', color: '#666' },
+                            className: 'p-6 fs-12 br-8 w-84',
+                            column: [
+                                {
+                                    html:<Icon path={mdiCamera} size={0.8}/>,
+                                    align:'vh',
+                                    className:'w-24 h-24 br-100 m-b-6',
+                                    style:{ background: '#fff', color:'pink' }
+                                },
+                                { 
+                                    html: 'My Text',
+                                    className:'bold' 
+                                },
+                                { 
+                                    html: '10 files', 
+                                    style: { fontSize: '85%' }, 
+                                    className: 'op-80' 
+                                }
+                            ]
+                        }} 
+                    />
+                )}
+                code={`
+function Layout(){
+    return (
+        <RVD 
+            layout={{
+                style: { background: '#fff', color: '#666' },
+                className: 'p-6 fs-12 br-8 w-84', //{padding:6px; font-size:12px; border-radius:8px; width:84px;}
+                column: [
+                    {
+                        html:<Icon path={mdiCamera} size={0.8}/>,
+                        align:'vh',
+                        className:'w-24 h-24 br-100 m-b-6', //{width:24px; height:24px; border-radius:100%; margin-bottom:6px;}
+                        style:{ background: '#fff', color:'pink' }
+                    },
+                    { 
+                        html: 'My Text',
+                        className:'bold' 
+                    },
+                    { 
+                        html: '10 files', 
+                        style: { fontSize: '85%' }, 
+                        className: 'op-80' //{opacity: 0.8;}
+                    }
+                ]
+            }} 
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='Creating a function (card_layout) that produces this card'
                 content={(
                     <RVD 
                         layout={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
@@ -129,6 +187,7 @@ function Layout(){
                 `}
             />
             <Part
+                title='generate files_layout'
                 content={(
                     <RVD layout={files_layout(files)}/>
                 )}
@@ -1133,7 +1192,7 @@ class Layout{
     }
     row = ({path,text,type,size,color},props)=>{
         return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
             row:[
                 this.icon(path,0.6,{className:'w-24 h-24 br-4',style:{color:'#fff',background:color}}),
                 this.row_text(text),
@@ -1174,4 +1233,62 @@ class Layout{
             ...props
         }
     }
+}
+
+function RVDREMOVEV() {
+    let [recentFiles,setRecentFiles] = useState([
+        { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    function click(e,obj){
+        RVDRemoveV($(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.text !== obj.text))
+        })
+    }
+    let layout = new Layout();
+    return (
+        <div className='example' style={{background:'#eee'}}>
+            <Part
+                content={(
+                    <RVD
+                        layout={{
+                            className:'gap-12',
+                            column:recentFiles.map((o,i)=>{
+                                return layout.row(o,{onClick:(e)=>click(e,o),style:{height:60,background:'#fff',attrs:{key:o.text}}})
+                            })
+                        }}
+                    />
+                )}
+                code={`
+                
+function App(){
+    let [recentFiles,setRecentFiles] = useState([
+        { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    function click(e,index){
+        RVDRemoveV($(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>i !== index))
+        })
+    }
+    let layout = new Layout();
+    return (
+        <RVD
+            layout={{
+                className:'gap-12',
+                column:recentFiles.map((o,i)=>{
+                    return layout.row(o,{onClick:(e)=>click(e,i),style:{height:60,background:'#fff'}})
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
 }
