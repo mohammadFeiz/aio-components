@@ -1,9 +1,9 @@
 import React, { Component, Fragment, useState } from 'react';
 import DOC from '../../resuse-components/doc.js';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import RVD,{RVDRemoveV} from '../../npm/react-virtual-dom/index.tsx';
+import RVD,{animate,reOrder} from '../../npm/react-virtual-dom/index.tsx';
 import { Icon } from '@mdi/react';
-import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiChevronRight, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
+import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
 export default function DOC_AIOShop(props) {
@@ -13,6 +13,11 @@ export default function DOC_AIOShop(props) {
             nav={{
                 nested: true,
                 items: [
+                    { text: 'html node object', id: 'hno', render: () => <Node /> },
+                    { text: 'align', id: 'align', render: () => <Align /> },
+                    { text: 'size', id: 'size', render: () => <Size /> },
+                    { text: 'flex', id: 'flex', render: () => <Flex /> },
+                    { text: 'sizing', id: 'sizing', render: () => <Sizing /> },
                     {
                         text: 'layout', id: 'layout',
                         items: [
@@ -22,12 +27,14 @@ export default function DOC_AIOShop(props) {
                             { text: 'example 6', id: 'example6', render: () => <Layout6 /> }
                         ]
                     },
-                    { text: 'sizing', id: 'sizing', render: () => <Sizing /> },
                     { text: 'loading', id: 'loading', render: () => <Loading /> },
                     { text: 'gap', id: 'gap', render: () => <Gap /> },
                     { text: 'Css Classes', id: 'css classes', render: () => <CssClasses /> },
                     { text: 'nodeClass', id: 'node class', render: () => <NodeClass /> },
-                    { text: 'RVDRemoveV', id: 'rvdremovev', render: () => <RVDREMOVEV /> },
+                    { text: 'animate', id: 'animate', render: () => <Animate /> },
+                    { text: 'resize', id: 'resize', render: () => <Resize /> },
+                    { text: 'state setState', id: 'statesetstate', render: () => <StateSetState /> },
+                    { text: 'reOrder', id: 'reOrder', render: () => <ReOrder /> },
                     
                 ]
             }}
@@ -37,6 +44,7 @@ export default function DOC_AIOShop(props) {
 function Part(p) {
     let { content, code,title } = p;
     if (!content) { return null }
+    if(typeof content === 'function'){content = content()}
     return (
         <>
             {title && <h3>{title}</h3>}
@@ -44,6 +52,458 @@ function Part(p) {
             {AIODoc().Code(code)}
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
         </>
+    )
+}
+function Node() {
+    
+    return (
+        <div className='example'>
+            <Part
+                title='html'
+                content={()=>{
+                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+                    return (
+                        <RVD 
+                            layout={node_A}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A'};
+    return (
+        <RVD 
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='row'
+                content={()=>{
+                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+                    let node_A_row = {
+                        className:'gap-12',
+                        row:[
+                            node_A,
+                            node_A,
+                            node_A,
+                            node_A
+                        ]
+                    }
+                    return (
+                        <RVD
+                            layout={node_A_row}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+    let node_A_row = {
+        className:'gap-12',
+        row:[
+            node_A,
+            node_A,
+            node_A,
+            node_A
+        ]
+    }
+    return (
+        <RVD
+            layout={node_A_row}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='column'
+                content={()=>{
+                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+                    let node_A_row = {
+                        className:'gap-12',
+                        row:[
+                            node_A,
+                            node_A,
+                            node_A,
+                            node_A
+                        ]
+                    }
+                    let node_A_table = {
+                        className:'gap-12',
+                        column:[
+                            node_A_row,
+                            node_A_row,
+                            node_A_row,
+                            node_A_row
+                        ]
+                    }
+                    return (
+                        <RVD
+                            layout={node_A_table}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+    let node_A_row = {
+        className:'gap-12',
+        row:[
+            node_A,
+            node_A,
+            node_A,
+            node_A
+        ]
+    }
+    let node_A_table = {
+        className:'gap-12',
+        column:[
+            node_A_row,
+            node_A_row,
+            node_A_row,
+            node_A_row
+        ]
+    }
+    return (
+        <RVD
+            layout={node_A_table}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                content={()=>{
+                    return (
+                        <RVD
+                            layout={{
+                                className:'h-96 brd-c16',
+                                row:[
+                                    {
+                                        html:'A',className:'bg-12 flex-1 align-vh color-32'
+                                    },
+                                    {
+                                        flex:1,
+                                        column:[
+                                            {html:'A',className:'bg-16 flex-1 align-vh'},
+                                            {html:'A',className:'bg-20 flex-1 align-vh'}
+                                        ]
+                                    },
+                                    {
+                                        className:'flex-1',
+                                        column:[
+                                            {html:'A',className:'bg-24 flex-1 align-vh'},
+                                            {html:'A',className:'bg-28 flex-1 align-vh'},
+                                            {html:'A',className:'bg-32 flex-1 align-vh'},
+                                        ]
+                                    }
+                                ]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',style:{border:'1px solid',width:72,height:72},align:'vh'};
+    return (
+        <RVD
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+function Align() { 
+    return (
+        <div className='example'>
+            <Part
+                title='without align'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD
+                            layout={node_A}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='align-v'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
+                    return (
+                        <RVD
+                            layout={node_A}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
+    return (
+        <RVD
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='align-h'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
+                    return (
+                        <RVD
+                            layout={node_A}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
+    return (
+        <RVD
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='align-vh'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    return (
+                        <RVD
+                            layout={node_A}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    return (
+        <RVD
+            layout={node_A}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+function Size() { 
+    return (
+        <div className='example'>
+            <Part
+                title='without align'
+                content={()=>{
+                    let row = {
+                        row:[
+                            {html:'A',className:'brd-c16',size:24},
+                            {html:'A',className:'brd-c16',size:48},
+                            {html:'A',className:'brd-c16',size:60}
+                        ]
+                    }
+                    return (
+                        <RVD
+                            layout={row}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let row = {
+        row:[
+            {html:'A',className:'brd-c16',size:24},
+            {html:'A',className:'brd-c16',size:48},
+            {html:'A',className:'brd-c16',size:60}
+        ]
+    }
+    return (
+        <RVD
+            layout={row}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='without align'
+                content={()=>{
+                    let table = {
+                        column:[
+                            {
+                                size:24,
+                                row:[
+                                    {html:'A',className:'brd-c16',size:24},
+                                    {html:'A',className:'brd-c16',size:48},
+                                    {html:'A',className:'brd-c16',size:60}
+                                ]
+                            },
+                            {
+                                size:48,
+                                row:[
+                                    {html:'A',className:'brd-c16',size:24},
+                                    {html:'A',className:'brd-c16',size:48},
+                                    {html:'A',className:'brd-c16',size:60}
+                                ]
+                            },
+                            {
+                                size:60,
+                                row:[
+                                    {html:'A',className:'brd-c16',size:24},
+                                    {html:'A',className:'brd-c16',size:48},
+                                    {html:'A',className:'brd-c16',size:60}
+                                ]
+                            }   
+                        ]
+                    }
+                    return (
+                        <RVD
+                            layout={table}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let table = {
+        column:[
+            {
+                size:24,
+                row:[
+                    {html:'A',className:'brd-c16',size:24},
+                    {html:'A',className:'brd-c16',size:48},
+                    {html:'A',className:'brd-c16',size:60}
+                ]
+            },
+            {
+                size:48,
+                row:[
+                    {html:'A',className:'brd-c16',size:24},
+                    {html:'A',className:'brd-c16',size:48},
+                    {html:'A',className:'brd-c16',size:60}
+                ]
+            },
+            {
+                size:60,
+                row:[
+                    {html:'A',className:'brd-c16',size:24},
+                    {html:'A',className:'brd-c16',size:48},
+                    {html:'A',className:'brd-c16',size:60}
+                ]
+            }   
+        ]
+    }
+    return (
+        <RVD
+            layout={table}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+function Flex() { 
+    return (
+        <div className='example'>
+            <Part
+                title='without align'
+                content={()=>{
+                    let table = {
+                        style:{width:120,height:120},
+                        column:[
+                            {
+                                className:'flex-1',
+                                row:[
+                                    {html:'A',className:'brd-c16 flex-1'},
+                                    {html:'A',className:'brd-c16 flex-2'},
+                                    {html:'A',className:'brd-c16 flex-3'}
+                                ]
+                            },
+                            {
+                                className:'flex-2',
+                                row:[
+                                    {html:'A',className:'brd-c16 flex-1'},
+                                    {html:'A',className:'brd-c16 flex-2'},
+                                    {html:'A',className:'brd-c16 flex-3'}
+                                ]
+                            },
+                            {
+                                className:'flex-3',
+                                row:[
+                                    {html:'A',className:'brd-c16 flex-1'},
+                                    {html:'A',className:'brd-c16 flex-2'},
+                                    {html:'A',className:'brd-c16 flex-3'}
+                                ]
+                            }
+                        ]
+                    }
+                    return (
+                        <RVD
+                            layout={table}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let table = {
+        style:{width:120,height:120},
+        column:[
+            {
+                className:'flex-1',
+                row:[
+                    {html:'A',className:'brd-c16 flex-1'},
+                    {html:'A',className:'brd-c16 flex-2'},
+                    {html:'A',className:'brd-c16 flex-3'}
+                ]
+            },
+            {
+                className:'flex-2',
+                row:[
+                    {html:'A',className:'brd-c16 flex-1'},
+                    {html:'A',className:'brd-c16 flex-2'},
+                    {html:'A',className:'brd-c16 flex-3'}
+                ]
+            },
+            {
+                className:'flex-3',
+                row:[
+                    {html:'A',className:'brd-c16 flex-1'},
+                    {html:'A',className:'brd-c16 flex-2'},
+                    {html:'A',className:'brd-c16 flex-3'}
+                ]
+            }
+        ]
+    }
+    return (
+        <RVD
+            layout={table}
+        />
+    )
+}
+                `}
+            />
+        </div>
     )
 }
 function Layout1() {
@@ -65,8 +525,7 @@ function Layout1() {
             column: [
                 {
                     html:<Icon path={path} size={0.8}/>,
-                    align:'vh',
-                    className:'w-24 h-24 br-100 m-b-6',
+                    className:'w-24 h-24 br-100 m-b-6 align-vh',
                     style:{ background: '#fff', color }
                 },
                 { 
@@ -99,8 +558,7 @@ function Layout1() {
                             column: [
                                 {
                                     html:<Icon path={mdiCamera} size={0.8}/>,
-                                    align:'vh',
-                                    className:'w-24 h-24 br-100 m-b-6',
+                                    className:'w-24 h-24 br-100 m-b-6 align-vh',
                                     style:{ background: '#fff', color:'pink' }
                                 },
                                 { 
@@ -126,8 +584,7 @@ function Layout(){
                 column: [
                     {
                         html:<Icon path={mdiCamera} size={0.8}/>,
-                        align:'vh',
-                        className:'w-24 h-24 br-100 m-b-6', //{width:24px; height:24px; border-radius:100%; margin-bottom:6px;}
+                        className:'w-24 h-24 br-100 m-b-6 align-vh', //{width:24px; height:24px; border-radius:100%; margin-bottom:6px; ...}
                         style:{ background: '#fff', color:'pink' }
                     },
                     { 
@@ -162,8 +619,7 @@ function Layout(){
             column: [
                 {
                     html:<Icon path={path} size={0.8}/>,
-                    align:'vh',
-                    className:'w-24 h-24 br-100 m-b-6',
+                    className:'w-24 h-24 br-100 m-b-6 align-vh',
                     style:{ background: '#fff', color }
                 },
                 { 
@@ -211,8 +667,7 @@ function Layout(){
             column: [
                 {
                     html:<Icon path={path} size={0.8}/>,
-                    align:'vh',
-                    className:'w-24 h-24 br-100 m-b-6',
+                    className:'w-24 h-24 br-100 m-b-6 align-vh',
                     style:{ background: '#fff', color }
                 },
                 { 
@@ -758,26 +1213,28 @@ function Sizing() {
                         layout={{
                             className:'gap-12',
                             row:[
-                                {html:'size:60',size:60,align:'vh',style},
-                                {html:'size:120',size:120,align:'vh',style},
-                                {html:'flex:1',flex:1,align:'vh',style},
-                                {html:'flex:2',flex:2,align:'vh',style},
-                                {html:'no size no flex',align:'vh',style},
+                                {html:'size:60',className:'align-vh',size:60,style},
+                                {html:'size:120',className:'align-vh',size:120,style},
+                                {html:'flex:1',className:'align-vh flex-1',style},
+                                {html:'flex:2',className:'align-vh flex-2',style},
+                                {html:'no size no flex',className:'align-vh',style},
                             ]
                         }}
                     />
                 )}
                 code={`
 function Layout(){
+    let style = {background:'#ddd',height:60}
     return (
         <RVD 
             layout={{
+                className:'gap-12',
                 row:[
-                    {html:'size:60',size:60,align:'vh'},
-                    {html:'size:120',size:120,align:'vh'},
-                    {html:'flex:1',flex:1,align:'vh'},
-                    {html:'flex:2',flex:2,align:'vh'},
-                    {html:'no size no flex',align:'vh'},
+                    {html:'size:60',className:'align-vh',size:60,style},
+                    {html:'size:120',className:'align-vh',size:120,style},
+                    {html:'flex:1',className:'align-vh flex-1',style},
+                    {html:'flex:2',className:'align-vh flex-2',style},
+                    {html:'no size no flex',className:'align-vh',style},
                 ]
             }}
         />
@@ -1235,53 +1692,515 @@ class Layout{
     }
 }
 
-function RVDREMOVEV() {
+function Animate() {
     let [recentFiles,setRecentFiles] = useState([
-        { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
-    function click(e,obj){
-        RVDRemoveV($(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.text !== obj.text))
+    let [files,setFiles] = useState([
+        { id:'0',path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
+        { id:'1',path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
+        { id:'2',path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
+        { id:'3',path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
+    ])
+    function card_layout({ id,path, text, length, color }){
+        return {
+            key:id,
+            style: { background: color, color: '#fff' },
+            className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',
+            onClick:(e)=>removeH(e,id),
+            column: [
+                {
+                    html:<Icon path={path} size={0.6}/>,
+                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
+                    style:{color},
+                },
+                { 
+                    html: text,
+                    className:'bold' 
+                },
+                { 
+                    html: length + ' files', 
+                    className: 'op-80 fs-p85' 
+                }
+            ]
+        }
+    }
+    function removeV(e,id){
+        animate('removeV',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
         })
     }
-    let layout = new Layout();
+    function removeL(e,id){
+        animate('removeL',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
+        })
+    }
+    function removeH(e,id){
+        animate('removeH',$(e.currentTarget),()=>{
+            setFiles(files.filter((o,i)=>o.id !== id))
+        })
+    }
+
     return (
         <div className='example' style={{background:'#eee'}}>
             <Part
+                title='removeV'
                 content={(
                     <RVD
                         layout={{
-                            className:'gap-12',
                             column:recentFiles.map((o,i)=>{
-                                return layout.row(o,{onClick:(e)=>click(e,o),style:{height:60,background:'#fff',attrs:{key:o.text}}})
+                                let {id,path,text,type,size,color} = o;
+                                return {
+                                    key:id,
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    onClick:(e)=>removeV(e,o.id),
+                                    row:[
+                                        {
+                                            html:<Icon path={path} size={0.6}/>,
+                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            style:{background:color}
+                                        },
+                                        {
+                                            html:text,size:120,
+                                            className:'bold align-v'
+                                        },
+                                        {
+                                            html:type + ' file',
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:size,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiShare} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        }
+                                    ]
+                                }
                             })
                         }}
                     />
                 )}
                 code={`
                 
+import RVD,{animate} from 'react-virtual-dom';
 function App(){
     let [recentFiles,setRecentFiles] = useState([
-        { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
-    function click(e,index){
-        RVDRemoveV($(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>i !== index))
+    function removeV(e,id){
+        animate('removeV',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
         })
     }
-    let layout = new Layout();
     return (
         <RVD
             layout={{
-                className:'gap-12',
                 column:recentFiles.map((o,i)=>{
-                    return layout.row(o,{onClick:(e)=>click(e,i),style:{height:60,background:'#fff'}})
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        key:id,
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        onClick:(e)=>removeV(e,o.id),
+                        row:[
+                            {
+                                html:<Icon path={path} size={0.6}/>,
+                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                style:{background:color}
+                            },
+                            {
+                                html:text,size:120,
+                                className:'bold align-v'
+                            },
+                            {
+                                html:type + ' file',
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:size,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiShare} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            }
+                        ]
+                    }
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='removeL'
+                content={(
+                    <RVD
+                        layout={{row: files.map((o) => card_layout(o))}}
+                    />
+                )}
+                code={`
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [files,setFiles] = useState([
+        { id:'0',path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
+        { id:'1',path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
+        { id:'2',path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
+        { id:'3',path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
+    ])
+    function removeL(e,id){
+        animate('removeL',$(e.currentTarget),()=>{
+            setFiles(files.filter((o,i)=>o.id !== id))
+        })
+    }
+    function card_layout({ id,path, text, length, color }){
+        return {
+            key:id,
+            style: { background: color, color: '#fff' },
+            className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',
+            onClick:(e)=>removeH(e,id),
+            column: [
+                {
+                    html:<Icon path={path} size={0.6}/>,
+                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
+                    style:{color},
+                },
+                { 
+                    html: text,
+                    className:'bold' 
+                },
+                { 
+                    html: length + ' files', 
+                    className: 'op-80 fs-p85' 
+                }
+            ]
+        }
+    }
+    return (
+        <RVD
+            layout={{row: files.map((o) => card_layout(o))}}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='removeV'
+                content={(
+                    <RVD
+                        layout={{
+                            column:recentFiles.map((o,i)=>{
+                                let {id,path,text,type,size,color} = o;
+                                return {
+                                    key:id,
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    onClick:(e)=>removeL(e,o.id),
+                                    row:[
+                                        {
+                                            html:<Icon path={path} size={0.6}/>,
+                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            style:{background:color}
+                                        },
+                                        {
+                                            html:text,size:120,
+                                            className:'bold align-v'
+                                        },
+                                        {
+                                            html:type + ' file',
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:size,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiShare} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        }
+                                    ]
+                                }
+                            })
+                        }}
+                    />
+                )}
+                code={`
+                
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [recentFiles,setRecentFiles] = useState([
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    function removeV(e,id){
+        animate('removeV',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
+        })
+    }
+    return (
+        <RVD
+            layout={{
+                column:recentFiles.map((o,i)=>{
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        key:id,
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        onClick:(e)=>removeV(e,o.id),
+                        row:[
+                            {
+                                html:<Icon path={path} size={0.6}/>,
+                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                style:{background:color}
+                            },
+                            {
+                                html:text,size:120,
+                                className:'bold align-v'
+                            },
+                            {
+                                html:type + ' file',
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:size,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiShare} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            }
+                        ]
+                    }
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+            
+        </div>
+    )
+}
+function Resize() {
+    let [aSize,setASize] = useState(200)
+    let [bSize,setBSize] = useState(200)
+    return (
+        <div className='example' style={{background:'#eee'}}>
+            <Part
+                content={(
+                    <RVD
+                        layout={{
+                            className:'h-120',gap:12,
+                            row:[
+                                {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
+                                {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
+                                {html:'C',className:'align-vh brd-c12 flex-1'},
+                            ]
+                        }}
+                    />
+                )}
+                code={`
+                
+function App(){
+    let [aSize,setASize] = useState(200)
+    let [bSize,setBSize] = useState(200)
+    return (
+        <RVD
+            layout={{
+                className:'h-120',gap:12,
+                row:[
+                    {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
+                    {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
+                    {html:'C',className:'align-vh brd-c12 flex-1'},
+                ]
+            }}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+function StateSetState() {
+    return (
+        <div className='example' style={{background:'#eee'}}>
+            <Part
+                content={(
+                    <RVD
+                        state={{a:0,b:0,c:0}}
+                        layout={{
+                            className:'h-120',gap:12,
+                            row:({state,setState})=>{
+                                let {a,b,c} = state;
+                                let className = 'align-vh brd-c12 sel-off';
+                                return [
+                                    {size:120,html:a,className,onClick:()=>setState({...state,a:a + 1})},
+                                    {size:120,html:b,className,onClick:()=>setState('b',b + 1)},
+                                    {size:120,html:c,className,onClick:()=>setState({...state,c:c + 1})},
+                                ]
+                            }
+                        }}
+                    />
+                )}
+                code={`
+                
+function App(){
+    return (
+        <RVD
+            state={{a:0,b:0,c:0}}
+            layout={{
+                className:'h-120',gap:12,
+                row:({state,setState})=>{
+                    let {a,b,c} = state;
+                    let className = 'align-vh brd-c12 sel-off';
+                    return [
+                        {size:120,html:a,className,onClick:()=>setState({...state,a:a + 1})},
+                        {size:120,html:b,className,onClick:()=>setState('b',b + 1)},
+                        {size:120,html:c,className,onClick:()=>setState({...state,c:c + 1})},
+                    ]
+                }
+            }}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+
+function ReOrder() {
+    let [recentFiles,setRecentFiles] = useState([
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    return (
+        <div className='example' style={{background:'#eee'}}>
+            <Part
+                title='reOrder'
+                content={(
+                    <RVD
+                        layout={{
+                            data:recentFiles,
+                            reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
+                            column:recentFiles.map((o,i)=>{
+                                let {id,path,text,type,size,color} = o;
+                                return {
+                                    key:id,
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    row:[
+                                        {
+                                            html:<Icon path={path} size={0.6}/>,
+                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            style:{background:color}
+                                        },
+                                        {
+                                            html:text,size:120,
+                                            className:'bold align-v'
+                                        },
+                                        {
+                                            html:type + ' file',
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:size,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiShare} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        }
+                                    ]
+                                }
+                            })
+                        }}
+                    />
+                )}
+                code={`
+                
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [recentFiles,setRecentFiles] = useState([
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    function removeV(e,id){
+        animate('removeV',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
+        })
+    }
+    return (
+        <RVD
+            layout={{
+                data:recentFiles,
+                reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
+                column:recentFiles.map((o,i)=>{
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        key:id,
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        row:[
+                            {
+                                html:<Icon path={path} size={0.6}/>,
+                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                style:{background:color}
+                            },
+                            {
+                                html:text,size:120,
+                                className:'bold align-v'
+                            },
+                            {
+                                html:type + ' file',
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:size,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiShare} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            }
+                        ]
+                    }
                 })
             }}
         />

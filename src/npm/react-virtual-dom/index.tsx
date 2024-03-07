@@ -7,10 +7,10 @@ let RVDCLS = {
 }
 export type I_RVD_node = {
     align?: 'v' | 'h' | 'vh' | 'hv',
-    dragId?:string,
     egg?:{callback:()=>void,count:number}
     gap?: number | {size:number,content?:React.ReactNode,attrs?:any} | ((node:I_RVD_node,parent:I_RVD_node,index:number)=>{size:number,content?:React.ReactNode,attrs?:any}),
     data?:any,
+    reOrder?: (newData:any[],fromDragIndex: number, toDragIndex: number) => void,
     longTouch?:()=>void,
     size?: number,
     flex?: number,
@@ -29,25 +29,32 @@ export type I_RVD_node = {
     onClick?: (e: any) => void,
     show?: boolean | (() => boolean),
     loading?: boolean,
+    key?:string | number,
+    id?:string | number,
 }
 
 export type I_RVD_props = {
     layout: I_RVD_node,
     dragHandleClassName?: string,
-    onDragStart?: (dragId: string) => void,
-    onSwap?: (fromDragId: string, toDragId: string) => void,
-    onDrop?: (toDragId: string) => void,
     layouts?: { [key: string]: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node | React.ReactNode },
     classes?:{[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
     rtl?: boolean,
     state?:any,
     editNode?: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node
 }
-type I_RVD_temp = { dragId?: string | false, lt?: string, time?: number, eggCounter?: number, timeOut?: any }
+type I_RVD_temp = { dragIndex?:false | number, lt?: string, time?: number, eggCounter?: number, timeOut?: any }
 export default function ReactVirtualDom(props: I_RVD_props) {
-    let { layout, dragHandleClassName, onDragStart = () => { }, onSwap = () => { }, onDrop = () => { }, layouts = {}, rtl, editNode,classes = {} } = props;
+    let { layout, dragHandleClassName, layouts = {}, rtl, editNode,classes = {} } = props;
     let [temp] = useState<I_RVD_temp>({});
-    let [state,setState] = useState<any>(props.state)
+    let [state,changeState] = useState<any>(props.state)
+    let setState = (key:any,value:any)=>{
+        if(typeof key === 'string'){
+            changeState({...state,[key]:value})
+        }
+        else if(typeof key === 'object'){
+            changeState(key)
+        }
+    }
     function getAlignClassName(node: I_RVD_node): string {
         let res;
         if (node.align === 'v') { res = node.column ? RVDCLS.justify : RVDCLS.align; }
@@ -105,24 +112,21 @@ export default function ReactVirtualDom(props: I_RVD_props) {
         }
         return { flex, ...style }
     }
-    function getDragAttrs(node:I_RVD_node) {
-        let { dragId } = node;
-        if (dragId === undefined) { return {} }
+    function getDragAttrs(node:I_RVD_node,parent:I_RVD_node,index:number) {
+        if (!parent || !parent.reOrder || !Array.isArray(parent.data)) { return {} }
         let res: any = {};
         res.draggable = true;
         res.onDragStart = (e) => {
             if (dragHandleClassName) {
                 if (!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0) { return; }
             }
-            onDragStart(dragId)
-            temp.dragId = dragId;
+            temp.dragIndex = index;
         }
         res.onDragOver = (e) => e.preventDefault();
         res.onDrop = () => {
-            if (temp.dragId === false || temp.dragId === dragId) { return; }
-            onSwap(temp.dragId, dragId);
-            onDrop(dragId);
-            temp.dragId = false
+            if (temp.dragIndex === false || temp.dragIndex === index) { return; }
+            parent.reOrder(ReOrder({data:parent.data,fromIndex:temp.dragIndex, toIndex:index}),temp.dragIndex, index);
+            temp.dragIndex = false
         }
         return res;
     }
@@ -158,13 +162,13 @@ export default function ReactVirtualDom(props: I_RVD_props) {
         eventHandler('mouseup', longTouchMouseUp, 'unbind');
         clearInterval(temp[temp.lt + 'interval']);
     }
-    function getAttrs(node:I_RVD_node, parent:I_RVD_node,isRoot:boolean) {
+    function getAttrs(node:I_RVD_node, parent:I_RVD_node,isRoot:boolean,index) {
         let attrs = node.attrs ? { ...node.attrs } : {};
         let dataId = 'a' + Math.random()
         attrs['data-id'] = dataId;
         attrs.style = getStyle(node, parent, attrs)
         attrs.onClick = getOnClick(node);
-        attrs = { ...attrs, ...getDragAttrs(node) };
+        attrs = { ...attrs, ...getDragAttrs(node,parent,index) };
         attrs.className = getClassName(node,parent,isRoot, attrs);
         attrs = { ...attrs, ...getLongTouchAttrs(node, dataId) };
         return attrs
@@ -211,12 +215,13 @@ export default function ReactVirtualDom(props: I_RVD_props) {
         let childs = getChilds(node);
         if (childs.length) {
             content = childs.map((o, i) => {
+                let key = o.key === undefined?i:o.key
                 let parent = node;
-                return <Fragment key={i}>{getLayout(o, i, parent, false)}</Fragment>
+                return <Fragment key={key}>{getLayout(o, i, parent, false)}</Fragment>
             })
         }
         else { content = getHtml(node, parent) }
-        let attrs = getAttrs(node,parent, isRoot);
+        let attrs = getAttrs(node,parent, isRoot,index);
         let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl, index,state,setState });
         return (<Fragment key={index}><div {...attrs}>{content}</div>{gap !== false && <div {...gap.attrs}>{gap.content}</div>}</Fragment>)
     }
@@ -229,21 +234,27 @@ export default function ReactVirtualDom(props: I_RVD_props) {
     }
     return getLayout(layout, 0, undefined, true);
 }
-export function RVDRemoveV(selector, callback) {
-    $(selector).animate({ height: 0 }, 150, callback);
-}
-export function RVDRemoveH(selector, callback) {
-    $(selector).animate({ opacity: 0 }, 100).animate({ width: 0, padding: 0 }, 150, callback);
-}
-export function RVDRemove(selector, callback) {
-    $(selector).animate({ opacity: 0 }, 200, callback);
+export function animate(type, selector,callback) {
+    if(type === 'removeV'){
+        $(selector).animate({ opacity: 0 }, 250).animate({ height: 0,padding:0,margin:0 }, 200, callback);
+    } 
+    else if(type === 'removeH'){
+        $(selector).animate({ opacity: 0 }, 250).animate({ width: 0, padding: 0,margin:0 }, 200, callback);
+    }
+    else if(type === 'removeL'){
+        $(selector).animate({ right: '100%' }, 250).animate({ height: 0,width:0, padding: 0,margin:0 }, 200, callback);
+    }
+    else if(type === 'remove'){
+        $(selector).animate({ opacity: 0 }, 250).animate({ width: 0, height:0,padding: 0,margin:0 }, 200, callback);
+    }
+    
 }
 function eventHandler(event, action, type = 'bind') {
     event = 'ontouchstart' in document.documentElement ? { mousemove: "touchmove", mouseup: "touchend" }[event] : event;
     $(window).unbind(event, action);
     if (type === 'bind') { $(window).bind(event, action) }
 }
-function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,state:any,setState:(p:any)=>void }) {
+function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,state:any,setState:(p:any,value?:any)=>void }) {
     let { node, parent = {}, dataId, rtl, index,state,setState } = p;
     let $$ = {
         getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
@@ -251,7 +262,7 @@ function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index
             var { pos, axis, size, dataId } = this.so;
             var client = this.getClient(e);
             var offset = (client[axis] - pos[axis]) * (rtl ? -1 : 1);
-            if (offset % 24 !== 0) { return }
+            //if (offset % 24 !== 0) { return }
             this.so.newSize = offset + size;
             var panel = $('[data-id="' + dataId + '"]');
             panel.css({ [{ 'x': 'width', 'y': 'height' }[axis]]: this.so.newSize })
@@ -260,7 +271,7 @@ function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index
             eventHandler('mousemove', this.mouseMove, 'unbind');
             eventHandler('mouseup', this.mouseUp, 'unbind');
             let { onResize, newSize } = this.so;
-            onResize({size:newSize,state,setState});
+            onResize(newSize);
         },
         getClassName(cls) {
             let className = RVDCLS.gap;
@@ -394,4 +405,11 @@ export function renderCard(p:{ text?:React.ReactNode, subtext?:React.ReactNode, 
             }}
         />
     )
+}
+function ReOrder(p:{data:any[],fromIndex:number,toIndex:number}){
+    let {data,fromIndex,toIndex} = p;
+    let from = data[fromIndex];
+    let newData = data.filter((o,i) => i !== fromIndex);
+    newData.splice(toIndex, 0, from)
+    return newData;
 }
