@@ -446,7 +446,7 @@ function Other() {
         className: 't-page p-12 gap-12 t-color4',
         column: [
           {
-            align: 'v', gap: 12,
+            className:'align-v gap-12',
             row: [
               { html: 't-fs-xs', className: 't-fs-xs' },
               { html: 't-fs-sm', className: 't-fs-sm' },
@@ -456,7 +456,7 @@ function Other() {
             ]
           },
           {
-            align: 'v', gap: 12,
+            className:'align-v gap-12',
             row: [
               { html: 't-color1', className: 't-fs-md t-color1 t-bg4 p-6' },
               { html: 't-color2', className: 't-fs-md t-color2 t-bg4 p-6' },
@@ -465,7 +465,7 @@ function Other() {
             ]
           },
           {
-            align: 'v', gap: 12,
+            className:'align-v gap-12',
             row: [
               { html: 't-color-error', className: 't-fs-sm t-color-error' },
               { html: 't-color-warning', className: 't-fs-sm t-color-warning' },
@@ -474,7 +474,7 @@ function Other() {
             ]
           },
           {
-            align: 'v', gap: 12,
+            className:'align-v gap-12',
             row: [
               { html: 't-bg-error', className: 't-fs-sm t-bg-error color-32 p-6' },
               { html: 't-bg-warning', className: 't-fs-sm t-bg-warning color-32 p-6' },

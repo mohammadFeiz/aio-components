@@ -2388,11 +2388,7 @@ function Card({row}){
         <RVD
             layout={{
                 style:{width:'50%',maxWidth:160,minWidth:120,border:'1px solid #ddd',height:240,padding:12},
-                column:[
-                    {html:row.name},
-                    {html:row.gender},
-                    {html:row.age,flex:1,align:'vh',className:'fs-24'},
-                ]
+                column:[{html:row.name},{html:row.gender},{html:row.age,className:'align-vh fs-24 flex-1'}]
             }}
         />
     )

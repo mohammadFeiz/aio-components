@@ -157,7 +157,7 @@ class Box extends Component{
               row:[
                 {size:12},
                 {flex:1,html:title},
-                {size:24,html:'X',attrs:{onClick:()=>onRemove()},align:'vh'}
+                {size:24,html:'X',attrs:{onClick:()=>onRemove()},className:'align-vh'}
               ]
             },
             {html:text,style:{width:'100%',padding:12}}

@@ -103,7 +103,7 @@ export default function Versions({goToHome}){
             layout={{
                 style:{fontSize:12},
                 column:[
-                    {size:36,html:<button onClick={()=>goToHome()}>Go To Home</button>,align:'v',className:'p-h-12'},
+                    {size:36,html:<button onClick={()=>goToHome()}>Go To Home</button>,className:'p-h-12 align-v'},
                     {
                         column:componentsList.map((key)=>{
                             let {version,dependencies,open} = components[key];
@@ -119,10 +119,10 @@ export default function Versions({goToHome}){
                                 style:{border:'1px solid dodgerblue',marginBottom:3},
                                 column:[
                                     {
-                                        style:{background:'dodgerblue',color:'#fff',padding:6},align:'v',
+                                        style:{background:'dodgerblue'},className:'align-v color-32 p-6',
                                         row:[
                                             {
-                                                html:<Icon path={open?mdiChevronDown:mdiChevronRight} size={1}/>,size:36,align:'vh',
+                                                html:<Icon path={open?mdiChevronDown:mdiChevronRight} size={1}/>,size:36,className:'align-vh',
                                                 onClick:()=>setComponents({...components,[key]:{...components[key],open:!open}})
                                             },
                                             {html:key,flex:1},

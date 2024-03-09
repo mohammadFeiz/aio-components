@@ -328,16 +328,16 @@ function ModalHeader({rtl,header,handleClose,state,setState}){
     let path,style;
     if(rtl){path = mdiChevronRight; style = {marginLeft:12}}
     else {path = mdiChevronLeft; style = {marginRight:12}}
-    return { html: <Icon path={path} size={1} />, align: 'vh', onClick: () => close() ,style}
+    return { html: <Icon path={path} size={1} />, className: 'align-vh', onClick: () => close() ,style}
   }
   function title_layout(){
     if(!title){return false}
     if(!subtitle){
-      return { flex: 1,align: 'v', html: title, className: 'aio-popup-title' }  
+      return { html: title, className: 'aio-popup-title align-v flex-1' }  
     }
     else {
       return { 
-        flex: 1, align: 'v',
+        className: 'align-v flex-1',
         column:[
           {html:title,className: 'aio-popup-title'},
           {html:subtitle,className: 'aio-popup-subtitle'}
@@ -348,19 +348,19 @@ function ModalHeader({rtl,header,handleClose,state,setState}){
   function buttons_layout(){
     if(!buttons.length){return false}
     return {
-      gap:6,align:'vh',
+      className:'align-vh gap-6',
       row:()=>buttons.map(([text,attrs = {}])=>{
         let {onClick = ()=>{},className} = attrs;
         let Attrs = {...attrs};
         Attrs.className = 'aio-popup-header-button' + (className?' ' + className:'');
         Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
-        return {html:(<button {...Attrs}>{text}</button>),align:'vh'}
+        return {html:(<button {...Attrs}>{text}</button>),className:'align-vh'}
       })
     }
   }
   function close_layout(){
     if(backButton || onClose === false){return false}
-    return { html: <Icon path={mdiClose} size={0.8} />, align: 'vh', onClick: () => close(),className:'aio-popup-header-close-button' }
+    return { html: <Icon path={mdiClose} size={0.8} />,onClick: () => close(),className:'aio-popup-header-close-button align-vh' }
   }
   let className = 'aio-popup-header' + (attrs.className?' ' + attrs.className:'')
   let style = attrs.style;

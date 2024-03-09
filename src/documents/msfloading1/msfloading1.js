@@ -107,9 +107,9 @@ export default function Loading(){
             size: 72, className: 'fs-18 br-6 m-0',
             style: { background: !!error?'#ddd':'dodgerblue', color: '#fff', padding: 6 },
             column: [
-                { html: 'COPY', align: 'h' }, { html: type, align: 'h' },
+                { html: 'COPY', className:'align-h' }, { html: type, className:'align-h' },
                 {
-                    flex: 1, align: 'vh', html: <Icon path={mdiContentCopy} size={1.8} />,
+                    flex: 1, className:'align-vh', html: <Icon path={mdiContentCopy} size={1.8} />,
                     onClick: () => {
                         if(error){alert(error); return}
                         window.navigator.clipboard.writeText(code);
@@ -152,7 +152,7 @@ export default function Loading(){
                             },
                             {
                                 row: [
-                                    { html: 'sizes', align: 'v' },
+                                    { html: 'sizes', className:'align-v' },
                                     {
                                         flex:1,
                                         row: [
@@ -166,7 +166,7 @@ export default function Loading(){
                                                         column: [
                                                             {
                                                                 style: { color: active ? 'dodgerblue' : '#ddd' },
-                                                                html: <Icon path={active ? mdiEye : mdiEyeOff} size={.8} />, align: 'vh',
+                                                                html: <Icon path={active ? mdiEye : mdiEyeOff} size={.8} />, className:'align-vh',
                                                                 onClick: () => setModel({ ...model, activeSize: model.activeSize === i ? false : i })
                                                             },
                                                             { input: { type: 'number', style: { width: 60 } }, field: `value.sizes[${i}]` }
@@ -205,8 +205,7 @@ export default function Loading(){
                         },
                         {
                             style: { border: '3px solid dodgerblue', background: 'dodgerblue', direction: model.rtl ? 'rtl' : 'ltr' },
-                            className: 'br-12 m-12 p-12',
-                            flex: 1, align: 'vh',
+                            className: 'br-12 m-12 p-12 align-vh flex-1',
                             html: (
                                 <div className={model.className} id='doc-msfloading1-container' style={{ width: model.containerSize }}>
                                     {new Array(model.count).fill(0).map((o, i) => {

@@ -211,9 +211,9 @@ class LoginForm extends Component {
         if (!title) { return false }
         let { modes,profile } = this.props;
         return {
-            className: 'aio-login-title', align: 'v',
+            className: 'aio-login-title align-v',
             row: [
-                { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, align: 'vh', onClick: () => profile?profile.onClose():this.changeMode(modes[0]) },
+                { show: !!backButton, html: <Icon path={mdiChevronRight} size={1} />, size: 48, className: 'align-vh', onClick: () => profile?profile.onClose():this.changeMode(modes[0]) },
                 { html: title }
             ]
         }
@@ -345,14 +345,14 @@ class LoginForm extends Component {
     changeUserId_layout() {
         let { mode } = this.props;
         if (mode !== 'OTPCode') { return false }
-        return { onClick: () => this.changeMode('OTPNumber'), className: 'aio-login-text m-b-12', align: 'vh', html: 'تغییر شماره همراه' }
+        return { onClick: () => this.changeMode('OTPNumber'), className: 'aio-login-text m-b-12 align-vh', html: 'تغییر شماره همراه' }
     }
     recode_layout() {
         let { model } = this.state;
         let { mode, onChangeMode } = this.props;
         if (mode !== 'OTPCode') { return false }
         return {
-            className: 'aio-login-text m-b-12', html: `ارسال مجدد کد`, align: 'vh',
+            className: 'aio-login-text m-b-12 align-vh', html: `ارسال مجدد کد`,
             onClick: () => {
                 onChangeMode('OTPNumber')
                 this.setState({ model: { ...model, login: { ...model.login, password: '' } } })
@@ -370,9 +370,9 @@ class LoginForm extends Component {
             let title = { OTPNumber: 'رمز یکبار مصرف', userName: 'نام کاربری و رمز عبور', email: 'آدرس ایمیل و رمز عبور', phoneNumber: 'شماره همراه و رمز عبور' }[key];
             let icon = { OTPNumber: mdiAccount, phoneNumber: mdiCellphone, userName: mdiAccountBoxOutline, email: mdiEmail }[key]
             others.push({
-                flex: 1, className: `of-visible aio-login-other-method aio-login-${key}`,
+                className: `of-visible gap-6 flex-1 aio-login-other-method aio-login-${key}`,
                 onClick: () => this.changeMode(key),
-                row: [{ html: <Icon path={icon} size={0.7} />, align: 'vh' }, { size: 6 }, { align: 'v', html: title }]
+                row: [{ html: <Icon path={icon} size={0.7} />, className: 'align-vh' }, { className: 'align-v', html: title }]
             })
         }
         if (!others.length) { return false }
@@ -380,11 +380,11 @@ class LoginForm extends Component {
             className: 'p-h-12',
             column: [
                 {
-                    gap: 6,
+                    className:'align-v gap-6',
                     row: [
-                        { flex: 1, html: <div className='aio-login-splitter'></div>, align: 'v' },
-                        { html: 'یا ورود با', align: 'v', className: 'aio-login-or bold' },
-                        { flex: 1, html: <div className='aio-login-splitter'></div>, align: 'v' },
+                        { html: <div className='aio-login-splitter flex-1'></div> },
+                        { html: 'یا ورود با', className: 'aio-login-or bold' },
+                        { html: <div className='aio-login-splitter flex-1'></div> },
                     ]
                 },
                 { size: 12 },
@@ -397,7 +397,7 @@ class LoginForm extends Component {
         if ( mode === 'register') { return false }
         if (!register.type !== 'button') { return false }
         let {buttonText = 'ثبت نام'} = register
-        return { align: 'vh', html: (<button onClick={() => this.changeMode('register')} className='aio-login-register-button'>{buttonText}</button>) }
+        return { html: (<button onClick={() => this.changeMode('register')} className='aio-login-register-button align-vh'>{buttonText}</button>) }
     }
     registerTab_layout() {
         let { register, modes, mode,profile } = this.props;
@@ -435,7 +435,7 @@ class LoginForm extends Component {
                 this.registerTab_layout(),
                 { column: [this.title_layout(labels), this.subtitle_layout(labels)] },
                 this.form_layout(labels),this.forget_layout(),
-                { gap: 12, align: 'h', row: [this.recode_layout(), this.changeUserId_layout()] },
+                { className: 'align-h gap-12', row: [this.recode_layout(), this.changeUserId_layout()] },
                 this.changeMode_layout(),this.registerButton_layout()
             ]
         }

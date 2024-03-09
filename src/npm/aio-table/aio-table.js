@@ -429,7 +429,7 @@ export default class Table extends Component {
           html:<button className={TableCLS.toolbarIconButton}><Icon path={mdiChevronLeft} size={0.8}/></button>,
           attrs:{onClick:()=>this.changePaging(rtl?'next':'prev')}
         },
-        {html:rtl?pages + ' / ' + number:number + ' / ' + pages,style:{fontSize:12,padding:'0 12px'},align:'vh'},
+        {html:rtl?pages + ' / ' + number:number + ' / ' + pages,className:'align-vh p-h-12 fs-12'},
         {
           html:<button className={TableCLS.toolbarIconButton}><Icon path={mdiChevronRight} size={0.8}/></button>,
           attrs:{onClick:()=>this.changePaging(rtl?'prev':'next')}
@@ -512,7 +512,7 @@ class TableUnit extends Component{
     let title = column.title || column.label || '';
     return {
       hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg,
-      size:width,align:'vh',flex,style:{minWidth,height:headerHeight || rowHeight,...titleAttrs.style},
+      size:width,className:'align-vh',flex,style:{minWidth,height:headerHeight || rowHeight,...titleAttrs.style},
       attrs:{
         ...titleAttrs,'data-column-id':column.dataColumnId,className:undefined,style:undefined,
         draggable:column.swap !== false,

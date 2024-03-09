@@ -216,7 +216,7 @@ class MSF extends Component{
       let {model,background} = config;
       let {name} = this.props;
       return {
-        flex:1,align:'vh',style:{background},
+        className:'align-vh flex-1',style:{background},
         html:(
           <AIOLoading key={JSON.stringify(model) + name} config={{...model,name}}/>
         )

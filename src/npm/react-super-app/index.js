@@ -124,15 +124,15 @@ class ReactSuperApp extends Component {
     let { header} = this.props;
     let Header = typeof header === 'function'?header():header;
     if (Header === false) { return false }
-    if(Header){return {style: { flex: 'none', width: '100%' }, align: 'v', className: 'rsa-header of-visible',html: Header}}
+    if(Header){return {style: { flex: 'none', width: '100%' }, className: 'rsa-header of-visible align-v',html: Header}}
     let { headerContent, side, title = () => activeNav?activeNav.text:'' ,subtitle = ()=>{}} = this.props;
     let Title = title(activeNav);
     let Subtitle = subtitle(activeNav);
     if(!Title && !side && !headerContent){return false}
     return {
-      style: { flex: 'none', width: '100%' }, align: 'v', className: 'rsa-header of-visible',
+      style: { flex: 'none'}, className: 'rsa-header of-visible align-v w-100',
       row: [
-        { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, align: 'vh', attrs: { onClick: () => this.openSide() } },
+        { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, className: 'align-vh',onClick: () => this.openSide()},
         {
           show: !!Title,
           column:[
@@ -272,8 +272,8 @@ class Navigation extends Component {
     else {
       html = <marquee behavior='scroll' scrollamount={3} direction='right'>{text}</marquee>
     }
-    if(type === 'side'){return { html, align: 'v' }}
-    if(type === 'bottom'){return { html, align: 'vh', className: 'rsa-bottom-menu-item-text' }}
+    if(type === 'side'){return { html, className: 'align-v' }}
+    if(type === 'bottom'){return { html, className: 'rsa-bottom-menu-item-text align-vh' }}
   }
   item_layout(o, level = 0) {
     let { setNavId, navId, rtl,nav } = this.props;
@@ -285,8 +285,8 @@ class Navigation extends Component {
       className: 'rsa-navigation-item' + (active ? ' active' : ''), onClick: disabled?undefined:() => items ? this.toggle(id) : setNavId(id),
       row: [
         { size: level * 16 },
-        { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', align: 'vh' },
-        { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh' },
+        { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', className: 'align-vh' },
+        { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'align-vh' },
         this.text_layout(o,'side')
       ]
     }
@@ -300,7 +300,7 @@ class Navigation extends Component {
       column: [
         { show: !icon,flex: 1 },
         { show: !!icon,flex: 2 },
-        { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, align: 'vh', className: 'of-visible rsa-bottom-menu-item-icon' },
+        { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'of-visible rsa-bottom-menu-item-icon align-vh' },
         { show: !!icon,flex: 1 },
         this.text_layout(o,'bottom'),
         { flex: 1 }
@@ -332,8 +332,8 @@ class SideMenu extends Component {
           style:attrs.style,
           show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (attrs.className ? ' ' + attrs.className : ''), onClick: () => { onClick(o); onClose() },
           row: [
-            { size: 48, html: typeof icon === 'function'?icon():icon, align: 'vh' },
-            { html: text, align: 'v' }
+            { size: 48, html: typeof icon === 'function'?icon():icon, className: 'align-vh' },
+            { html: text, className: 'align-v' }
           ]
         }
       })

@@ -418,10 +418,10 @@ class AddModal extends Component {
                         layout={{
                             row:[
                                 {
-                                    flex:1,
-                                    style:{maxHeight:400,overflowY:'auto'},
+                                    style:{maxHeight:400},
                                     html:'this is my sample text in modal',
-                                    align:'v'},
+                                    className:'align-v flex-1 ofy-auto'
+                                },
                                 {
                                     gap:6,
                                     column:[
@@ -446,10 +446,10 @@ class AddModal extends Component {
                         layout={{
                             row:[
                                 {
-                                    flex:1,
                                     style:{maxHeight:400,overflowY:'auto'},
                                     html:'this is my sample text in modal',
-                                    align:'v'},
+                                    className:'align-v flex-1'
+                                },
                                 {
                                     gap:6,
                                     column:[
@@ -473,12 +473,12 @@ class AddModal extends Component {
                         layout={{
                             row:[
                                 {
-                                    flex:1,
                                     style:{maxHeight:400,overflowY:'auto'},
                                     html:'this is my sample text in modal',
-                                    align:'v'},
+                                    className:'align-v flex-1'
+                                },
                                 {
-                                    gap:6,
+                                    className:'gap-6',
                                     column:[
                                         {html:(<button className='btn-123'>Approve</button>)},
                                         {html:(<button className='btn-123' onClick={()=>this.popup.removeModal()}>Close</button>)}
@@ -721,7 +721,7 @@ class ModalPosition extends Component {
             <RVD
                 layout={{
                     row:[
-                        {flex:1,style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',align:'v'},
+                        {style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',className:'align-v flex-1'},
                         {gap:6,column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
                     ]
                 }}
@@ -741,8 +741,8 @@ class ModalPosition extends Component {
                         {
                             gap:6,
                             row:[
-                                {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
+                                {html:(<button className='btn-123 w-100'>Approve</button>),className:'align-vh flex-1'},
+                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),className:'align-vh flex-1'}
                             ]   
                         }
                     ]
@@ -768,10 +768,9 @@ class ModalPosition extends Component {
                 layout={{
                     row:[
                         {
-                            flex:1,
                             style:{maxHeight:400,overflowY:'auto'},
                             html:'this is my sample text in modal',
-                            align:'v'
+                            className:'align-v flex-1'
                         },
                         {
                             gap:6,
@@ -801,8 +800,8 @@ class ModalPosition extends Component {
                         {
                             gap:6,
                             row:[
-                                {html:(<button className='btn-123 w-100'>Approve</button>),flex:1,align:'vh'},
-                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),flex:1,align:'vh'}
+                                {html:(<button className='btn-123 w-100'>Approve</button>),className:'align-vh flex-1'},
+                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),className:'align-vh flex-1'}
                             ]   
                         }
                     ]
@@ -1110,7 +1109,7 @@ class Popover extends Component {
                 layout={{
                     className:'p-6',
                     row:[
-                        {flex:1,style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',align:'v'},
+                        {style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',className:'align-v flex-1'},
                         {size:12},
                         {gap:6,column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
                     ]

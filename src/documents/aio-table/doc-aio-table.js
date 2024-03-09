@@ -572,7 +572,7 @@ class ToolbarAttrs extends Component {
             layout={{
               row:[
                 {
-                  flex:1,align:'v',
+                  className:'align-v flex-1',
                   row:[
                     {size:12},
                     {html:'rowGap'},
@@ -588,7 +588,7 @@ class ToolbarAttrs extends Component {
                   ]
                 },
                 {
-                  flex:1,align:'v',
+                  className:'align-v flex-1',
                   row:[
                     {size:12},
                     {html:'columnGap'},
@@ -632,9 +632,9 @@ class ToolbarAttrs extends Component {
             style:{height:72,borderRadius:8,background:'dodgerblue',padding:'0 12px',color:'#fff',overflow:'visible',opacity:detail._show === 'relative'?0.5:1,boxShadow:'1px 1px 6px 0px rgba(0,0,0,0.3)'}, 
             column:[
               {flex:1},
-              {row:[{html:row.name,align:'v'},{flex:1},{html:row.age,align:'v'}]},
+              {row:[{html:row.name,className:'align-v'},{flex:1},{html:row.age,className:'align-v'}]},
               {flex:1},
-              {row:[{html:row.gender,align:'v'},{flex:1},{html:row.date,align:'v'}]},
+              {row:[{html:row.gender,className:'align-v'},{flex:1},{html:row.date,className:'align-v'}]},
               {flex:1}
             ]
           }}

@@ -195,10 +195,8 @@ function Header(){
     return (
         <RVD
             layout={{
-                style:{height:48,background:'lightblue',padding:'0 24px'},align:'v',
-                row:[
-                    {html:'Go To Home',onClick:()=>goToHome()}
-                ]
+                style:{background:'lightblue'},className:'align-v p-h-24 h-48',
+                row:[{html:'Go To Home',onClick:()=>goToHome()}]
             }}
         />
     )
@@ -247,20 +245,9 @@ function Items(){
         return {flex:1,className:'ofy-auto',html:<Items_Body items={items} level={0}/>}
     }
     function footer_layout(){
-        return {size:36,align:'v',style:{background:'rgba(255,255,255,.2)',padding:'0 12px'},html:'items footer'}
+        return {size:36,className:'align-v p-h-12',style:{background:'rgba(255,255,255,.2)'},html:'items footer'}
     }
-    return (
-        <RVD
-            layout={{
-                className:'aioc-items',
-                column:[
-                    header_layout(),
-                    body_layout(),
-                    footer_layout()
-                ]
-            }}
-        />
-    )
+    return (<RVD layout={{className:'aioc-items',column:[header_layout(),body_layout(),footer_layout()]}}/>)
 }
 function Items_Header(){
     return (
@@ -268,13 +255,9 @@ function Items_Header(){
             layout={{
                 className:'aioc-items-header',
                 row:[
-                    {
-                        size:36,html:<AddItem/>,align:'vh'
-                    },
+                    {size:36,html:<AddItem/>,className:'align-vh'},
                     {flex:1},
-                    {
-                        size:36,html:<Icon path={mdiDelete} size={.7}/>,align:'vh'
-                    },
+                    {size:36,html:<Icon path={mdiDelete} size={.7}/>,classNAme:'align-vh'},
                 ]
             }}
         />
@@ -336,7 +319,7 @@ function Item({item,level,active}){
                 <RVD
                     layout={{
                         row:[
-                            {size:24,html:<Icon path={item.show === false?mdiEyeOff:mdiEye} size={.7}/>,align:'vh',onClick:(e)=>{
+                            {size:24,html:<Icon path={item.show === false?mdiEyeOff:mdiEye} size={.7}/>,className:'align-vh',onClick:(e)=>{
                                 e.stopPropagation();
                                 changeItem(item,{show:!item.show})
                             }}
@@ -379,9 +362,7 @@ function Preview(){
                     },
                     {
                         style:{background:'rgba(255,255,255,.2)',height:36,color:'#fff',padding:'0 24px'},
-                        row:[
-                            {align:'v',className:'aioc-mouse-position',html:''}
-                        ]
+                        row:[{className:'aioc-mouse-position align-v',html:''}]
                     }
                 ]
             }}
@@ -501,21 +482,21 @@ function Setting({activeItem}){
     let [codeView,setCodeView] = useState(false);
     function header_layout(){
         return {
-            className:'aioc-setting-header',align:'v',
+            className:'aioc-setting-header align-v',
             row:[
                 {html:`${activeItem.name} ( ${activeItem.type} )`,flex:1},
-                {html:<Icon path={mdiCodeJson} size={.7}/>,align:'vh',onClick:()=>setCodeView(!codeView),size:24,style:{height:24,background:codeView?'orange':undefined}},
-                {html:<Icon path={mdiClose} size={.7}/>,align:'vh',onClick:()=>setActiveItemId(false),size:24}
+                {html:<Icon path={mdiCodeJson} size={.7}/>,className:'align-vh h-24',onClick:()=>setCodeView(!codeView),size:24,style:{background:codeView?'orange':undefined}},
+                {html:<Icon path={mdiClose} size={.7}/>,className:'align-vh',onClick:()=>setActiveItemId(false),size:24}
             ]
         }
     }
     function footer_layout(){
         return {
-            className:'aioc-setting-header',align:'v',
+            className:'aioc-setting-header align-v',
             row:[
-                {show:activeItem.type === 'Group',html:<AddItem parent={activeItem}/>,align:'vh',size:24},
-                {html:<Icon path={mdiContentCopy} size={.7}/>,align:'vh',onClick:()=>cloneItem(activeItem),size:24},
-                {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>removeItem(activeItem),size:24}
+                {show:activeItem.type === 'Group',html:<AddItem parent={activeItem}/>,classNAme:'align-vh',size:24},
+                {html:<Icon path={mdiContentCopy} size={.7}/>,className:'align-vh',onClick:()=>cloneItem(activeItem),size:24},
+                {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>removeItem(activeItem),size:24}
             ]
         }
     }
@@ -547,9 +528,9 @@ function Setting({activeItem}){
                             {
                                 row:[
                                     {input:{type:'color'},field:'value.fill',label:'fill'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{fill:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{fill:undefined})},
                                     {input:{type:'color'},field:'value.stroke',label:'stroke'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{stroke:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{stroke:undefined})},
                                     
                                 ]
                             },
@@ -557,7 +538,7 @@ function Setting({activeItem}){
                                 show:activeItem.type === 'Arc' || activeItem.type === 'NGon',
                                 row:[
                                     {input:{type:'number'},field:'value.r',label:'radius'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{r:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{r:undefined})},
                                 ]
                             },
                             {
@@ -568,11 +549,11 @@ function Setting({activeItem}){
                                     {
                                         input:{type:'number'},field:'value.lineWidth',label:'line width'
                                     },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{lineWidth:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{lineWidth:undefined})},
                                     {
                                         input:{type:'number'},field:'value.rotate',label:'rotate (deg)'
                                     },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{rotate:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{rotate:undefined})},
                                     
                                 ]
                             },
@@ -585,7 +566,7 @@ function Setting({activeItem}){
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[3]',label:'a',labelAttrs:{style:{opacity:0}}}, 
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
                                 ]
                             },
                             {
@@ -600,7 +581,7 @@ function Setting({activeItem}){
                                     {input:{type:'number'},field:'value.corner[1]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
                                 ]
                             },
                             {
@@ -608,21 +589,21 @@ function Setting({activeItem}){
                                 row:[
                                     {input:{type:'number'},field:'value.slice[0]',label:'slice from'},
                                     {input:{type:'number'},field:'value.slice[1]',label:'slice to'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{slice:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{slice:undefined})},
                                 ]
                             },
                             {
                                 row:[
                                     {input:{type:'number'},field:'value.dash[0]',label:'dash fill'},
                                     {input:{type:'number'},field:'value.dash[1]',label:'dash empty'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{dash:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{dash:undefined})},
                                 ]
                             },
                             {
                                 row:[
                                     {input:{type:'number'},field:'value.pivot[0]',label:'pivot x'},
                                     {input:{type:'number'},field:'value.pivot[1]',label:'pivot y'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',onClick:()=>changeItem(activeItem,{pivot:undefined})},
+                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{pivot:undefined})},
                                 ]
                             },
                             {
@@ -648,7 +629,7 @@ function Setting({activeItem}){
                                             {input:{type:'number'},field:`value.points[${i}][0]`},
                                             {input:{type:'number'},field:`value.points[${i}][1]`},
                                             {input:{type:'number'},field:`value.points[${i}][2]`},
-                                            {html:<Icon path={mdiDelete} size={.7}/>,align:'vh',style:{paddingLeft:12},onClick:(e)=>{
+                                            {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh p-l-12',onClick:(e)=>{
                                                 e.stopPropagation();
                                                 removePoint(activeItem,i)
                                             }},

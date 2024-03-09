@@ -154,12 +154,12 @@ class ValueZoom extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'latitude',align:'v',className:'bold'},
+                                    {html:'latitude',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:lat,size:120,align:'vh'},
+                                            {html:lat,size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lat',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -169,12 +169,12 @@ class ValueZoom extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'longitude',align:'v',className:'bold'},
+                                    {html:'longitude',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:lng,size:120,align:'vh'},
+                                            {html:lng,size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -184,12 +184,12 @@ class ValueZoom extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'zoom',align:'v',className:'bold'},
+                                    {html:'zoom',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-1,'zoom')}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:zoom,size:120,align:'vh'},
+                                            {html:zoom,size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(1,'zoom')}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -255,12 +255,12 @@ class Area extends Component {
                                     {
                                         style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:'latitude',align:'v',className:'bold'},
+                                            {html:'latitude',className:'align-v bold'},
                                             {size:12},
                                             {
                                                 row:[
                                                     {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                                    {html:area.lat,size:120,align:'vh'},
+                                                    {html:area.lat,size:120,className:'align-vh'},
                                                     {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                                 ]
                                             }
@@ -270,12 +270,12 @@ class Area extends Component {
                                     {
                                         style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:'longitude',align:'v',className:'bold'},
+                                            {html:'longitude',className:'align-v bold'},
                                             {size:12},
                                             {
                                                 row:[
                                                     {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                                    {html:area.lng,size:120,align:'vh'},
+                                                    {html:area.lng,size:120,className:'align-vh'},
                                                     {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                                 ]
                                             }
@@ -285,12 +285,12 @@ class Area extends Component {
                                     {
                                         style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:'radius',align:'v',className:'bold'},
+                                            {html:'radius',className:'align-v bold'},
                                             {size:12},
                                             {
                                                 row:[
                                                     {html:<button onClick={()=>this.change(-100,'radius',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                                    {html:area.radius,size:120,align:'vh'},
+                                                    {html:area.radius,size:120,className:'align-vh'},
                                                     {html:<button onClick={()=>this.change(100,'radius',0)}><Icon size={1} path={mdiChevronRight}/></button>}
                                                 ]
                                             }
@@ -304,7 +304,7 @@ class Area extends Component {
                                         flex:1,
                                         style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:'opacity',align:'v',className:'bold'},
+                                            {html:'opacity',className:'align-v bold'},
                                             {
                                                 flex:1,
                                                 html:(
@@ -321,7 +321,7 @@ class Area extends Component {
                                         flex:1,
                                         style:{border:'1px solid #ddd',padding:12},
                                         row:[
-                                            {html:'color',align:'v',className:'bold'},
+                                            {html:'color',className:'align-v bold'},
                                             {size:12},
                                             {
                                                 flex:1,
@@ -399,12 +399,12 @@ class Markers extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'latitude',align:'v',className:'bold'},
+                                    {html:'latitude',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lat',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:markers[0].lat.toFixed(6),size:120,align:'vh'},
+                                            {html:markers[0].lat.toFixed(6),size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lat',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -414,12 +414,12 @@ class Markers extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'longitude',align:'v',className:'bold'},
+                                    {html:'longitude',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-0.001,'lng',6)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:markers[0].lng.toFixed(6),size:120,align:'vh'},
+                                            {html:markers[0].lng.toFixed(6),size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(0.001,'lng',6)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }
@@ -429,12 +429,12 @@ class Markers extends Component {
                             {
                                 style:{border:'1px solid #ddd',padding:12},
                                 row:[
-                                    {html:'radius',align:'v',className:'bold'},
+                                    {html:'radius',className:'align-v bold'},
                                     {size:12},
                                     {
                                         row:[
                                             {html:<button onClick={()=>this.change(-1,'size',0)}><Icon size={1} path={mdiChevronLeft}/></button>},
-                                            {html:markers[0].size,size:120,align:'vh'},
+                                            {html:markers[0].size,size:120,className:'align-vh'},
                                             {html:<button onClick={()=>this.change(1,'size',0)}><Icon size={1} path={mdiChevronRight}/></button>}
                                         ]
                                     }

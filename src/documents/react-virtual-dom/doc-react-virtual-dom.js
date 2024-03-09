@@ -2,8 +2,10 @@ import React, { Component, Fragment, useState } from 'react';
 import DOC from '../../resuse-components/doc.js';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import RVD,{animate,reOrder} from '../../npm/react-virtual-dom/index.tsx';
+import AIOInput from './../../npm/aio-input/aio-input.js';
+import AIOStorage from './../../npm/aio-storage/aio-storage.js'
 import { Icon } from '@mdi/react';
-import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
+import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
 export default function DOC_AIOShop(props) {
@@ -15,6 +17,7 @@ export default function DOC_AIOShop(props) {
                 items: [
                     { text: 'html node object', id: 'hno', render: () => <Node /> },
                     { text: 'align', id: 'align', render: () => <Align /> },
+                    { text: 'spacing', id: 'spacing', render: () => <Spacing /> },
                     { text: 'size', id: 'size', render: () => <Size /> },
                     { text: 'flex', id: 'flex', render: () => <Flex /> },
                     { text: 'sizing', id: 'sizing', render: () => <Sizing /> },
@@ -35,6 +38,8 @@ export default function DOC_AIOShop(props) {
                     { text: 'resize', id: 'resize', render: () => <Resize /> },
                     { text: 'state setState', id: 'statesetstate', render: () => <StateSetState /> },
                     { text: 'reOrder', id: 'reOrder', render: () => <ReOrder /> },
+                    { text: 'longTouch', id: 'longTouch', render: () => <LongTouch /> },
+                    { text: 'Style Generator', id: 'stylegenerator', render: () => <StyleGenerator /> },
                     
                 ]
             }}
@@ -61,117 +66,63 @@ function Node() {
             <Part
                 title='html'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
-                    return (
-                        <RVD 
-                            layout={node_A}
-                        />
-                    )
+                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
+                    return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A'};
-    return (
-        <RVD 
-            layout={node_A}
-        />
-    )
+    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
+    return <RVD rootNode={node_A}/>
 }
                 `}
             />
             <Part
                 title='row'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
                     let node_A_row = {
                         className:'gap-12',
-                        row:[
-                            node_A,
-                            node_A,
-                            node_A,
-                            node_A
-                        ]
+                        row:[node_A,node_A,node_A,node_A]
                     }
-                    return (
-                        <RVD
-                            layout={node_A_row}
-                        />
-                    )
+                    return <RVD rootNode={node_A_row}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
     let node_A_row = {
         className:'gap-12',
-        row:[
-            node_A,
-            node_A,
-            node_A,
-            node_A
-        ]
+        row:[node_A,node_A,node_A,node_A]
     }
-    return (
-        <RVD
-            layout={node_A_row}
-        />
-    )
+    return <RVD rootNode={node_A_row}/>
 }
                 `}
             />
             <Part
                 title='column'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
                     let node_A_row = {
                         className:'gap-12',
-                        row:[
-                            node_A,
-                            node_A,
-                            node_A,
-                            node_A
-                        ]
+                        row:[node_A,node_A,node_A,node_A]
                     }
                     let node_A_table = {
                         className:'gap-12',
-                        column:[
-                            node_A_row,
-                            node_A_row,
-                            node_A_row,
-                            node_A_row
-                        ]
+                        column:[node_A_row,node_A_row,node_A_row,node_A_row]
                     }
-                    return (
-                        <RVD
-                            layout={node_A_table}
-                        />
-                    )
+                    return <RVD rootNode={node_A_table}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid',padding:12}};
+    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
     let node_A_row = {
         className:'gap-12',
-        row:[
-            node_A,
-            node_A,
-            node_A,
-            node_A
-        ]
+        row:[node_A,node_A,node_A,node_A]
     }
     let node_A_table = {
         className:'gap-12',
-        column:[
-            node_A_row,
-            node_A_row,
-            node_A_row,
-            node_A_row
-        ]
+        column:[node_A_row,node_A_row,node_A_row,node_A_row]
     }
-    return (
-        <RVD
-            layout={node_A_table}
-        />
-    )
+    return <RVD rootNode={node_A_table}/>
 }
                 `}
             />
@@ -179,7 +130,7 @@ function Layout(){
                 content={()=>{
                     return (
                         <RVD
-                            layout={{
+                            rootNode={{
                                 className:'h-96 brd-c16',
                                 row:[
                                     {
@@ -207,10 +158,31 @@ function Layout(){
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid',width:72,height:72},align:'vh'};
     return (
         <RVD
-            layout={node_A}
+            rootNode={{
+                className:'h-96 brd-c16',
+                row:[
+                    {
+                        html:'A',className:'bg-12 flex-1 align-vh color-32'
+                    },
+                    {
+                        flex:1,
+                        column:[
+                            {html:'A',className:'bg-16 flex-1 align-vh'},
+                            {html:'A',className:'bg-20 flex-1 align-vh'}
+                        ]
+                    },
+                    {
+                        className:'flex-1',
+                        column:[
+                            {html:'A',className:'bg-24 flex-1 align-vh'},
+                            {html:'A',className:'bg-28 flex-1 align-vh'},
+                            {html:'A',className:'bg-32 flex-1 align-vh'},
+                        ]
+                    }
+                ]
+            }}
         />
     )
 }
@@ -226,72 +198,103 @@ function Align() {
                 title='without align'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
-                    return (
-                        <RVD
-                            layout={node_A}
-                        />
-                    )
+                    return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
-    return (
-        <RVD
-            layout={node_A}
-        />
-    )
+    return <RVD rootNode={node_A}/>
 }
                 `}
             />
             <Part
-                title='align-v'
+                title='align-v as className'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
-                    return (
-                        <RVD
-                            layout={node_A}
-                        />
-                    )
+                    return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
-    return (
-        <RVD
-            layout={node_A}
-        />
-    )
+    return <RVD rootNode={node_A}/>
 }
                 `}
             />
             <Part
-                title='align-h'
+                title='align-v as property'
+                content={()=>{
+                    let node_A = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
+                    return <RVD rootNode={node_A}/>
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
+    return <RVD rootNode={node_A}/>
+}
+                `}
+            />
+            <Part
+                title='align-h as className'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
-                    return (
-                        <RVD
-                            layout={node_A}
-                        />
-                    )
+                    return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
-    return (
-        <RVD
-            layout={node_A}
-        />
-    )
+    return <RVD rootNode={node_A}/>
 }
                 `}
             />
             <Part
-                title='align-vh'
+                title='align-h as property'
+                content={()=>{
+                    let node_A = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
+                    return <RVD rootNode={node_A}/>
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
+    return <RVD rootNode={node_A}/>
+}
+                `}
+            />
+            <Part
+                title='align-vh as className'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    return <RVD rootNode={node_A}/>
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    return <RVD rootNode={node_A}/>
+}
+                `}
+            />
+            <Part
+                title='align-vh as property'
+                content={()=>{
+                    let node_A = {html:'A',align:'vh',className:'brd-c12 w-72 h-72'};
+                    return <RVD rootNode={node_A}/>
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    return <RVD rootNode={node_A}/>
+}
+                `}
+            />
+            <Part
+                title='align-v in column'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
                     return (
-                        <RVD
-                            layout={node_A}
+                        <RVD 
+                            rootNode={{
+                                className:'h-300 w-fit brd-c12 align-v p-12',
+                                column:[node_A,node_A]
+                            }}
                         />
                     )
                 }}
@@ -299,8 +302,38 @@ function Layout(){
 function Layout(){
     let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
     return (
-        <RVD
-            layout={node_A}
+        <RVD 
+            rootNode={{
+                className:'h-300 w-fit brd-c12 align-v p-12',
+                column:[node_A,node_A]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='align-h in column'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'w-300 h-fit brd-c12 align-h p-12',
+                                row:[node_A,node_A]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'w-300 h-fit brd-c12 align-h p-12',
+                row:[node_A,node_A]
+            }}
         />
     )
 }
@@ -309,6 +342,131 @@ function Layout(){
         </div>
     )
 }
+function Spacing() { 
+    return (
+        <div className='example'>
+            <Part
+                title='without align'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'w-300 brd-c12 p-12',
+                                row:[
+                                    node_A,
+                                    {className:'flex-1'},
+                                    node_A
+                                ]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'w-300 brd-c12 p-12',
+                row:[
+                    node_A,
+                    {className:'flex-1'},
+                    node_A
+                ]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='without align'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'brd-c12 p-12',
+                                row:[
+                                    node_A,
+                                    {className:'flex-1'},
+                                    node_A,
+                                    {className:'flex-3'},
+                                    node_A
+                                ]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'brd-c12 p-12',
+                row:[
+                    node_A,
+                    {className:'flex-1'},
+                    node_A,
+                    {className:'flex-3'},
+                    node_A
+                ]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='without align'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'brd-c12 p-12',
+                                row:[
+                                    node_A,
+                                    {size:60,html:'size:60',className:'align-vh op-20'},
+                                    node_A,
+                                    {html:'flex:1',className:'flex-1 align-vh op-20'},
+                                    node_A,
+                                    {html:'flex:3',className:'flex-3 align-vh op-20'},
+                                    node_A,
+                                ]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'brd-c12 p-12',
+                row:[
+                    node_A,
+                    {size:60},
+                    node_A,
+                    {className:'flex-1'},
+                    node_A,
+                    {className:'flex-3'},
+                    node_A,
+                ]
+            }}
+        />
+    )
+}
+                `}
+            />
+            
+        </div>
+    )
+}
+
 function Size() { 
     return (
         <div className='example'>
@@ -322,11 +480,7 @@ function Size() {
                             {html:'A',className:'brd-c16',size:60}
                         ]
                     }
-                    return (
-                        <RVD
-                            layout={row}
-                        />
-                    )
+                    return <RVD rootNode={row}/>
                 }}
                 code={`
 function Layout(){
@@ -337,11 +491,7 @@ function Layout(){
             {html:'A',className:'brd-c16',size:60}
         ]
     }
-    return (
-        <RVD
-            layout={row}
-        />
-    )
+    return <RVD rootNode={row}/>
 }
                 `}
             />
@@ -376,11 +526,7 @@ function Layout(){
                             }   
                         ]
                     }
-                    return (
-                        <RVD
-                            layout={table}
-                        />
-                    )
+                    return <RVD rootNode={table}/>
                 }}
                 code={`
 function Layout(){
@@ -412,11 +558,7 @@ function Layout(){
             }   
         ]
     }
-    return (
-        <RVD
-            layout={table}
-        />
-    )
+    return <RVD rootNode={table}/>
 }
                 `}
             />
@@ -430,7 +572,7 @@ function Flex() {
                 title='without align'
                 content={()=>{
                     let table = {
-                        style:{width:120,height:120},
+                        className:'w-120 h-120',
                         column:[
                             {
                                 className:'flex-1',
@@ -458,16 +600,12 @@ function Flex() {
                             }
                         ]
                     }
-                    return (
-                        <RVD
-                            layout={table}
-                        />
-                    )
+                    return <RVD rootNode={table}/>
                 }}
                 code={`
 function Layout(){
     let table = {
-        style:{width:120,height:120},
+        className:'w-120 h-120',
         column:[
             {
                 className:'flex-1',
@@ -495,11 +633,7 @@ function Layout(){
             }
         ]
     }
-    return (
-        <RVD
-            layout={table}
-        />
-    )
+    return <RVD rootNode={table}/>
 }
                 `}
             />
@@ -552,7 +686,7 @@ function Layout1() {
                 title='Generate a card width react virtual dom'
                 content={(
                     <RVD 
-                        layout={{
+                        rootNode={{
                             style: { background: '#fff', color: '#666' },
                             className: 'p-6 fs-12 br-8 w-84',
                             column: [
@@ -578,7 +712,7 @@ function Layout1() {
 function Layout(){
     return (
         <RVD 
-            layout={{
+            rootNode={{
                 style: { background: '#fff', color: '#666' },
                 className: 'p-6 fs-12 br-8 w-84', //{padding:6px; font-size:12px; border-radius:8px; width:84px;}
                 column: [
@@ -607,7 +741,7 @@ function Layout(){
                 title='Creating a function (card_layout) that produces this card'
                 content={(
                     <RVD 
-                        layout={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
+                        rootNode={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
                     />
                 )}
                 code={`
@@ -636,7 +770,7 @@ function Layout(){
     }
     return (
         <RVD 
-            layout={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
+            rootNode={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
         />
     )
 }
@@ -645,7 +779,7 @@ function Layout(){
             <Part
                 title='generate files_layout'
                 content={(
-                    <RVD layout={files_layout(files)}/>
+                    <RVD rootNode={files_layout(files)}/>
                 )}
                 code={`
 function Layout(){
@@ -689,7 +823,7 @@ function Layout(){
         { path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
     ]
     return (
-        <RVD layout={files_layout(files)}/>
+        <RVD rootNode={files_layout(files)}/>
     )
 }
                 `}
@@ -706,7 +840,7 @@ function Layout2() {
     }
     function row_layout({path,text,format,size,color}){
         return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
             row:[
                 icon_layout(path,{size:24,style:{color:'#fff',background:color}}),
                 text_layout(text),
@@ -718,16 +852,16 @@ function Layout2() {
         }
     }
     function icon_layout(path,props){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24',align:'vh',...props}
+        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh',...props}
     }
     function text_layout(text){
         return {html:text,size:200,className:'bold fs-14',style:{color:'#174484'}}
     }
     function format_layout(format){
-        return {html:format + ' file',flex:1,align:'vh'}
+        return {html:format + ' file',flex:1,className:'align-vh'}
     }
     function size_layout(size){
-        return {html:size,flex:1,align:'vh'}
+        return {html:size,flex:1,className:'align-vh'}
     }
     let recentFiles = [
         { path: mdiCamera, text: 'IMG_100000', format: 'PNG',size:'10 MB', color: '#6663fe' },
@@ -740,8 +874,8 @@ function Layout2() {
             <Part
                 content={(
                     <RVD
-                        layout={{
-                            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
+                        rootNode={{
+                            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
                             row:[
                                 icon_layout(mdiCamera,{size:24,style:{color:'#fff',background:'pink'}}),
                                 text_layout('IMG_100000'),
@@ -756,21 +890,21 @@ function Layout2() {
                 code={`
 function Layout(){
     function icon_layout(path,props){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24',align:'vh',...props}
+        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh',...props}
     }
     function text_layout(text){
         return {html:text,size:200,className:'bold fs-14',style:{color:'#174484'}}
     }
     function format_layout(format){
-        return {html:format + ' file',flex:1,align:'vh'}
+        return {html:format + ' file',flex:1,className:'align-vh'}
     }
     function size_layout(size){
-        return {html:size,flex:1,align:'vh'}
+        return {html:size,flex:1,className:'align-vh'}
     }
     return (
         <RVD
-            layout={{
-                style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
+            rootNode={{
+                style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
                 row:[
                     icon_layout(mdiCamera,{size:24,style:{color:'#fff',background:'pink'}}),
                     text_layout('IMG_100000'),
@@ -788,7 +922,7 @@ function Layout(){
             <Part
                 content={(
                     <RVD
-                        layout={recentFiles_layout(recentFiles)}
+                        rootNode={recentFiles_layout(recentFiles)}
                     />
                 )}
                 code={`
@@ -802,7 +936,7 @@ function Layout(){
     }
     function row_layout({path,text,format,size,color}){
         return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
             row:[
                 icon_layout(path,{size:24,style:{color:'#fff',background:color}}),
                 text_layout(text),
@@ -819,7 +953,7 @@ function Layout(){
         { path: mdiMonitor, text: 'freestyle beat', format: 'MP3',size:'50 MB', color: '#e06c9f' },
         { path: mdiListBox, text: 'Work proposal', format: 'DOCx',size:'30 KB', color: '#266fd5' },
     ]
-    return (<RVD layout={recentFiles_layout(recentFiles)} />)
+    return (<RVD rootNode={recentFiles_layout(recentFiles)} />)
 }
                 `}
             />
@@ -831,14 +965,14 @@ function Layout3() {
         return {
             style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
             column: [
-                {size: 100, align: 'vh',html: <Icon path={mdiAccount} size={2} />},
+                {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
                 {column: sideItems.map((sideItem) => sideItem_layout(sideItem))}
             ],
         }
     }
     function sideItem_layout(sideItem){
         return {
-            className: 'p-h-24 gap-12 fs-12', align: 'v', size: 36,
+            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
             row: [
                 icon_layout(sideItem.path),
                 { html: sideItem.text}
@@ -846,7 +980,7 @@ function Layout3() {
         }
     }
     function icon_layout(path){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24',align:'vh'}
+        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh'}
     }
     let sideItems = [
         { path: mdiAccount, text: 'My Cloud' },
@@ -860,7 +994,7 @@ function Layout3() {
         <div className='example'>
             <Part
                 content={(
-                    <RVD layout={side_layout(sideItems)}/>
+                    <RVD rootNode={side_layout(sideItems)}/>
                 )}
                 code={`
 function Layout(){
@@ -868,14 +1002,14 @@ function Layout(){
         return {
             style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
             column: [
-                {size: 100, align: 'vh',html: <Icon path={mdiAccount} size={2} />},
+                {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
                 {column: sideItems.map((sideItem) => sideItem_layout(sideItem))}
             ],
         }
     }
     function sideItem_layout(sideItem){
         return {
-            className: 'p-h-24 gap-12 fs-12', align: 'v', size: 36,
+            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
             row: [
                 icon_layout(sideItem.path),
                 { html: sideItem.text}
@@ -883,7 +1017,7 @@ function Layout(){
         }
     }
     function icon_layout(path){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24',align:'vh'}
+        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh'}
     }
     let sideItems = [
         { path: mdiAccount, text: 'My Cloud' },
@@ -894,7 +1028,7 @@ function Layout(){
         { path: mdiCloudUpload, text: 'Upload Files' }
     ]
     return (
-        <RVD layout={side_layout(sideItems)}/>
+        <RVD rootNode={side_layout(sideItems)}/>
     )
 }
                 `}
@@ -937,7 +1071,7 @@ function Layout6() {
             <Part
                 content={(
                     <RVD
-                        layout={layout.root()}
+                        rootNode={layout.root()}
                     />
                 )}
                 code={`
@@ -969,7 +1103,7 @@ function App(){
         { path: mdiListBox, text: 'Work proposal', type: 'DOCx', color: '#266fd5' },
     ]
     let layout = new Layout(()=>{return {sideItems,categories,files,recentFiles}});    
-    return (<RVD layout={layout.root()}/>)
+    return (<RVD rootNode={layout.root()}/>)
 }
 class Layout{
     constructor(getProps){
@@ -995,7 +1129,7 @@ class Layout{
         }
     }
     sideHeader = (props) => {
-        return {size: 100, align: 'vh',html: <Icon path={mdiAccount} size={2} />,...props}
+        return {size: 100, classNAme: 'align-vh',html: <Icon path={mdiAccount} size={2} />,...props}
     }
     sideItems = (props) => {
         let {sideItems} = this.getProps()
@@ -1003,7 +1137,7 @@ class Layout{
     }
     sideItem = (sideItem,props) => {
         return {
-            className: 'p-h-24 gap-12 fs-12', align: 'v', size: 36,
+            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
             row: [this.icon(sideItem.path,0.6),this.sideText(sideItem.text)],
             ...props
         }
@@ -1012,7 +1146,7 @@ class Layout{
         return { html: text ,...props}
     }
     icon = (path,size,props) => {
-        return {html:<Icon path={path} size={size}/>,align:'vh',...props}
+        return {html:<Icon path={path} size={size}/>,className:'align-vh',...props}
     }
     label = (text,props) => {
         return {html:text,className:'bold fs-14',style:{color:'#174484'},...props}
@@ -1045,7 +1179,7 @@ class Layout{
         return {
             style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',
             row:[
-                this.icon(path,0.6,{className:'w-24 h-24 br-4',style:{color:'#fff',background:color}}),
+                this.icon(path,0.6,{className:'w-24 h-24 br-4 align-vh',style:{color:'#fff',background:color}}),
                 this.row_text(text),
                 this.row_type(type),
                 this.row_size(size),
@@ -1056,13 +1190,13 @@ class Layout{
         }
     }
     row_text = (text,props) =>{
-        return {html:text,size:120,align:'v',className:'bold',...props}
+        return {html:text,size:120,className:'bold align-v',...props}
     }
     row_type = (type,props)=>{
-        return {html:type + ' file',flex:1,align:'vh',...props}
+        return {html:type + ' file',flex:1,className:'align-vh',...props}
     }
     row_size = (size,props)=>{
-        return {html:size,flex:1,align:'vh',...props}
+        return {html:size,flex:1,className:'align-vh',...props}
     }
     files = (props) =>{
         let {files} = this.getProps()
@@ -1100,7 +1234,7 @@ function Loading() {
             <Part
                 content={(
                     <RVD
-                        layout={{
+                        rootNode={{
                             className:'gap-12',
                             column:[
                                 layout.row(recentFile),
@@ -1117,7 +1251,7 @@ function App(){
 
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className:'gap-12',
                 column:[
                     layout.row(recentFile),
@@ -1158,8 +1292,8 @@ function Gap() {
             <Part
                 content={(
                     <RVD
-                        layout={{
-                            align:'v',
+                        rootNode={{
+                            className:'align-v',
                             gap:{
                                 size:16,
                                 content:'&',
@@ -1180,8 +1314,8 @@ function App(){
     
     return (
         <RVD
-            layout={{
-                align:'v',
+            rootNode={{
+                classNAme:'align-v',
                 gap:{
                     size:16,
                     content:'&',
@@ -1210,7 +1344,7 @@ function Sizing() {
             <Part
                 content={(
                     <RVD 
-                        layout={{
+                        rootNode={{
                             className:'gap-12',
                             row:[
                                 {html:'size:60',className:'align-vh',size:60,style},
@@ -1227,7 +1361,7 @@ function Layout(){
     let style = {background:'#ddd',height:60}
     return (
         <RVD 
-            layout={{
+            rootNode={{
                 className:'gap-12',
                 row:[
                     {html:'size:60',className:'align-vh',size:60,style},
@@ -1486,7 +1620,7 @@ function CssClasses() {
             <Part
                 content={(
                     <RVD 
-                        layout={rows_layout(rows)}
+                        rootNode={rows_layout(rows)}
                     />
                 )}
                 
@@ -1500,7 +1634,7 @@ function NodeClass() {
             <Part
                 content={(
                     <RVD 
-                        layout={{
+                        rootNode={{
                             nodeClass:'table',
                             row:[
                                 {
@@ -1548,7 +1682,7 @@ js
 function Layout(){
     return (
         <RVD 
-            layout={{
+            rootNode={{
                 nodeClass:'table',
                 row:[
                     {
@@ -1601,7 +1735,7 @@ class Layout{
         }
     }
     sideHeader = (props) => {
-        return {size: 100, align: 'vh',html: <Icon path={mdiAccount} size={2} />,...props}
+        return {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />,...props}
     }
     sideItems = (props) => {
         let {sideItems} = this.getProps()
@@ -1609,7 +1743,7 @@ class Layout{
     }
     sideItem = (sideItem,props) => {
         return {
-            className: 'p-h-24 gap-12 fs-12', align: 'v', size: 36,
+            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
             row: [this.icon(sideItem.path,0.6),this.sideText(sideItem.text)],
             ...props
         }
@@ -1618,7 +1752,7 @@ class Layout{
         return { html: text ,...props}
     }
     icon = (path,size,props) => {
-        return {html:<Icon path={path} size={size}/>,align:'vh',...props}
+        return {html:<Icon path={path} size={size}/>,className:'align-vh',...props}
     }
     label = (text,props) => {
         return {html:text,className:'bold fs-14',style:{color:'#174484'},...props}
@@ -1649,9 +1783,9 @@ class Layout{
     }
     row = ({path,text,type,size,color},props)=>{
         return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',align:'v',
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
             row:[
-                this.icon(path,0.6,{className:'w-24 h-24 br-4',style:{color:'#fff',background:color}}),
+                this.icon(path,0.6,{className:'w-24 h-24 br-4 align-vh',style:{color:'#fff',background:color}}),
                 this.row_text(text),
                 this.row_type(type),
                 this.row_size(size),
@@ -1662,13 +1796,13 @@ class Layout{
         }
     }
     row_text = (text,props) =>{
-        return {html:text,size:120,align:'v',className:'bold',...props}
+        return {html:text,size:120,className:'bold align-v',...props}
     }
     row_type = (type,props)=>{
-        return {html:type + ' file',flex:1,align:'vh',...props}
+        return {html:type + ' file',flex:1,className:'aling-vh',...props}
     }
     row_size = (size,props)=>{
-        return {html:size,flex:1,align:'vh',...props}
+        return {html:size,flex:1,classNAme:'align-vh',...props}
     }
     files = (props) =>{
         let {files} = this.getProps()
@@ -1750,7 +1884,7 @@ function Animate() {
                 title='removeV'
                 content={(
                     <RVD
-                        layout={{
+                        rootNode={{
                             column:recentFiles.map((o,i)=>{
                                 let {id,path,text,type,size,color} = o;
                                 return {
@@ -1806,7 +1940,7 @@ function App(){
     }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 column:recentFiles.map((o,i)=>{
                     let {id,path,text,type,size,color} = o;
                     return {
@@ -1852,7 +1986,7 @@ function App(){
                 title='removeL'
                 content={(
                     <RVD
-                        layout={{row: files.map((o) => card_layout(o))}}
+                        rootNode={{row: files.map((o) => card_layout(o))}}
                     />
                 )}
                 code={`
@@ -1894,7 +2028,7 @@ function App(){
     }
     return (
         <RVD
-            layout={{row: files.map((o) => card_layout(o))}}
+            rootNode={{row: files.map((o) => card_layout(o))}}
         />
     )
 }
@@ -1904,7 +2038,7 @@ function App(){
                 title='removeV'
                 content={(
                     <RVD
-                        layout={{
+                        rootNode={{
                             column:recentFiles.map((o,i)=>{
                                 let {id,path,text,type,size,color} = o;
                                 return {
@@ -1960,7 +2094,7 @@ function App(){
     }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 column:recentFiles.map((o,i)=>{
                     let {id,path,text,type,size,color} = o;
                     return {
@@ -2014,7 +2148,7 @@ function Resize() {
             <Part
                 content={(
                     <RVD
-                        layout={{
+                        rootNode={{
                             className:'h-120',gap:12,
                             row:[
                                 {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
@@ -2031,7 +2165,7 @@ function App(){
     let [bSize,setBSize] = useState(200)
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className:'h-120',gap:12,
                 row:[
                     {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
@@ -2054,7 +2188,7 @@ function StateSetState() {
                 content={(
                     <RVD
                         state={{a:0,b:0,c:0}}
-                        layout={{
+                        rootNode={{
                             className:'h-120',gap:12,
                             row:({state,setState})=>{
                                 let {a,b,c} = state;
@@ -2074,7 +2208,7 @@ function App(){
     return (
         <RVD
             state={{a:0,b:0,c:0}}
-            layout={{
+            rootNode={{
                 className:'h-120',gap:12,
                 row:({state,setState})=>{
                     let {a,b,c} = state;
@@ -2108,7 +2242,7 @@ function ReOrder() {
                 title='reOrder'
                 content={(
                     <RVD
-                        layout={{
+                        rootNode={{
                             data:recentFiles,
                             reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
                             column:recentFiles.map((o,i)=>{
@@ -2165,7 +2299,7 @@ function App(){
     }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 data:recentFiles,
                 reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
                 column:recentFiles.map((o,i)=>{
@@ -2209,5 +2343,282 @@ function App(){
                 `}
             />
         </div>
+    )
+}
+
+function LongTouch() {
+    let [recentFiles,setRecentFiles] = useState([
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    return (
+        <div className='example' style={{background:'#eee'}}>
+            <Part
+                title='reOrder'
+                content={(
+                    <RVD
+                        rootNode={{
+                            column:recentFiles.map((o,i)=>{
+                                let {id,path,text,type,size,color} = o;
+                                return {
+                                    key:id,
+                                    longTouch:()=>{
+                                        alert(text)
+                                    },
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    row:[
+                                        {
+                                            html:<Icon path={path} size={0.6}/>,
+                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            style:{background:color}
+                                        },
+                                        {
+                                            html:text,size:120,
+                                            className:'bold align-v'
+                                        },
+                                        {
+                                            html:type + ' file',
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:size,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiShare} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        },
+                                        {
+                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                            className:'flex-1 align-vh'
+                                        }
+                                    ]
+                                }
+                            })
+                        }}
+                    />
+                )}
+                code={`
+                
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [recentFiles,setRecentFiles] = useState([
+        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+    ])
+    function removeV(e,id){
+        animate('removeV',$(e.currentTarget),()=>{
+            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
+        })
+    }
+    return (
+        <RVD
+            rootNode={{
+                data:recentFiles,
+                reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
+                column:recentFiles.map((o,i)=>{
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        key:id,
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        row:[
+                            {
+                                html:<Icon path={path} size={0.6}/>,
+                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                style:{background:color}
+                            },
+                            {
+                                html:text,size:120,
+                                className:'bold align-v'
+                            },
+                            {
+                                html:type + ' file',
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:size,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiShare} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            },
+                            {
+                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
+                                className:'flex-1 align-vh'
+                            }
+                        ]
+                    }
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+        </div>
+    )
+}
+//linear-gradient(180deg, #000, #666);
+
+function StyleGenerator(){
+    let storage = AIOStorage('grdgenerator')
+    function to_array(c){
+        if(Array.isArray(c)){return c}
+        if(c.indexOf('rgb(') === 0){
+          return c.slice(c.indexOf('(') + 1,c.indexOf(')')).split(',').map((o)=>+o);
+        }
+        c = c.substr(1);
+        let values = c.split(''),r,g,b;
+        if (c.length === 3) {
+            r = parseInt(values[0] + values[0], 16);
+            g = parseInt(values[1] + values[1], 16);
+            b = parseInt(values[2] + values[2], 16);
+        } 
+        else if (c.length === 6) {
+            r = parseInt(values[0] + values[1], 16);
+            g = parseInt(values[2] + values[3], 16);
+            b = parseInt(values[4] + values[5], 16);
+        } 
+        return [r,g,b];
+      }
+    function to_dark(c,percent){
+        let [r,g,b] = to_array(c);
+        r = Math.round(r - (r * (percent / 100)))
+        g = Math.round(g - (g * (percent / 100)))
+        b = Math.round(b - (b * (percent / 100)))
+        return `rgb(${r},${g},${b})`
+    }
+    function between(c1,c2,count){
+        var [r1,g1,b1] = to_array(c1);
+        var [r2,g2,b2] = to_array(c2);
+        var rDelta = (r2 - r1) / (count - 1);
+        var gDelta = (g2 - g1) / (count - 1);
+        var bDelta = (b2 - b1) / (count - 1);
+        var colors = [];
+        for(var i = 0; i < count; i++){
+          let color = `rgb(${Math.round(r1 + rDelta * i)},${Math.round(g1 + gDelta * i)},${Math.round(b1 + bDelta * i)})`;
+          colors.push(color)
+        }
+        return colors;
+    }
+    function change(key,value){
+        setGrd({...grd,[key]:value})
+    }
+    function changeSelected(newSelected){
+        setSelected(newSelected)
+        storage.save({name:'selected',value:newSelected})
+    }
+    let [grd,setGrd] = useState({
+        light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',
+        borderWidth:1,contrast:50,borderRadius:6,bold:true,fontSize:14,
+        containerBG:'#fff'
+    })
+    let [selected,setSelected] = useState(storage.load({name:'selected',def:[]}))
+    let darker = to_dark(grd.light,grd.contrast)
+    let style = {
+        background:`linear-gradient(180deg, ${grd.light}, ${darker})`,
+        width:grd.width,height:grd.height,
+        border:`${grd.borderWidth}px solid ${grd.borderColor}`,
+        borderRadius:grd.borderRadius,fontWeight:grd.bold?'bold':undefined,
+        fontSize:grd.fontSize,color:grd.color
+
+    }
+    function color_node(key){
+        return {
+            size:36,className:'w-240',html:<AIOInput type='color' value={grd[key]} onChange={(v)=>change(key,v)} className='w-36 h-36 brd-c12'/>
+        }
+    }
+    function slider_node(key,start,end){
+        return {
+            size:180,html:<AIOInput type='slider' showValue='inline' value={grd[key]} onChange={(v)=>change(key,v)} start={start} end={end}/>
+        }
+    }
+    function checkbox_node(key){
+        return {
+            align:'v',
+            flex:1,className:'w-240',html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
+        }
+    }
+    console.log(selected)
+    return (
+        <RVD
+            rootNode={{
+                className:'h-fit align-v p-24',
+                column:[
+                    {
+                        row:[
+                            {
+                                className:'p-12',
+                                column:[
+                                    {
+                                        className:'align-v gap-12',
+                                        row:[
+                                            {html:'Geadient'},color_node('light'),slider_node('contrast',0,100),
+                                            {className:'w-36 h-36',style:{background:darker}}
+                                        ]
+                                    },
+                                    {
+                                        row:[
+                                            {align:'v',row:[{html:'Width'},slider_node('width',0,300)]},
+                                            {align:'v',row:[{html:'Height'},slider_node('height',0,300)]},
+                                        ]
+                                    },
+                                    {
+                                        className:'gap-12',
+                                        row:[
+                                            {className:'align-v gap-12',row:[{html:'Color'},color_node('color')]},
+                                            {className:'align-v gap-12',row:[{html:'Border Color'},color_node('borderColor')]},
+                                            {className:'align-v gap-12',row:[{html:'Container BG'},color_node('containerBG')]}
+                                        ]
+                                    },
+                                    {
+                                        row:[
+                                            {align:'v',row:[{html:'Border Width'},slider_node('borderWidth',0,5)]},
+                                            {align:'v',row:[{html:'Border Radius'},slider_node('borderRadius',0,36)]}
+                                        ]
+                                    },
+                                    {align:'v',row:[{html:'Font Size'},slider_node('fontSize',10,36),checkbox_node('bold')]},
+                                    {html:<button onClick={()=>changeSelected([...selected,{style:{...style},containerBG:grd.containerBG}])}>Add To Selected</button>}
+                                ]
+                            },
+                            {
+                                flex:1,className:'p-12 align-vh',style:{background:grd.containerBG},
+                                column:[
+                                    {html:'Sample Text',style,className:'align-vh'}
+                                ]
+                            },
+
+                            
+                        ]
+                    },
+                    {
+                        className:'gap-12 p-24',style:{flexWrap:'wrap'},
+                        row:selected.map(({style,containerBG},i)=>{
+                            return {
+                                className:'p-12 of-visible',
+                                style:{background:containerBG},
+                                column:[
+                                    {
+                                        html:<div className='align-vh' style={style}>Sample Text</div>
+                                    },
+                                    {
+                                        className:'of-visible br-100 absolute',
+                                        html:<Icon path={mdiClose} size={0.7}/>,
+                                        onClick:()=>changeSelected(selected.filter((o,index)=>index !== i)),
+                                        style:{left:-12,top:-12,background:'dodgerblue',color:'#fff'},
+                                    }
+                                ]
+                            }
+                        })
+                        
+                    }
+                ]
+            }}
+        />
     )
 }

@@ -38,11 +38,11 @@ export default class Logs {
                     className:'fullscreen',style:{direction:'ltr'},
                     column:[
                         {
-                            size:48,align:'v',style:{background:'#fff'},
+                            size:48,className:'align-v bg-32',
                             row:[
                                 {size:12},
-                                {flex:1,align:'v',html:'LOGGER'},
-                                {html:<Icon path={mdiClose} size={1}/>,align:'vh',size:48,onClick:()=>this.removePopup()}
+                                {className:'align-v flex-1',html:'LOGGER'},
+                                {html:<Icon path={mdiClose} size={1}/>,className:'align-vh',size:48,onClick:()=>this.removePopup()}
                             ]
                         },
                         {flex:1,html:this.render()}
@@ -61,15 +61,15 @@ function LogsComponent(props) {
     function remove(index) { setLogs(logs.filter((o, i) => i !== index)); props.onRemove(index) }
     function getValue(value) { return typeof value === 'object' ? <pre>{JSON.stringify(value, null, 3)}</pre> : value; }
     function tabs_layout() { return { size: 36, html: (<AIOInput type='tabs' options={tabs} onChange={(tab) => setTab(tab)} value={tab} />) } }
-    function items_layout() { return { flex: 1, className: 'aio-log-items', column: logs.map((o, i) => item_layout(o, i)) } }
+    function items_layout() { return { className: 'aio-log-items flex-1', column: logs.map((o, i) => item_layout(o, i)) } }
     function item_layout(o, index) { return { className: 'aio-log-item', column: [itemHeader_layout(o, index), itemBody_layout(o)] } }
     function itemHeader_layout(o, index) { return { size: 36, row: [itemToggle_layout(o),itemTitle_layout(o), itemRemove_layout(index)], className: 'aio-log-item-header' } }
-    function itemToggle_layout({id}){return {size:24,align:'vh',html:<Icon path={visibleId === id?mdiChevronDown:mdiChevronRight} size={1}/>}}
-    function itemTitle_layout({key,id}) { return { html: key, flex: 1, align: 'v', className: 'aio-log-item-title',onClick:()=>setVisibleId(id === visibleId?false:id) } }
-    function itemRemove_layout(index) { return { html: <Icon path={mdiClose} size={.8} />, align: 'vh', size: 24, onClick: () => remove(index) } }
+    function itemToggle_layout({id}){return {size:24,className:'align-vh',html:<Icon path={visibleId === id?mdiChevronDown:mdiChevronRight} size={1}/>}}
+    function itemTitle_layout({key,id}) { return { html: key, className: 'aio-log-item-title align-v flex-1',onClick:()=>setVisibleId(id === visibleId?false:id) } }
+    function itemRemove_layout(index) { return { html: <Icon path={mdiClose} size={.8} />, className: 'align-vh', size: 24, onClick: () => remove(index) } }
     function itemBody_layout({value,id}) { 
         if(visibleId !== id){return false}
-        return { className: 'aio-log-item-body', html: getValue(value), align: 'v' } 
+        return { className: 'aio-log-item-body align-v', html: getValue(value) } 
     }
     return (<RVD layout={{ className: 'aio-log', column: [tabs_layout(), items_layout()] }} />)
 }

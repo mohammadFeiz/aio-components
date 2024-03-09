@@ -57,14 +57,14 @@ export default class AIOHighlighter extends Component {
     if(dir === 'top'){
       column = [
         {flex:1},
-        {align:'vh',html:htmls[index](limit),className:'aio-highlighter-html'},
+        {html:htmls[index](limit),className:'aio-highlighter-html align-vh'},
         this.getArrow(dir,limit.Left,limit.Width)
       ]
     }
     else {
       column = [
         this.getArrow(dir,limit.Left,limit.Width),
-        {align:'vh',html:htmls[index](limit),className:'aio-highlighter-html'},
+        {html:htmls[index](limit),className:'aio-highlighter-html align-vh'},
         {flex:1}
       ]
     }
@@ -127,7 +127,7 @@ export default class AIOHighlighter extends Component {
         style:{pointerEvents:mouseAccess?'none':'all',...style},
         column:[
           {
-            size:limit.Top,align:'vh',className:'aio-highlighter-mask',
+            size:limit.Top,className:'aio-highlighter-mask align-vh',
             html:limit.TopSpace > limit.BottomSpace?this.getHtml('top'):undefined,
             onClick:()=>this.click(),
           },
@@ -150,7 +150,7 @@ export default class AIOHighlighter extends Component {
             ]
           },
           {
-            flex:1,align:'vh',className:'aio-highlighter-mask',
+            className:'aio-highlighter-mask align-vh flex-1',
             onClick:()=>this.click(),
             html:limit.TopSpace <= limit.BottomSpace?this.getHtml('bottom'):undefined
           },

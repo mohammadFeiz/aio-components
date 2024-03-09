@@ -105,8 +105,8 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addRange(e), align: 'vh', size: 30 },
-                        { html: 'Gaguge Ranges', align: 'v', flex: 1 },
+                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addRange(e), className:'align-vh', size: 30 },
+                        { html: 'Gaguge Ranges', className:'align-v', flex: 1 },
 
                     ]
                 },
@@ -115,13 +115,13 @@ class Input extends Component {
                         let beforeValue = i === 0 ? start : ranges[i - 1].value;
                         let afterValue = i === ranges.length - 1 ? end : ranges[i + 1].value;
                         return {
-                            align:'v',gap:2,
+                            className:'align-v gap-2',
                             row: [
                                 this.getInlineLabel('range ' + i),
                                 { input: { type: 'slider', start: beforeValue, end: afterValue }, field: `value.ranges[${i}].value` },
                                 { input: { type: 'number' }, field: `value.ranges[${i}].value`, size: 70 },
                                 { input: { type: 'color' }, field: `value.ranges[${i}].color`, size: 46 },
-                                { html: () => <Icon path={mdiClose} size={0.8} onClick={() => this.removeRange(i)} />, size: 20, align: 'vh' },
+                                { html: () => <Icon path={mdiClose} size={0.8} onClick={() => this.removeRange(i)} />, size: 20, className:'align-vh' },
                             ]
                         }
                     })
@@ -137,8 +137,8 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addCircle(e), align: 'vh', size: 30 },
-                        { html: 'Gaguge Circles', align: 'v', flex: 1 },
+                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addCircle(e), className:'align-vh', size: 30 },
+                        { html: 'Gaguge Circles', className:'align-v', flex: 1 },
 
                     ]
                 },
@@ -151,7 +151,7 @@ class Input extends Component {
                                 { input: { type: 'number' }, field: `value.circles[${i}].lineWidth` },
                                 { input: { type: 'color' }, field: `value.circles[${i}].stroke` },
                                 { input: { type: 'checkbox', center: true }, field: `value.circles[${i}].slice`, size: 24 },
-                                { html: () => <Icon path={mdiClose} size={0.8} />, size: 20, align: 'vh', onClick: () => this.removeCircle(i) }
+                                { html: () => <Icon path={mdiClose} size={0.8} />, size: 20, className:'align-vh', onClick: () => this.removeCircle(i) }
                             ]
                         }
                     })
@@ -159,11 +159,11 @@ class Input extends Component {
             ]
         }
     }
-    getInlineLabel(html) { return { html, align: 'v', size: 70, style: { fontSize: 10 } } }
+    getInlineLabel(html) { return { html, className:'align-v fs-10', size: 70 } }
     form_style() {
         return {
             column: [
-                { html: 'Gauge Styling', size: 36, align: 'v', style: { marginTop: 12 } },
+                { html: 'Gauge Styling', size: 36, className:'align-v m-t-12' },
                 {
                     row: [
                         this.getInlineLabel('start-end'),
@@ -227,8 +227,8 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addLabel(e), align: 'vh', size: 30 },
-                        { html: 'Gaguge Labels', align: 'v', flex: 1 },
+                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addLabel(e), className:'align-vh', size: 30 },
+                        { html: 'Gaguge Labels', className:'align-v', flex: 1 },
 
                     ]
                 },
@@ -257,8 +257,8 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addScale(e), align: 'vh', size: 30 },
-                        { html: 'Gaguge Scales', align: 'v', flex: 1 },
+                        { html: <Icon path={mdiPlusThick} size={0.8} />, onClick: (e) => this.addScale(e), className:'align-vh', size: 30 },
+                        { html: 'Gaguge Scales', className:'align-v', flex: 1 },
 
                     ]
                 },
@@ -287,7 +287,7 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: 'Gaguge Handle', align: 'v', flex: 1 },
+                        { html: 'Gaguge Handle', className:'align-v', flex: 1 },
                     ]
                 },
                 {
@@ -335,7 +335,7 @@ class Input extends Component {
                 {
                     size: 36, style: { marginTop: 12 },
                     row: [
-                        { html: 'Gaguge Text', align: 'v', flex: 1 },
+                        { html: 'Gaguge Text', className:'align-v flex-1' },
                     ]
                 },
                 {
@@ -423,10 +423,7 @@ class Input extends Component {
     }
     preview_layout() {
         let { mode } = this.state;
-        return {
-            flex: 1, align: 'vh', scroll: 'v', style: { background: '#fff' },
-            html: this['preview_' + mode]()
-        }
+        return {className:'align-vh ofy-auto bg-32 flex-1',html: this['preview_' + mode]()}
     }
     preview_preview() {
         // let {fileName} = this.state;
@@ -448,17 +445,11 @@ class Input extends Component {
             column: gauges.map((name) => {
                 let active = fileName === name;
                 return {
-                    align: 'v',
-                    style: {
-                        height: 36, padding: '0 12px',
-                        background: active ? '#2e577f' : 'rgb(138 166 216 / 10%)',
-                        color: '#fff',
-                        fontSize: 12,
-                        marginBottom: 1
-                    },
+                    className:'align-v h-36 p-h-12 color-32 fs-12 m-b-1',
+                    style: {background: active ? '#2e577f' : 'rgb(138 166 216 / 10%)'},
                     row: [
                         {
-                            flex: 1, align: 'v', style: { height: '100%' },
+                            className:'align-v h-100 flex-1',
                             html: name,
                             attrs: {
                                 onClick: () => {
@@ -468,7 +459,7 @@ class Input extends Component {
                             }
                         },
                         {
-                            html: <Icon path={mdiDelete} size={0.7} />, align: 'vh', attrs: {
+                            html: <Icon path={mdiDelete} size={0.7} />, className:'align-vh', attrs: {
                                 onClick: () => {
                                     let { fileName } = this.state;
                                     if (name === fileName) { fileName = false; }
@@ -485,7 +476,7 @@ class Input extends Component {
     toolbar_layout() {
         let { gauge, Storage, mode } = this.state;
         return {
-            size: 48, align: 'v', gap: 1,
+            size: 48, className:'align-v gap-1',
             row: [
                 {
                     size: 240,

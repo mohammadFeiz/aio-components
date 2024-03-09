@@ -446,7 +446,7 @@ function TimePopover(props) {
         if (typeof value[type] !== 'number') { return false }
         return {
             column: [
-                { html: translate(type), align: 'vh', size: 36 },
+                { html: translate(type), className: 'align-vh', size: 36 },
                 { html: (<AIOInput type='list' value={value[type]} options={getOptions(type)} size={48} width={72} onChange={(v) => change({ [type]: v })} />) }
             ]
         }
@@ -457,7 +457,7 @@ function TimePopover(props) {
             layout={{
                 className: 'dir-ltr',
                 column: [
-                    { align: 'h', className: 'm-b-12', row: [layout('year'), layout('month'), layout('day'), layout('hour'), layout('minute'), layout('second')] },
+                    { className: 'm-b-12 align-h', row: [layout('year'), layout('month'), layout('day'), layout('hour'), layout('minute'), layout('second')] },
                     { html: <button className='ai-style-3' style={{ height: 36, fontSize: 12 }} onClick={submit}>{translate('Submit')}</button> }
                 ]
             }}
@@ -765,16 +765,16 @@ class Form extends Component {
         return {
             className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
             row: [
-                { show: !!onBack, size: 36, html: <Icon path={mdiChevronRight} size={.8} />, align: 'vh', onClick: () => onBack() },
+                { show: !!onBack, size: 36, html: <Icon path={mdiChevronRight} size={.8} />, className: 'align-vh', onClick: () => onBack() },
                 {
-                    show: !!title, align: 'v',
+                    show: !!title, className: 'align-v',
                     column: [
                         { html: title, className: 'aio-input-form-title' },
                         { show: !!subtitle, html: subtitle, className: 'aio-input-form-subtitle' },
                     ]
                 },
                 { flex: 1, show: !!title },
-                { show: !!header, flex: !!title ? undefined : 1, html: () => typeof header === 'function' ? header() : header, align: 'vh' },
+                { show: !!header, flex: !!title ? undefined : 1, html: () => typeof header === 'function' ? header() : header, className: 'align-vh' },
                 { show: !!onClose, html: <Icon path={mdiClose} size={.8} />, onClick: () => onClose(), className: 'aio-input-form-close-icon' }
             ]
         }
@@ -3018,10 +3018,10 @@ function MapHeader() {
         let showCloseButton = !!showResult && !!searchResult.length;
         return {
             flex: 1, row: [
-                { align: 'h', flex: 1, html: SearchInput() },
-                { show: !!loading, align: 'vh', className: 'aio-input-map-serach-icon', html: loadingIcon },
-                { show: showCloseButton, align: 'vh', className: 'aio-input-map-serach-icon', html: closeIcon },
-                { show: !showCloseButton && !loading, align: 'vh', className: 'aio-input-map-serach-icon', html: searchIcon }
+                { className: 'align-h flex-1', html: SearchInput() },
+                { show: !!loading, className: 'aio-input-map-serach-icon align-vh', html: loadingIcon },
+                { show: showCloseButton, className: 'aio-input-map-serach-icon align-vh', html: closeIcon },
+                { show: !showCloseButton && !loading, className: 'aio-input-map-serach-icon align-vh', html: searchIcon }
             ]
         }
     }
@@ -3038,8 +3038,8 @@ function MapHeader() {
                     onClick: () => { setShowResult(false); flyTo(location.y, location.x, undefined, 'result_layout') },
                     className: 'aio-input-map-search-result',
                     column: [
-                        { html: title, className: 'aio-input-map-serach-result-text', align: 'v' },
-                        { html: address, className: 'aio-input-map-serach-result-subtext', align: 'v', style: { opacity: 0.5 } }
+                        { html: title, className: 'aio-input-map-serach-result-text align-v' },
+                        { html: address, className: 'aio-input-map-serach-result-subtext align-v', style: { opacity: 0.5 } }
                     ]
                 }
             })
@@ -3049,13 +3049,13 @@ function MapHeader() {
         if (typeof title !== 'string' && !onClose) { return false }
         return {
             row: [
-                { show: !!onClose, align: 'vh', html: <Icon path={mdiChevronRight} size={1} />, className: 'aio-input-map-close', onClick: () => onClose() },
-                { show: typeof title === 'string', html: title, className: 'aio-input-map-title', align: 'v' },
+                { show: !!onClose, html: <Icon path={mdiChevronRight} size={1} />, className: 'aio-input-map-close align-vh', onClick: () => onClose() },
+                { show: typeof title === 'string', html: title, className: 'aio-input-map-title align-v' },
             ]
         }
     }
     function currentPoint_layout() {
-        return { className: 'aio-input-map-current-point', html: <Icon path={mdiCrosshairsGps} size={0.8} onClick={() => goToCurrent()} />, align: 'vh' }
+        return { className: 'aio-input-map-current-point align-vh', html: <Icon path={mdiCrosshairsGps} size={0.8} onClick={() => goToCurrent()} /> }
     }
     if (!search && !title && !onClose) { return null }
     return (
@@ -3080,9 +3080,9 @@ function MapFooter() {
         let { mapConfig = {} } = rootProps;
         if (mapConfig.showAddress === false) { return false }
         if (rootState.addressLoading) {
-            return { flex: 1, html: <Icon path={mdiLoading} size={1} spin={0.4} />, align: 'v' }
+            return { html: <Icon path={mdiLoading} size={1} spin={0.4} />, classNAme: 'align-v flex-1' }
         }
-        return { flex: 1, column: [{ html: rootState.address, className: 'aio-input-map-address' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
+        return { column: [{ html: rootState.address, className: 'aio-input-map-address flex-1' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
     }
     let Submit = submit_layout()
     let Details = details_layout();
@@ -3206,11 +3206,11 @@ export function Acardion(props = {}){
       if(open){className += ' open'}
       if(headerAttrs.className){className += ' ' + headerAttrs.className}
       return {
-        className:'aio-input-acardion-header' + (open?' open':''),align:'v',
+        className:'aio-input-acardion-header align-v' + (open?' open':''),
         row:[
-          {html:<Icon path={open?mdiChevronDown:mdiChevronLeft} size={0.8}/>,className:'aio-input-acardion-toggle',align:'vh',onClick:()=>toggle(id)},
+          {html:<Icon path={open?mdiChevronDown:mdiChevronLeft} size={0.8}/>,className:'aio-input-acardion-toggle align-vh',onClick:()=>toggle(id)},
           {html:name,flex:1,className:'aio-input-acardion-name'},
-          {show:!!after,html:()=>typeof after === 'function'?after(open):after,align:'vh',className:'aio-input-acardion-after'}
+          {show:!!after,html:()=>typeof after === 'function'?after(open):after,className:'aio-input-acardion-after align-vh'}
         ]
       }
     }
@@ -3292,23 +3292,23 @@ export function Tree(props = {}){
       return {
         className: 'aio-input-tree-row',
         row: [
-          { className: 'aio-input-tree-toggle', align: 'vh', html: toggle, onClick: () => setOpenDic({...openDic,[o.id]:openDic[o.id] === undefined?false:!openDic[o.id]}) },
-          { className:'aio-input-tree-before',show:!!before,align: 'vh', html: before},
+          { className: 'aio-input-tree-toggle align-vh', html: toggle, onClick: () => setOpenDic({...openDic,[o.id]:openDic[o.id] === undefined?false:!openDic[o.id]}) },
+          { className:'aio-input-tree-before align-vh',show:!!before, html: before},
           {
-            flex: 1,className:'aio-input-tree-texts',align:'v',
+            className:'aio-input-tree-texts align-v flex-1',
             column: [
-              { align: 'v', html: text, className: 'aio-input-tree-text' },
-              { show:!!subtext,align: 'v', html: subtext, className: 'aio-input-tree-subtext' }
+              { html: text, className: 'aio-input-tree-text align-v' },
+              { show:!!subtext,html: subtext, className: 'aio-input-tree-subtext align-v' }
             ]
           },
-          {show:!!options,html:()=>options,align:'vh',className:'aio-input-tree-options'}
+          {show:!!options,html:()=>options,className:'aio-input-tree-options align-vh'}
         ]
       }
     }
     function header_layout(){
       if(!onAdd){return false}
       return {
-        className:'aio-input-tree-header', align: 'v',
+        className:'aio-input-tree-header align-v',
         html: ()=><button onClick={() => add()}><Icon path={mdiPlusThick} size={.8} />افزودن</button>
       }
     }

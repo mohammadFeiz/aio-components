@@ -26,7 +26,7 @@ export default class DOC_AIOStorage extends Component{
                     ]
                 },
                 {flex:1},
-                {size:48,html:'X',onClick:()=>this.remove(id),align:'vh'}
+                {size:48,html:'X',onClick:()=>this.remove(id),className:'align-vh'}
             ]
         }
     }
@@ -56,15 +56,15 @@ export default class DOC_AIOStorage extends Component{
                 layout={{
                     style:{width:'50%',marginLeft:'25%',border:'1px solid',padding:12},
                     column:[
-                        {html:'exit',align:'v',size:48,onClick:()=>goToHome()},
-                        {html:'Add Member',align:'v',size:48},
-                        {html:'name',align:'v'},               
+                        {html:'exit',className:'align-v',size:48,onClick:()=>goToHome()},
+                        {html:'Add Member',className:'align-v',size:48},
+                        {html:'name',className:'align-v'},               
                         {
                             row:[
-                                {html:<input type='text' value={name} onChange={(e)=>this.setState({name:e.target.value})}/>,align:'v'},
+                                {html:<input type='text' value={name} onChange={(e)=>this.setState({name:e.target.value})}/>,className:'align-v'},
                             ]
                         },
-                        {html:'age',align:'v'},               
+                        {html:'age',className:'align-v'},               
                         {
                             row:[
                                 {html:<input type='text' value={age} onChange={(e)=>this.setState({age:e.target.value})}/>},
@@ -81,7 +81,7 @@ export default class DOC_AIOStorage extends Component{
                             }});
                         }}/>},
                         {size:12},
-                        {html:'Members',align:'v',size:48},
+                        {html:'Members',className:'align-v',size:48},
                         {gap:12,column:list.map((o)=>this.item_layout(o))}
                     ]
                 }}

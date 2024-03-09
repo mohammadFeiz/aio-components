@@ -1,13 +1,13 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, createContext, useCallback, useContext, useState } from "react";
 import $ from 'jquery';
 import "./index.css";
 let RVDCLS = {
-    rvd: 'rvd', pointer: 'rvd-pointer', gap: 'rvd-gap', justify: 'rvd-justify', align: 'rvd-align',
+    rvd: 'rvd', pointer: 'rvd-pointer', gap: 'rvd-gap',
     row: 'rvd-row', column: 'rvd-column', hidexs: 'rvd-hide-xs', hidesm: 'rvd-hide-sm', hidemd: 'rvd-hide-md', hidelg: 'rvd-hide-lg'
 }
+const RVDContext = createContext({} as I_RVD_context);
 export type I_RVD_node = {
-    align?: 'v' | 'h' | 'vh' | 'hv',
-    egg?:{callback:()=>void,count:number}
+    align?: 'v' | 'h' | 'vh',
     gap?: number | {size:number,content?:React.ReactNode,attrs?:any} | ((node:I_RVD_node,parent:I_RVD_node,index:number)=>{size:number,content?:React.ReactNode,attrs?:any}),
     data?:any,
     reOrder?: (newData:any[],fromDragIndex: number, toDragIndex: number) => void,
@@ -21,10 +21,10 @@ export type I_RVD_node = {
     gridCols?:number,
     gridRow?:I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
     layout?: string,
-    attrs?: any,
-    className?: string,
     nodeClass?:string,
     nodeClasses?:string[],
+    attrs?: any,
+    className?: string | ((string | false)[]),
     style?: any,
     onClick?: (e: any) => void,
     show?: boolean | (() => boolean),
@@ -32,59 +32,38 @@ export type I_RVD_node = {
     key?:string | number,
     id?:string | number,
 }
-
-export type I_RVD_props = {
-    layout: I_RVD_node,
-    dragHandleClassName?: string,
-    layouts?: { [key: string]: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node | React.ReactNode },
-    classes?:{[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
-    rtl?: boolean,
-    state?:any,
-    editNode?: (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node
-}
-type I_RVD_temp = { dragIndex?:false | number, lt?: string, time?: number, eggCounter?: number, timeOut?: any }
+export type I_RVD_editNode = (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node;
+export type I_RVD_classes = {[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
+export type I_RVD_props = {rootNode: I_RVD_node,dragHandleClassName?: string,classes?:I_RVD_classes,rtl?: boolean,state?:any,editNode?: I_RVD_editNode}
+type I_RVD_getTemp = (key:string)=>any;
+type I_RVD_setTemp = (key:string,value:any)=>void;
+type I_RVD_state = any;
+type I_RVD_setState = (key:any,value?:any)=>void
+type I_RVD_temp = { dragIndex?:false | number, lt?: string, time?: number, timeOut?: any }
+type I_RVD_context = {getTemp:I_RVD_getTemp,setTemp:I_RVD_setTemp,rootProps:I_RVD_props,state:I_RVD_state,setState:I_RVD_setState}
 export default function ReactVirtualDom(props: I_RVD_props) {
-    let { layout, dragHandleClassName, layouts = {}, rtl, editNode,classes = {} } = props;
+    let {rootNode} = props;
     let [temp] = useState<I_RVD_temp>({});
+    function getTemp(key){return temp[key];}
+    function setTemp(key,value){temp[key] = value;}
     let [state,changeState] = useState<any>(props.state)
-    let setState = (key:any,value:any)=>{
-        if(typeof key === 'string'){
-            changeState({...state,[key]:value})
-        }
-        else if(typeof key === 'object'){
-            changeState(key)
-        }
-    }
-    function getAlignClassName(node: I_RVD_node): string {
-        let res;
-        if (node.align === 'v') { res = node.column ? RVDCLS.justify : RVDCLS.align; }
-        else if (node.align === 'h') { res = node.column ? RVDCLS.align : RVDCLS.justify; }
-        else if (node.align === 'vh' || node.align === 'hv') { res = `${RVDCLS.justify} ${RVDCLS.align}`; }
+    let setState = (key:any,value:any)=>changeState(typeof key === 'string'?{...state,[key]:value}:key)
+    let rootNodeProps:I_RVDNode = {node:rootNode,index:0,level:0};
+    let context:I_RVD_context = {getTemp,setTemp,rootProps:props,state,setState};
+    return (<RVDContext.Provider value={context}><RVDNode {...rootNodeProps}/></RVDContext.Provider>)
+}
+type I_RVDNode = {node: I_RVD_node, index: number, parent?: I_RVD_node, level: number}
+function RVDNode(props:I_RVDNode){
+    let context:I_RVD_context = useContext(RVDContext);
+    let {rootProps,state,setState} = context;
+    let {parent,index, level} = props;
+    function getHtml(node:I_RVD_node) {
+        let { html = '', loading } = node;
+        html = typeof html === 'function' ? html({state,setState}) : html;
+        let res:React.ReactNode;
+        if (loading && html) { res = (<><div style={{ opacity: 0 }}>{html}</div><div className='rvd-loading'></div></>) }
+        else{res = html}
         return res
-    }
-    function getClassName(node: I_RVD_node,parent:I_RVD_node,isRoot:boolean, attrs: any = {}) {
-        let res = RVDCLS.rvd;
-        if (isRoot) { res += ' rvd-root' }
-        let className = node.className || attrs.className
-        if (className) {
-            let cls:string = className; 
-            let dcls = classes[className];
-            if(typeof dcls === 'function'){cls = dcls(node,parent)}
-            else if(typeof dcls === 'string'){cls = dcls;}
-            if(cls && typeof cls === 'string'){res += ' ' + cls;}  
-        }
-        if(node.nodeClass){
-            res += ' ' + node.nodeClasses.join('-')
-        }
-        if (!!attrs.onClick) { res += ' ' + RVDCLS.pointer; }
-        let alignClassName = getAlignClassName(node);
-        if (alignClassName) { res += ' ' + alignClassName }
-        if (node.row) { res += ' ' + RVDCLS.row }
-        else if (node.column || node.grid) { res += ' ' + RVDCLS.column }
-        if(node.loading){res += ' rvd-parent-loading'}
-        let hideClassName = getHideClassName(node);
-        if (hideClassName) { res += ' ' + hideClassName }
-        return res;
     }
     function getChilds(node:I_RVD_node) {
         let childs = [];
@@ -103,136 +82,173 @@ export default function ReactVirtualDom(props: I_RVD_props) {
         }
         return childs;
     }
-    function getStyle(node:I_RVD_node, parent:I_RVD_node, attrs?:any) {
-        let { size, flex } = node;
-        let style = { ...(node.style || attrs.style || {}) };
-        if (size !== undefined) {
-            if (parent && parent.row) { style.width = size; flex = undefined }
-            else if (parent && (parent.column || parent.grid)) { style.height = size; flex = undefined }
-        }
-        return { flex, ...style }
-    }
-    function getDragAttrs(node:I_RVD_node,parent:I_RVD_node,index:number) {
-        if (!parent || !parent.reOrder || !Array.isArray(parent.data)) { return {} }
-        let res: any = {};
-        res.draggable = true;
-        res.onDragStart = (e) => {
-            if (dragHandleClassName) {
-                if (!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0) { return; }
-            }
-            temp.dragIndex = index;
-        }
-        res.onDragOver = (e) => e.preventDefault();
-        res.onDrop = () => {
-            if (temp.dragIndex === false || temp.dragIndex === index) { return; }
-            parent.reOrder(ReOrder({data:parent.data,fromIndex:temp.dragIndex, toIndex:index}),temp.dragIndex, index);
-            temp.dragIndex = false
-        }
-        return res;
-    }
-    function getOnClick(node:I_RVD_node) {
-        if (node.loading) { return }
-        let { onClick, egg, attrs = {} } = node;
-        if (egg) { return (() => eggHandler(egg)) }
-        return onClick || attrs.onClick;
-    }
-    function getLongTouchAttrs(node:I_RVD_node, dataId) {
-        let { longTouch } = node;
-        if (typeof longTouch !== 'function') { return {} }
-        let res = {};
-        res['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
-            temp.lt = dataId;
-            temp[dataId + 'callback'] = longTouch;
-            timer()
-            eventHandler('mouseup', longTouchMouseUp);
-        }
-        return res
-    }
-    function timer() {
-        temp.time = 0;
-        temp[temp.lt + 'interval'] = setInterval(() => {
-            temp.time++;
-            if (temp.time > 50) {
-                clearInterval(temp[temp.lt + 'interval']);
-                temp[temp.lt + 'callback']()
-            }
-        }, 10)
-    }
-    function longTouchMouseUp() {
-        eventHandler('mouseup', longTouchMouseUp, 'unbind');
-        clearInterval(temp[temp.lt + 'interval']);
-    }
-    function getAttrs(node:I_RVD_node, parent:I_RVD_node,isRoot:boolean,index) {
-        let attrs = node.attrs ? { ...node.attrs } : {};
-        let dataId = 'a' + Math.random()
-        attrs['data-id'] = dataId;
-        attrs.style = getStyle(node, parent, attrs)
-        attrs.onClick = getOnClick(node);
-        attrs = { ...attrs, ...getDragAttrs(node,parent,index) };
-        attrs.className = getClassName(node,parent,isRoot, attrs);
-        attrs = { ...attrs, ...getLongTouchAttrs(node, dataId) };
-        return attrs
-    }
-    function getHtml(node:I_RVD_node, parent:I_RVD_node) {
-        let { html = '', loading } = node;
-        html = typeof html === 'function' ? html({state,setState}) : html;
-        let res:React.ReactNode;
-        if (typeof html === 'string' && layouts[html]) { res = layouts[html](node, parent) as React.ReactNode }
-        else if (loading && html) { res = (<><div style={{ opacity: 0 }}>{html}</div><div className='rvd-loading'></div></>) }
-        else{res = html}
-        return res
-    }
-    function isLoading(node: I_RVD_node, parent: I_RVD_node): boolean {
-        if (typeof node.loading === 'boolean') { return node.loading }
-        return parent ? !!parent.loading : false;
-    }
-    function getNode(node: I_RVD_node, parent: I_RVD_node) {
-        if (!node || node === null) { return {} }
-        if (Array.isArray(node)) { alert('rvd error => node cannot be an array'); return {} }
-        if (typeof node !== 'object') { alert('rvd error => node should be an object'); return {} }
-        if (typeof node.layout === 'string') {
-            if (layouts[node.layout]) {
-                let res = layouts[node.layout](node, parent) as I_RVD_node
-                return getNode(res, parent)
-            }
-            else { return {} }
-        }
-        return node
-    }
     function getNodeClasses(node:I_RVD_node,parent:I_RVD_node){
         let res:string[] = [];
         if(parent && parent.nodeClasses){res = [...parent.nodeClasses]}
         if(node.nodeClass){res = [...res,node.nodeClass]}
         return res; 
     }
-    function getLayout(obj: I_RVD_node, index: number, parent: I_RVD_node, isRoot: boolean) {
-        let node: I_RVD_node = getNode(obj, parent);
+    function isLoading(node: I_RVD_node, parent: I_RVD_node): boolean {
+        if (typeof node.loading === 'boolean') { return node.loading }
+        return parent ? !!parent.loading : false;
+    }
+    function getNode():I_RVD_node{
+        let {node} = props;
+        if (!node || node === null) { node = {} }
         if ((typeof node.show === 'function' ? node.show() : node.show) === false) { return null }
-        if (editNode) { node = editNode(node, parent) }
+        if (rootProps.editNode) { node = rootProps.editNode(node, parent) }
         node.loading = isLoading(node, parent);
         node.nodeClasses = getNodeClasses(node,parent)
+        return node
+    }
+    function getContent(node:I_RVD_node){
         let content:React.ReactNode;
         let childs = getChilds(node);
         if (childs.length) {
             content = childs.map((o, i) => {
                 let key = o.key === undefined?i:o.key
-                let parent = node;
-                return <Fragment key={key}>{getLayout(o, i, parent, false)}</Fragment>
+                let p:I_RVDNode = {node:o,index:i,level:level + 1,parent:node}
+                return <RVDNode key={key} {...p}/>
             })
         }
-        else { content = getHtml(node, parent) }
-        let attrs = getAttrs(node,parent, isRoot,index);
-        let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl, index,state,setState });
-        return (<Fragment key={index}><div {...attrs}>{content}</div>{gap !== false && <div {...gap.attrs}>{gap.content}</div>}</Fragment>)
+        else { content = getHtml(node) }
+        return content
     }
-    function eggHandler({ callback = () => { }, count = 10 }) {
-        temp.eggCounter = temp.eggCounter || 0;
-        temp.eggCounter++;
-        if (temp.eggCounter >= count) { callback() }
-        clearTimeout(temp.timeOut);
-        temp.timeOut = setTimeout(() => temp.eggCounter = 0, 500)
+    let node = getNode()
+    let content = getContent(node)
+    let attrs = new RVDAttrs({node,parent, level,index,context}).getAttrs();
+    let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl:rootProps.rtl, index,state,setState });
+    return (
+        <>
+            <div {...attrs}>{content}</div>
+            {gap !== false && <div {...gap.attrs}>{gap.content}</div>}
+        </>
+    )
+}
+type I_RVDAttrs = {
+    node:I_RVD_node,parent:I_RVD_node,level:number,index:number,context:I_RVD_context
+}
+class RVDAttrs{
+    node:I_RVD_node;
+    parent:I_RVD_node;
+    level:number;
+    index:number;
+    context:I_RVD_context;
+    constructor(props:I_RVDAttrs){
+        let {node,parent,level,index,context} = props;
+        this.node = node;
+        this.parent = parent;
+        this.level = level;
+        this.index = index;
+        this.context = context;
     }
-    return getLayout(layout, 0, undefined, true);
+    getStyle = () => {
+        let { size, flex,attrs = {} } = this.node;
+        let style = { ...(this.node.style || attrs.style || {}) };
+        if (size !== undefined) {
+            if(this.parent){
+                if (this.parent.row) { style.width = size; flex = undefined }
+                else if (this.parent.column || this.parent.grid) { style.height = size; flex = undefined }
+            }
+        }
+        return { flex, ...style }
+    }
+    getOnClick = () => {
+        let { onClick, attrs = {},loading } = this.node;
+        if (loading) { return }
+        return onClick || attrs.onClick;
+    }
+    getDragAttrs = () => {
+        if (!this.parent || !this.parent.reOrder || !Array.isArray(this.parent.data)) { return {} }
+        let {rootProps,getTemp,setTemp} = this.context;
+        let {dragHandleClassName} = rootProps;
+        let res: any = {};
+        res.draggable = true;
+        res.onDragStart = (e) => {
+            if (dragHandleClassName) {
+                if (!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0) { return; }
+            }
+            setTemp('dragIndex',this.index);
+        }
+        res.onDragOver = (e) => e.preventDefault();
+        res.onDrop = () => {
+            let dragIndex = getTemp('dragIndex');
+            if (dragIndex === false || dragIndex === this.index) { return; }
+            this.parent.reOrder(ReOrder({data:this.parent.data,fromIndex:dragIndex, toIndex:this.index}),dragIndex, this.index);
+            setTemp('dragIndex',false)
+        }
+        return res;
+    }
+    getClassName = () => {
+        let {classes = {}} = this.context.rootProps;
+        let res = RVDCLS.rvd;
+        if (this.level === 0) { res += ' rvd-root' }
+        let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading} = this.node
+        if (this.node.className) {
+            let className:string;
+            if(Array.isArray(this.node.className)){className = this.node.className.filter((cls)=>!!cls && typeof cls === 'string').join(' ')}
+            else{className = this.node.className}
+            let dcls = classes[className];
+            if(typeof dcls === 'function'){className = dcls(this.node,this.parent)}
+            else if(typeof dcls === 'string'){className = dcls;}
+            if(className && typeof className === 'string'){res += ' ' + className;}  
+        }
+        if(nodeClass){res += ' ' + nodeClasses.join('-')}
+        if (!!attrs.onClick) { res += ' ' + RVDCLS.pointer; }
+        if(this.node.align){res += ` align-${this.node.align}`}
+        if (row) { res += ' ' + RVDCLS.row }
+        else if (column || grid) { res += ' ' + RVDCLS.column }
+        if(loading){res += ' rvd-parent-loading'}
+        let hideClassName = getHideClassName(this.node);
+        if (hideClassName) { res += ' ' + hideClassName }
+        return res;
+    }
+    getLongTouchAttrs = (dataId) => {
+        let { longTouch } = this.node;
+        let {setTemp} = this.context;
+        if (typeof longTouch !== 'function') { return {} }
+        let res = {};
+        res['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
+            setTemp('lt',dataId);
+            setTemp(dataId + 'callback',longTouch);
+            this.timer()
+            eventHandler('mouseup', this.longTouchMouseUp);
+        }
+        return res
+    }
+    timer = () => {
+        let {setTemp,getTemp} = this.context;
+        let lt = getTemp('lt');
+        setTemp('time',0)
+        setTemp(lt + 'interval',setInterval(() => {
+            let time = getTemp('time')
+            time++;
+            setTemp('time',time);
+            if (time > 50) {
+                clearInterval(getTemp(lt + 'interval'));
+                let callback = getTemp(lt + 'callback')
+                callback()
+            }
+        }, 10)) 
+    }
+    longTouchMouseUp = () => {
+        let {getTemp} = this.context;
+        eventHandler('mouseup', this.longTouchMouseUp, 'unbind');
+        let lt = getTemp('lt');
+        clearInterval(getTemp(lt + 'interval'));
+    }
+    getAttrs = () => {
+        let attrs = this.node.attrs ? { ...this.node.attrs } : {};
+        let dataId = 'a' + Math.random()
+        attrs['data-id'] = dataId;
+        attrs.style = this.getStyle()
+        attrs.onClick = this.getOnClick();
+        attrs = { ...attrs, ...this.getDragAttrs() };
+        attrs.className = this.getClassName();
+        attrs = { ...attrs, ...this.getLongTouchAttrs(dataId) };
+        return attrs
+    }
+    
 }
 export function animate(type, selector,callback) {
     if(type === 'removeV'){
@@ -338,7 +354,7 @@ export function renderCards(p: { items: any[], gap?: number, attrs: any }) {
     let { items = [], gap, attrs = {} } = p;
     return (
         <ReactVirtualDom
-            layout={{
+            rootNode={{
                 className: Cls('cards-container', attrs.className),
                 column: [
                     {
@@ -357,7 +373,7 @@ export function renderCards(p: { items: any[], gap?: number, attrs: any }) {
 export function renderCardsRow(rows = [], gap) {
     return (
         <ReactVirtualDom
-            layout={{
+            rootNode={{
                 className: Cls('cards-row-container'),
                 column: [
                     {
@@ -373,7 +389,7 @@ export function renderCard(p:{ text?:React.ReactNode, subtext?:React.ReactNode, 
     let { text, subtext, uptext, attrs = {}, before, after, header, footer, justify, classes = {} } = p;
     return (
         <ReactVirtualDom
-            layout={{
+            rootNode={{
                 attrs, onClick: attrs.onClick, className: Cls('card', attrs.className) + (justify ? ' justify' : ''), style: attrs.style,
                 column: [
                     { show: !!header && !Array.isArray(header), html: header, className: Cls('card-header', classes.header) },

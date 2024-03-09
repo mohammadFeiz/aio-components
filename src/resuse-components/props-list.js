@@ -27,7 +27,7 @@ class PropsListItem extends Component{
                 layout={{
                     column:[
                         {
-                            align:'v',
+                            className:'align-v',
                             row:[
                                 {size:100,html:'Props',className:'bold size14'},
                                 {size:12},
@@ -37,7 +37,7 @@ class PropsListItem extends Component{
                             ]
                         },
                         {
-                            align:'v',
+                            className:'align-v',
                             row:[
                                 {size:100,html:'Description',className:'bold size14'},
                                 {size:12},
