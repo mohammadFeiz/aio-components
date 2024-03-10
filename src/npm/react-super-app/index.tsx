@@ -5,20 +5,44 @@ import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/j
 import RVD from '../react-virtual-dom/react-virtual-dom';
 import AIOPopup from '../aio-popup/aio-popup';
 import './index.css';
-import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_props, I_ReactSuperApp, I_rsa_navItem } from './types';
+import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_addAlert, I_RSA_addConfirm, I_RSA_addModal, I_RSA_addPrompt, I_RSA_addSnakebar, I_RSA_closeSide, I_RSA_getNavId, I_RSA_openSide, I_RSA_props, I_RSA_removeModal, I_RSA_render, I_RSA_setNavId, I_ReactSuperApp, I_rsa_navItem } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types';
 
 export default class RSA {
   backButtonCallBack:true | Function;
   rootProps:I_RSA_props;
   popup:any;
+  getNavId:I_RSA_getNavId;
+  setNavId:I_RSA_setNavId;
+  removeModal:I_RSA_removeModal;
+  openSide:I_RSA_openSide;
+  closeSide:I_RSA_closeSide;
+  addModal:I_RSA_addModal;
+  setBackButtonCallBack:(fn:any)=>void;
+  render:I_RSA_render;
+  addAlert:I_RSA_addAlert;
+  addSnakebar:I_RSA_addSnakebar;
+  addConfirm:I_RSA_addConfirm;
+  addPrompt:I_RSA_addPrompt;
   constructor(props:I_RSA_props) {
     RSAValidate(props || {});
-    let { rtl, maxWidth,nav,side,title,subtitle,headerContent,header,body,id,theme } = props;
+    let { rtl} = props;
     this.rootProps = props;
     this.backButtonCallBack = true;
     this.popup = new AIOPopup({ rtl })
-    
+    this.removeModal = (obj) => this.popup.removeModal(obj);
+    this.addModal = (obj) => this.popup.addModal(obj);
+    this.setBackButtonCallBack = (backButtonCallBack)=>this.backButtonCallBack = backButtonCallBack;
+    this.render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup} getActions={({getNavId,setNavId,openSide,closeSide})=>{
+      this.getNavId = getNavId;
+      this.setNavId = setNavId;
+      this.openSide = openSide;
+      this.closeSide = closeSide;
+    }}/>
+    this.addAlert = (obj) => this.popup.addAlert(obj);
+    this.addSnakebar = (obj) => this.popup.addSnakebar(obj);
+    this.addConfirm = (obj) => this.popup.addConfirm(obj);
+    this.addPrompt = (obj) => this.popup.addPrompt(obj);  
     window.history.pushState({}, '')
     window.onpopstate = () => {
       setTimeout(()=>window.history.pushState({}, ''),100)
@@ -33,20 +57,6 @@ export default class RSA {
       catch{}
     };  
   }
-  setBackButtonCallBack = (backButtonCallBack)=>this.backButtonCallBack = backButtonCallBack;
-  render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup} getActions={({getNavId,setNavId,openSide,closeSide})=>{
-    this.getNavId = getNavId;
-    this.setNavId = setNavId;
-    this.openSide = openSide;
-    this.closeSide = closeSide;
-  }}/>
-  addModal = (obj) => this.popup.addModal(obj);
-  addAlert = (obj) => this.popup.addAlert(obj);
-  removeModal = (obj) => this.popup.removeModal(obj);
-  addSnakebar = (obj) => this.popup.addSnakebar(obj);
-  addConfirm = (obj) => this.popup.addConfirm(obj);
-  addPrompt = (obj) => this.popup.addPrompt(obj);
-  
 }
 function ReactSuperApp(props:I_ReactSuperApp) {
   let {rootProps,getActions,popup} = props

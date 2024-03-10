@@ -14,7 +14,13 @@ export type I_RSA_props = {
     splash?:()=>React.ReactNode,
     className?:string,
 }
-export type I_rsa_addModal = {
+export type I_RSA_addAlert_param = {type:'error' | 'success',text:string,subtext?:string}
+export type I_RSA_addAlert = (p:I_RSA_addAlert_param)=>void;
+export type I_RSA_setNavId = (navId:string)=>void
+export type I_RSA_getNavId = ()=>string;
+export type I_RSA_removeModal = (id?:string)=>void;
+export type I_RSA_render = ()=>React.ReactNode
+export type I_RSA_addModal_param = {
     position?:'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom',
     id?:string,
     attrs?:any,
@@ -25,16 +31,8 @@ export type I_rsa_addModal = {
     },
     body:{render:(p:{state:any,setState:(p:any)=>void})=>React.ReactNode,attrs?:any}
 }
-export type I_rsa_addSnakebar = {
-    type:'info' | 'warning' | 'error' | 'success',
-    text:string,
-    subtext?:string,
-    time?:number,
-    rtl?:boolean,
-    action?:{text:string,onClick:()=>void},
-    onClose?:false | (()=>void)
-}
-export type I_rsa_addConfirm = {
+export type I_RSA_addModal = (p:I_RSA_addModal_param)=>void
+export type I_RSA_addConfirm_param = {
     title:string,
     text:string,
     onSubmit:()=>Promise<boolean>,
@@ -44,19 +42,31 @@ export type I_rsa_addConfirm = {
     onCansel?:()=>void,
     attrs?:any
 }
-export type I_rsa_addAlert = {type:'error' | 'success',text:string,subtext?:string}
+export type I_RSA_addConfirm = (p:I_RSA_addConfirm_param)=>void
+export type I_RSA_addSnakebar_param = {
+    type:'info' | 'warning' | 'error' | 'success',
+    text:string,
+    subtext?:string,
+    time?:number,
+    rtl?:boolean,
+    action?:{text:string,onClick:()=>void},
+    onClose?:false | (()=>void)
+}
+export type I_RSA_addSnakebar = (p:I_RSA_addSnakebar_param)=>void
+export type I_RSA_closeSide = ()=>void
+export type I_RSA_openSide = ()=>void
+export type I_RSA_addPrompt = (p:any)=>void;
 export type I_rsa = {
-    setNavId:(navId:string)=>void,
-    addModal:(p:I_rsa_addModal)=>void,
-    removeModal:(id?:string)=>void,
-    addSnakebar:(p:I_rsa_addSnakebar)=>void,
-    closeSide:()=>void,
-    getNavId:()=>string,
-    addConfirm:(p:I_rsa_addConfirm)=>void,
-    addAlert:(p:I_rsa_addAlert)=>void,
-    openSide:()=>void,
-    render:()=>React.ReactNode,
-    changeTheme: (index:number) => void
+    setNavId:I_RSA_setNavId,
+    addModal:I_RSA_addModal,
+    removeModal:I_RSA_removeModal,
+    addSnakebar:I_RSA_addSnakebar,
+    closeSide:I_RSA_closeSide,
+    getNavId:I_RSA_getNavId,
+    addConfirm:I_RSA_addConfirm,
+    addAlert:I_RSA_addAlert,
+    openSide:I_RSA_openSide,
+    render:I_RSA_render,
 }
 export type I_rsa_navItem = {
     id:string,
