@@ -1,18 +1,25 @@
-import React, { Component } from 'react';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import React, { Component, useEffect, useState } from 'react';
+import AIOStorage from '../aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOPopup from './../../npm/aio-popup/aio-popup';
+import RVD from '../react-virtual-dom/react-virtual-dom';
+import AIOPopup from '../aio-popup/aio-popup';
 import './index.css';
+import { I_RSA_Navigation, I_RSA_props, I_ReactSuperApp, I_rsa_navItem } from './types';
+import { I_RVD_node } from '../react-virtual-dom/types';
+
 export default class RSA {
-  constructor(props = {}) {
-    RSAValidate(props);
-    let { rtl, maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme } = props;
-    this.backbuttonCallback = true;
+  backButtonCallBack:true | Function;
+  rootProps:I_RSA_props;
+  popup:any;
+  constructor(props:I_RSA_props) {
+    RSAValidate(props || {});
+    let { rtl, maxWidth,nav,side,title,subtitle,headerContent,header,body,id,theme } = props;
+    this.rootProps = props;
+    this.backButtonCallBack = true;
+    this.popup = new AIOPopup({ rtl })
     this.props = {
-      rtl,maxWidth,AppContext,nav,side,title,subtitle,headerContent,actions,header,body,id,theme,
-      popup:new AIOPopup({ rtl }),
+      maxWidth,nav,side,title,subtitle,headerContent,header,body,id,theme,
       getActions:({getNavId,setNavId,openSide,closeSide})=>{
         this.getNavId = getNavId;
         this.setNavId = setNavId;
@@ -24,18 +31,18 @@ export default class RSA {
     window.onpopstate = () => {
       setTimeout(()=>window.history.pushState({}, ''),100)
       try{
-        if(this.backbuttonCallback === true){
+        if(this.backButtonCallBack === true){
           this.removeModal()
         }
-        else if(typeof this.backbuttonCallback === 'function'){
-          this.backbuttonCallback()
+        else if(typeof this.backButtonCallBack === 'function'){
+          this.backButtonCallBack()
         }
       }
       catch{}
     };  
   }
-  setBackbuttonCallBack = (backbuttonCallback)=>this.backbuttonCallback = backbuttonCallback;
-  render = () => <RSAAPP {...this.props}/>
+  setBackButtonCallBack = (backButtonCallBack)=>this.backButtonCallBack = backButtonCallBack;
+  render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup}/>
   addModal = (obj) => this.props.popup.addModal(obj);
   addAlert = (obj) => this.props.popup.addAlert(obj);
   removeModal = (obj) => this.props.popup.removeModal(obj);
@@ -44,95 +51,42 @@ export default class RSA {
   addPrompt = (obj) => this.props.popup.addPrompt(obj);
   
 }
-function RSAAPP(props){
-  let PROPS = {...props,getActions:(obj)=>props.getActions({...obj})} 
-  return <ReactSuperApp {...PROPS}/>
-}
-
-class ReactSuperApp extends Component {
-  constructor(props) {
-    super(props);
-    let { touch = 'ontouchstart' in document.documentElement, splash, splashTime = 7000,id,nav } = props;
-    this.storage = AIOStorage('rsa-cache-' + id);
-    // window.oncontextmenu = function (event) {
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   return false;
-    // };
-    let navId = nav?(nav.cache?this.initNavId(this.storage.load({name:'navId',def:this.initNavId()})):this.initNavId()):false
-    this.state = {
-      navId,
-      splash,
-      showSplash: true,
-      confirm: false,
-      touch,
-      changeTheme: (index) => {
-        let { themes } = props;
-        this.theme = this.theme || 0;
-        if (index === 'init') {
-          this.theme = this.storage.load({ name: 'theme', value: 0 });
-        }
-        else if (typeof (index) === 'number') {
-          this.theme = index;
-        }
-        else {
-          this.theme++;
-        }
-        this.storage.save({ value: this.theme, name: 'theme' });
-        if (this.theme > themes.length - 1) { this.theme = 0 }
-        let target;
-        try {
-          target = themes[this.theme] || {};
-        }
-        catch { target = {} }
-        for (let prop in target) {
-          document.documentElement.style.setProperty(prop, target[prop]);
-        }
-
-      },
-      openSide:this.openSide.bind(this),
-      closeSide:this.closeSide.bind(this),
-      setNavId: this.setNavId.bind(this),
-      getNavId:this.getNavId.bind(this)
-    }
-    if (props.themes) { this.state.changeTheme('init') }
-    if (splash) { setTimeout(() => this.setState({ splash: false }), splashTime) }
-    props.getActions({ ...this.state })
+function ReactSuperApp(props:I_ReactSuperApp) {
+  let {rootProps,getActions,popup} = props
+  let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body} = rootProps;
+  let [showSplash,setShowSplash] = useState<boolean>(!!splash);
+  let [storage] = useState(AIOStorage('rsa-cache-' + id))
+  let navItems = typeof nav.items === 'function'?nav.items():nav.items;
+  let [navId,SETNAVID] = useState<false | string>(false)
+  useEffect(()=>{
+    let navId = (nav.cache?initNavId(storage.load({name:'navId',def:initNavId()})):initNavId())
+    SETNAVID(navId);
+    if (splash) { setTimeout(() => setShowSplash(false), splashTime) }
+    getActions({openSide,closeSide,setNavId,getNavId})
+  },[])
+  function initNavId(id?:string) {
+    if (id) {if (getNavById(id) !== false) { return id }}
+    if (nav.id) {if (this.getNavById(nav.id) !== false) { return nav.id }}
+    return navItems.filter(({ show = () => true }) => show())[0].id;
   }
-  getNavId(){return this.state.navId}
-  setNavId(navId){
-    let {nav} = this.props;
-    if(nav.cache){this.storage.save({name:'navId',value:navId})}
-    this.setState({navId})
+  function getNavId(){return navId}
+  function setNavId(navId:string){
+    if(nav.cache){storage.save({name:'navId',value:navId})}
+    SETNAVID(navId)
   }
-  initNavId(id) {
-    let { nav } = this.props;
-    if (!nav) { return false }
-    this.navItems = typeof nav.items === 'function'?nav.items():nav.items;
-    if (id) {
-      let res = this.getNavById(id);
-      if (res !== false) { return id }
-    }
-    if (nav.id) {
-      let res = this.getNavById(nav.id);
-      if (res !== false) { return nav.id }
-    }
-    if (!this.navItems && !this.navItems.length) { return false }
-    return this.navItems.filter(({ show = () => true }) => show())[0].id;
-  }
-  header_layout(activeNav) {
-    let { header} = this.props;
+  function header_node(activeNav):I_RVD_node {
     let Header = typeof header === 'function'?header():header;
-    if (Header === false) { return false }
+    if (Header === false) { return {} }
     if(Header){return {style: { flex: 'none', width: '100%' }, className: 'rsa-header of-visible align-v',html: Header}}
-    let { headerContent, side, title = () => activeNav?activeNav.text:'' ,subtitle = ()=>{}} = this.props;
-    let Title = title(activeNav);
-    let Subtitle = subtitle(activeNav);
-    if(!Title && !side && !headerContent){return false}
+    let Title:string;
+    if(title){Title = title(activeNav)}
+    else {Title = activeNav?activeNav.text:''}
+    let Subtitle:string = subtitle(activeNav);
+    if(!Title && !side && !headerContent){return {}}
     return {
       style: { flex: 'none'}, className: 'rsa-header of-visible align-v w-100',
       row: [
-        { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, className: 'align-vh',onClick: () => this.openSide()},
+        { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, className: 'align-vh',onClick: () => openSide()},
         {
           show: !!Title,
           column:[
@@ -141,131 +95,111 @@ class ReactSuperApp extends Component {
           ]
         },
         {show:!!title || !!side ,flex:1},
-        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => headerContent({...this.state}), className: 'of-visible' },
+        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => headerContent(), className: 'of-visible' },
       ]
     }
   }
-  getNavById(id) {
-    this.res = false;
-    this.getNavById_req(this.navItems, id);
-    return this.res;
+  let navResult = false;
+  function getNavById(id) {
+    navResult = false;
+    getNavById_req(navItems, id);
+    return navResult;
   }
-  getNavById_req(items, id) {
-    if (this.res) { return; }
+  function getNavById_req(items, id) {
+    if (navResult) { return; }
     for (let i = 0; i < items.length; i++) {
-      if (this.res) { return; }
+      if (navResult) { return; }
       let item = items[i];
       let { show = () => true } = item;
       if (!show()) { continue }
-      if (item.id === id) { this.res = item; break; }
+      if (item.id === id) { navResult = item; break; }
       let navItems = typeof item.items === 'function'?item.items():item.items
-      if (navItems) { 
-        this.getNavById_req(navItems, id); 
-      }
+      if (navItems) {getNavById_req(navItems, id);}
     }
   }
-  getMainClassName() {
-    let { rtl, className: cls } = this.props;
-    let className = 'rsa-main';
-    className += cls ? ' ' + cls : '';
-    className += rtl ? ' rtl' : ' ltr';
-    return className;
+  function navigation_node(type:'bottom' | 'side'):I_RVD_node {
+    if (!nav || !navItems || !navItems.length) { return {} }
+    let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl }
+    return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={navItems}/>) };
   }
-  navigation_layout(type) {
-    let { nav,rtl } = this.props;
-    if (!nav || !this.navItems || !this.navItems.length) { return false }
-    let { navId } = this.state;
-    let props = { nav, navId, setNavId: (navId) => this.setNavId(navId), type, rtl }
-    return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={this.navItems}/>) };
-  }
-  page_layout({render}) {
-    let { body = () => '' } = this.props;
-    let {navId} = this.state;
-    let content = body({...this.state,render});
-    let activeNav = this.getNavById(navId);
+  function page_node(navItem:I_rsa_navItem | boolean):I_RVD_node {
+    let content = body(navItem as I_rsa_navItem);
+    let activeNav = getNavById(navId);
     return {
       flex: 1,
       column: [
-        this.header_layout(activeNav),
+        header_node(activeNav),
         { flex: 1, html: <div className='rsa-body'>{content}</div> },
-        this.navigation_layout('bottom')
+        navigation_node('bottom')
       ]
     }
   }
 
-  renderMain() {
-    let { navId } = this.state;
-    let { nav, style } = this.props;
-    this.navItems = typeof nav.items === 'function'?nav.items():nav.items
-    let navItem = nav ? this.getNavById(navId) : false;
-    let layout = { style, className: this.getMainClassName() }
-    layout.row = [this.navigation_layout('side'), this.page_layout(navItem)]
-    return (<RVD rootNode={layout} />)
+  function renderMain() {
+    let navItem = getNavById(navId);
+    let className = 'rsa-main';
+    className += cls ? ' ' + cls : '';
+    className += rtl ? ' rtl' : ' ltr';
+    let rootNode:I_RVD_node = { className }
+    rootNode.row = [navigation_node('side'), page_node(navItem)]
+    return (<RVD rootNode={rootNode} />)
   }
-  openSide() {
-    let { popup, rtl } = this.props;
+  function openSide() {
     popup.addModal({
       position: rtl ? 'right' : 'left', id: 'rsadefaultsidemodal',
       backdrop:{attrs:{className:'rsa-sidemenu-backdrop'}},
-      body: { render: ({ close }) => this.renderSide(close) },
+      body: { render: ({ close }) => renderSide(close) },
     })
   }
-  closeSide(){
-    let { popup } = this.props;
-    popup.removeModal('rsadefaultsidemodal')
-  }
-  renderSide(close) {
-    let { side = {}, rtl } = this.props;
+  function closeSide(){popup.removeModal('rsadefaultsidemodal')}
+  function renderSide(close) {
     let items = typeof side.items === 'function'?side.items():side.items;
     return <SideMenu {...side} items={items} rtl={rtl} onClose={() => close()} />
   }
-  render() {
-    let { splash } = this.state;
-    let { style, className, maxWidth, popup,rtl,theme } = this.props;
-    return (
-      <div className={`rsa-container` + (className ? ' ' + className : '') + (theme ? ' ' + theme : '')} style={{...style,direction:rtl?'rtl':'ltr'}}>
-        <div className='rsa' style={{ maxWidth }}>
-          {this.renderMain()}
-          {popup.render()}
-          {splash && splash()}
-        </div>
+  let { className, maxWidth,theme } = this.props;
+  return (
+    <div className={`rsa-container` + (className ? ' ' + className : '') + (theme ? ' ' + theme : '')} style={{direction:rtl?'rtl':'ltr'}}>
+      <div className='rsa' style={{ maxWidth }}>
+        {renderMain()}
+        {popup.render()}
+        {showSplash && splash()}
       </div>
-    );
-  }
+    </div>
+  );
 }
-class Navigation extends Component {
-  state = { openDic: {} }
-  header_layout() {
+function Navigation(props:I_RSA_Navigation) {
+  let [openDic,setOpenDic] = useState({})
+  function header_node() {
     let { nav } = this.props;
     if (!nav.header) { return { size: 12 } }
     return { html: nav.header() };
   }
-  footer_layout() {
+  function footer_node() {
     let { nav } = this.props;
     if (!nav.footer) { return { size: 12 } }
     return { html: nav.footer() };
   }
-  items_layout(navItems, level) {
+  function items_node(navItems, level) {
     return {
       flex: 1, className: 'ofy-auto',
       column: navItems.filter(({ show = () => true }) => show()).map((o, i) => {
         if (o.items) {
           let { openDic } = this.state;
           let open = openDic[o.id] === undefined ? true : openDic[o.id]
-          let column = [this.item_layout(o, level)]
-          if (open) { column.push(this.items_layout(o.items, level + 1)) }
+          let column = [this.item_node(o, level)]
+          if (open) { column.push(this.items_node(o.items, level + 1)) }
           return { column }
         }
-        return this.item_layout(o, level)
+        return this.item_node(o, level)
       })
     }
   }
-  toggle(id) {
+  function toggle(id) {
     let { openDic } = this.state;
     let open = openDic[id] === undefined ? true : openDic[id]
     this.setState({ openDic: { ...openDic, [id]: !open } })
   }
-  text_layout({text,marquee},type) {
+  function text_node({text,marquee},type) {
     text = typeof text === 'function' ? text() : text; 
     let html;
     if (!marquee) { html = text }
@@ -275,7 +209,7 @@ class Navigation extends Component {
     if(type === 'side'){return { html, className: 'align-v' }}
     if(type === 'bottom'){return { html, className: 'rsa-bottom-menu-item-text align-vh' }}
   }
-  item_layout(o, level = 0) {
+  function item_node(o, level = 0) {
     let { setNavId, navId, rtl,nav } = this.props;
     let { openDic } = this.state;
     let { id, icon, items ,disabled} = o;
@@ -287,11 +221,11 @@ class Navigation extends Component {
         { size: level * 16 },
         { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', className: 'align-vh' },
         { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'align-vh' },
-        this.text_layout(o,'side')
+        this.text_node(o,'side')
       ]
     }
   }
-  bottomMenu_layout(o) {
+  function bottomMenu_node(o) {
     let { icon, id,disabled } = o;
     let { navId, setNavId } = this.props;
     let active = id === navId;
@@ -302,26 +236,24 @@ class Navigation extends Component {
         { show: !!icon,flex: 2 },
         { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'of-visible rsa-bottom-menu-item-icon align-vh' },
         { show: !!icon,flex: 1 },
-        this.text_layout(o,'bottom'),
+        this.text_node(o,'bottom'),
         { flex: 1 }
       ]
     }
   }
-  render() {
-    let { type, navItems } = this.props;
-    if (type === 'bottom') {
-      return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
-    }
-    return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navItems, 0),this.footer_layout()] }} />);
+  let { type, navItems } = this.props;
+  if (type === 'bottom') {
+    return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_node(o)) }} />)
   }
+  return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_node(), this.items_node(navItems, 0),this.footer_node()] }} />);
 }
 class SideMenu extends Component {
-  header_layout() {
+  header_node() {
     let { header } = this.props;
     if (!header) { return false }
     return { html: header(), className: 'rsa-sidemenu-header' };
   }
-  items_layout() {
+  items_node() {
     let { items, onClose } = this.props;
     return {
       flex: 1,
@@ -339,7 +271,7 @@ class SideMenu extends Component {
       })
     }
   }
-  footer_layout() {
+  footer_node() {
     let { footer } = this.props;
     if (!footer) { return false }
     return { html: footer(), className: 'rsa-sidemenu-footer' };
@@ -354,7 +286,7 @@ class SideMenu extends Component {
         rootNode={{
           attrs,
           className: 'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : ''),
-          column: [this.header_layout(), this.items_layout(), this.footer_layout()]
+          column: [this.header_node(), this.items_node(), this.footer_node()]
         }}
       />
     );
@@ -385,19 +317,14 @@ function RSAValidate(props){
 }
 
 function RSAValidateError(props){
-  let validProps = ['id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side','theme']
+  let validProps = ['id','rtl','title','nav','subtitle','body','header','headerContent','maxWidth','side','theme']
   for(let prop in props){
     if(validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid props (${prop}). 
-        valid properties are 'id','rtl','title','nav','subtitle','AppContext','actions','body','header','headerContent','maxWidth','side','theme'
+        valid properties are 'id','rtl','title','nav','subtitle','body','header','headerContent','maxWidth','side','theme'
       `
     }
-  }
-  if(props.actions !== undefined && (typeof props.actions !== 'object' || Array.isArray(props.actions))){
-    return `
-        react-super-app error => actions props should be an object. 
-      `
   }
   if(props.rtl !== undefined && typeof props.rtl !== 'boolean'){
     return `
