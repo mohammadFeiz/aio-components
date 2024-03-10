@@ -5,7 +5,7 @@ import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/j
 import RVD from '../react-virtual-dom/react-virtual-dom';
 import AIOPopup from '../aio-popup/aio-popup';
 import './index.css';
-import { I_RSA_Navigation, I_RSA_props, I_ReactSuperApp, I_rsa_navItem } from './types';
+import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_props, I_ReactSuperApp, I_rsa_navItem } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types';
 
 export default class RSA {
@@ -18,15 +18,7 @@ export default class RSA {
     this.rootProps = props;
     this.backButtonCallBack = true;
     this.popup = new AIOPopup({ rtl })
-    this.props = {
-      maxWidth,nav,side,title,subtitle,headerContent,header,body,id,theme,
-      getActions:({getNavId,setNavId,openSide,closeSide})=>{
-        this.getNavId = getNavId;
-        this.setNavId = setNavId;
-        this.openSide = openSide;
-        this.closeSide = closeSide;
-      }
-    }
+    
     window.history.pushState({}, '')
     window.onpopstate = () => {
       setTimeout(()=>window.history.pushState({}, ''),100)
@@ -42,13 +34,18 @@ export default class RSA {
     };  
   }
   setBackButtonCallBack = (backButtonCallBack)=>this.backButtonCallBack = backButtonCallBack;
-  render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup}/>
-  addModal = (obj) => this.props.popup.addModal(obj);
-  addAlert = (obj) => this.props.popup.addAlert(obj);
-  removeModal = (obj) => this.props.popup.removeModal(obj);
-  addSnakebar = (obj) => this.props.popup.addSnakebar(obj);
-  addConfirm = (obj) => this.props.popup.addConfirm(obj);
-  addPrompt = (obj) => this.props.popup.addPrompt(obj);
+  render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup} getActions={({getNavId,setNavId,openSide,closeSide})=>{
+    this.getNavId = getNavId;
+    this.setNavId = setNavId;
+    this.openSide = openSide;
+    this.closeSide = closeSide;
+  }}/>
+  addModal = (obj) => this.popup.addModal(obj);
+  addAlert = (obj) => this.popup.addAlert(obj);
+  removeModal = (obj) => this.popup.removeModal(obj);
+  addSnakebar = (obj) => this.popup.addSnakebar(obj);
+  addConfirm = (obj) => this.popup.addConfirm(obj);
+  addPrompt = (obj) => this.popup.addPrompt(obj);
   
 }
 function ReactSuperApp(props:I_ReactSuperApp) {
@@ -118,8 +115,8 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     }
   }
   function navigation_node(type:'bottom' | 'side'):I_RVD_node {
-    if (!nav || !navItems || !navItems.length) { return {} }
-    let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl }
+    if (!nav || !navItems || !navItems.length || navId === false) { return {} }
+    let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl,navItems }
     return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={navItems}/>) };
   }
   function page_node(navItem:I_rsa_navItem | boolean):I_RVD_node {
@@ -154,7 +151,8 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   function closeSide(){popup.removeModal('rsadefaultsidemodal')}
   function renderSide(close) {
     let items = typeof side.items === 'function'?side.items():side.items;
-    return <SideMenu {...side} items={items} rtl={rtl} onClose={() => close()} />
+    let props:I_RSA_SideMenu = {...side,attrs:side.attrs,items,onClose:()=>close()}
+    return <SideMenu {...props} />
   }
   let { className, maxWidth,theme } = this.props;
   return (
@@ -168,6 +166,8 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   );
 }
 function Navigation(props:I_RSA_Navigation) {
+  let {nav,navId, setNavId,rtl,navItems,type} = props;
+    
   let [openDic,setOpenDic] = useState({})
   function header_node() {
     let { nav } = this.props;
@@ -175,31 +175,29 @@ function Navigation(props:I_RSA_Navigation) {
     return { html: nav.header() };
   }
   function footer_node() {
-    let { nav } = this.props;
     if (!nav.footer) { return { size: 12 } }
     return { html: nav.footer() };
   }
-  function items_node(navItems, level) {
+  function items_node(navItems, level):I_RVD_node {
     return {
       flex: 1, className: 'ofy-auto',
       column: navItems.filter(({ show = () => true }) => show()).map((o, i) => {
         if (o.items) {
           let { openDic } = this.state;
           let open = openDic[o.id] === undefined ? true : openDic[o.id]
-          let column = [this.item_node(o, level)]
-          if (open) { column.push(this.items_node(o.items, level + 1)) }
+          let column = [item_node(o, level)]
+          if (open) { column.push(items_node(o.items, level + 1)) }
           return { column }
         }
-        return this.item_node(o, level)
+        return item_node(o, level)
       })
     }
   }
   function toggle(id) {
-    let { openDic } = this.state;
     let open = openDic[id] === undefined ? true : openDic[id]
-    this.setState({ openDic: { ...openDic, [id]: !open } })
+    setOpenDic({ ...openDic, [id]: !open })
   }
-  function text_node({text,marquee},type) {
+  function text_node({text,marquee},type):I_RVD_node {
     text = typeof text === 'function' ? text() : text; 
     let html;
     if (!marquee) { html = text }
@@ -209,25 +207,22 @@ function Navigation(props:I_RSA_Navigation) {
     if(type === 'side'){return { html, className: 'align-v' }}
     if(type === 'bottom'){return { html, className: 'rsa-bottom-menu-item-text align-vh' }}
   }
-  function item_node(o, level = 0) {
-    let { setNavId, navId, rtl,nav } = this.props;
-    let { openDic } = this.state;
+  function item_node(o, level = 0):I_RVD_node {
     let { id, icon, items ,disabled} = o;
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
     return {
-      className: 'rsa-navigation-item' + (active ? ' active' : ''), onClick: disabled?undefined:() => items ? this.toggle(id) : setNavId(id),
+      className: 'rsa-navigation-item' + (active ? ' active' : ''), onClick: disabled?undefined:() => items ? toggle(id) : setNavId(id),
       row: [
         { size: level * 16 },
         { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', className: 'align-vh' },
         { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'align-vh' },
-        this.text_node(o,'side')
+        text_node(o,'side')
       ]
     }
   }
-  function bottomMenu_node(o) {
+  function bottomMenu_node(o):I_RVD_node {
     let { icon, id,disabled } = o;
-    let { navId, setNavId } = this.props;
     let active = id === navId;
     return {
       flex: 1, className: 'rsa-bottom-menu-item of-visible' + (active ? ' active' : ''), onClick: disabled?undefined:() => setNavId(id),
@@ -236,25 +231,23 @@ function Navigation(props:I_RSA_Navigation) {
         { show: !!icon,flex: 2 },
         { show: !!icon, html: () => typeof icon === 'function' ? icon(active) : icon, className: 'of-visible rsa-bottom-menu-item-icon align-vh' },
         { show: !!icon,flex: 1 },
-        this.text_node(o,'bottom'),
+        text_node(o,'bottom'),
         { flex: 1 }
       ]
     }
   }
-  let { type, navItems } = this.props;
   if (type === 'bottom') {
-    return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_node(o)) }} />)
+    return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => bottomMenu_node(o)) }} />)
   }
-  return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_node(), this.items_node(navItems, 0),this.footer_node()] }} />);
+  return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [header_node(), items_node(navItems, 0),footer_node()] }} />);
 }
-class SideMenu extends Component {
-  header_node() {
-    let { header } = this.props;
+function SideMenu(props:I_RSA_SideMenu) {
+  let { attrs = {},header,items, onClose,footer } = props;
+  function header_node() {
     if (!header) { return false }
     return { html: header(), className: 'rsa-sidemenu-header' };
   }
-  items_node() {
-    let { items, onClose } = this.props;
+  function items_node() {
     return {
       flex: 1,
       column: items.map((o, i) => {
@@ -271,26 +264,19 @@ class SideMenu extends Component {
       })
     }
   }
-  footer_node() {
-    let { footer } = this.props;
+  function footer_node() {
     if (!footer) { return false }
     return { html: footer(), className: 'rsa-sidemenu-footer' };
   }
-  componentDidMount() {
-    setTimeout(() => this.setState({ open: true }), 0)
-  }
-  render() {
-    let { attrs = {} } = this.props;
-    return (
-      <RVD
-        rootNode={{
-          attrs,
-          className: 'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : ''),
-          column: [this.header_node(), this.items_node(), this.footer_node()]
-        }}
-      />
-    );
-  }
+  return (
+    <RVD
+      rootNode={{
+        attrs,
+        className: 'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : ''),
+        column: [header_node(), items_node(), footer_node()]
+      }}
+    />
+  );
 }
 const RSANavInterface = `
 {
@@ -421,7 +407,7 @@ function RSAValidateNav(nav){
     if(nav_validProps.indexOf(prop) === -1){
       return `
         react-super-app error => invalid nav property (${prop}). 
-        valid nav properties are ${nav_validProps.split(' - ')}
+        valid nav properties are ${nav_validProps.join(' - ')}
       `
     }
   }

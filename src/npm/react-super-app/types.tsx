@@ -71,7 +71,8 @@ export type I_rsa_nav = {
     id?:string,
     header?:()=>React.ReactNode,
     footer?:()=>React.ReactNode,
-    cache?:boolean
+    cache?:boolean,
+    nested?:boolean
 }
 export type I_rsa_sideItem = {
     icon?:React.ReactNode | (()=>React.ReactNode),
@@ -92,8 +93,8 @@ export type I_ReactSuperApp = {
     popup:any
 }
 export type I_RSA_Navigation = {
-
+    nav:I_rsa_nav,navId:string, setNavId:(navId)=>void,rtl:boolean,navItems:I_rsa_navItem[],type:'bottom'|'side'
 }
 export type I_RSA_SideMenu = {
-    
+    attrs:any,header?:()=>React.ReactNode,items:I_rsa_sideItem[], onClose:()=>void,footer?:()=>React.ReactNode
 }
