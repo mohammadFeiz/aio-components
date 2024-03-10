@@ -367,7 +367,7 @@ export default class Table extends Component {
     if(this.freezeMode){
       let {freezeSize} = this.state;
       return {
-        flex:1,gap:8,
+        flex:1,gap:{size:8},
         row:[
           {
             gapAttrs:{className:TableCLS.splitter},
@@ -473,7 +473,7 @@ export default class Table extends Component {
     return (
       <TableContext.Provider value={context}>
         <RVD 
-          layout={{
+          rootNode={{
             className:TableCLS.table + (className?' ' + className:''),attrs:{ref:this.dom,onKeyDown:(e)=>this.keyDown(e)},
             style,
             column:[
@@ -657,7 +657,7 @@ class TableUnit extends Component{
     let isThereAnyFlex = false;
     return {
       className:TableCLS.row + ' of-visible' + (rowDetail._show === 'relative'?' row-relative-filter':''),
-      gap:columnGap,
+      gap:{size:columnGap},
       row:cells.map((cell,i)=>{
         let res = cell(striped);
         let {html,size,flex,minWidth = 3,attrs,hide_xs,hide_sm,hide_md,hide_lg,show_xs,show_sm,show_md,show_lg} = res;
@@ -687,10 +687,10 @@ class TableUnit extends Component{
     return (
       <RVD 
         onSwap={(f,t)=>this.onSwap(f,t)}
-        layout={{
+        rootNode={{
           className,
           column:[headerLayout,...rowsLayout],
-          gap:rowGap,flex:1,
+          gap:{size:rowGap},flex:1,
           attrs:{onScroll:()=>onScroll(),ref:this.rowsRef}
         }}
       />
@@ -702,7 +702,7 @@ class TableUnit extends Component{
     if(rowTemplate || showHeader === false){return false}
     let isThereAnyFlex = false;
     return {
-      gap:columnGap,className:TableCLS.header,hide_xs:showHeader === 'hide_xs',
+      gap:{size:columnGap},className:TableCLS.header,hide_xs:showHeader === 'hide_xs',
       row:columns.map((column,i)=>{
         let {width,flex} = column;
         if(width === undefined && flex === undefined){flex = 1;}
@@ -978,7 +978,7 @@ class Cell extends Component{
     this.inlineEdit = this.getInlineEdit(row,column);
     return (
       <RVD
-        layout={{
+        rootNode={{
           className:TableCLS.cell + ' of-visible' + (attrs.className?' ' + attrs.className:'') + (striped === true?' striped':''),
           attrs:{
             ...attrs,'data-uniq-id':this.dataUniqId,style:undefined,className:undefined,
@@ -1146,7 +1146,7 @@ class AIOTableFilterPopup extends Component{
     this.operatorOptions = this.getOperatorOptions();
     return (
       <RVD
-        layout={{
+        rootNode={{
           className:TableCLS.filterPopup,style:{minWidth:250},
           column:[this.title_layout(),this.items_layout(),this.add_layout()]
         }}
@@ -1220,7 +1220,7 @@ class AIOfilterItem extends Component{
     if(this.state.prevValue !== this.props.value){
       setTimeout(()=>this.setState({value:this.props.value,prevValue:this.props.value}),0);
     }
-    return (<RVD layout={{className:TableCLS.filterItem,gap:3,row:[this.operator_layout(),this.value_layout(),this.remove_layout()]}}/>)
+    return (<RVD rootNode={{className:TableCLS.filterItem,gap:{size:3},row:[this.operator_layout(),this.value_layout(),this.remove_layout()]}}/>)
   }
 }
 function Sort(getProps,getState,setColumns){

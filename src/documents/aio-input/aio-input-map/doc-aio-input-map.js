@@ -149,7 +149,7 @@ class ValueZoom extends Component {
         return (
             <div className='example'>
                 <RVD
-                    layout={{
+                    rootNode={{
                         row:[
                             {
                                 style:{border:'1px solid #ddd',padding:12},
@@ -248,7 +248,7 @@ class Area extends Component {
         return (
             <div className='example'>
                 <RVD
-                    layout={{
+                    rootNode={{
                         column:[
                             {
                                 row:[
@@ -394,7 +394,7 @@ class Markers extends Component {
         return (
             <div className='example'>
                 <RVD
-                    layout={{
+                    rootNode={{
                         row:[
                             {
                                 style:{border:'1px solid #ddd',padding:12},
@@ -588,7 +588,7 @@ class Example extends Component {
     render() {
         return (
             <RVD
-                layout={{
+                rootNode={{
                     column: [
                         this.toolbar_layout(),
                         this.body_layout()

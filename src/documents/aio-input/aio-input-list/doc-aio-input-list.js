@@ -39,7 +39,6 @@ class Basic extends Component {
                     value={model}
                     labelAttrs={{style:{marginRight:12}}}
                     inputs={{
-                        gap:12,
                         row:[
                             {input:{type:'slider',start:24,end:72,before:'size'},field:'value.size'},
                             {input:{type:'slider',start:80,end:400,before:'width'},field:'value.width'},
@@ -143,7 +142,7 @@ class Example extends Component {
     render() {
         return (
             <RVD
-                layout={{
+                rootNode={{
                     column: [
                         this.toolbar_layout(),
                         this.body_layout()

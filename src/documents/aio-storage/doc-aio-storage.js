@@ -1,6 +1,6 @@
 import React,{Component} from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
-import RVD,{RVDRemoveV} from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD,{animate} from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from './../../npm/aio-input/aio-input';
 import './index.css';
 export default class DOC_AIOStorage extends Component{
@@ -37,7 +37,7 @@ export default class DOC_AIOStorage extends Component{
         this.setState({list})
     }
     remove(id){
-        RVDRemoveV('#a' + id,()=>{
+        animate('removeV','#a' + id,()=>{
             let {list} = this.state;
             let newList = list.filter((o)=>o.id !== id);
             this.Storage.save({name:'list',value:newList});
@@ -53,7 +53,7 @@ export default class DOC_AIOStorage extends Component{
         let {goToHome} = this.props;
         return (
             <RVD
-                layout={{
+                rootNode={{
                     style:{width:'50%',marginLeft:'25%',border:'1px solid',padding:12},
                     column:[
                         {html:'exit',className:'align-v',size:48,onClick:()=>goToHome()},
@@ -82,7 +82,7 @@ export default class DOC_AIOStorage extends Component{
                         }}/>},
                         {size:12},
                         {html:'Members',className:'align-v',size:48},
-                        {gap:12,column:list.map((o)=>this.item_layout(o))}
+                        {gap:{size:12},column:list.map((o)=>this.item_layout(o))}
                     ]
                 }}
             />

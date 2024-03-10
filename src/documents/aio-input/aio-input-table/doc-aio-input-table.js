@@ -2386,7 +2386,7 @@ class App extends Component {
 function Card({row}){
     return (
         <RVD
-            layout={{
+            rootNode={{
                 style:{width:'50%',maxWidth:160,minWidth:120,border:'1px solid #ddd',height:240,padding:12},
                 column:[{html:row.name},{html:row.gender},{html:row.age,className:'align-vh fs-24 flex-1'}]
             }}
@@ -2712,7 +2712,7 @@ class Example extends Component {
     render() {
         return (
             <RVD
-                layout={{
+                rootNode={{
                     column: [
                         this.toolbar_layout(),
                         this.body_layout()

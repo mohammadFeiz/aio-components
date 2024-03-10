@@ -5,7 +5,7 @@ export default class PropsList extends Component{
         let {props} = this.props;
         return (
             <RVD
-                layout={{
+                rootNode={{
                     style:{padding:12},
                     column:props.map((o)=>{
                         return (
@@ -24,7 +24,7 @@ class PropsListItem extends Component{
         let {props,type,description} = this.props;
         return (
             <RVD
-                layout={{
+                rootNode={{
                     column:[
                         {
                             className:'align-v',

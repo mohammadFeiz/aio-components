@@ -70,7 +70,7 @@ export default class AIOHighlighter extends Component {
     }
     return (
       <RVD
-        layout={{
+        rootNode={{
           flex:1,style:{position:'absolute',left:0,top:0,height:'100%',width:'100%'},
           column
         }}
@@ -122,7 +122,7 @@ export default class AIOHighlighter extends Component {
     let {mouseAccess,style} = this.props;
     return (
     <RVD
-      layout={{
+      rootNode={{
         className:'fullscreen aio-highlighter',
         style:{pointerEvents:mouseAccess?'none':'all',...style},
         column:[

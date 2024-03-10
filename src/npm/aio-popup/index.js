@@ -305,7 +305,7 @@ class Popup extends Component {
     return (
       <div {...backdropProps} ref={this.backdropDom} onKeyDown={this.keyDown.bind(this)} tabIndex={0}>
         <RVD
-          layout={{
+          rootNode={{
             attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui,[ev]:this.mouseDown.bind(this)},
             className,style,
             column: [
@@ -364,7 +364,7 @@ function ModalHeader({rtl,header,handleClose,state,setState}){
   }
   let className = 'aio-popup-header' + (attrs.className?' ' + attrs.className:'')
   let style = attrs.style;
-  return (<RVD layout={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
+  return (<RVD rootNode={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
 }
 function ModalBody(props){
     let {handleClose,body,updatePopoverStyle,state,setState} = props;

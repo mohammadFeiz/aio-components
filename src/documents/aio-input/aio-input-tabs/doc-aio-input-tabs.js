@@ -94,7 +94,7 @@ export default function App(){
     }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 column:[
                     code_layout(),
                 ]

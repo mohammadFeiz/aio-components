@@ -128,7 +128,6 @@ export default function Loading(){
                     onChange={(model) => setModel(model)}
                     value={{ ...model }}
                     inputs={{
-                        props: { gap: 12 },
                         column: [
                             {
                                 row: [
@@ -157,7 +156,7 @@ export default function Loading(){
                                         flex:1,
                                         row: [
                                             {
-                                                flex:1,props: { gap: 3 },className:'ofx-auto',
+                                                flex:1,className:'ofx-auto',
                                                 row: new Array(model.count).fill(0).map((s, i) => {
                                                     let active = model.activeSize === i;
                                                     return {
@@ -192,7 +191,7 @@ export default function Loading(){
     return (
         <>
             <RVD
-                layout={{
+                rootNode={{
                     className: 'fullscreen',
                     column: [
                         {

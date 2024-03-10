@@ -1232,7 +1232,7 @@ class App extends Component {
   render(){
     return (
       <RVD
-        layout={{
+        rootNode={{
           column:[
             this.tabs_layout(),
             {size:24},

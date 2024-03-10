@@ -34,7 +34,7 @@ export default class Logs {
         const root = ReactDOM.createRoot(document.getElementById('aio-log-container'));
         root.render(
             <RVD
-                layout={{
+                rootNode={{
                     className:'fullscreen',style:{direction:'ltr'},
                     column:[
                         {
@@ -71,5 +71,5 @@ function LogsComponent(props) {
         if(visibleId !== id){return false}
         return { className: 'aio-log-item-body align-v', html: getValue(value) } 
     }
-    return (<RVD layout={{ className: 'aio-log', column: [tabs_layout(), items_layout()] }} />)
+    return (<RVD rootNode={{ className: 'aio-log', column: [tabs_layout(), items_layout()] }} />)
 }

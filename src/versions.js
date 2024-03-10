@@ -63,7 +63,7 @@ export default function Versions({goToHome}){
         },
         'react-virtual-dom':{
             open:false,
-            version:'4.0.7',
+            version:'5.0.0',
             "dependencies": {
                 "jquery": "3.6.0"
             }
@@ -100,7 +100,7 @@ export default function Versions({goToHome}){
     let componentsList = Object.keys(components);
     return (
         <RVD
-            layout={{
+            rootNode={{
                 style:{fontSize:12},
                 column:[
                     {size:36,html:<button onClick={()=>goToHome()}>Go To Home</button>,className:'p-h-12 align-v'},
@@ -119,7 +119,7 @@ export default function Versions({goToHome}){
                                 style:{border:'1px solid dodgerblue',marginBottom:3},
                                 column:[
                                     {
-                                        style:{background:'dodgerblue'},className:'align-v color-32 p-6',
+                                        style:{background:'dodgerblue'},className:'align-v c-32 p-6',
                                         row:[
                                             {
                                                 html:<Icon path={open?mdiChevronDown:mdiChevronRight} size={1}/>,size:36,className:'align-vh',
@@ -137,7 +137,7 @@ export default function Versions({goToHome}){
                                                 html:'Dependencies'  
                                             },
                                             {
-                                                style:{padding:12,background:'#f7f7f7'},gap:2,
+                                                style:{padding:12,background:'#f7f7f7'},gap:{size:2},
                                                 column:dependenciesList.map((key)=>{
                                                     let version = dependencies[key];
                                                     let isUpToDate = !components[key] || version === 'latest'?true:(version === components[key].version);
@@ -161,7 +161,7 @@ export default function Versions({goToHome}){
                                                 html:'Depended To'  
                                             },
                                             {
-                                                style:{padding:12,background:'#f7f7f7'},gap:2,
+                                                style:{padding:12,background:'#f7f7f7'},gap:{size:2},
                                                 column:dependedTo.map((key)=>{
                                                     return {
                                                         style:{background:'#fff',padding:6},

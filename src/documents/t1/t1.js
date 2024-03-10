@@ -26,7 +26,7 @@ export default function App({ goToHome }) {
     headerContent: () => {
       return (
         <RVD
-          layout={{
+          rootNode={{
             row: [
               { html: <Icon path={mdiHome} size={1} />, onClick: () => goToHome() }
             ]
@@ -71,7 +71,7 @@ function Popups() {
   }
   return (
     <RVD
-      layout={{
+      rootNode={{
         className: 't-page',
         column: [
           {
@@ -98,8 +98,8 @@ function Cards() {
   let { rsa } = useContext(AppContext);
   return (
     <RVD
-      layout={{
-        className: 't-page p-24', gap: 12,
+      rootNode={{
+        className: 't-page p-24', gap:{size:12},
         column: [
           {
             className: 'of-visible',
@@ -209,7 +209,7 @@ function Cards() {
             })
           },
           {
-            gap: 12, className: 'of-visible',
+            gap:{size: 12}, className: 'of-visible',
             row: [
               {
                 flex: 1, className: 'of-visible',
@@ -226,7 +226,7 @@ function Cards() {
             ]
           },
           {
-            gap: 2, className: 'of-visible',
+            gap:{size:2}, className: 'of-visible',
             column: [
               { className: 'of-visible', html: renderCard({ text: 'my panel text' }) },
               { className: 'of-visible', html: renderCard({ text: 'my panel text' }) },
@@ -244,7 +244,7 @@ function Cards() {
                   { attrs: { className: 't-dark' }, justify: true, uptext: 'my panel uptext', text: 'my panel text', subtext: 'my panel subtext' }
                 ]
               ],
-              gap: 2, attrs: { className: 't-shadow' }
+              gap:{size:2}, attrs: { className: 't-shadow' }
             })
           },
           {
@@ -258,7 +258,7 @@ function Cards() {
                 [{ text: 'my panel text', subtext: 'my panel subtext' }],
                 [{ uptext: 'my panel uptext', text: 'my panel text', subtext: 'my panel subtext' }]
               ],
-              gap: 2,
+              gap:{size:2},
             })
           },
           {
@@ -289,8 +289,8 @@ function Inputs() {
   let [date,setDate] = useState();
   return (
     <RVD
-      layout={{
-        className: 't-page', gap: 12,
+      rootNode={{
+        className: 't-page', gap:{size:12},
         column:[
           {
             html: (
@@ -308,7 +308,7 @@ function Inputs() {
           {
             className:'ofy-auto',flex:1,column: [
               {
-                className: 'p-12', gap: 12,
+                className: 'p-12', gap:{size:12},
                 column: [
                   { html: <button className='t-link'>t-link</button> },
                   {
@@ -391,7 +391,6 @@ function Inputs() {
                     value={{ ...form }}
                     onChange={(form) => setForm(form)}
                     inputs={{
-                      props: { gap: 12 },
                       column: [
                         {
                           row:[
@@ -442,7 +441,7 @@ function Inputs() {
 function Other() {
   return (
     <RVD
-      layout={{
+      rootNode={{
         className: 't-page p-12 gap-12 t-color4',
         column: [
           {

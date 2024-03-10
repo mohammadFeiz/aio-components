@@ -140,7 +140,7 @@ class Box extends Component{
     let {text,onRemove,title = 'title'} = this.props;
     return (
       <RVD
-        layout={{
+        rootNode={{
           className:'handle',
           style:{
             userSelect:'none',

@@ -242,7 +242,7 @@ class MSF extends Component{
       }
     }
     render(){
-      return (<RVD layout={{row:[this.form_layout(),this.body_layout()]}}/>)
+      return (<RVD rootNode={{row:[this.form_layout(),this.body_layout()]}}/>)
     }
   }
 

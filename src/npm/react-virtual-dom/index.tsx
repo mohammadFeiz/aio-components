@@ -1,14 +1,10 @@
-import React, { Fragment, createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import $ from 'jquery';
 import "./index.css";
-let RVDCLS = {
-    rvd: 'rvd', pointer: 'rvd-pointer', gap: 'rvd-gap',
-    row: 'rvd-row', column: 'rvd-column', hidexs: 'rvd-hide-xs', hidesm: 'rvd-hide-sm', hidemd: 'rvd-hide-md', hidelg: 'rvd-hide-lg'
-}
 const RVDContext = createContext({} as I_RVD_context);
 export type I_RVD_node = {
     align?: 'v' | 'h' | 'vh',
-    gap?: number | {size:number,content?:React.ReactNode,attrs?:any} | ((node:I_RVD_node,parent:I_RVD_node,index:number)=>{size:number,content?:React.ReactNode,attrs?:any}),
+    gap?: I_RVD_node | ((p:{node:I_RVD_node,parent:I_RVD_node,index:number,level:number})=>I_RVD_node),
     data?:any,
     reOrder?: (newData:any[],fromDragIndex: number, toDragIndex: number) => void,
     longTouch?:()=>void,
@@ -20,8 +16,8 @@ export type I_RVD_node = {
     grid?: I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
     gridCols?:number,
     gridRow?:I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
-    layout?: string,
     nodeClass?:string,
+    wrap?:boolean,
     nodeClasses?:string[],
     attrs?: any,
     className?: string | ((string | false)[]),
@@ -31,6 +27,8 @@ export type I_RVD_node = {
     loading?: boolean,
     key?:string | number,
     id?:string | number,
+    onDrag?:(e:any)=>void,
+    onDrop?:(e:any)=>void
 }
 export type I_RVD_editNode = (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node;
 export type I_RVD_classes = {[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
@@ -94,8 +92,6 @@ function RVDNode(props:I_RVDNode){
     }
     function getNode():I_RVD_node{
         let {node} = props;
-        if (!node || node === null) { node = {} }
-        if ((typeof node.show === 'function' ? node.show() : node.show) === false) { return null }
         if (rootProps.editNode) { node = rootProps.editNode(node, parent) }
         node.loading = isLoading(node, parent);
         node.nodeClasses = getNodeClasses(node,parent)
@@ -114,14 +110,16 @@ function RVDNode(props:I_RVDNode){
         else { content = getHtml(node) }
         return content
     }
+    if (!props.node || props.node === null) { return null }
+    if ((typeof props.node.show === 'function' ? props.node.show() : props.node.show) === false) { return null }
     let node = getNode()
     let content = getContent(node)
     let attrs = new RVDAttrs({node,parent, level,index,context}).getAttrs();
-    let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl:rootProps.rtl, index,state,setState });
+    let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl:rootProps.rtl, index,level,context });
     return (
         <>
             <div {...attrs}>{content}</div>
-            {gap !== false && <div {...gap.attrs}>{gap.content}</div>}
+            {gap !== null && gap}
         </>
     )
 }
@@ -159,7 +157,9 @@ class RVDAttrs{
         return onClick || attrs.onClick;
     }
     getDragAttrs = () => {
-        if (!this.parent || !this.parent.reOrder || !Array.isArray(this.parent.data)) { return {} }
+        let isReorder = this.parent && this.parent.reOrder && Array.isArray(this.parent.data)
+        let isDragable = this.node.onDrag || this.node.onDrop;
+        if(!isReorder && !isDragable){return {}}
         let {rootProps,getTemp,setTemp} = this.context;
         let {dragHandleClassName} = rootProps;
         let res: any = {};
@@ -168,22 +168,26 @@ class RVDAttrs{
             if (dragHandleClassName) {
                 if (!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0) { return; }
             }
-            setTemp('dragIndex',this.index);
+            if(isReorder){setTemp('dragIndex',this.index);}
+            else if(this.node.onDrag){this.node.onDrag(e)}
         }
         res.onDragOver = (e) => e.preventDefault();
-        res.onDrop = () => {
-            let dragIndex = getTemp('dragIndex');
-            if (dragIndex === false || dragIndex === this.index) { return; }
-            this.parent.reOrder(ReOrder({data:this.parent.data,fromIndex:dragIndex, toIndex:this.index}),dragIndex, this.index);
-            setTemp('dragIndex',false)
+        res.onDrop = (e) => {
+            if(isReorder){
+                let dragIndex = getTemp('dragIndex');
+                if (dragIndex === false || dragIndex === this.index) { return; }
+                this.parent.reOrder(ReOrder({data:this.parent.data,fromIndex:dragIndex, toIndex:this.index}),dragIndex, this.index);
+                setTemp('dragIndex',false)
+            }
+            else if(this.node.onDrop) {this.node.onDrop(e)}
         }
         return res;
     }
     getClassName = () => {
         let {classes = {}} = this.context.rootProps;
-        let res = RVDCLS.rvd;
+        let res = 'rvd';
         if (this.level === 0) { res += ' rvd-root' }
-        let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading} = this.node
+        let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading,wrap} = this.node
         if (this.node.className) {
             let className:string;
             if(Array.isArray(this.node.className)){className = this.node.className.filter((cls)=>!!cls && typeof cls === 'string').join(' ')}
@@ -193,11 +197,12 @@ class RVDAttrs{
             else if(typeof dcls === 'string'){className = dcls;}
             if(className && typeof className === 'string'){res += ' ' + className;}  
         }
+        if(wrap){res += ' wrap'}
         if(nodeClass){res += ' ' + nodeClasses.join('-')}
-        if (!!attrs.onClick) { res += ' ' + RVDCLS.pointer; }
+        if (!!attrs.onClick) { res += ' pointer'; }
         if(this.node.align){res += ` align-${this.node.align}`}
-        if (row) { res += ' ' + RVDCLS.row }
-        else if (column || grid) { res += ' ' + RVDCLS.column }
+        if (row) { res += ' rvd-row' }
+        else if (column || grid) { res += ' rvd-column' }
         if(loading){res += ' rvd-parent-loading'}
         let hideClassName = getHideClassName(this.node);
         if (hideClassName) { res += ' ' + hideClassName }
@@ -270,13 +275,14 @@ function eventHandler(event, action, type = 'bind') {
     $(window).unbind(event, action);
     if (type === 'bind') { $(window).bind(event, action) }
 }
-function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,state:any,setState:(p:any,value?:any)=>void }) {
-    let { node, parent = {}, dataId, rtl, index,state,setState } = p;
+function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,level:number,context:I_RVD_context}) {
+    let { node, parent = {}, dataId, rtl, index,level,context } = p;
     let $$ = {
         getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
         mouseMove(e) {
-            var { pos, axis, size, dataId } = this.so;
+            var { pos, size } = this.so;
             var client = this.getClient(e);
+            let axis = parent.row?'x':'y';
             var offset = (client[axis] - pos[axis]) * (rtl ? -1 : 1);
             //if (offset % 24 !== 0) { return }
             this.so.newSize = offset + size;
@@ -286,45 +292,32 @@ function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index
         mouseUp() {
             eventHandler('mousemove', this.mouseMove, 'unbind');
             eventHandler('mouseup', this.mouseUp, 'unbind');
-            let { onResize, newSize } = this.so;
-            onResize(newSize);
-        },
-        getClassName(cls) {
-            let className = RVDCLS.gap;
-            if (cls) { className += ' ' + cls }
-            let hideClassName = getHideClassName(node)
-            return className + (hideClassName ? ' ' + hideClassName : '');
+            let { newSize } = this.so;
+            node.onResize(newSize);
         },
         getGap() {
-            let { gap } = parent, style: any = {}, axis;
-            if (!gap) { return false }
-            let res = typeof gap === 'function' ? gap(node, parent, index) : gap;
-            let size, content = '', attrs: any = {};
-            if (typeof res === 'object') {
-                size = res.size;
-                content = res.content === undefined ? '' : res.content;
-                attrs = res.attrs || {};
-            }
-            else { size = res; }
-            if (!size) { return false }
-            if (parent.row) { axis = 'x'; style.width = size; }
-            else if (parent.column || parent.grid) { axis = 'y'; style.height = size; }
-            else { return false }
-            style = { ...style, ...attrs.style }
-            attrs = {
-                ...attrs,
-                className: this.getClassName(attrs.className), style, draggable: false,
+            let { gap } = parent;
+            gap = typeof gap === 'function' ? gap({node, parent, index,level}) : gap;
+            if (!gap || !parent) { return null }
+            let gapAttrs = {
+                draggable:false,
                 onDragStart: (e) => { e.preventDefault(); return false }
-            };
+            }
             if (node.size && node.onResize) {
-                attrs.style.cursor = axis === 'x' ? 'col-resize' : 'row-resize';
-                attrs['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
-                    this.so = { pos: this.getClient(e), onResize: node.onResize, axis, size: node.size, dataId };
+                gapAttrs['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
+                    this.so = { pos: this.getClient(e), size: node.size };
                     eventHandler('mousemove', $.proxy(this.mouseMove, this));
                     eventHandler('mouseup', $.proxy(this.mouseUp, this));
                 }
             }
-            return { attrs, content };
+            let className = 'rvd-gap';
+            if(gap.className){className += ' ' + gap.className}
+            let p:I_RVDAttrs = {node:{...gap,className,attrs:{...gap.attrs,...gapAttrs}},parent,level,index,context}
+            let Attrs = new RVDAttrs(p)
+            let attrs = Attrs.getAttrs();
+            let {html = ''} = gap;
+            if(node.loading){html = ''}
+            return <div {...attrs}>{html}</div> 
         }
     }
     return $$.getGap()
@@ -339,10 +332,10 @@ function getHideClassName(node) {
     if (node.hide_md) { hide_md = true; }
     if (node.show_lg) { hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false; }
     if (node.hide_lg) { hide_lg = true; }
-    if (hide_xs) { className += ' ' + RVDCLS.hidexs; }
-    if (hide_sm) { className += ' ' + RVDCLS.hidesm; }
-    if (hide_md) { className += ' ' + RVDCLS.hidemd; }
-    if (hide_lg) { className += ' ' + RVDCLS.hidelg; }
+    if (hide_xs) { className += ' rvd-hide-xs'; }
+    if (hide_sm) { className += ' rvd-hide-sm'; }
+    if (hide_md) { className += ' rvd-hide-md'; }
+    if (hide_lg) { className += ' rvd-hide-lg'; }
     return className;
 }
 function Cls(key:string, CLASSNAME?:string) {

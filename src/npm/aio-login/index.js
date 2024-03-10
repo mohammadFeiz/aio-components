@@ -321,7 +321,7 @@ class LoginForm extends Component {
                 <AIOInput
                     type='form' key={mode} lang='fa' value={model} rtl={true} initialDisabled={!userId}
                     onChange={(model,errors) => { this.setState({ model,error:!!errors.length }) }}
-                    inputs={{ props: { gap: 12 }, column: this.getInputs(labels) }}
+                    inputs={{ column: this.getInputs(labels) }}
                     footer={({ disabled }) => this.submit_layout({ submitText: labels.submitText, disabled })}
                 />
             )
@@ -333,7 +333,7 @@ class LoginForm extends Component {
             style: { padding: '0 12px' },
             html: (<SubmitButton mode={mode} timer={timer} text={submitText} loading={loading} disabled={() => !!disabled} onClick={() => this.onSubmit()} />)
         }
-        return <RVD layout={layout} />
+        return <RVD rootNode={layout} />
     }
     async onSubmit() {
         let { onSubmit, profile,onSubmitProfile } = this.props;
@@ -441,7 +441,7 @@ class LoginForm extends Component {
         }
         let className = 'aio-login' + (attrs.className ? ' ' + attrs.className : '')
         let style = attrs.style;
-        return (<RVD layout={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } }}}/>)
+        return (<RVD rootNode={{className, style,column,attrs:{ onKeyDown: (e) => { if (e.keyCode === 13) { this.onSubmit() } } }}}/>)
     }
 }
 class SubmitButton extends Component {

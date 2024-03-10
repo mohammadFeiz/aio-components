@@ -159,7 +159,7 @@ export default class AIOJson extends Component {
         popOver={()=>{
           return (
             <RVD
-              layout={{
+              rootNode={{
                 attrs:{style:{fontSize:12}},
                 column:[
                   {
@@ -405,13 +405,13 @@ export default class AIOJson extends Component {
     let mode = generated === false?'builder':'preview';
     return (
       <RVD
-        layout={{
+        rootNode={{
           attrs:{className:'json-builder' + (className?' ' + className:''),style},
           column:[
             this.getHeader(mode),
             {
               flex:1,show:mode === 'builder',attrs:{style:{padding:12}},
-              html:<RVD layout={{style:{fontSize},className:'ofy-auto',column}}/>
+              html:<RVD rootNode={{style:{fontSize},className:'ofy-auto',column}}/>
             },
             {show:mode === 'preview',flex:1,className:'ofy-auto',html:<pre>{generated}</pre>,style:{padding:12}}
           ]

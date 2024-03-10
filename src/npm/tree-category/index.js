@@ -61,12 +61,12 @@ export default class TreeCategories extends Component{
         let {childs} = this.state;
         if(!childs.length){return false}
         let className = 'tree-category-row';
-        return {className,gap:6,row:childs.map(({name,index},i)=>this.child_layout(name,index))}
+        return {className,gap:{size:6},row:childs.map(({name,index},i)=>this.child_layout(name,index))}
     }
     child_layout(name,index){return {className:`tree-category-button`,html:name,onClick:()=>this.addLevel(index)}}
     path_layout(){
         let {path} = this.state;
-        let gap = {gap:16,gapHtml:()=>this.chevron(),gapAttrs:{className:'align-vh'}}
+        let gap = {gap:{size:16},gapHtml:()=>this.chevron(),gapAttrs:{className:'align-vh'}}
         return {className:'tree-category-row',...gap,row:path.map((o,i)=>this.pathItem_layout(o,i))}
     }
     pathItem_layout(pathItem,pathIndex){
@@ -78,5 +78,5 @@ export default class TreeCategories extends Component{
         else{className = `tree-category-button`; html = pathItem.name}
         return {className,html,onClick:isLast?undefined:()=>this.goToLevel(pathItem.level)}
     }
-    render(){return (<RVD layout={{className:'tree-category' + (this.props.rtl?' rtl':''),column:[this.path_layout(),this.childs_layout()]}}/>)}
+    render(){return (<RVD rootNode={{className:'tree-category' + (this.props.rtl?' rtl':''),column:[this.path_layout(),this.childs_layout()]}}/>)}
 }

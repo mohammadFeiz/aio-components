@@ -454,7 +454,7 @@ function TimePopover(props) {
     function submit() { props.onChange(value); props.onClose(); }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className: 'dir-ltr',
                 column: [
                     { className: 'm-b-12 align-h', row: [layout('year'), layout('month'), layout('day'), layout('hour'), layout('minute'), layout('second')] },
@@ -967,14 +967,14 @@ class Form extends Component {
         attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') })
         return (
             <RVD
-                getLayout={(obj, parent = {}) => {
+                editNode={(obj, parent = {}) => {
                     let show = this.getValueByField({ field: obj.show, def: true });
                     if (show === false) { return false }
                     if (obj.input) { return this.input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
                     if (parent.input) { obj.className = 'of-visible' }
                     return { ...obj }
                 }}
-                layout={{ attrs, column: [this.header_layout(), this.body_layout(), this.footer_layout()] }}
+                rootNode={{ attrs, column: [this.header_layout(), this.body_layout(), this.footer_layout()] }}
             />
         )
     }
@@ -2968,7 +2968,7 @@ class MapUnit extends Component {
             <>
                 <MapContext.Provider value={this.getContext()}>
                     <RVD
-                        layout={{
+                        rootNode={{
                             className: 'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : ''), style: attrs.style,
                             onClick: () => {
                                 if (popup && !isPopup) { this.setState({ showPopup: true }) }
@@ -3060,7 +3060,7 @@ function MapHeader() {
     if (!search && !title && !onClose) { return null }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className: 'aio-input-map-header of-visible' + (searchResult && searchResult.length && showResult ? ' aio-input-map-header-open' : ''),
                 column: [header_layout(), input_layout(), result_layout(),]
             }}
@@ -3087,7 +3087,7 @@ function MapFooter() {
     let Submit = submit_layout()
     let Details = details_layout();
     if (!Submit && !Details) { return null }
-    return (<RVD layout={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
+    return (<RVD rootNode={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
 function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, speedX = 1, speedY = 1, stepX = 1, stepY = 1, id, reverseY, reverseX, minY, maxY, minX, maxX }) {
     let a = {
@@ -3225,7 +3225,7 @@ export function Acardion(props = {}){
     }
     return (
       <RVD
-        layout={{
+        rootNode={{
           className:'aio-input-acardion',
           column:items.map((o)=>item_layout(o))
         }}
@@ -3315,7 +3315,7 @@ export function Tree(props = {}){
     function body_layout(){
       return { className: 'aio-input-tree-body', column: getColumn() }
     }
-    return (<RVD layout={{className:'aio-input-tree',column: [header_layout(),body_layout()]}}/>)
+    return (<RVD rootNode={{className:'aio-input-tree',column: [header_layout(),body_layout()]}}/>)
   }
 export function AIOValidation(props) {
     let $$ = {

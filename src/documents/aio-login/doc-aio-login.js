@@ -518,7 +518,7 @@ class Example extends Component {
     render() {
         return (
             <RVD
-                layout={{
+                rootNode={{
                     column: [
                         this.toolbar_layout(),
                         this.body_layout()

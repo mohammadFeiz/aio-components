@@ -24,17 +24,6 @@ export default function DOC_AIO_Canvas({goToHome}){
         activePointIndex:false
     })
     let startDragId;
-    function header_layout(){
-        return {
-            html:<Header/>
-        }
-    }
-    function body_layout(){
-        return {
-            flex:1,
-            html:<Body/>
-        }
-    }
     function getNewId(){return 'aa' + Math.round(Math.random() * 10000000);}
     function getItemById(ids){
         let {items} = state;
@@ -63,22 +52,12 @@ export default function DOC_AIO_Canvas({goToHome}){
         let id = getNewId();
         let newItem = {
             type,id:parent?[...parent.id,id]:[id],name:type + Math.round(Math.random() * 10000000),show:true,
-            events:{
-                'click':()=>alert()
-            }
+            events:{'click':()=>alert()}
         }
-        if(type === 'Arc'){
-            newItem = {...newItem,r:100}
-        }
-        else if(type === 'Rectangle'){
-            newItem = {...newItem,width:100,height:100}
-        }
-        else if(type === 'Group'){
-            newItem = {...newItem,items:[],sequence:[],open:true}
-        }
-        else if(type === 'Line'){
-            newItem = {...newItem,points:[]}
-        }
+        if(type === 'Arc'){newItem = {...newItem,r:100}}
+        else if(type === 'Rectangle'){newItem = {...newItem,width:100,height:100}}
+        else if(type === 'Group'){newItem = {...newItem,items:[],sequence:[],open:true}}
+        else if(type === 'Line'){newItem = {...newItem,points:[]}}
         addItem(newItem,parent)
     }
     function addItem(newItem,parent){
@@ -177,15 +156,7 @@ export default function DOC_AIO_Canvas({goToHome}){
     }
     return (
         <CTX.Provider value={getContext()}>
-            <RVD
-                layout={{
-                    className:'fullscreen aioc',
-                    column:[
-                        header_layout(),
-                        body_layout(),
-                    ]
-                }}
-            />
+            <RVD rootNode={{className:'fullscreen aioc',column:[{html:<Header/>},{className:'flex-1',html:<Body/>}]}}/>
         </CTX.Provider>
     )
 }
@@ -194,43 +165,22 @@ function Header(){
     let {goToHome} = useContext(CTX)
     return (
         <RVD
-            layout={{
+            rootNode={{
                 style:{background:'lightblue'},className:'align-v p-h-24 h-48',
                 row:[{html:'Go To Home',onClick:()=>goToHome()}]
             }}
         />
     )
 }
-
 function Body(){
     let {activeItemId,getItemById} = useContext(CTX);
-    function items_layout(){
-        return {
-            size:240,
-            html:<Items/>
-        }
-    }
-    function preview_layout(){
-        return {
-            flex:1,
-            html:<Preview/>
-        }
-    }
-    function setting_layout(){
-        if(!activeItemId){return false}
-        let activeItem = getItemById(activeItemId)
-        return {
-            size:240,
-            html:<Setting activeItem={activeItem}/>
-        }
-    }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 row:[
-                    items_layout(),
-                    preview_layout(),
-                    setting_layout()
+                    {size:240,html:<Items/>},
+                    {flex:1,html:<Preview/>},
+                    {show:!!activeItemId,size:240,html:()=><Setting activeItem={getItemById(activeItemId)}/>}
                 ]               
             }}
         />
@@ -238,22 +188,24 @@ function Body(){
 }
 function Items(){
     let {items} = useContext(CTX);
-    function header_layout(){
-        return {html:<Items_Header/>}
-    }
-    function body_layout(){
-        return {flex:1,className:'ofy-auto',html:<Items_Body items={items} level={0}/>}
-    }
-    function footer_layout(){
-        return {size:36,className:'align-v p-h-12',style:{background:'rgba(255,255,255,.2)'},html:'items footer'}
-    }
-    return (<RVD layout={{className:'aioc-items',column:[header_layout(),body_layout(),footer_layout()]}}/>)
+    return (
+        <RVD 
+            rootNode={{
+                className:'aioc-items',
+                column:[
+                    {html:<Items_Header/>},
+                    {flex:1,className:'ofy-auto',html:<Items_Body items={items} level={0}/>},
+                    {size:36,className:'align-v p-h-12',style:{background:'rgba(255,255,255,.2)'},html:'items footer'}
+                ]
+            }}
+        />
+    )
 }
 function Items_Header(){
     return (
         <RVD
-            layout={{
-                className:'aioc-items-header',
+            rootNode={{
+                className:'aioc-items-header align-v',
                 row:[
                     {size:36,html:<AddItem/>,className:'align-vh'},
                     {flex:1},
@@ -264,60 +216,49 @@ function Items_Header(){
     )
 }
 function AddItem(props = {}){
-    let {parent} = props;
-    let {types,addNewItem} = useContext(CTX)
+    let {parent} = props,{types,addNewItem} = useContext(CTX)
     return (
         <AIOInput
-            type='select' caret={false}
+            type='select' caret={false} className='bg-off'
             text={<Icon path={mdiPlusThick} size={.7}/>}
-            options={types}
-            optionText='option'
-            optionValue='option'
-            popover={{
-                attrs:{style:{color:'#333'}}
-            }}
+            options={types} optionText='option' optionValue='option'
+            optionAttrs={{className:'bg-32'}}
+            popover={{attrs:{style:{color:'#333'}}}}
             onChange={(type)=>addNewItem(type,parent)}
         />
     )
 }
 function Items_Body({items,level}){
     let {dragStart,drop,activeItemId} = useContext(CTX)
-    return (
-        <RVD
-            onDragStart={(startDragId)=>dragStart(startDragId)}
-            onDrop={(endDragId)=>drop(endDragId)}
-            layout={{
-                className:'ofy-auto',
-                column:items.map((item,i)=>{
-                    let active = activeItemId && activeItemId.toString() === item.id.toString();
-                    item.showPivot = !!active;
-                    return {
-                        column:[
-                            {dragId:item.id,html:<Item key={item.id} item={item} level={level} active={active}/>},
-                            {show:item.type === 'Group' && item.open,html:()=><Items_Body items={item.items} level={level + 1}/>}
-                        ]
-                    }
-                })
-            }}
-        />
-    )
+    function item_node(item){
+        let active = activeItemId && activeItemId.toString() === item.id.toString();
+        item.showPivot = !!active;            
+        return {
+            column:[
+                {
+                    dragId:item.id,html:<Item key={item.id} item={item} level={level} active={active}/>,
+                    onDrag:()=>dragStart(item.id),onDrop:()=>drop(item.id)
+                },
+                {show:item.type === 'Group' && item.open,html:()=><Items_Body items={item.items} level={level + 1}/>}
+            ]
+        }
+    }
+    return (<RVD rootNode={{className:'ofy-auto',column:items.map((item,i)=>item_node(item))}}/>)
 }
 function Item({item,level,active}){
     let {changeItem,setActiveItemId} = useContext(CTX)
     return (
         <AIOInput
-            attrs={{
-                className:'aioc-item' + (active?' active':''),
-                style:{paddingLeft:level * 12},
-                onClick:()=>setActiveItemId(item.id)
-            }}
+            className={'aioc-item' + (active?' active':'')}
+            style={{paddingLeft:level * 12}}
+            onClick={()=>setActiveItemId(item.id)}
             before={<Icon path={item.type === 'Group'?(item.open?mdiChevronDown:mdiChevronRight):mdiCircleMedium} size={.8} onClick={item.type !== 'Group'?undefined:(e)=>{
                 e.stopPropagation();
                 changeItem(item,{open:!item.open})
             }}/>}
             after={(
                 <RVD
-                    layout={{
+                    rootNode={{
                         row:[
                             {size:24,html:<Icon path={item.show === false?mdiEyeOff:mdiEye} size={.7}/>,className:'align-vh',onClick:(e)=>{
                                 e.stopPropagation();
@@ -335,39 +276,39 @@ function Item({item,level,active}){
 function Preview(){
     let {Canvas,items,onMount,mounted,activeItemId,activePointIndex,getActivePoint} = useContext(CTX)
     let activePoint = getActivePoint();
+    function mouseMove(){
+        let mp = Canvas.mousePosition || {};
+        $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
+        $('.msf').css({left:mp.cx,top:mp.cy})
+    }
+    function controller(){
+        if(!mounted || activePoint === false){return null}
+        return <PointController key={activeItemId + ' ' + activePointIndex } x={activePoint[0]} y={activePoint[1]}/>
+    }
+    function renderCanvas(){
+        return Canvas.render({
+            onMount:()=>onMount(),
+            events:{onMouseMove:()=>mouseMove()},
+            grid:[10,10,'#444'],onPan:true,
+            style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
+            items
+        })
+    }
     return (
         <>
-        <RVD
-            layout={{
-                column:[
-                    {
-                        flex:1,
-                        html:(
-                            Canvas.render({
-                                onMount:()=>onMount(),
-                                onPan:true,
-                                events:{
-                                    onMouseMove:()=>{
-                                        let mp = Canvas.mousePosition || {};
-                                        $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
-                                        $('.msf').css({left:mp.cx,top:mp.cy})
-                                        
-                                    }
-                                },
-                                grid:[10,10,'#444'],
-                                style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
-                                items
-                            })
-                        )
-                    },
-                    {
-                        style:{background:'rgba(255,255,255,.2)',height:36,color:'#fff',padding:'0 24px'},
-                        row:[{className:'aioc-mouse-position align-v',html:''}]
-                    }
-                ]
-            }}
-        />
-        {!!mounted && activePoint !== false && <PointController key={activeItemId + ' ' + activePointIndex } x={activePoint[0]} y={activePoint[1]}/>}
+            <RVD
+                rootNode={{
+                    column:[
+                        {className:'flex-1',html:renderCanvas()},
+                        {
+                            className:'h-36 c-32 p-h-24',
+                            style:{background:'rgba(255,255,255,.2)'},
+                            row:[{className:'aioc-mouse-position align-v',html:''}]
+                        }
+                    ]
+                }}
+            />
+            {controller()}
         </>
     )
 }
@@ -480,7 +421,7 @@ class PointController extends Component{
 function Setting({activeItem}){
     let {changeItem,setActiveItemId,activePointIndex,removeItem,cloneItem,removePoint,setActivePointIndex} = useContext(CTX);
     let [codeView,setCodeView] = useState(false);
-    function header_layout(){
+    function header_node(){
         return {
             className:'aioc-setting-header align-v',
             row:[
@@ -490,7 +431,7 @@ function Setting({activeItem}){
             ]
         }
     }
-    function footer_layout(){
+    function footer_node(){
         return {
             className:'aioc-setting-header align-v',
             row:[
@@ -500,19 +441,23 @@ function Setting({activeItem}){
             ]
         }
     }
-    function form_layout(){
+    function reset_node(change){
+        return {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh p-t-16',onClick:()=>changeItem(activeItem,change)}
+    }
+    function form_node(){
         if(codeView){return false}
         return {
-            flex:1,
+            className:'flex-1 p-6',
             html:(
                 <AIOInput
                     type='form' attrs={{className:'aioc-setting-form'}} value={activeItem}
                     onChange={(value)=>changeItem(activeItem,value)}
                     inputStyle={{background:'none'}}
                     inputs={{
-                        props:{gap:12},
+                        className:'gap-6',
                         column:[
                             {
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.x',label:'x'},
                                     {input:{type:'number'},field:'value.y',label:'y'}
@@ -520,53 +465,51 @@ function Setting({activeItem}){
                             },
                             {
                                 show:activeItem.type === 'Rectangle' || activeItem.type === 'Triangle',
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.width',label:'width'},
                                     {input:{type:'number'},field:'value.height',label:'height'}
                                 ]
                             },
                             {
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'color'},field:'value.fill',label:'fill'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{fill:undefined})},
+                                    reset_node({fill:undefined}),
                                     {input:{type:'color'},field:'value.stroke',label:'stroke'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{stroke:undefined})},
-                                    
+                                    reset_node({stroke:undefined})
                                 ]
                             },
                             {
                                 show:activeItem.type === 'Arc' || activeItem.type === 'NGon',
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.r',label:'radius'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{r:undefined})},
+                                    reset_node({r:undefined})
                                 ]
                             },
                             {
                                 show:activeItem.type === 'NGon',input:{type:'number'},field:'value.count',label:'count'
                             },
                             {
+                                className:'gap-6',
                                 row:[
-                                    {
-                                        input:{type:'number'},field:'value.lineWidth',label:'line width'
-                                    },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{lineWidth:undefined})},
-                                    {
-                                        input:{type:'number'},field:'value.rotate',label:'rotate (deg)'
-                                    },
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{rotate:undefined})},
-                                    
+                                    {input:{type:'number'},field:'value.lineWidth',label:'line width'},
+                                    reset_node({lineWidth:undefined}),
+                                    {input:{type:'number'},field:'value.rotate',label:'rotate (deg)'},
+                                    reset_node({rotate:undefined})
                                 ]
                             },
                             {
-                                props:{gap:0},
                                 show:activeItem.type === 'Rectangle',
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.corner[0]',label:'corner'},
                                     {input:{type:'number'},field:'value.corner[1]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[3]',label:'a',labelAttrs:{style:{opacity:0}}}, 
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    reset_node({corner:undefined})
                                 ]
                             },
                             {
@@ -574,40 +517,44 @@ function Setting({activeItem}){
                                 input:{type:'number'},field:'value.corner',label:'corner'
                             },
                             {
-                                props:{gap:0},
                                 show:activeItem.type === 'Triangle',
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.corner[0]',label:'corner'},
                                     {input:{type:'number'},field:'value.corner[1]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {input:{type:'number'},field:'value.corner[2]',label:'a',labelAttrs:{style:{opacity:0}}},
                                     {size:12},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{corner:undefined})},
+                                    reset_node({corner:undefined})
                                 ]
                             },
                             {
                                 show:activeItem.type === 'Arc',
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.slice[0]',label:'slice from'},
                                     {input:{type:'number'},field:'value.slice[1]',label:'slice to'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{slice:undefined})},
+                                    reset_node({slice:undefined})
                                 ]
                             },
                             {
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.dash[0]',label:'dash fill'},
                                     {input:{type:'number'},field:'value.dash[1]',label:'dash empty'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{dash:undefined})},
+                                    reset_node({dash:undefined})
                                 ]
                             },
                             {
+                                className:'gap-6',
                                 row:[
                                     {input:{type:'number'},field:'value.pivot[0]',label:'pivot x'},
                                     {input:{type:'number'},field:'value.pivot[1]',label:'pivot y'},
-                                    {html:<Icon path={mdiDelete} size={.7}/>,className:'align-vh',onClick:()=>changeItem(activeItem,{pivot:undefined})},
+                                    reset_node({pivot:undefined})
                                 ]
                             },
                             {
                                 show:activeItem.type === 'Line',
+                                className:'gap-6',
                                 row:[
                                     {
                                         html:(
@@ -619,7 +566,7 @@ function Setting({activeItem}){
                                 ]
                             },
                             {
-                                show:activeItem.type === 'Line',props:{gap:0},
+                                show:activeItem.type === 'Line',
                                 column:()=>activeItem.points.map((o,i)=>{
                                     let active = activePointIndex === i;
                                     return {
@@ -639,6 +586,7 @@ function Setting({activeItem}){
                             },
                             {
                                 show:activeItem.type === 'Group',
+                                className:'gap-6',
                                 row:[
                                     {
                                         label:'Repeat Childs',
@@ -663,7 +611,7 @@ function Setting({activeItem}){
                                 ]
                             },
                             {
-                                show:activeItem.type === 'Group',props:{gap:0},
+                                show:activeItem.type === 'Group',
                                 column:()=>activeItem.sequence.map((o,i)=>{
                                     return {
                                         input:{
@@ -685,7 +633,7 @@ function Setting({activeItem}){
             )
         }
     }
-    function code_layout(){
+    function code_node(){
         if(!codeView){return false}
         return {
             flex:1,
@@ -698,13 +646,13 @@ function Setting({activeItem}){
     if(!activeItem){return null}
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className:'aioc-setting',
                 column:[
-                    header_layout(),
-                    form_layout(),
-                    code_layout(),
-                    footer_layout(),
+                    header_node(),
+                    form_node(),
+                    code_node(),
+                    footer_node(),
                     
                 ]
             }}

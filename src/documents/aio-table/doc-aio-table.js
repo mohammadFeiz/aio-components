@@ -569,7 +569,7 @@ class ToolbarAttrs extends Component {
       let {rtl = false} = this.props;
       return (
         <RVD
-            layout={{
+          rootNode={{
               row:[
                 {
                   className:'align-v flex-1',
@@ -628,7 +628,7 @@ class ToolbarAttrs extends Component {
     getCard(row,detail){
       return (
         <RVD
-          layout={{
+          rootNode={{
             style:{height:72,borderRadius:8,background:'dodgerblue',padding:'0 12px',color:'#fff',overflow:'visible',opacity:detail._show === 'relative'?0.5:1,boxShadow:'1px 1px 6px 0px rgba(0,0,0,0.3)'}, 
             column:[
               {flex:1},
@@ -1502,7 +1502,7 @@ class App extends Component {
     render(){
       return (
         <RVD
-          layout={{
+          rootNode={{
             column:[
               this.tabs_layout(),
               this.toolbar_layout(),

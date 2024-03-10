@@ -347,7 +347,7 @@ const Checkout = observer((props: I_Checkout) => {
             className,
             column:[
                 {
-                    gap:3,align:'v',
+                    gap:{size:3},align:'v',
                     row:[
                         {html:title,className:'aio-shop-box-title'},
                         {show:!!subtitle,html:()=>subtitle,className:'aio-shop-box-subtitle'}
@@ -364,7 +364,7 @@ const Checkout = observer((props: I_Checkout) => {
             className,
             column:[
                 {
-                    gap:3,align:'v',
+                    gap:{size:3},align:'v',
                     row:[
                         {html:title,className:'aio-shop-box-title'},
                         {show:!!subtitle,html:()=>subtitle,className:'aio-shop-box-subtitle'}
@@ -399,7 +399,7 @@ const Checkout = observer((props: I_Checkout) => {
     }
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className:'aio-shop-checkout',
                 column: [
                     {flex: 1, className: 'aio-shop-checkout-body',column: [cartProducts_layout(),items_layout(),content_layout(),factor_layout()]},
@@ -437,8 +437,8 @@ const Cart = observer((props:I_Cart) => {
         let props:I_Factor = {renderIn:'cart',getContext,mode:'payment'}
         return {className:'aio-shop-cart-footer',html:<Factor {...props}/>}
     }
-    if (!cart.length) {return (<RVD layout={{className: 'aio-shop-cart',html: 'سبد خرید شما خالی است', align: 'vh'}}/>)}
-    return (<RVD layout={{className: 'aio-shop-cart',column: [body_layout(),footer_layout()]}}/>)
+    if (!cart.length) {return (<RVD rootNode={{className: 'aio-shop-cart',html: 'سبد خرید شما خالی است', align: 'vh'}}/>)}
+    return (<RVD rootNode={{className: 'aio-shop-cart',column: [body_layout(),footer_layout()]}}/>)
 })
 const Factor = observer((props:I_Factor) => {
     let {renderIn,getContext,mode} = props,context = getContext();

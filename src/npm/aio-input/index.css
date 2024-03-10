@@ -682,8 +682,9 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    background: #fff;
-    color: #666;
+    background: #eee;
+    color: #888;
+    border:1px solid #eee;
 }
 
 .aio-input-table .aio-input {
@@ -703,8 +704,8 @@
     position: -webkit-sticky;
     z-index: 10;
     background: #f8f8f8;
-    box-shadow: 0 0 8px 0px rgba(0, 0, 0, 0.1);
     min-width: fit-content;
+    border-bottom:1px solid #eee;
 }
 
 .aio-input-table-title {
@@ -725,7 +726,9 @@
 
 .aio-input-table-row {
     display: flex;
-    min-width: fit-content
+    min-width: fit-content;
+    background:#fff;
+    height:36px;
 }
 
 .aio-input-table-cell {
@@ -841,13 +844,11 @@
 
 .aio-input-table-border-h {
     height: 1px;
-    background: #ddd;
     flex-shrink: 0;
 }
 
 .aio-input-table-border-v {
     width: 1px;
-    background: #ddd;
     flex-shrink: 0;
 }
 

@@ -1,6 +1,7 @@
 import React, { Component, Fragment, useState } from 'react';
 import DOC from '../../resuse-components/doc.js';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
+import AIOPopup from '../../npm/aio-popup/index.js';
 import RVD,{animate,reOrder} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from './../../npm/aio-input/aio-input.js';
 import AIOStorage from './../../npm/aio-storage/aio-storage.js'
@@ -134,21 +135,21 @@ function Layout(){
                                 className:'h-96 brd-c16',
                                 row:[
                                     {
-                                        html:'A',className:'bg-12 flex-1 align-vh color-32'
+                                        html:'A',className:'bg12 flex-1 align-vh c32'
                                     },
                                     {
                                         flex:1,
                                         column:[
-                                            {html:'A',className:'bg-16 flex-1 align-vh'},
-                                            {html:'A',className:'bg-20 flex-1 align-vh'}
+                                            {html:'A',className:'bg16 flex-1 align-vh'},
+                                            {html:'A',className:'bg20 flex-1 align-vh'}
                                         ]
                                     },
                                     {
                                         className:'flex-1',
                                         column:[
-                                            {html:'A',className:'bg-24 flex-1 align-vh'},
-                                            {html:'A',className:'bg-28 flex-1 align-vh'},
-                                            {html:'A',className:'bg-32 flex-1 align-vh'},
+                                            {html:'A',className:'bg24 flex-1 align-vh'},
+                                            {html:'A',className:'bg28 flex-1 align-vh'},
+                                            {html:'A',className:'bg32 flex-1 align-vh'},
                                         ]
                                     }
                                 ]
@@ -164,21 +165,21 @@ function Layout(){
                 className:'h-96 brd-c16',
                 row:[
                     {
-                        html:'A',className:'bg-12 flex-1 align-vh color-32'
+                        html:'A',className:'bg12 flex-1 align-vh c32'
                     },
                     {
                         flex:1,
                         column:[
-                            {html:'A',className:'bg-16 flex-1 align-vh'},
-                            {html:'A',className:'bg-20 flex-1 align-vh'}
+                            {html:'A',className:'bg16 flex-1 align-vh'},
+                            {html:'A',className:'bg20 flex-1 align-vh'}
                         ]
                     },
                     {
                         className:'flex-1',
                         column:[
-                            {html:'A',className:'bg-24 flex-1 align-vh'},
-                            {html:'A',className:'bg-28 flex-1 align-vh'},
-                            {html:'A',className:'bg-32 flex-1 align-vh'},
+                            {html:'A',className:'bg24 flex-1 align-vh'},
+                            {html:'A',className:'bg28 flex-1 align-vh'},
+                            {html:'A',className:'bg32 flex-1 align-vh'},
                         ]
                     }
                 ]
@@ -346,7 +347,7 @@ function Spacing() {
     return (
         <div className='example'>
             <Part
-                title='without align'
+                title='spacing by nodes'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
                     return (
@@ -381,7 +382,7 @@ function Layout(){
                 `}
             />
             <Part
-                title='without align'
+                title='spacing by nodes'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
                     return (
@@ -420,7 +421,7 @@ function Layout(){
                 `}
             />
             <Part
-                title='without align'
+                title='spacing by nodes'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
                     return (
@@ -456,6 +457,62 @@ function Layout(){
                     {className:'flex-3'},
                     node_A,
                 ]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='spacing by gap className'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'brd-c12 p-12 gap-24',
+                                row:[node_A,node_A,node_A,node_A]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'brd-c12 p-12 gap-24',
+                row:[node_A,node_A,node_A,node_A]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='spacing by gap property'
+                content={()=>{
+                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    return (
+                        <RVD 
+                            rootNode={{
+                                className:'brd-c12 p-12',
+                                gap:{flex:1},
+                                row:[node_A,node_A,node_A,node_A]
+                            }}
+                        />
+                    )
+                }}
+                code={`
+function Layout(){
+    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    return (
+        <RVD 
+            rootNode={{
+                className:'brd-c12 p-12',
+                gap:{flex:1},
+                row:[node_A,node_A,node_A,node_A]
             }}
         />
     )
@@ -1111,7 +1168,7 @@ class Layout{
     }
     root = (props)=>{
         return {
-            className:'bg-30',row:[this.side(),this.body()],...props
+            className:'bg30',row:[this.side(),this.body()],...props
         }
     }
     side = (props) => {
@@ -1295,12 +1352,10 @@ function Gap() {
                         rootNode={{
                             className:'align-v',
                             gap:{
+                                html:'&',
                                 size:16,
-                                content:'&',
-                                attrs:{
-                                    style:{background:'dodgerblue',color:'#fff'},
-                                    className:'m-h-6 br-4 fs-12 h-fit'
-                                }
+                                style:{background:'dodgerblue',color:'#fff'},
+                                className:'m-h-6 br-4 fs-12 h-fit'
                             },
                             row:texts.map((t)=>{
                                 return {html:t}
@@ -1317,12 +1372,10 @@ function App(){
             rootNode={{
                 classNAme:'align-v',
                 gap:{
+                    html:'&',
                     size:16,
-                    content:'&',
-                    attrs:{
-                        style:{background:'dodgerblue',color:'#fff'},
-                        className:'m-h-6 br-4 fs-12 h-fit'
-                    }
+                    style:{background:'dodgerblue',color:'#fff'},
+                    className:'m-h-6 br-4 fs-12 h-fit'
                 },
                 row:texts.map((t)=>{
                     return {html:t}
@@ -1495,19 +1548,19 @@ function CssClasses() {
 `.r-0{right:0;}`,
 `.r-100{right:100%;}`,
 'background (black to white)',
-'.bg-<i>{background:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
-`.bg-0{background:rgb(0,0,0);}`,
-`.bg-1{background:rgb(8,8,8);}`,
+'.bg<i>{background:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
+`.bg0{background:rgb(0,0,0);}`,
+`.bg1{background:rgb(8,8,8);}`,
 `...`,
-`.bg-31{background:rgb(248,248,248);}`,
-`.bg-32{background:rgb(255,255,255);}`,
+`.bg31{background:rgb(248,248,248);}`,
+`.bg32{background:rgb(255,255,255);}`,
 'color (black to white)',
-'.color-<i>{color:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
-`.color-0{color:rgb(0,0,0);}`,
-`.color-1{color:rgb(8,8,8);}`,
+'.c<i>{color:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
+`.c0{color:rgb(0,0,0);}`,
+`.c1{color:rgb(8,8,8);}`,
 `...`,
-`.color-31{color:rgb(248,248,248);}`,
-`.color-32{color:rgb(255,255,255);}`,
+`.c31{color:rgb(248,248,248);}`,
+`.c32{color:rgb(255,255,255);}`,
 'border color',
 `.brd-c<i>{border:1px solid rgb(i * 8,i * 8,i * 8)} (0 to 32)`,
 `.brd-c0{border:1px solid rgb(0,0,0);}`,
@@ -1717,7 +1770,7 @@ class Layout{
     }
     root = (props)=>{
         return {
-            className:'bg-30',row:[this.side(),this.body()],...props
+            className:'bg30',row:[this.side(),this.body()],...props
         }
     }
     side = (props) => {
@@ -1809,7 +1862,7 @@ class Layout{
         return {
             column:[
                 this.label('Files'),
-                {gap: 12,row: files.map((o) => this.card(o))}
+                {className: 'gap-12',row: files.map((o) => this.card(o))}
             ],
             ...props
         }
@@ -1848,7 +1901,7 @@ function Animate() {
             column: [
                 {
                     html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
+                    className:'align-vh bg32 w-24 h-24 br-100 m-b-6',
                     style:{color},
                 },
                 { 
@@ -1889,12 +1942,12 @@ function Animate() {
                                 let {id,path,text,type,size,color} = o;
                                 return {
                                     key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                                     onClick:(e)=>removeV(e,o.id),
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            className:'w-24 h-24 br-4 c32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -1945,12 +1998,12 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                         onClick:(e)=>removeV(e,o.id),
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                className:'w-24 h-24 br-4 c32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2012,7 +2065,7 @@ function App(){
             column: [
                 {
                     html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
+                    className:'align-vh bg32 w-24 h-24 br-100 m-b-6',
                     style:{color},
                 },
                 { 
@@ -2043,12 +2096,12 @@ function App(){
                                 let {id,path,text,type,size,color} = o;
                                 return {
                                     key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                                     onClick:(e)=>removeL(e,o.id),
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            className:'w-24 h-24 br-4 c32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -2099,12 +2152,12 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                         onClick:(e)=>removeV(e,o.id),
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                className:'w-24 h-24 br-4 c32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2149,7 +2202,7 @@ function Resize() {
                 content={(
                     <RVD
                         rootNode={{
-                            className:'h-120',gap:12,
+                            className:'h-120',gap:{size:12},
                             row:[
                                 {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
                                 {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
@@ -2166,12 +2219,53 @@ function App(){
     return (
         <RVD
             rootNode={{
-                className:'h-120',gap:12,
+                className:'h-120',gap:{size:12},
                 row:[
                     {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
                     {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
                     {html:'C',className:'align-vh brd-c12 flex-1'},
                 ]
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                content={(
+                    <RVD
+                        state={{aSize:200,bSize:200}}
+                        rootNode={{
+                            className:'h-120',gap:{size:12},
+                            row:({state,setState})=>{
+                                let {aSize,bSize} = state;
+                                return [
+                                    {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setState('aSize',newSize)},
+                                    {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setState('bSize',newSize)},
+                                    {html:'C',className:'align-vh brd-c12 flex-1'},
+                                ]
+                            }
+                        }}
+                    />
+                )}
+                code={`
+                
+function App(){
+    let [aSize,setASize] = useState(200)
+    let [bSize,setBSize] = useState(200)
+    return (
+        <RVD
+            state={{aSize:200,bSize:200}}
+            rootNode={{
+                className:'h-120',gap:{size:12},
+                row:({state,setState})=>{
+                    let {aSize,bSize} = state;
+                    return [
+                        {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setState('aSize',newSize)},
+                        {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setState('bSize',newSize)},
+                        {html:'C',className:'align-vh brd-c12 flex-1'},
+                    ]
+                }
             }}
         />
     )
@@ -2189,7 +2283,7 @@ function StateSetState() {
                     <RVD
                         state={{a:0,b:0,c:0}}
                         rootNode={{
-                            className:'h-120',gap:12,
+                            className:'h-120 gap-12',
                             row:({state,setState})=>{
                                 let {a,b,c} = state;
                                 let className = 'align-vh brd-c12 sel-off';
@@ -2209,7 +2303,7 @@ function App(){
         <RVD
             state={{a:0,b:0,c:0}}
             rootNode={{
-                className:'h-120',gap:12,
+                className:'h-120 gap-12',
                 row:({state,setState})=>{
                     let {a,b,c} = state;
                     let className = 'align-vh brd-c12 sel-off';
@@ -2249,11 +2343,11 @@ function ReOrder() {
                                 let {id,path,text,type,size,color} = o;
                                 return {
                                     key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            className:'w-24 h-24 br-4 c32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -2306,11 +2400,11 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                className:'w-24 h-24 br-4 c32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2367,11 +2461,11 @@ function LongTouch() {
                                     longTouch:()=>{
                                         alert(text)
                                     },
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 color-32 align-vh',
+                                            className:'w-24 h-24 br-4 c32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -2424,11 +2518,11 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 color-32 align-vh',
+                                className:'w-24 h-24 br-4 c32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2467,6 +2561,7 @@ function App(){
 
 function StyleGenerator(){
     let storage = AIOStorage('grdgenerator')
+    let [popup] = useState(new AIOPopup())
     function to_array(c){
         if(Array.isArray(c)){return c}
         if(c.indexOf('rgb(') === 0){
@@ -2513,15 +2608,22 @@ function StyleGenerator(){
         setSelected(newSelected)
         storage.save({name:'selected',value:newSelected})
     }
+    function addSelected(){
+        changeSelected([...selected,{style:{...style},containerBG:grd.containerBG,grd:{...grd}}])
+    }
+    function removeSelected(i){
+        changeSelected(selected.filter((o,index)=>index !== i))
+    }
     let [grd,setGrd] = useState({
         light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',
         borderWidth:1,contrast:50,borderRadius:6,bold:true,fontSize:14,
-        containerBG:'#fff'
+        containerBG:'#fff',p:50
     })
     let [selected,setSelected] = useState(storage.load({name:'selected',def:[]}))
-    let darker = to_dark(grd.light,grd.contrast)
+    let dark = to_dark(grd.light,grd.contrast);
+    let medium = between(grd.light,dark,3)[1];
     let style = {
-        background:`linear-gradient(180deg, ${grd.light}, ${darker})`,
+        background:`linear-gradient(180deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%)`,
         width:grd.width,height:grd.height,
         border:`${grd.borderWidth}px solid ${grd.borderColor}`,
         borderRadius:grd.borderRadius,fontWeight:grd.bold?'bold':undefined,
@@ -2544,81 +2646,115 @@ function StyleGenerator(){
             flex:1,className:'w-240',html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
-    console.log(selected)
+    function log(i){
+        let grd = selected[i].grd;
+        let style = `
+{
+    background:linear-gradient(180deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%);
+    width:${grd.width}px;
+    height:${grd.height}px;
+    border:${grd.borderWidth}px solid ${grd.borderColor};
+    border-radius:${grd.borderRadius}px;
+    font-weight:${grd.bold?'bold':'unset'};
+    font-size:${grd.fontSize}px;
+    color:${grd.color};
+}
+        
+        `
+        popup.addModal({
+            position:'center',
+            header:{title:'generated style'},
+            body:{
+                render:()=>{
+                    return AIODoc().Code(style)
+                }
+            }
+        })
+    }
     return (
-        <RVD
-            rootNode={{
-                className:'h-fit align-v p-24',
-                column:[
-                    {
-                        row:[
-                            {
-                                className:'p-12',
-                                column:[
-                                    {
-                                        className:'align-v gap-12',
-                                        row:[
-                                            {html:'Geadient'},color_node('light'),slider_node('contrast',0,100),
-                                            {className:'w-36 h-36',style:{background:darker}}
-                                        ]
-                                    },
-                                    {
-                                        row:[
-                                            {align:'v',row:[{html:'Width'},slider_node('width',0,300)]},
-                                            {align:'v',row:[{html:'Height'},slider_node('height',0,300)]},
-                                        ]
-                                    },
-                                    {
-                                        className:'gap-12',
-                                        row:[
-                                            {className:'align-v gap-12',row:[{html:'Color'},color_node('color')]},
-                                            {className:'align-v gap-12',row:[{html:'Border Color'},color_node('borderColor')]},
-                                            {className:'align-v gap-12',row:[{html:'Container BG'},color_node('containerBG')]}
-                                        ]
-                                    },
-                                    {
-                                        row:[
-                                            {align:'v',row:[{html:'Border Width'},slider_node('borderWidth',0,5)]},
-                                            {align:'v',row:[{html:'Border Radius'},slider_node('borderRadius',0,36)]}
-                                        ]
-                                    },
-                                    {align:'v',row:[{html:'Font Size'},slider_node('fontSize',10,36),checkbox_node('bold')]},
-                                    {html:<button onClick={()=>changeSelected([...selected,{style:{...style},containerBG:grd.containerBG}])}>Add To Selected</button>}
-                                ]
-                            },
-                            {
-                                flex:1,className:'p-12 align-vh',style:{background:grd.containerBG},
-                                column:[
-                                    {html:'Sample Text',style,className:'align-vh'}
-                                ]
-                            },
+        <>
+            <RVD
+                rootNode={{
+                    className:'h-fit align-v p-24',
+                    column:[
+                        {
+                            row:[
+                                {
+                                    className:'p-12',
+                                    column:[
+                                        {
+                                            className:'align-v gap-12',
+                                            row:[
+                                                {html:'Geadient'},color_node('light'),slider_node('contrast',0,100),slider_node('p',0,100)
+                                            ]
+                                        },
+                                        {
+                                            row:[
+                                                {align:'v',row:[{html:'Width'},slider_node('width',0,300)]},
+                                                {align:'v',row:[{html:'Height'},slider_node('height',0,300)]},
+                                            ]
+                                        },
+                                        {
+                                            className:'gap-12',
+                                            row:[
+                                                {className:'align-v gap-12',row:[{html:'Color'},color_node('color')]},
+                                                {className:'align-v gap-12',row:[{html:'Border Color'},color_node('borderColor')]},
+                                                {className:'align-v gap-12',row:[{html:'Container BG'},color_node('containerBG')]}
+                                            ]
+                                        },
+                                        {
+                                            row:[
+                                                {align:'v',row:[{html:'Border Width'},slider_node('borderWidth',0,24)]},
+                                                {align:'v',row:[{html:'Border Radius'},slider_node('borderRadius',0,36)]}
+                                            ]
+                                        },
+                                        {align:'v',row:[{html:'Font Size'},slider_node('fontSize',10,36),checkbox_node('bold')]},
+                                        {html:<button onClick={()=>addSelected()}>Add To Selected</button>}
+                                    ]
+                                },
+                                {
+                                    flex:1,className:'p-12 align-vh',style:{background:grd.containerBG},
+                                    column:[
+                                        {html:'Sample Text',style,className:'align-vh'}
+                                    ]
+                                },
 
+                                
+                            ]
+                        },
+                        {
+                            className:'gap-12 p-24 brd-c12',style:{flexWrap:'wrap'},
+                            row:selected.map((o,i)=>{
+                                let {style,containerBG,grd} = o;
+                                return {
+                                    className:'p-12 of-visible brd-c16',
+                                    onClick:()=>setGrd(grd),
+                                    style:{background:containerBG},
+                                    column:[
+                                        {
+                                            html:<div className='align-vh' style={style}>Sample Text</div>
+                                        },
+                                        {
+                                            className:'of-visible br-100 absolute rvd-pointer',
+                                            html:<Icon path={mdiClose} size={0.7}/>,
+                                            onClick:(e)=>{e.stopPropagation(); removeSelected(i)},
+                                            style:{left:-6,top:-6,background:'dodgerblue',color:'#fff'},
+                                        },
+                                        {
+                                            className:'of-visible br-6 absolute fs-10 w-fit p-h-6 rvd-pointer',
+                                            html:'CSS',
+                                            onClick:(e)=>{e.stopPropagation(); log(i)},
+                                            style:{right:-6,top:-6,background:'dodgerblue',color:'#fff'},
+                                        }
+                                    ]
+                                }
+                            })
                             
-                        ]
-                    },
-                    {
-                        className:'gap-12 p-24',style:{flexWrap:'wrap'},
-                        row:selected.map(({style,containerBG},i)=>{
-                            return {
-                                className:'p-12 of-visible',
-                                style:{background:containerBG},
-                                column:[
-                                    {
-                                        html:<div className='align-vh' style={style}>Sample Text</div>
-                                    },
-                                    {
-                                        className:'of-visible br-100 absolute',
-                                        html:<Icon path={mdiClose} size={0.7}/>,
-                                        onClick:()=>changeSelected(selected.filter((o,index)=>index !== i)),
-                                        style:{left:-12,top:-12,background:'dodgerblue',color:'#fff'},
-                                    }
-                                ]
-                            }
-                        })
-                        
-                    }
-                ]
-            }}
-        />
+                        }
+                    ]
+                }}
+            />
+            {popup.render()}
+        </>
     )
 }

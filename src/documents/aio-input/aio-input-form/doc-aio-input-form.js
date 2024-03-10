@@ -1612,7 +1612,7 @@ function Code({code}){
     let [show,setShow] = useState(false);
     return (
         <RVD
-            layout={{
+            rootNode={{
                 column:[
                     {size:6},
                     {html:<div>{show?'hide code':'show code'}</div>,className:'fs-10 bold',style:{color:show?'red':'blue'},onClick:()=>setShow(!show)},
@@ -1650,7 +1650,7 @@ function AIOINPUT({type,prop,initModel = {},allInputProps,allInputFooters,descri
         return (
             <div className='example' style={{padding:0}}>
                 <RVD
-                    layout={{
+                    rootNode={{
                         className:'h-100',
                         column:[
                             {html:<AIOInput type='tabs' options={tabs} value={tab} onChange={(v)=>setTab(v)} attrs={{style:{background:'#eee'}}}/>},
@@ -1720,7 +1720,7 @@ class Example extends Component {
     render() {
         return (
             <RVD
-                layout={{
+            rootNode={{
                     column: [
                         this.toolbar_layout(),
                         this.body_layout()

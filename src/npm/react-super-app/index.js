@@ -200,7 +200,7 @@ class ReactSuperApp extends Component {
     let navItem = nav ? this.getNavById(navId) : false;
     let layout = { style, className: this.getMainClassName() }
     layout.row = [this.navigation_layout('side'), this.page_layout(navItem)]
-    return (<RVD layout={layout} />)
+    return (<RVD rootNode={layout} />)
   }
   openSide() {
     let { popup, rtl } = this.props;
@@ -310,9 +310,9 @@ class Navigation extends Component {
   render() {
     let { type, navItems } = this.props;
     if (type === 'bottom') {
-      return (<RVD layout={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
+      return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => this.bottomMenu_layout(o)) }} />)
     }
-    return (<RVD layout={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navItems, 0),this.footer_layout()] }} />);
+    return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [this.header_layout(), this.items_layout(navItems, 0),this.footer_layout()] }} />);
   }
 }
 class SideMenu extends Component {
@@ -351,7 +351,7 @@ class SideMenu extends Component {
     let { attrs = {} } = this.props;
     return (
       <RVD
-        layout={{
+        rootNode={{
           attrs,
           className: 'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : ''),
           column: [this.header_layout(), this.items_layout(), this.footer_layout()]

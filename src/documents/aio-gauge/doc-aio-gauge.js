@@ -382,7 +382,6 @@ class Input extends Component {
         if (!fileName) { return false }
         gauge.start = gauge.start || 0;
         let inputs = {
-            props:{gap:2},
             column: [
                 this.form_ranges(),
                 this.form_circles(),
@@ -528,7 +527,7 @@ class Input extends Component {
     render() {
         return (
             <RVD
-                layout={{
+                rootNode={{
                     style: { position: 'fixed', height: '100%', flex: 'none', width: '100%', left: 0, top: 0, background: '#1d292c' },
                     column: [
                         this.toolbar_layout(),
