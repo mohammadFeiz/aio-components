@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import AIOInput from './../../../npm/aio-input/aio-input';
-import DOC from '../../../resuse-components/doc';
+import DOC from '../../../resuse-components/doc.tsx';
 export default class DOC_AIOForm extends Component{
     render(){
         return (

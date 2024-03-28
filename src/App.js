@@ -6,7 +6,7 @@ import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-in
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
 import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
 import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
-import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map';
+import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map.tsx';
 import DOC_AIOInput_Tabs from './documents/aio-input/aio-input-tabs/doc-aio-input-tabs';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
@@ -89,7 +89,6 @@ export default class AIOComponents extends Component{
       return
     }
     let props = {
-      id:part,
       goToHome:()=>this.changePart(false),
       name:part
     }

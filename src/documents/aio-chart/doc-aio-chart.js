@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Chart,{getFakeData} from './../../npm/aio-chart/aio-chart';
 import AIOInput from './../../npm/aio-input/aio-input';

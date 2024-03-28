@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import Table from '../../npm/aio-table/aio-table';
 export default class DOC_AIOForm extends Component{
     render(){

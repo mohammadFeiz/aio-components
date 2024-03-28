@@ -1,5 +1,5 @@
 import React, { Component, useState } from 'react';
-import DOC from '../../../resuse-components/doc';
+import DOC from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation';
 import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from '../../../npm/aio-input/aio-input';

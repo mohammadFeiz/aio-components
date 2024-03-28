@@ -15,106 +15,171 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/aio-popup';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
+import { I_RVD_node } from '../react-virtual-dom/types';
 const AICTX = createContext({} as any);
 export type I_AIOInput_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-        'button' | 'datepicker' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' 
+    'button' | 'datepicker' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time'
 export type I_AIOInput = {
-    rtl?:boolean,
-    popover?:{attrs?:any,fixStyle?:(style:any)=>any,fitHorizontal?:boolean,position?:'fullscreen'|'popover'|'center'|'left'|'top'|'right' |'bottom', header?:any},//notice get type from aio popup
-    type:I_AIOInput_type,
-    multiple?:boolean,
-    value?:any,
-    visible?:boolean,
-    open?:boolean,
-    options?:any[],
-    unit?:'year'|'month'|'day'|'hour',
-    calendarType?:'gregorian'|'jalali',
-    pattern?:string,
-    placeholder?:string,
-    width?:number, 
-    height?:number, 
-    style?:any,
-    onChange?:(newValue:any,option?:I_AIOInput_option)=>void, 
-    disabled?:boolean, 
-    loading?:boolean | React.ReactNode,
-    min?:number, 
-    max?:number, 
-    swip?:boolean,
-    blurChange?:boolean, 
-    maxLength?:number, 
-    justNumber?:boolean,
-    filter?:string[], 
-    delay?:number,
-    inputAttrs?:any, 
-    spin?:boolean, 
-    justify?:boolean,
-    hideTags?:boolean,
-    attrs?:any,
-    columns?:type_table_column[],
-    paging?:type_table_paging,
-    rowGap?:number,
-    columnGap?:number,
-    onChangeSort?:(sorts:type_table_sort[])=>Promise<boolean>,
-    toolbarAttrs?:any,
-    toolbar?:React.ReactNode | (()=>React.ReactNode),
-    getValue?:{[key:string]:(p:{ row:any, column:type_table_column, rowIndex:number })=>any},
-    onAdd?:Object | (()=>void),
-    onRemove?:true | ((p:{ row:any, action:Function, rowIndex: number })=>void),
-    excel?:string,
-    onSwap?:true | ((newValue:any[],startRow:any,endRow:any)=>void),
-    onSearch?:true | ((searchValue:string)=>void),
-    rowAttrs?:(p:{ row:any, rowIndex:number })=>any,
-    rowTemplate?:(p:{ row: any, rowIndex: number, isLast:boolean })=>React.ReactNode,
-    rowsTemplate?:(rows:any[])=>React.ReactNode,
-    rowAfter?:(p:{row:any,rowIndex:number})=>React.ReactNode,
-    rowBefore?:(p:{row:any,rowIndex:number})=>React.ReactNode,
-    headerAttrs?:any,
-    after?:React.ReactNode | (()=>React.ReactNode),
-    before?:React.ReactNode | (()=>React.ReactNode),
-    optionText?:I_AIOInput_optionProp,
-    optionValue?:I_AIOInput_optionProp,
-    direction?:'left'|'right'|'top'|'bottom',
-    checkIcon?:I_AIOInput_checkIcon,
-    caret?:boolean | React.ReactNode,
-    text?:React.ReactNode | (()=>React.ReactNode)
-    subtext?:React.ReactNode | (()=>React.ReactNode),
+    rtl?: boolean,
+    popover?: { 
+        attrs?: any, 
+        fixStyle?: (style: any) => any, 
+        fitHorizontal?: boolean, 
+        position?: 'fullscreen' | 'popover' | 'center' | 'left' | 'top' | 'right' | 'bottom', 
+        header?: any,
+        pageSelector?:string,
+        render?:(p:{close:()=>void})=>React.ReactNode
+    },//notice get type from aio popup
+    type: I_AIOInput_type,
+    multiple?: boolean,
+    value?: any,
+    visible?: boolean,
+    open?: boolean,
+    options?: any[],
+    unit?: 'year' | 'month' | 'day' | 'hour',
+    calendarType?: 'gregorian' | 'jalali',
+    pattern?: string,
+    placeholder?: string,
+    className?:string,
+    width?: number, //list
+    height?: number,
+    style?: any,
+    onChange?: (newValue: any, p?: any) => void,
+    disabled?: boolean,
+    loading?: boolean | React.ReactNode,
+    min?: number,//slider,number
+    max?: number,//slider,number
+    start?:number,//slider
+    end?:number,//slider
+    step?:number,//slider
+    swip?: boolean,
+    blurChange?: boolean,
+    maxLength?: number,
+    justNumber?: boolean,
+    filter?: string[],
+    delay?: number,
+    inputAttrs?: any,
+    spin?: boolean,
+    justify?: boolean,
+    hideTags?: boolean,
+    attrs?: any,
+    columns?: type_table_column[],
+    paging?: type_table_paging,
+    rowGap?: number,
+    columnGap?: number,
+    onChangeSort?: (sorts: type_table_sort[]) => Promise<boolean>,
+    toolbarAttrs?: any,
+    toolbar?: React.ReactNode | (() => React.ReactNode),
+    getValue?: { [key: string]: (p: { row: any, column: type_table_column, rowIndex: number }) => any },
+    onAdd?: Object | (() => void),
+    onRemove?: true | ((p: { row: any, action: Function, rowIndex: number }) => void),
+    excel?: string,
+    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    onSearch?: true | ((searchValue: string) => void),
+    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
+    rowsTemplate?: (rows: any[]) => React.ReactNode,
+    rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    headerAttrs?: any,
+    after?: React.ReactNode | (() => React.ReactNode),
+    before?: React.ReactNode | (() => React.ReactNode),
+    optionText?: I_AIOInput_optionProp,
+    optionValue?: I_AIOInput_optionProp,
+    optionAttrs?: I_AIOInput_optionProp,
+    direction?: 'left' | 'right' | 'top' | 'bottom',
+    checkIcon?: I_AIOInput_checkIcon,
+    caret?: boolean | React.ReactNode,
+    text?: React.ReactNode | (() => React.ReactNode)
+    subtext?: React.ReactNode | (() => React.ReactNode),
+    move?: any,//list
+    count?: number,//list
+    size?: number,//list,datepicker
+    editable?: boolean,//list
+    stop?: number,//list
+    decay?: number,//list
+    startYear?: string | number,//datepicker
+    endYear?: string | number,//datepicker
+    translate?: (text: string) => string,//datepicker,
+    theme?: string[],//datepicker
+    search?: boolean | string,
+    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//datepicker
+    dateDisabled?:string[],
+    close?:boolean,//datepicker
+    preview?:boolean,
+    footer?:{
+        layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
+        onSubmit?:()=>void,onClose?:()=>void,reset?:boolean,attrs?:any,submitText?:string,closeText?:string,resetText?:string,
+        before?:React.ReactNode,after?:React.ReactNode
+    },//form
+    body?:{attrs?:any},//form
+    getErrors?:(p:string[])=>void,//form
+    initialDisabled?:boolean,//form
+    inputs?:any,//form
+    labelAttrs?:any,//form
+    errorAttrs?:any,//form
+    lang?:'fa' | 'en',//form,
+    lineAttrs?:any,//slider
+    pointLabel?:(index:number,value:number)=>{html?:React.ReactNode,attrs?:any,show?:boolean | 'inline'},
+    point?:(index:number,value:number)=>{attrs?:any,html?:React.ReactNode},
+    line?:{
+        attrs?:(index:number,active:boolean)=>any,
+        text?:(index:number,active:boolean)=>string
+    }
+    label?:{
+        step?:number,
+        list?:number[],
+        attrs?:(value:number)=>Object,
+        html?:(value:number)=>React.ReactNode,
+        rotate?:number | ((value:number)=>number)
+    },
+    scale?:{
+        step?:number,
+        list?:number[],
+        attrs?:(value:number)=>React.ReactNode,
+        html?:(value:number)=>React.ReactNode  
+    },
+    mapConfig?:I_Map_config,
+    popupConfig?:I_Map_config
 }
-export type I_AIOInput_checkIcon = ((checked:boolean)=>React.ReactNode) | Object;
-export type I_AIOInput_optionProp = string | ((option:I_AIOInput_option)=>any)
-export type I_AIOInput_getOptionProp = {
-    
-}//notice
-export type I_AIOInput_temp = {dragIndex?:number}
+//notice
+//use global fixed options in List
+//create list document 
+export type I_AIOInput_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
+export type I_AIOInput_optionProp = string | ((option: I_AIOInput_option) => any)
+export type I_AIOInput_getOptionProp = (option: any, key: string, def?: any, preventFunction?: boolean) => any;
+export type I_AIOInput_temp = { dragIndex?: number }
 export type I_AIOInput_option = {
-    checked:boolean,
-    checkIcon:I_AIOInput_checkIcon,
-    after:React.ReactNode | (()=>React.ReactNode),
-    before:React.ReactNode | (()=>React.ReactNode),
-    draggable:boolean,
-    text:React.ReactNode,
-    subtext:React.ReactNode,
-    justify:boolean,
-    loading:boolean | React.ReactNode,
-    disabled:boolean,
-    attrs:any,
-    style:any
+    checked: boolean,
+    checkIcon: I_AIOInput_checkIcon,
+    after: React.ReactNode | (() => React.ReactNode),
+    before: React.ReactNode | (() => React.ReactNode),
+    draggable: boolean,
+    text: React.ReactNode,
+    subtext: React.ReactNode,
+    justify: boolean,
+    loading: boolean | React.ReactNode,
+    disabled: boolean,
+    attrs: any,
+    style: any
 }
-export type I_AIOInput_getProp_param = {key:string, def?:any, preventFunction?:boolean};
-export type I_AIOInput_getProp = (p:I_AIOInput_getProp_param)=>any;
-export type I_AIOInput_addToAttrs = (attrs:any, p:{ className?:string, style?:any, stylePriority?:boolean })=>any
+export type I_AIOInput_getProp_param = { key: string, def?: any, preventFunction?: boolean };
+export type I_AIOInput_getProp = (p: I_AIOInput_getProp_param) => any;
+export type I_AIOInput_addToAttrs = (attrs: any, p: { className?: string, style?: any, stylePriority?: boolean }) => any
 export type I_AIOInput_context = {
-    rootProps:I_AIOInput,
-    showPassword:boolean,
-    setShowPassword:(v:boolean)=>void,
-    getOptionProp:I_AIOInput_getOptionProp,
-    Drag:I_Drag,
-    datauniqid:string,
-    touch:boolean,
-    open:boolean,
-    click:(e:any,dom:any)=>void,
-    optionClick:(option:I_AIOInput_option)=>void
-    types:{
-        isMultiple:boolean,
+    rootProps: I_AIOInput,
+    showPassword: boolean,
+    setShowPassword: (v?: boolean) => void,
+    getOptionProp: I_AIOInput_getOptionProp,
+    Drag: I_Drag,
+    datauniqid: string,
+    touch: boolean,
+    open: boolean,
+    click: (e: any, dom: any) => void,
+    optionClick: (option: I_AIOInput_option) => void,
+    getOptions:()=>I_AIOInput_option[],
+    types: {
+        isMultiple: boolean,
         isInput: boolean,
         isDropdown: boolean,
         hasOption: boolean,
@@ -124,95 +189,29 @@ export type I_AIOInput_context = {
         hasSearch: boolean
     }
 }
-type I_Drag = {start:(e:any)=>void,over:(e:any)=>void,drop:(e:any)=>void}
-export default function AIOInput(props:I_AIOInput) {
-    let {type,multiple,onChange,value} = props;
+type I_Drag = { start: (e: any) => void, over: (e: any) => void, drop: (e: any) => void }
+export default function AIOInput(props: I_AIOInput) {
+    let { type, multiple, onChange, value, attrs = {} } = props;
     let [types] = useState(getTypes(props))
     let [parentDom] = useState(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
     let [getPopover] = useState<any>(initGetPopover());
-    function initGetPopover(){
-        let p:I_AIOInput_Popover_props = {type,getRootProps:()=>props, id:datauniqid, toggle, getOptions}
+    function initGetPopover() {
+        let p: I_AIOInput_Popover_props = { getRootProps: () => props, id: datauniqid, toggle, getOptions }
         return new Popover(p).getFn()
     }
     let [popup] = useState(new AIOPopup())
-    let [open,setOpen] = useState<boolean>(!!props.open);
-    let [showPassword,SetShowPassword] = useState<boolean>(false);
-    function setShowPassword(state?:boolean){SetShowPassword(state === undefined?!showPassword:state)}
-    let [temp] = useState<I_AIOInput_temp>({})
-    function isMultiple() {
-        if (type === 'multiselect' || type === 'table') { return true }
-        else if (type === 'radio' || type === 'slider' || type === 'file') { return !!multiple }
-        else { return false };
-    }
-    let [Drag] = useState<I_Drag>(new DragClass({rootProps:props}))
+    let [open, setOpen] = useState<boolean>(!!props.open);
+    let [showPassword, SetShowPassword] = useState<boolean>(false);
+    function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
+    let [Drag] = useState<I_Drag>(new DragClass({ rootProps: props }))
     function getSelectText() {
-        //cannot use this.properties here 
-        let {options = [],value} = props;
+        let { options = [], value } = props;
         let option = options.find((option) => value === undefined ? false : getOptionProp(option, 'value') === value);
         if (option === undefined) { return }
         return getOptionProp(option, 'text')
     }
-    
-    function getProp(p:I_AIOInput_getProp_param) {
-        let {key, def, preventFunction} = p;
-        let propsResult = typeof props[key] === 'function' && !preventFunction ? props[key]() : props[key];
-        if (propsResult === null) { propsResult = undefined }
-        if (key === 'value') {
-            if (propsResult === null) { propsResult = undefined }
-
-            if (types.isMultiple) {
-                if (propsResult === undefined) { propsResult = [] }
-                if (!Array.isArray(propsResult)) {
-                    console.error(`aio-input error => in type="${type}" by multiple:true value should be an array but is ${propsResult}`)
-                    propsResult = [propsResult]
-                }
-            }
-            else {
-                if (Array.isArray(propsResult)) {
-                    console.error(`aio-input error => in type="${type}" by multiple:false|undefined value cannot be an array`)
-                    propsResult = propsResult[0]
-                }
-                if (type === 'map') {
-                    let { lat, lng } = propsResult || {};
-                    if (lat === null) { lat = 35.699739 } if (lng === null) { lng = 51.338097 }
-                    propsResult = { lat, lng }
-                }
-            }
-            if (type === 'slider') {
-                if (!Array.isArray(propsResult)) {
-                    if (typeof propsResult !== 'number') { propsResult = [] }
-                    else { propsResult = [propsResult] }
-                }
-            }
-            return propsResult === undefined ? def : propsResult;
-        }
-        if (key === 'type') { return type }
-        if (key === 'props') { return props }
-        if (key === 'after') {
-            if (type === 'password' && props.visible) {
-                return <div className='align-v' onClick={() => setShowPassword()}><Icon path={showPassword ? mdiEyeOff : mdiEye} size={.8} /></div>
-            }
-        }
-        if (key === 'caret') {
-            if (propsResult === false) { return false }
-            if (type === 'button') { return !!getProp({key:'popover'}) }
-            if (type === 'select' || type === 'multiselect' || type === 'datepicker') { return propsResult || true }
-            if (type === 'text' || type === 'number' || type === 'textarea') {
-                let options = getProp({key:'options'});
-                if (options) { return propsResult || true }
-                else { return false }
-            }
-            return false;
-        }
-        if (key === 'text' && propsResult === undefined) {
-            if (type === 'select') { return getSelectText() }
-            if (type === 'datepicker') { return getDatepickerText() }
-        }
-        propsResult = propsResult === undefined ? def : propsResult;
-        return propsResult;
-    }
-    function getOptionProp(option:I_AIOInput_option, key:string, def?:any, preventFunction?:boolean) {
+    function getOptionProp(option: I_AIOInput_option, key: string, def?: any, preventFunction?: boolean) {
         let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option, props) : option[key]
         if (optionResult !== undefined) { return optionResult }
         let prop = props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
@@ -230,59 +229,55 @@ export default function AIOInput(props:I_AIOInput) {
         }
         return prop !== undefined ? prop : def;
     }
-    function toggle(popover:any) {
+    function toggle(popover: any) {
         let open = !!popup.getModals().length
         if (!!popover === !!open) { return }
         setOpen(!!popover)
-        if (popover) {popup.addModal(popover);}
-        else {popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0)}
+        if (popover) { popup.addModal(popover); }
+        else { popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0) }
     }
     function click(e, dom) {
-        let onChange = properties.onChange || (() => { });
-        let attrs = properties.attrs;
-        if (type === 'checkbox') { onChange(!properties.value) }
-        else if (getPopover) { toggle(getPopover(dom)) }
+        if (type === 'checkbox') { if (onChange) { onChange(!value) } }
+        else if (getPopover) {toggle(getPopover(dom))}
         else if (attrs.onClick) { attrs.onClick(); }
     }
     function optionClick(option) {
         let { attrs = {}, onClick, close, text } = option;
         if (onClick) { onClick(option.value, option); }
         else if (attrs.onClick) { attrs.onClick(option.value, option); }
-        else if(onChange){
+        else if (onChange) {
             if (types.isInput) { onChange(text, option) }
             else if (types.isMultiple) {
-                if (value.indexOf(option.value) === -1) { onChange(value.concat(option.value), option.value, 'add') }
-                else { onChange(value.filter((o) => o !== option.value), option.value, 'remove') }
+                if (value.indexOf(option.value) === -1) { onChange(value.concat(option.value)) }
+                else { onChange(value.filter((o) => o !== option.value)) }
             }
             else { onChange(option.value, option) }
         }
         if (close) { toggle(false) }
     }
     function getOptions() {
-        let getDefaultOptionChecked = (value) => {
-            if (type === 'multiselect' || type === 'radio') {
-                let Value = properties.value;
-                return types.isMultiple ? Value.indexOf(value) !== -1 : Value === value
-            }
+        let getDefaultOptionChecked = (v) => {
+            if (type === 'multiselect') { return value.indexOf(v) !== -1 }
+            if (type === 'radio') { return types.isMultiple ? value.indexOf(v) !== -1 : value === v }
         }
-        let {options = []} = props;
+        let { options = [] } = props;
         let result = [];
         let renderIndex = 0;
-        let Value = properties.value;
         let draggable = types.isDropdown && types.hasOption && props.onSwap;
         for (let i = 0; i < options.length; i++) {
             let option = options[i];
-            let disabled = properties.disabled || getOptionProp(option, 'disabled');
+            let disabled = !!props.disabled || getOptionProp(option, 'disabled');
             let show = getOptionProp(option, 'show')
             if (show === false) { continue }
             let text = getOptionProp(option, 'text');
-            if (types.isInput && Value && text.toString().indexOf(Value.toString()) !== 0) { continue }
-            let value = getOptionProp(option, 'value')
+            //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
+            if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
+            let optionValue = getOptionProp(option, 'value')
             let attrs = getOptionProp(option, 'attrs', {});
             let obj = {
-                attrs, text, value, disabled, draggable,
+                attrs, text, value: optionValue, disabled, draggable,
                 checkIcon: getOptionProp(option, 'checkIcon', [], true),
-                checked: getOptionProp(option, 'checked', getDefaultOptionChecked(value)),
+                checked: getOptionProp(option, 'checked', getDefaultOptionChecked(optionValue)),
                 before: getOptionProp(option, 'before'),
                 after: getOptionProp(option, 'after'),
                 justify: getOptionProp(option, 'justify'),
@@ -296,27 +291,18 @@ export default function AIOInput(props:I_AIOInput) {
                 tagAfter: getOptionProp(option, 'tagAfter'),
                 renderIndex, realIndex: i
             }
-            if (value === Value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
+            if (optionValue === value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
             result.push(obj)
             renderIndex++;
         }
         return result;
     }
-    function getContext():I_AIOInput_context {
-        let context:I_AIOInput_context = {
-            rootProps:props,datauniqid,
-            touch: 'ontouchstart' in document.documentElement,
-            Drag,open,click,optionClick,
-            types,
-            showPassword,setShowPassword,
-            getOptionProp
-
+    function getContext(): I_AIOInput_context {
+        let context: I_AIOInput_context = {
+            rootProps: props, datauniqid,getOptions,touch: 'ontouchstart' in document.documentElement,
+            Drag, open, click, optionClick,types,showPassword, setShowPassword,getOptionProp
         }
         return context
-        // return {
-        //     ...props,properties,types,getOptions,open,setShowPassword,showPassword,popup,dragStart,dragOver,drop,click,
-        //     optionClick,datauniqid,getProp,getOptionProp,parentDom,
-        // }
     }
     function getTimeText(obj) {
         let text = [], dateArray = [];
@@ -332,68 +318,67 @@ export default function AIOInput(props:I_AIOInput) {
         return text.join(' ');
     }
     let render = {
-        list:()=><List {...{properties,getOptionProp}} />,
-        file:() => <File />,
-        select:() => <Layout />,
-        button:() => <Layout />,
-        multiselect:() => <Multiselect />,
-        radio:() => <Layout text={<Options />} />,
-        tabs:() => <Layout text={<Options />} />,
-        checkbox:() => <Layout />,
-        datepicker:() => <Layout />,
-        image:() => <Layout text={<Image />} />,
-        map:() => <Layout text={<Map properties={this.properties} />} />,
-        table:() => <Table properties={this.properties} />,
-        text:() => <Layout text={<Input />} />,
-        password:() => <Layout text={<Input />} />,
-        textarea:() => <Layout text={<Input />} />,
-        number:() => <Layout text={<Input />} />,
-        color:() => <Layout text={<Input />} />,
-        slider:() => <Layout text={<InputSlider properties={this.properties} />} />,
-        form:() => <Form properties={this.properties} />,   
-        time:()=>{
+        list: () => <List />,
+        file: () => <File />,
+        select: () => <Layout properties={{text:props.text || getSelectText()}}/>,
+        button: () => <Layout />,
+        multiselect: () => <Multiselect />,
+        radio: () => <Layout properties={{text:<Options />}} />,
+        tabs: () => <Layout properties={{text:<Options />}} />,
+        checkbox: () => <Layout />,
+        datepicker: () => <Layout properties={{text:getDatepickerText(props)}}/>,
+        image: () => <Layout properties={{text:<Image />}} />,
+        map: () => <Layout properties={{text:<Map />}} />,
+        table: () => <Table />,
+        text: () => <Layout properties={{text:<Input />}} />,
+        password: () => <Layout properties={{text:<Input />}} />,
+        textarea: () => <Layout properties={{text:<Input />}} />,
+        number: () => <Layout properties={{text:<Input />}} />,
+        color: () => <Layout properties={{text:<Input />}} />,
+        slider: () => <Layout properties={{text:<Slider />}} />,
+        form: () => <Form />,
+        time: () => {
             let getProps = () => {
-                let {calendarType,onChange,style} = properties;
+                let { calendarType, onChange, style } = props;
                 let today = AIODate().getToday({ calendarType });
                 let todayObject = { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] }
-                let value = properties.value || {};
+                let value = props.value || {};
                 for (let prop in value) { if (value[prop] === true) { value[prop] = todayObject[prop] } }
-                let popover = properties.popover || {};
+                let popover = props.popover || {};
                 let className = 'aio-input-time';
-                className += properties.className ? ' ' + properties.className : '';
-                return { text: getTimeText(value), attrs: addToAttrs(properties.attrs, { style: { direction: 'ltr' } }), popover, onChange, value, className, style }
+                className += props.className ? ' ' + props.className : '';
+                return { text: getTimeText(value), attrs: addToAttrs(props.attrs, { style: { direction: 'ltr' } }), popover, onChange, value, className, style }
             }
             let { text, attrs, popover = {}, onChange, className, style } = getProps()
             return (
                 <AIOInput
-                    caret={false} text={text} {...this.props} attrs={attrs} type='button' className={className} style={style}
+                    caret={false} text={text} {...props} attrs={attrs} type='button' className={className} style={style}
                     popover={!onChange ? undefined : {
                         position: 'center', ...popover, attrs: addToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
                         render: ({ close }) => <TimePopover value={getProps().value} onChange={(obj) => onChange(obj)} onClose={() => close()} />
                     }}
                 />
             )
-        } 
+        }
     }
-    let properties = getMainProperties(props, getProp, types);
     if (!type || !render[type]) { return null }
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
 }
 export type I_AIOInput_Popover_props = {
-    getRootProps:()=>I_AIOInput, id:string, toggle:(popover:any)=>void, getOptions:()=>I_AIOInput_option[]
+    getRootProps: () => I_AIOInput, id: string, toggle: (popover: any) => void, getOptions: () => I_AIOInput_option[]
 }
 class Popover {
-    props:I_AIOInput_Popover_props;
-    isActive:boolean;
-    constructor(props:I_AIOInput_Popover_props) {
+    props: I_AIOInput_Popover_props;
+    isActive: boolean;
+    constructor(props: I_AIOInput_Popover_props) {
         this.props = props;
         this.isActive = this.getIsActive();
     }
     getRender = (popover) => {
-        let {getRootProps,getOptions} = this.props;
-        let {type} = getRootProps();
+        let { getRootProps, getOptions } = this.props;
+        let { type } = getRootProps();
         if (type === 'button') { return ({ close }) => popover.render({ close }) }
-        else if (type === 'datepicker') { return ({ close }) => <DatePicker onClose={close} /> }
+        else if (type === 'datepicker') { return ({ close }) => <Calendar onClose={close} /> }
         else {
             return ({ close }) => {
                 let options = getOptions() || [];
@@ -404,15 +389,15 @@ class Popover {
         }
     }
     getIsActive = () => {
-        let {getRootProps} = this.props;
-        let {popover,type,options} = getRootProps();
+        let { getRootProps } = this.props;
+        let { popover, type, options } = getRootProps();
         if (type === 'datepicker' || type === 'select' || type === 'multiselect') { return true }
         if (type === 'button') { return !!popover }
         if (type === 'text' || type === 'number' || type === 'textarea') { return !!options }
         return false
     }
     getBackdrop = (popover) => {
-        let {id} = this.props,{ backdrop = {} } = popover;
+        let { id } = this.props, { backdrop = {} } = popover;
         return { ...backdrop, attrs: addToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
     }
     getBody = (popover, render) => {
@@ -420,20 +405,20 @@ class Popover {
         return { ...body, render }
     }
     getPopover = (popover, dom) => {
-        let {getRootProps,id} = this.props;
-        let {type} = getRootProps();
+        let { getRootProps, id } = this.props;
+        let { type } = getRootProps();
         let { fixStyle, fitHorizontal = ['multiselect', 'text', 'number', 'textarea'].indexOf(type) !== -1 } = popover;
         return { fixStyle, fitHorizontal, pageSelector: '.aio-input-backdrop.' + id, getTarget: () => $(dom.current) }
     }
     getFn = () => {
         if (!this.isActive) { return }
-        let {getRootProps,toggle} = this.props;
+        let { getRootProps, toggle } = this.props;
         let props = getRootProps()
         return (dom) => {
             let popover = { ...(props.popover || {}) }
             let render = this.getRender(popover);
             let body = this.getBody(popover, render);
-            let {rtl} = props;
+            let { rtl } = props;
             let { position = 'popover', header } = popover;
             return {
                 onClose: () => toggle(false),
@@ -446,10 +431,10 @@ class Popover {
         }
     }
 }
-export type type_time_value = {year?:number,month?:number,day?:number,hour?:number,minute?:number,second?:number}
-export type I_TimePopver = {lang?:'en' | 'fa',value:type_time_value,onChange:(value:type_time_value)=>void,onClose:()=>void}
-function TimePopover(props:I_TimePopver) {
-    let { lang = 'fa',onChange,onClose } = props;
+export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
+export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange: (value: type_time_value) => void, onClose: () => void }
+function TimePopover(props: I_TimePopver) {
+    let { lang = 'fa', onChange, onClose } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
     let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
     let [value, setValue] = useState<type_time_value>({ ...props.value })
@@ -491,10 +476,10 @@ function TimePopover(props:I_TimePopver) {
     )
 }
 function Image() {
-    let { rootProps }:I_AIOInput_context = useContext(AICTX);
+    let { rootProps }: I_AIOInput_context = useContext(AICTX);
     let [popup] = useState(new AIOPopup());
     let { value = {}, width, height, onChange, disabled, loading, placeholder, preview } = rootProps;
-    let [url, setUrl] = useState();
+    let [url, setUrl] = useState<string>();
     let dom = createRef()
     // if(typeof value === 'object'){
     //     let fr = new FileReader();
@@ -504,21 +489,17 @@ function Image() {
     //     fr.readAsDataURL(value);
     // }
     useEffect(() => {
-        if (value.file) {
-            changeUrl(typeof value.file === 'object')
-        }
-        else if (typeof value.url === 'string') {
-            if (url !== value.url) { setUrl(value.url) }
-        }
-        else if (value.url !== false) { setUrl(false) }//notice
+        if (value.file) {changeUrl(value.file)}
+        else if (typeof value.url === 'string') {if (url !== value.url) { setUrl(value.url) }}
+        else { setUrl(undefined) }//notice
     })
-    function changeUrl(file, callback = () => { }) {
+    function changeUrl(file:any, callback?:Function) {
         try {
             let fr = new FileReader();
             fr.onload = function () {
                 if (url !== fr.result) {
-                    setUrl(fr.result);
-                    callback(fr.result)
+                    setUrl(fr.result as any);
+                    if(callback){callback(fr.result)}
                 }
             }
             fr.readAsDataURL(file);
@@ -527,14 +508,7 @@ function Image() {
     }
     function openPopup() {
         popup.addModal({
-            header: {
-                title: '',
-                onClose: (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    popup.removeModal();
-                }
-            },
+            header: {title: '',onClose: (e) => {e.stopPropagation(); e.preventDefault(); popup.removeModal();}},
             body: {
                 render: () => {
                     let src = $(dom.current).attr('src')
@@ -545,8 +519,8 @@ function Image() {
     }
     let IMG = url ? (
         <>
-            <img ref={dom} src={url} alt={placeholder} style={{ objectFit: 'cover' }} width={width} height={height} />
-            {typeof onChange === 'function' && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange() }} className='aio-input-image-remove'><Icon path={mdiClose} size={1} /></div>}
+            <img ref={dom as any} src={url} alt={placeholder} style={{ objectFit: 'cover' }} width={width} height={height} />
+            {typeof onChange === 'function' && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(undefined) }} className='aio-input-image-remove'><Icon path={mdiClose} size={1} /></div>}
             {preview && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); openPopup() }} className='aio-input-image-preview'><Icon path={mdiImage} size={1} /></div>}
             {popup.render()}
         </>
@@ -556,7 +530,7 @@ function Image() {
     }
     return (
         <AIOInput
-            disabled={disabled || loading}
+            disabled={!!disabled || !!loading}
             type='file' justify={true} text={IMG} attrs={{ style: { width: '100%', height: '100%', padding: 0 } }}
             onChange={(file) => {
                 changeUrl(file, (url) => {
@@ -567,13 +541,13 @@ function Image() {
     )
 }
 function Multiselect() {
-    let { rootProps }:I_AIOInput_context = useContext(AICTX);
+    let { rootProps }: I_AIOInput_context = useContext(AICTX);
     let { style = {} } = rootProps.attrs || {};
     return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags /></div>)
 }
 function Tags() {
-    let { rootProps, getOptionProp }:I_AIOInput_context = useContext(AICTX);
-    let {value = [],rtl,hideTags,options = []} = rootProps;
+    let { rootProps, getOptionProp }: I_AIOInput_context = useContext(AICTX);
+    let { value = [], rtl, hideTags, options = [] } = rootProps;
     if (!value.length || hideTags) { return null }
     return (
         <div className={`aio-input-tags${rtl ? ' rtl' : ''}`}>
@@ -587,42 +561,44 @@ function Tags() {
         </div>
     )
 }
-function Tag({ option, value }) {
-    let { properties, getOptionProp } = useContext(AICTX);
-    let onChange = properties.onChange || (() => { })
+type I_Tag = { option:I_AIOInput_option, value:any }
+function Tag(props:I_Tag) {
+    let { rootProps, getOptionProp } = useContext(AICTX);
+    let {onChange = () => { }} = rootProps;
+    let {option,value} = props;
     let text = getOptionProp(option, 'text');
     let tagAttrs = getOptionProp(option, 'tagAttrs', {});
     let tagBefore = getOptionProp(option, 'tagBefore', <Icon path={mdiCircleMedium} size={0.7} />);
     let tagAfter = getOptionProp(option, 'tagAfter');
-    let disabled = getOptionProp(option, 'disabled') || properties.disabled;
-    let onRemove = disabled ? undefined : () => { onChange(properties.value.filter((o) => o !== value)) }
+    let disabled = getOptionProp(option, 'disabled') || rootProps.disabled;
+    let onRemove = disabled ? undefined : () => { onChange(rootProps.value.filter((o) => o !== value)) }
     return (
         <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
             <div className='aio-input-tag-icon'>{tagBefore}</div>
             <div className='aio-input-tag-text'>{text}</div>
             {tagAfter !== undefined && <div className='aio-input-tag-icon'>{tagAfter}</div>}
-            <div className='aio-input-tag-icon'><Icon path={mdiClose} size={0.7} onClick={onRemove} /></div>
+            <div className='aio-input-tag-icon' onClick={onRemove}><Icon path={mdiClose} size={0.7} /></div>
         </div>
     )
 }
 function Input() {
-    let {rootProps,types,showPassword}:I_AIOInput_context = useContext(AICTX)
-    let {type} = rootProps;
-    let { 
-        min, max, swip, onChange,blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400,disabled,options, placeholder,
+    let { rootProps, types, showPassword }: I_AIOInput_context = useContext(AICTX)
+    let { type } = rootProps;
+    let {
+        min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400, disabled, options, placeholder,
         inputAttrs, spin, justify
     } = rootProps;
     let [dom] = useState(createRef())
     let [container] = useState(createRef())
     let [timeout] = useState<any>()
     let [datauniqid] = useState(`ac${Math.round(Math.random() * 100000)}`)
-    let [value,setValue] = useState<any>(rootProps.value || '');
-    useEffect(()=>{
+    let [value, setValue] = useState<any>(rootProps.value || '');
+    useEffect(() => {
         if (type === 'number' && swip) {
             AIOSwip({
                 speedY: 0.2, reverseY: true, minY: min, maxY: max,
                 dom: () => $(dom.current),
-                start: () => [0, this.state.value || 0],
+                start: () => [0, value || 0],
                 move: ({ y }) => {
                     if (min !== undefined && y < min) { y = min; }
                     if (max !== undefined && y > max) { y = max }
@@ -630,8 +606,8 @@ function Input() {
                 }
             })
         }
-    },[]) 
-    useEffect(()=>{setValue(rootProps.value)},[rootProps])
+    }, [])
+    useEffect(() => { setValue(rootProps.value) }, [rootProps])
     function convertPersianDigits(value) {
         try {
             value = value.toString();
@@ -648,7 +624,7 @@ function Input() {
         return value
     }
     function change(value, onChange) {
-        if (types.type === 'number') { if (value) { value = +value; } }
+        if (rootProps.type === 'number') { if (value) { value = +value; } }
         else if (types.hasKeyboard) {
             if (value) {
                 value = convertPersianDigits(value);
@@ -686,13 +662,13 @@ function Input() {
                 }
             }
         }
-        this.setState({ value });
+        setValue(value);
         if (!blurChange) {
             clearTimeout(timeout);
             timeout = setTimeout(() => onChange(value), delay);
         }
     }
-    function blur(onChange) {if (blurChange) { onChange(value)}}
+    function blur(onChange) { if (blurChange) { onChange(value) } }
     function getInputAttrs() {
         let InputAttrs = addToAttrs(inputAttrs, {
             className: !spin ? 'no-spin' : undefined,
@@ -724,112 +700,86 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
-class Form extends Component {
-    static contextType = AICTX;
-    constructor(props) {
-        super(props);
-        let { properties } = props;
-        let { value = {}, onChange } = properties;
-        this.state = { initialValue: JSON.stringify(value) }
-        if (!onChange) { this.state.value = value; }
-        this.errors = {}
+function Form() {
+    let {rootProps}:I_AIOInput_context = useContext(AICTX)
+    let {onChange ,getErrors,body,inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs} = rootProps;
+    let [initialValue] = useState<any>(JSON.stringify(rootProps.value))
+    let [value,setValue] = useState(rootProps.value || {})
+    let [errors] = useState({})
+    let [reportedErrors] = useState<string>()
+    function getValue() {
+        let res;
+        if(onChange){res = rootProps.value}
+        else{res = value}
+        return res || {}
     }
-    getValue() {
-        let { properties } = this.props;
-        let { onChange, value = {} } = properties;
-        return onChange ? value : this.state.value
-    }
-    getErrors() { return [...Object.keys(this.errors).filter((o) => !!this.errors[o]).map((o) => this.errors[o])] }
-    removeError(field) {
+    function GetErrors() { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o])] }
+    function removeError(field) {
         let newErrors = {}
-        for (let prop in this.errors) { if (prop !== field) { newErrors[prop] = this.errors[prop] } }
-        this.errors = newErrors
+        for (let prop in errors) { if (prop !== field) { newErrors[prop] = errors[prop] } }
+        errors = newErrors
     }
-    setValue({ itemValue, formItem, field }) {
+    function SetValue({ itemValue, formItem, field }) {
         //اگر فرم آیتم ارسال شد یعنی در حال تغییر مستقیم توسط یک اینپوت هستیم
         //اگر فیلد ارسال شد یعنی خارج از برنامه داریم یک پروپرتی را چنج می کنیم پس ارور هندلینگ نباید انجام شود
-        let { properties } = this.props;
-        let { onChange } = properties;
         let Field = field || formItem.field
-        let value = this.getValue();
-        let newValue = this.setValueByField(value, Field, itemValue);
+        let value = getValue();
+        let newValue = setValueByField(value, Field, itemValue);
         if (!field) {
-            let error = this.getError(formItem, itemValue)
-            if (error) { this.errors[Field] = error }
-            else { this.removeError(Field) }
+            let error = getError(formItem, itemValue)
+            if (error) { errors[Field] = error }
+            else { removeError(Field) }
         }
-        if (onChange) { onChange(newValue, this.getErrors()) }
-        else { this.setState({ value: newValue }) }
+        if (onChange) { onChange(newValue, GetErrors()) }
+        else { setValue(newValue) }
     }
-    header_layout() {
-        let { properties } = this.props;
-        let { header, title, subtitle, headerAttrs, onClose, onBack } = properties;
-        if (!header && !title) { return false }
-        return {
-            className: 'aio-input-form-header' + (headerAttrs.className ? ' ' + headerAttrs.className : ''), style: headerAttrs.style,
-            row: [
-                { show: !!onBack, size: 36, html: <Icon path={mdiChevronRight} size={.8} />, className: 'align-vh', onClick: () => onBack() },
-                {
-                    show: !!title, className: 'align-v',
-                    column: [
-                        { html: title, className: 'aio-input-form-title' },
-                        { show: !!subtitle, html: subtitle, className: 'aio-input-form-subtitle' },
-                    ]
-                },
-                { flex: 1, show: !!title },
-                { show: !!header, flex: !!title ? undefined : 1, html: () => typeof header === 'function' ? header() : header, className: 'align-vh' },
-                { show: !!onClose, html: <Icon path={mdiClose} size={.8} />, onClick: () => onClose(), className: 'aio-input-form-close-icon' }
-            ]
-        }
-    }
-    body_layout() {
-        let { properties } = this.props;
-        let { inputs, bodyAttrs = {} } = properties;
-        if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => this.input_layout(o)) } }
+    function body_layout() {
+        let { attrs = {} } = body;
+        if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => input_layout(o)) } }
         let className = 'aio-input-form-body';
-        if (bodyAttrs.className) { className += ' ' + bodyAttrs.className }
-        let style = bodyAttrs.style;
+        if (attrs.className) { className += ' ' + attrs.className }
+        let style = attrs.style;
         let res = { flex: 1, className, style, ...inputs }
         return res
     }
-    reset() {
-        let { properties } = this.props;
-        let { onChange } = properties;
-        let { initialValue } = this.state;
+    function Reset() {
         if (onChange) { onChange(JSON.parse(initialValue)) }
-        else { this.setState({ value: JSON.parse(initialValue) }) }
+        else { SetValue(JSON.parse(initialValue) ) }
     }
-    footer_layout() {
-        let { properties } = this.props;
-        let { footer, onClose, onSubmit, footerAttrs, closeText, resetText, submitText, reset, initialDisabled } = properties;
-        let { initialValue } = this.state;
-        if (footer === false) { return false }
-        if (!footer && !onSubmit && !onClose && !reset) { return false }
+    function isDisabled(){
         let disabled = false;
-        if (!!this.getErrors().length) { disabled = true }
-        else if (initialDisabled && initialValue === JSON.stringify(this.getValue())) { disabled = true }
-        if (footer) {
-            let html = typeof footer === 'function' ? footer({ onReset: () => this.reset(), disabled, errors: this.getErrors() }) : footer;
-            let className = 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : '');
-            return { className, style: footerAttrs.style, html }
+        if (!!GetErrors().length) { disabled = true }
+        else if (initialDisabled && initialValue === JSON.stringify(getValue())) { disabled = true }
+        return disabled
+    }
+    function footer_layout() {
+        if (!footer) { return false }
+        let {onSubmit,onClose,reset,layout,attrs,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',before,after} = footer;
+        let disabled = isDisabled();
+        if (layout) {
+            let html = layout({ reset:Reset,disabled, errors: GetErrors() });
+            if(!html || html === null){return {}}
+            return { html }
         }
         return {
-            className: 'aio-input-form-footer' + (footerAttrs.className ? ' ' + footerAttrs.className : ''), style: footerAttrs.style,
+            className: 'aio-input-form-footer' + (attrs.className ? ' ' + attrs.className : ''), style: attrs.style,
             html: (
                 <>
+                    {!!before && before}
                     {!!onClose && <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button>}
-                    {!!reset && <button onClick={() => this.reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button>}
+                    {!!reset && <button onClick={() => Reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button>}
                     {!!onSubmit && <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button>}
+                    {!!after && after}
                 </>
             )
         }
     }
-    getDefault({ type, multiple }) {
+    function getDefault({ type, multiple }) {
         return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
     }
-    getValueByField({ field, def, functional, value = this.getValue() }) {
-        let { properties } = this.props;
-        let props = properties.props, a;
+    function getValueByField(p:{ field:string | ((value:any)=>string), def?:any, functional?:boolean, value?:any }) {
+        let { field, def, functional, value = getValue() } = p;
+        let a;
         if (functional && typeof field === 'function') { a = field(value); }
         else if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
@@ -841,11 +791,10 @@ class Form extends Component {
         else { a = field }
         return a === undefined ? def : a;
     }
-    setValueByField(obj = {}, field, value) {
+    function setValueByField(obj = {}, field, value) {
         try {
             field = field.replaceAll('[', '.');
             field = field.replaceAll(']', '');
-
         }
         catch { }
         var fields = field.split('.');
@@ -863,88 +812,79 @@ class Form extends Component {
         node[fields[fields.length - 1]] = value;
         return obj;
     }
-    componentDidMount() { this.reportErrors() }
-    componentDidUpdate() { this.reportErrors() }
-    reportErrors() {
-        let { properties } = this.props;
-        let { getErrors } = properties;
+    useEffect(()=>{
+        reportErrors()
+    })
+    function reportErrors() {
         if (!getErrors) { return }
-        let errors = this.getErrors();
-        if (JSON.stringify(errors) !== this.reportedErrors) {
+        let errors = GetErrors();
+        if (JSON.stringify(errors) !== reportedErrors) {
             getErrors(errors);
-            this.reportedErrors = JSON.stringify(errors)
+            reportedErrors = JSON.stringify(errors)
         }
     }
-    getAttrs(propsAttrs = {}, ownAttrs = {}) {
+    function getAttrs(propsAttrs:any = {}, ownAttrs:any = {}) {
         let style = { ...propsAttrs.style, ...ownAttrs.style }
         return { ...propsAttrs, ...ownAttrs, style }
     }
-    getInputProps(input, formItem) {
-        let { properties } = this.props;
-        let { rtl, disabled, updateInput = (o) => o, inputStyle = {}, inputClassName } = properties;
-        let value = this.getValueByField({ field: formItem.field, def: this.getDefault(input) });
-        let props = {
-            rtl, value,
+    function getInputProps(input, formItem) {
+        let value = getValueByField({ field: formItem.field, def: getDefault(input) });
+        let props:I_AIOInput = {
+            rtl, value,type:input.type,
             onChange: (value) => {
                 if (input.type === 'map' && formItem.addressField && value.address) {
-                    this.setValue({ itemValue: value.address, field: formItem.addressField })
+                    setValue({ itemValue: value.address, field: formItem.addressField })
                 }
-                this.setValue({ itemValue: value, formItem })
-            }, attrs: {}
+                setValue({ itemValue: value, formItem })
+            }, attrs: {},inputAttrs:{},disabled:false,pointLabel:()=>{return {show:'inline'}}
         };
         for (let prop in input) {
             let functional = ['options'].indexOf(prop) !== -1;
-            props[prop] = this.getValueByField({ field: input[prop], functional })
+            props[prop] = getValueByField({ field: input[prop], functional })
         }
         props.value = value;
-        if (input.type === 'slider' && props.showValue === undefined) { props.showValue = 'inline'; }
         let { attrs = {} } = input;
-        for (let prop in attrs) { props.attrs[prop] = this.getValueByField({ field: attrs[prop] }) }
-        props.attrs = addToAttrs({ ...props.attrs }, { style: inputStyle, stylePriority: false, className: inputClassName })
+        for (let prop in attrs) { props.attrs[prop] = getValueByField({ field: attrs[prop] }) }
         if (disabled) { props.disabled = true; }
-        if (['text', 'number', 'password', 'textarea'].indexOf(props.type) !== -1) {
+        if (['text', 'number', 'password', 'textarea'].indexOf(input.type) !== -1) {
             let { inputAttrs = {} } = input;
             props.inputAttrs = {};
-            for (let prop in inputAttrs) { props.inputAttrs[prop] = this.getValueByField({ field: inputAttrs[prop] }) }
+            for (let prop in inputAttrs) { props.inputAttrs[prop] = getValueByField({ field: inputAttrs[prop] }) }
         }
-        return updateInput(props);
+        return props;
     }
-    get_layout(key, value, attrs) {
+    function get_layout(key, value, attrs) {
         if (!value) { return false }
         let cls = 'aio-input-form';
         let className = { 'label': `${cls}-label`, 'footer': `${cls}-item-footer`, 'error': `${cls}-error` }[key];
         attrs = addToAttrs(attrs, { className })
         return { html: value, align: 'v', attrs }
     }
-    input_layout(formItem) {
-        let { properties } = this.props;
+    function input_layout(formItem) {
         let { label, footer, input, flex, size, field } = formItem;
-        let value = this.getValueByField({ field, def: this.getDefault(input) });
-        let error = this.getError(formItem, value)
-        if (error) { this.errors[field] = error }
-        else { this.errors[field] = undefined }
-        let labelAttrs = this.getAttrs(properties.labelAttrs, formItem.labelAttrs)
-        let errorAttrs = this.getAttrs(properties.errorAttrs, formItem.errorAttrs)
-        let footerAttrs = this.getAttrs(properties.footerAttrs, formItem.footerAttrs)
-        let inputProps = this.getInputProps(input, formItem);
+        let value = getValueByField({ field, def: getDefault(input) });
+        let error = getError(formItem, value)
+        if (error) { errors[field] = error }
+        else { errors[field] = undefined }
+        let LabelAttrs = getAttrs(labelAttrs, formItem.labelAttrs)
+        let ErrorAttrs = getAttrs(errorAttrs, formItem.errorAttrs)
+        let InputProps:I_AIOInput = getInputProps(input, formItem);
         return {
             flex, size, className: 'aio-input-form-item',
             column: [
                 {
                     flex: 1, className: 'aio-input-form-item-input-container of-visible',
                     column: [
-                        this.get_layout('label', label, labelAttrs),
-                        { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...inputProps} /> },
+                        get_layout('label', label, LabelAttrs),
+                        { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...InputProps} /> },
                     ]
                 },
-                this.get_layout('footer', footer, footerAttrs),
-                this.get_layout('error', error, errorAttrs)
+                footer?{html:footer}:{},
+                get_layout('error', error, ErrorAttrs)
             ]
         }
     }
-    getError(o, value, options) {
-        let { properties } = this.props;
-        let { lang } = properties;
+    function getError(o, value) {
         let { validations = [], input } = o;
         let { type } = input;
         if (!validations.length || type === 'html') { return '' }
@@ -954,38 +894,33 @@ class Form extends Component {
             value, title: o.label, lang,
             validations: validations.map((a) => {
                 let params = a[2] || {};
-                let target = typeof a[1] === 'function' ? a[1] : this.getValueByField({ field: a[1], def: '' });
+                let target = typeof a[1] === 'function' ? a[1] : getValueByField({ field: a[1], def: '' });
                 let operator = a[0];
                 return [operator, target, params]
             })
         }
         return AIOValidation(a);
     }
-    render() {
-        let { properties } = this.props;
-        let { rtl, attrs } = properties;
-        attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') })
-        return (
-            <RVD
-                editNode={(obj, parent = {}) => {
-                    let show = this.getValueByField({ field: obj.show, def: true });
-                    if (show === false) { return false }
-                    if (obj.input) { return this.input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
-                    if (parent.input) { obj.className = 'of-visible' }
-                    return { ...obj }
-                }}
-                rootNode={{ attrs, column: [this.header_layout(), this.body_layout(), this.footer_layout()] }}
-            />
-        )
-    }
+    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') })
+    return (
+        <RVD
+            editNode={(obj, parent:any = {}) => {
+                let show = getValueByField({ field: obj.show, def: true });
+                if (show === false) { return false }
+                if (obj.input) { return input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
+                if (parent.input) { obj.className = 'of-visible' }
+                return { ...obj }
+            }}
+            rootNode={{ attrs, column: [body_layout(), footer_layout()] }}
+        />
+    )
 }
-function Options(props) {
-    let context = useContext(AICTX);
-    let { properties, getOptions, types } = context;
-    let type = properties.type;
+type I_Options = {options?:any[]}
+function Options(props:I_Options) {
+    let { rootProps, getOptions, types }:I_AIOInput_context = useContext(AICTX);
+    let {type,search} = rootProps;
     let [searchValue, setSearchValue] = useState('');
     function renderSearchBox(options) {
-        let { search } = properties;
         if (type === 'tabs' || types.isInput || search === false) { return null }
         if (type === 'radio' && !search) { return null }
         if (typeof search !== 'string') { search = 'Search' }
@@ -1025,61 +960,62 @@ function Options(props) {
 //column schema
 //title,value,width,minWidth,justify,type,onChange,cellAttrs,subtext,before,after
 export type type_table_column = {
-    title?:string,
-    value?:any,
-    sort?:true | type_table_sort,
-    search?:boolean,
-    id?:string,
-    _id?:string,
-    width?:number,
-    minWidth?:number,
-    input?:I_AIOInput,
-    onChange?:(newValue:any)=>void,
-    excel?:boolean
+    title?: string,
+    value?: any,
+    sort?: true | type_table_sort,
+    search?: boolean,
+    id?: string,
+    _id?: string,
+    width?: number,
+    minWidth?: number,
+    input?: I_AIOInput,
+    onChange?: (newValue: any) => void,
+    excel?: boolean
 }
 export type type_table_sort = {
-    active?:boolean,dir?:'dec'|'inc',title?:string,type?:'string'|'number',sortId?:string,getValue?:(row:any)=>any
+    active?: boolean, dir?: 'dec' | 'inc', title?: string, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any
 }
-export type type_table_temp = {start?:any,isInitSortExecuted?:boolean}
+export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
 export type type_table_paging = {
-    serverSide?:boolean,
-    number:number,
-    size:number,
-    length?:number,
-    sizes?:number[],
-    onChange?:(newPaging:type_table_paging)=>void
+    serverSide?: boolean,
+    number: number,
+    size: number,
+    length?: number,
+    sizes?: number[],
+    onChange?: (newPaging: type_table_paging) => void
 }
-export type type_table_getCellAttrs = (p:{ row:any, rowIndex:number, column:type_table_column, type: 'title' | 'cell' })=>any;
+export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: type_table_column, type: 'title' | 'cell' }) => any;
 export type type_table_context = {
-    rootProps:I_AIOInput,
-    columns:type_table_column[],
-    ROWS:{rows:any[], searchedRows:any[], sortedRows:any[], pagedRows:any[]},
-    add:()=>void,remove:(row:any,index:number)=>void,search:(searchValue:string)=>void,
-    exportToExcel:()=>void,
-    sorts:type_table_sort[],
-    setSorts:(newSorts:type_table_sort[])=>void,
-    sortRows:(rows:any[],sorts:type_table_sort[])=>any[],
-    excelColumns:type_table_column[],
-    getRowAttrs:(row:any,rowIndex:number)=>any,
-    getCellAttrs:type_table_getCellAttrs,
-    getCellContent:(p:{ row:any, rowIndex:number, column:type_table_column })=>React.ReactNode
+    rootProps: I_AIOInput,
+    columns: type_table_column[],
+    ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
+    add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
+    exportToExcel: () => void,
+    sorts: type_table_sort[],
+    setSorts: (newSorts: type_table_sort[]) => void,
+    sortRows: (rows: any[], sorts: type_table_sort[]) => any[],
+    excelColumns: type_table_column[],
+    addToAttrs:I_AIOInput_addToAttrs,
+    getRowAttrs: (row: any, rowIndex: number) => any,
+    getCellAttrs: type_table_getCellAttrs,
+    getCellContent: (p: { row: any, rowIndex: number, column: type_table_column }) => React.ReactNode
 }
 const AITableContext = createContext({} as any);
 function Table() {
-    let {rootProps}:I_AIOInput_context = useContext(AICTX);
-    let {paging,getValue,value, onChange = () => { },onAdd,onRemove,excel,onSwap,onSearch,rowAttrs,attrs} = rootProps;
+    let { rootProps }: I_AIOInput_context = useContext(AICTX);
+    let { paging, getValue, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs, attrs,onChangeSort } = rootProps;
     let [dom] = useState(createRef())
-    let [searchValue,setSearchValue] = useState('')
-    let [columns,setColumns] = useState<type_table_column[]>();
-    let [searchColumns,setSearchColumns] = useState<type_table_column[]>();
-    let [excelColumns,setExcelColumns] = useState<type_table_column[]>();
+    let [searchValue, setSearchValue] = useState('')
+    let [columns, setColumns] = useState<type_table_column[]>();
+    let [searchColumns, setSearchColumns] = useState<type_table_column[]>();
+    let [excelColumns, setExcelColumns] = useState<type_table_column[]>();
     let [temp] = useState<type_table_temp>({})
-    function getColumns(){
+    function getColumns() {
         let { columns } = rootProps;
-        let searchColumns = [],excelColumn = [];
+        let searchColumns = [], excelColumn = [];
         let updatedColumns = columns.map((o) => {
-            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search,excel } = o;
-            let column = { ...o, _id:id };
+            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
+            let column = { ...o, _id: id };
             if (search) { searchColumns.push(column) }
             if (excel) { excelColumns.push(column) }
             return column
@@ -1088,37 +1024,37 @@ function Table() {
         setSearchColumns(searchColumns)
         setExcelColumns(excelColumns)
     }
-    let [sorts,setSorts] = useState<type_table_sort[]>([])
-    function getSorts(){
+    let [sorts, setSorts] = useState<type_table_sort[]>([])
+    function getSorts() {
         let sorts = [];
         for (let i = 0; i < columns.length; i++) {
             let column = columns[i];
             let { _id, input } = column;
-            let sort = column.sort === true?{}:column.sort;
+            let sort = column.sort === true ? {} : column.sort;
             if (!sort) { continue }
             let { active = false, dir = 'dec' } = sort as type_table_sort;
             let getValue;
-            if(sort.getValue){getValue = sort.getValue}
+            if (sort.getValue) { getValue = sort.getValue }
             else {
                 getValue = (row) => {
                     let value = getDynamics({ value: column.value, row, column })
-                    if (input && input.type === 'datepicker') { value = AIODate().getTime({date:value}); }
+                    if (input && input.type === 'datepicker') { value = AIODate().getTime({ date: value }); }
                     return value
                 }
             }
             let type;
-            if(input && ['number','date','slider'].indexOf(input.type) !== -1){type = 'number'}
-            else {type = sort.type || 'string'}
-            let sortItem:type_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
+            if (input && ['number', 'date', 'slider'].indexOf(input.type) !== -1) { type = 'number' }
+            else { type = sort.type || 'string' }
+            let sortItem: type_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
             sorts.push(sortItem)
         }
         return sorts;
     }
-    function getDynamics(p:{ value:any, row?:any, column?:type_table_column, def?:any, rowIndex?:number }){
+    function getDynamics(p: { value: any, row?: any, column?: type_table_column, def?: any, rowIndex?: number }) {
         let { value, row, column, def, rowIndex } = p;
         if (paging) {
             let { serverSide, number, size } = paging;
-            if (!serverSide) {rowIndex += ((number - 1) * size)}
+            if (!serverSide) { rowIndex += ((number - 1) * size) }
         }
         let type = typeof value;
         if (type === 'string') {
@@ -1131,7 +1067,7 @@ function Table() {
         if (type === 'function') { return value({ row, column, rowIndex }) }
         return value === undefined ? def : value
     }
-    function setCell(row:any, column:type_table_column, cellNewValue?:any){
+    function setCell(row: any, column: type_table_column, cellNewValue?: any) {
         if (column.input && column.input.onChange) { column.input.onChange({ value: cellNewValue, row, column }) }
         else {
             row = JSON.parse(JSON.stringify(row));
@@ -1139,10 +1075,10 @@ function Table() {
             onChange(value.map((o) => o._id !== row._id ? o : row))
         }
     }
-    useEffect(()=>{
+    useEffect(() => {
         getColumns();
         getSorts();
-    },[]) 
+    }, [])
     function add() {
         if (typeof onAdd === 'function') { onAdd(); }
         else if (typeof onAdd === 'object') { onChange([onAdd, ...value]) }
@@ -1189,7 +1125,7 @@ function Table() {
             return str
         })
     }
-    function sortRows(rows = [], sorts = []){
+    function sortRows(rows = [], sorts = []) {
         if (!sorts.length) { return rows }
         return rows.sort((a, b) => {
             for (let i = 0; i < sorts.length; i++) {
@@ -1202,10 +1138,8 @@ function Table() {
             return 0;
         });
     }
-    function getSortedRows(rows){
+    function getSortedRows(rows) {
         if (temp.isInitSortExecuted) { return rows }
-        let { onChangeSort, onChange = () => { } } = this.properties;
-        let { sorts } = this.getState();
         if (onChangeSort) { return rows }
         let activeSorts = sorts.filter((sort) => sort.active !== false);
         if (!activeSorts.length) { return rows }
@@ -1233,7 +1167,7 @@ function Table() {
         return { ...attrs }
     }
     function getRowAttrs(row, rowIndex) {
-        let attrs = rowAttrs?rowAttrs({ row, rowIndex }):{};
+        let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
         let obj = addToAttrs(attrs, { className: 'aio-input-table-row' })
         if (!!onSwap) { obj = { ...obj, draggable: true, onDragStart: (e) => dragStart(e, row), onDragOver: (e) => dragOver(e, row), onDrop: (e) => drop(e, row) } }
         return obj;
@@ -1249,25 +1183,24 @@ function Table() {
             else { convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
         }
         let value = getDynamics({ value: column.value, row, rowIndex, column })
-        let p = {...convertedInput,value,onChange:column.input ? (value) => setCell(row, column, value) : undefined} as I_AIOInput
-        return (<AIOInput {...p}/>)
+        let p = { ...convertedInput, value, onChange: column.input ? (value) => setCell(row, column, value) : undefined } as I_AIOInput
+        return (<AIOInput {...p} />)
     }
     function search(searchValue) {
         if (onSearch === true) { setSearchValue(searchValue) }
         else { onSearch(searchValue) }
     }
     function getContext(ROWS) {
-        let { properties } = this.props;
-        let context:type_table_context = {
-            ROWS, addToAttrs,rootProps,columns,sorts,setSorts,sortRows,excelColumns,getCellAttrs,getRowAttrs,getCellContent,
-            add,remove,search,exportToExcel,
+        let context: type_table_context = {
+            ROWS, addToAttrs, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs, getCellContent,
+            add, remove, search, exportToExcel,
         }
         return context
     }
     let ROWS = getRows();
     return (
-        <AITableContext.Provider value={this.getContext(ROWS)}>
-            <div {...attrs} ref={this.dom} className={'aio-input-table' + (attrs.className ? ' ' + attrs.className : '')}>
+        <AITableContext.Provider value={getContext(ROWS)}>
+            <div {...attrs} ref={dom} className={'aio-input-table' + (attrs.className ? ' ' + attrs.className : '')}>
                 <TableToolbar />
                 <div className='aio-input-table-unit'><TableHeader /><TableRows /></div>
                 {paging ? <TablePaging /> : ''}
@@ -1275,19 +1208,19 @@ function Table() {
         </AITableContext.Provider>
     )
 }
-export type I_TableGap = {dir:'h'|'v'}
-function TableGap(props){
-    let {rootProps}:type_table_context = useContext(AITableContext)
-    let {rowGap,columnGap} = rootProps;
-    let {dir} = props;
+export type I_TableGap = { dir: 'h' | 'v' }
+function TableGap(props) {
+    let { rootProps }: type_table_context = useContext(AITableContext)
+    let { rowGap, columnGap } = rootProps;
+    let { dir } = props;
     let style;
-    if(dir === 'h'){style = { height: rowGap }}
-    else {style = { width: columnGap }}
+    if (dir === 'h') { style = { height: rowGap } }
+    else { style = { width: columnGap } }
     return <div className={'aio-input-table-border-${dir}'} style={style}></div>
 }
 function TablePaging() {
-    let { ROWS,rootProps }:type_table_context = useContext(AITableContext)
-    function fix(paging:type_table_paging) {
+    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
+    function fix(paging: type_table_paging) {
         let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
         if (!serverSide) { length = ROWS.sortedRows.length }
         if (sizes.indexOf(size) === -1) { size = sizes[0] }
@@ -1302,10 +1235,10 @@ function TablePaging() {
         return { ...paging, length, pages, number, size, sizes, end }
     }
     let [paging, setPaging] = useState<type_table_paging>(fix(rootProps.paging));
-    let [start,setStart] = useState<number>(0);
-    let [end,setEnd] = useState<number>(0);
-    let [pages,setPages] = useState<number>(0);
-    let [temp] = useState<{timeout?:any}>({})
+    let [start, setStart] = useState<number>(0);
+    let [end, setEnd] = useState<number>(0);
+    let [pages, setPages] = useState<number>(0);
+    let [temp] = useState<{ timeout?: any }>({})
     useEffect(() => {
         setPaging(fix(rootProps.paging));
     }, [rootProps.paging])
@@ -1333,15 +1266,15 @@ function TablePaging() {
             buttons.push(<button key={index} className={'aio-input-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
         }
     }
-    function changeSizeButton(){
-        if(!sizes.length){return null}
-        let p:I_AIOInput = {
-            attrs:{ className: 'aio-input-table-paging-button aio-input-table-paging-size' },
-            type:'select',value:size,options:sizes,optionText:'option',optionValue:'option',
-            onChange:(value) => changePaging({ size: value }),
-            popover:{ fitHorizontal: true },
+    function changeSizeButton() {
+        if (!sizes.length) { return null }
+        let p: I_AIOInput = {
+            attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
+            type: 'select', value: size, options: sizes, optionText: 'option', optionValue: 'option',
+            onChange: (value) => changePaging({ size: value }),
+            popover: { fitHorizontal: true },
         }
-        return (<AIOInput {...p}/>)
+        return (<AIOInput {...p} />)
     }
     return (
         <div className='aio-input-table-paging'>
@@ -1351,7 +1284,7 @@ function TablePaging() {
     )
 }
 function TableRows() {
-    let { ROWS,rootProps }:type_table_context = useContext(AITableContext)
+    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
     let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
     function getContent() {
         let rows = ROWS.pagedRows || [];
@@ -1376,11 +1309,11 @@ function TableRows() {
     return <div className='aio-input-table-rows'>{content}</div>
 }
 function TableToolbar() {
-    let { add, exportToExcel, sorts,sortRows,setSorts, search,rootProps,excelColumns }:type_table_context = useContext(AITableContext);
-    let { toolbarAttrs, toolbar, onAdd, onSearch,onChangeSort,onChange = () => { },value } = rootProps;
+    let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
+    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value } = rootProps;
     toolbarAttrs = addToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
     if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
-    function changeSort(sortId, changeObject){
+    function changeSort(sortId, changeObject) {
         let newSorts = sorts.map((sort) => {
             if (sort.sortId === sortId) {
                 let newSort = { ...sort, ...changeObject }
@@ -1390,29 +1323,28 @@ function TableToolbar() {
         });
         changeSorts(newSorts)
     }
-    async function changeSorts(sorts){
+    async function changeSorts(sorts) {
         if (onChangeSort) {
             let res = await onChangeSort(sorts)
-            if (res !== false) { setSorts( sorts ); }
+            if (res !== false) { setSorts(sorts); }
         }
         else {
-            setSorts( sorts );
+            setSorts(sorts);
             let activeSorts = sorts.filter((sort) => sort.active !== false);
             if (activeSorts.length) {
                 onChange(sortRows(value, activeSorts))
             }
         }
     }
-    
-    function getSortOption(sort:type_table_sort){
+
+    function getSortOption(sort: type_table_sort) {
         let { active, dir = 'dec', title, sortId } = sort;
         return {
             text: title, checked: !!active, close: false, value: sortId,
             after: (
-                <Icon
-                    path={dir === 'dec' ? mdiArrowDown : mdiArrowUp} size={0.8}
-                    onClick={(e) => { e.stopPropagation(); changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) }}
-                />
+                <div onClick={(e) => { e.stopPropagation(); changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) }}>
+                    <Icon path={dir === 'dec' ? mdiArrowDown : mdiArrowUp} size={0.8}/>
+                </div>
             )
         }
     }
@@ -1441,25 +1373,25 @@ function TableToolbar() {
                 {!!excelColumns.length && <div className='aio-input-table-toolbar-icon' onClick={() => exportToExcel()}><Icon path={mdiFileExcel} size={0.8} /></div>}
                 {!!onAdd && <div className='aio-input-table-toolbar-icon' onClick={() => add()}><Icon path={mdiPlusThick} size={0.8} /></div>}
             </div>
-            <TableGap dir='h'/>
+            <TableGap dir='h' />
         </>
     )
 }
 function TableHeader() {
-    let { rootProps, columns }:type_table_context = useContext(AITableContext);
+    let { rootProps, columns }: type_table_context = useContext(AITableContext);
     let { headerAttrs, onRemove } = rootProps;
     headerAttrs = addToAttrs(headerAttrs, { className: 'aio-input-table-header' })
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
-    let RemoveTitle = !onRemove ? null : <><TableGap dir='v'/><div className='aio-input-table-remove-title'></div></>;
-    return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h'/></div>
+    let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
+    return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
 }
 function TableTitle({ column, isLast }) {
     let { getCellAttrs } = useContext(AITableContext);
     let attrs = getCellAttrs({ column, type: 'title' });
-    return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v'/>}</>)
+    return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
 }
 function TableRow({ row, isLast, rowIndex }) {
-    let { remove, rootProps, columns, getRowAttrs }:type_table_context = useContext(AITableContext);
+    let { remove, rootProps, columns, getRowAttrs }: type_table_context = useContext(AITableContext);
     function getCells() {
         return columns.map((column, i) => {
             let key = row._id + ' ' + column._id;
@@ -1472,31 +1404,30 @@ function TableRow({ row, isLast, rowIndex }) {
         <>
             <div key={row._id} {...getRowAttrs(row, rowIndex)}>
                 {getCells()}
-                {onRemove ? <><TableGap dir='v'/><button className='aio-input-table-remove' onClick={() => remove(row,rowIndex)}><Icon path={mdiClose} size={0.8} /></button></> : null}
+                {onRemove ? <><TableGap dir='v' /><button className='aio-input-table-remove' onClick={() => remove(row, rowIndex)}><Icon path={mdiClose} size={0.8} /></button></> : null}
             </div>
-            <TableGap dir='h'/>
+            <TableGap dir='h' />
         </>
     )
 }
 const TableCell = ({ row, rowIndex, column, isLast }) => {
-    let { getCellAttrs, getCellContent }:type_table_context = useContext(AITableContext);
+    let { getCellAttrs, getCellContent }: type_table_context = useContext(AITableContext);
     let content = getCellContent({ row, rowIndex, column });
     return (
         <Fragment key={row._id + ' ' + column._id}>
             <div {...getCellAttrs({ row, rowIndex, column, type: 'cell' })} >{content}</div>
-            {!isLast && <TableGap dir='v'/>}
+            {!isLast && <TableGap dir='v' />}
         </Fragment>
     )
 }
 export type I_Layout = {
-    option?:I_AIOInput_option,text?:React.ReactNode,realIndex?:number,renderIndex?:number,
-    properties?:any
+    option?: I_AIOInput_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
+    properties?: any
 }
-function Layout(props:I_Layout) {
-    let {rootProps,getOptionProp, datauniqid, types, touch,Drag,click, optionClick, open}:I_AIOInput_context = useContext(AICTX)
-    let {option,realIndex,renderIndex} = props;
-    let {type,rtl,direction,value} = rootProps;
-    let { checked} = option || {};
+function Layout(props: I_Layout) {
+    let { rootProps, datauniqid, types, touch, Drag, click, optionClick, open,showPassword,setShowPassword }: I_AIOInput_context = useContext(AICTX)
+    let { option, realIndex, renderIndex } = props;
+    let { type, rtl, direction = 'right' } = rootProps;
     let [dom] = useState(createRef())
     function getClassName() {
         let cls;
@@ -1525,43 +1456,44 @@ function Layout(props:I_Layout) {
         else { className += ` aio-input-${type}-${key}` }
         return className;
     }
-    function Text() {
-        let {text,placeholder,subtext,justify} = properties;
+    function Text():React.ReactNode {
+        let { text, placeholder, subtext, justify } = properties;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text !== undefined) {
+            let p = (type: 'value' | 'subtext') => {
+                return {
+                    style: { textAlign: justify ? 'center' : undefined },
+                    className: `${cls(type)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
+                } as any
+            }
             if (subtext) {
-                let p = (type:'value'|'subtext')=>{
-                    return {
-                        style:{ textAlign: justify ? 'center' : undefined },
-                        className:`${cls(type)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
-                    } as any
-                }
                 return (
                     <div className={`aio-input-content aio-input-${type}-content${justify && !types.isInput ? ' aio-input-content-justify' : ''}`}>
                         <div {...p('value')}>{text}</div><div {...p('subtext')}>{subtext}</div>
                     </div>
                 )
             }
-            else {return p('value')}
+            else { return <div {...p('value')}>{text}</div> }
         }
         else { return <div className='flex-1'></div> }
     }
     function DragIcon() {
-        if(!properties.draggable){return null}
+        if (!properties.draggable) { return null }
         return (
             <svg viewBox="8 4 10 13" role="presentation" style={{ width: 12, height: '1.8rem' }}>
                 <path d="M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z" style={{ fill: 'currentcolor' }}></path>
             </svg>
         )
     }
-    function Caret(){
-        if(!types.isDropdown || option){return null}
-        let {caret} = rootProps;
-        if(!caret){return null}
+    function Caret() {
+        if (!types.isDropdown || option) { return null }
+        let { caret } = rootProps;
+        if (!caret) { return null }
         return <div className='aio-input-caret'>{caret === undefined ? <Icon path={mdiChevronDown} size={.8} /> : caret}</div>
     }
-    function CheckIcon(){
-        let {checkIcon,checked} = properties;
+    function CheckIcon() {
+        let { checkIcon, checked } = properties;
+        if(checked === undefined){return null}
         if (typeof checkIcon === 'function') { return checkIcon(checked) }
         return (
             <div className={'aio-input-check-out' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
@@ -1569,21 +1501,25 @@ function Layout(props:I_Layout) {
             </div>
         );
     }
-    function BeforeAfter(type:'before'|'after'){
-        let res = getValue(type);
-        if(res === undefined){return null}
-        return <div className={cls('before')}>{typeof res === 'function'?res():res}</div>
+    function BeforeAfter(mode: 'before' | 'after') {
+        let res:React.ReactNode;
+        if (mode === 'after' && type === 'password' && rootProps.visible) {
+            res = <div className='align-v' onClick={() => setShowPassword()}><Icon path={showPassword ? mdiEyeOff : mdiEye} size={.8} /></div>
+        }
+        else {let v = rootProps[mode]; res = typeof v === 'function'?v():v;}
+        if (res === undefined) { return null }
+        return <div className={cls('before')}>{res}</div>
     }
-    function Loading(){
-        let {loading} = properties;
+    function Loading() {
+        let { loading } = properties;
         let elem;
-        if(!loading){return null;}
-        else if(loading ===true){elem = <Icon path={mdiLoading} spin={0.3} size={.8} />}
-        else {elem = loading}
+        if (!loading) { return null; }
+        else if (loading === true) { elem = <Icon path={mdiLoading} spin={0.3} size={.8} /> }
+        else { elem = loading }
         return <div className={cls('loading')}>{elem}</div>
     }
-    function getProps(){
-        let { justify, attrs, disabled, draggable,style } = properties;
+    function getProps() {
+        let { justify, attrs, disabled, draggable, style } = properties;
         let zIndex;
         if (open && !option && ['text', 'number', 'textarea'].indexOf(type) !== -1) {
             zIndex = 100000
@@ -1609,51 +1545,52 @@ function Layout(props:I_Layout) {
         }
         return p;
     }
-    function getValue(key:string,p?:{fn?:boolean,def?:any}){
-        p = p || {};
-        let res;
-        if(props[key] !== undefined){res = props[key]}
-        else if(option){res = option[res]}
-        else {res = rootProps[res]}
-        res = p.fn !== false && typeof res === 'function'?res():value
-        return res === undefined?p.def:res
+    function getProperties() {
+        let p = props.properties || {};
+        let { disabled = rootProps.disabled } = p
+        let { draggable = false } = p;
+        let { text = rootProps.text } = p;
+        let { subtext = rootProps.subtext } = p;
+        let { placeholder = rootProps.placeholder } = p;
+        let { justify = rootProps.justify } = p;
+        let { checked } = p;
+        let { checkIcon = rootProps.checkIcon } = p;
+        if (checkIcon === undefined) { checkIcon = {} }
+        let { loading = rootProps.loading } = p;
+        let { attrs = rootProps.attrs } = p;
+        if (attrs === undefined) { attrs = {} }
+        let { style = rootProps.style } = p;
+        if (style === undefined) { style = {} }
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style }
     }
-    function getProperties(){
-        let {disabled = rootProps.disabled} = props.properties
-        let {draggable = false} = props.properties;
-        let {text = rootProps.text} = props.properties;
-        let {subtext = rootProps.subtext} = props.properties;
-        let {placeholder = rootProps.placeholder} = props.properties;
-        let {justify = rootProps.justify} = props.properties;
-        let {checked = false} = props.properties;
-        let {checkIcon = rootProps.checkIcon} = props.properties;
-        if(checkIcon === undefined){checkIcon = {}}
-        let {loading = rootProps.loading} = props.properties;
-        let {attrs = rootProps.attrs} = props.properties;
-        if(attrs === undefined){attrs = {}}
-        let {style = rootProps.style} = props.properties;
-        if(style === undefined){style = {}}
-        return {disabled,draggable,text,subtext,placeholder,justify,checked,checkIcon,loading,attrs,style}
+    function getOptionProperties() {
+        let p = props.properties || {};
+        let { disabled = option.disabled } = p
+        let { draggable = option.draggable } = p;
+        let { text = option.text } = p;
+        let { subtext = option.subtext } = p;
+        let { placeholder = option.draggable } = p;
+        let { justify = option.justify } = p;
+        let { checked = option.checked } = p;
+        let { checkIcon = option.checkIcon } = p;
+        if (checkIcon === undefined) { checkIcon = {} }
+        let { loading = option.loading } = p;
+        let { attrs = option.attrs } = p;
+        if (attrs === undefined) { attrs = {} }
+        let { style = option.style } = p;
+        if (style === undefined) { style = {} }
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style }
     }
-    function getOptionProperties(){
-        let {disabled = option.disabled} = props.properties
-        let {draggable = option.draggable} = props.properties;
-        let {text = option.text} = props.properties;
-        let {subtext = option.subtext} = props.properties;
-        let {placeholder = option.draggable} = props.properties;
-        let {justify = option.justify} = props.properties;
-        let {checked = option.checked} = props.properties;
-        let {checkIcon = option.checkIcon} = props.properties;
-        if(checkIcon === undefined){checkIcon = {}}
-        let {loading = option.loading} = props.properties;
-        let {attrs = option.attrs} = props.properties;
-        if(attrs === undefined){attrs = {}}
-        let {style = option.style} = props.properties;
-        if(style === undefined){style = {}}
-        return {disabled,draggable,text,subtext,placeholder,justify,checked,checkIcon,loading,attrs,style}
-    }
-    let properties = option?getOptionProperties():getProperties();
-    let content = (<>{DragIcon()}{CheckIcon()}{BeforeAfter('before')}{Text()}{BeforeAfter('after')}{Loading()}{Caret()}</>)
+    let properties = option ? getOptionProperties() : getProperties();
+    let content = (<>
+        {DragIcon()}
+        {CheckIcon()}
+        {BeforeAfter('before')}
+        {Text()}
+        {BeforeAfter('after')}
+        {Loading()}
+        {Caret()}
+    </>)
     let p = getProps();
     if (type === 'file') { return (<label {...p}>{content}<InputFile /></label>) }
     return (
@@ -1664,11 +1601,10 @@ function Layout(props:I_Layout) {
     )
 }
 function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
-class InputFile extends Component {
-    static contextType = AICTX;
-    change(e) {
-        let { properties, types } = this.context;
-        let { value = [], onChange = () => { } } = properties;
+function InputFile() {
+    let { rootProps, types }: I_AIOInput_context = useContext(AICTX);
+    let { value = [], onChange = () => { }, disabled } = rootProps;
+    function change(e) {
         let Files = e.target.files;
         let result;
         if (types.isMultiple) {
@@ -1683,32 +1619,26 @@ class InputFile extends Component {
         else { result = Files.length ? Files[0] : undefined }
         onChange(result)
     }
-    render() {
-        let { properties, types } = this.context;
-        let { disabled } = properties;
-        let multiple = types.isMultiple;
-        let props = { disabled, type: 'file', style: { display: 'none' }, multiple, onChange: (e) => this.change(e) }
-        return <input {...props} />
-    }
+    let props = { disabled, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e) => change(e) }
+    return <input {...props} />
 }
-class FileItems extends Component {
-    static contextType = AICTX;
-    render() {
-        let { properties } = this.context;
-        let { value, rtl } = properties;
-        let files = [];
-        if (Array.isArray(value)) { files = value }
-        else if (value) { files = [value] }
-        else { return null }
-        if (!files.length) { return null }
-        return (
-            <div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{files.map((file, i) => <FileItem key={i} file={file} index={i} />)}</div>
-        )
-    }
+function FileItems() {
+    let {rootProps}:I_AIOInput_context = useContext(AICTX);
+    let { value, rtl } = rootProps;
+    let files = [];
+    if (Array.isArray(value)) { files = value }
+    else if (value) { files = [value] }
+    else { return null }
+    if (!files.length) { return null }
+    let Files = files.map((file, i) => {let p:I_FileItem = {file,index:i}; return <FileItem key={i} {...p} />})
+    return (<div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{Files}</div>)
 }
-class FileItem extends Component {
-    static contextType = AICTX;
-    getFile(file) {
+type I_FileItem = {file:any,index:number}
+function FileItem(props:I_FileItem) {
+    let {rootProps}:I_AIOInput_context = useContext(AICTX);
+    let { onChange = () => { }, value = [] } = rootProps;    
+    let { file, index } = props;
+    function getFile(file) {
         let filename = file.name || 'untitle';
         let fileSize = file.size || 0;
         let nameLength = 20;
@@ -1718,7 +1648,7 @@ class FileItem extends Component {
             let name = filename.slice(0, lastDotIndex);
             let format = filename.slice(lastDotIndex + 1, filename.length);
             if (name.length > nameLength) {
-                minName = name.slice(0, parseInt(nameLength / 2)) + '...' + name.slice(name.length - parseInt(nameLength / 2), name.length) + '.' + format;
+                minName = name.slice(0, Math.floor(nameLength / 2)) + '...' + name.slice(name.length - Math.floor(nameLength / 2), name.length) + '.' + format;
             }
             else { minName = filename; }
             let size = fileSize;
@@ -1732,9 +1662,7 @@ class FileItem extends Component {
         }
         catch { return { minName: 'untitle', sizeString: false } }
     }
-    remove(index) {
-        let { properties } = this.context;
-        let { onChange = () => { }, value = [] } = properties;
+    function remove(index:number) {
         let newValue = [];
         for (let i = 0; i < value.length; i++) {
             if (i === index) { continue }
@@ -1742,60 +1670,59 @@ class FileItem extends Component {
         }
         onChange(newValue);
     }
-    renderString(minName, sizeString) {
+    function renderString(minName, sizeString) {
         let size;
         if (sizeString === false) { size = '' }
         else { size = ` ( ${sizeString})` }
         return `${minName}${size}`
     }
-    render() {
-        let { file, index } = this.props;
-        let { minName, sizeString } = this.getFile(file);
-        let { url, name } = file;
-        return (
-            <div className='aio-input-file' style={{ cursor: url ? 'pointer' : 'default' }}>
-                <div className='aio-input-file-icon'>
-                    <Icon path={url ? mdiDownloadOutline : mdiAttachment} size={.8} />
-                </div>
-                <div className='aio-input-file-name' onClick={() => {
-                    if (url) { DownloadUrl(url, name) }
-                }}>
-                    {this.renderString(minName, sizeString)}
-                </div>
-                <div className='aio-input-file-icon' onClick={() => this.remove(index)}>
-                    <Icon path={mdiClose} size={.7} />
-                </div>
+    let { minName, sizeString } = getFile(file);
+    let { url, name } = file;
+    return (
+        <div className='aio-input-file' style={{ cursor: url ? 'pointer' : 'default' }}>
+            <div className='aio-input-file-icon'>
+                <Icon path={url ? mdiDownloadOutline : mdiAttachment} size={.8} />
             </div>
-        )
-    }
+            <div className='aio-input-file-name' onClick={() => {
+                if (url) { DownloadUrl(url, name) }
+            }}>
+                {renderString(minName, sizeString)}
+            </div>
+            <div className='aio-input-file-icon' onClick={() => remove(index)}>
+                <Icon path={mdiClose} size={.7} />
+            </div>
+        </div>
+    )
 }
-const DPContext = createContext();
-class DatePicker extends Component {
-    static contextType = AICTX;
-    render() {
-        let { properties } = this.context, { onClose } = this.props
-        return (<Calendar properties={properties} onClose={onClose} />)
-    }
+const DPContext = createContext({} as any);
+type I_DPContext = {
+    translate: (text: string) => string,
+    rootProps: I_AIOInput,
+    activeDate: I_DP_activeDate,
+    changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
+    onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
+    today: any, todayWeekDay: any, thisMonthString: any,months:string[]
+
 }
-class Calendar extends Component {
-    constructor(props) {
-        super(props);
-        let { properties } = props;
-        let { calendarType, value } = properties;
-        let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
-        let today = getToday({ calendarType });
-        if (!value) { value = today }
-        let [year, month, day] = convertToArray({ date: value })
-        let months = getMonths({ calendarType });
-        this.state = {
-            activeDate: { year, month, day }, years: this.getYears(), today,
-            todayWeekDay: getWeekDay({ date: today }).weekDay,
-            months, thisMonthString: months[today[1] - 1],
-        }
+type I_Calendar = { onClose?: () => void }
+type I_DP_activeDate = { year?: number, month?: number, day?: number }
+function Calendar(props: I_Calendar) {
+    let { rootProps }: I_AIOInput_context = useContext(AICTX);
+    let { onClose } = props;
+    let { unit, calendarType, value,disabled,size,theme, startYear, endYear, translate = (text) => text,onChange = () => { }, close } = rootProps;
+    let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
+    let [months] = useState(getMonths({ calendarType }));
+    let [today, setToday] = useState(getToday({ calendarType }))
+    let [todayWeekDay] = useState(getWeekDay({ date: today }).weekDay)
+    let [initValue] = useState(getInitValue())
+    function getInitValue() {
+        let date = !value || value === null ? today : value;
+        let [year, month, day] = convertToArray({ date })
+        return { year, month, day }
     }
-    translate(text) {
-        let { properties, translate = (text) => text } = this.props;
-        let { calendarType, unit } = properties;
+    let [thisMonthString] = useState(months[today[1] - 1])
+    let [activeDate, setActiveDate] = useState<I_DP_activeDate>({ ...initValue });
+    function trans(text) {
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
@@ -1803,57 +1730,29 @@ class Calendar extends Component {
         let obj = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری', }
         let res = text;
         if (calendarType === 'jalali' && obj[text]) { res = obj[text] }
-        return translate(res)
+        return trans(res)
     }
-    changeActiveDate(obj) {
+    function changeActiveDate(obj) {
         let newActiveDate;
         if (obj === 'today') {
-            let { today } = this.state;
-            let { properties } = this.props;
-            let { unit } = properties;
             let [year, month, day] = today;
             newActiveDate = { year, month, day: unit === 'month' ? 1 : day };
         }
-        else { newActiveDate = { ...this.state.activeDate, ...obj } }
-        this.setState({ activeDate: newActiveDate })
+        else { newActiveDate = { ...activeDate, ...obj } }
+        setActiveDate(newActiveDate)
     }
-    getYears() {
-        let start, end;
-        let { properties } = this.props;
-        let { calendarType, startYear, endYear } = properties
-        let today = AIODate().getToday({ calendarType });
-        if (typeof startYear === 'string' && startYear.indexOf('-') === 0) {
-            start = today[0] - parseInt(startYear.slice(1, startYear.length));
-        }
-        else { start = parseInt(startYear); }
-        if (typeof endYear === 'string' && endYear.indexOf('+') === 0) {
-            end = today[0] + parseInt(endYear.slice(1, endYear.length));
-        }
-        else { end = parseInt(endYear); }
-        let years = [];
-        for (var i = start; i <= end; i++) { years.push(i); }
-        return years;
-    }
-    getPopupStyle() {
-        let { properties } = this.props;
-        let { disabled, size, theme } = properties;
+    function getPopupStyle() {
         return {
             width: size, fontSize: size / 17, background: theme[1], color: theme[0], stroke: theme[0],
             cursor: disabled === true ? 'not-allowed' : undefined,
         };
     }
-    getContext() {
-        let { properties } = this.props;
-        return {
-            ...this.state,
-            properties,
-            changeActiveDate: this.changeActiveDate.bind(this),
-            translate: this.translate.bind(this),
-            SetState: (obj) => this.setState(obj),
+    function getContext() {
+        let context: I_DPContext = {
+            changeActiveDate,
+            translate: trans, rootProps, activeDate,
+            today, todayWeekDay, thisMonthString,months,
             onChange: ({ year, month, day, hour }) => {
-                let { properties, onClose } = this.props;
-                let { calendarType, unit, onChange = () => { }, close, value } = properties;
-                let { months } = this.state;
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = calendarType === 'gregorian' ? AIODate().toJalali({ date: dateArray }) : dateArray;
                 let gregorianDateArray = calendarType === 'jalali' ? AIODate().toGregorian({ date: dateArray }) : dateArray;
@@ -1879,63 +1778,55 @@ class Calendar extends Component {
                 if (close) { onClose() }
             }
         }
+        return context
     }
-    render() {
-        return (
-            <DPContext.Provider value={this.getContext()}>
-                <div className='aio-input-datepicker-container' style={{ display: 'flex' }}>
-                    <div className='aio-input-datepicker-calendar' style={this.getPopupStyle()}>
-                        <DPHeader /><DPBody /><DPFooter />
-                    </div>
-                    <DPToday />
+    return (
+        <DPContext.Provider value={getContext()}>
+            <div className='aio-input-datepicker-container' style={{ display: 'flex' }}>
+                <div className='aio-input-datepicker-calendar' style={getPopupStyle()}>
+                    <DPHeader /><DPBody /><DPFooter />
                 </div>
-            </DPContext.Provider>
-        );
-    }
-}
-class DPToday extends Component {
-    static contextType = DPContext;
-    render() {
-        let { properties, translate, today, todayWeekDay, thisMonthString } = this.context;
-        let { theme, calendarType, unit, size } = properties;
-        return (
-            <div className='aio-input-datepicker-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
-                <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
-                {
-                    (unit === 'day' || unit === 'hour') &&
-                    <>
-                        <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
-                        <div style={{ fontSize: size / 12 * 4, height: size / 12 * 4 }}>{today[2]}</div>
-                        <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>
-                    </>
-                }
-                {unit === 'month' && <div style={{ fontSize: size / 8 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
-                <div style={{ fontSize: size / 11 }}>{today[0]}</div>
-                {unit === 'hour' && <div style={{ fontSize: size / 10 }}>{today[3] + ':00'}</div>}
+                <DPToday />
             </div>
-        )
-    }
+        </DPContext.Provider>
+    );
 }
-class DPFooter extends Component {
-    static contextType = DPContext;
-    render() {
-        let { properties, changeActiveDate, translate } = this.context;
-        let { remove, disabled, onChange = () => { }, size } = properties;
-        if (disabled) { return null }
-        let buttonStyle = { padding: `${size / 20}px 0` };
-        return (
-            <div className='aio-input-datepicker-footer' style={{ fontSize: size / 13 }}>
-                {remove && <button style={buttonStyle} onClick={() => onChange(false)}>{translate('Clear')}</button>}
-                <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
-            </div>
-        )
-    }
+function DPToday() {
+    let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
+    let { theme, calendarType, unit, size } = rootProps;
+    return (
+        <div className='aio-input-datepicker-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
+            <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
+            {
+                (unit === 'day' || unit === 'hour') &&
+                <>
+                    <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
+                    <div style={{ fontSize: size / 12 * 4, height: size / 12 * 4 }}>{today[2]}</div>
+                    <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>
+                </>
+            }
+            {unit === 'month' && <div style={{ fontSize: size / 8 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
+            <div style={{ fontSize: size / 11 }}>{today[0]}</div>
+            {unit === 'hour' && <div style={{ fontSize: size / 10 }}>{today[3] + ':00'}</div>}
+        </div>
+    )
 }
-class DPBody extends Component {
-    static contextType = DPContext;
-    getStyle() {
-        let { properties } = this.context;
-        let { size, calendarType, unit } = properties;
+function DPFooter() {
+    let {rootProps, changeActiveDate, translate}:I_DPContext = useContext(DPContext);
+    let { disabled, onChange = () => { }, size } = rootProps;
+    if (disabled) { return null }
+    let buttonStyle = { padding: `${size / 20}px 0` };
+    return (
+        <div className='aio-input-datepicker-footer' style={{ fontSize: size / 13 }}>
+            <button style={buttonStyle} onClick={() => onChange(false)}>{translate('Clear')}</button>
+            <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
+        </div>
+    )
+}
+function DPBody() {
+    let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
+    let { unit = 'day',calendarType = 'gregorian',size } = rootProps;
+    function getStyle() {
         var columnCount = { hour: 4, day: 7, month: 3 }[unit];
         var rowCount = { hour: 6, day: 7, month: 4 }[unit];
         var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
@@ -1943,53 +1834,47 @@ class DPBody extends Component {
         var gridTemplateColumns = '', gridTemplateRows = '';
         for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
         for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction = calendarType === 'gregorian' ? 'ltr' : 'rtl';
+        let direction:'ltr'|'rtl' = calendarType === 'gregorian' ? 'ltr' : 'rtl';
         return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
     }
-    render() {
-        let { properties, activeDate } = this.context;
-        let { unit } = properties;
-        return (
-            <div className='aio-input-datepicker-body' style={this.getStyle()}>
-                {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
-                {unit === 'day' && <DPBodyDay />}
-                {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, i + 1]} />)}
-            </div>
-        )
-    }
+    return (
+        <div className='aio-input-datepicker-body' style={getStyle()}>
+            {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
+            {unit === 'day' && <DPBodyDay />}
+            {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, i + 1]} />)}
+        </div>
+    )
 }
-class DPBodyDay extends Component {
-    static contextType = DPContext;
-    render() {
-        let { properties, activeDate } = this.context;
-        let { theme, calendarType } = properties;
-        let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
-        var daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
-        let weekDays = AIODate().getWeekDays({ calendarType });
-        return (<>
-            {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-            {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
-            {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, i + 1]} />)}
-            {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
-        </>)
-    }
+function DPBodyDay() {
+    let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
+    let { theme, calendarType } = rootProps;
+    let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
+    let daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
+    let weekDays = AIODate().getWeekDays({ calendarType });
+    return (<>
+        {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
+        {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
+        {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, i + 1]} />)}
+        {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
+    </>)
 }
-class DPCellWeekday extends Component {
-    static contextType = DPContext;
-    render() {
-        let { properties, translate } = this.context;
-        let { theme, calendarType } = properties;
-        let { weekDay } = this.props;
-        return (
-            <div className='aio-input-datepicker-weekday aio-input-datepicker-cell' style={{ background: theme[1], color: theme[0] }}>
-                <span>{translate(weekDay.slice(0, calendarType === 'gregorian' ? 2 : 1))}</span>
-            </div>
-        )
-    }
+type I_DPCellWeekday = {weekDay:string}
+function DPCellWeekday(props:I_DPCellWeekday) {
+    let {rootProps, translate}:I_DPContext = useContext(DPContext);
+    let { theme, calendarType } = rootProps;
+    let { weekDay } = props;
+    return (
+        <div className='aio-input-datepicker-weekday aio-input-datepicker-cell' style={{ background: theme[1], color: theme[0] }}>
+            <span>{translate(weekDay.slice(0, calendarType === 'gregorian' ? 2 : 1))}</span>
+        </div>
+    )
 }
-class DPCell extends Component {
-    static contextType = DPContext;
-    getClassName(isActive, isToday, isDisabled, className) {
+type I_DPCell = {dateArray:number[]}
+function DPCell(props:I_DPCell) {
+    let {rootProps, translate, onChange}:I_DPContext = useContext(DPContext);
+    let { disabled, dateAttrs, theme, value, calendarType, unit, dateDisabled } = rootProps;
+    let { dateArray } = props;
+    function getClassName(isActive, isToday, isDisabled, className) {
         var str = 'aio-input-datepicker-cell';
         if (isDisabled) { str += ' aio-input-datepicker-disabled' }
         if (isActive) { str += ' aio-input-datepicker-active'; }
@@ -1997,175 +1882,178 @@ class DPCell extends Component {
         if (className) { str += ' className'; }
         return str;
     }
-    render() {
-        let { properties, translate, onChange } = this.context;
-        let { disabled, dateAttrs, theme, value, calendarType, unit, dateDisabled } = properties;
-        let { dateArray } = this.props;
-        let { isEqual, isMatch, getMonths, getToday } = AIODate();
-        let isActive = !value ? false : AIODate().isEqual(dateArray, value);
-        let isToday = isEqual(dateArray, getToday({ calendarType }))
-        let isDateDisabled = !dateDisabled ? false : isMatch({ date: dateArray, matchers: dateDisabled });
-        let isDisabled = disabled || isDateDisabled;
-        let Attrs = {}
-        if (dateAttrs) { Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) }) || {} }
-        let className = this.getClassName(isActive, isToday, isDisabled, Attrs.className);
-        let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }, true) };
-        let style = {}
-        if (!isDisabled) { style.background = theme[1]; }
-        if (className.indexOf('aio-input-datepicker-active') !== -1) {
-            style.background = theme[0];
-            style.color = theme[1];
-        }
-        if (className.indexOf('today') !== -1) { style.border = `1px solid ${theme[0]}` }
-        style = { ...style, ...Attrs.style }
-        let text;
-        if (unit === 'hour') { text = dateArray[3] + ':00' }
-        else if (unit === 'day') { text = dateArray[2] }
-        else if (unit === 'month') {
-            let months = getMonths({ calendarType });
-            text = translate(calendarType === 'gregorian' ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
-        }
-        return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
+    let { isEqual, isMatch, getMonths, getToday } = AIODate();
+    let isActive = !value ? false : AIODate().isEqual(dateArray, value);
+    let isToday = isEqual(dateArray, getToday({ calendarType }))
+    let isDateDisabled = !dateDisabled ? false : isMatch({ date: dateArray, matchers: dateDisabled });
+    let isDisabled = disabled || isDateDisabled;
+    let Attrs:any = {}
+    if (dateAttrs) { 
+        Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) })
+        Attrs = Attrs || {} 
     }
+    let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
+    let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }) };
+    let style:any = {}
+    if (!isDisabled) { style.background = theme[1]; }
+    if (className.indexOf('aio-input-datepicker-active') !== -1) {
+        style.background = theme[0];
+        style.color = theme[1];
+    }
+    if (className.indexOf('today') !== -1) { style.border = `1px solid ${theme[0]}` }
+    style = { ...style, ...Attrs.style }
+    let text;
+    if (unit === 'hour') { text = dateArray[3] + ':00' }
+    else if (unit === 'day') { text = dateArray[2] }
+    else if (unit === 'month') {
+        let months = getMonths({ calendarType });
+        text = translate(calendarType === 'gregorian' ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
+    }
+    return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
 }
-class DPHeader extends Component {
-    static contextType = DPContext;
-    getYears() {
-        let { activeDate, years, changeActiveDate } = this.context;
-        let props = {
-            value: activeDate.year, options: years.map((y) => { return { text: y.toString(), value: y } }),
-            onChange: (year) => { changeActiveDate({ year }) }
-        }
-        return (<DPHeaderDropdown {...props} />)
+type I_DPYears = {
+    value: number, onChange: (newValue: number) => void
+}
+function DPYears(props: I_DPYears) {
+    let { rootProps }: I_DPContext = useContext(DPContext);
+    let { calendarType = 'gregorian' } = rootProps;
+    let { value, onChange } = props;
+    let [start, setStart] = useState<number>(Math.floor(value / 10) * 10);
+    function changePage(dir) {
+        let newStart = start + (dir * 10)
+        setStart(newStart);
+        onChange(newStart)
     }
-    getMonths() {
-        let { properties, activeDate, changeActiveDate, months, translate } = this.context;
-        let { calendarType } = properties;
-        let props = {
+    function getCells() {
+        let cells = [];
+        for (let i = start; i < start + 10; i++) {
+            cells.push(<div className='aio-input-datepicker-years-cell' key={i} onClick={() => onChange(i)}>{i}</div>)
+        }
+        return cells
+    }
+    return (
+        <div className='aio-input-datepicker-years'>
+            <div className='aio-input-datepicker-years-header'>
+                <DPArrow type='minus' onClick={() => changePage(-1)} />
+                <div style={{ flex: 1 }}></div>
+                <DPArrow type='plus' onClick={() => changePage(1)} />
+            </div>
+            <div className='aio-input-datepicker-years-body'>{getCells()}</div>
+        </div>
+    )
+}
+function DPHeader() {
+    let { rootProps,activeDate, changeActiveDate, months, translate }: I_DPContext = useContext(DPContext);
+    let { size, unit,calendarType } = rootProps;
+    function getYears() {
+        let p:I_DPYears = {
+            value: activeDate.year,onChange: (year) => { changeActiveDate({ year }) }
+        }
+        return (<DPYears {...p} />)
+    }
+    function getMonths() {
+        let p:I_DPHeaderDropdown = {
             value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
             options: months.map((o, i) => { return { value: i + 1, text: translate(calendarType === 'gregorian' ? o.slice(0, 3) : o) } })
         }
-        return (<DPHeaderDropdown {...props} />)
+        return <DPHeaderDropdown {...p} />
     }
-    getDays() {
-        let { activeDate, changeActiveDate } = this.context;
+    function getDays() {
         let daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
         let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
-        let props = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
-        return (<DPHeaderDropdown {...props} />)
+        let p:I_DPHeaderDropdown = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
+        return <DPHeaderDropdown {...p} />
     }
-    render() {
-        let { properties } = this.context;
-        let { size, unit } = properties
-        return (
-            <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
-                <DPArrow type='minus' />
-                <div className='aio-input-datepicker-select' style={{ fontSize: Math.floor(size / 12) }}>
-                    {this.getYears()}
-                    {unit !== 'month' ? this.getMonths() : null}
-                    {unit === 'hour' ? this.getDays() : null}
-                </div>
-                <DPArrow type='plus' />
+    return (
+        <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
+            <DPArrow type='minus' />
+            <div className='aio-input-datepicker-select' style={{ fontSize: Math.floor(size / 12) }}>
+                {getYears()}
+                {unit !== 'month' ? getMonths() : null}
+                {unit === 'hour' ? getDays() : null}
             </div>
-        )
-    }
+            <DPArrow type='plus' />
+        </div>
+    )
 }
-class DPHeaderDropdown extends Component {
-    static contextType = DPContext;
-    render() {
-        //این شرط فقط در حالت سال رخ میدهد در شرایطی که فقط یک سال قابل انتخاب است
-        let { value, options, onChange } = this.props;
-        if (this.props.options.length === 1) { return this.props.options[0] }
-        let { properties } = this.context;
-        let { size, theme } = properties
-        let props = {
-            value, options, onChange, search: false, caret: false, type: 'select',
-            attrs: { className: 'aio-input-datepicker-dropdown' },
-            optionAttrs: { style: { height: size / 6, background: theme[1], color: theme[0] } }
-        }
-        return (<AIOInput {...props} />)
+type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
+function DPHeaderDropdown(props: I_DPHeaderDropdown) {
+    let { rootProps }: I_DPContext = useContext(DPContext);
+    //این شرط فقط در حالت سال رخ میدهد در شرایطی که فقط یک سال قابل انتخاب است
+    let { value, options, onChange } = props;
+    let { size, theme } = rootProps;
+    let p: I_AIOInput = {
+        value, options, onChange, search: false, caret: false, type: 'select',
+        attrs: { className: 'aio-input-datepicker-dropdown' },
+        optionAttrs: ()=>{return { style: { height: size / 6, background: theme[1], color: theme[0] } }}
     }
+    return (<AIOInput {...p} />)
 }
-class DPArrow extends Component {
-    static contextType = DPContext;
-    change() {
-        let { properties, years, changeActiveDate, activeDate } = this.context;
-        let { calendarType, unit } = properties;
-        let { type } = this.props;
+type I_DPArrow = { type: 'minus' | 'plus', onClick?: () => void }
+function DPArrow(props: I_DPArrow) {
+    let { rootProps, changeActiveDate, activeDate }: I_DPContext = useContext(DPContext);
+    let { type, onClick } = props;
+    let { calendarType, unit, size, theme } = rootProps;
+    function change() {
+        if (onClick) { onClick(); return }
         let offset = (calendarType === 'gregorian' ? 1 : -1) * (type === 'minus' ? -1 : 1);
         let date = [activeDate.year, activeDate.month, activeDate.day]
         let next = AIODate().getByOffset({ date, offset, unit: { 'hour': 'day', 'day': 'month', 'month': 'year' }[unit] })
-        if (next[0] > years[years.length - 1] || next[0] < years[0]) { return }
         if (unit === 'month') { changeActiveDate({ year: next[0] }) }
         if (unit === 'day') { changeActiveDate({ year: next[0], month: next[1] }) }
         if (unit === 'hour') { changeActiveDate({ year: next[0], month: next[1], day: next[2] }) }
     }
-    getIcon() {
-        let { properties } = this.context, { type } = this.props;
-        let { theme } = properties;
+    function getIcon() {
         return <Icon path={type === 'minus' ? mdiChevronLeft : mdiChevronRight} size={1} style={{ color: theme[0] }} />
     }
-    render() {
-        let { size } = this.context;
-        return (<div className='aio-input-datepicker-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => this.change()}>{this.getIcon()}</div>)
-    }
+    return (<div className='aio-input-datepicker-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => change()}>{getIcon()}</div>)
+
 }
-function InputSlider() {
-    let { properties, types } = useContext(AICTX)
-    let { onChange, value } = properties;
-    function change(value) {
-        if (types.isMultiple) { onChange([...value]) }
-        else { onChange(value[0]) }
-    }
-    let props = { ...properties, value, onChange: !onChange ? undefined : change }
-    return (<Slider {...props} />)
+const SliderContext = createContext({} as any);
+type I_Slider_statics = {getDiff:(x:number,y:number,client:{x:number,y:number})=>number,oriention:'h' | 'v',flexDirection?:'column' | 'column-reverse'}
+type I_Slider_context = {
+    touch:boolean,value:number[],
+    statics:I_Slider_statics,
+    rootProps:I_AIOInput,isDown:boolean,
+    mouseDown:(e:any,index:number,type:'point' | 'fill')=>void,
+    fix:(v:number)=>number,
+    getStartByStep:(start:number,step:number)=>number,
+    getPercentByValue:(value:number,start:number,end:number)=>number,
+    isActive:(index:number)=>boolean
 }
-const SliderContext = createContext();
-class Slider extends Component {
-    constructor(props) {
-        super(props);
-        var { direction } = this.props;
-        this.touch = 'ontouchstart' in document.documentElement;
-        if (direction === 'left') {
-            this.getDiff = function (x, y, client) { return x - client.x; }; this.oriention = 'horizontal';
-        }
-        else if (direction === 'right') {
-            this.getDiff = function (x, y, client) { return client.x - x; }; this.oriention = 'horizontal';
-        }
-        else if (direction === 'top') {
-            this.getDiff = function (x, y, client) { return y - client.y; }; this.oriention = 'vertical'; this.flexDirection = 'column-reverse';
-        }
-        else {
-            this.getDiff = function (x, y, client) { return client.y - y; }; this.oriention = 'vertical'; this.flexDirection = 'column';
-        }
-        this.dom = createRef();
-        this.state = {
-            isDown: false,
-        }
+function Slider() {
+    let {rootProps,touch,types}:I_AIOInput_context = useContext(AICTX);
+    let {direction = 'right',step, start, end, min = start, max = end, disabled,attrs = {}, scale,label,multiple} = rootProps;
+    let [statics] = useState(getStatics())
+    let [dom] = useState(createRef())
+    let [isDown,setIsDown] = useState(false)
+    let [moved] = useState<boolean>(false);
+    let [startOffset] = useState<{ x:number, y:number, size:number, index: number[], value: number[], startLimit: number, endLimit: number }>()
+    let value = getValidValue()
+    function onChange(value:number[],drag:boolean){
+        rootProps.onChange(multiple?[...value]:value[0],drag)
     }
-    getClient(e) { return this.touch ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } }
-    getPercentByValue(value, start, end) { return 100 * (value - start) / (end - start); } //getPercentByValue
-    fix(number) {
-        let dotPos = this.props.step.toString().indexOf('.');
-        let a = dotPos === -1 ? 0 : this.props.step.toString().length - dotPos - 1;
+    function getStatics():I_Slider_statics{
+        if (direction === 'left') {return {getDiff:function (x, y, client) { return x - client.x; },oriention:'h'}}
+        else if (direction === 'right') {return {getDiff:function (x, y, client) { return client.x - x; },oriention:'h'}}
+        else if (direction === 'top') {return {getDiff:function (x, y, client) { return y - client.y; },oriention:'v',flexDirection:'column-reverse'}}
+        else {return {getDiff:function (x, y, client) { return client.y - y; },oriention:'v',flexDirection:'column'}}
+    }
+    function getPercentByValue(value, start, end) { return 100 * (value - start) / (end - start); }
+    function fix(number) {
+        let dotPos = step.toString().indexOf('.');
+        let a = dotPos === -1 ? 0 : step.toString().length - dotPos - 1;
         return parseFloat((number).toFixed(a));
     }
-    getStartByStep(start, step) {
+    function getStartByStep(start, step) {
         var a = Math.round((start - step) / step) * step;
         while (a < start) { a += step; } return a;
     }
-    eventHandler(selector, event, action, type = 'bind') {
-        var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
-        event = this.touch ? me[event] : event;
-        var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-        element.unbind(event, action);
-        if (type === 'bind') { element.bind(event, action) }
-    }
-    getValidValue() {
-        let { value = [], start, end, min = start, max = end, step } = this.props;
-        if (!Array.isArray(value) || !value.length) { value = [0] }
+    function getValidValue() {
+        let {value} = rootProps;
+        if (!Array.isArray(value)) {value = [value || 0]}
         for (var i = 0; i < value.length; i++) {
-            var point = value[i];
+            var point = value[i] || 0;
             point = Math.round((point - start) / step) * step + start;
             if (point < min) { point = min; }
             if (point > max) { point = max; }
@@ -2173,61 +2061,59 @@ class Slider extends Component {
         }
         return value
     }
-    getOffset(x, y, size, e) {
-        var { start, end, step } = this.props, client = this.getClient(e);
-        return Math.round((end - start) * this.getDiff(x, y, client) / size / step) * step;
-    }
-    getValue(value, param = this.props) { return typeof value === 'function' ? value(param) : value; }
-    getPercents() {
-        var { start, end } = this.props;
-        var percents = this.value.map((o, i) => [
-            this.getPercentByValue(i ? this.value[i - 1] : start, start, end),
-            this.getPercentByValue(o, start, end)
+    function getOffset(x, y, size, e) {return Math.round((end - start) * statics.getDiff(x, y, getClient(e)) / size / step) * step;}
+    function getPercents() {
+        var percents = value.map((o, i) => [
+            getPercentByValue(i ? value[i - 1] : start, start, end),
+            getPercentByValue(o, start, end)
         ]);
         percents.push([percents[percents.length - 1][1], 100])
         return percents;
     }
-    decreaseAll(step = this.props.step) {
-        var start = this.props.start;
-        var { min = start } = this.props;
-        var offset = Math.min(step, this.value[0] - this.getValue(min));
-        for (var i = 0; i < this.value.length; i++) {
-            this.value[i] -= offset;
-            this.value[i] = this.fix(this.value[i])
+    function decreaseAll(step = rootProps.step) {
+        let { min = start } = rootProps;
+        let offset = Math.min(step, value[0] - min);
+        for (let i = 0; i < value.length; i++) {
+            value[i] -= offset;
+            value[i] = fix(value[i])
         }
-        this.moved = true;
+        moved = true;
     }
-    increaseAll(step = this.props.step) {
-        let end = this.props.end;
-        let { max = end } = this.props;
-        let offset = Math.min(step, this.getValue(max) - this.value[this.value.length - 1]);
-        for (var i = 0; i < this.value.length; i++) {
-            this.value[i] += offset;
-            this.value[i] = this.fix(this.value[i])
+    function increaseAll(step = rootProps.step) {
+        let { max = end } = rootProps;
+        let offset = Math.min(step, max - value[value.length - 1]);
+        for (let i = 0; i < value.length; i++) {
+            value[i] += offset;
+            value[i] = fix(value[i])
         }
-        this.moved = true;
+        moved = true;
     }
-    mouseDown(e, index, type) {
+    function isActive(index){
+        if (value.length === 1 && index === 0) { return true }
+        if (value.length > 1 && index !== 0 && index !== value.length) { return true; }
+        return false
+    }
+    function mouseDown(e, index, type) {
         e.preventDefault();
-        let { start, end, min = start, max = end, onChange, disabled } = this.props;
-        if (!onChange || disabled) { return }
-        let { x, y } = this.getClient(e), dom = $(this.dom.current);
-        let pointContainers = dom.find('.aio-slider-point-container');
-        let size = dom.find('.aio-slider-line')[this.oriention === 'horizontal' ? 'width' : 'height']();
-        let length = this.value.length;
-        this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
-        this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this));
-        this.moved = false;
-        this.setState({ isDown: true });
+        let { min = start,max = end } = rootProps;
+        if (!rootProps.onChange || disabled) { return }
+        let { x, y } = getClient(e), DOM = $(dom.current);
+        let pointContainers = DOM.find('.aio-slider-point-container');
+        let size = DOM.find('.aio-slider-line')[statics.oriention === 'h' ? 'width' : 'height']();
+        let length = value.length;
+        eventHandler('window', 'mousemove', mouseMove);
+        eventHandler('window', 'mouseup', mouseUp);
+        moved = false;
+        setIsDown(true);
         pointContainers.css({ zIndex: 10 });
         if (type === 'point') {
             let pointContainer = pointContainers.eq(index);
             pointContainer.css({ zIndex: 100 });
             pointContainer.find('.aio-slider-point').addClass('active');
-            let current = this.value[index];
-            let before = index === 0 ? min : this.value[index - 1];
-            let after = index === this.value.length - 1 ? max : this.value[index + 1]
-            this.startOffset = { x, y, size, index: [index], value: [current], startLimit: before - current, endLimit: after - current }
+            let current = value[index];
+            let before = index === 0 ? min : value[index - 1];
+            let after = index === value.length - 1 ? max : value[index + 1]
+            startOffset = { x, y, size, index: [index], value: [current], startLimit: before - current, endLimit: after - current }
         }
         else {
             let pointContainer1 = pointContainers.eq(index - 1);
@@ -2239,209 +2125,189 @@ class Slider extends Component {
             p1.addClass('active');
             p2.addClass('active');
 
-            if (index === 0) { this.decreaseAll(); }
-            else if (index === length) { this.increaseAll(); }
+            if (index === 0) { decreaseAll(); }
+            else if (index === length) { increaseAll(); }
             if (index === 0 || index === length) {
-                this.startOffset = {
+                startOffset = {
                     x, y, size,
-                    index: this.value.map((o, i) => i), value: this.value.map((o) => o),
-                    startLimit: min - this.value[0], endLimit: max - this.value[length - 1],
+                    index: value.map((o, i) => i), value: value.map((o) => o),
+                    startLimit: min - value[0], endLimit: max - value[length - 1],
                 }
             }
             else {
-                let point1 = this.value[index - 1], point2 = this.value[index];
-                let before = index === 1 ? min : this.value[index - 2];//مقدار قبلی رنج
-                let after = index === length - 1 ? max : this.value[index + 1]; //مقدار بعدی رنج
-                this.startOffset = {
+                let point1 = value[index - 1], point2 = value[index];
+                let before = index === 1 ? min : value[index - 2];//مقدار قبلی رنج
+                let after = index === length - 1 ? max : value[index + 1]; //مقدار بعدی رنج
+                startOffset = {
                     x, y, size, index: [index - 1, index],
                     value: [point1, point2], startLimit: before - point1, endLimit: after - point2,
                 }
             }
         }
     }
-
-    mouseMove(e) {
-        let { onChange } = this.props;
-        var { x, y, size, value, startLimit, endLimit, index } = this.startOffset;
-        var offset = this.getOffset(x, y, size, e);
+    function mouseMove(e) {
+        let { x, y, size, value:v, startLimit, endLimit, index } = startOffset;
+        let offset = getOffset(x, y, size, e);
         if (offset < startLimit) { offset = startLimit; }
         else if (offset > endLimit) { offset = endLimit; }
-        for (var i = 0; i < value.length; i++) {
-            let Index = index[i], Value = value[i], newValue = parseFloat(Value) + offset;
-            if (this.value[Index] === newValue) { return; }
-            this.value[Index] = this.fix(newValue);
+        for (let i = 0; i < v.length; i++) {
+            let Index = index[i], Value = v[i], newValue = Value + offset;
+            if (value[Index] === newValue) { return; }
+            value[Index] = fix(newValue);
         }
-        this.moved = true;
-        onChange(this.value, true);
+        moved = true;
+        console.log(value)
+        onChange(value, true);
     }
-    mouseUp() {
-        this.eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
-        this.eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
-        let { onChange } = this.props;
-        var points = $(this.dom.current).find('.aio-slider-point');
+    function mouseUp() {
+        eventHandler('window', 'mousemove', mouseMove, 'unbind');
+        eventHandler('window', 'mouseup', mouseUp, 'unbind');
+        let points = $(dom.current).find('.aio-slider-point');
         points.removeClass('active');
-        this.setState({ isDown: false });
-        if (this.moved) { onChange(this.value, false); }
+        setIsDown(false);
+        if (moved) { onChange(value, false); }
     }
-    getContext() {
-        return {
-            ...this.props,
-            touch: this.touch,
-            fix: this.fix.bind(this),
-            oriention: this.oriention,
-            getValue: this.getValue.bind(this),
-            isDown: this.state.isDown,
-            mouseDown: this.mouseDown.bind(this),
-            getStartByStep: this.getStartByStep.bind(this),
-            getPercentByValue: this.getPercentByValue.bind(this),
-            value: this.value
-        };
+    function getContext() {
+        let context:I_Slider_context = {
+            statics,rootProps,mouseDown,touch,value,isDown,fix,getStartByStep,getPercentByValue,isActive
+        }
+        return context
     }
-    getStyle() {
-        return { direction: 'ltr', flexDirection: this.flexDirection }
+    function getStyle() {return { direction: 'ltr', flexDirection: statics.flexDirection }}
+    function getClassName() {
+        let { className } = attrs;
+        return `aio-slider ${statics.oriention === 'h'?'horizontal':'vertical'}${className ? ' ' + className : ''}${disabled ? ' disabled' : ''}`;
     }
-    getClassName() {
-        let { attrs, disabled } = this.props, { className } = attrs;
-        return `aio-slider ${this.context.oriention}${className ? ' ' + className : ''}${disabled ? ' disabled' : ''}`;
-    }
-    render() {
-        this.value = this.getValidValue();
-        this.context = this.getContext();
-        var { labelStep, scaleStep } = this.props;
-        var percents = this.getPercents();
-        return (
-            <SliderContext.Provider value={this.context}>
-                <div ref={this.dom} style={this.getStyle()} className={this.getClassName()}>
-                    <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                        <SliderLine />
-                        {labelStep && <SliderLabels />}
-                        {scaleStep && <SliderScales />}
-                        {this.value.map((o, i) => <SliderFill key={i} index={i} percent={percents[i]} />)}
-                        <SliderFill key={this.value.length} index={this.value.length} percent={percents[this.value.length]} />
-                        {this.value.map((o, i) => <SliderPoint key={i} index={i} percent={percents[i]} />)}
-                    </div>
+    let percents = getPercents();
+    return (
+        <SliderContext.Provider value={getContext()}>
+            <div ref={dom as any} style={getStyle() as any} className={getClassName()}>
+                <div style={{ display: 'flex', height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <SliderLine />
+                    {label && <SliderLabels />}
+                    {scale && <SliderScales />}
+                    {value.map((o, i) => <SliderFill key={i} index={i} percent={percents[i]} />)}
+                    <SliderFill key={value.length} index={value.length} percent={percents[value.length]} />
+                    {value.map((o, i) => <SliderPoint key={i} index={i} percent={percents[i]} />)}
                 </div>
-            </SliderContext.Provider>
-        );
-    }
+            </div>
+        </SliderContext.Provider>
+    );
 }
-Slider.defaultProps = {
-    direction: 'right', editLabel: (a) => a, labelStyle: {}, labelRotate: 0,
-    value: [0], scaleStyle: {}, style: () => { },
-    start: 0, end: 100, step: 1, activegetPointStyle: {}, getText: () => { return '' }, attrs: {},
-    pointStyle: {}, lineStyle: {}, fillStyle: {}, valueStyle: {}, editValue: (value, index) => value, textStyle: () => { }
+function SliderLine() {
+    let {rootProps}:I_Slider_context = useContext(SliderContext);
+    let {lineAttrs = {}} = rootProps;
+    let className = 'aio-slider-line';
+    if(lineAttrs.className){className += ' ' + lineAttrs.className}
+    let style = lineAttrs.style;
+    let p = {...lineAttrs,className,style}
+    return (<div {...p}></div>)
 }
-class SliderLine extends Component {
-    static contextType = SliderContext;
-    render() {
-        var { lineStyle } = this.context;
-        return (<div className='aio-slider-line' style={typeof lineStyle === 'function' ? lineStyle(this.context) : lineStyle}></div>)
-    }
-}
-class SliderFill extends Component {
-    static contextType = SliderContext;
-    getContainerStyle() {
-        var { oriention, direction } = this.context, { percent } = this.props;
-        var obj = {};
-        obj[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]] = percent[0] + '%';
-        if (oriention === 'horizontal') { obj.width = (percent[1] - percent[0]) + '%'; }
-        else { obj.height = (percent[1] - percent[0]) + '%'; }
-        return obj;
-    }
-    render() {
-        var { mouseDown, rangeEvents = {}, fillStyle, getText, textStyle, touch, value } = this.context;
-        var { index } = this.props;
-        var containerProps = {
-            'data-index': index, className: 'aio-slider-fill-container', style: this.getContainerStyle(),
+type I_SliderFill = {percent:number,index:number}
+function SliderFill(props:I_SliderFill) {
+    let {statics,rootProps,mouseDown,touch,isActive}:I_Slider_context = useContext(SliderContext);
+    let { oriention } = statics,{ direction = 'right',line = {} } = rootProps, { percent,index } = props; 
+    let [active] = useState<boolean>(isActive(index))
+    function getContainerProps(){
+        let style:any = {};
+        style[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]] = percent[0] + '%';
+        if (oriention === 'h') { style.width = (percent[1] - percent[0]) + '%'; }
+        else { style.height = (percent[1] - percent[0]) + '%'; }
+        return {
+            'data-index': index, className: 'aio-slider-fill-container', style,
             [touch ? 'onTouchStart' : 'onMouseDown']: (e) => mouseDown(e, index, 'fill')
         }
-        for (let prop in rangeEvents) { containerProps[prop] = () => rangeEvents[prop](index) }
-        let text = getText(index, this.context), style, active;
-        if (typeof fillStyle === 'function') { style = fillStyle(index, this.context); }
-        else {
-            if (value.length === 1 && index === 0) { style = fillStyle; active = true }
-            if (value.length > 1 && index !== 0 && index !== value.length) { style = fillStyle; active = true; }
-        }
-        return (
-            <div {...containerProps}>
-                <div className={'aio-slider-fill' + (active ? ' aio-slider-fill-active' : '')} style={style} data-index={index}></div>
-                {text !== undefined && <div className='aio-slider-text' style={textStyle(index)}>{text}</div>}
-            </div>
-        );
     }
+    function getProps(){
+        let {attrs:Attrs = ()=>{}} = line;
+        let attrs = Attrs(index,active) || {};
+        let style = attrs.style;
+        let className = 'aio-slider-fill';
+        if(active){className += ' aio-slider-fill-active'}
+        if(attrs.className){className += ' ' + attrs.className}
+        return {...attrs,className,style,'data-index':index}
+    }
+    let text = line.text?line.text(index,active):'';
+    return (
+        <div {...getContainerProps()}>
+            <div {...getProps()}></div>
+            {text !== undefined && <div className='aio-slider-text'>{text}</div>}
+        </div>
+    );
 }
-class SliderPoint extends Component {
-    static contextType = SliderContext;
-    getContainerStyle() {
-        var { direction } = this.context, { percent } = this.props;
-        return { [{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]]: percent[1] + '%' };
-    }
-    getValueStyle() {
-        var { showValue, isDown, valueStyle } = this.context;
-        var { index } = this.props;
-        if (showValue === false) { return { display: 'none' } }
-        if (showValue === true || showValue === 'inline' || isDown) { return typeof valueStyle === 'function' ? valueStyle(index, this.context) : valueStyle; }
-        return { display: 'none' };
-    }
-    render() {
-        var { value, mouseDown, editValue, pointEvents, getPointHTML, pointStyle, touch, fix, showValue } = this.context;
-        var { index } = this.props;
-        var point = value[index];
-        var props = {
-            style: this.getContainerStyle(), 'data-index': index, className: 'aio-slider-point-container',
+type I_SliderPoint = {percent:number,index:number}
+function SliderPoint(props:I_SliderPoint) {
+    let {rootProps,isDown,mouseDown,value,touch,fix}:I_Slider_context = useContext(SliderContext);
+    let {percent,index} = props;
+    let {direction = 'right'} = rootProps;
+    let fixValue = fix(value[index]);
+    let {attrs = {},html = ''} = (rootProps.point?rootProps.point(index,fixValue):{}) || {}
+    let {attrs:labelAttrs = {},html:labelHtml = fixValue,show:labelShow = 'inline'} = (rootProps.pointLabel?rootProps.pointLabel(index,fixValue):{}) || {}
+    function getContainerProps(){
+        let style = { [{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]]: percent[1] + '%' };
+        return {
+            style, 'data-index': index, className: 'aio-slider-point-container',
             [touch ? 'onTouchStart' : 'onMouseDown']: (e) => mouseDown(e, index, 'point')
-        };
-        for (let prop in pointEvents) { props[prop] = () => pointEvents[prop](index) }
-        var pointProps = { className: 'aio-slider-point', style: typeof pointStyle === 'function' ? pointStyle(index, this.context) : pointStyle, 'data-index': index };
-        var valueProps = {
-            style: this.getValueStyle(),
-            className: `aio-slider-value ${'aio-slider-value-' + index}` + (showValue === 'inline' ? ' aio-slider-value-inline' : '')
-        };
-        let html = getPointHTML ? getPointHTML(index, this.context) : '';
-        return (
-            <div {...props}>
-                {showValue !== 'inline' && <div {...pointProps}>{html}</div>}
-                <div {...valueProps}>{editValue(fix(point), index)}</div>
-            </div>
-        );
+        }
     }
+    function getValueProps(){
+        let style;
+        if (labelShow === false) { style = { display: 'none' } }
+        else if (labelShow === true || labelShow === 'inline' || isDown) { style = labelAttrs.style; }
+        else { style = { display: 'none' } };
+        let className = `aio-slider-value ${'aio-slider-value-' + index}` + (labelShow === 'inline' ? ' aio-slider-value-inline' : '');
+        return {style,className}
+    }
+    function getPointProps(){
+        let className = 'aio-slider-point';
+        if(attrs.className){className += attrs.className}
+        return { ...attrs,className, style: attrs.style, 'data-index': index };
+    }
+    return (
+        <div {...getContainerProps()}>
+            {labelShow !== 'inline' && <div {...getPointProps()}>{html}</div>}
+            <div {...getValueProps()}>{labelHtml}</div>
+        </div>
+    );
 }
-class SliderLabels extends Component {
-    static contextType = SliderContext;
-    constructor(props) {
-        super(props);
-        this.dom = createRef();
-        $(window).on('resize', this.update.bind(this))
-    }
-    getLabelsByStep(labelStep) {
-        var { start, end, getStartByStep } = this.context;
-        var Labels = [];
-        var value = getStartByStep(start, labelStep);
-        var key = 0;
+function SliderLabels() {
+    let {rootProps, getStartByStep}:I_Slider_context = useContext(SliderContext);
+    let {start, end,direction = 'right',label = {}} = rootProps;
+    let {step,list} = label;
+    let [dom] = useState(createRef())
+    useEffect(()=>{
+        $(window).on('resize', update)
+    },[])
+    useEffect(()=>{
+        update()
+    })
+    function getLabelsByStep() {
+        let Labels = [];
+        let value = getStartByStep(start, step);
+        let key = 0;
         while (value <= end) {
-            Labels.push(<SliderLabel key={key} value={value} />);
-            value += labelStep;
+            let p:I_SliderLabel = {value}
+            Labels.push(<SliderLabel key={key} {...p} />);
+            value += step;
             value = parseFloat(value.toFixed(6))
             key++;
         }
         return Labels;
     }
-    getLabels(labelStep) { return labelStep.map((o) => <SliderLabel key={o} value={o} />) }
-    update() {
-        let container = $(this.dom.current);
+    function getLabels() { return list.map((o) => {let p:I_SliderLabel = {value:o}; return <SliderLabel key={o} {...p} />}) }
+    function update() {
+        let container = $(dom.current);
         let labels = container.find('.aio-slider-label div');
         if (!labels.length) { return; }
-        let { direction } = this.context;
         let firstLabel = labels.eq(0);
-        let firstLabelThickness = firstLabel.attr('datarotated') === 'yes' ? 'height' : 'width';
+        let firstLabelThickness = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
         if (direction === 'right') {
             let end = firstLabel.offset().left + firstLabel[firstLabelThickness]();
             for (let i = 1; i < labels.length; i++) {
                 let label = labels.eq(i);
-                let thickness = label.attr('datarotated') === 'yes' ? 'height' : 'width';
+                let thickness = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
                 label.css({ display: 'block' })
                 let left = label.offset().left
-
                 let width = label[thickness]();
                 if (left < end + 5) {
                     label.css({ display: 'none' })
@@ -2453,7 +2319,7 @@ class SliderLabels extends Component {
             var end = firstLabel.offset().left;
             for (let i = 1; i < labels.length; i++) {
                 let label = labels.eq(i);
-                let thickness = label.attr('datarotated') === 'yes' ? 'height' : 'width';
+                let thickness = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
                 label.css({ display: 'block' })
                 let left = label.offset().left
                 let width = label[thickness]();
@@ -2465,351 +2331,395 @@ class SliderLabels extends Component {
             }
         }
     }
-    componentDidMount() { this.update() }
-    componentDidUpdate() { this.update() }
-    render() {
-        let { labelStep } = this.context;
-        return (
-            <div className='aio-slider-labels' ref={this.dom}>
-                {Array.isArray(labelStep) ? this.getLabels(labelStep) : this.getLabelsByStep(labelStep)}
-            </div>
-        );
-    }
+    return (
+        <div className='aio-slider-labels' ref={dom as any}>
+            {list ? getLabels() : getLabelsByStep()}
+        </div>
+    );
+    
 }
-class SliderLabel extends Component {
-    static contextType = SliderContext;
-    getStyle(rotate) {
-        var { start, end, getPercentByValue, direction, labelStyle } = this.context;
-        var { value } = this.props;
-        var obj = typeof labelStyle === 'function' ? labelStyle(value, this.context) : labelStyle;
-        obj = !obj ? {} : { ...obj }
+type I_SliderLabel = {value:number}
+function SliderLabel(props:I_SliderLabel) {
+    let {rootProps,getPercentByValue}:I_Slider_context = useContext(SliderContext)
+    let {start,end,direction = 'right',label} = rootProps;
+    let {html = (o)=>o} = label;
+    let {value} = props;
+    function getProps() {
+        let attrs:any = label.attrs(value);
+        attrs = !attrs ? {} : { ...attrs }
         let key = { right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction];
-        obj[key] = getPercentByValue(value, start, end) + '%';
+        let style:any = {};
+        style[key] = getPercentByValue(value, start, end) + '%';
         if (rotate) {
-            obj.transform = `rotate(${rotate + 'deg'})`;
-            obj.justifyContent = rotate > 0 ? 'flex-start' : 'flex-end'
+            style.transform = `rotate(${label.rotate + 'deg'})`;
+            style.justifyContent = rotate > 0 ? 'flex-start' : 'flex-end'
         }
-        return obj;
-    }
-    click(e) {
-        var { onLabelClick } = this.context;
-        e.stopPropagation();
-        if (!onLabelClick) { return }
-        var { value } = this.props;
-        onLabelClick(value);
-    }
-    render() {
-        let { editLabel, labelRotate } = this.context;
-        let { value } = this.props;
-        let rotate = typeof labelRotate === 'function' ? labelRotate(value) : labelRotate;
-        let text;
-        try { text = editLabel(value) }
-        catch { text = '' }
-        return (
-            <div onClick={this.click.bind(this)} style={this.getStyle(rotate)} className={`aio-slider-label`}>
-                <div datarotated={rotate ? 'yes' : 'no'} className='aio-slider-label-text'>{text}</div>
-            </div>
-        );
-    }
-}
-class SliderScales extends Component {
-    static contextType = SliderContext;
-    getScalesByStep(scaleStep) {
-        var { start, end, getStartByStep } = this.context;
-        var value = getStartByStep(start, scaleStep);
-        var key = 0, scales = [];
-        while (value <= end) {
-            scales.push(<SliderScale value={value} key={key} />);
-            value += scaleStep;
-            key++;
+        let className = `aio-slider-label`
+        if(attrs.className){className += ' ' + attrs.className}
+        let onClick = !attrs.onClick?undefined:(e)=>{
+            if(attrs.onClick){
+                e.stopPropagation();
+                attrs.onClick(value,e)
+            }
         }
-        return scales;
+        return {onClick,...attrs,className,style}
     }
-    getScales(scaleStep) { return scaleStep.map((o) => <SliderScale value={o} key={o} />) }
-    render() {
-        let { scaleStep } = this.context;
-        let scales = Array.isArray(scaleStep) ? this.getScales(scaleStep) : this.getScalesByStep(scaleStep)
-        return (<div className='aio-slider-scales'>{scales}</div>);
-    }
+    let rotate = (typeof label.rotate === 'function' ? label.rotate(value) : label.rotate) || 0;
+    return (
+        <div {...getProps()}>
+            <div data-rotated={rotate ? 'yes' : 'no'} className='aio-slider-label-text'>{html(value)}</div>
+        </div>
+    );
 }
-function SliderScale(props) {
-    let context = useContext(SliderContext);
-    function getStyle() {
-        var { scaleStyle } = context;
-        var { start, end, direction, getPercentByValue } = context, { value } = props;
-        var obj = typeof scaleStyle === 'function' ? scaleStyle(value, context) : scaleStyle;
-        obj = !obj ? {} : { ...obj }
-        if (!obj) { obj = {} }
-        obj[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]] = getPercentByValue(value, start, end) + '%';
-        return obj;
-    }
-    let { getScaleHTML } = context, { value } = props;
-    return (<div className="aio-slider-scale" style={getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
-}
-class List extends Component {
-    constructor(props) {
-        super(props);
-        let { properties, getOptionProp } = props;
-        this.getOptionProp = getOptionProp;
-        this.touch = 'ontouchstart' in document.documentElement;
-        this.dom = createRef();
-        let { count, move } = properties;
-        if (move) { move(this.move.bind(this)) }
-        this.state = { count }
-    }
-    eventHandler(selector, event, action, type = 'bind') {
-        var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
-        event = this.touch ? me[event] : event;
-        var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-        element.unbind(event, action);
-        if (type === 'bind') { element.bind(event, action) }
-    }
-    getClient(e) {
-        try { return this.touch && e.changedTouches ? [e.changedTouches[0].clientX, e.changedTouches[0].clientY] : [e.clientX, e.clientY]; }
-        catch { return this.touch && e.changedTouches ? [e.changedTouches[0].clientX, e.changedTouches[0].clientY] : [e.clientX, e.clientY] }
-    }
-    getStyle() {
-        let { properties } = this.props;
-        let { size, width } = properties;
-        var { count } = this.state, height = count * (size);
-        return { width, height }
-    }
-    getOptions() {
-        let { properties } = this.props;
-        let { size, options = [], value: propsValue } = properties;
-        this.activeIndex = 0;
-        return options.map((option, i) => {
-            let value = this.getOptionProp(option, 'value');
-            let text = this.getOptionProp(option, 'text', '');
-            let style = this.getOptionProp(option, 'style', {});
-            if (value === propsValue) { this.activeIndex = i; }
-            return <div key={i} dataindex={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
+function SliderScales() {
+    let {rootProps,getStartByStep}:I_Slider_context = useContext(SliderContext);
+    let {scale = {},start,end} = rootProps;
+    let {step,list} = scale;
+    let [numbers] = useState<number[]>(getNumbers())
+    function getNumbers():number[]{
+        let numbers = [],dic = {}
+        if(list){
+            for(let i = 0; i < list.length; i++){
+                if(dic[list[i].toString()] === undefined){numbers.push(i);}
+            }
+        }
+        if(step){
+            let value = getStartByStep(start, step);
+            while (value <= end) {
+                if(dic[value.toString()] === undefined){numbers.push(value);}
+                value += step;
+            }
+        }
+        return numbers;
+    } 
+    function getScales(){
+        return numbers.map((o)=>{
+            let p:I_SliderScale = {value:o};
+            return <SliderScale key={o} {...p}/>
         })
     }
-    getIndexByTop(top) {
-        let { properties } = this.props;
-        let { size } = properties;
-        let { count } = this.state;
-        return Math.round(((count * size) - size - (2 * top)) / (2 * size));
+    let scales = getScales();
+    return !scales.length?null:<div className='aio-slider-scales'>{scales}</div>
+}
+type I_SliderScale = {value:number}
+function SliderScale(props:I_SliderScale) {
+    let {rootProps,getPercentByValue} = useContext(SliderContext);
+    let {value} = props;
+    let {scale = {},start,end,direction = 'right'} = rootProps;
+    let {html = ()=>null} = scale;
+    let attrs = (typeof scale.attrs === 'function'?scale.attrs(value):scale.attrs) || {};
+    let style = attrs.style;
+    style = !style ? {} : { ...style }
+    style[{ right: 'left', left: 'right', top: 'bottom', bottom: 'top' }[direction]] = getPercentByValue(value, start, end) + '%';
+    let className = 'aio-slider-scale';
+    if(attrs.className){className += ' ' + attrs.className}
+    let p = {...attrs,className,style}
+    return (<div {...p}>{html(value)}</div>);
+}
+function List() {
+    let { rootProps, getOptionProp }: I_AIOInput_context = useContext(AICTX);
+    let { move, size, width, options = [], value, onChange = () => { }, attrs = {}, editable, stop, decay } = rootProps;
+    let [touch] = useState('ontouchstart' in document.documentElement);//notice global touch?
+    let [dom] = useState(createRef());
+    let [activeIndex] = useState<number>(0)
+    let [interval] = useState<any>()
+    let [moved] = useState<boolean>()
+    let [lastY] = useState<number>()
+    let [deltaY] = useState<number>()
+    let [so] = useState<{ y: number, top: number, newTop?: number, limit: { top: number, bottom: number } }>()
+    let [count, setCount] = useState<number>(rootProps.count)
+    useEffect(() => { if (move) { move(Move) } }, [])
+    useEffect(() => { setBoldStyle(activeIndex) }, [activeIndex])
+    function getOptions() {
+        let propsValue = value;
+        activeIndex = 0;
+        return options.map((option, i) => {
+            let value = getOptionProp(option, 'value');
+            let text = getOptionProp(option, 'text', '');
+            let style = getOptionProp(option, 'style', {});
+            if (value === propsValue) { activeIndex = i; }
+            let p = { key: i, dataindex: i, className: 'aio-input-list-option', style: { height: size, ...style } }
+            return <div {...p}>{text}</div>
+        })
     }
-    getTopByIndex(index) {
-        let { properties } = this.props;
-        let { size } = properties;
-        let { count } = this.state;
-        return (count - 2 * index - 1) * size / 2;
+    function getIndexByTop(top) { return Math.round(((count * size) - size - (2 * top)) / (2 * size)); }
+    function getTopByIndex(index) { return (count - 2 * index - 1) * size / 2; }
+    function getContainerStyle() { return { top: getTopByIndex(activeIndex) }; }
+    function moveDown() {
+        if (activeIndex >= options.length - 1) { return }
+        activeIndex++;
+        let newTop = getTopByIndex(activeIndex);
+        setStyle({ top: newTop });
+        setBoldStyle(activeIndex);
     }
-    getContainerStyle() { return { top: this.getTopByIndex(this.activeIndex) }; }
-    moveDown() {
-        let { properties } = this.props;
-        let { options = [] } = properties;
-        if (this.activeIndex >= options.length - 1) { return }
-        this.activeIndex++;
-        var newTop = this.getTopByIndex(this.activeIndex);
-        this.setStyle({ top: newTop });
-        this.setBoldStyle(this.activeIndex);
+    function setBoldStyle(index) {
+        $(dom.current).find('.aio-input-list-option').removeClass('active');
+        $(dom.current).find('.aio-input-list-option[dataindex=' + (index) + ']').addClass('active');
     }
-    setBoldStyle(index) {
-        $(this.dom.current).find('.aio-input-list-option').removeClass('active');
-        $(this.dom.current).find('.aio-input-list-option[dataindex=' + (index) + ']').addClass('active');
+    function moveUp() {
+        if (activeIndex <= 0) { return }
+        activeIndex--;
+        var newTop = getTopByIndex(activeIndex);
+        setStyle({ top: newTop });
+        setBoldStyle(activeIndex);
     }
-    moveUp() {
-        if (this.activeIndex <= 0) { return }
-        this.activeIndex--;
-        var newTop = this.getTopByIndex(this.activeIndex);
-        this.setStyle({ top: newTop });
-        this.setBoldStyle(this.activeIndex);
-    }
-    keyDown(e) {
-        let { properties } = this.props;
-        let { editable } = properties;
+    function keyDown(e) {
         if (!editable) { return }
-        if (e.keyCode === 38) { this.moveUp(); }
-        else if (e.keyCode === 40) { this.moveDown(); }
+        if (e.keyCode === 38) { moveUp(); }
+        else if (e.keyCode === 40) { moveDown(); }
     }
-    getLimit() {
-        let { properties } = this.props;
-        let { options = [] } = properties;
-        return { top: this.getTopByIndex(-1), bottom: this.getTopByIndex(options.length) }
-    }
-    getTrueTop(top) {
-        let { properties } = this.props;
-        let { options = [] } = properties;
-        let index = this.getIndexByTop(top);
+    function getLimit() { return { top: getTopByIndex(-1), bottom: getTopByIndex(options.length) } }
+    function getTrueTop(top) {
+        let index = getIndexByTop(top);
         if (index < 0) { index = 0 }
         if (index > options.length - 1) { index = options.length - 1 }
-        return this.getTopByIndex(index);
+        return getTopByIndex(index);
     }
-    mouseDown(e) {
-        let { properties } = this.props;
-        let { options = [], onChange = () => { }, editable } = properties;
+    function mouseDown(e) {
         if (!editable) { return }
-        this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
-        this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this));
-        clearInterval(this.interval);
-        this.moved = false;
-        this.isDown = true;
-        let client = this.getClient(e);
-        let y = client[1]
-        this.setStyle({ transition: 'unset' });
-        let top = this.getTop();
-        var index = this.getIndexByTop(top);
-        this.setBoldStyle(index);
-        this.setStyle({ top, transition: 'unset' });
+        eventHandler('window', 'mousemove', mouseMove);
+        eventHandler('window', 'mouseup', mouseUp);
+        clearInterval(interval);
+        moved = false;
+        let client = getClient(e), y = client[1]
+        setStyle({ transition: 'unset' });
+        let top = getTop(), index = getIndexByTop(top);
+        setBoldStyle(index);
+        setStyle({ top, transition: 'unset' });
         onChange(options[index].value, index)
-        this.so = { y, top, limit: this.getLimit() };
+        so = { y, top, limit: getLimit() };
     }
-    getTop() {
-        var top = parseInt($(this.dom.current).find('.aio-input-list-options').css('top'));
-        return this.getTrueTop(top);
+    function getTop() {
+        var top = parseInt($(dom.current).find('.aio-input-list-options').css('top'));
+        return getTrueTop(top);
     }
-    fixTop(value) {
-        let { top, bottom } = this.so.limit;
+    function fixTop(value) {
+        let { top, bottom } = so.limit;
         if (value > top) { return top }
         if (value < bottom) { return bottom }
         return value;
     }
-    mouseMove(e) {
-        this.moved = true;
-        var client = this.getClient(e);
-        let y = client[1];
-        var offset = y - this.so.y;
-        if (this.lastY === undefined) { this.lastY = y }
-        this.deltaY = y - this.lastY;
-        this.lastY = y;
-        if (Math.abs(offset) < 20) { this.deltaY = 3 }
-        var newTop = this.fixTop(this.so.top + offset);
-        let index = this.getIndexByTop(newTop);
-        this.so.newTop = newTop;
-        this.setBoldStyle(index);
-        this.setStyle({ top: newTop });
+    function mouseMove(e) {
+        moved = true;
+        let client = getClient(e), y = client[1], offset = y - so.y;
+        if (lastY === undefined) { lastY = y }
+        deltaY = y - lastY;
+        lastY = y;
+        if (Math.abs(offset) < 20) { deltaY = 3 }
+        let newTop = fixTop(so.top + offset), index = getIndexByTop(newTop);
+        so.newTop = newTop;
+        setBoldStyle(index);
+        setStyle({ top: newTop });
     }
-    setStyle(obj) { $(this.dom.current).find('.aio-input-list-options').css(obj); }
-    mouseUp(e) {
-        this.eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
-        this.eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
-        this.isDown = false;
-        if (!this.moved) { return }
-        this.moved = false;
-        this.move(this.deltaY, this.so.newTop)
+    function setStyle(obj) { $(dom.current).find('.aio-input-list-options').css(obj); }
+    function mouseUp(e) {
+        eventHandler('window', 'mousemove', mouseMove, 'unbind');
+        eventHandler('window', 'mouseup', mouseUp, 'unbind');
+        if (!moved) { return }
+        moved = false;
+        Move(deltaY, so.newTop)
     }
-    move(deltaY, startTop = this.getTop()) {
-        let { properties } = this.props;
-        let { options = [], onChange = () => { }, stop, decay } = properties;
+    function Move(dy, startTop = getTop()) {
         if (decay < 0) { decay = 0 }
         if (decay > 99) { decay = 99 }
-        decay = parseFloat(1 + decay / 1000)
-        this.interval = setInterval(() => {
-            startTop += deltaY;
-            let index = this.getIndexByTop(startTop);
-            if (Math.abs(deltaY) < stop || index < 0 || index > options.length - 1) {
-                clearInterval(this.interval);
+        decay = 1 + decay / 1000;
+        interval = setInterval(() => {
+            startTop += dy;
+            let index = getIndexByTop(startTop);
+            if (Math.abs(dy) < stop || index < 0 || index > options.length - 1) {
+                clearInterval(interval);
                 if (index < 0) { index = 0 }
                 if (index > options.length - 1) { index = options.length - 1 }
-                let top = this.getTopByIndex(index);
-                this.setBoldStyle(index);
-                this.setStyle({ top, transition: '0.3s' });
+                let top = getTopByIndex(index);
+                setBoldStyle(index);
+                setStyle({ top, transition: '0.3s' });
                 onChange(options[index].value, index)
                 return;
             }
-            deltaY /= decay;
-            this.setStyle({ top: startTop });
+            dy /= decay;
+            setStyle({ top: startTop });
         }, 20)
     }
-    componentDidUpdate() { this.setBoldStyle(this.activeIndex); }
-    componentDidMount() { this.setBoldStyle(this.activeIndex); }
-    render() {
-        let { properties } = this.props;
-        let { attrs } = properties;
-        let options = this.getOptions();
-        return (
+    return (
+        <div
+            {...rootProps.attrs} ref={dom} tabIndex={0} onKeyDown={(e) => keyDown(e)}
+            className={'aio-input-list' + (attrs.className ? ' ' + attrs.className : '')}
+            style={{ ...attrs.style, width, height: count * (size) }}
+        >
             <div
-                {...attrs} ref={this.dom} tabIndex={0} onKeyDown={(e) => this.keyDown(e)}
-                className={'aio-input-list' + (attrs.className ? ' ' + attrs.className : '')}
-                style={{ ...attrs.style, ...this.getStyle() }}
-            >
-                <div
-                    className='aio-input-list-options' style={this.getContainerStyle()}
-                    onMouseDown={(e) => this.mouseDown(e)} onTouchStart={(e) => this.mouseDown(e)}
-                >{options}</div>
-            </div>
-        );
-    }
+                className='aio-input-list-options' style={getContainerStyle()}
+                onMouseDown={(e) => mouseDown(e)} onTouchStart={(e) => mouseDown(e)}
+            >{getOptions()}</div>
+        </div>
+    );
 }
-const MapContext = createContext();
-function Map(props) {
-    let storage = AIOStorage('aio-input-storage');
-    let mapApiKeys = storage.load({ name: 'mapApiKeys', def: { map: '', service: '' } });
-    let { properties } = props;
-    let { popup, mapConfig, onChange, disabled, attrs, onChangeAddress, value } = properties;
+const MapContext = createContext({} as any);
+function Map() {
+    let { rootProps }: I_AIOInput_context = useContext(AICTX);
+    let { popupConfig, mapConfig, onChange, disabled, attrs, value } = rootProps;
+    let [isScriptAdded,setIsScriptAdded] = useState<boolean>(false);
+    useEffect(()=>{
+        let scr = document.getElementById('aio-input-map-neshan');
+        try {
+            const script = document.createElement("script");
+            script.src = `https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js`;
+            script.id = 'aio-input-map-neshan'
+            script.onload = () => setIsScriptAdded(true);
+            document.body.appendChild(script);
+        }
+        catch (err) { console.log(err) }
+    },[])
+    if(!isScriptAdded){return null}
     if (!value) { value = { lat: 35.699739, lng: 51.338097 } }
     if (!value.lat) { value.lat = 35.699739 }
     if (!value.lng) { value.lng = 51.338097 }
-    let isPopup = false;
-    let onClose = false;
-    let p = { popup, isPopup, onClose, onChange, attrs, onChangeAddress, value, mapApiKeys, mapConfig, disabled }
+    let p:I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled }
     return <MapUnit {...p} />
 }
-class MapUnit extends Component {
-    static contextType = AICTX;
-    constructor(props) {
-        super(props);
-        this.datauniqid = 'mp' + (Math.round(Math.random() * 10000000))
-        this.markers = []
-        this.dom = createRef();
-        let { mapConfig = {} } = props;
-        let { zoom = 14 } = mapConfig;
-        this.state = { address: '', value: props.value, prevValue: props.value, zoom, prevZoom: zoom }
-    }
-    handleArea() {
-        if (this.area) { this.area.remove() }
-        let { mapConfig = {} } = this.props;
-        let { area } = mapConfig;
-        if (area && this.L && this.map) {
+type I_Map_config = {
+    area?:I_Map_area,
+    markers?:I_Map_marker[],
+    zoom?:number,
+    marker?:boolean | I_Map_marker,
+    traffic?:boolean,
+    zoomControl?:boolean,
+    maptype?:any,
+    poi?:boolean,
+    search?:boolean,
+    title?:string,
+    draggable?:boolean,
+    address?:boolean
+}
+export type I_Map_area = {color:string, opacity:number, radius:number, lat:number, lng:number}
+export type I_Map_marker = {size?:number,color?:string,html?:React.ReactNode,text?:React.ReactNode,lat?:number,lng?:number,popup?:(marker:I_Map_marker)=>any}
+type I_Map_value = {lat:number,lng:number,address?:string}
+type I_MapUnit = {
+    onClose?:()=>void,
+    value:I_Map_value,
+    onChange:(value:I_Map_value)=>void,
+    mapConfig:I_Map_config,
+    popupConfig?:I_Map_config,
+    attrs:any,
+    disabled:boolean
+}
+type I_Map_temp = {
+    datauniqid:string,
+    area:any,
+    map:any,
+    markers:any[],
+    dom:any,
+    L:any,
+    atimeout:any,
+    btimeout:any,
+    mapMarker:any,
+    lastChange:any
+}
+type I_Map_coords = {lat:number,lng:number};
+type I_mapApiKeys = {map:string,service:string}
+type I_Map_context = {
+    mapApiKeys:I_mapApiKeys,
+    value:I_Map_value,
+    flyTo:(coords:I_Map_coords)=>void,
+    addressLoading:boolean,
+    address:string,
+    goToCurrent:()=>void,
+    mapConfig:I_Map_config,
+    popupConfig:I_Map_config,
+    onClose:()=>void,
+    onChange:(value:I_Map_value)=>void
+}
+function MapUnit(props:I_MapUnit) {
+    let [mapApiKeys] = useState<I_mapApiKeys>(AIOStorage('aio-input-storage').load({ name: 'mapApiKeys', def: { map: '', service: '' } }));
+    let {onClose,mapConfig = {},onChange = () => { },disabled, attrs = {},popupConfig} = props;
+    let {area,zoom:Zoom = 14, traffic = false,markers = [], zoomControl = false, maptype = 'dreamy-gold', poi = true,draggable = true } = mapConfig;
+    let [showPopup,setShowPopup] = useState<boolean>(false)
+    let [value,setValue] = useState<{lat:number,lng:number}>(props.value)
+    let [address,setAddress] = useState<string>('')
+    let [addressLoading,setAddressLoading] = useState<boolean>(false)
+    let [zoom,setZoom] = useState<number>(Zoom);
+    let [mounted,setMounted] = useState<boolean>(false)
+    let [temp] = useState<I_Map_temp>({
+        datauniqid:'mp' + (Math.round(Math.random() * 10000000)),
+        markers:[],
+        dom:createRef(),
+        map:undefined,
+        L:(window as any).L,
+        atimeout:undefined,
+        btimeout:undefined,
+        area:undefined,
+        mapMarker:undefined,
+        lastChange:undefined
+    })
+    let [Marker] = useState(new MarkerClass(()=>temp,()=>mapConfig));
+    Marker.updateMarkers(markers);
+    useEffect(()=>{if(mounted){Marker.addMarkersToMap(value)}},[JSON.stringify(Marker.htmls)])
+    let changeView = !!draggable && !disabled;
+    //maptype: "dreamy" | 'standard-day'  
+    useEffect(()=>{
+        let config = {
+            key: mapApiKeys.map, maptype, poi, traffic,
+            center: [value.lat, value.lng], zoom,
+            dragging: !disabled,
+            scrollWheelZoom: 'center',
+            zoomControl
+        }
+        temp.map = new temp.L.Map(temp.dom.current, config);
+        Marker.addMapMarker(value);
+        temp.map.on('click', (e) => {
+            if (attrs.onClick) { return }
+            if (onChange) { let { lat, lng } = e.latlng; temp.map.panTo({ lat, lng }) }
+        });
+        temp.map.on('move', (e) => {
+            if(!changeView){return}
+            let { lat, lng } = e.target.getCenter()
+            move({ lat, lng })
+        });
+        setMounted(true);
+        update()
+    },[])
+    function handleArea() {
+        if (temp.area) { temp.area.remove() }
+        if (area && temp.L && temp.map) {
             let { color = 'dodgerblue', opacity = 0.1, radius = 1000, lat, lng } = area;
-            this.area = this.L.circle([lat, lng], { color, fillColor: color, fillOpacity: opacity, radius }).addTo(this.map);
+            temp.area = temp.L.circle([lat, lng], { color, fillColor: color, fillOpacity: opacity, radius }).addTo(temp.map);
         }
     }
-    ipLookUp() {
+    function ipLookUp() {
         $.ajax('http://ip-api.com/json')
             .then(
-                (response) => {
-                    let { lat, lon } = response;
-                    this.flyTo(lat, lon, undefined, 'ipLookUp')
-                },
+                (response) => {let { lat, lon } = response; flyTo({lat,lng:lon})},
                 (data, status) => console.log('Request failed.  Returned status of', status)
             );
     }
-    handlePermission() {
+    function handlePermission() {
         navigator.permissions.query({ name: 'geolocation' }).then((result) => {
             if (result.state === 'granted') { console.log(result.state); }
             else if (result.state === 'prompt') { console.log(result.state); }
             else if (result.state === 'denied') { console.log(result.state); }
         });
     }
-    async getAddress({ lat, lng }) {
-        let { mapApiKeys } = this.props;
+    async function getAddress({ lat, lng }) {
         try {
             let res = await Axios.get(`https://api.neshan.org/v5/reverse?lat=${lat}&lng=${lng}`, { headers: { 'Api-Key': mapApiKeys.service, Authorization: false } });
             return res.status !== 200 ? '' : res.data.formatted_address;
         }
         catch (err) { return '' }
     }
-    goToCurrent() {
+    function goToCurrent() {
         if ("geolocation" in navigator) {
-            this.handlePermission();
+            handlePermission();
             // check if geolocation is supported/enabled on current browser
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     let { latitude: lat, longitude: lng } = position.coords;
-                    this.apis.flyTo(lat, lng, undefined, 'goToCurrent');
+                    flyTo({lat, lng});
                 },
-                (error_message) => { this.ipLookUp() }
+                (error_message) => { ipLookUp() }
             )
         }
-        else { this.ipLookUp() }
+        else { ipLookUp() }
     }
-    async route(from = [35.699739, 51.338097], to = [35.699939, 51.338497]) {
-        let { mapApiKeys } = this.context;
+    async function route(from = [35.699739, 51.338097], to = [35.699939, 51.338497]) {
         try {
             let param = { headers: { 'Api-Key': mapApiKeys.service } }
             let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
@@ -2817,204 +2727,167 @@ class MapUnit extends Component {
         }
         catch (err) { return '' }
     }
-    async showPath(path) {
-        let { mapApiKeys } = this.props;
+    async function showPath(path) {
         try { await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`, { headers: { 'Api-Key': mapApiKeys.service } }); }
         catch (err) { return '' }
     }
-    flyTo(lat, lng) {
-        let animate = GetDistance(this.state.value, { lat, lng }) > 0.3;
-        if (!lat || !lng) { return }
-        this.map.flyTo([lat, lng], undefined, { animate, duration: 1 });
+    function flyTo(coords:I_Map_coords) {
+        if (!coords) { return }
+        let animate = GetDistance(value, coords) > 0.3;
+        temp.map.flyTo([coords.lat, coords.lng], zoom, { animate, duration: 1 });
     }
-    panTo(lat, lng) { this.map.panTo({ lat, lng }) }
-    async updateAddress({ lat, lng }) {
-        clearTimeout(this.atimeout);
-        this.setState({ addressLoading: true })
-        this.atimeout = setTimeout(async () => {
-            let { onChange = () => { } } = this.props;
-            let address = await this.getAddress({ lat, lng });
-            this.setState({ address, addressLoading: false });
+    function panTo(coords:{lat:number,lng:number}) { temp.map.panTo(coords) }
+    async function updateAddress(coords) {
+        if(!mapConfig.address){return}
+        let { lat, lng } = coords;
+        clearTimeout(temp.atimeout);
+        if(temp.lastChange && lat === temp.lastChange.lat && lng === temp.lastChange.lng){return}
+        temp.lastChange = {lat,lng}
+        setAddressLoading(true)
+        temp.atimeout = setTimeout(async () => {
+            let address = await getAddress({ lat, lng });
+            setAddress(address);
+            setAddressLoading(false);
             onChange({ lat, lng, address });
-        }, 500);
+        }, 1200);
     }
-    change({ lat, lng }) {
-        let { onChange = () => { } } = this.props;
-        let { address } = this.state;
+    function change(value) {
+        let {lat,lng} = value;
         onChange({ lat, lng, address });
-        this.updateAddress({ lat, lng })
+        updateAddress(value)
     }
-    move({ lat, lng }) {
-        let { mapConfig = {} } = this.props;
-        let { marker = true } = mapConfig;
-        if (marker) { this.marker.setLatLng({ lat, lng }) }
-        clearTimeout(this.atimeout);
-        clearTimeout(this.btimeout);
-        this.btimeout = setTimeout(async () => this.setState({ value: { lat, lng } }, () => this.change({ lat, lng })), 500);
+    function move(value) {
+        if (temp.mapMarker) { temp.mapMarker.setLatLng(value) }
+        clearTimeout(temp.atimeout); clearTimeout(temp.btimeout);
+        temp.btimeout = setTimeout(async () => {setValue(value); change(value)}, 500);
     }
-    //maptype: "dreamy" | 'standard-day'  
-    init() {
-        let { mapApiKeys, onChange, mapConfig = {}, disabled, attrs = {} } = this.props;
-        let { marker = true, traffic = false, zoomControl = false, maptype = 'dreamy-gold', poi = true } = mapConfig;
-        let { value, zoom } = this.state;
-        let config = {
-            key: mapApiKeys.map, maptype, poi, traffic,
-            center: [value.lat, value.lng], zoom,
-            dragging: !disabled,
-            scrollWheelZoom: 'center',
-            //minZoom: zoomable ? undefined : zoom,
-            //maxZoom: zoomable ? undefined : zoom,
-            zoomControl
-        }
-        let map = new window.L.Map(this.dom.current, config);
-        let L = window.L, myMap = map;
-        this.map = myMap; this.L = L;
-        if (marker && myMap) { this.marker = L.marker([value.lat, value.lng]).addTo(myMap); }
-        myMap.on('click', (e) => {
-            if (attrs.onClick) { return }
-            if (onChange) { let { lat, lng } = e.latlng; this.map.panTo({ lat, lng }) }
-        });
-        if (!disabled) {
-            myMap.on('move', (e) => {
-                //marker.setLatLng(e.target.getCenter())
-                let { lat, lng } = e.target.getCenter()
-                this.move({ lat, lng })
-            });
-        }
-        this.updateAddress(value);
-        this.handleMarkers()
-        this.handleArea()
+    function update(){
+        flyTo(props.value);  
+        handleArea()
+        Marker.addMarkersToMap(value);
+        updateAddress(value);
     }
-    componentDidMount() {
-        if (document.getElementById('aio-input-map-neshan') === null) {
-            try {
-                const script = document.createElement("script");
-                script.src = `https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js`;
-                script.id = 'aio-input-map-neshan'
-                script.onload = () => this.init();
-                document.body.appendChild(script);
-            }
-            catch (err) { console.log(err) }
-        }
-        else { this.init() }
+    useEffect(()=>{if(mounted){handleArea()}},[JSON.stringify(area || {})])
+    useEffect(()=>{if(mounted){update()}},[props.value.lat,props.value.lng,Zoom])
+    function getContext() {
+        let context:I_Map_context = { mapApiKeys, value,addressLoading,address, flyTo, goToCurrent,onClose,mapConfig,popupConfig,onChange }
+        return context;
     }
-    componentDidUpdate() {
-        let { prevValue, prevZoom: szoom } = this.state;
-        let { value } = this.props;
-        if (
-            JSON.stringify(prevValue) !== JSON.stringify(value)
-            //|| pzoom !== szoom
-        ) {
-            setTimeout(() => {
-                this.flyTo(
-                    value.lat,
-                    value.lng, szoom, 'componentDidUpdate');
-                this.setState({
-                    prevValue: value,
-                    //prevZoom: pzoom 
-                })
-            }, 0)
-        }
-        this.handleArea()
-        this.handleMarkers()
-    }
-    getMarkerDefaultOptions(marker) {
-        let { mapConfig = {} } = this.props;
-        let { markerOptions = {} } = mapConfig;
-        let { size: dsize = 20, color: dcolor = 'orange', html: dhtml, text: dtext = '' } = markerOptions;
-        let { size = dsize, color = dcolor, html = dhtml, text = dtext } = marker;
-        return { size, color, html, text }
-    }
-    getMarker(marker) {
-        let { size, color, html, text } = this.getMarkerDefaultOptions(marker);
-        let innerSize = size * 0.4;
-        let borderSize = Math.ceil(size / 10);
-        let innerTop = Math.round(size / 25);
-        let top = `-${(size / 2 + innerSize)}px`;
-        let style1 = `transform:translateY(${top});flex-shrink:0;color:${color};width:${size}px;height:${size}px;border:${borderSize}px solid;position:relative;border-radius:100%;display:flex;align-items:center;justify-content:center;`
-        let style2 = `position:absolute;left:calc(50% - ${innerSize}px);top:calc(100% - ${innerTop}px);border-top:${innerSize}px solid ${color};border-left:${innerSize}px solid transparent;border-right:${innerSize}px solid transparent;`
-        let innerHtml = '', innerText = '';
-        if (html) { innerHtml = JSXToHTML(html) }
-        if (text) { innerText = JSXToHTML(text) }
-        return (`<div class='aio-input-map-marker' data-parent='${this.datauniqid}' style="${style1}">${innerHtml}<div class='aio-input-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
-    }
-    handleMarkers() {
-        let { mapConfig = {} } = this.props;
-        let { markers = [] } = mapConfig;
-        if (!markers || !this.map || !this.L) { markers = [] }
-        if (this.markers.length) {
-            for (let i = 0; i < this.markers.length; i++) { this.markers[i].remove(); }
-            this.markers = [];
-        }
-        for (let i = 0; i < markers.length; i++) {
-            let marker = markers[i];
-            let { lat, lng, popup = () => '' } = marker;
-            let pres = popup(marker)
-            if (typeof pres !== 'string') { try { pres = pres.toString() } catch { } }
-            this.markers.push(
-                this.L.marker([lat, lng], { icon: this.L.divIcon({ html: this.getMarker(marker) }) }).addTo(this.map).bindPopup(pres)
-            )
-        }
-    }
-    getContext() {
-        let { mapApiKeys } = this.props;
-        return { mapApiKeys, rootProps: { ...this.props }, rootState: { ...this.state }, flyTo: this.flyTo.bind(this), goToCurrent: this.goToCurrent.bind(this) }
-    }
-    renderPopup() {
-        let { showPopup } = this.state;
+    function renderPopup() {
         if (showPopup) {
-            let { popup } = this.props, { attrs = {} } = popup, { value } = this.state;
-            if (popup === true) { popup = {} }
-            let props = {
-                ...this.props, ...popup, value,
-                mapConfig: { ...popup.mapConfig },
-                isPopup: true, popup: false,
-                onClose: () => this.setState({ showPopup: false }),
+            let props:I_MapUnit = {
+                value,
+                disabled,
+                mapConfig: popupConfig,
+                onClose: () => setShowPopup(false),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
-                onChange: (obj) => {
-                    this.move(obj);
-                }
+                onChange: (obj) => move(obj)
             }
             return <MapUnit {...props} />
         }
         return null
     }
-    render() {
-        let { attrs = {}, mapConfig = {}, popup, isPopup } = this.props;
-        return (
-            <>
-                <MapContext.Provider value={this.getContext()}>
-                    <RVD
-                        rootNode={{
-                            className: 'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : ''), style: attrs.style,
-                            onClick: () => {
-                                if (popup && !isPopup) { this.setState({ showPopup: true }) }
-                            },
-                            column: [{ html: <MapHeader /> }, { flex: 1, attrs: { ref: this.dom }, html: '' }, { html: <MapFooter /> }]
-                        }}
-                    />
-                </MapContext.Provider>
-                {this.renderPopup()}
-            </>
-        )
+    function header_node():I_RVD_node{return { html: <MapHeader /> }}
+    function body_node():I_RVD_node{return { flex: 1, attrs: { ref: temp.dom }, html: '' }}
+    function footer_node():I_RVD_node{return { html: <MapFooter /> }}
+    return (
+        <>
+            <MapContext.Provider value={getContext()}>
+                <RVD
+                    rootNode={{
+                        className: 'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : ''), style: attrs.style,
+                        onClick: () => {if (popupConfig) { setShowPopup(true) }},
+                        column: [header_node(), body_node(), footer_node()]
+                    }}
+                />
+            </MapContext.Provider>
+            {renderPopup()}
+        </>
+    )
+}
+class MarkerClass{
+    getHtml:(marker:I_Map_marker)=>string;
+    getHtmls:()=>string[];
+    updateMarkers:(markers:I_Map_marker[])=>void;
+    getIcon:(html:string)=>any;
+    addMapMarker:(value:{lat:number,lng:number})=>void;
+    addMarkersToMap:(value:{lat:number,lng:number})=>void;
+    markers:I_Map_marker[];
+    marker:boolean | string;
+    htmls:string[];
+    constructor(getTemp:()=>I_Map_temp,getMapConfig:()=>I_Map_config){
+        let mapConfig = getMapConfig();
+        let {marker = true} = mapConfig;
+        this.marker = typeof marker === 'boolean'?marker:this.getHtml(marker);
+        this.updateMarkers = (markers)=>{
+            this.markers = markers;
+            this.htmls = this.getHtmls();
+        }
+        this.getHtml = (marker) => {
+            let temp = getTemp();
+            let {datauniqid:id} = temp;
+            let { size = 20, color = 'orange', html, text,lat,lng } = marker;
+            let innerSize = size * 0.4;
+            let borderSize = Math.ceil(size / 10);
+            let innerTop = Math.round(size / 25);
+            let top = `-${(size / 2 + innerSize)}px`;
+            let style1 = `transform:translateY(${top});flex-shrink:0;color:${color};width:${size}px;height:${size}px;border:${borderSize}px solid;position:relative;border-radius:100%;display:flex;align-items:center;justify-content:center;`
+            let style2 = `position:absolute;left:calc(50% - ${innerSize}px);top:calc(100% - ${innerTop}px);border-top:${innerSize}px solid ${color};border-left:${innerSize}px solid transparent;border-right:${innerSize}px solid transparent;`
+            let innerHtml = '', innerText = '';
+            if (html) { innerHtml = JSXToHTML(html) }
+            if (text) { innerText = JSXToHTML(text) }
+            //data-lat va data-lng baraye tashkhise taghire mogheiat az rooye string
+            return (`<div class='aio-input-map-marker' data-lat='${lat}' data-lng='${lng}' data-parent='${id}' style="${style1}">${innerHtml}<div class='aio-input-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
+        }
+        this.getHtmls = ()=>{
+            return this.markers.map((o:I_Map_marker)=>this.getHtml(o))
+        }
+        this.getIcon = (html) => {
+            if(typeof html !== 'string'){return false}
+            let temp = getTemp();
+            return { icon: temp.L.divIcon({ html })}
+        }
+        this.addMarkersToMap = ()=>{
+            let m = this.marker;
+            if(m === false){return}
+            let icon = m === true || m === undefined?undefined:this.getIcon(this.getHtml(m as I_Map_marker))
+            return (lat:number,lng:number,temp:I_Map_temp)=>temp.mapMarker = temp.L.marker([lat, lng],icon).addTo(temp.map)
+        }
+        this.addMapMarker = (value) => {
+            let temp = getTemp();
+            if(this.marker === false){return}
+            let icon = this.marker === true || this.marker === undefined?undefined:this.getIcon(this.marker)
+            temp.mapMarker = temp.L.marker([value.lat, value.lng],icon).addTo(temp.map)
+        }
+        this.addMarkersToMap = (value) => {
+            let temp = getTemp();
+            if (!temp.map || !temp.L) { return }
+            if (temp.markers.length) {
+                for (let i = 0; i < temp.markers.length; i++) { temp.markers[i].remove(); }
+                temp.markers = [];
+            }
+            for (let i = 0; i < this.htmls.length; i++) {
+                let h = this.htmls[i];
+                let icon = this.getIcon(h);
+                let { lat = value.lat, lng = value.lng, popup = () => '' } = this.markers[i];
+                let pres:any = popup(this.markers[i])
+                if (typeof pres !== 'string') { try { pres = pres.toString() } catch { } }
+                temp.markers.push(temp.L.marker([lat, lng], icon).addTo(temp.map).bindPopup(pres))
+            }
+        }
     }
 }
 function MapHeader() {
-    let context = useContext(MapContext);
-    let { rootProps, rootState, flyTo, goToCurrent, mapApiKeys } = context;
-    let { mapConfig = {}, onClose } = rootProps;
+    let {value, flyTo, goToCurrent, mapApiKeys,mapConfig = {}, onClose}:I_Map_context = useContext(MapContext);
     let { title, search } = mapConfig;
     let [searchValue, setSearchValue] = useState('');
     let [searchResult, setSearchResult] = useState([]);
     let [loading, setLoading] = useState(false);
     let [showResult, setShowResult] = useState(false);
-    let loadingIcon = <Icon path={mdiLoading} size={1} spin={0.4} />;
-    let closeIcon = <Icon path={mdiClose} size={0.8} onClick={() => setShowResult(false)} />;
-    let searchIcon = <Icon path={mdiMagnify} size={0.8} />;
     let dom = createRef();
     let timeout;
     async function changeSearch(e) {
-        let { value } = rootState, { lat, lng } = value, searchValue = e.target.value;
+        let { lat, lng } = value, searchValue = e.target.value;
         setSearchValue(searchValue);
         clearTimeout(timeout);
         timeout = setTimeout(async () => {
@@ -3029,16 +2902,16 @@ function MapHeader() {
         }, 1000)
     }
     function SearchInput() {
-        return (<input ref={dom} value={searchValue} className='aio-input-map-serach-input' type='text' placeholder='جستجو' onChange={changeSearch} onClick={() => setShowResult(true)} />)
+        return (<input ref={dom as any} value={searchValue} className='aio-input-map-serach-input' type='text' placeholder='جستجو' onChange={changeSearch} onClick={() => setShowResult(true)} />)
     }
     function search_layout() {
         let showCloseButton = !!showResult && !!searchResult.length;
         return {
             flex: 1, row: [
                 { className: 'align-h flex-1', html: SearchInput() },
-                { show: !!loading, className: 'aio-input-map-serach-icon align-vh', html: loadingIcon },
-                { show: showCloseButton, className: 'aio-input-map-serach-icon align-vh', html: closeIcon },
-                { show: !showCloseButton && !loading, className: 'aio-input-map-serach-icon align-vh', html: searchIcon }
+                { show: !!loading, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiLoading} size={1} spin={0.4} /> },
+                { show: showCloseButton, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiClose} size={0.8} />,onClick:() => setShowResult(false) },
+                { show: !showCloseButton && !loading, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiMagnify} size={0.8} /> }
             ]
         }
     }
@@ -3052,7 +2925,7 @@ function MapHeader() {
             className: 'aio-input-map-serach-results',
             column: searchResult.map(({ title, address, location }) => {
                 return {
-                    onClick: () => { setShowResult(false); flyTo(location.y, location.x, undefined, 'result_layout') },
+                    onClick: () => { setShowResult(false); flyTo({lat:location.y, lng:location.x}) },
                     className: 'aio-input-map-search-result',
                     column: [
                         { html: title, className: 'aio-input-map-serach-result-text align-v' },
@@ -3072,7 +2945,7 @@ function MapHeader() {
         }
     }
     function currentPoint_layout() {
-        return { className: 'aio-input-map-current-point align-vh', html: <Icon path={mdiCrosshairsGps} size={0.8} onClick={() => goToCurrent()} /> }
+        return { className: 'aio-input-map-current-point align-vh', html: <Icon path={mdiCrosshairsGps} size={0.8} />,onClick:()=>goToCurrent() }
     }
     if (!search && !title && !onClose) { return null }
     return (
@@ -3085,40 +2958,37 @@ function MapHeader() {
     )
 }
 function MapFooter() {
-    let context = useContext(MapContext);
-    let { rootProps, rootState } = context;
-    let { value } = rootState, { lat, lng } = value;
-    let { onClose, onChange } = rootProps;
+    let {value,addressLoading,address,onClose, onChange,popupConfig,mapConfig}:I_Map_context = useContext(MapContext);
+    let { lat, lng } = value;
     function submit_layout() {
-        if (!rootProps.isPopup) { return false }
-        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(rootState.value); onClose() }}>تایید موقعیت</button>) }
+        if (!popupConfig) { return false }
+        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); onClose() }}>تایید موقعیت</button>) }
     }
     function details_layout() {
-        let { mapConfig = {} } = rootProps;
-        if (mapConfig.showAddress === false) { return false }
-        if (rootState.addressLoading) {
+        if (mapConfig.address === false) { return false }
+        if (addressLoading) {
             return { html: <Icon path={mdiLoading} size={1} spin={0.4} />, classNAme: 'align-v flex-1' }
         }
-        return { column: [{ html: rootState.address, className: 'aio-input-map-address flex-1' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
+        return { column: [{ html: address, className: 'aio-input-map-address flex-1' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
     }
     let Submit = submit_layout()
     let Details = details_layout();
     if (!Submit && !Details) { return null }
     return (<RVD rootNode={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
 }
-function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, speedX = 1, speedY = 1, stepX = 1, stepY = 1, id, reverseY, reverseX, minY, maxY, minX, maxX }) {
+type I_AIOSwip_mousePosition = {x:number,y:number,xp:number,yp:number,clientX:number,clientY:number};
+type I_AIOSwip = {
+    dom:any,start:(mousePosition:any)=>number[], 
+    move:(p:{ dx:number, dy:number, dist:number, x:number, y:number, mousePosition: I_AIOSwip_mousePosition}, e:any ) => void, 
+    end?:(p:{ dx: number, dy: number, dist: number }, e:any) => void, 
+    speedX?:number, speedY?:number, stepX?:number, stepY?:number, reverseY?:boolean, reverseX?:boolean, minY?:number, maxY?:number, minX?:number, maxX?:number 
+}
+function AIOSwip(p:I_AIOSwip) {
+    let {dom,start,move,end,speedX = 1,speedY = 1,stepX = 1, stepY = 1, reverseY, reverseX, minY, maxY, minX, maxX} = p;
     let a = {
         timeout: undefined,
         count: 0,
         getDom() { return dom() },
-        getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
-        eventHandler(selector, event, action, type = 'bind') {
-            var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
-            event = 'ontouchstart' in document.documentElement ? me[event] : event;
-            var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-            element.unbind(event, action);
-            if (type === 'bind') { element.bind(event, action) }
-        },
         init() {
             a.count++;
             if (a.count > 10) { clearTimeout(a.timeout); return }
@@ -3126,12 +2996,12 @@ function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, sp
             if (!res.length) { a.timeout = setTimeout(() => a.init(), 400) }
             else {
                 clearTimeout(a.timeout);
-                this.eventHandler(a.getDom(), 'mousedown', $.proxy(this.mouseDown, this))
+                eventHandler(a.getDom(), 'mousedown', $.proxy(this.mouseDown, this))
             }
         },
         getPercentByValue(value, start, end) { return 100 * (value - start) / (end - start) },
         getMousePosition(e) {
-            let client = this.getClient(e), x = client.x - this.left, y = client.y - this.top;
+            let client = getClient(e), x = client.x - this.left, y = client.y - this.top;
             let xp = this.getPercentByValue(x, 0, this.width), yp = this.getPercentByValue(y, 0, this.height);
             return { xp, yp, clientX: client.x, clientY: client.y, x, y }
         },
@@ -3146,17 +3016,18 @@ function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, sp
             this.so = {
                 client: { x: mp.clientX, y: mp.clientY }
             };
-            let res = start({ mousePosition: { ...mp }, id });
+            if (!start) { return; }
+            let res = start({ ...mp });
             if (!Array.isArray(res)) { return; }
             let x = res[0];
             let y = res[1];
             this.so.x = x;
             this.so.y = y;
-            this.eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
-            this.eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this))
+            eventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
+            eventHandler('window', 'mouseup', $.proxy(this.mouseUp, this))
         },
         mouseMove(e) {
-            let client = this.getClient(e);
+            let client = getClient(e);
             let dx = client.x - this.so.client.x;
             let dy = client.y - this.so.client.y;
             dx = Math.round(dx * speedX) * (reverseX ? -1 : 1)
@@ -3177,28 +3048,79 @@ function AIOSwip({ dom, start = () => { }, move = () => { }, end = () => { }, sp
                 if (minY !== undefined && y < minY) { y = minY }
                 if (maxY !== undefined && y > maxY) { y = maxY }
             }
-            move({ dx, dy, dist, x, y, id, mousePosition: { ...this.getMousePosition(e) }, e });
+            move({ dx, dy, dist, x, y, mousePosition: { ...this.getMousePosition(e) } }, e);
         },
         mouseUp(e) {
-            this.eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
-            this.eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
-            end({ dx: this.dx, dy: this.dy, dist: this.dist, id, e })
+            eventHandler('window', 'mousemove', this.mouseMove, 'unbind');
+            eventHandler('window', 'mouseup', this.mouseUp, 'unbind');
+            if(end){end({ dx: this.dx, dy: this.dy, dist: this.dist }, e)} 
         }
     }
     a.init();
 }
-function AIOInputSearch(items:any[], searchValue:string, getValue?:(o:any,index:number) => any) { 
-    if (!searchValue) { return items } 
-    function isMatch(keys, value) { 
-        for (let i = 0; i < keys.length; i++) { 
-            if (value.indexOf(keys[i]) === -1) { return false } 
-        } 
-        return true 
-    } 
-    let keys = searchValue.split(' '); 
-    return items.filter((o, i) => isMatch(keys, getValue?getValue(o, i):o)) 
+function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, index: number) => any) {
+    if (!searchValue) { return items }
+    function isMatch(keys, value) {
+        for (let i = 0; i < keys.length; i++) {
+            if (value.indexOf(keys[i]) === -1) { return false }
+        }
+        return true
+    }
+    let keys = searchValue.split(' ');
+    return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
-function ExportToExcel(rows, config = {}) { let { promptText = 'Inter Excel File Name' } = config; let o = { fixPersianAndArabicNumbers(str) { if (typeof str !== 'string') { return str } let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g], arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; for (var i = 0; i < 10; i++) { str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i); } return str; }, getJSON(rows) { let result = []; for (let i = 0; i < rows.length; i++) { let json = rows[i], fixedJson = {}; for (let prop in json) { fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop]) } result.push(fixedJson); } return result; }, export() { let name = window.prompt(promptText); if (!name || name === null || !name.length) { return }; var data = this.getJSON(rows); var arrData = typeof data != "object" ? JSON.parse(data) : data; var CSV = ""; CSV += '\r\n\n'; if (true) { let row = ""; for (let index in arrData[0]) { row += index + ","; } row = row.slice(0, -1); CSV += row + "\r\n"; } for (var i = 0; i < arrData.length; i++) { let row = ""; for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; } row.slice(0, row.length - 1); CSV += row + "\r\n"; } if (CSV === "") { alert("Invalid data"); return; } var fileName = name.replace(/ /g, "_"); var universalBOM = "\uFEFF"; var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV); var link = document.createElement("a"); link.href = uri; link.style = "visibility:hidden"; link.download = fileName + ".csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }; return o.export(); }
+function ExportToExcel(rows, config:any = {}) { 
+    let { promptText = 'Inter Excel File Name' } = config; 
+    let o = { 
+        fixPersianAndArabicNumbers(str) { 
+            if (typeof str !== 'string') { return str } 
+            let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g], 
+                arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; 
+            for (var i = 0; i < 10; i++) {str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);} 
+            return str; 
+        }, 
+        getJSON(rows) { 
+            let result = []; 
+            for (let i = 0; i < rows.length; i++) { 
+                let json = rows[i], fixedJson = {}; 
+                for (let prop in json) {fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} 
+                result.push(fixedJson); 
+            } 
+            return result; 
+        }, 
+        export() { 
+            let name = window.prompt(promptText); 
+            if (!name || name === null || !name.length) { return }; 
+            var data = this.getJSON(rows); 
+            var arrData = typeof data != "object" ? JSON.parse(data) : data; 
+            var CSV = ""; CSV += '\r\n\n'; 
+            if (true) { 
+                let row = ""; 
+                for (let index in arrData[0]) {row += index + ",";} 
+                row = row.slice(0, -1); CSV += row + "\r\n"; 
+            } 
+            for (var i = 0; i < arrData.length; i++) { 
+                let row = ""; 
+                for (let index in arrData[i]) {row += '"' + arrData[i][index] + '",';} 
+                row.slice(0, row.length - 1); CSV += row + "\r\n"; 
+            } 
+            if (CSV === "") { 
+                alert("Invalid data"); return; 
+            } 
+            var fileName = name.replace(/ /g, "_"); 
+            var universalBOM = "\uFEFF"; 
+            var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV); 
+            let link:any = document.createElement("a"); 
+            link.href = uri; 
+            link.style = "visibility:hidden"; 
+            link.download = fileName + ".csv"; 
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link); 
+        } 
+    }; 
+    return o.export(); 
+}
 async function DownloadUrl(url, name) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
 function JSXToHTML(html) { return ReactDOMServer.renderToStaticMarkup(html) }
 function GetDistance(p1, p2) {
@@ -3208,142 +3130,142 @@ function GetDistance(p1, p2) {
     let radius = 6371; //earth radius in kilometers
     return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
 }
-export function Acardion(props = {}){
-    let {items,singleOpen} = props;
-    let [openDic,setOpenDic] = useState({})
-    function toggle(id){
-      let open = !!openDic[id]
-      if(singleOpen){setOpenDic(open?{}:{[id]:true})}
-      else {setOpenDic({...openDic,[id]:!openDic[id]})}
+export function Acardion(props:any = {}) {
+    let { items, singleOpen } = props;
+    let [openDic, setOpenDic] = useState({})
+    function toggle(id) {
+        let open = !!openDic[id]
+        if (singleOpen) { setOpenDic(open ? {} : { [id]: true }) }
+        else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
     }
-    function item_layout(o){
-      let {id} = o;
-      let open = !!openDic[id];
-      return {
-        className:'aio-input-acardion-item',
-        column:[
-          item_header_layout(o,open),
-          item_content_layout(o,open)
-        ]
-      }
+    function item_layout(o) {
+        let { id } = o;
+        let open = !!openDic[id];
+        return {
+            className: 'aio-input-acardion-item',
+            column: [
+                item_header_layout(o, open),
+                item_content_layout(o, open)
+            ]
+        }
     }
-    function item_header_layout(o,open){
-      let {name,after,id,headerAttrs = {}} = o;
-      let className = 'aio-input-acardion-header';
-      if(open){className += ' open'}
-      if(headerAttrs.className){className += ' ' + headerAttrs.className}
-      return {
-        className:'aio-input-acardion-header align-v' + (open?' open':''),
-        row:[
-          {html:<Icon path={open?mdiChevronDown:mdiChevronLeft} size={0.8}/>,className:'aio-input-acardion-toggle align-vh',onClick:()=>toggle(id)},
-          {html:name,flex:1,className:'aio-input-acardion-name'},
-          {show:!!after,html:()=>typeof after === 'function'?after(open):after,className:'aio-input-acardion-after align-vh'}
-        ]
-      }
+    function item_header_layout(o, open) {
+        let { name, after, id, headerAttrs = {} } = o;
+        let className = 'aio-input-acardion-header';
+        if (open) { className += ' open' }
+        if (headerAttrs.className) { className += ' ' + headerAttrs.className }
+        return {
+            className: 'aio-input-acardion-header align-v' + (open ? ' open' : ''),
+            row: [
+                { html: <Icon path={open ? mdiChevronDown : mdiChevronLeft} size={0.8} />, className: 'aio-input-acardion-toggle align-vh', onClick: () => toggle(id) },
+                { html: name, flex: 1, className: 'aio-input-acardion-name' },
+                { show: !!after, html: () => typeof after === 'function' ? after(open) : after, className: 'aio-input-acardion-after align-vh' }
+            ]
+        }
     }
-    function item_content_layout(o,open){
-      let {content,contentAttrs = {}} = o;
-      if(!open){return false}
-      return {
-        style:contentAttrs.style,
-        className:'aio-input-acardion-content' + (contentAttrs.className?' ' + contentAttrs.className:''),
-        html:content()
-      }
+    function item_content_layout(o, open) {
+        let { content, contentAttrs = {} } = o;
+        if (!open) { return false }
+        return {
+            style: contentAttrs.style,
+            className: 'aio-input-acardion-content' + (contentAttrs.className ? ' ' + contentAttrs.className : ''),
+            html: content()
+        }
     }
     return (
-      <RVD
-        rootNode={{
-          className:'aio-input-acardion',
-          column:items.map((o)=>item_layout(o))
-        }}
-      />
+        <RVD
+            rootNode={{
+                className: 'aio-input-acardion',
+                column: items.map((o) => item_layout(o))
+            }}
+        />
     )
 }
-export function Tree(props = {}){
-    let {getText,getBefore,getOptions,getSubtext,onAdd,onRemove,data,indent = 12,getOptionBefore,onChange} = props;
-    let [openDic,setOpenDic] = useState({})
-    function getColumn() {return getColumn_req([...data], 0, undefined);}
+export function Tree(props:any = {}) {
+    let { getText, getBefore, getOptions, getSubtext, onAdd, onRemove, data, indent = 12, getOptionBefore, onChange } = props;
+    let [openDic, setOpenDic] = useState({})
+    function getColumn() { return getColumn_req([...data], 0, undefined); }
     function getColumn_req(model, level, parent) {
-      return model.map((o, i) => {
-        let childs = o.childs || []
-        return {
-          style: { paddingRight: level * indent },
-          column: [
-            row_layout(o, parent),
-            { show: !!childs.length && openDic[o.id] !== false, column: getColumn_req(childs, level + 1, o) }
-          ]
-        }
-      })
+        return model.map((o, i) => {
+            let childs = o.childs || []
+            return {
+                style: { paddingRight: level * indent },
+                column: [
+                    row_layout(o, parent),
+                    { show: !!childs.length && openDic[o.id] !== false, column: getColumn_req(childs, level + 1, o) }
+                ]
+            }
+        })
     }
-    async function add(parent) {
+    async function add(parent?:any) {
         let obj = await onAdd(parent);
-        if(!obj){return}
+        if (!obj) { return }
         if (parent) { parent.childs = parent.childs || []; parent.childs.push(obj); }
         else { data.push(obj) }
         onChange(data);
     }
     async function remove(o, parent) {
-      let res = await onRemove(o,parent);
-      if(!res){return}
-      if (!parent) { data = data.filter((row) => row.id !== o.id) }
-      else { parent.childs = parent.childs.filter((row) => row.id !== o.id); }
-      onChange(data)
+        let res = await onRemove(o, parent);
+        if (!res) { return }
+        if (!parent) { data = data.filter((row) => row.id !== o.id) }
+        else { parent.childs = parent.childs.filter((row) => row.id !== o.id); }
+        onChange(data)
     }
-    function GetOptions(row,parent){
-      let res = [];
-      if(onAdd){
-        res.push({ text: 'افزودن', value: 'add', before: getOptionBefore?getOptionBefore('add'):undefined,onClick:()=>add(row) })
-      }
-      let options = getOptions?getOptions(row):[];
-      for(let i = 0; i < options.length; i++){
-        let {text,value,onClick} = options[i];
-        res.push({text,value,before:getOptionBefore?getOptionBefore(value):undefined,onClick})
-      }
-      if(onRemove){
-        res.push({ text: 'حذف', value: 'remove', before: getOptionBefore?getOptionBefore('remove'):undefined,onClick:()=>remove(row,parent) })
-      }
-      return res
+    function GetOptions(row, parent) {
+        let res = [];
+        if (onAdd) {
+            res.push({ text: 'افزودن', value: 'add', before: getOptionBefore ? getOptionBefore('add') : undefined, onClick: () => add(row) })
+        }
+        let options = getOptions ? getOptions(row) : [];
+        for (let i = 0; i < options.length; i++) {
+            let { text, value, onClick } = options[i];
+            res.push({ text, value, before: getOptionBefore ? getOptionBefore(value) : undefined, onClick })
+        }
+        if (onRemove) {
+            res.push({ text: 'حذف', value: 'remove', before: getOptionBefore ? getOptionBefore('remove') : undefined, onClick: () => remove(row, parent) })
+        }
+        return res
     }
     function row_layout(o, parent) {
-      
-      let toggle = o.childs.length ? <Icon path={openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown} size={1} /> : ''
-      let Options = () => {
-        let options = GetOptions(o,parent)
-        if(!options.length){return false}
-        return (<AIOInput key={o.id} type='select' caret={false} style={{ background: 'none' }} options={options} text={<Icon path={mdiDotsHorizontal} size={0.8} />}/>)
-      }
-      let before = getBefore?getBefore(o,parent):undefined
-      let subtext = getSubtext?getSubtext(o,parent):undefined
-      let text = getText?getText(o,parent):undefined
-      let options = Options()
-      return {
-        className: 'aio-input-tree-row',
-        row: [
-          { className: 'aio-input-tree-toggle align-vh', html: toggle, onClick: () => setOpenDic({...openDic,[o.id]:openDic[o.id] === undefined?false:!openDic[o.id]}) },
-          { className:'aio-input-tree-before align-vh',show:!!before, html: before},
-          {
-            className:'aio-input-tree-texts align-v flex-1',
-            column: [
-              { html: text, className: 'aio-input-tree-text align-v' },
-              { show:!!subtext,html: subtext, className: 'aio-input-tree-subtext align-v' }
+
+        let toggle = o.childs.length ? <Icon path={openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown} size={1} /> : ''
+        let Options = () => {
+            let options = GetOptions(o, parent)
+            if (!options.length) { return false }
+            return (<AIOInput key={o.id} type='select' caret={false} style={{ background: 'none' }} options={options} text={<Icon path={mdiDotsHorizontal} size={0.8} />} />)
+        }
+        let before = getBefore ? getBefore(o, parent) : undefined
+        let subtext = getSubtext ? getSubtext(o, parent) : undefined
+        let text = getText ? getText(o, parent) : undefined
+        let options = Options()
+        return {
+            className: 'aio-input-tree-row',
+            row: [
+                { className: 'aio-input-tree-toggle align-vh', html: toggle, onClick: () => setOpenDic({ ...openDic, [o.id]: openDic[o.id] === undefined ? false : !openDic[o.id] }) },
+                { className: 'aio-input-tree-before align-vh', show: !!before, html: before },
+                {
+                    className: 'aio-input-tree-texts align-v flex-1',
+                    column: [
+                        { html: text, className: 'aio-input-tree-text align-v' },
+                        { show: !!subtext, html: subtext, className: 'aio-input-tree-subtext align-v' }
+                    ]
+                },
+                { show: !!options, html: () => options, className: 'aio-input-tree-options align-vh' }
             ]
-          },
-          {show:!!options,html:()=>options,className:'aio-input-tree-options align-vh'}
-        ]
-      }
+        }
     }
-    function header_layout(){
-      if(!onAdd){return false}
-      return {
-        className:'aio-input-tree-header align-v',
-        html: ()=><button onClick={() => add()}><Icon path={mdiPlusThick} size={.8} />افزودن</button>
-      }
+    function header_layout() {
+        if (!onAdd) { return false }
+        return {
+            className: 'aio-input-tree-header align-v',
+            html: () => <button onClick={() => add()}><Icon path={mdiPlusThick} size={.8} />افزودن</button>
+        }
     }
-    function body_layout(){
-      return { className: 'aio-input-tree-body', column: getColumn() }
+    function body_layout() {
+        return { className: 'aio-input-tree-body', column: getColumn() }
     }
-    return (<RVD rootNode={{className:'aio-input-tree',column: [header_layout(),body_layout()]}}/>)
-  }
+    return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_layout(), body_layout()] }} />)
+}
 export function AIOValidation(props) {
     let $$ = {
         translate(text) {
@@ -3569,12 +3491,12 @@ export function getFormInput(Field, path) {
     function getField(field) { return `value${path ? `.${path}` : ''}.${field}` }
     function getBase(field) {
         let list = field.split('_');
-        if (list.length >= 3) { 
+        if (list.length >= 3) {
             let inputProps = {}
-            if(list[3]){
-                try{inputProps = JSON.parse(list[3])}catch{}
-            }    
-            return { field: list[0], input: { type: list[1],...inputProps }, label: list[2], extra: {} } 
+            if (list[3]) {
+                try { inputProps = JSON.parse(list[3]) } catch { }
+            }
+            return { field: list[0], input: { type: list[1], ...inputProps }, label: list[2], extra: {} }
         }
         let { input, label, extra = {} } = {
             fullname: { input: { type: 'text' }, label: 'نام و نام خانوادگی' },
@@ -3654,177 +3576,8 @@ function getCities() {
         "یزد": ["ابرکوه", "احمدآباد", "اردکان", "اشکذر", "بافق", "بفروئیه", "بهاباد", "تفت", "حمیدیا", "خضرآباد", "دیهوک", "رضوانشهر", "زارچ", "شاهدیه", "طبس", "عقدا", "مروست", "مهردشت", "مهریز", "میبد", "ندوشن", "نیر", "هرات", "یزد"]
     }
 }
-function getMainProperties(props, getProp, types) {
-    let p = getProp;
-    let { type, rtl } = props;
-    let value = p('value');
-    let loading = p('loading');
-    let disabled = p('disabled');
-    let className = p('className');
-    let style = p('style');
-    let onClick = p('onClick', undefined, true);
-    let attrs = { ...p('attrs', {}) };
-    let justify = p('justify');
-    if (className) { attrs.className = className }
-    if (style) { attrs.style = style }
-    if (onClick) { attrs.onClick = onClick }
-    let properties = {
-        props: { ...props },
-        value, type, rtl, loading, disabled: loading || disabled, attrs, justify,
-        onChange: p('onChange', undefined, true),
-        text: p('text'),
-        before: p('before'), after: p('after'), subtext: p('subtext'), label: p('label'),
-        className: p('className'), style: p('style')
-    }
-    if (types.hasOption) {
-        properties = {
-            ...properties,
-            options: p('options'),
-            optionText: p('optionText'),
-            optionValue: p('optionValue'),
-            optionAttrs: p('optionAttrs'),
-            optionDisabled: p('optionDisabled'),
-            optionClassName: p('optionClassName'),
-            optionStyle: p('optionStyle'),
-            optionShow: p('optionShow'),
-            optionSubtext: p('optionSubtext'),
-            optionCheckIcon: p('optionCheckIcon'),
-            optionBefore: p('optionBefore'),
-            optionAfter: p('optionAfter')
-        }
-    }
-    if (types.isDropdown) {
-        properties = { ...properties, caret: p('caret'), popover: p('popover') }
-        if (types.hasOption) { properties = { ...properties, optionClose: p('optionClose'), onSwap: p('onSwap') } }
-    }
-    if (types.isInput) { properties = { ...properties, inputAttrs: p('inputAttrs'), blurChange: p('blurChange'), delay: p('delay') } }
-    if (types.hasPlaceholder) { properties = { ...properties, placeholder: p('placeholder') } }
-    properties = { ...properties, multiple: !!types.isMultiple }
-    if (types.hasSearch) { properties = { ...properties, search: p('search') } }
-    if (types.hasKeyboard) { properties = { ...properties, maxLength: p('maxLength'), filter: p('filter'), justNumber: p('justNumber') } }
-    if (type === 'number') { properties = { ...properties, swip: p('swip'), spin: p('spin', true), min: p('min'), max: p('max') } }
-    else if (type === 'password') { properties = { ...properties, visible: p('visible') } }
-    else if (type === 'checkbox') { properties = { ...properties, checkIcon: p('checkIcon'), checked: !!value } }
-    else if (type === 'image') { properties = { ...properties, preview: p('preview'), width: p('width'), height: p('height') } }
-    else if (type === 'map') { properties = { ...properties, onChangeAddress: p('onChangeAddress'), popup: p('popup'), mapConfig: p('mapConfig', {}) } }
-    else if (type === 'multiselect') {
-        properties = {
-            ...properties,
-            optionTagAttrs: p('optionTagAttrs'),
-            optionTagBefore: p('optionTagBefore'),
-            optionTagAfter: p('optionTagAfter'),
-            hideTags: p('hideTags')
-        }
-    }
-    else if (type === 'datepicker') {
-        properties = {
-            ...properties,
-            calendarType: p('calendarType', 'gregorian'),
-            unit: p('unit', 'day'),
-            theme: p('theme', []),
-            size: p('size', 180),
-            startYear: p('startYear', '-10'),
-            endYear: p('endYear', '+10'),
-            pattern: p('pattern'),
-            dateDisabled: p('dateDisabled'),
-            dateAttrs: p('dateAttrs'),
-            remove: p('remove'),
-            close: p('close')
-        }
-    }
-    else if (type === 'time') {
-        properties = { ...properties, calendarType: p('calendarType', 'gregorian') }
-    }
-    else if (type === 'list') {
-        properties = {
-            ...properties,
-            size: p('size', 48),
-            width: p('width', 200),
-            decay: p('decay', 8),
-            stop: p('stop', 3),
-            count: p('count', 3),
-            move: p('move'),
-            editable: p('editable', true)
-        }
-    }
-    else if (type === 'slider') {
-        properties = {
-            ...properties,
-            showValue: p('showValue'),
-            lineStyle: p('lineStyle'),
-            fillStyle: p('fillStyle'),
-            pointStyle: p('pointStyle'),
-            valueStyle: p('valueStyle'),
-            labelStyle: p('labelStyle'),
-            scaleStyle: p('scaleStyle'),
-            getPointHTML: p('getPointHTML'),
-            getScaleHTML: p('getScaleHTML'),
-            direction: p('direction', rtl ? 'left' : 'right'),
-            scaleStep: p('scaleStep'),
-            labelStep: p('labelStep'),
-            editLabel: p('editLabel'),
-            start: p('start'),
-            step: p('step'),
-            end: p('end'),
-            min: p('min'),
-            max: p('max'),
-            labelRotate: p('labelRotate'),
-        }
-    }
-    else if (type === 'form') {
-        properties = {
-            ...properties,
-            onClose: p('onClose'),
-            onBack: p('onBack'),
-            headerAttrs: p('headerAttrs', {}),
-            subtitle: p('subtitle'),
-            header: p('header'),
-            footer: p('footer'),
-            getErrors: p('getErrors'),
-            onSubmit: p('onSubmit'),
-            footerAttrs: p('footerAttrs', {}),
-            closeText: p('closeText', 'Close'),
-            resetText: p('resetText', 'Reset'),
-            submitText: p('submitText', 'Submit'),
-            reset: p('reset'),
-            inputs: p('inputs'),
-            inputClassName: p('inputClassName'),
-            inputStyle: p('inputStyle', {}),
-            labelAttrs: p('labelAttrs'),
-            bodyAttrs: p('bodyAttrs', {}),
-            lang: p('lang', 'en'),
-            updateInput: p('updateInput', (o) => o),
-            initialDisabled: p('initialDisabled', true)
-        }
-    }
-    else if (type === 'table') {
-        properties = {
-            ...properties,
-            columns: p('columns', []),
-            getValue: p('getValue', {}),
-            rowAttrs: p('rowAttrs'),
-            toolbar: p('toolbar'),
-            excel: p('excel'),
-            toolbarAttrs: p('toolbarAttrs'),
-            paging: p('paging'),
-            rowGap: p('rowGap'),
-            columnGap: p('columnGap'),
-            onAdd: p('onAdd'),
-            onRemove: p('onRemove'),
-            onSearch: p('onSearch'),
-            onSwap: p('onSwap'),
-            onChangeSort: p('onChangeSort'),
-            headerAttrs: p('headerAttrs'),
-            rowTemplate: p('rowTemplate'),
-            rowsTemplate: p('rowsTemplate'),
-            rowAfter: p('rowAfter'),
-            rowBefore: p('rowBefore')
-        }
-    }
-    return { ...properties }
-}
-function getTypes(props){
-    let {type,multiple} = props;
+function getTypes(props) {
+    let { type, multiple } = props;
     let isMultiple;
     if (type === 'multiselect' || type === 'table') { isMultiple = true }
     else if (type === 'radio' || type === 'slider' || type === 'file') { isMultiple = !!multiple }
@@ -3840,10 +3593,10 @@ function getTypes(props){
         hasSearch: ['multiselect', 'table', 'select'].indexOf(type) !== -1
     }
 }
-class DragClass{
-    rootProps:I_AIOInput;
-    dragIndex:number;
-    constructor(p){
+class DragClass {
+    rootProps: I_AIOInput;
+    dragIndex: number;
+    constructor(p) {
         this.rootProps = p.rootProps;
         this.dragIndex = undefined;
     }
@@ -3854,10 +3607,10 @@ class DragClass{
         let from = this.dragIndex, dom = $(e.target);
         if (!dom.hasClass('aio-input-option')) { dom = dom.parents('.aio-input-option'); };
         if (!dom.hasClass('aio-input-option')) { return };
-        let {onSwap,options} = this.rootProps;
+        let { onSwap, options } = this.rootProps;
         let to = parseInt(dom.attr('datarealindex'));
         if (from === to) { return }
-        if(typeof onSwap === 'function'){onSwap(this.swap(options,from,to),from, to)}
+        if (typeof onSwap === 'function') { onSwap(this.swap(options, from, to), from, to) }
     }
     swap = (arr, from, to) => {
         if (to === from + 1) { let a = to; to = from; from = a; }
@@ -3867,7 +3620,7 @@ class DragClass{
         return Arr.filter((o) => o._testswapindex !== fromIndex)
     }
 }
-const addToAttrs:I_AIOInput_addToAttrs = (attrs:any, p:{ className?:string, style?:any, stylePriority?:boolean })=>{
+const addToAttrs: I_AIOInput_addToAttrs = (attrs: any, p: { className?: string, style?: any, stylePriority?: boolean }) => {
     attrs = attrs || {};
     let { className, style, stylePriority = true } = p;
     let classNames = [];
@@ -3877,9 +3630,8 @@ const addToAttrs:I_AIOInput_addToAttrs = (attrs:any, p:{ className?:string, styl
     let newStyle = stylePriority ? { ...attrs.style, ...style } : { ...style, ...attrs.style };
     return { ...attrs, className: newClassName, style: newStyle }
 }
-function getDatepickerText(props) {
-    //cannot use this.properties here 
-    let {value,unit = 'day',pattern:Pattern,calendarType,placeholder} = props;
+function getDatepickerText(rootProps:I_AIOInput) {
+    let { value, unit = 'day', pattern: Pattern, calendarType, placeholder } = rootProps;
     if (value) {
         let list = AIODate().convertToArray({ date: value });
         let [year, month = 1, day = 1, hour = 0] = list;
@@ -3895,4 +3647,12 @@ function getDatepickerText(props) {
     return placeholder || (calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
 }
 function D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
-    
+function eventHandler(selector, event, action, type = 'bind') {
+    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
+    let touch = 'ontouchstart' in document.documentElement
+    event = touch ? me[event] : event;
+    var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
+    element.unbind(event, action);
+    if (type === 'bind') { element.bind(event, action) }
+}
+function getClient(e) { return 'ontouchstart' in document.documentElement && e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } }

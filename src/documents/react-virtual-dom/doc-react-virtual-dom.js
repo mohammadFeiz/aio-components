@@ -1,5 +1,5 @@
 import React, { Component, Fragment, useState } from 'react';
-import DOC from '../../resuse-components/doc.js';
+import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.js';
 import RVD,{animate,reOrder} from '../../npm/react-virtual-dom/index.tsx';

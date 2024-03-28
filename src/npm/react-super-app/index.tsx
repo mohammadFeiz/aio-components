@@ -5,7 +5,7 @@ import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/j
 import RVD from '../react-virtual-dom/react-virtual-dom';
 import AIOPopup from '../aio-popup/aio-popup';
 import './index.css';
-import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_addAlert, I_RSA_addConfirm, I_RSA_addModal, I_RSA_addPrompt, I_RSA_addSnakebar, I_RSA_closeSide, I_RSA_getNavId, I_RSA_openSide, I_RSA_props, I_RSA_removeModal, I_RSA_render, I_RSA_setNavId, I_ReactSuperApp, I_rsa_navItem } from './types';
+import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_addAlert, I_RSA_addConfirm, I_RSA_addModal, I_RSA_addPrompt, I_RSA_addSnakebar, I_RSA_closeSide, I_RSA_getNavId, I_RSA_openSide, I_RSA_props, I_RSA_removeModal, I_RSA_render, I_RSA_setNavId, I_ReactSuperApp, I_RSA_navItem } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types';
 
 export default class RSA {
@@ -60,7 +60,7 @@ export default class RSA {
 }
 function ReactSuperApp(props:I_ReactSuperApp) {
   let {rootProps,getActions,popup} = props
-  let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body} = rootProps;
+  let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body,maxWidth} = rootProps;
   let [showSplash,setShowSplash] = useState<boolean>(!!splash);
   let [storage] = useState(AIOStorage('rsa-cache-' + id))
   let navItems = typeof nav.items === 'function'?nav.items():nav.items;
@@ -73,7 +73,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   },[])
   function initNavId(id?:string) {
     if (id) {if (getNavById(id) !== false) { return id }}
-    if (nav.id) {if (this.getNavById(nav.id) !== false) { return nav.id }}
+    if (nav.id) {if (getNavById(nav.id) !== false) { return nav.id }}
     return navItems.filter(({ show = () => true }) => show())[0].id;
   }
   function getNavId(){return navId}
@@ -129,8 +129,8 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl,navItems }
     return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={navItems}/>) };
   }
-  function page_node(navItem:I_rsa_navItem | boolean):I_RVD_node {
-    let content = body(navItem as I_rsa_navItem);
+  function page_node(navItem:I_RSA_navItem | boolean):I_RVD_node {
+    let content = body(navItem as I_RSA_navItem);
     let activeNav = getNavById(navId);
     return {
       flex: 1,
@@ -164,9 +164,8 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     let props:I_RSA_SideMenu = {...side,attrs:side.attrs,items,onClose:()=>close()}
     return <SideMenu {...props} />
   }
-  let { className, maxWidth,theme } = this.props;
   return (
-    <div className={`rsa-container` + (className ? ' ' + className : '') + (theme ? ' ' + theme : '')} style={{direction:rtl?'rtl':'ltr'}}>
+    <div className={`rsa-container` + (cls ? ' ' + cls : '')} style={{direction:rtl?'rtl':'ltr'}}>
       <div className='rsa' style={{ maxWidth }}>
         {renderMain()}
         {popup.render()}
@@ -180,7 +179,6 @@ function Navigation(props:I_RSA_Navigation) {
     
   let [openDic,setOpenDic] = useState({})
   function header_node() {
-    let { nav } = this.props;
     if (!nav.header) { return { size: 12 } }
     return { html: nav.header() };
   }
@@ -193,7 +191,6 @@ function Navigation(props:I_RSA_Navigation) {
       flex: 1, className: 'ofy-auto',
       column: navItems.filter(({ show = () => true }) => show()).map((o, i) => {
         if (o.items) {
-          let { openDic } = this.state;
           let open = openDic[o.id] === undefined ? true : openDic[o.id]
           let column = [item_node(o, level)]
           if (open) { column.push(items_node(o.items, level + 1)) }
@@ -422,8 +419,10 @@ function RSAValidateNav(nav){
     }
   }
   if(nav.id && typeof nav.id !== 'string'){return `react-super-app error => exist nav.id should be an string`}
-  if(!nav.items || (!Array.isArray(nav.items) && typeof nav.items !== 'function')){return `
-    react-super-app error => nav.items should be an array or function.
+  if(!nav.items || typeof nav.items !== 'function'){return `
+    react-super-app error => nav.items should be a function that returns array of nav items.
+    each nav item type is:
+    ${RSANavItemInterface}
   `}
   let itemsError = RSAValidateNavItems(nav.items)
   if(itemsError){return itemsError}

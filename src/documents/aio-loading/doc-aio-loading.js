@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import AIOLoading from './../../npm/aio-loading/aio-loading';
 import AIOInput from './../../npm/aio-input/aio-input';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 export default class DOC_AIOForm extends Component{
     render(){
         return (

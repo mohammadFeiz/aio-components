@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import Table from './../../npm/aio-table/aio-table';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import model from './model';
 import tree_model from './tree-model';
 import {mdiHumanFemale,mdiHumanMale} from '@mdi/js';

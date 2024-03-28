@@ -1,5 +1,5 @@
 import React,{Component} from "react";
-import DOC from './../../resuse-components/doc';
+import DOC from './../../resuse-components/doc.tsx';
 import ACS from './../../npm/aio-content-slider/aio-content-slider';
 import AIOInput from './../../npm/aio-input/aio-input';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';

@@ -1,5 +1,5 @@
 import React, { Component,Fragment,useState } from 'react';
-import DOC from '../../resuse-components/doc.js';
+import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
 import products from './products.tsx';

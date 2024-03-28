@@ -1,5 +1,5 @@
 import React, { Component,createRef } from 'react';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import AIOPopup from '../../npm/aio-popup/aio-popup';
 import AIOInput from '../../npm/aio-input/aio-input';

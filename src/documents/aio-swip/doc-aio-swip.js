@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import {Swip} from '../../npm/aio-utils/aio-utils';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from './../../npm/aio-documentation/aio-documentation';
 import $ from 'jquery';
 import AIOInput from '../../npm/aio-input/aio-input';

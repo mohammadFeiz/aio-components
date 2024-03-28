@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import DOC from '../../resuse-components/doc';
+import DOC from '../../resuse-components/doc.tsx';
 import AIOHighlighter from './../../npm/aio-highlighter/aio-highlighter';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { mdiHumanFemale, mdiHumanMale } from '@mdi/js';
