@@ -19,23 +19,27 @@ import { I_RVD_node } from '../react-virtual-dom/types';
 const AICTX = createContext({} as any);
 export type I_AIOInput_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
     'button' | 'datepicker' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time'
+export type I_AIOInput_optionKey = (
+    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
+    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
+)
+type I_AIOInput_popover = { 
+    attrs?: any, 
+    fixStyle?: (style: any) => any, 
+    fitHorizontal?: boolean, 
+    position?: 'fullscreen' | 'popover' | 'center' | 'left' | 'top' | 'right' | 'bottom', 
+    header?: {title?:React.ReactNode,subtitle?:React.ReactNode,attrs?:any,onClose?:boolean | (()=>void)},
+    pageSelector?:string,
+    body?:{render?:(p:{close:()=>void})=>React.ReactNode}
+}
 export type I_AIOInput = {
     rtl?: boolean,
-    popover?: { 
-        attrs?: any, 
-        fixStyle?: (style: any) => any, 
-        fitHorizontal?: boolean, 
-        position?: 'fullscreen' | 'popover' | 'center' | 'left' | 'top' | 'right' | 'bottom', 
-        header?: any,
-        pageSelector?:string,
-        render?:(p:{close:()=>void})=>React.ReactNode
-    },//notice get type from aio popup
+    popover?: I_AIOInput_popover,//notice get type from aio popup
     type: I_AIOInput_type,
     multiple?: boolean,
     value?: any,
     visible?: boolean,
     open?: boolean,
-    options?: any[],
     unit?: 'year' | 'month' | 'day' | 'hour',
     calendarType?: 'gregorian' | 'jalali',
     pattern?: string,
@@ -84,9 +88,8 @@ export type I_AIOInput = {
     headerAttrs?: any,
     after?: React.ReactNode | (() => React.ReactNode),
     before?: React.ReactNode | (() => React.ReactNode),
-    optionText?: I_AIOInput_optionProp,
-    optionValue?: I_AIOInput_optionProp,
-    optionAttrs?: I_AIOInput_optionProp,
+    options?: any[],
+    option?:{[key in I_AIOInput_optionKey]?:I_AIOInput_optionProp},
     direction?: 'left' | 'right' | 'top' | 'bottom',
     checkIcon?: I_AIOInput_checkIcon,
     caret?: boolean | React.ReactNode,
@@ -102,7 +105,7 @@ export type I_AIOInput = {
     endYear?: string | number,//datepicker
     translate?: (text: string) => string,//datepicker,
     theme?: string[],//datepicker
-    search?: boolean | string,
+    search?: string,
     dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//datepicker
     dateDisabled?:string[],
     close?:boolean,//datepicker
@@ -145,11 +148,13 @@ export type I_AIOInput = {
 //notice
 //use global fixed options in List
 //create list document 
+//define popover type by aio popup
 export type I_AIOInput_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
-export type I_AIOInput_optionProp = string | ((option: I_AIOInput_option) => any)
+export type I_AIOInput_optionProp = string | ((option: I_AIOInput_option,p?:any) => any)
 export type I_AIOInput_getOptionProp = (option: any, key: string, def?: any, preventFunction?: boolean) => any;
 export type I_AIOInput_temp = { dragIndex?: number }
 export type I_AIOInput_option = {
+    object:any,
     checked: boolean,
     checkIcon: I_AIOInput_checkIcon,
     after: React.ReactNode | (() => React.ReactNode),
@@ -177,7 +182,6 @@ export type I_AIOInput_context = {
     open: boolean,
     click: (e: any, dom: any) => void,
     optionClick: (option: I_AIOInput_option) => void,
-    getOptions:()=>I_AIOInput_option[],
     types: {
         isMultiple: boolean,
         isInput: boolean,
@@ -191,14 +195,17 @@ export type I_AIOInput_context = {
 }
 type I_Drag = { start: (e: any) => void, over: (e: any) => void, drop: (e: any) => void }
 export default function AIOInput(props: I_AIOInput) {
-    let { type, multiple, onChange, value, attrs = {} } = props;
+    let { type, onChange, value, attrs = {} } = props;
     let [types] = useState(getTypes(props))
     let [parentDom] = useState(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
-    let [getPopover] = useState<any>(initGetPopover());
+    let [temp] = useState<any>({
+        getPopover:initGetPopover()
+    });
     function initGetPopover() {
-        let p: I_AIOInput_Popover_props = { getRootProps: () => props, id: datauniqid, toggle, getOptions }
-        return new Popover(p).getFn()
+        let p: I_AIOInput_Popover_props = { getRootProps: () => props, id: datauniqid, toggle,types }
+        let res = new Popover(p).getFn()
+        return res;
     }
     let [popup] = useState(new AIOPopup())
     let [open, setOpen] = useState<boolean>(!!props.open);
@@ -211,10 +218,36 @@ export default function AIOInput(props: I_AIOInput) {
         if (option === undefined) { return }
         return getOptionProp(option, 'text')
     }
+    function toggle(popover: any) {
+        let open = !!popup.getModals().length
+        if (!!popover === !!open) { return }
+        setOpen(!!popover)
+        if (popover) { popup.addModal(popover); }
+        else { popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0) }
+    }
+    function click(e, dom) {
+        if (type === 'checkbox') { if (onChange) { onChange(!value) } }
+        else if (temp.getPopover) {toggle(temp.getPopover(dom,props.options))}
+        else if (attrs.onClick) { attrs.onClick(); }
+    }
+    function optionClick(option) {
+        let { attrs = {}, onClick, close, text } = option;
+        if (onClick) { onClick(option); }
+        else if (attrs.onClick) { attrs.onClick(option); }
+        else if (onChange) {
+            if (types.isInput) { /*do nothing*/}
+            else if (types.isMultiple) {
+                if (value.indexOf(option.value) === -1) { onChange(value.concat(option.value)) }
+                else { onChange(value.filter((o) => o !== option.value)) }
+            }
+            else { onChange(option.value, option) }
+        }
+        if (close) { toggle(false) }
+    }
     function getOptionProp(option: I_AIOInput_option, key: string, def?: any, preventFunction?: boolean) {
         let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option, props) : option[key]
         if (optionResult !== undefined) { return optionResult }
-        let prop = props['option' + key[0].toUpperCase() + key.slice(1, key.length)];
+        let prop = (props.option || {})[key];
         if (typeof prop === 'string') {
             try {
                 let value;
@@ -229,77 +262,9 @@ export default function AIOInput(props: I_AIOInput) {
         }
         return prop !== undefined ? prop : def;
     }
-    function toggle(popover: any) {
-        let open = !!popup.getModals().length
-        if (!!popover === !!open) { return }
-        setOpen(!!popover)
-        if (popover) { popup.addModal(popover); }
-        else { popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0) }
-    }
-    function click(e, dom) {
-        if (type === 'checkbox') { if (onChange) { onChange(!value) } }
-        else if (getPopover) {toggle(getPopover(dom))}
-        else if (attrs.onClick) { attrs.onClick(); }
-    }
-    function optionClick(option) {
-        let { attrs = {}, onClick, close, text } = option;
-        if (onClick) { onClick(option.value, option); }
-        else if (attrs.onClick) { attrs.onClick(option.value, option); }
-        else if (onChange) {
-            if (types.isInput) { onChange(text, option) }
-            else if (types.isMultiple) {
-                if (value.indexOf(option.value) === -1) { onChange(value.concat(option.value)) }
-                else { onChange(value.filter((o) => o !== option.value)) }
-            }
-            else { onChange(option.value, option) }
-        }
-        if (close) { toggle(false) }
-    }
-    function getOptions() {
-        let getDefaultOptionChecked = (v) => {
-            if (type === 'multiselect') { return value.indexOf(v) !== -1 }
-            if (type === 'radio') { return types.isMultiple ? value.indexOf(v) !== -1 : value === v }
-        }
-        let { options = [] } = props;
-        let result = [];
-        let renderIndex = 0;
-        let draggable = types.isDropdown && types.hasOption && props.onSwap;
-        for (let i = 0; i < options.length; i++) {
-            let option = options[i];
-            let disabled = !!props.disabled || getOptionProp(option, 'disabled');
-            let show = getOptionProp(option, 'show')
-            if (show === false) { continue }
-            let text = getOptionProp(option, 'text');
-            //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
-            if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
-            let optionValue = getOptionProp(option, 'value')
-            let attrs = getOptionProp(option, 'attrs', {});
-            let obj = {
-                attrs, text, value: optionValue, disabled, draggable,
-                checkIcon: getOptionProp(option, 'checkIcon', [], true),
-                checked: getOptionProp(option, 'checked', getDefaultOptionChecked(optionValue)),
-                before: getOptionProp(option, 'before'),
-                after: getOptionProp(option, 'after'),
-                justify: getOptionProp(option, 'justify'),
-                subtext: getOptionProp(option, 'subtext'),
-                onClick: getOptionProp(option, 'onClick', undefined, true),
-                className: getOptionProp(option, 'className'),
-                style: getOptionProp(option, 'style'),
-                tagAttrs: getOptionProp(option, 'tagAttrs'),
-                tagBefore: getOptionProp(option, 'tagBefore'),
-                close: getOptionProp(option, 'close', type !== 'multiselect'),
-                tagAfter: getOptionProp(option, 'tagAfter'),
-                renderIndex, realIndex: i
-            }
-            if (optionValue === value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
-            result.push(obj)
-            renderIndex++;
-        }
-        return result;
-    }
     function getContext(): I_AIOInput_context {
         let context: I_AIOInput_context = {
-            rootProps: props, datauniqid,getOptions,touch: 'ontouchstart' in document.documentElement,
+            rootProps: props, datauniqid,touch: 'ontouchstart' in document.documentElement,
             Drag, open, click, optionClick,types,showPassword, setShowPassword,getOptionProp
         }
         return context
@@ -355,7 +320,7 @@ export default function AIOInput(props: I_AIOInput) {
                     caret={false} text={text} {...props} attrs={attrs} type='button' className={className} style={style}
                     popover={!onChange ? undefined : {
                         position: 'center', ...popover, attrs: addToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
-                        render: ({ close }) => <TimePopover value={getProps().value} onChange={(obj) => onChange(obj)} onClose={() => close()} />
+                        body:{render: ({ close }) => <TimePopover value={getProps().value} onChange={(obj) => onChange(obj)} onClose={() => close()} />}
                     }}
                 />
             )
@@ -365,7 +330,7 @@ export default function AIOInput(props: I_AIOInput) {
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
 }
 export type I_AIOInput_Popover_props = {
-    getRootProps: () => I_AIOInput, id: string, toggle: (popover: any) => void, getOptions: () => I_AIOInput_option[]
+    getRootProps: () => I_AIOInput, id: string, toggle: (popover: any) => void,types:any
 }
 class Popover {
     props: I_AIOInput_Popover_props;
@@ -373,20 +338,6 @@ class Popover {
     constructor(props: I_AIOInput_Popover_props) {
         this.props = props;
         this.isActive = this.getIsActive();
-    }
-    getRender = (popover) => {
-        let { getRootProps, getOptions } = this.props;
-        let { type } = getRootProps();
-        if (type === 'button') { return ({ close }) => popover.render({ close }) }
-        else if (type === 'datepicker') { return ({ close }) => <Calendar onClose={close} /> }
-        else {
-            return ({ close }) => {
-                let options = getOptions() || [];
-                if (!options.length) { return null }
-                if (popover.render) { return popover.render({ close, options }) }
-                return <Options options={options} />
-            }
-        }
     }
     getIsActive = () => {
         let { getRootProps } = this.props;
@@ -400,10 +351,6 @@ class Popover {
         let { id } = this.props, { backdrop = {} } = popover;
         return { ...backdrop, attrs: addToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
     }
-    getBody = (popover, render) => {
-        let { body = {} } = popover;
-        return { ...body, render }
-    }
     getPopover = (popover, dom) => {
         let { getRootProps, id } = this.props;
         let { type } = getRootProps();
@@ -412,19 +359,21 @@ class Popover {
     }
     getFn = () => {
         if (!this.isActive) { return }
-        let { getRootProps, toggle } = this.props;
-        let props = getRootProps()
-        return (dom) => {
-            let popover = { ...(props.popover || {}) }
-            let render = this.getRender(popover);
-            let body = this.getBody(popover, render);
-            let { rtl } = props;
-            let { position = 'popover', header } = popover;
+        let { getRootProps, toggle } = this.props,rootProps = getRootProps()
+        return (dom:any) => {
+            let popover = { ...(rootProps.popover || {}) }
+            let { rtl } = rootProps;
+            let { position = 'popover', header,body = {} } = popover;
             return {
-                onClose: () => toggle(false),
-                rtl, header, position,
-                backdrop: this.getBackdrop(popover),
-                body,
+                onClose: () => toggle(false),rtl, header, position,backdrop: this.getBackdrop(popover),
+                body:{
+                    ...body,
+                    render:({close})=>{
+                        if (rootProps.type === 'button') { return body.render({ close }) }
+                        else if (rootProps.type === 'datepicker') { let p:I_Calendar = {onClose:close}; return <Calendar {...p} /> }
+                        else {return body.render?body.render({ close }):<Options />}
+                    }
+                },
                 popover: this.getPopover(popover, dom),
                 attrs: addToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
             }
@@ -442,7 +391,7 @@ function TimePopover(props: I_TimePopver) {
     function translate(key) {
         return lang === 'fa' ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت' }[key] : key
     }
-    function getOptions(type) {
+    function getTimeOptions(type) {
         let { year, month, day } = value;
         if (type === 'year') { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
         if (type === 'day') {
@@ -458,7 +407,7 @@ function TimePopover(props: I_TimePopver) {
         return {
             column: [
                 { html: translate(type), className: 'align-vh', size: 36 },
-                { html: (<AIOInput type='list' value={value[type]} options={getOptions(type)} size={48} width={72} onChange={(v) => change({ [type]: v })} />) }
+                { html: (<AIOInput type='list' value={value[type]} options={getTimeOptions(type)} size={48} width={72} onChange={(v) => change({ [type]: v })} />) }
             ]
         }
     }
@@ -733,9 +682,9 @@ function Form() {
         if (onChange) { onChange(newValue, GetErrors()) }
         else { setValue(newValue) }
     }
-    function body_layout() {
+    function body_node():I_RVD_node {
         let { attrs = {} } = body;
-        if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => input_layout(o)) } }
+        if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => input_node(o)) } }
         let className = 'aio-input-form-body';
         if (attrs.className) { className += ' ' + attrs.className }
         let style = attrs.style;
@@ -752,8 +701,8 @@ function Form() {
         else if (initialDisabled && initialValue === JSON.stringify(getValue())) { disabled = true }
         return disabled
     }
-    function footer_layout() {
-        if (!footer) { return false }
+    function footer_node():I_RVD_node {
+        if (!footer) { return {} }
         let {onSubmit,onClose,reset,layout,attrs,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',before,after} = footer;
         let disabled = isDisabled();
         if (layout) {
@@ -853,14 +802,14 @@ function Form() {
         }
         return props;
     }
-    function get_layout(key, value, attrs) {
-        if (!value) { return false }
+    function get_node(key, value, attrs):I_RVD_node {
+        if (!value) { return {} }
         let cls = 'aio-input-form';
         let className = { 'label': `${cls}-label`, 'footer': `${cls}-item-footer`, 'error': `${cls}-error` }[key];
         attrs = addToAttrs(attrs, { className })
         return { html: value, align: 'v', attrs }
     }
-    function input_layout(formItem) {
+    function input_node(formItem):I_RVD_node {
         let { label, footer, input, flex, size, field } = formItem;
         let value = getValueByField({ field, def: getDefault(input) });
         let error = getError(formItem, value)
@@ -875,12 +824,12 @@ function Form() {
                 {
                     flex: 1, className: 'aio-input-form-item-input-container of-visible',
                     column: [
-                        get_layout('label', label, LabelAttrs),
+                        get_node('label', label, LabelAttrs),
                         { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...InputProps} /> },
                     ]
                 },
                 footer?{html:footer}:{},
-                get_layout('error', error, ErrorAttrs)
+                get_node('error', error, ErrorAttrs)
             ]
         }
     }
@@ -907,32 +856,72 @@ function Form() {
             editNode={(obj, parent:any = {}) => {
                 let show = getValueByField({ field: obj.show, def: true });
                 if (show === false) { return false }
-                if (obj.input) { return input_layout({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
+                if (obj.input) { return input_node({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
                 if (parent.input) { obj.className = 'of-visible' }
                 return { ...obj }
             }}
-            rootNode={{ attrs, column: [body_layout(), footer_layout()] }}
+            rootNode={{ attrs, column: [body_node(), footer_node()] }}
         />
     )
 }
 type I_Options = {options?:any[]}
 function Options(props:I_Options) {
-    let { rootProps, getOptions, types }:I_AIOInput_context = useContext(AICTX);
-    let {type,search} = rootProps;
+    let { rootProps, types,getOptionProp }:I_AIOInput_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     function renderSearchBox(options) {
-        if (type === 'tabs' || types.isInput || search === false) { return null }
-        if (type === 'radio' && !search) { return null }
-        if (typeof search !== 'string') { search = 'Search' }
+        if (rootProps.type === 'tabs' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
         return (
             <div className='aio-input-search'>
-                <input type='text' value={searchValue} placeholder={search} onChange={(e) => setSearchValue(e.target.value)} />
+                <input type='text' value={searchValue} placeholder={rootProps.search} onChange={(e) => setSearchValue(e.target.value)} />
                 <div className='aio-input-search-icon' onClick={() => { setSearchValue('') }}>
                     <Icon path={searchValue ? mdiClose : mdiMagnify} size={.8} />
                 </div>
             </div>
         )
+    }
+    function getDefaultOptionChecked(v){
+        if (rootProps.type === 'multiselect') { return rootProps.value.indexOf(v) !== -1 }
+        if (rootProps.type === 'radio') { return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v }
+    }
+    function getOptions() {
+        let { options = [] } = rootProps;
+        let result = [];
+        let renderIndex = 0;
+        let draggable = types.isDropdown && types.hasOption && rootProps.onSwap;
+        for (let i = 0; i < options.length; i++) {
+            let option = options[i];
+            let disabled = !!rootProps.disabled || getOptionProp(option, 'disabled');
+            let show = getOptionProp(option, 'show')
+            if (show === false) { continue }
+            let text = getOptionProp(option, 'text');
+            //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
+            //if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
+            let optionValue = getOptionProp(option, 'value')
+            let attrs = getOptionProp(option, 'attrs', {});
+            let obj = {
+                object:{...option},
+                attrs, text, value: optionValue, disabled, draggable,
+                checkIcon: getOptionProp(option, 'checkIcon', [], true),
+                checked: getOptionProp(option, 'checked', getDefaultOptionChecked(optionValue)),
+                before: getOptionProp(option, 'before'),
+                after: getOptionProp(option, 'after'),
+                justify: getOptionProp(option, 'justify'),
+                subtext: getOptionProp(option, 'subtext'),
+                onClick: getOptionProp(option, 'onClick', undefined, true),
+                className: getOptionProp(option, 'className'),
+                style: getOptionProp(option, 'style'),
+                tagAttrs: getOptionProp(option, 'tagAttrs'),
+                tagBefore: getOptionProp(option, 'tagBefore'),
+                close: getOptionProp(option, 'close', rootProps.type !== 'multiselect'),
+                tagAfter: getOptionProp(option, 'tagAfter'),
+                renderIndex, realIndex: i
+            }
+            if (optionValue === rootProps.value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
+            result.push(obj)
+            renderIndex++;
+        }
+        return result;
     }
     function getRenderOptions(options) {
         let renderIndex = 0;
@@ -948,7 +937,7 @@ function Options(props:I_Options) {
     let options = props.options || getOptions();
     if (!options.length) { return null }
     let renderOptions = getRenderOptions(options);
-    let className = `aio-input-options aio-input-${type}-options`
+    let className = `aio-input-options aio-input-${rootProps.type}-options`
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <>
@@ -1270,7 +1259,7 @@ function TablePaging() {
         if (!sizes.length) { return null }
         let p: I_AIOInput = {
             attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
-            type: 'select', value: size, options: sizes, optionText: 'option', optionValue: 'option',
+            type: 'select', value: size, options: sizes, option:{text:'option',value:'option'},
             onChange: (value) => changePaging({ size: value }),
             popover: { fitHorizontal: true },
         }
@@ -1506,7 +1495,7 @@ function Layout(props: I_Layout) {
         if (mode === 'after' && type === 'password' && rootProps.visible) {
             res = <div className='align-v' onClick={() => setShowPassword()}><Icon path={showPassword ? mdiEyeOff : mdiEye} size={.8} /></div>
         }
-        else {let v = rootProps[mode]; res = typeof v === 'function'?v():v;}
+        else {let v = properties[mode]; res = typeof v === 'function'?v():v;}
         if (res === undefined) { return null }
         return <div className={cls('before')}>{res}</div>
     }
@@ -1547,41 +1536,23 @@ function Layout(props: I_Layout) {
     }
     function getProperties() {
         let p = props.properties || {};
-        let { disabled = rootProps.disabled } = p
-        let { draggable = false } = p;
-        let { text = rootProps.text } = p;
-        let { subtext = rootProps.subtext } = p;
-        let { placeholder = rootProps.placeholder } = p;
-        let { justify = rootProps.justify } = p;
-        let { checked } = p;
-        let { checkIcon = rootProps.checkIcon } = p;
-        if (checkIcon === undefined) { checkIcon = {} }
-        let { loading = rootProps.loading } = p;
-        let { attrs = rootProps.attrs } = p;
-        if (attrs === undefined) { attrs = {} }
-        let { style = rootProps.style } = p;
-        if (style === undefined) { style = {} }
-        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style }
+        let obj = option || rootProps; //اگر آپشن بود از آپشن وگر نه از پروپس بخون مقادیر رو
+        let { draggable = option?option.draggable:false } = p;
+        let { placeholder = !option?rootProps.placeholder:undefined } = p;
+        let { checked = option?option.checked:undefined } = p;
+        let { disabled = obj.disabled } = p
+        let { text = obj.text } = p;
+        let { subtext = obj.subtext } = p;
+        let { justify = obj.justify } = p;
+        let { checkIcon = obj.checkIcon || {} } = p;
+        let { loading = obj.loading } = p;
+        let { attrs = obj.attrs || {} } = p;
+        let { style = obj.style || {} } = p;
+        let { before = obj.before} = p;
+        let { after = obj.after} = p; 
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style,before,after }    
     }
-    function getOptionProperties() {
-        let p = props.properties || {};
-        let { disabled = option.disabled } = p
-        let { draggable = option.draggable } = p;
-        let { text = option.text } = p;
-        let { subtext = option.subtext } = p;
-        let { placeholder = option.draggable } = p;
-        let { justify = option.justify } = p;
-        let { checked = option.checked } = p;
-        let { checkIcon = option.checkIcon } = p;
-        if (checkIcon === undefined) { checkIcon = {} }
-        let { loading = option.loading } = p;
-        let { attrs = option.attrs } = p;
-        if (attrs === undefined) { attrs = {} }
-        let { style = option.style } = p;
-        if (style === undefined) { style = {} }
-        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style }
-    }
-    let properties = option ? getOptionProperties() : getProperties();
+    let properties = getProperties();
     let content = (<>
         {DragIcon()}
         {CheckIcon()}
@@ -1979,13 +1950,12 @@ function DPHeader() {
 type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
-    //این شرط فقط در حالت سال رخ میدهد در شرایطی که فقط یک سال قابل انتخاب است
     let { value, options, onChange } = props;
     let { size, theme } = rootProps;
     let p: I_AIOInput = {
-        value, options, onChange, search: false, caret: false, type: 'select',
+        value, options, onChange, caret: false, type: 'select',
         attrs: { className: 'aio-input-datepicker-dropdown' },
-        optionAttrs: ()=>{return { style: { height: size / 6, background: theme[1], color: theme[0] } }}
+        option:{style:()=>{return { height: size / 6, background: theme[1], color: theme[0] }} },
     }
     return (<AIOInput {...p} />)
 }
@@ -2156,7 +2126,6 @@ function Slider() {
             value[Index] = fix(newValue);
         }
         moved = true;
-        console.log(value)
         onChange(value, true);
     }
     function mouseUp() {
@@ -2430,7 +2399,7 @@ function List() {
     let [count, setCount] = useState<number>(rootProps.count)
     useEffect(() => { if (move) { move(Move) } }, [])
     useEffect(() => { setBoldStyle(activeIndex) }, [activeIndex])
-    function getOptions() {
+    function getListOptions() {
         let propsValue = value;
         activeIndex = 0;
         return options.map((option, i) => {
@@ -2549,7 +2518,7 @@ function List() {
             <div
                 className='aio-input-list-options' style={getContainerStyle()}
                 onMouseDown={(e) => mouseDown(e)} onTouchStart={(e) => mouseDown(e)}
-            >{getOptions()}</div>
+            >{getListOptions()}</div>
         </div>
     );
 }
@@ -2585,10 +2554,12 @@ type I_Map_config = {
     zoomControl?:boolean,
     maptype?:any,
     poi?:boolean,
-    search?:boolean,
+    search?:string,
     title?:string,
     draggable?:boolean,
-    address?:boolean
+    address?:boolean,
+    submitText?:React.ReactNode,
+    isPopup?:boolean
 }
 export type I_Map_area = {color:string, opacity:number, radius:number, lat:number, lng:number}
 export type I_Map_marker = {size?:number,color?:string,html?:React.ReactNode,text?:React.ReactNode,lat?:number,lng?:number,popup?:(marker:I_Map_marker)=>any}
@@ -2778,7 +2749,7 @@ function MapUnit(props:I_MapUnit) {
             let props:I_MapUnit = {
                 value,
                 disabled,
-                mapConfig: popupConfig,
+                mapConfig: {...popupConfig,isPopup:true},
                 onClose: () => setShowPopup(false),
                 attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
                 onChange: (obj) => move(obj)
@@ -2816,9 +2787,6 @@ class MarkerClass{
     marker:boolean | string;
     htmls:string[];
     constructor(getTemp:()=>I_Map_temp,getMapConfig:()=>I_Map_config){
-        let mapConfig = getMapConfig();
-        let {marker = true} = mapConfig;
-        this.marker = typeof marker === 'boolean'?marker:this.getHtml(marker);
         this.updateMarkers = (markers)=>{
             this.markers = markers;
             this.htmls = this.getHtmls();
@@ -2839,6 +2807,9 @@ class MarkerClass{
             //data-lat va data-lng baraye tashkhise taghire mogheiat az rooye string
             return (`<div class='aio-input-map-marker' data-lat='${lat}' data-lng='${lng}' data-parent='${id}' style="${style1}">${innerHtml}<div class='aio-input-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
         }
+        let mapConfig = getMapConfig();
+        let {marker = true} = mapConfig;
+        this.marker = typeof marker === 'boolean'?marker:this.getHtml(marker);
         this.getHtmls = ()=>{
             return this.markers.map((o:I_Map_marker)=>this.getHtml(o))
         }
@@ -2881,15 +2852,19 @@ function MapHeader() {
     let {value, flyTo, goToCurrent, mapApiKeys,mapConfig = {}, onClose}:I_Map_context = useContext(MapContext);
     let { title, search } = mapConfig;
     let [searchValue, setSearchValue] = useState('');
-    let [searchResult, setSearchResult] = useState([]);
+    let [searchResult, setSearchResult] = useState<{title:string,address:string,location:{x:number,y:number}}[]>([]);
     let [loading, setLoading] = useState(false);
     let [showResult, setShowResult] = useState(false);
     let dom = createRef();
     let timeout;
-    async function changeSearch(e) {
-        let { lat, lng } = value, searchValue = e.target.value;
+    async function changeSearch(searchValue:string) {
+        let { lat, lng } = value;
         setSearchValue(searchValue);
         clearTimeout(timeout);
+        if(!searchValue){
+            setSearchResult([]);
+            return;
+        }
         timeout = setTimeout(async () => {
             try {
                 let param = { headers: { 'Api-Key': mapApiKeys.service, 'Authorization': false } }
@@ -2901,42 +2876,29 @@ function MapHeader() {
             catch (err) { }
         }, 1000)
     }
-    function SearchInput() {
-        return (<input ref={dom as any} value={searchValue} className='aio-input-map-serach-input' type='text' placeholder='جستجو' onChange={changeSearch} onClick={() => setShowResult(true)} />)
-    }
-    function search_layout() {
-        let showCloseButton = !!showResult && !!searchResult.length;
-        return {
-            flex: 1, row: [
-                { className: 'align-h flex-1', html: SearchInput() },
-                { show: !!loading, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiLoading} size={1} spin={0.4} /> },
-                { show: showCloseButton, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiClose} size={0.8} />,onClick:() => setShowResult(false) },
-                { show: !showCloseButton && !loading, className: 'aio-input-map-serach-icon align-vh', html: <Icon path={mdiMagnify} size={0.8} /> }
-            ]
+    function input_node():I_RVD_node {
+        if (!search) { return {} }
+        let p:I_AIOInput = {
+            type:'text',placeholder:search,className:'aio-input-map-serach-input',value:searchValue,attrs:{ref:dom},options:searchResult,
+            before:<div onClick={()=>goToCurrent()} className='align-vh'><Icon path={mdiCrosshairsGps} size={0.6} /></div>,
+            after:()=>{
+                let path,spin,size,onClick;
+                if(loading){path = mdiLoading; spin = 0.4; size = 1;}
+                else if(!!showResult && !!searchResult.length){path = mdiClose; size = 0.8; onClick = ()=>{changeSearch('')}}
+                else {path = mdiMagnify; size=0.8;}
+                return (<div className='aio-input-map-serach-icon align-vh' onClick={onClick}><Icon {...{path,size,spin}} /></div>)
+            },
+            option:{
+                text:'option.title',value:'option.location.x + "-" + option.location.y',close:()=>true,
+                subtext:'option.address',
+                onClick:(option)=>flyTo({lat:option.object.location.y, lng:option.object.location.x})
+            },
+            onChange:(searchValue:string)=>changeSearch(searchValue)
         }
+        return {className: 'aio-input-map-search',html:<AIOInput {...p}/>}
     }
-    function input_layout() {
-        if (!search) { return false }
-        return { className: 'aio-input-map-search', row: [currentPoint_layout(), search_layout()] }
-    }
-    function result_layout() {
-        if (!searchResult || !searchResult.length || !showResult) { return false }
-        return {
-            className: 'aio-input-map-serach-results',
-            column: searchResult.map(({ title, address, location }) => {
-                return {
-                    onClick: () => { setShowResult(false); flyTo({lat:location.y, lng:location.x}) },
-                    className: 'aio-input-map-search-result',
-                    column: [
-                        { html: title, className: 'aio-input-map-serach-result-text align-v' },
-                        { html: address, className: 'aio-input-map-serach-result-subtext align-v', style: { opacity: 0.5 } }
-                    ]
-                }
-            })
-        }
-    }
-    function header_layout() {
-        if (typeof title !== 'string' && !onClose) { return false }
+    function header_node():I_RVD_node {
+        if (typeof title !== 'string' && !onClose) { return {} }
         return {
             row: [
                 { show: !!onClose, html: <Icon path={mdiChevronRight} size={1} />, className: 'aio-input-map-close align-vh', onClick: () => onClose() },
@@ -2944,37 +2906,34 @@ function MapHeader() {
             ]
         }
     }
-    function currentPoint_layout() {
-        return { className: 'aio-input-map-current-point align-vh', html: <Icon path={mdiCrosshairsGps} size={0.8} />,onClick:()=>goToCurrent() }
-    }
     if (!search && !title && !onClose) { return null }
     return (
         <RVD
             rootNode={{
                 className: 'aio-input-map-header of-visible' + (searchResult && searchResult.length && showResult ? ' aio-input-map-header-open' : ''),
-                column: [header_layout(), input_layout(), result_layout(),]
+                column: [header_node(), input_node()]
             }}
         />
     )
 }
 function MapFooter() {
-    let {value,addressLoading,address,onClose, onChange,popupConfig,mapConfig}:I_Map_context = useContext(MapContext);
+    let {value,addressLoading,address,onClose, onChange,mapConfig = {}}:I_Map_context = useContext(MapContext);
     let { lat, lng } = value;
-    function submit_layout() {
-        if (!popupConfig) { return false }
-        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); onClose() }}>تایید موقعیت</button>) }
+    function submit_node():I_RVD_node {
+        if (!mapConfig.isPopup) { return {} }
+        let {submitText = 'Submit'} = mapConfig;
+        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); onClose() }}>{submitText}</button>) }
     }
-    function details_layout() {
-        if (mapConfig.address === false) { return false }
-        if (addressLoading) {
-            return { html: <Icon path={mdiLoading} size={1} spin={0.4} />, classNAme: 'align-v flex-1' }
-        }
-        return { column: [{ html: address, className: 'aio-input-map-address flex-1' }, { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }] }
+    function details_node():I_RVD_node {
+        if (!mapConfig.address) { return {} }
+        return addressLoading?loading_node():{ className:'flex-1',column: [address_node(), coords_node()] }
     }
-    let Submit = submit_layout()
-    let Details = details_layout();
-    if (!Submit && !Details) { return null }
-    return (<RVD rootNode={{ className: 'aio-input-map-footer', row: [Details, Submit] }} />)
+    function loading_node():I_RVD_node{return { html: <Icon path={mdiLoading} size={1} spin={0.4} />, className: 'align-v flex-1' }}
+    function address_node():I_RVD_node{return { html: address, className: 'aio-input-map-address flex-1' }}
+    function coords_node():I_RVD_node{return { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }}
+    function root_node():I_RVD_node{return {className: 'aio-input-map-footer',row: [details_node(),submit_node()]}}
+    if(!mapConfig.isPopup && !mapConfig.address){return null}
+    return (<RVD rootNode={root_node()} />)
 }
 type I_AIOSwip_mousePosition = {x:number,y:number,xp:number,yp:number,clientX:number,clientY:number};
 type I_AIOSwip = {
@@ -3138,18 +3097,18 @@ export function Acardion(props:any = {}) {
         if (singleOpen) { setOpenDic(open ? {} : { [id]: true }) }
         else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
     }
-    function item_layout(o) {
+    function item_node(o):I_RVD_node {
         let { id } = o;
         let open = !!openDic[id];
         return {
             className: 'aio-input-acardion-item',
             column: [
-                item_header_layout(o, open),
-                item_content_layout(o, open)
+                item_header_node(o, open),
+                item_content_node(o, open)
             ]
         }
     }
-    function item_header_layout(o, open) {
+    function item_header_node(o, open):I_RVD_node {
         let { name, after, id, headerAttrs = {} } = o;
         let className = 'aio-input-acardion-header';
         if (open) { className += ' open' }
@@ -3163,9 +3122,9 @@ export function Acardion(props:any = {}) {
             ]
         }
     }
-    function item_content_layout(o, open) {
+    function item_content_node(o, open):I_RVD_node {
         let { content, contentAttrs = {} } = o;
-        if (!open) { return false }
+        if (!open) { return {} }
         return {
             style: contentAttrs.style,
             className: 'aio-input-acardion-content' + (contentAttrs.className ? ' ' + contentAttrs.className : ''),
@@ -3176,7 +3135,7 @@ export function Acardion(props:any = {}) {
         <RVD
             rootNode={{
                 className: 'aio-input-acardion',
-                column: items.map((o) => item_layout(o))
+                column: items.map((o) => item_node(o))
             }}
         />
     )
@@ -3191,7 +3150,7 @@ export function Tree(props:any = {}) {
             return {
                 style: { paddingRight: level * indent },
                 column: [
-                    row_layout(o, parent),
+                    row_node(o, parent),
                     { show: !!childs.length && openDic[o.id] !== false, column: getColumn_req(childs, level + 1, o) }
                 ]
             }
@@ -3226,7 +3185,7 @@ export function Tree(props:any = {}) {
         }
         return res
     }
-    function row_layout(o, parent) {
+    function row_node(o, parent):I_RVD_node {
 
         let toggle = o.childs.length ? <Icon path={openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown} size={1} /> : ''
         let Options = () => {
@@ -3254,17 +3213,17 @@ export function Tree(props:any = {}) {
             ]
         }
     }
-    function header_layout() {
-        if (!onAdd) { return false }
+    function header_node():I_RVD_node {
+        if (!onAdd) { return {} }
         return {
             className: 'aio-input-tree-header align-v',
             html: () => <button onClick={() => add()}><Icon path={mdiPlusThick} size={.8} />افزودن</button>
         }
     }
-    function body_layout() {
+    function body_node():I_RVD_node {
         return { className: 'aio-input-tree-body', column: getColumn() }
     }
-    return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_layout(), body_layout()] }} />)
+    return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
 }
 export function AIOValidation(props) {
     let $$ = {

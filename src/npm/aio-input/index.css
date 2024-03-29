@@ -32,6 +32,7 @@
 
 .aio-input-popover {
     font-size: 12px;
+    background:#fff;
 }
 .aio-input-popover .aio-popup-body{
     padding:0;
@@ -126,6 +127,15 @@
 }
 
 .aio-input-select-options {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    border-radius: 4px;
+    max-height: 300px;
+}
+.aio-input-text-options {
     flex: 1;
     overflow-y: auto;
     display: flex;
@@ -1633,6 +1643,9 @@
 .leaflet-control {
     display: none;
 }
+.leaflet-container a{
+    display:none;
+}
 
 .aio-input-map-footer {
     width: 100%;
@@ -1703,7 +1716,6 @@
     left: 0;
     top: 0;
     box-sizing: border-box;
-    max-height:100%;
     z-index: 1000;
     background: #fff;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.4)

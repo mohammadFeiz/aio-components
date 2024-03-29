@@ -24,7 +24,7 @@ export default function DOC_AIOInput_map(props) {
                 { text: 'area', id: 'area', render: () => <Area /> },
                 { text: 'markers', id: 'markers', render: () => <Markers /> },
                 { text: 'search', id: 'search', render: () => <Search /> },
-                { text: 'popup', id: 'popup', render: () => <Popup /> },
+                { text: 'popupConfig', id: 'popupConfig', render: () => <PopupConfig /> },
             ]
         }
     }
@@ -389,7 +389,7 @@ ler markers = [
 function Search () {
     let [value,setValue] = useState({lat:35.694739,lng:51.394097})
     function renderMap(){
-        let p:I_AIOInput = {type:'map',value,onChange:({lat,lng})=>setValue({lat,lng}),mapConfig:{search:true}}
+        let p:I_AIOInput = {type:'map',value,onChange:({lat,lng})=>setValue({lat,lng}),mapConfig:{search:'جستجو'}}
         return <AIOInput {...p}/>
     }
     return (
@@ -414,34 +414,30 @@ return (
         </div>
     )
 }
-class Popup extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            lat:35.694739,lng:51.394097
-        }
+function PopupConfig() {
+    let [value,setValue] = useState({lat:35.694739,lng:51.394097})
+    function renderMap(){
+        let p:I_AIOInput = {type:'map',value,onChange:(value)=>setValue(value),popupConfig:{title:'انتخاب موقعیت'}}
+        return <AIOInput {...p}/>
     }
-    render() {
-        let {lat,lng} = this.state;
-        return (
-            <div className='example'>
-                <span>{`latitude = ${lat}`}</span>
-                <span>{`longitude = ${lng}`}</span>
-                <AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})} popup={{title:'انتخاب موقعیت'}}/>
-                {
-                    AIODoc().Code(`
+    return (
+        <div className='example'>
+            <span>{`latitude = ${value.lat}`}</span>
+            <span>{`longitude = ${value.lng}`}</span>
+            {renderMap()}
+            {
+                AIODoc().Code(`
 <AIOInput 
     type='map' 
     value={{lat,lng}} 
     onChange={({lat,lng})=>this.setState({lat,lng})} 
-    popup={{title:'انتخاب موقعیت'}}
+    popupConfig={{title:'انتخاب موقعیت'}}
 />
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
 }
 
 
