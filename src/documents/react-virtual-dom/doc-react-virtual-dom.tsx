@@ -3,19 +3,20 @@ import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.js';
 import RVD,{animate,reOrder} from '../../npm/react-virtual-dom/index.tsx';
-import AIOInput from './../../npm/aio-input/aio-input.js';
-import AIOStorage from './../../npm/aio-storage/aio-storage.js'
+import AIOInput from '../../npm/aio-input/aio-input.js';
+import AIOStorage from '../../npm/aio-storage/aio-storage.js'
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
+import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
 export default function DOC_AIOShop(props) {
     return (
         <DOC
             {...props}
             nav={{
                 nested: true,
-                items: [
+                items: ()=>[
                     { text: 'html node object', id: 'hno', render: () => <Node /> },
                     { text: 'align', id: 'align', render: () => <Align /> },
                     { text: 'spacing', id: 'spacing', render: () => <Spacing /> },
@@ -67,7 +68,7 @@ function Node() {
             <Part
                 title='html'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
+                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -80,8 +81,8 @@ function Layout(){
             <Part
                 title='row'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
-                    let node_A_row = {
+                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+                    let node_A_row:I_RVD_node = {
                         className:'gap-12',
                         row:[node_A,node_A,node_A,node_A]
                     }
@@ -101,12 +102,12 @@ function Layout(){
             <Part
                 title='column'
                 content={()=>{
-                    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
-                    let node_A_row = {
+                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+                    let node_A_row:I_RVD_node = {
                         className:'gap-12',
                         row:[node_A,node_A,node_A,node_A]
                     }
-                    let node_A_table = {
+                    let node_A_table:I_RVD_node = {
                         className:'gap-12',
                         column:[node_A_row,node_A_row,node_A_row,node_A_row]
                     }
@@ -129,33 +130,30 @@ function Layout(){
             />
             <Part
                 content={()=>{
-                    return (
-                        <RVD
-                            rootNode={{
-                                className:'h-96 brd-c16',
-                                row:[
-                                    {
-                                        html:'A',className:'bg12 flex-1 align-vh c32'
-                                    },
-                                    {
-                                        flex:1,
-                                        column:[
-                                            {html:'A',className:'bg16 flex-1 align-vh'},
-                                            {html:'A',className:'bg20 flex-1 align-vh'}
-                                        ]
-                                    },
-                                    {
-                                        className:'flex-1',
-                                        column:[
-                                            {html:'A',className:'bg24 flex-1 align-vh'},
-                                            {html:'A',className:'bg28 flex-1 align-vh'},
-                                            {html:'A',className:'bg32 flex-1 align-vh'},
-                                        ]
-                                    }
+                    let rootNode:I_RVD_node = {
+                        className:'h-96 brd-c16',
+                        row:[
+                            {
+                                html:'A',className:'bg12 flex-1 align-vh c32'
+                            },
+                            {
+                                flex:1,
+                                column:[
+                                    {html:'A',className:'bg16 flex-1 align-vh'},
+                                    {html:'A',className:'bg20 flex-1 align-vh'}
                                 ]
-                            }}
-                        />
-                    )
+                            },
+                            {
+                                className:'flex-1',
+                                column:[
+                                    {html:'A',className:'bg24 flex-1 align-vh'},
+                                    {html:'A',className:'bg28 flex-1 align-vh'},
+                                    {html:'A',className:'bg32 flex-1 align-vh'},
+                                ]
+                            }
+                        ]
+                    }
+                    return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
@@ -211,7 +209,7 @@ function Layout(){
             <Part
                 title='align-v as className'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -224,7 +222,7 @@ function Layout(){
             <Part
                 title='align-v as property'
                 content={()=>{
-                    let node_A = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -237,7 +235,7 @@ function Layout(){
             <Part
                 title='align-h as className'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -250,7 +248,7 @@ function Layout(){
             <Part
                 title='align-h as property'
                 content={()=>{
-                    let node_A = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -263,7 +261,7 @@ function Layout(){
             <Part
                 title='align-vh as className'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -276,7 +274,7 @@ function Layout(){
             <Part
                 title='align-vh as property'
                 content={()=>{
-                    let node_A = {html:'A',align:'vh',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'vh',className:'brd-c12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
@@ -289,15 +287,12 @@ function Layout(){
             <Part
                 title='align-v in column'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
-                    return (
-                        <RVD 
-                            rootNode={{
-                                className:'h-300 w-fit brd-c12 align-v p-12',
-                                column:[node_A,node_A]
-                            }}
-                        />
-                    )
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    let rootNode:I_RVD_node = {
+                        className:'h-300 w-fit brd-c12 align-v p-12',
+                        column:[node_A,node_A]
+                    }
+                    return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
@@ -316,15 +311,9 @@ function Layout(){
             <Part
                 title='align-h in column'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
-                    return (
-                        <RVD 
-                            rootNode={{
-                                className:'w-300 h-fit brd-c12 align-h p-12',
-                                row:[node_A,node_A]
-                            }}
-                        />
-                    )
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    let rootNode:I_RVD_node = {className:'w-300 h-fit brd-c12 align-h p-12',row:[node_A,node_A]}
+                    return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
@@ -350,18 +339,8 @@ function Spacing() {
                 title='spacing by nodes'
                 content={()=>{
                     let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
-                    return (
-                        <RVD 
-                            rootNode={{
-                                className:'w-300 brd-c12 p-12',
-                                row:[
-                                    node_A,
-                                    {className:'flex-1'},
-                                    node_A
-                                ]
-                            }}
-                        />
-                    )
+                    let rootNode:I_RVD_node = {className:'w-300 brd-c12 p-12',row:[node_A,{className:'flex-1'},node_A]}
+                    return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
@@ -384,21 +363,9 @@ function Layout(){
             <Part
                 title='spacing by nodes'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
-                    return (
-                        <RVD 
-                            rootNode={{
-                                className:'brd-c12 p-12',
-                                row:[
-                                    node_A,
-                                    {className:'flex-1'},
-                                    node_A,
-                                    {className:'flex-3'},
-                                    node_A
-                                ]
-                            }}
-                        />
-                    )
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72'};
+                    let rootNode:I_RVD_node = {className:'brd-c12 p-12',row:[node_A,{className:'flex-1'},node_A,{className:'flex-3'},node_A]}
+                    return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){

@@ -26,7 +26,7 @@ import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1";
-import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.js';
+import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import T1 from './documents/t1/t1';
 import Versions from './versions';
 AIOInput.defaults.mapApiKeys = {
