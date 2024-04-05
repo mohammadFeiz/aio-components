@@ -376,7 +376,7 @@ function Inputs() {
                 className: 'p-12',
                 html: (
                   <AIOInput
-                    type='datepicker'
+                    type='date'
                     value={date}
                     onChange={(date) => setDate(date)}
                   />
@@ -395,7 +395,7 @@ function Inputs() {
                         {
                           row:[
                             { input: { type: 'checkbox', text: 'Active' }, label: 'Active',field:'value.active', before: <Icon path={mdiAccount} size={1} /> },
-                            { input: { type: 'datepicker', text: 'Select Date' }, label: 'Date',field:'value.date', before: <Icon path={mdiAccount} size={1} /> }
+                            { input: { type: 'date', text: 'Select Date' }, label: 'Date',field:'value.date', before: <Icon path={mdiAccount} size={1} /> }
                           ]
                         },
                         {

@@ -380,19 +380,19 @@
 .t1 .aio-input-tabs-option.active:after{
   display: none;
 }
-.t1 .aio-input-datepicker-container{
+.t1 .aio-input-date-container{
   color:#fff;
 }
-.t1 .aio-input-datepicker-today{
+.t1 .aio-input-date-today{
   background:var(--color1)
 }
-.t1 .aio-input-datepicker-calendar{
+.t1 .aio-input-date-calendar{
   background:var(--color2)
 }
-.t1 .aio-input-datepicker-cell{
+.t1 .aio-input-date-cell{
   background:var(--color2);
 }
-.t1 .aio-input-datepicker-active{
+.t1 .aio-input-date-active{
   background:var(--color3);
 }
 .t1 .t-fs-xs{font-size:var(--t-fs-xs);}

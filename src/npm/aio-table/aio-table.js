@@ -910,7 +910,7 @@ class Cell extends Component{
           />
         )
       }
-      if(this.inlineEdit.type === 'datepicker'){
+      if(this.inlineEdit.type === 'date'){
         return (
           <AIOInput
             attrs={{'data-col-id':colId,'data-row-id':rowId,tabIndex:verticalTabIndex?colId:0}}
@@ -951,7 +951,7 @@ class Cell extends Component{
     if(!inlineEdit){return false}
     if(inlineEdit === true){inlineEdit = {}}
     let {disabled = ()=>false,type = column.type || 'text'} = inlineEdit;
-    if(type === 'date'){type = 'datepicker'}
+    if(type === 'date'){type = 'date'}
     if(disabled(row)){return false}
     return {...inlineEdit,type};
   }

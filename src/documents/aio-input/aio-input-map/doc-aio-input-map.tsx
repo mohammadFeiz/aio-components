@@ -2,7 +2,7 @@ import React, { Component,createRef, useState } from 'react';
 import DOC,{I_DOC} from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
 import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput,{I_AIOInput,I_Map_area,I_Map_marker} from '../../../npm/aio-input/index.tsx';
+import AIOInput,{AI,I_Map_area,I_Map_marker} from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-map.css';
 import {Icon} from '@mdi/react';
 import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift, mdiAccount } from '@mdi/js';
@@ -52,8 +52,8 @@ class Draggable extends Component {
         super(props);
     }
     render() {
-        let p1:I_AIOInput = {type:'map'}
-        let p2:I_AIOInput = {type:'map',mapConfig:{draggable:false}}
+        let p1:AI = {type:'map'}
+        let p2:AI = {type:'map',mapConfig:{draggable:false}}
         return (
             <div className='example'>
                 <AIOInput key='p1' {...p1}/>
@@ -76,7 +76,7 @@ class Draggable extends Component {
 }
 class Traffic extends Component {
     render() {
-        let p:I_AIOInput = {type:'map',mapConfig:{traffic:true}}
+        let p:AI = {type:'map',mapConfig:{traffic:true}}
         return (
             <div className='example'>
                 <AIOInput {...p}/>
@@ -92,7 +92,7 @@ class Traffic extends Component {
 }
 class OnClick extends Component {
     render() {
-        let p:I_AIOInput = {type:'map',attrs:{onClick:()=>alert('you clicked map')}}
+        let p:AI = {type:'map',attrs:{onClick:()=>alert('you clicked map')}}
         return (
             <div className='example'>
                 <AIOInput {...p}/>
@@ -108,7 +108,7 @@ class OnClick extends Component {
 }
 class Title extends Component {
     render() {
-        let p:I_AIOInput = {type:'map',mapConfig:{title:'نمایش موقعیت'}}
+        let p:AI = {type:'map',mapConfig:{title:'نمایش موقعیت'}}
         return (
             <div className='example'>
                 <AIOInput {...p}/>
@@ -132,9 +132,9 @@ class Marker extends Component {
         )
     }
     render() {
-        let p1:I_AIOInput = {type:'map'}
-        let p2:I_AIOInput = {type:'map',mapConfig:{marker:false}}
-        let p3:I_AIOInput = {type:'map',mapConfig:{marker:{size:16,color:'transparent',html:this.getMarker()}}}
+        let p1:AI = {type:'map'}
+        let p2:AI = {type:'map',mapConfig:{marker:false}}
+        let p3:AI = {type:'map',mapConfig:{marker:{size:16,color:'transparent',html:this.getMarker()}}}
         return (
             <div className='example'>
                 {this.getMarker()}
@@ -171,7 +171,7 @@ function ValueZoom() {
     }
     function renderMap(){
         let {zoom,lat,lng} = value;
-        let p:I_AIOInput = {type:'map',mapConfig:{zoom},value:{lat,lng}}
+        let p:AI = {type:'map',mapConfig:{zoom},value:{lat,lng}}
         return <AIOInput {...p}/>
     }
     return (
@@ -197,7 +197,7 @@ function ValueZoom() {
 }
 function OnChange() {
     let [value,setValue] = useState({lat:35.694739,lng:51.394097})
-    let p:I_AIOInput = {type:'map',value,onChange:(value)=>setValue(value)}
+    let p:AI = {type:'map',value,onChange:(value)=>setValue(value)}
     return (
         <div className='example'>
             <span>{`latitude = ${value.lat}`}</span>
@@ -248,7 +248,7 @@ function Area() {
         return {html:<CTRL {...props}/>}
     }
     function opacity_node():I_RVD_node{
-        let p:I_AIOInput = {
+        let p:AI = {
             type:'slider',pointLabel:()=>{return {show:'inline'}},attrs:{style:{width:'100%'}},value:[area.opacity],step:0.1,start:0,end:1,
             onChange:(opacity)=>{
                 setArea({...area,opacity})
@@ -283,7 +283,7 @@ function Area() {
         }
     }
     function renderMap(){
-        let p:I_AIOInput = {type:'map',mapConfig:{area}}
+        let p:AI = {type:'map',mapConfig:{area}}
         return <AIOInput {...p}/>
     }
     return (
@@ -340,7 +340,7 @@ function Markers() {
         return {html:<CTRL {...props}/>}
     }
     function renderMap(){
-        let p:I_AIOInput = {type:'map',mapConfig:{markers,address:false}}
+        let p:AI = {type:'map',mapConfig:{markers,address:false}}
         return <AIOInput {...p}/>
     }
     return (
@@ -389,7 +389,7 @@ ler markers = [
 function Search () {
     let [value,setValue] = useState({lat:35.694739,lng:51.394097})
     function renderMap(){
-        let p:I_AIOInput = {type:'map',value,onChange:({lat,lng})=>setValue({lat,lng}),mapConfig:{search:'جستجو'}}
+        let p:AI = {type:'map',value,onChange:({lat,lng})=>setValue({lat,lng}),mapConfig:{search:'جستجو'}}
         return <AIOInput {...p}/>
     }
     return (
@@ -417,7 +417,7 @@ return (
 function PopupConfig() {
     let [value,setValue] = useState({lat:35.694739,lng:51.394097})
     function renderMap(){
-        let p:I_AIOInput = {type:'map',value,onChange:(value)=>setValue(value),popupConfig:{title:'انتخاب موقعیت'}}
+        let p:AI = {type:'map',value,onChange:(value)=>setValue(value),popupConfig:{title:'انتخاب موقعیت'}}
         return <AIOInput {...p}/>
     }
     return (

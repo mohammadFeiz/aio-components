@@ -157,6 +157,7 @@ class RVDAttrs{
             else if(typeof dcls === 'string'){className = dcls;}
             if(className && typeof className === 'string'){res += ' ' + className;}  
         }
+        if(attrs.className){res += ' ' + attrs.className}
         if(wrap){res += ' wrap'}
         if(nodeClass){res += ' ' + nodeClasses.join('-')}
         if (!!attrs.onClick) { res += ' pointer'; }

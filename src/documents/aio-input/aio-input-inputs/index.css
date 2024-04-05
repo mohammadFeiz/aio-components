@@ -1,0 +1,21 @@
+.my-input{
+    border:1px solid #eee;
+}
+.badge{
+    background:dodgerblue;
+    color:#fff;
+    height:16px;
+    line-height:16px;
+    font-size:12px;
+    padding:0 3px;
+    min-width:12px;
+    text-align: center;
+    border-radius:4px;
+}
+.show-code{
+    color:darkblue;
+    background:none;
+    border:none;
+    text-decoration: underline;
+    font-size:12px;
+}

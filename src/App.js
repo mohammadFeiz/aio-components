@@ -2,9 +2,9 @@ import React,{Component} from "react";
 import './App.css'
 import AIOStorage from './npm/aio-storage/aio-storage';
 import AIOInput from "./npm/aio-input/aio-input";
-import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table";
+import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
+import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
-import DOC_AIOInput_Image from './documents/aio-input/aio-input-image/doc-aio-input-image';
 import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
 import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map.tsx';
 import DOC_AIOInput_Tabs from './documents/aio-input/aio-input-tabs/doc-aio-input-tabs';
@@ -47,9 +47,9 @@ export default class AIOComponents extends Component{
       part:this.storage.load({name:'part',def:'aio-input'}),
       parts:{
         'versions':Versions,
+        'aio-input-inputs':DOC_AIOInput_Inputs,
         'aio-input-table':DOC_AIOInput_Table,
         'aio-input-slider':DOC_AIOInput_Slider,
-        'aio-input-image':DOC_AIOInput_Image,
         'aio-input-list':DOC_AIOInput_List,
         'aio-input-form':DOC_AIOInput_Form,
         'aio-input-map':DOC_AIOInput_Map,

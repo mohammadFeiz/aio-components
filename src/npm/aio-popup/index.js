@@ -266,12 +266,12 @@ class Popup extends Component {
   }
   getPopoverStyle(){
     let { popover = {},rtl,attrs = {} } = this.props;
-    let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o} = popover; 
+    let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o,fitTo} = popover; 
     if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
     let popup = $(this.dom.current);
-    let style = Align(popup, target, { fixStyle: fixStyle, pageSelector, fitHorizontal, style: attrs.style, rtl })
+    let style = Align(popup, target, { fixStyle: fixStyle, pageSelector,fitTo, fitHorizontal, style: attrs.style, rtl })
     return {...style,position:'absolute'}
   }
   keyDown(e){
@@ -297,7 +297,7 @@ class Popup extends Component {
     let backdropProps = {
       ...backdropAttrs,
       className: this.getBackDropClassName(),
-      onClick: backdrop === false?undefined:(e) => this.backClick(e),
+      onClick: backdrop.close === false?undefined:(e) => this.backClick(e),
     }
     let style = { ...popoverStyle,...attrs.style,flex:'none'}
     let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
@@ -322,13 +322,16 @@ class Popup extends Component {
 function ModalHeader({rtl,header,handleClose,state,setState}){
   if(typeof header !== 'object'){return null}
   let {title,subtitle,buttons = [],onClose,backButton,attrs = {}} = header;
-  function close(){if(onClose){onClose({state,setState})} else{handleClose({state,setState})}}
+  function close(e){
+    e.stopPropagation(); e.preventDefault();
+    if(onClose){onClose({state,setState})} else{handleClose({state,setState})}
+  }
   function backButton_layout(){
     if(!backButton || onClose === false){return false}
     let path,style;
     if(rtl){path = mdiChevronRight; style = {marginLeft:12}}
     else {path = mdiChevronLeft; style = {marginRight:12}}
-    return { html: <Icon path={path} size={1} />, className: 'align-vh', onClick: () => close() ,style}
+    return { html: <Icon path={path} size={1} />, className: 'align-vh', onClick: (e) => close(e) ,style}
   }
   function title_layout(){
     if(!title){return false}
@@ -360,7 +363,7 @@ function ModalHeader({rtl,header,handleClose,state,setState}){
   }
   function close_layout(){
     if(backButton || onClose === false){return false}
-    return { html: <Icon path={mdiClose} size={0.8} />,onClick: () => close(),className:'aio-popup-header-close-button align-vh' }
+    return { html: <Icon path={mdiClose} size={0.8} />,onClick: (e) => close(e),className:'aio-popup-header-close-button align-vh' }
   }
   let className = 'aio-popup-header' + (attrs.className?' ' + attrs.className:'')
   let style = attrs.style;
@@ -549,9 +552,20 @@ class SnackebarItem extends Component{
 }
 //id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,pageSelector,rtl,body
 function Align(dom,target,config = {}){
-  let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,rtl} = config;
+  let {fitHorizontal,style,fixStyle = (o)=>o,pageSelector,rtl,fitTo} = config;
   let $$ = {
     getDomLimit(dom,type){
+      if(fitTo && type === 'popover'){
+        let parent = target.parents(fitTo);
+        if(parent.length){
+          let {left,top} = parent.offset()
+          let width = parent.width();
+          let height = parent.height();
+          let right = left + width;
+          let bottom = top + height;
+          return {left,top,right,bottom,width,height};    
+        }
+      }
       let offset = dom.offset();
       let left = offset.left - window.pageXOffset;
       let top = offset.top - window.pageYOffset;
@@ -586,49 +600,51 @@ function Align(dom,target,config = {}){
       let pageLimit = $$.getPageLimit(dom);
       let targetLimit = $$.getDomLimit(target,'target');
       let domLimit = $$.getDomLimit(dom,'popover'); 
-      domLimit.top = targetLimit.bottom
-      domLimit.bottom = domLimit.top + domLimit.height;  
-      if(fitHorizontal){
-        domLimit.width = targetLimit.width;
-        domLimit.left = targetLimit.left;
-        domLimit.right = targetLimit.left + targetLimit.width
-      }
-      else {
-        //اگر راست به چپ باید باشد
-        if(rtl){
-          //راست المان را با راست هدف ست کن
-          domLimit.right = targetLimit.right;
-          //چپ المان را بروز رسانی کن
-          domLimit.left = domLimit.right - domLimit.width;
-          //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
-          if(domLimit.left < pageLimit.left){domLimit.left = pageLimit.left;}
-        }
-        //اگر چپ به راست باید باشد
-        else{
-          //چپ المان را با چپ هدف ست کن
-          domLimit.left = targetLimit.left; 
-          //راست المان را بروز رسانی کن
-          domLimit.right = domLimit.left + domLimit.width;
-          //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
-          if(domLimit.right > pageLimit.right){domLimit.left = pageLimit.right - domLimit.width;}
-        }
-      }
-      
-      //اگر المان از سمت پایین صفحه بیرون زد
-      if(domLimit.bottom > pageLimit.bottom){
-        if(domLimit.height > targetLimit.top - pageLimit.top){domLimit.top = pageLimit.bottom - domLimit.height;}  
-        else{domLimit.top = targetLimit.top - domLimit.height;}
-      }
-      else{domLimit.top = targetLimit.bottom;}
       let overflowY;
-      if(domLimit.height > pageLimit.bottom - pageLimit.top){
-        domLimit.top = 6;
-        domLimit.bottom = undefined;
-        domLimit.height = pageLimit.bottom - pageLimit.top - 12;
-        overflowY = 'auto';
+      if(!fitTo){
+        domLimit.top = targetLimit.bottom
+        domLimit.bottom = domLimit.top + domLimit.height;  
+        if(fitHorizontal){
+          domLimit.width = targetLimit.width;
+          domLimit.left = targetLimit.left;
+          domLimit.right = targetLimit.left + targetLimit.width
+        }
+        else {
+          //اگر راست به چپ باید باشد
+          if(rtl){
+            //راست المان را با راست هدف ست کن
+            domLimit.right = targetLimit.right;
+            //چپ المان را بروز رسانی کن
+            domLimit.left = domLimit.right - domLimit.width;
+            //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
+            if(domLimit.left < pageLimit.left){domLimit.left = pageLimit.left;}
+          }
+          //اگر چپ به راست باید باشد
+          else{
+            //چپ المان را با چپ هدف ست کن
+            domLimit.left = targetLimit.left; 
+            //راست المان را بروز رسانی کن
+            domLimit.right = domLimit.left + domLimit.width;
+            //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
+            if(domLimit.right > pageLimit.right){domLimit.left = pageLimit.right - domLimit.width;}
+          }
+        }
+        
+        //اگر المان از سمت پایین صفحه بیرون زد
+        if(domLimit.bottom > pageLimit.bottom){
+          if(domLimit.height > targetLimit.top - pageLimit.top){domLimit.top = pageLimit.bottom - domLimit.height;}  
+          else{domLimit.top = targetLimit.top - domLimit.height;}
+        }
+        else{domLimit.top = targetLimit.bottom;}
+        if(domLimit.height > pageLimit.bottom - pageLimit.top){
+          domLimit.top = 6;
+          domLimit.bottom = undefined;
+          domLimit.height = pageLimit.bottom - pageLimit.top - 12;
+          overflowY = 'auto';
+        }
       }
-      let finalStyle = {left:domLimit.left,top:domLimit.top,width:domLimit.width,overflowY,...style}
-        return fixStyle(finalStyle,{targetLimit,pageLimit})
+      let finalStyle = {left:domLimit.left,top:domLimit.top,width:domLimit.width,height:!!fitTo?domLimit.height:undefined,overflowY,...style}
+      return fixStyle(finalStyle,{targetLimit,pageLimit})
     }
   }
   return $$.align();

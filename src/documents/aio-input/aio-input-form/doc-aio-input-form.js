@@ -2,7 +2,7 @@ import React, { Component, useState } from 'react';
 import DOC from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation';
 import RVD from '../../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from '../../../npm/aio-input/aio-input';
+import AIOInput from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-form.css';
 import { Icon } from '@mdi/react';
 import { mdiHumanMale, mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiAccountAlert, mdiChevronDown, mdiChevronDoubleDown, mdiCheckboxOutline, mdiCheckboxBlankOutline, mdiGenderFemale, mdiGenderMale } from '@mdi/js';
@@ -163,7 +163,7 @@ text:'this is my text,'
 start:20,step:1,end:100,
                 `
             },
-            {type:'datepicker'},
+            {type:'date'},
             { type: 'checkbox',allInputProps:{text:'this is my text'} },
             {
                 type:'image',
@@ -202,7 +202,7 @@ value:{url:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jp
             { prop:'after'},
             
         ]
-        return (<DOC {...this.props} nav={{items:getNavItems(items)}}/>)
+        return (<DOC {...this.props} nav={{items:()=>getNavItems(items)}}/>)
     }
 }
 function e_exist(type, prop) {
@@ -439,7 +439,7 @@ function e_exist(type, prop) {
             multiple__slider___:true
 
         },
-        datepicker: {
+        date: {
             before: true,
             after: true,
             subtext: true, 
@@ -449,7 +449,7 @@ function e_exist(type, prop) {
             caret_false: true,caret_html:true,
             attrs:true,
             popover:true,
-            calendarType:true,
+            jalali:true,
             unit_month:true,
             unit_hour:true,
             theme:true,
@@ -733,7 +733,7 @@ optionAttrs:(option)=>{
         ]
     }
     if (prop === 'caret_false') {
-        if(type === 'datepicker'){
+        if(type === 'date'){
             return [
                 {
                     caret: false
@@ -756,7 +756,7 @@ caret:false
         ]
     }
     if (prop === 'caret_html') {
-        if(type === 'datepicker'){
+        if(type === 'date'){
             return [
                 {
                     caret: <Icon path={mdiChevronDoubleDown} size={.7}/>
@@ -819,7 +819,7 @@ style:{boxShadow:'0 0 12px 2px lightblue'}
         ]
     }
     if (prop === 'popover') {///////////////////////////////////////////////////////////////////////////////////// popover
-        if(type === 'datepicker'){
+        if(type === 'date'){
             return [
                 { 
                     popover:{
@@ -1342,11 +1342,11 @@ value:{year:2022,month:6,day:25,hour:12,minute:30}
             `
         ]
     }
-    if (prop === 'calendarType') {
+    if (prop === 'jalali') {
         return [
-            {calendarType:'jalali'},
+            {jalali:true},
             `
-calendarType:'jalali'
+            jalali:true
             `
         ]
     }

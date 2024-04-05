@@ -148,8 +148,8 @@ export default function AIODate() {
       }
       if (!obj.date) { return }
       let arr = $$.convertToArray({ date: obj.date });
-      let calendarType = $$.getCalendarType(arr);
-      if (calendarType === 'jalali') { return arr }
+      let jalali = $$.isJalali(arr);
+      if (jalali) { return arr }
       let [gy, gm, gd] = arr;
       var g_d_m, jy, jm, jd, gy2, days;
       g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -174,8 +174,8 @@ export default function AIODate() {
       }
       if (!obj.date) { return }
       let arr = $$.convertToArray({ date: obj.date });
-      let calendarType = $$.getCalendarType(arr);
-      if (calendarType === 'gregorian') { return arr }
+      let jalali = $$.isJalali(arr);
+      if (!jalali) { return arr }
       let [jy, jm, jd] = arr;
       var sal_a, gy, gm, gd, days;
       jy += 1595; days = -355668 + (365 * jy) + (~~(jy / 33) * 8) + ~~(((jy % 33) + 3) / 4) + jd + ((jm < 7) ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
@@ -245,13 +245,12 @@ export default function AIODate() {
           }`, obj)
         return false
       }
-      let { date, calendarType } = obj;
+      let { date, jalali = $$.isJalali(date) } = obj;
       if (!date) { return }
-      calendarType = calendarType || $$.getCalendarType(date);
       if (typeof date === 'number') { return date }
       date = $$.convertToArray({ date });
       let [year, month = 1, day = 1, hour = 0, minute = 0, second = 0, tenthsecond = 0] = date;
-      if (calendarType === 'jalali') { date = $$.toGregorian({ date: [year, month, day, hour, minute, second, tenthsecond] }) }
+      if (jalali) { date = $$.toGregorian({ date: [year, month, day, hour, minute, second, tenthsecond] }) }
       let time = new Date(date[0], date[1] - 1, date[2]).getTime()
       time += hour * 60 * 60 * 1000;
       time += minute * 60 * 1000;
@@ -273,25 +272,16 @@ export default function AIODate() {
       }
       let { date, offset, pattern } = obj;
       if (!offset || !date) { return date }
-      let calendarType = $$.getCalendarType(date);
-      let time = $$.getTime({ date, calendarType });
+      let jalali = $$.isJalali(date);
+      let time = $$.getTime({ date, jalali });
       time += offset;
       time = $$.convertToArray({ date: time });
-      if (calendarType === 'jalali' || obj.jalali) {
+      if (jalali || obj.jalali) {
         let [jy, jm, jd] = $$.toJalali({ date: time });
         time[0] = jy; time[1] = jm; time[2] = jd;
       }
       if (pattern) { return $$.pattern(time, pattern) }
       return time;
-    },
-    GetMonthDaysLength: {
-      jalali: (year, month) => {
-        if (month <= 6) { return 31; }
-        if (month <= 11) { return 30; }
-        if ([1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) === -1) { return 29; }
-        return 30;
-      },
-      gregorian: (year, month) => { return new Date(year, month - 1, 0).getDate(); }
     },
     getMonthDaysLength(obj) {
       if (!obj || obj.date === undefined) {
@@ -306,7 +296,9 @@ export default function AIODate() {
       let { date } = obj;
       if (!date) { return }
       let [year, month] = $$.convertToArray({ date });
-      return $$.GetMonthDaysLength[$$.getCalendarType([year, month])](year, month)
+      let jalali = $$.isJalali([year, month]);
+      if(jalali){return [31,31,31,31,31,31,30,30,30,30,30,[1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) === -1?29:30][month - 1]}
+      else {return new Date(year, month - 1, 0).getDate();}
     },
     getYearDaysLength(obj) {
       if (!obj || obj.date === undefined) {
@@ -327,23 +319,21 @@ export default function AIODate() {
       }
       return res
     },
-    getCalendarType(date) {
-      return $$.convertToArray({ date })[0] < 1700 ? 'jalali' : 'gregorian'
-    },
+    isJalali(date) {return $$.convertToArray({ date })[0] < 1700 ? true : false},
     getWeekDay(obj) {
       if (!obj || !obj.date) {
         console.error(`AIODate().getWeekDay should get an object as parameter. {*date:string | array}`, obj)
         return false
       }
       let date = $$.convertToArray({ date: obj.date });
-      let calendarType = $$.getCalendarType(date);
+      let jalali = $$.isJalali(date);
       date = $$.toGregorian({ date })
       let index = new Date(date[0], date[1] - 1, date[2]).getDay();
-      if (calendarType === 'jalali') {
+      if (jalali) {
         index += 1;
         index = index % 7;
       }
-      return { weekDay: $$.getWeekDays({ calendarType })[index], index };
+      return { weekDay: $$.getWeekDays({ jalali })[index], index };
     },
     getDaysOfWeek(obj) {
       if (!obj || !obj.date) {
@@ -385,17 +375,17 @@ export default function AIODate() {
       }
       return lastDay
     },
-    getWeekDays({ calendarType }) {
-      return {
-        jalali: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'],
-        gregorian: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-      }[calendarType]
+    getWeekDays({ jalali }) {
+      return [
+        ['شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'],
+        ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
+      ][jalali?0:1]
     },
-    getMonths({ calendarType }) {
-      return {
-        jalali: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',],
-        gregorian: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-      }[calendarType]
+    getMonths({ jalali }) {
+      return [
+        ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',],
+        ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
+      ][jalali?0:1]
     },
     getDatesBetween(obj) {
       if (!obj || obj.date === undefined || obj.otherDate === undefined) {
@@ -431,15 +421,12 @@ export default function AIODate() {
       }
       return res
     },
-    getToday(obj) {
-      if (!obj || ['jalali', 'gregorian'].indexOf(obj.calendarType) === -1) {
-        console.error(`AIODate().getToday should get an object as parameter. {*calendarType:'gregorian' | 'jalali',pattern:string}`)
-        return false;
-      }
+    getToday(obj = {}) {
+      let {jalali,pattern} = obj;
       let date = new Date();
       date = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), Math.round(date.getMilliseconds() / 100)]
-      if (obj.calendarType === 'jalali') { date = $$.toJalali({ date }) }
-      if (obj.pattern) { return $$.pattern(date, obj.pattern) }
+      if (jalali) { date = $$.toJalali({ date }) }
+      if (pattern) { return $$.pattern(date, pattern) }
       return date;
     },
     getDateByPattern(obj) {
@@ -450,10 +437,10 @@ export default function AIODate() {
       let { date, pattern,jalali } = obj
       return $$.pattern(date, pattern,jalali)
     },
-    pattern(date, pattern,jalali) {
-      date = $$.convertToArray({ date,jalali });
+    pattern(date, pattern,Jalali) {
+      date = $$.convertToArray({ date,jalali:Jalali });
       let [year, month, day, hour, minute, second, tenthsecond] = date;
-      let calendarType = $$.getCalendarType(date);
+      let jalali = $$.isJalali(date);
       pattern = pattern.replace('{year}', year);
       if(typeof month === 'number'){pattern = pattern.replace('{month}', $$.get2Digit(month));}
       if(typeof day === 'number'){pattern = pattern.replace('{day}', $$.get2Digit(day));}
@@ -462,10 +449,10 @@ export default function AIODate() {
       if(typeof second === 'number'){pattern = pattern.replace('{second}', $$.get2Digit(second));}
       if(typeof tenthsecond === 'number'){pattern = pattern.replace('{tenthsecond}', $$.get2Digit(tenthsecond));}
       if (pattern.indexOf('{monthString}') !== -1) {
-        pattern = pattern.replace('{monthString}', $$.getMonths({ calendarType })[month - 1]);
+        pattern = pattern.replace('{monthString}', $$.getMonths({ jalali })[month - 1]);
       }
       if (pattern.indexOf('{weekDay}') !== -1) {
-        let weekDays = $$.getWeekDays({ calendarType });
+        let weekDays = $$.getWeekDays({ jalali });
         let { index } = $$.getWeekDay({ date });
         pattern = pattern.replace('{weekDay}', weekDays[index]);
       }
@@ -519,11 +506,11 @@ export default function AIODate() {
       let dif = $$.getTime({ date }) - $$.getTime({ date: otherDate });
       return $$.convertMiliseconds({miliseconds:-dif,unit,pattern})
     },
-    getByOffset({ date, offset, unit = 'day', calendarType = 'gregorian' }) {
+    getByOffset({ date, offset, unit = 'day', jalali }) {
       if (!offset) { return date }
       let fn = $$['get' + (offset > 0 ? 'Next' : 'Prev') + { 'hour': 'Hour', 'day': 'Day', 'month': 'Month', 'year': 'Year' }[unit]];
       let abs = Math.abs(offset);
-      for (let i = 0; i < abs; i++) { date = fn(date, calendarType); }
+      for (let i = 0; i < abs; i++) { date = fn(date, jalali); }
       return date;
     },
     getNextYear([year, month]) {
@@ -532,14 +519,14 @@ export default function AIODate() {
     getPrevYear([year, month]) {
       return [year - 1, month, 1, 0]
     },
-    getNextHour([year, month, day, hour], calendarType) {
+    getNextHour([year, month, day, hour], jalali) {
       if (hour < 23) { return [year, month, day, hour + 1] }
-      let a = $$.getNextDay([year, month, day], calendarType);
+      let a = $$.getNextDay([year, month, day], jalali);
       return [a[0], a[1], a[2], 0]
     },
-    getPrevHour([year, month, day, hour], calendarType) {
+    getPrevHour([year, month, day, hour], jalali) {
       if (hour > 0) { return [year, month, day, hour - 1] }
-      let a = $$.getPrevDay([year, month, day], calendarType);
+      let a = $$.getPrevDay([year, month, day], jalali);
       return [a[0], a[1], a[2], 23]
     },
     getNextDay([year, month, day, hour]) {
@@ -547,7 +534,7 @@ export default function AIODate() {
       if (month < 12) { return [year, month + 1, 1, hour] }
       return [year + 1, 1, 1, hour];
     },
-    getPrevDay([year, month, day, hour], calendarType) {
+    getPrevDay([year, month, day, hour], jalali) {
       if (day > 1) { return [year, month, day - 1] }
       if (month > 1) {
         month -= 1;

@@ -14,6 +14,8 @@ import {
     GenerateComponsition as _GenerateComponsition,
     CalculateDistance as _CalculateDistance,
     JsonValidator as _JsonValidator,
+    AIODate as _AIODate,
+    EventHandler as _EventHandler
 
 } from './index';
 export async function DownloadUrl(url, name) {return await _DownloadUrl(url,name)}
@@ -35,3 +37,5 @@ export function GenerateComponsition({level,length,childsField,fields}){
 }
 export function CalculateDistance(lat1, lon1, lat2, lon2) {return _CalculateDistance(lat1, lon1, lat2, lon2)}
 export function JsonValidator(json,schema){return _JsonValidator(json,schema)}
+export function AIODate(){return _AIODate()};
+export function EventHandler(selector, e, action, type){return _EventHandler(selector, e, action, type)}

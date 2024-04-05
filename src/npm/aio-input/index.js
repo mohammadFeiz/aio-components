@@ -25,9 +25,9 @@ export default class AIOInput extends Component {
         this.types = {
             type: props.type,
             isInput: ['text', 'number', 'textarea', 'password'].indexOf(props.type) !== -1,
-            isDropdown: ['text', 'number', 'textarea', 'select', 'multiselect', 'button', 'datepicker'].indexOf(props.type) !== -1,
+            isDropdown: ['text', 'number', 'textarea', 'select', 'multiselect', 'button', 'date'].indexOf(props.type) !== -1,
             hasOption: ['text', 'number', 'textarea', 'color', 'select', 'multiselect', 'radio', 'tabs', 'list'].indexOf(props.type) !== -1,
-            hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'datepicker'].indexOf(props.type) !== -1,
+            hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(props.type) !== -1,
             hasMultiple: ['radio', 'file', 'slider'].indexOf(props.type) !== -1,
             hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(props.type) !== -1,
             hasText: ['multiselect', 'checkbox', 'button', 'select'].indexOf(props.type) !== -1,
@@ -71,12 +71,12 @@ export default class AIOInput extends Component {
         if (option === undefined) { return }
         return this.getOptionProp(option, 'text')
     }
-    getDatepickerText() {
+    getdateText() {
         //cannot use this.properties here 
         let value = this.getProp('value');
         let unit = this.getProp('unit', 'day');
         let Pattern = this.getProp('pattern');
-        let calendarType = this.getProp('calendarType');
+        let jalali = this.getProp('jalali');
         let placeholder = this.getProp('placeholder');
         if (value) {
             let list = AIODate().convertToArray({ date: value });
@@ -90,7 +90,7 @@ export default class AIOInput extends Component {
             else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
             return <div style={{ direction: 'ltr' }}>{AIODate().getDateByPattern({ date: list, pattern })}</div>
         }
-        return placeholder || (calendarType === 'gregorian' ? 'Select Date' : 'انتخاب تاریخ')
+        return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
     }
     addToAttrs(attrs = {}, { className, style, stylePriority = true }) {
         let classNames = [];
@@ -144,7 +144,7 @@ export default class AIOInput extends Component {
         if (key === 'caret') {
             if (propsResult === false) { return false }
             if (type === 'button') { return !!this.getProp('popover') }
-            if (type === 'select' || type === 'multiselect' || type === 'datepicker') { return propsResult || true }
+            if (type === 'select' || type === 'multiselect' || type === 'date') { return propsResult || true }
             if (type === 'text' || type === 'number' || type === 'textarea') {
                 let options = this.getProp('options');
                 if (options) { return propsResult || true }
@@ -154,7 +154,7 @@ export default class AIOInput extends Component {
         }
         if (key === 'text' && propsResult === undefined) {
             if (type === 'select') { return this.getSelectText() }
-            if (type === 'datepicker') { return this.getDatepickerText() }
+            if (type === 'date') { return this.getdateText() }
         }
         propsResult = propsResult === undefined ? def : propsResult;
         return propsResult;
@@ -304,8 +304,8 @@ export default class AIOInput extends Component {
     }
     render_time() {
         let getProps = () => {
-            let calendarType = this.properties.calendarType;
-            let today = AIODate().getToday({ calendarType });
+            let jalali = this.properties.jalali;
+            let today = AIODate().getToday({ jalali });
             let todayObject = { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] }
             let value = this.properties.value || {};
             for (let prop in value) { if (value[prop] === true) { value[prop] = todayObject[prop] } }
@@ -333,7 +333,7 @@ export default class AIOInput extends Component {
     render_radio() { return <Layout text={<Options />} /> }
     render_tabs() { return <Layout text={<Options />} /> }
     render_checkbox() { return <Layout /> }
-    render_datepicker() { return <Layout /> }
+    render_date() { return <Layout /> }
     render_image() { return <Layout text={<Image />} /> }
     render_map() { return <Layout text={<Map properties={this.properties} />} /> }
     render_table() { return <Table properties={this.properties} /> }
@@ -369,7 +369,7 @@ class Popover {
     }
     getRender = (popover) => {
         if (this.type === 'button') { return ({ close }) => popover.render({ close }) }
-        else if (this.type === 'datepicker') { return ({ close }) => <DatePicker onClose={close} /> }
+        else if (this.type === 'date') { return ({ close }) => <date onClose={close} /> }
         else {
             return ({ close }) => {
                 let options = this.getOptions() || [];
@@ -383,7 +383,7 @@ class Popover {
         let options = this.getProp('options');
         let popover = this.getProp('popover');
         if (this.type === 'button') { return !!popover }
-        if (this.type === 'datepicker') { return true }
+        if (this.type === 'date') { return true }
         else if (this.type === 'select') { return true }
         else if (this.type === 'multiselect') { return true }
         else if (this.type === 'text') { return !!options }
@@ -1460,7 +1460,7 @@ class SortClass {
             let { active = false, dir = 'dec' } = sort;
             let getValue = (row) => {
                 let value = getDynamics({ value: column.value, row, column })
-                if (type === 'datepicker') { value = AIODate().getTime(value); }
+                if (type === 'date') { value = AIODate().getTime(value); }
                 return value
             }
             sorts.push({ dir, title: sort.title || column.title, sortId: _id, active, type, getValue })
@@ -1753,7 +1753,7 @@ class FileItem extends Component {
     }
 }
 const DPContext = createContext();
-class DatePicker extends Component {
+class date extends Component {
     static contextType = AICTX;
     render() {
         let { properties } = this.context, { onClose } = this.props
@@ -1764,12 +1764,12 @@ class Calendar extends Component {
     constructor(props) {
         super(props);
         let { properties } = props;
-        let { calendarType, value } = properties;
+        let { jalali, value } = properties;
         let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
-        let today = getToday({ calendarType });
+        let today = getToday({ jalali });
         if (!value) { value = today }
         let [year, month, day] = convertToArray({ date: value })
-        let months = getMonths({ calendarType });
+        let months = getMonths({ jalali });
         this.state = {
             activeDate: { year, month, day }, years: this.getYears(), today,
             todayWeekDay: getWeekDay({ date: today }).weekDay,
@@ -1778,14 +1778,14 @@ class Calendar extends Component {
     }
     translate(text) {
         let { properties, translate = (text) => text } = this.props;
-        let { calendarType, unit } = properties;
+        let { jalali, unit } = properties;
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
         }
         let obj = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری', }
         let res = text;
-        if (calendarType === 'jalali' && obj[text]) { res = obj[text] }
+        if (jalali && obj[text]) { res = obj[text] }
         return translate(res)
     }
     changeActiveDate(obj) {
@@ -1803,8 +1803,8 @@ class Calendar extends Component {
     getYears() {
         let start, end;
         let { properties } = this.props;
-        let { calendarType, startYear, endYear } = properties
-        let today = AIODate().getToday({ calendarType });
+        let { jalali, startYear, endYear } = properties
+        let today = AIODate().getToday({ jalali });
         if (typeof startYear === 'string' && startYear.indexOf('-') === 0) {
             start = today[0] - parseInt(startYear.slice(1, startYear.length));
         }
@@ -1835,11 +1835,11 @@ class Calendar extends Component {
             SetState: (obj) => this.setState(obj),
             onChange: ({ year, month, day, hour }) => {
                 let { properties, onClose } = this.props;
-                let { calendarType, unit, onChange = () => { }, close, value } = properties;
+                let { jalali, unit, onChange = () => { }, close, value } = properties;
                 let { months } = this.state;
                 let dateArray = [year, month, day, hour];
-                let jalaliDateArray = calendarType === 'gregorian' ? AIODate().toJalali({ date: dateArray }) : dateArray;
-                let gregorianDateArray = calendarType === 'jalali' ? AIODate().toGregorian({ date: dateArray }) : dateArray;
+                let jalaliDateArray = !jalali ? AIODate().toJalali({ date: dateArray }) : dateArray;
+                let gregorianDateArray = jalali ? AIODate().toGregorian({ date: dateArray }) : dateArray;
                 let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : AIODate().getWeekDay({ date: dateArray })
                 let get2digit = (v) => {
                     if (v === undefined) { return }
@@ -1852,8 +1852,8 @@ class Calendar extends Component {
                 else if (unit === 'day') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}` }
                 else if (unit === 'hour') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}${splitter}${get2digit(hour)}` }
                 let monthString = months[month - 1];
-                let jalaliMonthString = calendarType === 'gregorian' ? AIODate().getMonths({ calendarType: 'jalali' })[month - 1] : monthString;
-                let gregorianMonthString = calendarType === 'jalali' ? AIODate().getMonths({ calendarType: 'gregorian' })[month - 1] : monthString;
+                let jalaliMonthString = !jalali ? AIODate().getMonths({ jalali:true })[month - 1] : monthString;
+                let gregorianMonthString = jalali ? AIODate().getMonths({ jalali:false })[month - 1] : monthString;
                 let props = {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
@@ -1866,8 +1866,8 @@ class Calendar extends Component {
     render() {
         return (
             <DPContext.Provider value={this.getContext()}>
-                <div className='aio-input-datepicker-container' style={{ display: 'flex' }}>
-                    <div className='aio-input-datepicker-calendar' style={this.getPopupStyle()}>
+                <div className='aio-input-date-container' style={{ display: 'flex' }}>
+                    <div className='aio-input-date-calendar' style={this.getPopupStyle()}>
                         <DPHeader /><DPBody /><DPFooter />
                     </div>
                     <DPToday />
@@ -1880,19 +1880,19 @@ class DPToday extends Component {
     static contextType = DPContext;
     render() {
         let { properties, translate, today, todayWeekDay, thisMonthString } = this.context;
-        let { theme, calendarType, unit, size } = properties;
+        let { theme, jalali, unit, size } = properties;
         return (
-            <div className='aio-input-datepicker-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
+            <div className='aio-input-date-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
                 <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
                 {
                     (unit === 'day' || unit === 'hour') &&
                     <>
-                        <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
+                        <div style={{ fontSize: size / 11 }}>{!jalali ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
                         <div style={{ fontSize: size / 12 * 4, height: size / 12 * 4 }}>{today[2]}</div>
-                        <div style={{ fontSize: size / 11 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>
+                        <div style={{ fontSize: size / 11 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>
                     </>
                 }
-                {unit === 'month' && <div style={{ fontSize: size / 8 }}>{calendarType === 'gregorian' ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
+                {unit === 'month' && <div style={{ fontSize: size / 8 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
                 <div style={{ fontSize: size / 11 }}>{today[0]}</div>
                 {unit === 'hour' && <div style={{ fontSize: size / 10 }}>{today[3] + ':00'}</div>}
             </div>
@@ -1907,7 +1907,7 @@ class DPFooter extends Component {
         if (disabled) { return null }
         let buttonStyle = { padding: `${size / 20}px 0` };
         return (
-            <div className='aio-input-datepicker-footer' style={{ fontSize: size / 13 }}>
+            <div className='aio-input-date-footer' style={{ fontSize: size / 13 }}>
                 {remove && <button style={buttonStyle} onClick={() => onChange(false)}>{translate('Clear')}</button>}
                 <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
             </div>
@@ -1918,7 +1918,7 @@ class DPBody extends Component {
     static contextType = DPContext;
     getStyle() {
         let { properties } = this.context;
-        let { size, calendarType, unit } = properties;
+        let { size, jalali, unit } = properties;
         var columnCount = { hour: 4, day: 7, month: 3 }[unit];
         var rowCount = { hour: 6, day: 7, month: 4 }[unit];
         var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
@@ -1926,14 +1926,14 @@ class DPBody extends Component {
         var gridTemplateColumns = '', gridTemplateRows = '';
         for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
         for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction = calendarType === 'gregorian' ? 'ltr' : 'rtl';
+        let direction = !jalali ? 'ltr' : 'rtl';
         return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
     }
     render() {
         let { properties, activeDate } = this.context;
         let { unit } = properties;
         return (
-            <div className='aio-input-datepicker-body' style={this.getStyle()}>
+            <div className='aio-input-date-body' style={this.getStyle()}>
                 {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
                 {unit === 'day' && <DPBodyDay />}
                 {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, i + 1]} />)}
@@ -1945,15 +1945,15 @@ class DPBodyDay extends Component {
     static contextType = DPContext;
     render() {
         let { properties, activeDate } = this.context;
-        let { theme, calendarType } = properties;
+        let { theme, jalali } = properties;
         let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
         var daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
-        let weekDays = AIODate().getWeekDays({ calendarType });
+        let weekDays = AIODate().getWeekDays({ jalali });
         return (<>
             {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-            {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
+            {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
             {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, i + 1]} />)}
-            {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-datepicker-space aio-input-datepicker-cell' style={{ background: theme[1] }}></div>)}
+            {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
         </>)
     }
 }
@@ -1961,11 +1961,11 @@ class DPCellWeekday extends Component {
     static contextType = DPContext;
     render() {
         let { properties, translate } = this.context;
-        let { theme, calendarType } = properties;
+        let { theme, jalali } = properties;
         let { weekDay } = this.props;
         return (
-            <div className='aio-input-datepicker-weekday aio-input-datepicker-cell' style={{ background: theme[1], color: theme[0] }}>
-                <span>{translate(weekDay.slice(0, calendarType === 'gregorian' ? 2 : 1))}</span>
+            <div className='aio-input-date-weekday aio-input-date-cell' style={{ background: theme[1], color: theme[0] }}>
+                <span>{translate(weekDay.slice(0, !jalali ? 2 : 1))}</span>
             </div>
         )
     }
@@ -1973,20 +1973,20 @@ class DPCellWeekday extends Component {
 class DPCell extends Component {
     static contextType = DPContext;
     getClassName(isActive, isToday, isDisabled, className) {
-        var str = 'aio-input-datepicker-cell';
-        if (isDisabled) { str += ' aio-input-datepicker-disabled' }
-        if (isActive) { str += ' aio-input-datepicker-active'; }
+        var str = 'aio-input-date-cell';
+        if (isDisabled) { str += ' aio-input-date-disabled' }
+        if (isActive) { str += ' aio-input-date-active'; }
         if (isToday) { str += ' today'; }
         if (className) { str += ' className'; }
         return str;
     }
     render() {
         let { properties, translate, onChange } = this.context;
-        let { disabled, dateAttrs, theme, value, calendarType, unit, dateDisabled } = properties;
+        let { disabled, dateAttrs, theme, value, jalali, unit, dateDisabled } = properties;
         let { dateArray } = this.props;
         let { isEqual, isMatch, getMonths, getToday } = AIODate();
         let isActive = !value ? false : AIODate().isEqual(dateArray, value);
-        let isToday = isEqual(dateArray, getToday({ calendarType }))
+        let isToday = isEqual(dateArray, getToday({ jalali }))
         let isDateDisabled = !dateDisabled ? false : isMatch({ date: dateArray, matchers: dateDisabled });
         let isDisabled = disabled || isDateDisabled;
         let Attrs = {}
@@ -1995,7 +1995,7 @@ class DPCell extends Component {
         let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }, true) };
         let style = {}
         if (!isDisabled) { style.background = theme[1]; }
-        if (className.indexOf('aio-input-datepicker-active') !== -1) {
+        if (className.indexOf('aio-input-date-active') !== -1) {
             style.background = theme[0];
             style.color = theme[1];
         }
@@ -2005,8 +2005,8 @@ class DPCell extends Component {
         if (unit === 'hour') { text = dateArray[3] + ':00' }
         else if (unit === 'day') { text = dateArray[2] }
         else if (unit === 'month') {
-            let months = getMonths({ calendarType });
-            text = translate(calendarType === 'gregorian' ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
+            let months = getMonths({ jalali });
+            text = translate(!jalali ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
         }
         return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
     }
@@ -2023,10 +2023,10 @@ class DPHeader extends Component {
     }
     getMonths() {
         let { properties, activeDate, changeActiveDate, months, translate } = this.context;
-        let { calendarType } = properties;
+        let { jalali } = properties;
         let props = {
             value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
-            options: months.map((o, i) => { return { value: i + 1, text: translate(calendarType === 'gregorian' ? o.slice(0, 3) : o) } })
+            options: months.map((o, i) => { return { value: i + 1, text: translate(!jalali ? o.slice(0, 3) : o) } })
         }
         return (<DPHeaderDropdown {...props} />)
     }
@@ -2041,9 +2041,9 @@ class DPHeader extends Component {
         let { properties } = this.context;
         let { size, unit } = properties
         return (
-            <div className='aio-input-datepicker-header' style={{ height: size / 4 }}>
+            <div className='aio-input-date-header' style={{ height: size / 4 }}>
                 <DPArrow type='minus' />
-                <div className='aio-input-datepicker-select' style={{ fontSize: Math.floor(size / 12) }}>
+                <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 12) }}>
                     {this.getYears()}
                     {unit !== 'month' ? this.getMonths() : null}
                     {unit === 'hour' ? this.getDays() : null}
@@ -2063,7 +2063,7 @@ class DPHeaderDropdown extends Component {
         let { size, theme } = properties
         let props = {
             value, options, onChange, search: false, caret: false, type: 'select',
-            attrs: { className: 'aio-input-datepicker-dropdown' },
+            attrs: { className: 'aio-input-date-dropdown' },
             optionAttrs: { style: { height: size / 6, background: theme[1], color: theme[0] } }
         }
         return (<AIOInput {...props} />)
@@ -2073,9 +2073,9 @@ class DPArrow extends Component {
     static contextType = DPContext;
     change() {
         let { properties, years, changeActiveDate, activeDate } = this.context;
-        let { calendarType, unit } = properties;
+        let { jalali, unit } = properties;
         let { type } = this.props;
-        let offset = (calendarType === 'gregorian' ? 1 : -1) * (type === 'minus' ? -1 : 1);
+        let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
         let date = [activeDate.year, activeDate.month, activeDate.day]
         let next = AIODate().getByOffset({ date, offset, unit: { 'hour': 'day', 'day': 'month', 'month': 'year' }[unit] })
         if (next[0] > years[years.length - 1] || next[0] < years[0]) { return }
@@ -2090,7 +2090,7 @@ class DPArrow extends Component {
     }
     render() {
         let { size } = this.context;
-        return (<div className='aio-input-datepicker-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => this.change()}>{this.getIcon()}</div>)
+        return (<div className='aio-input-date-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => this.change()}>{this.getIcon()}</div>)
     }
 }
 function InputSlider() {
@@ -2412,7 +2412,7 @@ class SliderLabels extends Component {
     getLabels(labelStep) { return labelStep.map((o) => <SliderLabel key={o} value={o} />) }
     update() {
         let container = $(this.dom.current);
-        let labels = container.find('.aio-slider-label div');
+        let labels = container.find('.aio-slider-label-container div');
         if (!labels.length) { return; }
         let { direction } = this.context;
         let firstLabel = labels.eq(0);
@@ -2489,8 +2489,8 @@ class SliderLabel extends Component {
         try { text = editLabel(value) }
         catch { text = '' }
         return (
-            <div onClick={this.click.bind(this)} style={this.getStyle(rotate)} className={`aio-slider-label`}>
-                <div datarotated={rotate ? 'yes' : 'no'} className='aio-slider-label-text'>{text}</div>
+            <div onClick={this.click.bind(this)} style={this.getStyle(rotate)} className={`aio-slider-label-container`}>
+                <div datarotated={rotate ? 'yes' : 'no'} className='aio-slider-label'>{text}</div>
             </div>
         );
     }
@@ -2527,7 +2527,7 @@ function SliderScale(props) {
         return obj;
     }
     let { getScaleHTML } = context, { value } = props;
-    return (<div className="aio-slider-scale" style={getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
+    return (<div className="aio-slider-scale-container" style={getStyle()}>{getScaleHTML && getScaleHTML(value)}</div>);
 }
 class List extends Component {
     constructor(props) {
@@ -3689,10 +3689,10 @@ function getMainProperties(props, getProp, types) {
             hideTags: p('hideTags')
         }
     }
-    else if (type === 'datepicker') {
+    else if (type === 'date') {
         properties = {
             ...properties,
-            calendarType: p('calendarType', 'gregorian'),
+            jalali: p('jalali', false),
             unit: p('unit', 'day'),
             theme: p('theme', []),
             size: p('size', 180),
@@ -3706,7 +3706,7 @@ function getMainProperties(props, getProp, types) {
         }
     }
     else if (type === 'time') {
-        properties = { ...properties, calendarType: p('calendarType', 'gregorian') }
+        properties = { ...properties, jalali: p('jalali', false) }
     }
     else if (type === 'list') {
         properties = {

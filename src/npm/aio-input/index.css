@@ -13,6 +13,7 @@
     background: #fff;
     gap: 6px;
     font-family: inherit;
+    font-size:14px;
 }
 
 .aio-input input {
@@ -47,7 +48,14 @@
     flex: 1;
     justify-content: center;
 }
-
+.aio-input-content > .aio-input-value{
+    height:16px;
+    overflow:visible;
+}
+.aio-input-content > .aio-input-subtext{
+    height:12px;
+    overflow:visible;
+}
 
 
 .aio-input-value {
@@ -55,6 +63,7 @@
     width: 100%;
     position: relative;
     overflow: hidden;
+    max-width:100%;
 }
 .aio-input-map-value{
     overflow:visible;
@@ -81,7 +90,9 @@
     height: 100%;
     white-space: nowrap;
 }
-
+.aio-input-color-after{
+    padding-inline-end:6px;
+}
 .aio-input-loading {
     display: flex;
     align-items: center;
@@ -163,8 +174,7 @@
 }
 
 .aio-input-option {
-    height: 36px;
-    padding: 0 12px;
+    padding: 3px 12px;
     display: flex;
     align-items: center;
     box-sizing: border-box;
@@ -173,6 +183,16 @@
     cursor: pointer;
     flex-shrink: 0;
     gap: 6px;
+    user-select: none;
+}
+.aio-input-select-option{
+    height:36px;
+}
+.aio-input-multiselect-option{
+    height:36px;
+}
+.aio-input-radio-option{
+    height:36px;
 }
 
 .aio-input-dropdown-option {
@@ -339,6 +359,7 @@
     border: 1px solid #ddd;
     overflow: hidden;
     cursor: auto;
+    
 }
 
 .aio-input-tag {
@@ -355,9 +376,16 @@
     background: dodgerblue;
     font-size: 12px;
 }
-
+.aio-input-tags:not(.disabled) .aio-input-tag.disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+.aio-input-tags.disabled .aio-input-tag.disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
 .aio-input-tag-icon {
-    width: 20px;
+    min-width: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -386,11 +414,11 @@
     border: none;
     font-size:12px;
 }
-.aio-input-tabs-content {
-    overflow-x: hidden;
+.aio-input-tabs-content,.aio-input-buttons-content {
+    overflow: hidden;
 }
 
-.aio-input-tabs-options {
+.aio-input-tabs-options,.aio-input-buttons-options {
     display: flex;
     flex-wrap: nowrap;
     width: 100%;
@@ -417,9 +445,23 @@
     height: 0;
     border-bottom: 2px solid;
 }
-
 .aio-input-tabs-option.active {
     color: dodgerblue;
+}
+.aio-input-buttons{
+    width:100%;
+}
+.aio-input-buttons-options{
+    gap:6px;
+}
+.aio-input-buttons-option{
+    border:1px solid #ddd;
+    color:#666;
+    border-radius: 4px;
+}
+.aio-input-buttons-option.active {
+    background: dodgerblue;
+    color:#fff;
 }
 
 .aio-input-tabs-option.active .aio-input-tabs-option-bar{
@@ -472,6 +514,9 @@
 
 .aio-input-color {
     padding: 0;
+}
+.aio-input-color input[type=color]{
+    min-width:24px;
 }
 
 .aio-input-slider {
@@ -913,7 +958,7 @@
     opacity: 1;
 }
 
-.aio-input-datepicker-today {
+.aio-input-date-today {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -923,7 +968,7 @@
     color: #fff;
 }
 
-.aio-input-datepicker-calendar {
+.aio-input-date-calendar {
     user-select: none;
     -webkit-user-select: none;
     direction: ltr;
@@ -932,7 +977,7 @@
     stroke: #333;
 }
 
-.aio-input-datepicker-header {
+.aio-input-date-header {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -940,22 +985,21 @@
     direction: ltr;
 }
 
-.aio-input-datepicker-arrow {
+.aio-input-date-arrow {
     display: flex;
     align-items: center;
-    z-index: 1;
     justify-content: center;
     border-radius: 100%;
     stroke: inherit;
 }
 
-.aio-input-datepicker-footer {
+.aio-input-date-footer {
     display: flex;
     justify-content: flex-end;
     direction: ltr;
 }
 
-.aio-input-datepicker-footer button {
+.aio-input-date-footer button {
     background: none;
     font-weight: bold;
     border: none;
@@ -967,17 +1011,17 @@
     color: inherit;
 }
 
-.aio-input-datepicker-today div {
+.aio-input-date-today div {
     display: flex;
     align-items: center;
 
 }
 
-.aio-input-datepicker-calendar svg {
+.aio-input-date-calendar svg {
     cursor: pointer;
 }
 
-.aio-input-datepicker-select {
+.aio-input-date-select {
     flex: 1;
     display: flex;
     align-items: center;
@@ -987,7 +1031,7 @@
 }
 
 
-.aio-input-datepicker-body {
+.aio-input-date-body {
     display: grid;
     flex: 1 1;
     position: relative;
@@ -998,27 +1042,27 @@
 }
 
 /* custom scrollbar */
-.aio-input-datepicker-calendar select::-webkit-scrollbar {
+.aio-input-date-calendar select::-webkit-scrollbar {
     width: 10px !important;
     height: 10px !important;
 }
 
-.aio-input-datepicker-calendar select::-webkit-scrollbar-track {
+.aio-input-date-calendar select::-webkit-scrollbar-track {
     background-color: transparent;
 }
 
-.aio-input-datepicker-calendar select::-webkit-scrollbar-thumb {
+.aio-input-date-calendar select::-webkit-scrollbar-thumb {
     background-color: #e6e7e9;
     border-radius: 20px;
     border: 3px solid transparent;
     background-clip: content-box;
 }
 
-.aio-input-datepicker-calendar select::-webkit-scrollbar-thumb:hover {
+.aio-input-date-calendar select::-webkit-scrollbar-thumb:hover {
     background-color: #a8bbbf;
 }
 
-.aio-input-datepicker-cell {
+.aio-input-date-cell {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1027,7 +1071,7 @@
     background: #fff;
 }
 
-.aio-input-datepicker-cell.aio-input-datepicker-disabled {
+.aio-input-date-cell.aio-input-date-disabled {
     box-shadow: none;
     border-radius: 0;
     background: rgba(128, 128, 128, .2);
@@ -1035,27 +1079,27 @@
     cursor: not-allowed !important;
 }
 
-.aio-input-datepicker-cell.aio-input-datepicker-active {
+.aio-input-date-cell.aio-input-date-active {
     background: dodgerblue;
     color: #fff;
 }
 
-.aio-input-datepicker-cell.today {
+.aio-input-date-cell.today {
     border: 1px solid dodgerblue;
 }
 
-.aio-input-datepicker-weekday {
+.aio-input-date-weekday {
     font-weight: bold;
     font-size: 110%;
 }
 
-.aio-input-datepicker-container button {
+.aio-input-date-container button {
     width: unset !important;
     border: none !important;
     background: none !important;
 }
 
-.aio-input-datepicker-cell:not(.aio-input-datepicker-weekday):not(.aio-input-datepicker-space):not(.aio-input-datepicker-disabled):hover {
+.aio-input-date-cell:not(.aio-input-date-weekday):not(.aio-input-date-space):not(.aio-input-date-disabled):hover {
     position: relative;
     transform: scale(1.2);
     box-shadow: 2px 2px 5px 0 rgba(0, 0, 0, .3);
@@ -1063,7 +1107,7 @@
     z-index: 100;
 }
 
-.aio-input-datepicker-dropdown {
+.aio-input-date-dropdown {
     background: none;
     color: inherit;
     font-size: inherit;
@@ -1180,7 +1224,7 @@
     height: 100%;
 }
 
-.aio-slider-label {
+.aio-slider-label-container {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -1194,28 +1238,37 @@
 
 }
 
-.aio-slider.horizontal .aio-slider-label {
+.aio-slider.horizontal .aio-slider-label-container {
     top: 34px;
 }
 
-.aio-slider.vertical .aio-slider-label {
+.aio-slider.vertical .aio-slider-label-container {
     left: 34px;
 }
 
-.aio-slider-scale {
+.aio-slider-scale-container {
     position: absolute;
-    background: #ddd;
+    align-items: center !important;
+    justify-content: center !important;
+    display: flex;
     align-items: center;
     justify-content: center;
-    display: flex;
     overflow: visible;
     z-index: 10;
+    width:0;
+    height:0;
 }
 
-.aio-slider-scale * {
+.aio-slider-scale-container * {
     flex-shrink: 0;
 }
-
+.aio-slider-scale{
+    background:#ddd;
+    position: absolute;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
 .aio-slider.horizontal .aio-slider-scale {
     height: 10px;
     width: 1px;
@@ -1449,11 +1502,14 @@
     align-items: center;
     padding: 0 6px;
     position: relative;
+    opacity:0.5;
+    font-size:75%;
 }
 
 .aio-input-list-option.active {
     opacity: 1;
     transform: unset;
+    font-size:100%;
 }
 
 .aio-input-time-popover {
@@ -1856,4 +1912,20 @@
     color:#fff;
     flex:1;
     overflow-y:auto;
+}
+.aio-input-date-years{
+    display:flex;
+    flex-direction:column;
+}
+.aio-input-date-years-header{
+    display:flex;
+}
+.aio-input-date-years-body{
+    display:grid;
+}
+.aio-input-date-years-label{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content: center;
 }
