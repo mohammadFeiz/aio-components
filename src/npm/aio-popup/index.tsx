@@ -1,4 +1,4 @@
-import React, { Component, createRef, useEffect } from 'react';
+import React, { Component, createRef, useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -6,6 +6,10 @@ import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';
 type AP_props = {rtl?:boolean}
+type AP_addModal = {
+
+}
+type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export default class AIOPopup {
     rtl:boolean;
     render:()=>React.ReactNode;
@@ -112,24 +116,50 @@ export default class AIOPopup {
     this._addSnackebar({text,index,type,subtext,action,time,rtl,onClose})
   }
 }
-class Popups extends Component {
-  constructor(props) {
-    super(props);
-    this.dom = createRef()
-    let { getActions = () => { } } = props
-    this.state = {modals: []}
+type AP_Popups = {
+  getActions:(p:{
+    removeModal:(p:AP_removeModal)=>void,
+    addModal:(p:AP_addModal)=>void,
+    getModals:()=>AP_modal[]
+  })=>void,
+  rtl:boolean
+}
+type AP_modal_button = [text:React.ReactNode,attrs?:any]
+type AP_modal_header = {
+  title?:string,subtitle?:string,buttons?:AP_modal_button[],onClose?:()=>void,backButton?:()=>void,attrs?:any
+}
+type AP_modal_footer = {attrs?:any,buttons?:AP_modal_button[]}
+type AP_backdrop = {attrs?:any,close?:boolean}
+type AP_modal_body = {render:(p:{close:()=>void,state:any,setState:(state:any)=>void})=>React.ReactNode,attrs?:any}
+type AP_modal = {
+  id?:string,
+  onClose?:()=>void,
+  mounted:boolean,
+  popover:any,
+  position:AP_position,
+  attrs:any,
+  backdrop:AP_backdrop, 
+  header:AP_modal_header,
+  state?:any,
+  footer?:AP_modal_footer, 
+  body:AP_modal_body, 
+}
+function Popups(props:AP_Popups) {
+  let {getActions = ()=>{},rtl} = props;
+  let [temp] = useState({
+    
+  })
+  let [modals,setModals] = useState<AP_modal[]>([])
+  let modalsRef = useRef(modals);
+  modalsRef.current = modals;
+  useEffect(()=>{
     getActions({
-      removeModal: this.removeModal.bind(this),
-      addModal: this.addModal.bind(this),
-      getModals: ()=>[...this.state.modals]
+      removeModal,
+      addModal,
+      getModals: ()=>[...modals]
     })
-  }
-  change(obj) {
-    let { onChange = () => { } } = this.props;
-    for(let prop in obj){this.state[prop] = obj[prop]}
-    this.setState(obj, () => onChange({ ...this.state }))
-  }
-  addModal(o,animate = true) {
+  },[])
+  function addModal(o,animate = true) {
     if(typeof o !== 'object'){
       console.error('aio-popup => addModal modal parameter to add is not an object');
       return;
@@ -138,196 +168,179 @@ class Popups extends Component {
       console.error('aio-popup => addModal missing modal id property');
       return;
     }
-    let { modals } = this.state;
     let newModals = modals.filter(({ id }) => id !== o.id);
     newModals.push({...o,mounted:o.position === 'popover'?false:!animate})
-    this.change({ modals: newModals })
+    setModals(newModals)
   }
-  async removeModal(arg = 'last',animate = true) {
-    if(arg === 'all'){this.change({ modals: [] });}
+  async function removeModal(arg = 'last',animate = true) {
+    if(arg === 'all'){setModals([]);}
     else{
-      let { modals } = this.state;
       if(!modals.length){return}
       if(arg === 'last'){arg = modals[modals.length - 1].id}
-      this.mount(arg,false);
+      mount(arg,false);
       setTimeout(()=>{
-        let { modals } = this.state;
-        let modal = modals.find((o) => o.id === arg);
+        let modals = modalsRef.current;
+        let modal:AP_modal = modals.find((o:AP_modal) => o.id === arg);
         if(!modal){return}
         if(modal.onClose){modal.onClose()}
-        this.change({ modals: modals.filter((o) => o.id !== arg) })
+        setModals(modals.filter((o) => o.id !== arg))
       },animate?300:0)
     }
   }
-  mount(id = 'last',state){
+  function mount(id = 'last',state:boolean){
     try{
-      let { modals } = this.state;
       if(id === 'last'){id = modals[modals.length - 1].id}
-      let newModals = modals.map((o)=>o.id === id?{...o,mounted:state}:o)
-      this.change({modals:newModals})
+      let newModals:AP_modal[] = modals.map((o:AP_modal)=>{
+        let newModal:AP_modal = o.id === id?{...o,mounted:state}:o;
+        return newModal
+      })
+      setModals(newModals)
     }
     catch{return}
   }
-  getModals() {
-    let { modals } = this.state;
+  function getModals() {
     if (!modals.length) { return null }
-    return modals.map((modal, i) => {
-      let {
-        popover,position,text,onSubmit, rtl = this.props.rtl, attrs = {},backdrop, header,state,
-        footer, closeType, body, id,mounted 
-      } = modal;  
-      let props = {
-        id,backdrop,footer,text,onSubmit,header,popover,state,
-        position, rtl, attrs, closeType, body,index: i,isLast: i === modals.length - 1,mounted,
-        onClose: () => this.removeModal(id),
-        removeModal:this.removeModal.bind(this),//use for remove lastModal by esc keyboard
-        onMount:()=>this.mount(id,true)
+    return modals.map((modal:AP_modal, i) => {
+      let props:AP_Popup = {
+        modal,index: i,isLast: i === modals.length - 1,rtl,
+        onClose: () => removeModal(modal.id),
+        removeModal,//use for remove lastModal by esc keyboard
+        onMount:()=>mount(modal.id,true)
       }
-      return <Popup key={id} {...props} />
+      return <Popup key={modal.id} {...props} />
     })
   }
-  render() {return (<>{this.getModals()}</>)}
+  return getModals()
 }
+type AP_Popup = {
+  modal:AP_modal,
+  rtl:boolean,
+  index:number,
+  isLast:boolean,
+  onClose:()=>void,
+  removeModal:(p:AP_removeModal)=>void,
+  onMount:()=>void,
+}
+function Popup(props:AP_Popup) {
+  let {modal,rtl,onClose,onMount,isLast,removeModal} = this.props;  
+  let {attrs = {},popover = {},id,backdrop = {},footer,header,position = 'fullscreen',body = {},mounted} = modal;
+  let [temp] = useState({
+    dom:createRef(),
+    backdropDom:createRef(),
+    dui:undefined,
+    isDown:false
 
-class Popup extends Component {
-  constructor(props) {
-    super(props);    
-    this.dom = createRef();
-    this.backdropDom = createRef()
-    this.state = {popoverStyle:undefined,state:props.state}
-  }
-  async onClose(obj) {
-    let { onClose } = this.props;
-    onClose(obj);
+  })
+  let [popoverStyle,setPopoverStyle] = useState({})
+  let [state,setState] = useState(modal.state)
+  async function close() {
+    onClose();
   }
   componentWillUnmount(){
     $(window).unbind('click',this.handleBackClick)
   }
-  updatePopoverStyle(){
-    let {position} = this.props;
+  function updatePopoverStyle(){
     if(position === 'popover'){
-      let popoverStyle = this.getPopoverStyle();
-      if(JSON.stringify(popoverStyle) !== JSON.stringify(this.state.popoverStyle)){
-        this.setState({popoverStyle})
+      let ps = this.getPopoverStyle();
+      if(JSON.stringify(ps) !== JSON.stringify(popoverStyle)){
+        setPopoverStyle(ps)
       }
     }
   }
-  componentDidMount(){
-    let {popover = {},position} = this.props;
+  useEffect(()=>{
     setTimeout(()=>{
-      let {mounted,onMount} = this.props;
-      this.setState({popoverStyle:position === 'popover'?this.getPopoverStyle():{}})
+      setPopoverStyle(position === 'popover'?this.getPopoverStyle():{})
       if(!mounted){onMount()}
     },0)
     if(popover.getTarget){
-      this.dui = 'a' + (Math.round(Math.random() * 10000000));
+      temp.dui = 'a' + (Math.round(Math.random() * 10000000));
       let target = popover.getTarget();
-      target.attr('data-uniq-id',this.dui)
+      target.attr('data-uniq-id',temp.dui)
     }
     //$(this.backdropDom.current).focus();
-    $(window).unbind('click',this.handleBackClick)
-    $(window).bind('click',$.proxy(this.handleBackClick,this))
-  }
-  handleBackClick(e){
+    $(window).unbind('click',handleBackClick)
+    $(window).bind('click',handleBackClick)
+  },[])
+  function handleBackClick(e){
     //در مود پاپاور اگر هر جایی غیر از اینپوت و پاپاور کلیک شد پاپاپ رو ببند
-    if(!this.dui){return}
-    let { position = 'fullscreen' } = this.props;
+    if(!temp.dui){return}
     let target = $(e.target)
-    if(position !== 'popover' || target.attr('data-uniq-id') === this.dui || target.parents(`[data-uniq-id=${this.dui}]`).length){
+    if(position !== 'popover' || target.attr('data-uniq-id') === temp.dui || target.parents(`[data-uniq-id=${temp.dui}]`).length){
       return
     }
-    this.onClose();
+    close();
   }
-  header_layout() {
-    let { rtl,header } = this.props;
+  function header_layout() {
     if (typeof header !== 'object') { return false }
-    let {state} = this.state;
-    return {html:<ModalHeader rtl={rtl} header={header} handleClose={(obj)=>this.onClose(obj)} state={state} setState={(value)=>this.setState({state:value})}/>,className:'of-visible'}
+    return {html:<ModalHeader rtl={rtl} header={header} handleClose={(obj)=>close()} state={state} setState={(value)=>setState(value)}/>,className:'of-visible'}
   }
-  body_layout(){
-    let {body = {}} = this.props;
-    let {state} = this.state;
-    return { flex:1,html:<ModalBody body={body} state={state} setState={(value)=>this.setState({state:value})} handleClose={this.onClose.bind(this)} updatePopoverStyle={()=>this.updatePopoverStyle()}/> }
+  function body_layout(){
+    return { flex:1,html:<ModalBody body={body} state={state} setState={(value)=>setState(value)} handleClose={close} updatePopoverStyle={updatePopoverStyle}/> }
   }
-  footer_layout() {
-    let {closeText,submitText,onSubmit,footer,type} = this.props;
-    let {state} = this.state;
-    let handleClose = this.onClose.bind(this);
-    let props = {closeText,submitText,onSubmit,footer,type,handleClose,state,setState:(value)=>this.setState({state:value})};
+  function footer_layout() {
+    let handleClose = close;
+    let props = {footer,handleClose,state,setState};
     return {html:<ModalFooter {...props}/>}
   }
-  getBackDropClassName() {
-    let { rtl,position = 'fullscreen',backdrop,mounted } = this.props;
+  function getBackDropClassName() {
     let className = 'aio-popup-backdrop';
-    if (backdrop && backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
+    if (backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
     className += ` aio-popup-position-${position}`
     className += rtl?' rtl':' ltr'
     if(!mounted){className += ' not-mounted'}
     return className
   }
-  backClick(e) {
-    if(this.isDown){return}
+  function backClick(e) {
+    if(temp.isDown){return}
     e.stopPropagation();
     let target = $(e.target);
-    let { backdrop = {} } = this.props;
     if (backdrop.close === false) { return }
     if(!target.hasClass('aio-popup-backdrop')){return}
-    this.onClose()
+    close()
   }
-  getPopoverStyle(){
-    let { popover = {},rtl,attrs = {} } = this.props;
+  function getPopoverStyle(){
     let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o,fitTo} = popover; 
     if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
-    let popup = $(this.dom.current);
+    let popup = $(temp.dom.current);
     let style = Align(popup, target, { fixStyle: fixStyle, pageSelector,fitTo, fitHorizontal, style: attrs.style, rtl })
     return {...style,position:'absolute'}
   }
-  keyDown(e){
-    let {isLast,removeModal} = this.props;
+  function keyDown(e){
     if(!isLast){return}
     let code = e.keyCode;
     if(code === 27){
       removeModal()
     }
   }
-  mouseUp(){
-    setTimeout(()=>this.isDown = false,0);
+  function mouseUp(){
+    setTimeout(()=>temp.isDown = false,0);
   }
-  mouseDown(e){
-    $(window).unbind('mouseup',this.mouseUp);
-    $(window).bind('mouseup',$.proxy(this.mouseUp,this));
-    this.isDown = true
+  function mouseDown(e){
+    $(window).unbind('mouseup',mouseUp);
+    $(window).bind('mouseup',mouseUp);
+    temp.isDown = true
   }
-  render() {
-    let { rtl, attrs = {},backdrop = {},mounted} = this.props;
-    let {popoverStyle} = this.state
-    let backdropAttrs = backdrop?backdrop.attrs:{};
-    let backdropProps = {
-      ...backdropAttrs,
-      className: this.getBackDropClassName(),
-      onClick: backdrop.close === false?undefined:(e) => this.backClick(e),
-    }
-    let style = { ...popoverStyle,...attrs.style,flex:'none'}
-    let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
-    let ev = "ontouchstart" in document.documentElement?'onTouchStart':'onMouseDown'
-    return (
-      <div {...backdropProps} ref={this.backdropDom} onKeyDown={this.keyDown.bind(this)} tabIndex={0}>
-        <RVD
-          rootNode={{
-            attrs:{...attrs,ref:this.dom,style:undefined,className:undefined,'data-uniq-id':this.dui,[ev]:this.mouseDown.bind(this)},
-            className,style,
-            column: [
-              this.header_layout(),
-              this.body_layout(),
-              this.footer_layout()
-            ]
-          }}
-        />
-      </div>
-    )
+  let backdropAttrs = backdrop?backdrop.attrs:{};
+  let backdropProps = {
+    ...backdropAttrs,
+    className: getBackDropClassName(),
+    onClick: backdrop.close === false?undefined:(e) => backClick(e),
   }
+  let style:any = { ...popoverStyle,...attrs.style,flex:'none'}
+  let className = 'aio-popup' + (rtl ? ' rtl' : ' ltr') + (!mounted?' not-mounted':'') + (attrs.className?' ' + attrs.className:'');
+  let ev = "ontouchstart" in document.documentElement?'onTouchStart':'onMouseDown'
+  return (
+    <div {...backdropProps} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
+      <RVD
+        rootNode={{
+          attrs:{...attrs,ref:temp.dom,style:undefined,className:undefined,'data-uniq-id':temp.dui,[ev]:mouseDown},
+          className,style,column: [header_layout(),body_layout(),footer_layout()]
+        }}
+      />
+    </div>
+  )
 }
 function ModalHeader({rtl,header,handleClose,state,setState}){
   if(typeof header !== 'object'){return null}
