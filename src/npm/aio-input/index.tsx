@@ -727,7 +727,7 @@ function Input() {
     let { type } = rootProps;
     let {
         min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400, disabled, options, placeholder,
-        inputAttrs, spin, justify
+        inputAttrs, spin = true, justify
     } = rootProps;
     let [dom] = useState(createRef())
     let [temp] = useState<any>({atimeout:undefined,btimeout:undefined,clicked:false})

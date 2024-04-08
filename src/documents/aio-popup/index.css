@@ -5,3 +5,17 @@
     color:#666;
     border-radius:4px;
 }
+.my-snackebar{
+    background:#fff;
+    padding-top:16px;
+    color:#666;
+    width:fit-content;
+    border-radius:6px;
+}
+.my-snackebar .aio-popup-snackebar-item-uptext{
+    font-size:16px;
+    font-weight:bold;
+}
+.my-snackebar .aio-popup-snackebar-bar{
+    background:#36CB8C;
+}

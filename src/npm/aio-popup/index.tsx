@@ -1,55 +1,106 @@
-import React, { Component, createRef, useEffect, useRef, useState } from 'react';
+import React, { Component, createRef, useEffect, useRef, useState,isValidElement } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';
-type AP_props = {rtl?:boolean}
-type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
-type AP_popover = {getTarget?:()=>any,pageSelector?:string,fitHorizontal?:boolean,fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,fitTo?:string,rtl?:boolean,attrs?:any}
-type AP_header = {
+export type AP_props = {rtl?:boolean}
+export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
+export type AP_popover = {getTarget?:()=>any,pageSelector?:string,fitHorizontal?:boolean,fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,fitTo?:string,rtl?:boolean,attrs?:any}
+export type AP_header = {
   title?:string,subtitle?:string,buttons?:AP_modal_button[],onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),backButton?:()=>void,attrs?:any
 }
-type AP_backdrop = {attrs?:any,close?:boolean}
-type AP_body = {render:(p:{close:()=>void,state:any,setState:(state:any)=>void})=>React.ReactNode,attrs?:any}
-type AP_footer = {attrs?:any,buttons?:AP_modal_button[]}
+export type AP_backdrop = false | {attrs?:any,close?:boolean}
+export type AP_body = {render:(p:{close:()=>void,state:any,setState:(state:any)=>void})=>React.ReactNode,attrs?:any}
+export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]}
 
-export type AP_addModal = {
+export type AP_modal = {
   id?:string,
+  onClose?:boolean | (()=>void),
+  popover?:any,
   position?:AP_position,
-  animate?:boolean,
-  popover?:AP_popover,
   attrs?:any,
   backdrop?:AP_backdrop,
   header?:AP_header,
-  body:AP_body,
-  footer?:AP_footer,
   state?:any,
-  onClose?:boolean | (()=>void)
+  footer?:AP_footer,
+  body:AP_body,
+  animate?:boolean
 }
-type AP_addSnackbar = {
-  text:string,type:'success'|'error'|'warning'|'info',subtext?:string,action?:{text:string,onClick:()=>void},time?:number,rtl?:boolean,onClose?:false
+
+export type AP_snackebar = {
+  icon?:React.ReactNode,
+  id?:string,
+  time?:number,
+  text:string,
+  subtext?:string,
+  action?:{text:string,onClick:()=>void},
+  type:'success'|'error'|'warning'|'info',
+  verticalAlign?:'start' | 'end',
+  horizontalAlign?:'start' | 'center' | 'end',
+  onClose?:false
+  rtl?:boolean,
+  attrs?:any
 }
-type AP_addConfirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel:()=>void,attrs?:any}
-type AP_addPrompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel:()=>void,attrs?:any}
-type AP_addAlert = { icon?:false | React.ReactNode,type:'success'|'error'|'warning'|'info',text?:React.ReactNode,subtext?:string,time?:number,className?:string,closeText?:string,animate?:boolean}
+export type AP_addConfirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel:()=>void,attrs?:any}
+export type AP_addPrompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel:()=>void,attrs?:any}
+export type AP_alert = { icon?:false | React.ReactNode,position?:AP_position,type:'success'|'error'|'warning'|'info',text?:React.ReactNode,subtext?:string,time?:number,className?:string,closeText?:string,animate?:boolean}
+export type AP_modal_button = [text:React.ReactNode,attrs?:any]
+export type AP_Popups = {
+  getActions:(p:{
+    removeModal:(p?:string,animate?:boolean)=>void,
+    addModal:(p:AP_modal)=>void,
+    getModals:()=>AP_modal[]
+  })=>void,
+  rtl:boolean
+}
+
+export type AP_Popup = {
+  modal:AP_modal,
+  rtl:boolean,
+  index:number,
+  isLast:boolean,
+  onClose:()=>void,
+  removeModal:(p?:string,animate?:boolean)=>void,
+}
+
+export type AP_ModalHeader = {
+  rtl:boolean,header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void
+}
+
+export type AP_ModalBody = {
+  body:AP_body,
+  handleClose:()=>void,
+  updatePopoverStyle:()=>void,
+  state:any,setState:(state:any)=>void
+}
+
+export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
+
+export type AP_SnackebarItem = {
+  item:AP_snackebar,
+  onRemove:(id:string)=>void,
+  index:number,
+  rtl:boolean
+}
+
 export default class AIOPopup {
     rtl:boolean;
     render:()=>React.ReactNode;
-    _addModal:(p:AP_addModal)=>void;
-    addModal:(p:AP_addModal)=>void;
-    addAlert:(p:AP_addAlert)=>void;
+    _addModal:(p:AP_modal)=>void;
+    addModal:(p:AP_modal)=>void;
+    addAlert:(p:AP_alert)=>void;
     removeModal:(arg?:string,animate?:boolean)=>void;
     _removeModal:(arg?:string,animate?:boolean)=>void;
-    addSnackebar:(p:AP_addSnackbar)=>void;
-    _addSnackebar:(p:AP_addSnackbar)=>void;
+    addSnackebar:(p:AP_snackebar)=>void;
+    _addSnackebar:(p:AP_snackebar)=>void;
     getModals:()=>AP_modal[];
     _getModals:()=>AP_modal[];
     addConfirm:(p:AP_addConfirm)=>void;
     addPrompt:(p:AP_addPrompt)=>void;
     popupId:string;
-    constructor(obj:AP_props){
+    constructor(obj?:AP_props){
         let {rtl} = obj || {}
         this.rtl = rtl;
         this.render = () => {
@@ -61,7 +112,7 @@ export default class AIOPopup {
                     this._getModals = getModals;
                 }
             }
-            let snackebarProps:AP_Snackbar = {
+            let snackebarProps:AP_Snackebar = {
                 rtl:this.rtl,
                 getActions:({add})=>{
                     this._addSnackebar = add;
@@ -70,20 +121,20 @@ export default class AIOPopup {
             return (
                 <>
                     <Popups {...popupsProps}/>
-                    <Snackbar {...snackebarProps}/>
+                    <Snackebar {...snackebarProps}/>
                 </>
             )
         }
         this.addModal = (obj)=>this._addModal(obj);
         this.addAlert = (obj) => Alert(obj);
         this.removeModal = (arg,animate = true)=>{if(this._removeModal){this._removeModal(arg,animate)}};
-        this.addSnackebar = (obj:AP_addSnackbar)=>this._addSnackebar(obj)
+        this.addSnackebar = (obj:AP_snackebar)=>this._addSnackebar(obj)
         this.getModals = ()=>this._getModals()
         this.addConfirm = (obj:AP_addConfirm) => {
           let {title,subtitle,text,submitText = 'بله',canselText = 'خیر',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
           let className = 'aio-popup-confirm';
           if(attrs.className){className += ' ' + attrs.className}
-          let config:AP_addModal = {
+          let config:AP_modal = {
             position:'center',
             attrs:{...attrs,className},
             header:{title,subtitle},
@@ -96,7 +147,7 @@ export default class AIOPopup {
                   submitText,
                   {
                     onClick:async ()=>{
-                      let res = await onSubmit(); 
+                      let res = await onSubmit();
                       if(res !== false){this.removeModal()}
                     },
                     className:'active'
@@ -111,7 +162,7 @@ export default class AIOPopup {
           let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
           let className = 'aio-popup-prompt';
           if(attrs.className){className += ' ' + attrs.className}
-          let config:AP_addModal = {
+          let config:AP_modal = {
             position:'center',
             attrs:{...attrs,className},
             state:{temp:''},
@@ -126,7 +177,7 @@ export default class AIOPopup {
                   ({state,setState})=>{
                     return {
                       onClick:async ({state})=>{
-                        let res = await onSubmit(state.temp); 
+                        let res = await onSubmit(state.temp);
                         if(res !== false){this.removeModal()}
                         else {setState({temp:''})}
                       },
@@ -139,30 +190,8 @@ export default class AIOPopup {
           }
           this.addModal(config)
         }
-        
+
       }
-}
-type AP_Popups = {
-  getActions:(p:{
-    removeModal:(p?:string,animate?:boolean)=>void,
-    addModal:(p:AP_addModal)=>void,
-    getModals:()=>AP_modal[]
-  })=>void,
-  rtl:boolean
-}
-type AP_modal_button = [text:React.ReactNode,attrs?:any]
-type AP_modal = {
-  id:string,
-  onClose?:()=>void,
-  popover:any,
-  position:AP_position,
-  attrs:any,
-  backdrop:AP_backdrop, 
-  header:AP_header,
-  state?:any,
-  footer?:AP_footer, 
-  body:AP_body, 
-  animate:boolean
 }
 class Popups extends Component<AP_Popups,{modals:AP_modal[]}> {
   constructor(props){
@@ -178,14 +207,12 @@ class Popups extends Component<AP_Popups,{modals:AP_modal[]}> {
     for(let prop in obj){this.state[prop] = obj[prop]}
     this.setState(obj)
   }
-  
-  addModal(o:AP_addModal) {
+
+  addModal(o:AP_modal) {
     let {modals} = this.state;
     if(o.id === undefined){o.id = 'popup' + Math.round(Math.random() * 1000000)}
-    let {animate = true} = o;
     let newModals:AP_modal[] = modals.filter(({ id }) => id !== o.id);
-    let {popover,position,attrs,backdrop,header,body,id,footer} = o;
-    let newModal:AP_modal = {id,popover,attrs,backdrop,header,body,position,animate,footer}
+    let newModal:AP_modal = o
     newModals.push(newModal)
     this.change({modals:newModals})
   }
@@ -196,13 +223,13 @@ class Popups extends Component<AP_Popups,{modals:AP_modal[]}> {
       if(!modals.length){return}
       if(arg === 'last'){arg = modals[modals.length - 1].id}
       let parentDom = $(`.aio-popup-backdrop[data-id=${arg}]`);
-      let dom = parentDom.find('.aio-popup'); 
+      let dom = parentDom.find('.aio-popup');
       parentDom.addClass('not-mounted');
       dom.addClass('not-mounted');
       setTimeout(()=>{
         let modal:AP_modal = modals.find((o:AP_modal) => o.id === arg);
         if(!modal){return}
-        if(modal.onClose){modal.onClose()}
+        if(typeof modal.onClose === 'function'){modal.onClose()}
         let newModals:AP_modal[] = modals.filter((o) => o.id !== arg)
         this.change({modals:newModals})
       },animate?300:0)
@@ -224,19 +251,11 @@ class Popups extends Component<AP_Popups,{modals:AP_modal[]}> {
   render(){
     return <>{this.getModals()}</>
   }
-  
-}
-type AP_Popup = {
-  modal:AP_modal,
-  rtl:boolean,
-  index:number,
-  isLast:boolean,
-  onClose:()=>void,
-  removeModal:(p?:string,animate?:boolean)=>void,
+
 }
 function Popup(props:AP_Popup) {
-  let {modal,rtl,onClose,isLast,removeModal} = props; 
-  let {attrs = {},popover = {},id,backdrop = {},footer,header,position = 'fullscreen',body,animate} = modal;
+  let {modal,rtl,onClose,isLast,removeModal} = props;
+  let {attrs = {},popover = {},id,backdrop = {},footer,header,position = 'fullscreen',body} = modal;
   let [temp] = useState({
     dom:createRef(),
     backdropDom:createRef(),
@@ -265,9 +284,9 @@ function Popup(props:AP_Popup) {
   }
   function setMounted(){
     let parentDom = $(`.aio-popup-backdrop[data-id=${id}]`);
-    let dom = parentDom.find('.aio-popup'); 
+    let dom = parentDom.find('.aio-popup');
     parentDom.addClass('not-mounted');
-    dom.addClass('not-mounted'); 
+    dom.addClass('not-mounted');
   }
   useEffect(()=>{
     temp.isFirstMount = false
@@ -310,7 +329,7 @@ function Popup(props:AP_Popup) {
     if(temp.isFirstMount){
       className += ' not-mounted'
     }
-    if (backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
+    if (backdrop && backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
     className += ` aio-popup-position-${position}`
     className += rtl?' rtl':' ltr'
     return className
@@ -319,12 +338,12 @@ function Popup(props:AP_Popup) {
     if(temp.isDown){return}
     e.stopPropagation();
     let target = $(e.target);
-    if (backdrop.close === false) { return }
+    if (backdrop && backdrop.close === false) { return }
     if(!target.hasClass('aio-popup-backdrop')){return}
     close()
   }
   function getPopoverStyle(){
-    let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o,fitTo} = popover; 
+    let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o,fitTo} = popover;
     if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
@@ -362,7 +381,7 @@ function Popup(props:AP_Popup) {
   let backdropProps = {
     ...backdropAttrs,['data-id']:id,
     className: getBackDropClassName(),
-    onClick: backdrop.close === false?undefined:(e) => backClick(e),
+    onClick: backdrop === false?undefined:(backdrop.close === false?undefined:(e) => backClick(e)),
   }
   let style:any = { ...popoverStyle,...attrs.style,flex:'none'}
   let ev = "ontouchstart" in document.documentElement?'onTouchStart':'onMouseDown'
@@ -376,9 +395,6 @@ function Popup(props:AP_Popup) {
       />
     </div>
   )
-}
-type AP_ModalHeader = {
-  rtl:boolean,header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void
 }
 function ModalHeader(props:AP_ModalHeader){
   let {rtl,header,handleClose,state,setState} = props;
@@ -398,15 +414,15 @@ function ModalHeader(props:AP_ModalHeader){
   function title_layout(){
     if(!title){return false}
     if(!subtitle){
-      return { html: title, className: 'aio-popup-title align-v flex-1' }  
+      return { html: title, className: 'aio-popup-title align-v flex-1' }
     }
     else {
-      return { 
+      return {
         className: 'align-v flex-1',
         column:[
           {html:title,className: 'aio-popup-title'},
           {html:subtitle,className: 'aio-popup-subtitle'}
-        ]  
+        ]
       }
     }
   }
@@ -431,12 +447,6 @@ function ModalHeader(props:AP_ModalHeader){
   let style = attrs.style;
   return (<RVD rootNode={{attrs,className,style,row: [backButton_layout(),title_layout(),buttons_layout(),close_layout()]}}/>)
 }
-type AP_ModalBody = {
-  body:AP_body,
-  handleClose:()=>void,
-  updatePopoverStyle:()=>void,
-  state:any,setState:(state:any)=>void
-}
 function ModalBody(props:AP_ModalBody){
     let {handleClose,body,updatePopoverStyle,state = {},setState} = props;
     let {render,attrs = {}} = body;
@@ -445,38 +455,32 @@ function ModalBody(props:AP_ModalBody){
       updatePopoverStyle()
     },[content])
     return (
-      <div {...attrs} className={'aio-popup-body' + (attrs.className?' ' + attrs.className:'')}>
+      <div {...attrs} className={'aio-popup-body aio-popup-scroll' + (attrs.className?' ' + attrs.className:'')}>
         {typeof render === 'function' && content}
       </div>
     )
 }
 function ModalFooter({footer,handleClose,state,setState}){
+  if(isValidElement(footer)){return footer}
   if(typeof footer !== 'object'){return null}
   let {attrs = {},buttons = []} = footer;
-  function buttons_layout(){
-    if(!buttons.length){return null}
-    return buttons.map(([text,attrs = {}])=>{
-      let Attrs = typeof attrs === 'function'?{...attrs({state,setState})}:{...attrs};
-      let {onClick = ()=>{},className} = Attrs;
-      Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
-      Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
-      return <button {...Attrs}>{text}</button>
-    })
+  function buttons_layout(){return !buttons.length?null:buttons.map((o:AP_modal_button)=>button_node(o))}
+  function button_node(p:AP_modal_button){
+    let [text,attrs = {}] = p;
+    let Attrs = typeof attrs === 'function'?{...attrs({state,setState})}:{...attrs};
+    let {onClick = ()=>{},className} = Attrs;
+    Attrs.className = 'aio-popup-footer-button' + (className?' ' + className:'');
+    Attrs.onClick = ()=> onClick({close:handleClose,state,setState})
+    return <button key={text} {...Attrs}>{text}</button>
   }
-  let className = 'aio-popup-footer' + (attrs.className?' ' + attrs.className:'')
-  let style = attrs.style;
-  return (
-    <div className={className} style={style}>
-      {buttons_layout()}
-    </div>
-  )
+  let p = {className:'aio-popup-footer' + (attrs.className?' ' + attrs.className:''),style:attrs.style}
+  return (<div {...p}>{buttons_layout()}</div>)
 }
 
-type AP_Alert = AP_addAlert;
-function Alert(props:AP_Alert) {
-  let { icon,type = '',text = '',subtext = '',time = 10,className,closeText = 'بستن'} = props;
+function Alert(props:AP_alert) {
+  let { icon,type = '',text = '',subtext = '',time = 10,className,closeText = 'بستن',position = 'center'} = props;
   let $$ = {
-    id:undefined,  
+    id:undefined,
     time: 0,
       getId() {
           return 'aa' + Math.round((Math.random() * 100000000))
@@ -489,23 +493,24 @@ function Alert(props:AP_Alert) {
       },
       getRender() {
           return (`
-      <div class='aio-popup-alert-container ${$$.id}${className ? 'aio-popup' + className : ''}'>
+      <div class='aio-popup-alert-container not-mounted ${$$.id} aio-popup-alert-container-${position}'>
         <div class='aio-popup-alert aio-popup-alert-${type}'>
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
-          <div class='aio-popup-alert-body'>
+          <div class='aio-popup-alert-body aio-popup-scroll'>
             <div class='aio-popup-alert-text'>${ReactDOMServer.renderToStaticMarkup(text as any)}</div>
             <div class='aio-popup-alert-subtext'>${subtext}</div>
           </div>
           <div class='aio-popup-alert-footer'>
-            <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>    
+            <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>
           </div>
           <div class='aio-popup-time'></div>
-        </div>    
+        </div>
       </div>
     `)
       },
       close() {
-          $('.' + $$.id).remove()
+        $$.toggleClass(false)
+        setTimeout(()=>$('.' + $$.id).remove(),200);
       },
       getIcon() {
           if (icon === false) { return '' }
@@ -524,55 +529,68 @@ function Alert(props:AP_Alert) {
               $$.startTimer();
           }, time / 50 * 1000)
       },
+      toggleClass(mount){
+        let dom = $(`.${$$.id}`);
+        if(mount){
+          setTimeout(()=>dom.removeClass('not-mounted'),0)
+        }
+        else {dom.addClass('not-mounted')}
+      },
       render() {
           $('body').append($$.getRender());
           $('button.' + $$.id).off('click', $$.close);
           $('button.' + $$.id).on('click', $$.close)
+          $$.toggleClass(true)
       }
   }
   $$.id = $$.getId();
   $$.render();
   if (time) { $$.startTimer(); }
 }
-type AP_Snackbar = {getActions:(p:{add:(item:AP_snackbarItem)=>void})=>void,rtl:boolean}
-type AP_snackbarItem = {
-  id:string,time?:number,subtext?:string,action?:{text:string,onClick:()=>void}
-  text:string,type:'success'|'error'|'warning'|'info',
-  onClose?:false
-}
-function Snackbar(props:AP_Snackbar){
-  let {getActions,rtl = false} = props;
-  let [items,setItems] = useState<AP_snackbarItem[]>([])
-  function add(item:AP_snackbarItem){
-    setItems(items.concat({...item,id:'a' + Math.round(Math.random() * 1000000000)}))
+class Snackebar extends Component<AP_Snackebar,{items:AP_snackebar[]}>{
+  constructor(props){
+    super(props);
+    this.state = {items:[]}
+    props.getActions({add:this.add.bind(this)})
   }
-  useEffect(()=>{getActions({add})},[])
-  function remove(id:string){
-    setItems(items.filter((o:AP_snackbarItem,i)=>o.id !== id))
+  add(item:AP_snackebar){
+    let {items} = this.state;
+    let newItems:AP_snackebar[] = [...items,{...item,id:'a' + Math.round(Math.random() * 1000000000)}]
+    this.setState({items:newItems})
   }
-  return (
-    <>
-      {
-        items.map((item:AP_snackbarItem,i)=>{
-          let p:AP_SnackbarItem = {rtl,item,index:i,onRemove:(id:string)=>remove(id)}
-          return (
-            <SnackebarItem {...p} key={item.id}/>
-          )
-        })
-      }
-    </>
-  )
-  
+  remove(id:string){
+    let {items} = this.state;
+    let newItems:AP_snackebar[] = items.filter((o:AP_snackebar,i)=>o.id !== id)
+    this.setState({items:newItems})
+  }
+  render(){
+    let {items} = this.state;
+    let {rtl} = this.props;
+    return (
+      <>
+        {
+          items.map((item:AP_snackebar,i)=>{
+            let p:AP_SnackebarItem = {rtl,item,index:i,onRemove:(id:string)=>this.remove(id)}
+            return (
+              <SnackebarItem {...p} key={item.id}/>
+            )
+          })
+        }
+      </>
+    )
+  }
 }
-type AP_SnackbarItem = {
-  item:AP_snackbarItem,
-  onRemove:(id:string)=>void,
-  index:number,
-  rtl:boolean
-}
-function SnackebarItem(props:AP_SnackbarItem){
+function SnackebarItem(props:AP_SnackebarItem){
   let {item,onRemove,index,rtl} = props;
-  let {time = 8,id,text,type,subtext,action,onClose} = item;
+  let {time = 8,id,text,type,subtext,action,onClose,verticalAlign = 'end',horizontalAlign = 'center',icon,attrs = {}} = item;
+  if(verticalAlign !== 'start' && verticalAlign !== 'end'){
+    verticalAlign = 'end';
+    console.error('aio-popup error => snackebar item .verticalAlign should be "start" or "end"')
+  }
+  if(horizontalAlign !== 'start' && horizontalAlign !== 'end' && horizontalAlign !== 'center'){
+    horizontalAlign = 'center';
+    console.error('aio-popup error => snackebar item .horizontalAlign should be "start" or "end" or "center"')
+  }
   let [mounted,setMounted] = useState<boolean>(false)
   useEffect(()=>{
     setTimeout(()=>setMounted(true),0)
@@ -587,30 +605,53 @@ function SnackebarItem(props:AP_SnackbarItem){
   function info_svg(){return (<svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" style={{fill: 'currentcolor'}}></path></svg>)}
   function success_svg(){return (<svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z" style={{fill: 'currentcolor'}}></path></svg>)}
   function getSvg(type){return type === 'error' || type === 'warning' || type === 'info'?info_svg():success_svg()}
-  function getBottom(index){
-    let els = $('.aio-popup-snackebar-item-container'),sum = 12;
-    for(let i = 0; i < index; i++){sum += els.eq(i).height() + 6;}
-    return sum
+  function getOffsetStyle(index){
+    let els = $('.aio-popup-snackebar-item-container'),sum = {start:12,end:12};
+    for(let i = 0; i < index; i++){
+      let dom = els.eq(i);
+      let height = dom.height() + 6;
+      let va = dom.attr('data-vertical-align');
+      sum[va] += height;
+    }
+    return {
+      [verticalAlign === 'start'?'top':'bottom']:sum[verticalAlign]
+    }
   }
-  let bottom = getBottom(index)
-  return (
-    <div onClick={onClose === false?undefined:()=>remove()} className={'aio-popup-snackebar-item-container' + (mounted?' mounted':'')} style={{bottom,direction:rtl?'rtl':undefined}}>
-      <div className={`aio-popup-snackebar-item aio-popup-snackebar-item-${type}`}>
-        <div className={`aio-popup-snackebar-item-icon`}>{getSvg(type)}</div>
-        <div className='aio-popup-snackebar-item-text'>
-          <div style={{textAlign:rtl?'right':'left'}}>{text}</div>
-          {!!subtext && <div className='aio-popup-snackebar-item-subtext'>{subtext}</div>}
-        </div>
-        {
-          !!action && !!action.text && 
-          <button 
-            className='aio-popup-snackebar-item-action' 
-            onClick={(e)=>{e.stopPropagation(); action.onClick(); remove()}}
-          >{action.text}</button>}
-        <div className={`aio-popup-snackebar-bar`} style={{transition:`${time}s linear`,right:rtl?0:'unset',left:rtl?'unset':0}}></div>  
+  function text_node(){
+    return (
+      <div className='aio-popup-snackebar-item-text'>
+        <div className='aio-popup-snackebar-item-uptext'>{text}</div>
+        {!!subtext && <div className='aio-popup-snackebar-item-subtext'>{subtext}</div>}
       </div>
-    </div>
-  )
+    )
+  }
+  function container_node(){
+    let className = 'aio-popup-snackebar-item-container';
+    className += ` aio-popup-snackebar-item-container-horizontal-align-${horizontalAlign}`
+    if(mounted){className += ' mounted';}
+    if(rtl){className += ' rtl';}
+    let style = getOffsetStyle(index);
+    let p = {'data-vertical-align':verticalAlign,className,style,onClick:onClose === false?undefined:()=>remove()}
+    return (<div {...p}>{item_node()}</div>)
+  }
+  function item_node(){
+    let className = 'aio-popup-snackebar-item';
+    className += ` aio-popup-snackebar-item-${type}`
+    if(attrs.className){className += ` ${attrs.className}`}
+    let p = {...attrs,className,style:attrs.style}
+    return (<div {...p}>{icon_node()} {text_node()} {action_node()} {bar_node()}  </div>)
+  }
+  function bar_node(){return (<div className='aio-popup-snackebar-bar' style={{transition:`${time}s linear`}}></div>)}
+  function action_node(){
+    if(!action || !action.text){return null}
+    let p = {
+      className:'aio-popup-snackebar-item-action',
+      onClick:(e)=>{e.stopPropagation(); action.onClick(); remove()}
+    }
+    return (<button {...p}>{action.text}</button>)
+  }
+  function icon_node(){return <div className={`aio-popup-snackebar-item-icon`}>{!!icon?icon:getSvg(type)}</div>}
+  return container_node()
 }
 //id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,pageSelector,rtl,body
 function Align(dom:any,target:any,config:AP_popover){
@@ -625,7 +666,7 @@ function Align(dom:any,target:any,config:AP_popover){
           let height = parent.height();
           let right = left + width;
           let bottom = top + height;
-          return {left,top,right,bottom,width,height};    
+          return {left,top,right,bottom,width,height};
         }
       }
       let offset = dom.offset();
@@ -661,11 +702,11 @@ function Align(dom:any,target:any,config:AP_popover){
     align(){
       let pageLimit = $$.getPageLimit(dom);
       let targetLimit = $$.getDomLimit(target,'target');
-      let domLimit = $$.getDomLimit(dom,'popover'); 
+      let domLimit = $$.getDomLimit(dom,'popover');
       let overflowY;
       if(!fitTo){
         domLimit.top = targetLimit.bottom
-        domLimit.bottom = domLimit.top + domLimit.height;  
+        domLimit.bottom = domLimit.top + domLimit.height;
         if(fitHorizontal){
           domLimit.width = targetLimit.width;
           domLimit.left = targetLimit.left;
@@ -684,17 +725,16 @@ function Align(dom:any,target:any,config:AP_popover){
           //اگر چپ به راست باید باشد
           else{
             //چپ المان را با چپ هدف ست کن
-            domLimit.left = targetLimit.left; 
+            domLimit.left = targetLimit.left;
             //راست المان را بروز رسانی کن
             domLimit.right = domLimit.left + domLimit.width;
             //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
             if(domLimit.right > pageLimit.right){domLimit.left = pageLimit.right - domLimit.width;}
           }
         }
-        
         //اگر المان از سمت پایین صفحه بیرون زد
         if(domLimit.bottom > pageLimit.bottom){
-          if(domLimit.height > targetLimit.top - pageLimit.top){domLimit.top = pageLimit.bottom - domLimit.height;}  
+          if(domLimit.height > targetLimit.top - pageLimit.top){domLimit.top = pageLimit.bottom - domLimit.height;}
           else{domLimit.top = targetLimit.top - domLimit.height;}
         }
         else{domLimit.top = targetLimit.bottom;}

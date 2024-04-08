@@ -205,6 +205,12 @@
   align-items: center;
   justify-content: center;
   font-family: inherit;
+  transition:0.2s;
+}
+
+.aio-popup-alert-container.not-mounted{
+  background: rgba(0, 0, 0, 0);
+  transition:0.2;
 }
 
 .aio-popup-alert {
@@ -217,6 +223,31 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.aio-popup-alert-container-center .aio-popup-alert{
+  transform:scale(1);
+  transition:0.2s;
+}
+.aio-popup-alert-container-center.not-mounted .aio-popup-alert {
+  transform:scale(0);
+  transition:0.2s;
+}
+.aio-popup-alert-container-top .aio-popup-alert{
+  transform:translateY(0vh);
+  transition:0.2s;
+}
+.aio-popup-alert-container-top.not-mounted .aio-popup-alert {
+  transform:translateY(-100vh);
+  transition:0.2s;
+}
+.aio-popup-alert-container-bottom .aio-popup-alert{
+  transform:translateY(0vh);
+  transition:0.2s;
+}
+.aio-popup-alert-container-bottom.not-mounted .aio-popup-alert {
+  transform:translateY(100vh);
+  transition:0.2s;
 }
 
 .aio-popup-alert-error .aio-popup-alert-header svg {
@@ -273,9 +304,9 @@
 
 .aio-popup-time {
   position: absolute;
-  height: 3px;
-  width: calc(100% - 24px);
-  left: 12px;
+  height: 4px;
+  width: 100%;
+  left: 0;
   bottom: 0;
 }
 
@@ -314,7 +345,7 @@
 }
 
 .aio-popup-snackebar-item-container {
-  font-size: 12px;
+  font-size: 14px;
   height: fit-content;
   color: #fff;
   width: 100%;
@@ -328,7 +359,24 @@
   justify-content: center;
   z-index: 1000000;
 }
-
+.aio-popup-snackebar-item-container.aio-popup-snackebar-item-container-horizontal-align-start {
+  justify-content: flex-start;
+}
+.aio-popup-snackebar-item-container.aio-popup-snackebar-item-container-horizontal-align-end {
+  justify-content: flex-end;
+}
+.aio-popup-snackebar-item-container.aio-popup-snackebar-item-container-horizontal-align-center {
+  justify-content: center;
+}
+.aio-popup-snackebar-item-container.rtl {
+  direction:rtl;
+}
+.aio-popup-snackebar-item-container .aio-popup-snackebar-item-uptext{
+  text-align:left;
+}
+.aio-popup-snackebar-item-container.rtl .aio-popup-snackebar-item-uptext{
+  text-align:right;
+}
 .aio-popup-snackebar-item {
   background: rgb(24 28 41 / 95%);
   padding: 12px;
@@ -396,9 +444,13 @@
 .aio-popup-snackebar-item-container .aio-popup-snackebar-bar {
   position: absolute;
   left: 0;
-  bottom: 2px;
+  bottom: 0px;
   width: 0%;
-  height: 3px;
+  height: 4px;
+}
+.aio-popup-snackebar-item-container.rtl .aio-popup-snackebar-bar {
+  left: unset;
+  right:0;
 }
 
 .aio-popup-snackebar-item-container.mounted .aio-popup-snackebar-bar {
@@ -433,4 +485,30 @@
 
 .aio-popup-confirm .aio-popup-body{
   padding:12px;
+}
+
+
+
+.aio-popup-scroll::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+.aio-popup-scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.aio-popup-scroll::-webkit-scrollbar-thumb {
+  background-color: #cdd4e0;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.aio-popup-scroll::-webkit-scrollbar-thumb {
+  background-color: #b1b9ca;
+}
+
+.aio-popup-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #6f7888;
 }

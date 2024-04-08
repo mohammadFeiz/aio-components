@@ -58,6 +58,7 @@ let propDic = {
     optionCheckIcon:['select','multiselect','radio'],
     optionClose:['text','number','textarea','select','multiselect'],
     swip:['number'],
+    spin:['number'],
     multiple:['radio','buttons'],
     hideTags:['multiselect'],
     tagBefore:['multiselect'],
@@ -129,8 +130,8 @@ function Properties(){
     let p:AI = {type:'table',value:rows,columns,style:{height:'100%',fontSize:10},rowAttrs:()=>{return {style:{height:24}}}}
     return <AIOInput {...p}/>
 }
-function RenderInput(param:{value:any,setValue:(v:any)=>void,title:string,type:any,optionProps?:any,optionCode?:string,props?:{[key in keyof AI]?:AI[key]},code?:string,initialValue?:any}){
-    let {title,optionProps,optionCode,props = {},code,initialValue,type,value,setValue} = param;
+function RenderInput(param:{value:any,description?:string,setValue:(v:any)=>void,title:string,type:any,optionProps?:any,optionCode?:string,props?:{[key in keyof AI]?:AI[key]},code?:string,initialValue?:any}){
+    let {title,optionProps,optionCode,props = {},code,initialValue,type,value,setValue,description} = param;
     let [showCode,setShowCode] = useState<boolean>(false)
     
     let hasOption = !!optionProps || type === 'select' || type === 'multiselect' || type === 'tabs' || type === 'radio' || type === 'buttons';
@@ -158,9 +159,10 @@ function RenderInput(param:{value:any,setValue:(v:any)=>void,title:string,type:a
         return (
             <>
                 <h3>{title}</h3>
+                {description?<p style={{fontSize:12}}>{description}</p>:''}
                 <AIOInput {...p}/>
                 {
-                    !showCode?<button className='show-code' onClick={()=>setShowCode(true)}>Show Code</button>:AIODoc().Code(
+                    !showCode?'':AIODoc().Code(
 `let [value,setValue] = useState(${initialValue?JSON.stringify(initialValue):''});
 ${hasOption?DOC_options_code:''}
 return (
@@ -187,6 +189,7 @@ return (
 `
                     )
                 }
+                <button className='show-code' onClick={()=>setShowCode(!showCode)}>{showCode?'Hide Code':'Show Code'}</button>
                 <button onClick={()=>console.log(p)}>Log</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
             </>
@@ -265,6 +268,11 @@ function Input({type}){
             {
                 property:'maxLength',title:'maxLength',props:{maxLength:6,multiple:type === 'radio'},
                 code:`${type === 'radio'?'multiple={true} ':''}maxLength={6}`
+            },
+            {
+                property:'spin',title:'spin',props:{spin:false},
+                description:'Hide spin button',
+                code:`spin={false}`
             },
             {
                 property:'swip',title:'swip',props:{swip:0.05},
