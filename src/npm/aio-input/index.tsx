@@ -16,6 +16,7 @@ import AIOPopup from './../../npm/aio-popup/aio-popup';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
+import { AP_addModal } from '../aio-popup';
 const AICTX = createContext({} as any);
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons'
@@ -45,7 +46,7 @@ type AI_popover = {
     fixStyle?: (style: any) => any, 
     fitHorizontal?: boolean, 
     position?: 'fullscreen' | 'popover' | 'center' | 'left' | 'top' | 'right' | 'bottom', 
-    header?: {title?:React.ReactNode,subtitle?:React.ReactNode,attrs?:any,onClose?:boolean | (()=>void)},
+    header?: {title?:string,subtitle?:string,attrs?:any,onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void)},
     pageSelector?:string,
     fitTo?:string,
     body?:{render?:(p:{close:()=>void})=>React.ReactNode},
@@ -54,6 +55,7 @@ type AI_popover = {
         close?:boolean
     }
 }
+
 type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
@@ -264,7 +266,7 @@ export default function AIOInput(props: AI) {
         let res = new Popover(p).getFn()
         return res;
     }
-    let [popup] = useState(new AIOPopup())
+    let [popup] = useState(new AIOPopup({rtl:props.rtl}))
     let [open, setOpen] = useState<boolean>(!!props.open);
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
@@ -452,8 +454,8 @@ class Popover {
             let popover = { ...(rootProps.popover || {}) }
             let { rtl } = rootProps;
             let { position = 'popover', header,body = {} } = popover;
-            return {
-                onClose: () => toggle(false),rtl, header, position,backdrop: this.getBackdrop(popover),
+            let config:AP_addModal = {
+                onClose: () => toggle(false), header, position,backdrop: this.getBackdrop(popover),
                 body:{
                     ...body,
                     render:({close})=>{
@@ -465,6 +467,7 @@ class Popover {
                 popover: this.getPopover(popover, dom),
                 attrs: addToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
             }
+            return config;
         }
     }
 }

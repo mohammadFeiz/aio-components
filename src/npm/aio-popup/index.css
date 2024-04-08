@@ -144,6 +144,9 @@
   width: 100%;
   overflow-y: auto;
 }
+.aio-popup-body *{
+  box-sizing: border-box;
+}
 
 .aio-popup-footer {
   background: #fff;

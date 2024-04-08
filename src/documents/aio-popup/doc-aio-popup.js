@@ -1,7 +1,7 @@
 import React, { Component,createRef } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
-import AIOPopup from '../../npm/aio-popup/aio-popup';
+import AIOPopup from '../../npm/aio-popup/index.tsx';
 import AIOInput from '../../npm/aio-input/aio-input';
 import content from './content';
 import {Icon} from '@mdi/react';
@@ -16,12 +16,12 @@ export default class DOC_AIOForm extends Component {
                 {...this.props}
                 navId='popover'
                 nav={{
-                    items:[
+                    items:()=>[
                         { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
                         { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
                         { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
                         { text: 'alert', id: 'alert', render: () => <Alert /> },
-                        { text: 'snakebar', id: 'snakebar', render: () => <Snakebar /> },
+                        { text: 'snackebar', id: 'snackebar', render: () => <Snackebar /> },
                         { text: 'popover', id: 'popover', render: () => <Popover /> },
                     ]
                 }}
@@ -350,13 +350,13 @@ instance.addAlert(props)
 `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <h3>instance.addSnakebar()</h3>
+                <h3>instance.addSnackebar()</h3>
                 <h5>
-                    user instance.addSnakebar() to show snakebar box in your page. you can add more than one snakebar and dont need to handle any state of that 
+                    user instance.addSnackebar() to show snackebar box in your page. you can add more than one snackebar and dont need to handle any state of that 
                 </h5>
                 {
                     AIODoc().Code(`
-instance.addSnakebar(props)
+instance.addSnackebar(props)
 `)
                 }
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
@@ -437,65 +437,17 @@ class AddModal extends Component {
         })
     }
     removeModal(){
-        this.popup.addModal({
-            position:'top',
-            id:'one',
-            body:{
-                render:({close})=>(
-                    <RVD
-                        rootNode={{
-                            row:[
-                                {
-                                    style:{maxHeight:400,overflowY:'auto'},
-                                    html:'this is my sample text in modal',
-                                    className:'align-v flex-1'
-                                },
-                                {
-                                    gap:{size:6},
-                                    column:[
-                                        {html:(<button className='btn-123'>Approve</button>)},
-                                        {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                                    ]   
-                                }
-                            ]
-                        }}
-                    />
-                )
-            }
-        })
-        this.popup.addModal({
-            position:'bottom',
-            id:'two',
-            backClose:true,
-            body:{
-                render:({close})=>(
-                    <RVD
-                        rootNode={{
-                            row:[
-                                {
-                                    style:{maxHeight:400,overflowY:'auto'},
-                                    html:'this is my sample text in modal',
-                                    className:'align-v flex-1'
-                                },
-                                {
-                                    className:'gap-6',
-                                    column:[
-                                        {html:(<button className='btn-123'>Approve</button>)},
-                                        {html:(<button className='btn-123' onClick={()=>this.popup.removeModal()}>Close</button>)}
-                                    ]   
-                                }
-                            ]
-                        }}
-                    />
-                )
-            }
-        })
+        this.popup.addModal({position:'top',id:'one',body:{render:({close})=><Popup1 close={close}/>}})
+        this.popup.addModal({position:'bottom',id:'two',body:{render:({close})=><Popup1/>}})
     }
     addConfirm(){
         this.popup.addModal({
             position:'center',
             header:{title:'my confirm title'},
-            body:{render:()=>'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text '},
+            body:{
+                render:()=>'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text ',
+                attrs:{style:{padding:12,width:300}}
+            },
             footer:{
                 buttons:[
                     ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
@@ -627,7 +579,6 @@ instance.addModal({
 instance.addModal({
     position:'bottom',
     id:'two',
-    backClose:true,
     body:{
         render:({close})=><MyComponent onClose={close}/>
     }
@@ -642,7 +593,10 @@ instance.addModal({
 instance.addModal({
     position:'center',
     header:{title:'my confirm title'},
-    body:{render:()=>'my confirm text'},
+    body:{
+        render:()=>'my confirm text',
+        attrs:{style:{padding:12,width:300}}
+    },
     footer:{
         buttons:[
             ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
@@ -710,7 +664,29 @@ instance.addModal({
         )
     }
 }
-
+function Popup1(props = {}){
+    let {close} = props;
+    return (
+        <RVD
+            rootNode={{
+                row:[
+                    {
+                        style:{maxHeight:400,overflowY:'auto'},
+                        html:'this is my sample text in modal',
+                        className:'align-v flex-1'
+                    },
+                    {
+                        gap:{size:6},
+                        column:[
+                            {html:(<button className='btn-123'>Approve</button>)},
+                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
+                        ]   
+                    }
+                ]
+            }}
+        />
+    )
+}
 class ModalPosition extends Component {
     constructor(props){
         super(props);
@@ -970,116 +946,116 @@ instance.addAlert({
         )
     }
 }
-class Snakebar extends Component {
+class Snackebar extends Component {
     constructor(props){
         super(props);
         this.popup = new AIOPopup()
     }
-    addSnakebar(obj = {}){
+    addSnackebar(obj = {}){
         let {
-            text = 'my snakebar title',
-            subtext ='this is the subtext of my snakebar . please click on action',
+            text = 'my snackebar title',
+            subtext ='this is the subtext of my snackebar . please click on action',
             time = 12,
             type = 'error',
             rtl = false
         } = obj
-        this.popup.addSnakebar({text,subtext,time,type,rtl})
+        this.popup.addSnackebar({text,subtext,time,type,rtl})
     }
     preview() {
         return (
             <div className='example'>
-                <h3>addSnakebar</h3>
+                <h3>addSnackebar</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'error'
 })
                     `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar()}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar()}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>rtl</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'error'
     rtl:true
 })
                     `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({rtl:true})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({rtl:true})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>time</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:360,
     type:'error'
 })
 `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({time:360})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({time:360})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
 
                 <h3>type info</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'info'
 })
 `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({type:'info'})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'info'})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>type error</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'error'
 })
 `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({type:'error'})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'error'})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>type warning</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'warning'
 })
 `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({type:'warning'})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'warning'})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 <h3>type success</h3>
                 {
                     AIODoc().Code(`
-instance.addSnakebar({
-    text:'my snakebar title',
-    subtext:'this is the subtext of my snakebar . please click on action',
+instance.addSnackebar({
+    text:'my snackebar title',
+    subtext:'this is the subtext of my snackebar . please click on action',
     time:12,
     type:'success'
 })
 `)
                 }
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnakebar({type:'success'})}>Open snakebar</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'success'})}>Open snackebar</button>
                 <div style={{marginTop:24}} className='aio-component-splitter'></div>
                 {this.popup.render()}
             </div>
