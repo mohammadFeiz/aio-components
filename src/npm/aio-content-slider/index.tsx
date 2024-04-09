@@ -2,33 +2,36 @@ import React,{Component,createRef} from 'react';
 import $ from 'jquery';
 import "./index.css";
 type I_ACS = {autoSlide?:number,items:React.ReactNode[],speed?:number,arrow?:boolean,attrs?:any}
-type I_ACS_state = {moving:boolean,left:number,lastLeft:number,index:number}
+type I_ACS_state = {moving:boolean,left:number,lastLeft:number}
 export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
   dom:any;
   index:number;
-  autoSliderInterval:any;
-  isDown:boolean;
-  interval:any;
+  interval1:any;
+  interval2:any;
   so:any;
+  autoSlide:number;
+  speed:number;
   constructor(props){
     super(props);
+    let {autoSlide = 4000,speed = 90} = props;
+    if(speed > 99){speed = 99} if(speed < 1){speed = 1} 
     this.dom = createRef();
     this.index = 0;
-    this.state = {left:0,lastLeft:0,index:0,moving:false}
+    this.speed = speed;
+    this.autoSlide = autoSlide
+    this.state = {left:0,lastLeft:0,moving:false}
     this.auto();
   }
   auto(){
-    let {autoSlide = 4000,items} = this.props;
-    if(!autoSlide || items.length < 2){return}
-    clearInterval(this.autoSliderInterval)
-    this.autoSliderInterval = setInterval(()=>{
+    let {items} = this.props;
+    if(!this.autoSlide || items.length < 2){return}
+    clearInterval(this.interval1)
+    this.interval1 = setInterval(()=>{
       let {moving} = this.state;
       if(moving){return}
       let width = this.getWidth();
-      this.setState({moving:true,left:-width,lastLeft:-width},()=>{
-        this.startScroll(1)
-      })
-    },this.props.autoSlide)
+      this.scroll(width,1)
+    },this.autoSlide)
   }
   getSlides(){
     let {items} = this.props;
@@ -45,10 +48,8 @@ export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
   getWidth(){return $(this.dom.current).width()}
   mouseDown(e){
     let {moving} = this.state;
-    if(moving){return}
     let {items} = this.props;
-    if(items.length < 2){return}
-    this.isDown = true;
+    if(moving || items.length < 2){return}
     let {x} = this.getClient(e);
     let width = this.getWidth();
     this.so = {x,left:-width,width};
@@ -64,14 +65,9 @@ export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
   }
   stopScroll(offset){
     this.auto();
-    clearInterval(this.interval);
+    clearInterval(this.interval2);
     this.setIndex(offset);
     this.setState({moving:false})
-  }
-  getSpeed(){
-    let {speed = 90} = this.props;
-    if(speed > 99){speed = 99} if(speed < 1){speed = 1}
-    return {speed:(500 - speed * 5) / 10,step:5};
   }
   scroll(width,dir){
     let obj = {moving:true,left:-width,lastLeft:-width}
@@ -79,17 +75,21 @@ export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
     this.startScroll(dir)
   }
   startScroll(offset){
-    let {speed = 90,step} = this.getSpeed();
-    let newLeft = this.state.lastLeft + -offset * this.getWidth();
-    let dir = offset * -step;
-    this.interval = setInterval(()=>{
+    let step = 5;
+    let width = this.getWidth();
+    let newLeft = this.state.lastLeft + (-offset * width);
+    let dir = -offset * step;
+    this.interval2 = setInterval(()=>{
       let {left} = this.state;  
       if(dir > 0 && left >= newLeft){this.stopScroll(offset)}
       else if(dir < 0 && left <= newLeft){this.stopScroll(offset)}
       else{
-        this.setState({left:left + dir})
+        let newLeft = left + dir;
+        console.log(newLeft,width)
+        if(newLeft < -width * 2){newLeft = -width * 2}
+        this.setState({left:newLeft})
       }
-    },speed)
+    },(50 - this.speed * 0.5) / 10)
   }
   mouseMove(e){
     let {x} = this.getClient(e);
@@ -98,7 +98,6 @@ export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
     this.setState({left:this.so.left + offset})
   }
   mouseUp(){
-    this.isDown = false;
     this.eventHandler('window','mousemove',this.mouseMove,'unbind');
     this.eventHandler('window','mouseup',this.mouseUp,'unbind');
     let {left,lastLeft} = this.state;
