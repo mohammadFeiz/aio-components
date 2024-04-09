@@ -201,7 +201,7 @@ function Input({type}){
         let list:any[] = [
             {property:'value',title:'value , onChange'},
             {
-                property:'value',title:'value',
+                property:'value',title:'value',show:()=>type === 'image',
                 initialValue:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg',
                 code:`value='https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'`
             },

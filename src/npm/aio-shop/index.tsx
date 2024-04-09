@@ -3,7 +3,7 @@ import RVD,{I_RVD_node} from './../../npm/react-virtual-dom/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage.js';
 import AIOPopup from './../../npm/aio-popup/aio-popup.js';
 import AIOInput from './../../npm/aio-input/aio-input.js';
-import ACS from './../../npm/aio-content-slider/aio-content-slider.js';
+import ACS from './../../npm/aio-content-slider/index.tsx';
 import {SplitNumber} from './../../npm/aio-utils/aio-utils.js';
 import { makeAutoObservable,toJS } from "mobx"
 import { observer } from "mobx-react-lite"

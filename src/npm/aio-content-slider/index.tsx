@@ -1,29 +1,39 @@
 import React,{Component,createRef} from 'react';
 import $ from 'jquery';
 import "./index.css";
-export default class AIOContentSlider extends Component {
+type I_ACS = {autoSlide?:number,items:React.ReactNode[],speed?:number,arrow?:boolean,attrs?:any}
+type I_ACS_state = {moving:boolean,left:number,lastLeft:number,index:number}
+export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
+  dom:any;
+  index:number;
+  autoSliderInterval:any;
+  isDown:boolean;
+  interval:any;
+  so:any;
   constructor(props){
     super(props);
     this.dom = createRef();
     this.index = 0;
-    this.state = {left:0,lastLeft:0,index:0,moving:false,items:[props.items[0]]}
-    this.autoSlide();
+    this.state = {left:0,lastLeft:0,index:0,moving:false}
+    this.auto();
   }
-  autoSlide(){
-    if(!this.props.autoSlide || this.props.items.length < 2){return}
-    clearInterval(this.autoSlideInterval)
-    this.autoSlideInterval = setInterval(()=>{
-      if(this.state.moving){
-        return
-      }
+  auto(){
+    let {autoSlide = 4000,items} = this.props;
+    if(!autoSlide || items.length < 2){return}
+    clearInterval(this.autoSliderInterval)
+    this.autoSliderInterval = setInterval(()=>{
+      let {moving} = this.state;
+      if(moving){return}
       let width = this.getWidth();
       this.setState({moving:true,left:-width,lastLeft:-width},()=>{
         this.startScroll(1)
       })
     },this.props.autoSlide)
   }
-  getItems(){
+  getSlides(){
     let {items} = this.props;
+    let {moving} = this.state;
+    if(!moving){return [items[this.index]]}
     if(items.length < 2){return items;}
     let index = this.index;
     return [
@@ -32,15 +42,12 @@ export default class AIOContentSlider extends Component {
       items[index + 1 > items.length - 1?0:index + 1] 
     ];
   }
-  componentDidMount(){
-    let {items} = this.state;
-    if(items.length < 2){return;}
-    this.setState({left:-this.getWidth()}) 
-  }
   getWidth(){return $(this.dom.current).width()}
   mouseDown(e){
-    if(this.state.moving){return}
-    if(this.props.items.length < 2){return}
+    let {moving} = this.state;
+    if(moving){return}
+    let {items} = this.props;
+    if(items.length < 2){return}
     this.isDown = true;
     let {x} = this.getClient(e);
     let width = this.getWidth();
@@ -50,23 +57,29 @@ export default class AIOContentSlider extends Component {
     this.eventHandler('window','mouseup',$.proxy(this.mouseUp,this));
   }
   setIndex(offset){
+    let {items} = this.props;
     this.index += offset;
-    if(this.index < 0){this.index = this.props.items.length - 1}
-    if(this.index > this.props.items.length - 1){this.index = 0}
+    if(this.index < 0){this.index = items.length - 1}
+    if(this.index > items.length - 1){this.index = 0}
   }
   stopScroll(offset){
-    this.autoSlide();
+    this.auto();
     clearInterval(this.interval);
     this.setIndex(offset);
     this.setState({moving:false})
   }
   getSpeed(){
-    let {speed} = this.props;
+    let {speed = 90} = this.props;
     if(speed > 99){speed = 99} if(speed < 1){speed = 1}
     return {speed:(500 - speed * 5) / 10,step:5};
   }
+  scroll(width,dir){
+    let obj = {moving:true,left:-width,lastLeft:-width}
+    for(let prop in obj){this.state[prop] = obj[prop]}
+    this.startScroll(dir)
+  }
   startScroll(offset){
-    let {speed,step} = this.getSpeed();
+    let {speed = 90,step} = this.getSpeed();
     let newLeft = this.state.lastLeft + -offset * this.getWidth();
     let dir = offset * -step;
     this.interval = setInterval(()=>{
@@ -88,7 +101,6 @@ export default class AIOContentSlider extends Component {
     this.isDown = false;
     this.eventHandler('window','mousemove',this.mouseMove,'unbind');
     this.eventHandler('window','mouseup',this.mouseUp,'unbind');
-    let {swipMethod} = this.props;
     let {left,lastLeft} = this.state;
     if(left === lastLeft){
       this.stopScroll(0);
@@ -104,7 +116,7 @@ export default class AIOContentSlider extends Component {
     this.startScroll(offset)
   }
   getArrow(type){
-    let {arrow,items} = this.props;
+    let {arrow = true,items} = this.props;
     if(!arrow || items.length < 2){return null}
     let style= {},html,onClick;
     if(type === 'left'){
@@ -117,7 +129,7 @@ export default class AIOContentSlider extends Component {
       onClick = ()=>{
         if(this.state.moving){return}
         let width = this.getWidth()
-        this.setState({moving:true,left:-width,lastLeft:-width},()=>this.startScroll(-1))
+        this.scroll(width,-1)
       }
     }
     else {
@@ -130,7 +142,7 @@ export default class AIOContentSlider extends Component {
       onClick = ()=>{
         if(this.state.moving){return}
         let width = this.getWidth()
-        this.setState({moving:true,left:-width,lastLeft:-width},()=>this.startScroll(1))
+        this.scroll(width,1);
       }
     }
     return (
@@ -151,36 +163,36 @@ export default class AIOContentSlider extends Component {
     element.unbind(event, action); 
     if(type === 'bind'){element.bind(event, action)}
   }
-  render(){
-    let {moving} = this.state;
-    let {attrs} = this.props;
-    let left,items;
-    if(moving){left = this.state.left; items = this.getItems()}
-    else{left = 0; items = [this.props.items[this.index]]}
-    let downEvent = {
-      ['ontouchstart' in document.documentElement?'onTouchStart':'onMouseDown']:this.mouseDown.bind(this)
+  dots_node(){
+    let {items} = this.props;
+    return <ReactSliderDots attrs={{}} index={this.index} length={items.length}/>
+  }
+  slides_node(){
+    let {moving,left} = this.state;
+    let slides = this.getSlides()
+    let style = {left:moving?left:0}
+    let p = {
+      className:'rh-slider-items',
+      style,draggable:false,
+      ['ontouchstart' in document.documentElement?'onTouchStart':'onMouseDown']:this.mouseDown.bind(this),
+      onDragStart:(e)=>e.preventDefault(),
     }
     return (
+      <div {...p}>{slides.map((o,i)=><div key={i} className='rh-slider-item msf'>{o}</div>)}</div>  
+    )
+  }
+  render(){
+    let {attrs} = this.props;
+    return (
     <div className='rh-slider' {...attrs} ref={this.dom}>
-      <div 
-        className='rh-slider-items' style={{left}}
-        {...downEvent}
-        draggable={false}
-        onDragStart={(e)=>e.preventDefault()}
-      >{items.map((o,i)=><div key={i} className='rh-slider-item msf'>{o}</div>)}</div>  
+      {this.slides_node()}
       {this.getArrow('left')}
       {this.getArrow('right')}
-      <ReactSliderDots attrs={{}} index={this.index} length={this.props.items.length}/>
+      {this.dots_node()}
     </div>
     
   );
   }
-}
-AIOContentSlider.defaultProps = {
-  items:[],
-  speed:96,
-  arrow:true,
-  autoSlide:4000,
 }
 
 

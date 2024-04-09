@@ -5,7 +5,6 @@ import AIOInput from "./npm/aio-input/aio-input";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
-import DOC_AIOInput_Form from './documents/aio-input/aio-input-form/doc-aio-input-form';
 import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter';
@@ -50,7 +49,6 @@ export default class AIOComponents extends Component{
         'aio-input-table':DOC_AIOInput_Table,
         'aio-input-slider':DOC_AIOInput_Slider,
         'aio-input-list':DOC_AIOInput_List,
-        'aio-input-form':DOC_AIOInput_Form,
         'aio-input-map':DOC_AIOInput_Map,
         'aio-highlighter':DOC_AIOHighlighter,
         'aio-validation':DOC_AIOValidation,

@@ -5,85 +5,7 @@ import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';
-export type AP_props = {rtl?:boolean}
-export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
-export type AP_popover = {getTarget?:()=>any,pageSelector?:string,fitHorizontal?:boolean,fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,fitTo?:string,rtl?:boolean,attrs?:any}
-export type AP_header = {
-  title?:string,subtitle?:string,buttons?:AP_modal_button[],onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),backButton?:()=>void,attrs?:any
-}
-export type AP_backdrop = false | {attrs?:any,close?:boolean}
-export type AP_body = {render:(p:{close:()=>void,state:any,setState:(state:any)=>void})=>React.ReactNode,attrs?:any}
-export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]}
-
-export type AP_modal = {
-  id?:string,
-  onClose?:boolean | (()=>void),
-  popover?:any,
-  position?:AP_position,
-  attrs?:any,
-  backdrop?:AP_backdrop,
-  header?:AP_header,
-  state?:any,
-  footer?:AP_footer,
-  body:AP_body,
-  animate?:boolean
-}
-
-export type AP_snackebar = {
-  icon?:React.ReactNode,
-  id?:string,
-  time?:number,
-  text:string,
-  subtext?:string,
-  action?:{text:string,onClick:()=>void},
-  type:'success'|'error'|'warning'|'info',
-  verticalAlign?:'start' | 'end',
-  horizontalAlign?:'start' | 'center' | 'end',
-  onClose?:false
-  rtl?:boolean,
-  attrs?:any
-}
-export type AP_addConfirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel:()=>void,attrs?:any}
-export type AP_addPrompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel:()=>void,attrs?:any}
-export type AP_alert = { icon?:false | React.ReactNode,position?:AP_position,type:'success'|'error'|'warning'|'info',text?:React.ReactNode,subtext?:string,time?:number,className?:string,closeText?:string,animate?:boolean}
-export type AP_modal_button = [text:React.ReactNode,attrs?:any]
-export type AP_Popups = {
-  getActions:(p:{
-    removeModal:(p?:string,animate?:boolean)=>void,
-    addModal:(p:AP_modal)=>void,
-    getModals:()=>AP_modal[]
-  })=>void,
-  rtl:boolean
-}
-
-export type AP_Popup = {
-  modal:AP_modal,
-  rtl:boolean,
-  index:number,
-  isLast:boolean,
-  onClose:()=>void,
-  removeModal:(p?:string,animate?:boolean)=>void,
-}
-
-export type AP_ModalHeader = {
-  rtl:boolean,header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void
-}
-
-export type AP_ModalBody = {
-  body:AP_body,
-  handleClose:()=>void,
-  updatePopoverStyle:()=>void,
-  state:any,setState:(state:any)=>void
-}
-
-export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
-
-export type AP_SnackebarItem = {
-  item:AP_snackebar,
-  onRemove:(id:string)=>void,
-  index:number,
-  rtl:boolean
-}
+import { AP_ModalBody, AP_ModalHeader, AP_Popup, AP_Popups, AP_Snackebar, AP_SnackebarItem, AP_confirm, AP_prompt, AP_alert, AP_modal, AP_modal_button, AP_props, AP_snackebar } from './types';
 
 export default class AIOPopup {
     rtl:boolean;
@@ -97,8 +19,8 @@ export default class AIOPopup {
     _addSnackebar:(p:AP_snackebar)=>void;
     getModals:()=>AP_modal[];
     _getModals:()=>AP_modal[];
-    addConfirm:(p:AP_addConfirm)=>void;
-    addPrompt:(p:AP_addPrompt)=>void;
+    addConfirm:(p:AP_confirm)=>void;
+    addPrompt:(p:AP_prompt)=>void;
     popupId:string;
     constructor(obj?:AP_props){
         let {rtl} = obj || {}
@@ -129,8 +51,11 @@ export default class AIOPopup {
         this.addAlert = (obj) => Alert(obj);
         this.removeModal = (arg,animate = true)=>{if(this._removeModal){this._removeModal(arg,animate)}};
         this.addSnackebar = (obj:AP_snackebar)=>this._addSnackebar(obj)
-        this.getModals = ()=>this._getModals()
-        this.addConfirm = (obj:AP_addConfirm) => {
+        this.getModals = ()=>{
+          let res = this._getModals()
+          return Array.isArray(res)?res:[]
+        }
+        this.addConfirm = (obj:AP_confirm) => {
           let {title,subtitle,text,submitText = 'بله',canselText = 'خیر',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
           let className = 'aio-popup-confirm';
           if(attrs.className){className += ' ' + attrs.className}
@@ -158,7 +83,7 @@ export default class AIOPopup {
           }
           this.addModal(config)
         }
-        this.addPrompt = (obj:AP_addPrompt) => {
+        this.addPrompt = (obj:AP_prompt) => {
           let {title,subtitle,text,submitText = 'تایید',canselText = 'بستن',onSubmit,onCansel = ()=>{},attrs = {}} = obj;
           let className = 'aio-popup-prompt';
           if(attrs.className){className += ' ' + attrs.className}
@@ -255,7 +180,7 @@ class Popups extends Component<AP_Popups,{modals:AP_modal[]}> {
 }
 function Popup(props:AP_Popup) {
   let {modal,rtl,onClose,isLast,removeModal} = props;
-  let {attrs = {},popover = {},id,backdrop = {},footer,header,position = 'fullscreen',body} = modal;
+  let {attrs = {},id,backdrop = {},footer,header,position = 'fullscreen',body,fitHorizontal,getTarget,pageSelector,fixStyle = (o) => o,fitTo} = modal;
   let [temp] = useState({
     dom:createRef(),
     backdropDom:createRef(),
@@ -282,21 +207,14 @@ function Popup(props:AP_Popup) {
       }
     }
   }
-  function setMounted(){
-    let parentDom = $(`.aio-popup-backdrop[data-id=${id}]`);
-    let dom = parentDom.find('.aio-popup');
-    parentDom.addClass('not-mounted');
-    dom.addClass('not-mounted');
-  }
   useEffect(()=>{
     temp.isFirstMount = false
     setTimeout(()=>{
       setPopoverStyle(position === 'popover'?getPopoverStyle():{})
-      setMounted()
     },0)
-    if(popover.getTarget){
+    if(getTarget){
       temp.dui = 'a' + (Math.round(Math.random() * 10000000));
-      let target = popover.getTarget();
+      let target = getTarget();
       target.attr('data-uniq-id',temp.dui)
     }
     $(window).unbind('click',handleBackClick)
@@ -343,13 +261,11 @@ function Popup(props:AP_Popup) {
     close()
   }
   function getPopoverStyle(){
-    let {getTarget,pageSelector,fitHorizontal,fixStyle = (o) => o,fitTo} = popover;
     if(!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {}}
     let popup = $(temp.dom.current);
-    let config:AP_popover = { fixStyle, pageSelector,fitTo, fitHorizontal, attrs, rtl }
-    let style = Align(popup, target, config)
+    let style = Align({ dom:popup,target, fitHorizontal,fixStyle, pageSelector,fitTo, attrs, rtl })
     return {...style,position:'absolute'}
   }
   function keyDown(e){
@@ -654,8 +570,18 @@ function SnackebarItem(props:AP_SnackebarItem){
   return container_node()
 }
 //id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,pageSelector,rtl,body
-function Align(dom:any,target:any,config:AP_popover){
-  let {fitHorizontal,attrs = {},fixStyle = (o)=>o,pageSelector,rtl,fitTo} = config || {};
+type AP_align = {
+  dom:any,
+  target:any,
+  fitHorizontal?:boolean,
+  fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,
+  attrs?:any,
+  pageSelector?:string,
+  rtl?:boolean,
+  fitTo?:string
+}
+function Align(p:AP_align){
+  let {dom,target,fitHorizontal,fixStyle = (o)=>o,attrs = {},fitTo,pageSelector,rtl} = p;
   let $$ = {
     getDomLimit(dom,type){
       if(fitTo && type === 'popover'){

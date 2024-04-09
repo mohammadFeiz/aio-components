@@ -1,19 +1,18 @@
 import React, { Component,createRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import AIOPopup, { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
-import AIOInput from '../../npm/aio-input/aio-input.js';
+import AIOPopup from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import {Icon} from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
 import $ from 'jquery';
 import './index.css';
-export default function DOC_AIOForm() {
+import { AP_modal, AP_snackebar } from '../../npm/aio-popup/types.tsx';
+export default function DOC_AIOForm(props) {
     return (
         <DOC
-            {...this.props}
-            navId='popover'
+            name={props.name} goToHome={props.goToHome}
             nav={{
                 items:()=>[
                     { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
@@ -678,7 +677,7 @@ instance.addModal({
                     }
                 })
             }
-            {this.popup.render()}
+            {popup.render()}
         </div>
     )
 }
@@ -1234,9 +1233,7 @@ function Popover() {
     function addPopover(){
         popup.addModal({
             position:'popover',
-            popover:{
-                getTarget:()=>$(temp.dom1.current),
-            },
+            getTarget:()=>$(temp.dom1.current),
             body:{render:({close})=>v_layout(close)}
 
         })
@@ -1244,31 +1241,23 @@ function Popover() {
     function fixStyle(){
         popup.addModal({
             position:'popover',
-            popover:{
-                getTarget:()=>$(temp.dom2.current),
-                fixStyle:(a,b)=>{
-                    return {...a,top:a.top + 36}
-                }
-            },
+            getTarget:()=>$(temp.dom2.current),
+            fixStyle:(a,b)=>{return {...a,top:a.top + 36}},
             body:{render:()=>v_layout()},
         })
     }
     function fitHorizontal(){
         popup.addModal({
             position:'popover',
-            popover:{
-                getTarget:()=>$(temp.dom3.current),
-                fitHorizontal:true
-            },
+            getTarget:()=>$(temp.dom3.current),
+            fitHorizontal:true,
             body:{render:()=>v_layout()},
         })
     }
     function styling(){
         popup.addModal({
             position:'popover',
-            popover:{
-                getTarget:()=>$(temp.dom4.current),
-            },
+            getTarget:()=>$(temp.dom4.current),
             body:{render:()=>content},
             attrs:{
                 style:{
@@ -1281,10 +1270,8 @@ function Popover() {
     function without_backdrop(){
         popup.addModal({
             backdrop:false,
-            popover:{
-                getTarget:()=>$(temp.dom5.current),
-                fitHorizontal:true,
-            },
+            getTarget:()=>$(temp.dom5.current),
+            fitHorizontal:true,
             position:'popover',
             body:{render:()=>content},
             attrs:{

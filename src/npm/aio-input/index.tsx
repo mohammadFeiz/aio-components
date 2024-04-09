@@ -12,11 +12,11 @@ import {
 import $ from 'jquery';
 import {AIODate,GetClient,EventHandler,Swip} from './../../npm/aio-utils/aio-utils';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOPopup from './../../npm/aio-popup/aio-popup';
+import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
-import { AP_addModal } from '../aio-popup';
+import { AP_modal } from '../aio-popup/types';
 const AICTX = createContext({} as any);
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons'
@@ -24,6 +24,15 @@ export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
 )
+export type AI_formItem = I_RVD_node & {
+    field:string,
+    label?:string,
+    addressField?:string,
+    footer?:React.ReactNode,
+    input:AI,
+    labelAttrs?:any,
+    errorAttrs?:any
+}
 export type AI_table_column = {
     title?: any,
     value?: any,
@@ -41,26 +50,12 @@ export type AI_table_column = {
     justify?:boolean,
     cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
 }
-type AI_popover = { 
-    attrs?: any, 
-    fixStyle?: (style: any) => any, 
-    fitHorizontal?: boolean, 
-    position?: 'fullscreen' | 'popover' | 'center' | 'left' | 'top' | 'right' | 'bottom', 
-    header?: {title?:string,subtitle?:string,attrs?:any,onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void)},
-    pageSelector?:string,
-    fitTo?:string,
-    body?:{render?:(p:{close:()=>void})=>React.ReactNode},
-    backdrop?:{
-        attrs?:any,
-        close?:boolean
-    }
-}
 
 type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
     rtl?: boolean,
-    popover?: AI_popover,//notice get type from aio popup
+    popover?: AP_modal,//notice get type from aio popup
     type: AI_type,
     multiple?: boolean,
     value?: any,
@@ -266,7 +261,10 @@ export default function AIOInput(props: AI) {
         let res = new Popover(p).getFn()
         return res;
     }
-    let [popup] = useState(new AIOPopup({rtl:props.rtl}))
+    let [popup] = useState(getPopup(AIOPopup))
+    function getPopup(ctor:{new(p?:{rtl?:boolean}):AIOPopup}):AIOPopup{
+        return new ctor({rtl:props.rtl})
+    }
     let [open, setOpen] = useState<boolean>(!!props.open);
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
@@ -437,25 +435,25 @@ class Popover {
         if (type === 'text' || type === 'number' || type === 'textarea') { return !!options }
         return false
     }
-    getBackdrop = (popover) => {
-        let { id } = this.props, { backdrop = {} } = popover;
-        return { ...backdrop, attrs: addToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
-    }
-    getPopover = (popover, dom) => {
-        let { getRootProps, id } = this.props;
-        let { type } = getRootProps();
-        let { fixStyle, fitHorizontal = ['multiselect', 'text', 'number', 'textarea'].indexOf(type) !== -1,pageSelector = '.aio-input-backdrop.' + id,fitTo } = popover;
-        return { fixStyle, fitHorizontal, pageSelector,fitTo, getTarget: () => $(dom.current) }
-    }
     getFn = () => {
         if (!this.isActive) { return }
-        let { getRootProps, toggle } = this.props,rootProps = getRootProps()
+        let { getRootProps, toggle,id } = this.props,rootProps = getRootProps()
         return (dom:any) => {
-            let popover = { ...(rootProps.popover || {}) }
-            let { rtl } = rootProps;
-            let { position = 'popover', header,body = {} } = popover;
-            let config:AP_addModal = {
-                onClose: () => toggle(false), header, position,backdrop: this.getBackdrop(popover),
+            let popover:AP_modal = { ...(rootProps.popover || {}) }
+            let { rtl,type } = rootProps;
+            let {body = {}} = popover;
+            let backdrop = !popover.backdrop?{}:popover.backdrop;
+            backdrop = { ...backdrop, attrs: addToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
+            let target:React.ReactNode = $(dom.current)
+            let config:AP_modal = {
+                //props that have default but can change by user
+                position:'popover',
+                fitHorizontal:['multiselect', 'text', 'number', 'textarea'].indexOf(type) !== -1,
+                //props that havent default but can define by user(header,footer,fitTo,fixStyle)
+                ...popover,
+                //props that cannot change by user
+                backdrop,
+                onClose: () => toggle(false),
                 body:{
                     ...body,
                     render:({close})=>{
@@ -464,7 +462,8 @@ class Popover {
                         else {return body.render?body.render({ close }):<Options />}
                     }
                 },
-                popover: this.getPopover(popover, dom),
+                pageSelector:'.aio-input-backdrop.' + id,
+                getTarget:()=>target,
                 attrs: addToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
             }
             return config;
@@ -876,7 +875,7 @@ function Input() {
 }
 function Form() {
     let {rootProps}:AI_context = useContext(AICTX)
-    let {onChange ,getErrors,body = {},inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs} = rootProps;
+    let {onChange ,getErrors,body = {},inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs,style} = rootProps;
     let [initialValue] = useState<any>(JSON.stringify(rootProps.value))
     let [value,setValue] = useState(rootProps.value || {})
     let [errors] = useState({})
@@ -893,9 +892,10 @@ function Form() {
         for (let prop in errors) { if (prop !== field) { newErrors[prop] = errors[prop] } }
         errors = newErrors
     }
-    function SetValue({ itemValue, formItem, field }) {
+    function SetValue(p:{ itemValue:any, formItem?:AI_formItem, field?:string }) {
         //اگر فرم آیتم ارسال شد یعنی در حال تغییر مستقیم توسط یک اینپوت هستیم
         //اگر فیلد ارسال شد یعنی خارج از برنامه داریم یک پروپرتی را چنج می کنیم پس ارور هندلینگ نباید انجام شود
+        let { itemValue, formItem, field } = p;
         let Field = field || formItem.field
         let value = getValue();
         let newValue = setValueByField(value, Field, itemValue);
@@ -948,8 +948,9 @@ function Form() {
             )
         }
     }
-    function getDefault({ type, multiple }) {
-        return { file: [], multiselect: [], radio: multiple ? [] : undefined, slider: multiple ? [] : undefined }[type]
+    function getDefaultValue(p:AI) {
+        if(p.multiple){return []}
+        if(p.type === 'multiselect'){return []}
     }
     function getValueByField(p:{ field:string | ((value:any)=>string), def?:any, functional?:boolean, value?:any }) {
         let { field, def, functional, value = getValue() } = p;
@@ -1001,15 +1002,15 @@ function Form() {
         let style = { ...propsAttrs.style, ...ownAttrs.style }
         return { ...propsAttrs, ...ownAttrs, style }
     }
-    function getInputProps(input, formItem) {
-        let value = getValueByField({ field: formItem.field, def: getDefault(input) });
+    function getInputProps(input:AI, formItem:AI_formItem) {
+        let value = getValueByField({ field: formItem.field, def: getDefaultValue(input) });
         let props:AI = {
             rtl, value,type:input.type,
             onChange: (value) => {
                 if (input.type === 'map' && formItem.addressField && value.address) {
-                    setValue({ itemValue: value.address, field: formItem.addressField })
+                    SetValue({ itemValue: value.address, field: formItem.addressField })
                 }
-                setValue({ itemValue: value, formItem })
+                SetValue({ itemValue: value, formItem })
             }, attrs: {},inputAttrs:{},disabled:false,point:()=>{return {labelShow:'inline'}}
         };
         for (let prop in input) {
@@ -1034,9 +1035,9 @@ function Form() {
         attrs = addToAttrs(attrs, { className })
         return { html: value, align: 'v', attrs }
     }
-    function input_node(formItem):I_RVD_node {
+    function input_node(formItem:AI_formItem):I_RVD_node {
         let { label, footer, input, flex, size, field } = formItem;
-        let value = getValueByField({ field, def: getDefault(input) });
+        let value = getValueByField({ field, def: getDefaultValue(input) });
         let error = getError(formItem, value)
         if (error) { errors[field] = error }
         else { errors[field] = undefined }
@@ -1075,7 +1076,7 @@ function Form() {
         }
         return AIOValidation(a);
     }
-    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') })
+    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : ''),style })
     return (
         <RVD
             editNode={(obj, parent:any = {}) => {
@@ -1380,7 +1381,7 @@ function TablePaging() {
             attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
             type: 'select', value: size, options: sizes, option:{text:'option',value:'option'},
             onChange: (value) => changePaging({ size: value }),
-            popover: { fitHorizontal: true },
+            popover: { fitHorizontal: true},
         }
         return (<AIOInput {...p} />)
     }
@@ -1445,7 +1446,14 @@ function TableToolbar() {
     function button() {
         if (!sorts.length) { return null }
         let p:AI = {
-            popover:{ header: { attrs: { className: 'aio-input-table-toolbar-popover-header' }, title: 'Sort', onClose: false }, pageSelector: '.aio-input-table' },
+            popover:{ 
+                header: { 
+                    attrs: { className: 'aio-input-table-toolbar-popover-header' }, 
+                    title: 'Sort', 
+                    onClose: false 
+                }, 
+                pageSelector: '.aio-input-table'
+            },
             caret:false,type:'select',options:sorts,
             option:{
                 text:'option.title',
