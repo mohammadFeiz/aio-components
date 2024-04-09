@@ -24,7 +24,8 @@ export type I_RVD_node = {
     key?:string | number,
     id?:string | number,
     onDrag?:(e:any)=>void,
-    onDrop?:(e:any)=>void
+    onDrop?:(e:any)=>void,
+    onResize?:(newSize:number)=>void
 }
 export type I_RVD_editNode = (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node;
 export type I_RVD_classes = {[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}

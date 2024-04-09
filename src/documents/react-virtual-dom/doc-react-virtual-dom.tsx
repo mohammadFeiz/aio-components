@@ -23,15 +23,7 @@ export default function DOC_AIOShop(props) {
                     { text: 'size', id: 'size', render: () => <Size /> },
                     { text: 'flex', id: 'flex', render: () => <Flex /> },
                     { text: 'sizing', id: 'sizing', render: () => <Sizing /> },
-                    {
-                        text: 'layout', id: 'layout',
-                        items: [
-                            { text: 'example 1', id: 'example1', render: () => <Layout1 /> },
-                            { text: 'example 2', id: 'example2', render: () => <Layout2 /> },
-                            { text: 'example 3', id: 'example3', render: () => <Layout3 /> },
-                            { text: 'example 6', id: 'example6', render: () => <Layout6 /> }
-                        ]
-                    },
+                    {text: 'layout', id: 'layout', render: () => <Layout />},
                     { text: 'loading', id: 'loading', render: () => <Loading /> },
                     { text: 'gap', id: 'gap', render: () => <Gap /> },
                     { text: 'Css Classes', id: 'css classes', render: () => <CssClasses /> },
@@ -62,93 +54,97 @@ function Part(p) {
     )
 }
 function Node() {
-    
+    function Cell(){
+        let cell:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+        return cell
+    }
+    function Row(){
+        let row:I_RVD_node = {
+            className:'gap-12',
+            row:[Cell(),Cell(),Cell(),Cell()]
+        }
+        return row
+    }
+    function Table(){
+        let table:I_RVD_node = {
+            className:'gap-12',
+            column:[Row(),Row(),Row(),Row()]
+        }
+        return table
+    }
+    let CellCode = 
+`function Cell(){
+    let cell:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+    return cell
+}`
+    let RowCode = 
+`function Row(){
+    let row:I_RVD_node = {
+        className:'gap-12',
+        row:[Cell(),Cell(),Cell(),Cell()]
+    }
+    return row
+}`
+    let TableCode = 
+`function Table(){
+    let table:I_RVD_node = {
+        className:'gap-12',
+        column:[Row(),Row(),Row(),Row()]
+    }
+    return table
+}`
     return (
         <div className='example'>
             <Part
                 title='html'
-                content={()=>{
-                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
-                    return <RVD rootNode={node_A}/>
-                }}
-                code={`
-function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
-    return <RVD rootNode={node_A}/>
-}
-                `}
+                content={()=><RVD rootNode={Cell()}/>}
+                code={
+`${CellCode}
+return <RVD rootNode={Cell()}/>`
+                }
             />
             <Part
                 title='row'
-                content={()=>{
-                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
-                    let node_A_row:I_RVD_node = {
-                        className:'gap-12',
-                        row:[node_A,node_A,node_A,node_A]
-                    }
-                    return <RVD rootNode={node_A_row}/>
-                }}
-                code={`
-function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
-    let node_A_row = {
-        className:'gap-12',
-        row:[node_A,node_A,node_A,node_A]
-    }
-    return <RVD rootNode={node_A_row}/>
-}
-                `}
+                content={()=><RVD rootNode={Row()}/>}
+                code={
+`${CellCode}
+${RowCode}
+return <RVD rootNode={Row()}/>`
+                }
             />
             <Part
                 title='column'
-                content={()=>{
-                    let node_A:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
-                    let node_A_row:I_RVD_node = {
-                        className:'gap-12',
-                        row:[node_A,node_A,node_A,node_A]
-                    }
-                    let node_A_table:I_RVD_node = {
-                        className:'gap-12',
-                        column:[node_A_row,node_A_row,node_A_row,node_A_row]
-                    }
-                    return <RVD rootNode={node_A_table}/>
-                }}
-                code={`
-function Layout(){
-    let node_A = {html:'A',style:{border:'1px solid'},className:'p-12'};
-    let node_A_row = {
-        className:'gap-12',
-        row:[node_A,node_A,node_A,node_A]
-    }
-    let node_A_table = {
-        className:'gap-12',
-        column:[node_A_row,node_A_row,node_A_row,node_A_row]
-    }
-    return <RVD rootNode={node_A_table}/>
-}
-                `}
+                content={()=><RVD rootNode={Table()}/>}
+                code={
+`${CellCode}
+${RowCode}
+${TableCode}
+return (
+    <RVD rootNode={Table()}/>
+)`
+                }
             />
             <Part
                 content={()=>{
                     let rootNode:I_RVD_node = {
-                        className:'h-96 brd-c16',
+                        className:'h-96 brd-c-16',
                         row:[
                             {
-                                html:'A',className:'bg12 flex-1 align-vh c32'
+                                html:'A',className:'bg-12 flex-1 align-vh c-32'
                             },
                             {
                                 flex:1,
                                 column:[
-                                    {html:'A',className:'bg16 flex-1 align-vh'},
-                                    {html:'A',className:'bg20 flex-1 align-vh'}
+                                    {html:'A',className:'bg-16 flex-1 align-vh'},
+                                    {html:'A',className:'bg-20 flex-1 align-vh'}
                                 ]
                             },
                             {
                                 className:'flex-1',
                                 column:[
-                                    {html:'A',className:'bg24 flex-1 align-vh'},
-                                    {html:'A',className:'bg28 flex-1 align-vh'},
-                                    {html:'A',className:'bg32 flex-1 align-vh'},
+                                    {html:'A',className:'bg-24 flex-1 align-vh'},
+                                    {html:'A',className:'bg-28 flex-1 align-vh'},
+                                    {html:'A',className:'bg-32 flex-1 align-vh'},
                                 ]
                             }
                         ]
@@ -160,24 +156,24 @@ function Layout(){
     return (
         <RVD
             rootNode={{
-                className:'h-96 brd-c16',
+                className:'h-96 brd-c-16',
                 row:[
                     {
-                        html:'A',className:'bg12 flex-1 align-vh c32'
+                        html:'A',className:'bg-12 flex-1 align-vh c-32'
                     },
                     {
                         flex:1,
                         column:[
-                            {html:'A',className:'bg16 flex-1 align-vh'},
-                            {html:'A',className:'bg20 flex-1 align-vh'}
+                            {html:'A',className:'bg-16 flex-1 align-vh'},
+                            {html:'A',className:'bg-20 flex-1 align-vh'}
                         ]
                     },
                     {
                         className:'flex-1',
                         column:[
-                            {html:'A',className:'bg24 flex-1 align-vh'},
-                            {html:'A',className:'bg28 flex-1 align-vh'},
-                            {html:'A',className:'bg32 flex-1 align-vh'},
+                            {html:'A',className:'bg-24 flex-1 align-vh'},
+                            {html:'A',className:'bg-28 flex-1 align-vh'},
+                            {html:'A',className:'bg-32 flex-1 align-vh'},
                         ]
                     }
                 ]
@@ -196,12 +192,12 @@ function Align() {
             <Part
                 title='without align'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -209,12 +205,12 @@ function Layout(){
             <Part
                 title='align-v as className'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-v'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-v'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-v'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -222,12 +218,12 @@ function Layout(){
             <Part
                 title='align-v as property'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'v',className:'brd-c-12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',align:'v',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',align:'v',className:'brd-c-12 w-72 h-72'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -235,12 +231,12 @@ function Layout(){
             <Part
                 title='align-h as className'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-h'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-h'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-h'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -248,12 +244,12 @@ function Layout(){
             <Part
                 title='align-h as property'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'h',className:'brd-c-12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',align:'h',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',align:'h',className:'brd-c-12 w-72 h-72'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -261,12 +257,12 @@ function Layout(){
             <Part
                 title='align-vh as className'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -274,12 +270,12 @@ function Layout(){
             <Part
                 title='align-vh as property'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',align:'vh',className:'brd-c12 w-72 h-72'};
+                    let node_A:I_RVD_node = {html:'A',align:'vh',className:'brd-c-12 w-72 h-72'};
                     return <RVD rootNode={node_A}/>
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -287,20 +283,20 @@ function Layout(){
             <Part
                 title='align-v in column'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
                     let rootNode:I_RVD_node = {
-                        className:'h-300 w-fit brd-c12 align-v p-12',
+                        className:'h-300 w-fit brd-c-12 align-v p-12',
                         column:[node_A,node_A]
                     }
                     return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
     return (
         <RVD 
             rootNode={{
-                className:'h-300 w-fit brd-c12 align-v p-12',
+                className:'h-300 w-fit brd-c-12 align-v p-12',
                 column:[node_A,node_A]
             }}
         />
@@ -311,17 +307,17 @@ function Layout(){
             <Part
                 title='align-h in column'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
-                    let rootNode:I_RVD_node = {className:'w-300 h-fit brd-c12 align-h p-12',row:[node_A,node_A]}
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
+                    let rootNode:I_RVD_node = {className:'w-300 h-fit brd-c-12 align-h p-12',row:[node_A,node_A]}
                     return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72 align-vh'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
     return (
         <RVD 
             rootNode={{
-                className:'w-300 h-fit brd-c12 align-h p-12',
+                className:'w-300 h-fit brd-c-12 align-h p-12',
                 row:[node_A,node_A]
             }}
         />
@@ -338,17 +334,17 @@ function Spacing() {
             <Part
                 title='spacing by nodes'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
-                    let rootNode:I_RVD_node = {className:'w-300 brd-c12 p-12',row:[node_A,{className:'flex-1'},node_A]}
+                    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
+                    let rootNode:I_RVD_node = {className:'w-300 brd-c-12 p-12',row:[node_A,{className:'flex-1'},node_A]}
                     return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return (
         <RVD 
             rootNode={{
-                className:'w-300 brd-c12 p-12',
+                className:'w-300 brd-c-12 p-12',
                 row:[
                     node_A,
                     {className:'flex-1'},
@@ -363,17 +359,17 @@ function Layout(){
             <Part
                 title='spacing by nodes'
                 content={()=>{
-                    let node_A:I_RVD_node = {html:'A',className:'brd-c12 w-72 h-72'};
-                    let rootNode:I_RVD_node = {className:'brd-c12 p-12',row:[node_A,{className:'flex-1'},node_A,{className:'flex-3'},node_A]}
+                    let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72'};
+                    let rootNode:I_RVD_node = {className:'brd-c-12 p-12',row:[node_A,{className:'flex-1'},node_A,{className:'flex-3'},node_A]}
                     return (<RVD rootNode={rootNode}/>)
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return (
         <RVD 
             rootNode={{
-                className:'brd-c12 p-12',
+                className:'brd-c-12 p-12',
                 row:[
                     node_A,
                     {className:'flex-1'},
@@ -390,11 +386,11 @@ function Layout(){
             <Part
                 title='spacing by nodes'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
                     return (
                         <RVD 
                             rootNode={{
-                                className:'brd-c12 p-12',
+                                className:'brd-c-12 p-12',
                                 row:[
                                     node_A,
                                     {size:60,html:'size:60',className:'align-vh op-20'},
@@ -410,11 +406,11 @@ function Layout(){
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return (
         <RVD 
             rootNode={{
-                className:'brd-c12 p-12',
+                className:'brd-c-12 p-12',
                 row:[
                     node_A,
                     {size:60},
@@ -433,11 +429,11 @@ function Layout(){
             <Part
                 title='spacing by gap className'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
                     return (
                         <RVD 
                             rootNode={{
-                                className:'brd-c12 p-12 gap-24',
+                                className:'brd-c-12 p-12 gap-24',
                                 row:[node_A,node_A,node_A,node_A]
                             }}
                         />
@@ -445,11 +441,11 @@ function Layout(){
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return (
         <RVD 
             rootNode={{
-                className:'brd-c12 p-12 gap-24',
+                className:'brd-c-12 p-12 gap-24',
                 row:[node_A,node_A,node_A,node_A]
             }}
         />
@@ -460,11 +456,11 @@ function Layout(){
             <Part
                 title='spacing by gap property'
                 content={()=>{
-                    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+                    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
                     return (
                         <RVD 
                             rootNode={{
-                                className:'brd-c12 p-12',
+                                className:'brd-c-12 p-12',
                                 gap:{flex:1},
                                 row:[node_A,node_A,node_A,node_A]
                             }}
@@ -473,11 +469,11 @@ function Layout(){
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c12 w-72 h-72'};
+    let node_A = {html:'A',className:'brd-c-12 w-72 h-72'};
     return (
         <RVD 
             rootNode={{
-                className:'brd-c12 p-12',
+                className:'brd-c-12 p-12',
                 gap:{flex:1},
                 row:[node_A,node_A,node_A,node_A]
             }}
@@ -499,9 +495,9 @@ function Size() {
                 content={()=>{
                     let row = {
                         row:[
-                            {html:'A',className:'brd-c16',size:24},
-                            {html:'A',className:'brd-c16',size:48},
-                            {html:'A',className:'brd-c16',size:60}
+                            {html:'A',className:'brd-c-16',size:24},
+                            {html:'A',className:'brd-c-16',size:48},
+                            {html:'A',className:'brd-c-16',size:60}
                         ]
                     }
                     return <RVD rootNode={row}/>
@@ -510,9 +506,9 @@ function Size() {
 function Layout(){
     let row = {
         row:[
-            {html:'A',className:'brd-c16',size:24},
-            {html:'A',className:'brd-c16',size:48},
-            {html:'A',className:'brd-c16',size:60}
+            {html:'A',className:'brd-c-16',size:24},
+            {html:'A',className:'brd-c-16',size:48},
+            {html:'A',className:'brd-c-16',size:60}
         ]
     }
     return <RVD rootNode={row}/>
@@ -527,25 +523,25 @@ function Layout(){
                             {
                                 size:24,
                                 row:[
-                                    {html:'A',className:'brd-c16',size:24},
-                                    {html:'A',className:'brd-c16',size:48},
-                                    {html:'A',className:'brd-c16',size:60}
+                                    {html:'A',className:'brd-c-16',size:24},
+                                    {html:'A',className:'brd-c-16',size:48},
+                                    {html:'A',className:'brd-c-16',size:60}
                                 ]
                             },
                             {
                                 size:48,
                                 row:[
-                                    {html:'A',className:'brd-c16',size:24},
-                                    {html:'A',className:'brd-c16',size:48},
-                                    {html:'A',className:'brd-c16',size:60}
+                                    {html:'A',className:'brd-c-16',size:24},
+                                    {html:'A',className:'brd-c-16',size:48},
+                                    {html:'A',className:'brd-c-16',size:60}
                                 ]
                             },
                             {
                                 size:60,
                                 row:[
-                                    {html:'A',className:'brd-c16',size:24},
-                                    {html:'A',className:'brd-c16',size:48},
-                                    {html:'A',className:'brd-c16',size:60}
+                                    {html:'A',className:'brd-c-16',size:24},
+                                    {html:'A',className:'brd-c-16',size:48},
+                                    {html:'A',className:'brd-c-16',size:60}
                                 ]
                             }   
                         ]
@@ -559,25 +555,25 @@ function Layout(){
             {
                 size:24,
                 row:[
-                    {html:'A',className:'brd-c16',size:24},
-                    {html:'A',className:'brd-c16',size:48},
-                    {html:'A',className:'brd-c16',size:60}
+                    {html:'A',className:'brd-c-16',size:24},
+                    {html:'A',className:'brd-c-16',size:48},
+                    {html:'A',className:'brd-c-16',size:60}
                 ]
             },
             {
                 size:48,
                 row:[
-                    {html:'A',className:'brd-c16',size:24},
-                    {html:'A',className:'brd-c16',size:48},
-                    {html:'A',className:'brd-c16',size:60}
+                    {html:'A',className:'brd-c-16',size:24},
+                    {html:'A',className:'brd-c-16',size:48},
+                    {html:'A',className:'brd-c-16',size:60}
                 ]
             },
             {
                 size:60,
                 row:[
-                    {html:'A',className:'brd-c16',size:24},
-                    {html:'A',className:'brd-c16',size:48},
-                    {html:'A',className:'brd-c16',size:60}
+                    {html:'A',className:'brd-c-16',size:24},
+                    {html:'A',className:'brd-c-16',size:48},
+                    {html:'A',className:'brd-c-16',size:60}
                 ]
             }   
         ]
@@ -601,25 +597,25 @@ function Flex() {
                             {
                                 className:'flex-1',
                                 row:[
-                                    {html:'A',className:'brd-c16 flex-1'},
-                                    {html:'A',className:'brd-c16 flex-2'},
-                                    {html:'A',className:'brd-c16 flex-3'}
+                                    {html:'A',className:'brd-c-16 flex-1'},
+                                    {html:'A',className:'brd-c-16 flex-2'},
+                                    {html:'A',className:'brd-c-16 flex-3'}
                                 ]
                             },
                             {
                                 className:'flex-2',
                                 row:[
-                                    {html:'A',className:'brd-c16 flex-1'},
-                                    {html:'A',className:'brd-c16 flex-2'},
-                                    {html:'A',className:'brd-c16 flex-3'}
+                                    {html:'A',className:'brd-c-16 flex-1'},
+                                    {html:'A',className:'brd-c-16 flex-2'},
+                                    {html:'A',className:'brd-c-16 flex-3'}
                                 ]
                             },
                             {
                                 className:'flex-3',
                                 row:[
-                                    {html:'A',className:'brd-c16 flex-1'},
-                                    {html:'A',className:'brd-c16 flex-2'},
-                                    {html:'A',className:'brd-c16 flex-3'}
+                                    {html:'A',className:'brd-c-16 flex-1'},
+                                    {html:'A',className:'brd-c-16 flex-2'},
+                                    {html:'A',className:'brd-c-16 flex-3'}
                                 ]
                             }
                         ]
@@ -634,25 +630,25 @@ function Layout(){
             {
                 className:'flex-1',
                 row:[
-                    {html:'A',className:'brd-c16 flex-1'},
-                    {html:'A',className:'brd-c16 flex-2'},
-                    {html:'A',className:'brd-c16 flex-3'}
+                    {html:'A',className:'brd-c-16 flex-1'},
+                    {html:'A',className:'brd-c-16 flex-2'},
+                    {html:'A',className:'brd-c-16 flex-3'}
                 ]
             },
             {
                 className:'flex-2',
                 row:[
-                    {html:'A',className:'brd-c16 flex-1'},
-                    {html:'A',className:'brd-c16 flex-2'},
-                    {html:'A',className:'brd-c16 flex-3'}
+                    {html:'A',className:'brd-c-16 flex-1'},
+                    {html:'A',className:'brd-c-16 flex-2'},
+                    {html:'A',className:'brd-c-16 flex-3'}
                 ]
             },
             {
                 className:'flex-3',
                 row:[
-                    {html:'A',className:'brd-c16 flex-1'},
-                    {html:'A',className:'brd-c16 flex-2'},
-                    {html:'A',className:'brd-c16 flex-3'}
+                    {html:'A',className:'brd-c-16 flex-1'},
+                    {html:'A',className:'brd-c-16 flex-2'},
+                    {html:'A',className:'brd-c-16 flex-3'}
                 ]
             }
         ]
@@ -664,404 +660,7 @@ function Layout(){
         </div>
     )
 }
-function Layout1() {
-    function files_layout(files){
-        return {
-            column:[
-                label_layout('Files'),
-                {className: 'gap-12',row: files.map((o) => card_layout(o))}
-            ],
-        }
-    }
-    function label_layout(text){
-        return {html:text,className:'bold fs-14',style:{color:'#174484'}}
-    }
-    function card_layout({text,path,color,filesLength}){
-        return {
-            style: { background: '#fff', color: '#666' },
-            className: 'p-6 fs-12 br-8 w-84',
-            column: [
-                {
-                    html:<Icon path={path} size={0.8}/>,
-                    className:'w-24 h-24 br-100 m-b-6 align-vh',
-                    style:{ background: '#fff', color }
-                },
-                { 
-                    html: text,
-                    className:'bold' 
-                },
-                { 
-                    html: filesLength + ' files', 
-                    style: { fontSize: '85%' }, 
-                    className: 'op-80' 
-                }
-            ]
-        }
-    }
-    let files = [
-        { path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
-        { path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
-        { path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
-        { path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
-    ]
-    return (
-        <div className='example' style={{background:'#f2f2f2'}}>
-            <Part
-                title='Generate a card width react virtual dom'
-                content={(
-                    <RVD 
-                        rootNode={{
-                            style: { background: '#fff', color: '#666' },
-                            className: 'p-6 fs-12 br-8 w-84',
-                            column: [
-                                {
-                                    html:<Icon path={mdiCamera} size={0.8}/>,
-                                    className:'w-24 h-24 br-100 m-b-6 align-vh',
-                                    style:{ background: '#fff', color:'pink' }
-                                },
-                                { 
-                                    html: 'My Text',
-                                    className:'bold' 
-                                },
-                                { 
-                                    html: '10 files', 
-                                    style: { fontSize: '85%' }, 
-                                    className: 'op-80' 
-                                }
-                            ]
-                        }} 
-                    />
-                )}
-                code={`
-function Layout(){
-    return (
-        <RVD 
-            rootNode={{
-                style: { background: '#fff', color: '#666' },
-                className: 'p-6 fs-12 br-8 w-84', //{padding:6px; font-size:12px; border-radius:8px; width:84px;}
-                column: [
-                    {
-                        html:<Icon path={mdiCamera} size={0.8}/>,
-                        className:'w-24 h-24 br-100 m-b-6 align-vh', //{width:24px; height:24px; border-radius:100%; margin-bottom:6px; ...}
-                        style:{ background: '#fff', color:'pink' }
-                    },
-                    { 
-                        html: 'My Text',
-                        className:'bold' 
-                    },
-                    { 
-                        html: '10 files', 
-                        style: { fontSize: '85%' }, 
-                        className: 'op-80' //{opacity: 0.8;}
-                    }
-                ]
-            }} 
-        />
-    )
-}
-                `}
-            />
-            <Part
-                title='Creating a function (card_layout) that produces this card'
-                content={(
-                    <RVD 
-                        rootNode={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
-                    />
-                )}
-                code={`
-function Layout(){
-    function card_layout({text,path,color,filesLength}){
-        return {
-            style: { background: '#fff', color: '#666' },
-            className: 'p-6 fs-12 br-8 w-84',
-            column: [
-                {
-                    html:<Icon path={path} size={0.8}/>,
-                    className:'w-24 h-24 br-100 m-b-6 align-vh',
-                    style:{ background: '#fff', color }
-                },
-                { 
-                    html: text,
-                    className:'bold' 
-                },
-                { 
-                    html: filesLength + ' files', 
-                    style: { fontSize: '85%' }, 
-                    className: 'op-80' 
-                }
-            ]
-        }
-    }
-    return (
-        <RVD 
-            rootNode={card_layout({text:'My Text',path:mdiCamera,color:'pink',filesLength:10})} 
-        />
-    )
-}
-                `}
-            />
-            <Part
-                title='generate files_layout'
-                content={(
-                    <RVD rootNode={files_layout(files)}/>
-                )}
-                code={`
-function Layout(){
-    function files_layout(files){
-        return {
-            column:[
-                label_layout('Files'),
-                {className: 'gap-12',row: files.map((o) => card_layout(o))}
-            ],
-        }
-    }
-    function label_layout(text){
-        return {html:text,className:'bold fs-14',style:{color:'#174484'}}
-    }
-    function card_layout({text,path,color,filesLength}){
-        return {
-            style: { background: '#fff', color: '#666' },
-            className: 'p-6 fs-12 br-8 w-84',
-            column: [
-                {
-                    html:<Icon path={path} size={0.8}/>,
-                    className:'w-24 h-24 br-100 m-b-6 align-vh',
-                    style:{ background: '#fff', color }
-                },
-                { 
-                    html: text,
-                    className:'bold' 
-                },
-                { 
-                    html: filesLength + ' files', 
-                    style: { fontSize: '85%' }, 
-                    className: 'op-80' 
-                }
-            ]
-        }
-    }
-    let files = [
-        { path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
-        { path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
-        { path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
-        { path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
-    ]
-    return (
-        <RVD rootNode={files_layout(files)}/>
-    )
-}
-                `}
-            />
-        </div>
-    )
-}
-function Layout2() {
-    function recentFiles_layout(recentFiles){
-        return {
-            className:'gap-6',
-            column:recentFiles.map((o)=>row_layout(o))
-        }
-    }
-    function row_layout({path,text,format,size,color}){
-        return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
-            row:[
-                icon_layout(path,{size:24,style:{color:'#fff',background:color}}),
-                text_layout(text),
-                format_layout(format),
-                size_layout(size),
-                icon_layout(mdiShare,{flex:1}),
-                icon_layout(mdiDotsHorizontal,{flex:1}),
-            ]
-        }
-    }
-    function icon_layout(path,props){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh',...props}
-    }
-    function text_layout(text){
-        return {html:text,size:200,className:'bold fs-14',style:{color:'#174484'}}
-    }
-    function format_layout(format){
-        return {html:format + ' file',flex:1,className:'align-vh'}
-    }
-    function size_layout(size){
-        return {html:size,flex:1,className:'align-vh'}
-    }
-    let recentFiles = [
-        { path: mdiCamera, text: 'IMG_100000', format: 'PNG',size:'10 MB', color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Startup pitch', format: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { path: mdiMonitor, text: 'freestyle beat', format: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { path: mdiListBox, text: 'Work proposal', format: 'DOCx',size:'30 KB', color: '#266fd5' },
-    ]
-    return (
-        <div className='example' style={{background:'#f2f2f2'}}>
-            <Part
-                content={(
-                    <RVD
-                        rootNode={{
-                            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
-                            row:[
-                                icon_layout(mdiCamera,{size:24,style:{color:'#fff',background:'pink'}}),
-                                text_layout('IMG_100000'),
-                                format_layout('PNG'),
-                                size_layout('10 MB'),
-                                icon_layout(mdiShare,{flex:1}),
-                                icon_layout(mdiDotsHorizontal,{flex:1}),
-                            ]
-                        }}
-                    />
-                )}
-                code={`
-function Layout(){
-    function icon_layout(path,props){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh',...props}
-    }
-    function text_layout(text){
-        return {html:text,size:200,className:'bold fs-14',style:{color:'#174484'}}
-    }
-    function format_layout(format){
-        return {html:format + ' file',flex:1,className:'align-vh'}
-    }
-    function size_layout(size){
-        return {html:size,flex:1,className:'align-vh'}
-    }
-    return (
-        <RVD
-            rootNode={{
-                style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
-                row:[
-                    icon_layout(mdiCamera,{size:24,style:{color:'#fff',background:'pink'}}),
-                    text_layout('IMG_100000'),
-                    format_layout('PNG'),
-                    size_layout('10 MB'),
-                    icon_layout(mdiShare,{flex:1}),
-                    icon_layout(mdiDotsHorizontal,{flex:1}),
-                ]
-            }}
-        />
-    )
-}
-                `}
-            />
-            <Part
-                content={(
-                    <RVD
-                        rootNode={recentFiles_layout(recentFiles)}
-                    />
-                )}
-                code={`
-function Layout(){
-    ...
-    function recentFiles_layout(recentFiles){
-        return {
-            className:'gap-6',
-            column:recentFiles.map((o)=>row_layout(o))
-        }
-    }
-    function row_layout({path,text,format,size,color}){
-        return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
-            row:[
-                icon_layout(path,{size:24,style:{color:'#fff',background:color}}),
-                text_layout(text),
-                format_layout(format),
-                size_layout(size),
-                icon_layout(mdiShare,{flex:1}),
-                icon_layout(mdiDotsHorizontal,{flex:1}),
-            ]
-        }
-    }
-    let recentFiles = [
-        { path: mdiCamera, text: 'IMG_100000', format: 'PNG',size:'10 MB', color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Startup pitch', format: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { path: mdiMonitor, text: 'freestyle beat', format: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { path: mdiListBox, text: 'Work proposal', format: 'DOCx',size:'30 KB', color: '#266fd5' },
-    ]
-    return (<RVD rootNode={recentFiles_layout(recentFiles)} />)
-}
-                `}
-            />
-        </div>
-    )
-}
-function Layout3() {
-    function side_layout(sideItems){
-        return {
-            style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
-            column: [
-                {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
-                {column: sideItems.map((sideItem) => sideItem_layout(sideItem))}
-            ],
-        }
-    }
-    function sideItem_layout(sideItem){
-        return {
-            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
-            row: [
-                icon_layout(sideItem.path),
-                { html: sideItem.text}
-            ]
-        }
-    }
-    function icon_layout(path){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh'}
-    }
-    let sideItems = [
-        { path: mdiAccount, text: 'My Cloud' },
-        { path: mdiAccountGroup, text: 'Shared Files' },
-        { path: mdiStar, text: 'Favorites' },
-        { path: mdiCloudUpload, text: 'Upload Files' },
-        { path: mdiCarSettings, text: 'Settings' },
-        { path: mdiCloudUpload, text: 'Upload Files' }
-    ]
-    return (
-        <div className='example'>
-            <Part
-                content={(
-                    <RVD rootNode={side_layout(sideItems)}/>
-                )}
-                code={`
-function Layout(){
-    function side_layout(sideItems){
-        return {
-            style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
-            column: [
-                {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
-                {column: sideItems.map((sideItem) => sideItem_layout(sideItem))}
-            ],
-        }
-    }
-    function sideItem_layout(sideItem){
-        return {
-            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
-            row: [
-                icon_layout(sideItem.path),
-                { html: sideItem.text}
-            ]
-        }
-    }
-    function icon_layout(path){
-        return {html:<Icon path={path} size={0.6}/>,className:'br-6 h-24 align-vh'}
-    }
-    let sideItems = [
-        { path: mdiAccount, text: 'My Cloud' },
-        { path: mdiAccountGroup, text: 'Shared Files' },
-        { path: mdiStar, text: 'Favorites' },
-        { path: mdiCloudUpload, text: 'Upload Files' },
-        { path: mdiCarSettings, text: 'Settings' },
-        { path: mdiCloudUpload, text: 'Upload Files' }
-    ]
-    return (
-        <RVD rootNode={side_layout(sideItems)}/>
-    )
-}
-                `}
-            />
-        </div>
-    )
-}
-
-function Layout6() {
+function Layout() {
     let sideItems = [
         { path: mdiAccount, text: 'My Cloud' },
         { path: mdiAccountGroup, text: 'Shared Files' },
@@ -1088,171 +687,331 @@ function Layout6() {
         { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ]
-    let layout = new Layout(()=>{return {sideItems,categories,files,recentFiles}});
-
-    return (
-        <div className='example'>
-            <Part
-                content={(
-                    <RVD
-                        rootNode={layout.root()}
-                    />
-                )}
-                code={`
-function App(){
-    let sideItems = [
-        { path: mdiAccount, text: 'My Cloud' },
-        { path: mdiAccountGroup, text: 'Shared Files' },
-        { path: mdiStar, text: 'Favorites' },
-        { path: mdiCloudUpload, text: 'Upload Files' },
-        { path: mdiCarSettings, text: 'Settings' },
-        { path: mdiCloudUpload, text: 'Upload Files' }
-    ]
-    let categories = [
-        { path: mdiCamera, text: 'Pictures', length: 480, color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Doscuments', length: 190, color: '#00a0b6' },
-        { path: mdiMonitor, text: 'Videos', length: 30, color: '#e06c9f' },
-        { path: mdiMicrophone, text: 'Audio', length: 80, color: '#266fd5' },
-    ]
-    let files = [
-        { path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
-        { path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
-        { path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
-        { path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
-    ]
-    let recentFiles = [
-        { path: mdiCamera, text: 'IMG_100000', type: 'PNG', color: '#6663fe' },
-        { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI', color: '#00a0b6' },
-        { path: mdiMonitor, text: 'freestyle beat', type: 'MP3', color: '#e06c9f' },
-        { path: mdiListBox, text: 'Work proposal', type: 'DOCx', color: '#266fd5' },
-    ]
-    let layout = new Layout(()=>{return {sideItems,categories,files,recentFiles}});    
-    return (<RVD rootNode={layout.root()}/>)
-}
-class Layout{
-    constructor(getProps){
-        this.getProps = getProps;
-    }
-    root = (props)=>{
+    function CategoryCard(category){
         return {
-            className:'bg30',row:[this.side(),this.body()],...props
-        }
-    }
-    side = (props) => {
-        return {
-            style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
-            column: [this.sideHeader(),this.sideItems()],
-            ...props
-        }
-    }
-    body = (props) => {
-        return {
-            className:'p-24 gap-12',flex:1,
-            column:[this.categories(),this.files(),this.recentFiles()],
-            ...props
-        }
-    }
-    sideHeader = (props) => {
-        return {size: 100, classNAme: 'align-vh',html: <Icon path={mdiAccount} size={2} />,...props}
-    }
-    sideItems = (props) => {
-        let {sideItems} = this.getProps()
-        return {column: sideItems.map((sideItem) => this.sideItem(sideItem)),...props}
-    }
-    sideItem = (sideItem,props) => {
-        return {
-            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
-            row: [this.icon(sideItem.path,0.6),this.sideText(sideItem.text)],
-            ...props
-        }
-    }
-    sideText = (text,props) => {
-        return { html: text ,...props}
-    }
-    icon = (path,size,props) => {
-        return {html:<Icon path={path} size={size}/>,className:'align-vh',...props}
-    }
-    label = (text,props) => {
-        return {html:text,className:'bold fs-14',style:{color:'#174484'},...props}
-    }
-    categories = (props) => {
-        let {categories} = this.getProps();
-        return {
-            column:[
-                this.label('Categories'),
-                {className: 'gap-12',row: categories.map((o) => this.card(o))}
-            ],
-            ...props
-        }
-    }
-    card = ({ path, text, length, color, outline },props) => {
-        let cardStyle = { background: outline ? '#fff' : color, color: outline ? '#666' : '#fff' }
-        let iconStyle = { background: '#fff', color, width: 24, height: 24,borderRadius:'100%',marginBottom:6 };
-        return {
-            style: cardStyle,
+            style: {background:category.color,color:'#fff'},
             className: 'p-6 fs-12 br-8 w-84',
             column: [
-                this.icon(path,0.6,{style:iconStyle}),
-                { html: text,className:'bold' },
-                { html: length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
+                { html:<Icon path={category.path} size={0.6}/>,className:'p-v-6'},
+                { html: category.text,className:'bold' },
+                { html: category.length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
             ],
-            ...props
         }
     }
-    row = ({path,text,type,size,color},props)=>{
+    function FileCard(file){
         return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12',
+            style: {background:'#fff',color:file.color},
+            className: 'p-6 fs-12 br-8 w-84',
+            column: [
+                { html:<Icon path={file.path} size={0.6}/>,className:'p-v-6'},
+                { html: file.text,className:'bold' },
+                { html: file.length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
+            ],
+        }
+    }
+    function RecentFileCard(recentFile){
+        return {
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
             row:[
-                this.icon(path,0.6,{className:'w-24 h-24 br-4 align-vh',style:{color:'#fff',background:color}}),
-                this.row_text(text),
-                this.row_type(type),
-                this.row_size(size),
-                this.icon(mdiShare,0.8,{flex:1}),
-                this.icon(mdiDotsHorizontal,0.8,{flex:1}),
-            ],
-            ...props
+                {
+                    html:<Icon path={recentFile.path} size={0.6}/>,
+                    className:'w-24 h-24 br-4 align-vh',
+                    style:{color:'#fff',background:recentFile.color}
+                },
+                {html:recentFile.text,size:120,className:'bold align-v'},
+                {html:recentFile.type + ' file',flex:1,className:'aling-vh'},
+                {html:recentFile.size,flex:1,classNAme:'align-vh'},
+                {html:<Icon path={mdiShare} size={0.8}/>,className:'flex-1'},
+                {html:<Icon path={mdiDotsHorizontal} size={0.8}/>,className:'flex-1'},
+            ]
         }
     }
-    row_text = (text,props) =>{
-        return {html:text,size:120,className:'bold align-v',...props}
-    }
-    row_type = (type,props)=>{
-        return {html:type + ' file',flex:1,className:'align-vh',...props}
-    }
-    row_size = (size,props)=>{
-        return {html:size,flex:1,className:'align-vh',...props}
-    }
-    files = (props) =>{
-        let {files} = this.getProps()
+    function Categories(categories){
         return {
             column:[
-                this.label('Files'),
-                {gap: 12,row: files.map((o) => this.card(o))}
+                {html:'Categories',className:'bold fs-14',style:{color:'#174484'}},
+                {className: 'gap-12',row: categories.map((o) => CategoryCard(o))}
             ],
-            ...props
         }
     }
-    recentFiles = (props)=>{
-        let {recentFiles} = this.getProps();
+    function Files(files){
         return {
             column:[
-                this.label('Recent Files'),
-                {className:'gap-6',column:recentFiles.map((o)=>this.row(o))}
+                {html:'Files',className:'bold fs-14',style:{color:'#174484'}},
+                {className: 'gap-12',row: files.map((o) => FileCard(o))}
             ],
-            ...props
         }
     }
-}
-                `}
-            />
+    function RecentFiles(recentFiles){
+        return {
+            column:[
+                {html:'Recent Files',className:'bold fs-14',style:{color:'#174484'}},
+                {className:'gap-6',column:recentFiles.map((o)=>RecentFileCard(o))}
+            ]
+        }
+    }
+    function Body(){
+        return {
+            className:'gap-24 p-12 flex-1',
+            column:[
+                Categories(categories),
+                Files(files),
+                RecentFiles(recentFiles),
+            ]
+        }
+    }
+    function SideItem(sideItem){
+        return {
+            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
+            row: [
+                { html:<Icon path={sideItem.path} size={0.6}/>},
+                { html: sideItem.text}
+            ]
+        }
+    }
+    function Side(sideItems){
+        return {
+            style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
+            column: [
+                {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
+                {column: sideItems.map((sideItem) => SideItem(sideItem))}
+            ]
+        }
+    }
+    function Page(){
+        return {
+            className:'bg-30',
+            row:[
+                Side(sideItems),
+                Body()
+            ]
+        }
+    } 
+    let CategoryCardCode = 
+`function CategoryCard(category){
+    return {
+        style: {background:category.color,color:'#fff'},
+        className: 'p-6 fs-12 br-8 w-84',
+        column: [
+            { html:<Icon path={category.path} size={0.6}/>,className:'p-v-6'},
+            { html: category.text,className:'bold' },
+            { html: category.length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
+        ],
+    }
+}`
+let FileCardCode = 
+`function FileCard(file){
+    return {
+        style: {background:'#fff',color:file.color},
+        className: 'p-6 fs-12 br-8 w-84',
+        column: [
+            { html:<Icon path={file.path} size={0.6}/>,className:'p-v-6'},
+            { html: file.text,className:'bold' },
+            { html: file.length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
+        ],
+    }
+}`
+let RecentFileCardCode = 
+`function RecentFileCard(recentFile){
+    return {
+        style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
+        row:[
+            {
+                html:<Icon path={recentFile.path} size={0.6}/>,
+                className:'w-24 h-24 br-4 align-vh',
+                style:{color:'#fff',background:recentFile.color}
+            },
+            {html:recentFile.text,size:120,className:'bold align-v'},
+            {html:recentFile.type + ' file',flex:1,className:'aling-vh'},
+            {html:recentFile.size,flex:1,classNAme:'align-vh'},
+            {html:<Icon path={mdiShare} size={0.8}/>,className:'flex-1'},
+            {html:<Icon path={mdiDotsHorizontal} size={0.8}/>,className:'flex-1'},
+        ]
+    }
+}`
+let CategoriesCode = 
+`function Categories(categories){
+    return {
+        column:[
+            {html:'Categories',className:'bold fs-14',style:{color:'#174484'}},
+            {className: 'gap-12',row: categories.map((o) => CategoryCard(o))}
+        ],
+    }
+}`
+let FilesCode = 
+`function Files(files){
+    return {
+        column:[
+            {html:'Files',className:'bold fs-14',style:{color:'#174484'}},
+            {className: 'gap-12',row: files.map((o) => FileCard(o))}
+        ],
+    }
+}`
+let RecentFilesCode = 
+`function RecentFiles(recentFiles){
+    return {
+        column:[
+            {html:'Recent Files',className:'bold fs-14',style:{color:'#174484'}},
+            {className:'gap-6',column:recentFiles.map((o)=>RecentFileCard(o))}
+        ]
+    }
+}`
+let BodyCode = 
+`function Body(){
+    return {
+        className:'gap-12 p-12 flex-1',
+        column:[
+            Categories(categories),
+            Files(files),
+            RecentFiles(recentFiles),
+        ]
+    }
+}`
+let SideItemCode = 
+`function SideItem(sideItem){
+    return {
+        className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
+        row: [
+            { html:<Icon path={sideItem.path} size={0.6}/>},
+            { html: sideItem.text}
+        ]
+    }
+}`
+let SideCode = 
+`function Side(sideItems){
+    return {
+        style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
+        column: [
+            {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
+            {column: sideItems.map((sideItem) => SideItem(sideItem))}
+        ]
+    }
+}`
+let PageCode = 
+`function Page(){
+    return {
+        className:'bg-30',
+        row:[
+            Side(sideItems),
+            Body()
+        ]
+    }
+}`
+    return (
+        <div className='example' style={{background:'#f8f8f8'}}>
+            <h3>App Data</h3>
+            {AIODoc().Code(
+`let sideItems = [
+    { path: mdiAccount, text: 'My Cloud' },
+    { path: mdiAccountGroup, text: 'Shared Files' },
+    { path: mdiStar, text: 'Favorites' },
+    { path: mdiCloudUpload, text: 'Upload Files' },
+    { path: mdiCarSettings, text: 'Settings' },
+    { path: mdiCloudUpload, text: 'Upload Files' }
+]
+let categories = [
+    { path: mdiCamera, text: 'Pictures', length: 480, color: '#6663fe' },
+    { path: mdiFileDocument, text: 'Doscuments', length: 190, color: '#00a0b6' },
+    { path: mdiMonitor, text: 'Videos', length: 30, color: '#e06c9f' },
+    { path: mdiMicrophone, text: 'Audio', length: 80, color: '#266fd5' },
+]
+let files = [
+    { path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
+    { path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
+    { path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
+    { path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
+]
+let recentFiles = [
+    { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
+    { path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
+    { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
+    { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
+]`
+            )}
+            <h3>Render Category Card</h3>
+            <RVD rootNode={CategoryCard(categories[0])}/>
+            {AIODoc().Code(
+`${CategoryCardCode}
+return <RVD rootNode={CategoryCard(categories[0])}/>`
+            )}
+            <h3>Render Categories</h3>
+            <RVD rootNode={Categories(categories)}/>
+            {AIODoc().Code(
+`${CategoriesCode}
+return <RVD rootNode={Categories(categories)}/>`
+            )}
+            <h3>Render File Card</h3>
+            <RVD rootNode={FileCard(files[0])}/>
+            {AIODoc().Code(
+`${FileCardCode}
+return <RVD rootNode={FileCard(files[0])}/>`
+            )}
+            <h3>Render Files</h3>
+            <RVD rootNode={Files(files)}/>
+            {AIODoc().Code(
+`${FilesCode}
+return <RVD rootNode={Files(files)}/>`
+            )}
+            <h3>Render Recent File Card</h3>
+            <RVD rootNode={RecentFileCard(recentFiles[0])}/>
+            {AIODoc().Code(
+`${RecentFileCardCode}
+return <RVD rootNode={RecentFileCard(files[0])}/>`
+            )}
+            <h3>Render Recent Files</h3>
+            <RVD rootNode={RecentFiles(recentFiles)}/>
+            {AIODoc().Code(
+`${RecentFilesCode}
+return <RVD rootNode={RecentFiles(recentFiles)}/>`
+            )}
+            <h3>Render Side Item</h3>
+            <RVD rootNode={SideItem(sideItems[0])}/>
+            {AIODoc().Code(
+`${SideItemCode}
+return <RVD rootNode={SideItem(sideItems[0])}/>`
+            )}
+            <h3>Render App Side</h3>
+            <RVD rootNode={Side(sideItems)}/>
+            {AIODoc().Code(
+`${SideCode}
+return <RVD rootNode={Side(sideItems)}/>`
+            )}
+            <h3>Render App Body</h3>
+            <RVD rootNode={Body()}/>
+            {AIODoc().Code(
+`${BodyCode}
+return <RVD rootNode={Body()}/>`
+            )}
+            <h3>Render App Page</h3>
+            <RVD rootNode={Page()}/>
+            {AIODoc().Code(
+`${PageCode}
+return <RVD rootNode={Page()}/>`
+            )}
         </div>
     )
 }
 function Loading() {
     let recentFile = { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' }
     let recentFileLoading = { path: mdiCamera, text: 'loading text', type: 'any',size:'any size', color: 'any color' }
-    let layout = new Layout();
-
+    function RecentFileCard(recentFile:any,loading?:boolean){
+        return {
+            loading,
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
+            row:[
+                {
+                    html:<Icon path={recentFile.path} size={0.6}/>,
+                    className:'w-24 h-24 br-4 align-vh',
+                    style:{color:'#fff',background:recentFile.color}
+                },
+                {html:recentFile.text,size:120,className:'bold align-v'},
+                {html:recentFile.type + ' file',flex:1,className:'aling-vh'},
+                {html:recentFile.size,flex:1,classNAme:'align-vh'},
+                {html:<Icon path={mdiShare} size={0.8}/>,className:'flex-1'},
+                {html:<Icon path={mdiDotsHorizontal} size={0.8}/>,className:'flex-1'},
+            ]
+        }
+    }
     return (
         <div className='example' style={{background:'#eee'}}>
             <Part
@@ -1261,25 +1020,53 @@ function Loading() {
                         rootNode={{
                             className:'gap-12',
                             column:[
-                                layout.row(recentFile),
-                                layout.row(recentFileLoading,{loading:true})
+                                RecentFileCard(recentFile),
+                                RecentFileCard(recentFileLoading,true)
                             ]
                         }}
                     />
                 )}
                 code={`
 function App(){
-    let recentFile = { path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' }
-    let recentFileLoading = { path: mdiCamera, text: 'loading text', type: 'any',size:'any size', color: 'any color' }
-    let layout = new Layout();
-
+    function RecentFileCard(recentFile,loading){
+        return {
+            loading,
+            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
+            row:[
+                {
+                    html:<Icon path={recentFile.path} size={0.6}/>,
+                    className:'w-24 h-24 br-4 align-vh',
+                    style:{color:'#fff',background:recentFile.color}
+                },
+                {html:recentFile.text,size:120,className:'bold align-v'},
+                {html:recentFile.type + ' file',flex:1,className:'aling-vh'},
+                {html:recentFile.size,flex:1,classNAme:'align-vh'},
+                {html:<Icon path={mdiShare} size={0.8}/>,className:'flex-1'},
+                {html:<Icon path={mdiDotsHorizontal} size={0.8}/>,className:'flex-1'},
+            ]
+        }
+    }
+    let recentFile = { 
+        path: mdiCamera, 
+        text: 'IMG_100000', 
+        type: 'PNG',
+        size:'10 MB', 
+        color: '#6663fe' 
+    }
+    let recentFileLoading = { 
+        path: mdiCamera, 
+        text: 'any text', 
+        type: 'any',
+        size:'any size', 
+        color: 'any color' 
+    }
     return (
         <RVD
             rootNode={{
                 className:'gap-12',
                 column:[
-                    layout.row(recentFile),
-                    layout.row(recentFileLoading,{loading:true})
+                    RecentFileCard(recentFile),
+                    RecentFileCard(recentFileLoading,true)
                 ]
             }}
         />
@@ -1515,26 +1302,26 @@ function CssClasses() {
 `.r-0{right:0;}`,
 `.r-100{right:100%;}`,
 'background (black to white)',
-'.bg<i>{background:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
-`.bg0{background:rgb(0,0,0);}`,
-`.bg1{background:rgb(8,8,8);}`,
+'.bg-<i>{background:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
+`.bg-0{background:rgb(0,0,0);}`,
+`.bg-1{background:rgb(8,8,8);}`,
 `...`,
-`.bg31{background:rgb(248,248,248);}`,
-`.bg32{background:rgb(255,255,255);}`,
+`.bg-31{background:rgb(248,248,248);}`,
+`.bg-32{background:rgb(255,255,255);}`,
 'color (black to white)',
-'.c<i>{color:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
-`.c0{color:rgb(0,0,0);}`,
-`.c1{color:rgb(8,8,8);}`,
+'.c-<i>{color:rgb(i * 8,i * 8,i * 8)} (0 to 32)',
+`.c-0{color:rgb(0,0,0);}`,
+`.c-1{color:rgb(8,8,8);}`,
 `...`,
-`.c31{color:rgb(248,248,248);}`,
-`.c32{color:rgb(255,255,255);}`,
+`.c-31{color:rgb(248,248,248);}`,
+`.c-32{color:rgb(255,255,255);}`,
 'border color',
-`.brd-c<i>{border:1px solid rgb(i * 8,i * 8,i * 8)} (0 to 32)`,
-`.brd-c0{border:1px solid rgb(0,0,0);}`,
-`.brd-c1{border:1px solid rgb(8,8,8);}`,
+`.brd-c-<i>{border:1px solid rgb(i * 8,i * 8,i * 8)} (0 to 32)`,
+`.brd-c-0{border:1px solid rgb(0,0,0);}`,
+`.brd-c-1{border:1px solid rgb(8,8,8);}`,
 '...',
-`.brd-c31{border:1px solid rgb(248,248,248);}`,
-`.brd-c32{border:1px solid rgb(255,255,255);}`,
+`.brd-c-31{border:1px solid rgb(248,248,248);}`,
+`.brd-c-32{border:1px solid rgb(255,255,255);}`,
 'border-width',
 `.brd-w<i>{border-width:<i>px} (0 to 12)`,
 `.brd-w0{border-width:0px;}`,
@@ -1731,121 +1518,6 @@ function Layout(){
         </div>
     )
 }
-class Layout{
-    constructor(getProps){
-        this.getProps = getProps;
-    }
-    root = (props)=>{
-        return {
-            className:'bg30',row:[this.side(),this.body()],...props
-        }
-    }
-    side = (props) => {
-        return {
-            style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
-            column: [this.sideHeader(),this.sideItems()],
-            ...props
-        }
-    }
-    body = (props) => {
-        return {
-            className:'p-24 gap-12',flex:1,
-            column:[this.categories(),this.files(),this.recentFiles()],
-            ...props
-        }
-    }
-    sideHeader = (props) => {
-        return {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />,...props}
-    }
-    sideItems = (props) => {
-        let {sideItems} = this.getProps()
-        return {column: sideItems.map((sideItem) => this.sideItem(sideItem)),...props}
-    }
-    sideItem = (sideItem,props) => {
-        return {
-            className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
-            row: [this.icon(sideItem.path,0.6),this.sideText(sideItem.text)],
-            ...props
-        }
-    }
-    sideText = (text,props) => {
-        return { html: text ,...props}
-    }
-    icon = (path,size,props) => {
-        return {html:<Icon path={path} size={size}/>,className:'align-vh',...props}
-    }
-    label = (text,props) => {
-        return {html:text,className:'bold fs-14',style:{color:'#174484'},...props}
-    }
-    categories = (props) => {
-        let {categories} = this.getProps();
-        return {
-            column:[
-                this.label('Categories'),
-                {className: 'gap-12',row: categories.map((o) => this.card(o))}
-            ],
-            ...props
-        }
-    }
-    card = ({ path, text, length, color, outline },props) => {
-        let cardStyle = { background: outline ? '#fff' : color, color: outline ? '#666' : '#fff' }
-        let iconStyle = { background: '#fff', color, width: 24, height: 24,borderRadius:'100%',marginBottom:6 };
-        return {
-            style: cardStyle,
-            className: 'p-6 fs-12 br-8 w-84',
-            column: [
-                this.icon(path,0.6,{style:iconStyle}),
-                { html: text,className:'bold' },
-                { html: length + ' files', style: { fontSize: '85%' }, className: 'op-80' }
-            ],
-            ...props
-        }
-    }
-    row = ({path,text,type,size,color},props)=>{
-        return {
-            style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
-            row:[
-                this.icon(path,0.6,{className:'w-24 h-24 br-4 align-vh',style:{color:'#fff',background:color}}),
-                this.row_text(text),
-                this.row_type(type),
-                this.row_size(size),
-                this.icon(mdiShare,0.8,{flex:1}),
-                this.icon(mdiDotsHorizontal,0.8,{flex:1}),
-            ],
-            ...props
-        }
-    }
-    row_text = (text,props) =>{
-        return {html:text,size:120,className:'bold align-v',...props}
-    }
-    row_type = (type,props)=>{
-        return {html:type + ' file',flex:1,className:'aling-vh',...props}
-    }
-    row_size = (size,props)=>{
-        return {html:size,flex:1,classNAme:'align-vh',...props}
-    }
-    files = (props) =>{
-        let {files} = this.getProps()
-        return {
-            column:[
-                this.label('Files'),
-                {className: 'gap-12',row: files.map((o) => this.card(o))}
-            ],
-            ...props
-        }
-    }
-    recentFiles = (props)=>{
-        let {recentFiles} = this.getProps();
-        return {
-            column:[
-                this.label('Recent Files'),
-                {className:'gap-6',column:recentFiles.map((o)=>this.row(o))}
-            ],
-            ...props
-        }
-    }
-}
-
 function Animate() {
     let [recentFiles,setRecentFiles] = useState([
         { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
@@ -1868,7 +1540,7 @@ function Animate() {
             column: [
                 {
                     html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg32 w-24 h-24 br-100 m-b-6',
+                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
                     style:{color},
                 },
                 { 
@@ -1909,12 +1581,12 @@ function Animate() {
                                 let {id,path,text,type,size,color} = o;
                                 return {
                                     key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
                                     onClick:(e)=>removeV(e,o.id),
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c32 align-vh',
+                                            className:'w-24 h-24 br-4 c-32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -1965,12 +1637,12 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
                         onClick:(e)=>removeV(e,o.id),
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c32 align-vh',
+                                className:'w-24 h-24 br-4 c-32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2032,7 +1704,7 @@ function App(){
             column: [
                 {
                     html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg32 w-24 h-24 br-100 m-b-6',
+                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
                     style:{color},
                 },
                 { 
@@ -2063,12 +1735,12 @@ function App(){
                                 let {id,path,text,type,size,color} = o;
                                 return {
                                     key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
                                     onClick:(e)=>removeL(e,o.id),
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c32 align-vh',
+                                            className:'w-24 h-24 br-4 c-32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -2119,12 +1791,12 @@ function App(){
                     let {id,path,text,type,size,color} = o;
                     return {
                         key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
+                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
                         onClick:(e)=>removeV(e,o.id),
                         row:[
                             {
                                 html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c32 align-vh',
+                                className:'w-24 h-24 br-4 c-32 align-vh',
                                 style:{background:color}
                             },
                             {
@@ -2171,9 +1843,9 @@ function Resize() {
                         rootNode={{
                             className:'h-120',gap:{size:12},
                             row:[
-                                {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
-                                {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
-                                {html:'C',className:'align-vh brd-c12 flex-1'},
+                                {size:aSize,html:'A',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setASize(newSize)},
+                                {size:bSize,html:'B',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setBSize(newSize)},
+                                {html:'C',className:'align-vh brd-c-12 flex-1 bg-32'},
                             ]
                         }}
                     />
@@ -2188,9 +1860,9 @@ function App(){
             rootNode={{
                 className:'h-120',gap:{size:12},
                 row:[
-                    {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setASize(newSize)},
-                    {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setBSize(newSize)},
-                    {html:'C',className:'align-vh brd-c12 flex-1'},
+                    {size:aSize,html:'A',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setASize(newSize)},
+                    {size:bSize,html:'B',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setBSize(newSize)},
+                    {html:'C',className:'align-vh brd-c-12 flex-1 bg-32'},
                 ]
             }}
         />
@@ -2207,9 +1879,9 @@ function App(){
                             row:({state,setState})=>{
                                 let {aSize,bSize} = state;
                                 return [
-                                    {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setState('aSize',newSize)},
-                                    {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setState('bSize',newSize)},
-                                    {html:'C',className:'align-vh brd-c12 flex-1'},
+                                    {size:aSize,html:'A',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setState('aSize',newSize)},
+                                    {size:bSize,html:'B',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setState('bSize',newSize)},
+                                    {html:'C',className:'align-vh brd-c-12 flex-1 bg-32'},
                                 ]
                             }
                         }}
@@ -2228,9 +1900,9 @@ function App(){
                 row:({state,setState})=>{
                     let {aSize,bSize} = state;
                     return [
-                        {size:aSize,html:'A',className:'align-vh brd-c12',onResize:(newSize)=>setState('aSize',newSize)},
-                        {size:bSize,html:'B',className:'align-vh brd-c12',onResize:(newSize)=>setState('bSize',newSize)},
-                        {html:'C',className:'align-vh brd-c12 flex-1'},
+                        {size:aSize,html:'A',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setState('aSize',newSize)},
+                        {size:bSize,html:'B',className:'align-vh brd-c-12 bg-32',onResize:(newSize)=>setState('bSize',newSize)},
+                        {html:'C',className:'align-vh brd-c-12 flex-1 bg-32'},
                     ]
                 }
             }}
@@ -2253,7 +1925,7 @@ function StateSetState() {
                             className:'h-120 gap-12',
                             row:({state,setState})=>{
                                 let {a,b,c} = state;
-                                let className = 'align-vh brd-c12 sel-off';
+                                let className = 'align-vh brd-c-12 sel-off bg-32';
                                 return [
                                     {size:120,html:a,className,onClick:()=>setState({...state,a:a + 1})},
                                     {size:120,html:b,className,onClick:()=>setState('b',b + 1)},
@@ -2273,7 +1945,7 @@ function App(){
                 className:'h-120 gap-12',
                 row:({state,setState})=>{
                     let {a,b,c} = state;
-                    let className = 'align-vh brd-c12 sel-off';
+                    let className = 'align-vh brd-c-12 sel-off bg-32';
                     return [
                         {size:120,html:a,className,onClick:()=>setState({...state,a:a + 1})},
                         {size:120,html:b,className,onClick:()=>setState('b',b + 1)},
@@ -2297,6 +1969,21 @@ function ReOrder() {
         { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
+    function card_node(o):I_RVD_node{
+        let {id,path,text,type,size,color} = o;
+        return {
+            key:id,
+            className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+            row:[
+                {html:<Icon path={path} size={0.6}/>,className:'w-24 h-24 br-4 c-32 align-vh',style:{background:color}},
+                {html:text,size:120,className:'bold align-v'},
+                {html:type + ' file',className:'flex-1 align-vh'},
+                {html:size,className:'flex-1 align-vh'},
+                {html:<Icon path={mdiShare} size={0.6}/>,className:'flex-1 align-vh'},
+                {html:<Icon path={mdiDotsHorizontal} size={0.6}/>,className:'flex-1 align-vh'}
+            ]
+        }
+    }
     return (
         <div className='example' style={{background:'#eee'}}>
             <Part
@@ -2306,40 +1993,7 @@ function ReOrder() {
                         rootNode={{
                             data:recentFiles,
                             reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
-                            column:recentFiles.map((o,i)=>{
-                                let {id,path,text,type,size,color} = o;
-                                return {
-                                    key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
-                                    row:[
-                                        {
-                                            html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c32 align-vh',
-                                            style:{background:color}
-                                        },
-                                        {
-                                            html:text,size:120,
-                                            className:'bold align-v'
-                                        },
-                                        {
-                                            html:type + ' file',
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:size,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiShare} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        }
-                                    ]
-                                }
-                            })
+                            column:recentFiles.map((o,i)=>card_node(o))
                         }}
                     />
                 )}
@@ -2353,50 +2007,15 @@ function App(){
         { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
-    function removeV(e,id){
-        animate('removeV',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
+    function card_node(o){
+        ...
     }
     return (
         <RVD
             rootNode={{
                 data:recentFiles,
                 reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
-                column:recentFiles.map((o,i)=>{
-                    let {id,path,text,type,size,color} = o;
-                    return {
-                        key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
-                        row:[
-                            {
-                                html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c32 align-vh',
-                                style:{background:color}
-                            },
-                            {
-                                html:text,size:120,
-                                className:'bold align-v'
-                            },
-                            {
-                                html:type + ' file',
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:size,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiShare} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            }
-                        ]
-                    }
-                })
+                column:recentFiles.map((o,i)=>card_node(o))
             }}
         />
     )
@@ -2428,11 +2047,11 @@ function LongTouch() {
                                     longTouch:()=>{
                                         alert(text)
                                     },
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
+                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
                                     row:[
                                         {
                                             html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c32 align-vh',
+                                            className:'w-24 h-24 br-4 c-32 align-vh',
                                             style:{background:color}
                                         },
                                         {
@@ -2471,50 +2090,19 @@ function App(){
         { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
-    function removeV(e,id){
-        animate('removeV',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
+    function card_node(o){
+        return {
+            ...
+            key:o.id,
+            longTouch:()=>{
+                alert(text)
+            },
+        }
     }
     return (
         <RVD
             rootNode={{
-                data:recentFiles,
-                reOrder:(newData,fromIndex,toIndex)=>setRecentFiles(newData),
-                column:recentFiles.map((o,i)=>{
-                    let {id,path,text,type,size,color} = o;
-                    return {
-                        key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg32 m-b-12 align-v',
-                        row:[
-                            {
-                                html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c32 align-vh',
-                                style:{background:color}
-                            },
-                            {
-                                html:text,size:120,
-                                className:'bold align-v'
-                            },
-                            {
-                                html:type + ' file',
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:size,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiShare} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            }
-                        ]
-                    }
-                })
+                column:recentFiles.map((o,i)=>card_node(o))
             }}
         />
     )
@@ -2597,20 +2185,22 @@ function StyleGenerator(){
         fontSize:grd.fontSize,color:grd.color
 
     }
-    function color_node(key){
+    function color_node(key):I_RVD_node{
         return {
-            size:36,className:'w-240',html:<AIOInput type='color' value={grd[key]} onChange={(v)=>change(key,v)} className='w-36 h-36 brd-c12'/>
+            size:36,className:'w-240',html:<AIOInput type='color' value={grd[key]} onChange={(v)=>change(key,v)} className='w-36 h-36 brd-c-12'/>
         }
     }
-    function slider_node(key,start,end){
+    function slider_node(key,start,end):I_RVD_node{
         return {
             size:180,html:<AIOInput type='slider' showValue='inline' value={grd[key]} onChange={(v)=>change(key,v)} start={start} end={end}/>
         }
     }
-    function checkbox_node(key){
+    function checkbox_node(key):I_RVD_node{
         return {
             align:'v',
-            flex:1,className:'w-240',html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
+            flex:1,
+            className:'w-240',
+            html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
     function log(i){
@@ -2675,7 +2265,14 @@ function StyleGenerator(){
                                                 {align:'v',row:[{html:'Border Radius'},slider_node('borderRadius',0,36)]}
                                             ]
                                         },
-                                        {align:'v',row:[{html:'Font Size'},slider_node('fontSize',10,36),checkbox_node('bold')]},
+                                        {
+                                            align:'v',
+                                            row:[
+                                                {html:'Font Size'},
+                                                slider_node('fontSize',10,36),
+                                                checkbox_node('bold')
+                                            ]
+                                        },
                                         {html:<button onClick={()=>addSelected()}>Add To Selected</button>}
                                     ]
                                 },
@@ -2690,11 +2287,11 @@ function StyleGenerator(){
                             ]
                         },
                         {
-                            className:'gap-12 p-24 brd-c12',style:{flexWrap:'wrap'},
+                            className:'gap-12 p-24 brd-c-12',style:{flexWrap:'wrap'},
                             row:selected.map((o,i)=>{
                                 let {style,containerBG,grd} = o;
                                 return {
-                                    className:'p-12 of-visible brd-c16',
+                                    className:'p-12 of-visible brd-c-16',
                                     onClick:()=>setGrd(grd),
                                     style:{background:containerBG},
                                     column:[

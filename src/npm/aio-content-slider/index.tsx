@@ -85,7 +85,6 @@ export default class AIOContentSlider extends Component<I_ACS,I_ACS_state> {
       else if(dir < 0 && left <= newLeft){this.stopScroll(offset)}
       else{
         let newLeft = left + dir;
-        console.log(newLeft,width)
         if(newLeft < -width * 2){newLeft = -width * 2}
         this.setState({left:newLeft})
       }

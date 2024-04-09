@@ -1,5 +1,5 @@
 /**varsion 8.1.3 */
-import React, { Component, createRef, useContext, createContext, Fragment, useState, useEffect, useRef } from 'react';
+import React, { createRef, useContext, createContext, Fragment, useState, useEffect, useRef } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import Axios from 'axios';
 import { Icon } from '@mdi/react';
@@ -17,235 +17,15 @@ import AIOStorage from './../../npm/aio-storage/aio-storage';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
+import { 
+    AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_unit, AI_formItem, AI_option, 
+    AI_table_column, AI_table_paging, AI_table_sort, AI_time_unit, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
+    I_DPContext, I_DPHeaderDropdown, I_DPYears, I_DP_activeDate, I_Drag, I_FileItem, I_Layout, I_MapUnit, I_Map_config, I_Map_context, 
+    I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, I_SliderFill, I_SliderLabel, I_SliderPoint, I_SliderScale, I_Slider_context, 
+    I_Slider_statics, I_TableGap, I_Tag, I_Tags, I_TimePopver, I_list_temp, I_mapApiKeys, type_table_context, type_table_temp, type_time_value 
+} from './types.tsx';
 const AICTX = createContext({} as any);
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons'
-export type AI_optionKey = (
-    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
-    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
-)
-export type AI_formItem = I_RVD_node & {
-    field:string,
-    label?:string,
-    addressField?:string,
-    footer?:React.ReactNode,
-    input:AI,
-    labelAttrs?:any,
-    errorAttrs?:any
-}
-export type AI_table_column = {
-    title?: any,
-    value?: any,
-    sort?: true | AI_table_sort,
-    search?: boolean,
-    id?: string,
-    _id?: string,
-    width?: any,
-    minWidth?: any,
-    input?: AI,
-    onChange?: (newValue: any) => void,
-    titleAttrs?:{[key:string]:any} | string,
-    template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>React.ReactNode),
-    excel?: string,
-    justify?:boolean,
-    cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
-}
 
-type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
-type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
-export type AI = {
-    rtl?: boolean,
-    popover?: AP_modal,//notice get type from aio popup
-    type: AI_type,
-    multiple?: boolean,
-    value?: any,
-    deSelect?:any,
-    editable?:boolean,
-    open?: boolean,
-    unit?: AI_date_unit | AI_time_unit,
-    jalali?: boolean,
-    placeholder?: string,
-    className?:string,
-    width?: number | string, //list
-    height?: number | string,
-    style?: any,
-    onChange?: (newValue: any, p?: any) => void,
-    disabled?: boolean,
-    loading?: boolean | React.ReactNode,
-    min?: number,//slider,number
-    max?: number,//slider,number
-    start?:number,//slider
-    end?:number,//slider
-    step?:number,//slider
-    swip?: number,
-    blurChange?: boolean,
-    maxLength?: number,
-    justNumber?: boolean | (string[]),
-    filter?: string[],
-    delay?: number,
-    inputAttrs?: any,
-    spin?: boolean,
-    justify?: boolean,
-    hideTags?: boolean,
-    attrs?: any,
-    columns?: AI_table_column[],
-    paging?: AI_table_paging,
-    onChangePaging?: (newPaging: AI_table_paging) => void,
-    rowGap?: number,
-    columnGap?: number,
-    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
-    toolbarAttrs?: any,
-    toolbar?: React.ReactNode | (() => React.ReactNode),
-    getValue?: { [key: string]: (p: { row: any, column: AI_table_column, rowIndex: number }) => any },
-    onAdd?: Object | (() => void),
-    onRemove?: true | ((p: { row: any, action: Function, rowIndex: number }) => void),
-    excel?: string,
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-    onSearch?: true | ((searchValue: string) => void),
-    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
-    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
-    rowsTemplate?: (rows: any[]) => React.ReactNode,
-    rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
-    rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
-    headerAttrs?: any,
-    after?: React.ReactNode | (() => React.ReactNode),
-    before?: React.ReactNode | (() => React.ReactNode),
-    options?: any[],
-    option?:{[key in AI_optionKey]?:AI_optionProp},
-    direction?: 'left' | 'right' | 'top' | 'bottom',
-    checkIcon?: AI_checkIcon,
-    caret?: boolean | React.ReactNode,
-    text?: React.ReactNode | (() => React.ReactNode)
-    subtext?: React.ReactNode | (() => React.ReactNode),
-    move?: any,//list
-    count?: number,//list
-    size?: number,//list,date
-    stop?: number,//list
-    decay?: number,//list
-    startYear?: string | number,//date
-    endYear?: string | number,//date
-    translate?: (text: string) => string,//date,
-    theme?: string[],//date
-    search?: string,
-    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
-    dateDisabled?:string[],
-    changeClose?:boolean,//date
-    preview?:boolean,
-    footer?:{
-        layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
-        onSubmit?:()=>void,onClose?:()=>void,reset?:boolean,attrs?:any,submitText?:string,closeText?:string,resetText?:string,
-        before?:React.ReactNode,after?:React.ReactNode
-    },//form
-    body?:{attrs?:any},//form
-    getErrors?:(p:string[])=>void,//form
-    initialDisabled?:boolean,//form
-    inputs?:any,//form
-    labelAttrs?:any,//form
-    errorAttrs?:any,//form
-    lang?:'fa' | 'en',//form,
-    grooveAttrs?:any,//slider
-    point?:AI_slider_point,
-    line?:(index:number,active:boolean)=>{
-        attrs?:any,
-        html?:React.ReactNode
-    }
-    label?:AI_slider_label,
-    scale?:AI_slider_scale,
-    mapConfig?:I_Map_config,
-    popupConfig?:I_Map_config
-}
-export type AI_slider_point = (index:number,value:number)=>{attrs?:any,html?:React.ReactNode,labelHtml?:React.ReactNode,labelShow?:boolean | 'inline',labelAttrs?:any}
-export type AI_slider_scale = {
-    step?:number,
-    list?:number[],
-    attrs?:(value:number)=>Object,
-    html?:(value:number)=>React.ReactNode  
-}
-export type AI_slider_label = {
-    step?:number,
-    list?:number[],
-    attrs?:(value:number)=>Object,
-    html?:(value:number)=>React.ReactNode,
-    rotate?:number | ((value:number)=>number)
-}
-//notice
-//use global fixed options in List
-//create list document 
-//define popover type by aio popup
-export type AI_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
-export type AI_optionProp = string | ((option: any,p?:any) => any)
-export type AI_option = {
-    object:any,
-    checked: boolean,
-    checkIcon: AI_checkIcon,
-    after: React.ReactNode | (() => React.ReactNode),
-    before: React.ReactNode | (() => React.ReactNode),
-    draggable: boolean,
-    text: React.ReactNode,
-    subtext: React.ReactNode,
-    justify: boolean,
-    loading: boolean | React.ReactNode,
-    disabled: boolean,
-    attrs: any,
-    className:string,
-    style: any,
-    value:any,
-    tagAttrs:any,
-    tagBefore:any,
-    tagAfter:any
-}
-export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
-export type AI_getProp = (p: AI_getProp_param) => any;
-export type AI_addToAttrs = (attrs: any, p: { className?: string | (string[]), style?: any,attrs?:any }) => any
-export type AI_context = {
-    rootProps: AI,
-    showPassword: boolean,
-    setShowPassword: (v?: boolean) => void,
-    DragOptions: I_Drag,
-    datauniqid: string,
-    touch: boolean,
-    open: boolean,
-    click: (e: any, dom: any) => void,
-    optionClick: (option: AI_option) => void,
-    types: AI_types
-}
-type AI_types = {
-    isMultiple: boolean,
-    isInput: boolean,
-    isDropdown: boolean,
-    hasOption: boolean,
-    hasPlaceholder: boolean,
-    hasKeyboard: boolean,
-    hasText: boolean,
-    hasSearch: boolean
-}
-export type AI_table_sort = {
-    active?: boolean, dir?: 'dec' | 'inc', title?: React.ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any
-}
-export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
-export type AI_table_paging = {
-    serverSide?: boolean,
-    number: number,
-    size: number,
-    length?: number,
-    sizes?: number[]
-}
-export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
-export type type_table_context = {
-    rootProps: AI,
-    columns: AI_table_column[],
-    ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
-    add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
-    exportToExcel: () => void,
-    sorts: AI_table_sort[],
-    setSorts: (newSorts: AI_table_sort[]) => void,
-    sortRows: (rows: any[], sorts: AI_table_sort[]) => any[],
-    excelColumns: AI_table_column[],
-    addToAttrs:AI_addToAttrs,
-    getRowAttrs: (row: any, rowIndex: number) => any,
-    getCellAttrs: type_table_getCellAttrs,
-    getDynamics:any
-}
 export default function AIOInput(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
     props = getDefaultProps(props,types)
@@ -289,6 +69,7 @@ export default function AIOInput(props: AI) {
     function click(e, dom) {
         if (type === 'checkbox') { if (onChange) { onChange(!value) } }
         else if (temp.getPopover) {toggle(temp.getPopover(dom,props.options))}
+        else if(typeof props.onClick === 'function'){props.onClick()}
         else if (attrs.onClick) { attrs.onClick(); }
     }
     function optionClick(option) {
@@ -417,9 +198,6 @@ function Time(){
     }
     return renderButton()
 }
-export type AI_Popover_props = {
-    getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types
-}
 class Popover {
     props: AI_Popover_props;
     isActive: boolean;
@@ -470,8 +248,6 @@ class Popover {
         }
     }
 }
-export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange: (value: type_time_value) => void, onClose: () => void }
 function TimePopover(props: I_TimePopver) {
     let { lang = 'fa', onChange, onClose } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
@@ -621,7 +397,6 @@ function FileItems() {
     let Files = files.map((file, i) => {let p:I_FileItem = {file,index:i}; return <FileItem key={i} {...p} />})
     return (<div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{Files}</div>)
 }
-type I_FileItem = {file:any,index:number}
 function FileItem(props:I_FileItem) {
     let {rootProps}:AI_context = useContext(AICTX);
     let { onChange = () => { }, value = [] } = rootProps;    
@@ -680,14 +455,12 @@ function FileItem(props:I_FileItem) {
         </div>
     )
 }
-type I_Multiselect = {options:AI_option[]}
 function Multiselect(props:I_Multiselect) {
     let {options = []} = props;
     let { rootProps }: AI_context = useContext(AICTX);
     let { style = {} } = rootProps.attrs || {};
     return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags options={options}/></div>)
 }
-type I_Tags = {options:AI_option[]}
 function Tags(props:I_Tags) {
     let {options = []} = props;
     let { rootProps }: AI_context = useContext(AICTX);
@@ -705,7 +478,6 @@ function Tags(props:I_Tags) {
         </div>
     )
 }
-type I_Tag = { option:AI_option, value:any }
 function Tag(props:I_Tag) {
     let { rootProps } = useContext(AICTX);
     let {onChange = () => { }} = rootProps;
@@ -788,7 +560,6 @@ function Input() {
         return value
     }
     function change(value, onChange) {
-        if (rootProps.type === 'number') { if (value) { value = +value; } }
         if (types.hasKeyboard) {
             if (value) {
                 value = convertPersianDigits(value);
@@ -826,6 +597,7 @@ function Input() {
                 }
             }
         }
+        if (rootProps.type === 'number') { if (value && !isNaN(+value)) { value = +value; } }
         setValue(value);
         if (!blurChange) {
             clearTimeout(temp.btimeout);
@@ -1090,8 +862,7 @@ function Form() {
         />
     )
 }
-type I_Options = {options?:any[]}
-function Options(props:I_Options) {
+function Options(props:AI_Options) {
     let { rootProps, types }:AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     function renderSearchBox(options) {
@@ -1129,9 +900,6 @@ function Options(props:I_Options) {
         </>
     )
 }
-//column schema
-//title,value,width,minWidth,justify,type,onChange,cellAttrs,subtext,before,after
-
 const AITableContext = createContext({} as any);
 function Table() {
     let { rootProps }: AI_context = useContext(AICTX);
@@ -1319,8 +1087,7 @@ function Table() {
         </AITableContext.Provider>
     )
 }
-export type I_TableGap = { dir: 'h' | 'v' }
-function TableGap(props) {
+function TableGap(props:I_TableGap) {
     let { rootProps }: type_table_context = useContext(AITableContext)
     let { rowGap, columnGap } = rootProps;
     let { dir } = props;
@@ -1550,7 +1317,6 @@ const TableCell = ({ row, rowIndex, column, isLast }) => {
         </Fragment>
     )
 }
-type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:number,onChange?:(newValue:any)=>void}
 function TableCellContent(props:AI_TableCellContent){
     let {row,column,rowIndex,onChange} = props;
     let { getDynamics }: type_table_context = useContext(AITableContext);
@@ -1568,10 +1334,6 @@ function TableCellContent(props:AI_TableCellContent){
     let value = getDynamics({ value: column.value, row, rowIndex, column })
     let p:AI = { ...convertedInput, value, onChange,type:input.type }
     return (<AIOInput {...p} key={row._id + ' ' + column._id} />)
-}
-export type I_Layout = {
-    option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
-    properties?: any
 }
 function Layout(props: I_Layout) {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open,showPassword,setShowPassword }: AI_context = useContext(AICTX)
@@ -1729,17 +1491,6 @@ function Layout(props: I_Layout) {
     )
 }
 const DPContext = createContext({} as any);
-type I_DPContext = {
-    translate: (text: string) => string,
-    rootProps: AI,
-    activeDate: I_DP_activeDate,
-    changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
-    onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
-    today: any, todayWeekDay: any, thisMonthString: any,months:string[]
-
-}
-type I_Calendar = { onClose?: () => void }
-type I_DP_activeDate = { year?: number, month?: number, day?: number }
 function Calendar(props: I_Calendar) {
     let { rootProps }: AI_context = useContext(AICTX);
     let { onClose } = props;
@@ -1892,7 +1643,6 @@ function DPBodyDay() {
         {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
     </>)
 }
-type I_DPCellWeekday = {weekDay:string}
 function DPCellWeekday(props:I_DPCellWeekday) {
     let {rootProps, translate}:I_DPContext = useContext(DPContext);
     let { theme, jalali } = rootProps;
@@ -1903,7 +1653,6 @@ function DPCellWeekday(props:I_DPCellWeekday) {
         </div>
     )
 }
-type I_DPCell = {dateArray:number[]}
 function DPCell(props:I_DPCell) {
     let {rootProps, translate, onChange}:I_DPContext = useContext(DPContext);
     let { disabled, dateAttrs, theme, value, jalali, unit, dateDisabled } = rootProps;
@@ -1944,9 +1693,6 @@ function DPCell(props:I_DPCell) {
         text = translate(!jalali ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
     }
     return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
-}
-type I_DPYears = {
-    value: number, onChange: (newValue: number) => void
 }
 function DPYears(props: I_DPYears) {
     let {rootProps}:I_DPContext = useContext(DPContext);
@@ -2052,7 +1798,6 @@ function DPHeader() {
         </div>
     )
 }
-type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
     let { value, options, onChange } = props;
@@ -2064,7 +1809,6 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     }
     return (<AIOInput {...p} />)
 }
-type I_DPArrow = { type: 'minus' | 'plus', onClick?: () => void }
 function DPArrow(props: I_DPArrow) {
     let { rootProps, changeActiveDate, activeDate }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
@@ -2083,19 +1827,6 @@ function DPArrow(props: I_DPArrow) {
 
 }
 const SliderContext = createContext({} as any);
-type I_Slider_statics = {getDiff:(x:number,y:number,client:{x:number,y:number})=>number,oriention:'h' | 'v',flexDirection?:'column' | 'column-reverse'}
-type I_Slider_context = {
-    direction:'left'|'right'|'top'|'bottom',
-    start:number,end:number,step:number,
-    touch:boolean,value:number[],
-    statics:I_Slider_statics,
-    rootProps:AI,isDown:boolean,
-    mouseDown:(e:any,index:number,type:'point' | 'fill')=>void,
-    fix:(v:number)=>number,
-    getStartByStep:(start:number,step:number)=>number,
-    getPercentByValue:(value:number,start:number,end:number)=>number,
-    isActive:(index:number)=>boolean
-}
 function Slider() {
     let {rootProps,touch}:AI_context = useContext(AICTX);
     let {direction = 'right',step = 1, start = 0, end = 100, min = start, max = end, disabled,attrs = {}, scale,label,multiple} = rootProps;
@@ -2275,8 +2006,8 @@ function SliderLine() {
     let style = grooveAttrs.style;
     let p = {...grooveAttrs,className,style}
     return (<div {...p}></div>)
+
 }
-type I_SliderFill = {percent:number,index:number}
 function SliderFill(props:I_SliderFill) {
     let {statics,rootProps,mouseDown,touch,isActive,direction}:I_Slider_context = useContext(SliderContext);
     let { oriention } = statics, { percent,index } = props; 
@@ -2308,7 +2039,6 @@ function SliderFill(props:I_SliderFill) {
         </div>
     );
 }
-type I_SliderPoint = {percent:number,index:number}
 function SliderPoint(props:I_SliderPoint) {
     let {rootProps,isDown,mouseDown,value,touch,fix,direction}:I_Slider_context = useContext(SliderContext);
     let {percent,index} = props;
@@ -2409,7 +2139,6 @@ function SliderLabels() {
     );
     
 }
-type I_SliderLabel = {value:number}
 function SliderLabel(props:I_SliderLabel) {
     let {rootProps,getPercentByValue,start,end,direction}:I_Slider_context = useContext(SliderContext)
     let {label} = rootProps;
@@ -2470,7 +2199,6 @@ function SliderScales() {
     let scales = getScales();
     return !scales.length?null:<div className='aio-slider-scales'>{scales}</div>
 }
-type I_SliderScale = {value:number}
 function SliderScale(props:I_SliderScale) {
     let {rootProps,getPercentByValue,start,end,direction} = useContext(SliderContext);
     let {value} = props;
@@ -2483,15 +2211,6 @@ function SliderScale(props:I_SliderScale) {
     if(attrs.className){className += ' ' + attrs.className}
     let p = {...attrs,className,style}
     return (<div {...p}><div className={'aio-slider-scale' + (attrs.className?' ' + attrs.className:'')} style={attrs.style}>{html(value)}</div></div>);
-}
-type I_list_temp = {
-    dom:any,
-    activeIndex:number,
-    interval:any,
-    moved:boolean,
-    lastY:number,
-    deltaY:number,
-    so:{ y: number, top: number, newTop?: number, limit: { top: number, bottom: number } }
 }
 function List() {
     let {rootProps}:AI_context = useContext(AICTX);
@@ -2662,60 +2381,6 @@ function Map() {
     if (!value.lng) { value.lng = 51.338097 }
     let p:I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled }
     return <MapUnit {...p} />
-}
-type I_Map_config = {
-    area?:I_Map_area,
-    markers?:I_Map_marker[],
-    zoom?:number,
-    marker?:boolean | I_Map_marker,
-    traffic?:boolean,
-    zoomControl?:boolean,
-    maptype?:any,
-    poi?:boolean,
-    search?:string,
-    title?:string,
-    draggable?:boolean,
-    address?:boolean,
-    submitText?:React.ReactNode,
-    isPopup?:boolean
-}
-export type I_Map_area = {color:string, opacity:number, radius:number, lat:number, lng:number}
-export type I_Map_marker = {size?:number,color?:string,html?:React.ReactNode,text?:React.ReactNode,lat?:number,lng?:number,popup?:(marker:I_Map_marker)=>any}
-type I_Map_value = {lat:number,lng:number,address?:string}
-type I_MapUnit = {
-    onClose?:()=>void,
-    value:I_Map_value,
-    onChange:(value:I_Map_value)=>void,
-    mapConfig:I_Map_config,
-    popupConfig?:I_Map_config,
-    attrs:any,
-    disabled:boolean
-}
-type I_Map_temp = {
-    datauniqid:string,
-    area:any,
-    map:any,
-    markers:any[],
-    dom:any,
-    L:any,
-    atimeout:any,
-    btimeout:any,
-    mapMarker:any,
-    lastChange:any
-}
-type I_Map_coords = {lat:number,lng:number};
-type I_mapApiKeys = {map:string,service:string}
-type I_Map_context = {
-    mapApiKeys:I_mapApiKeys,
-    value:I_Map_value,
-    flyTo:(coords:I_Map_coords)=>void,
-    addressLoading:boolean,
-    address:string,
-    goToCurrent:()=>void,
-    mapConfig:I_Map_config,
-    popupConfig:I_Map_config,
-    onClose:()=>void,
-    onChange:(value:I_Map_value)=>void
 }
 function MapUnit(props:I_MapUnit) {
     let [mapApiKeys] = useState<I_mapApiKeys>(AIOStorage('aio-input-storage').load({ name: 'mapApiKeys', def: { map: '', service: '' } }));
@@ -3572,6 +3237,12 @@ function getCities() {
     }
 }
 function getTypes(props) {
+    function isDropdown(){
+        if(['select', 'multiselect', 'date','time'].indexOf(type) !== -1){return true}
+        if(['text', 'number', 'textarea'].indexOf(type) !== -1 && props.options){return true}
+        if(type === 'button' && props.popover){return true}
+        return false
+    }
     let { type, multiple } = props;
     let isMultiple;
     if (type === 'multiselect' || type === 'table') { isMultiple = true }
@@ -3580,7 +3251,7 @@ function getTypes(props) {
     return {
         isMultiple,
         isInput: ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1,
-        isDropdown: ['text', 'number', 'textarea', 'select', 'multiselect', 'button', 'date','time'].indexOf(type) !== -1,
+        isDropdown: isDropdown(),
         hasOption: ['text', 'number', 'textarea', 'color', 'select', 'multiselect', 'radio', 'tabs', 'list','buttons'].indexOf(type) !== -1,
         hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(type) !== -1,
         hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(type) !== -1,
@@ -3588,8 +3259,6 @@ function getTypes(props) {
         hasSearch: ['multiselect', 'table', 'select'].indexOf(type) !== -1
     }
 }
-type I_Drag = { getAttrs:(list:any[],index:number)=>any }
-
 class DragClass {
     dragIndex: number;
     onChange:(list:any[],from:any,to:any)=>void;
@@ -3681,7 +3350,6 @@ function getDefaultProps(props,types:AI_types){
     }
     return props;
 }
-
 function getOptions(rootProps:AI,types:AI_types) {
     let { options = [],deSelect } = rootProps;
     let result = [];

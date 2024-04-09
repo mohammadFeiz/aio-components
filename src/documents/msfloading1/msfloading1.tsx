@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from './../../npm/aio-input/aio-input';
-import AIOPopup from './../../npm/aio-popup/aio-popup';
+import RVD from '../../npm/react-virtual-dom/index.tsx';
+import AIOInput from '../../npm/aio-input/index.tsx';
+import AIOPopup from '../../npm/aio-popup/index.tsx';
 import { FileToBase64 } from '../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiContentCopy, mdiEye, mdiEyeOff } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
+import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
+type I_MSFL = {
+    count: number,
+    rtl: boolean,
+    duration: number,
+    loop: boolean,
+    offset: number,
+    size: number,
+    loopDelay: number,
+    className: string,
+    sizes: number[],
+    border: boolean,
+    containerSize: number,
+    activeSize: false | number
+}
 export default function DOC_MSFLoading1({ goToHome }) {
     let [popup] = useState(new AIOPopup())
     let [file,setFile] = useState();
-    let [model, setModel] = useState({
+    let [model, setModel] = useState<I_MSFL>({
         count: 9,
         rtl: true,
         duration: 1,
@@ -18,7 +33,7 @@ export default function DOC_MSFLoading1({ goToHome }) {
         offset: 4,
         size: 36,
         loopDelay: 0.7,
-        className: '',
+        className: 'msfloading1',
         sizes: [20, 16, 16, 16, 16, 16, 16, 16, 16],
         border: true,
         containerSize: 300,
@@ -88,7 +103,7 @@ export default function Loading(){
 }`
         return str
     }
-    function codes_layout() {
+    function codes_node():I_RVD_node {
         return {
             column: [
                 {className:'p-3 p-b-0',html: <AIOInput type='button' text={'Exit To Home'} onClick={()=>goToHome()} className='ai-style-4 fs-14 m-0'/>},
@@ -113,7 +128,7 @@ export default function Loading(){
                     onClick: () => {
                         if(error){alert(error); return}
                         window.navigator.clipboard.writeText(code);
-                        popup.addSnakebar({ type: 'success', time: 2, rtl: true, style: { opacity: 0.5 }, text: `${type} codes is copied in clipboard` })
+                        popup.addSnackebar({ type: 'success', time: 2, rtl: true, attrs: {style:{ opacity: 0.5 }}, text: `${type} codes is copied in clipboard` })
                     }
                 }
             ]
@@ -188,20 +203,14 @@ export default function Loading(){
         if (model.activeSize === index) { return `1px solid red` }
         if (model.border) { return `1px solid #dddddd` }
     }
+    console.log(model)
     return (
         <>
             <RVD
                 rootNode={{
                     className: 'fullscreen',
                     column: [
-                        {
-                            style: { border: '3px solid dodgerblue' },
-                            className: 'br-12 m-12 m-b-0',
-                            row: [
-                                form_layout(),
-                                codes_layout()
-                            ]
-                        },
+                        {style: { border: '3px solid dodgerblue' },className: 'br-12 m-12 m-b-0',row: [form_layout(),codes_node()]},
                         {
                             style: { border: '3px solid dodgerblue', background: 'dodgerblue', direction: model.rtl ? 'rtl' : 'ltr' },
                             className: 'br-12 m-12 p-12 align-vh flex-1',

@@ -1,12 +1,11 @@
-import React, { Component,createRef, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import DOC from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput, { AI_table_column } from '../../../npm/aio-input/index.tsx';
+import AIOInput, {  } from '../../../npm/aio-input/index.tsx';
 import './index.css';
 import {Icon} from '@mdi/react';
 import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiChevronDoubleDown, mdiCheck, mdiCheckboxBlank, mdiCheckboxBlankOutline, mdiCheckOutline, mdiCheckboxMarked, mdiClose} from '@mdi/js';
-import { AI } from '../../../npm/aio-input/index.tsx';
+import { AI,AI_table_column } from '../../../npm/aio-input/types.tsx';
 const types = ['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image']
 export default function DOC_AIOInput_Table(props) {
     return (

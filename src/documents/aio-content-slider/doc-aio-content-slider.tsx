@@ -2,7 +2,8 @@ import React,{Component, useState} from "react";
 import DOC from '../../resuse-components/doc.tsx';
 import ACS from '../../npm/aio-content-slider/index.tsx';
 import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
-import AIOInput,{AI} from './../../npm/aio-input/index.tsx';
+import AIOInput from './../../npm/aio-input/index.tsx';
+import { AI } from "../../npm/aio-input/types.tsx";
 export default function DOC_AIOContentSlider(props){
   return (
     <DOC

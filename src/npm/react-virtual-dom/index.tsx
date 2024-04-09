@@ -236,7 +236,7 @@ function eventHandler(event, action, type = 'bind') {
     $(window).unbind(event, action);
     if (type === 'bind') { $(window).bind(event, action) }
 }
-function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index: number,level:number,context:I_RVD_context}) {
+function getGap(p: { node: I_RVD_node, parent: I_RVD_node, dataId: string, rtl: boolean, index: number,level:number,context:I_RVD_context}) {
     let { node, parent = {}, dataId, rtl, index,level,context } = p;
     let $$ = {
         getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
@@ -264,14 +264,15 @@ function getGap(p: { node: any, parent: any, dataId: string, rtl: boolean, index
                 draggable:false,
                 onDragStart: (e) => { e.preventDefault(); return false }
             }
+            let className = 'rvd-gap';
             if (node.size && node.onResize) {
+                className += parent.row?' col-resize':' row-resize'
                 gapAttrs['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
                     this.so = { pos: this.getClient(e), size: node.size };
                     eventHandler('mousemove', $.proxy(this.mouseMove, this));
                     eventHandler('mouseup', $.proxy(this.mouseUp, this));
                 }
             }
-            let className = 'rvd-gap';
             if(gap.className){className += ' ' + gap.className}
             let p:I_RVDAttrs = {node:{...gap,className,attrs:{...gap.attrs,...gapAttrs}},parent,level,index,context}
             let Attrs = new RVDAttrs(p)

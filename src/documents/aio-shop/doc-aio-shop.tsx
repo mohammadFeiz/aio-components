@@ -1,7 +1,6 @@
 import React, { Component,Fragment,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
 import products from './products.tsx';
 import AIOShop from '../../npm/aio-shop/aio-shop.js';
 import './index.css';
@@ -11,10 +10,10 @@ import { mdiArrowLeftBoldCircle, mdiCircleMedium, mdiGift } from '@mdi/js';
 export default function DOC_AIOShop(props){
     return (
         <DOC
-            {...props}
+            name={props.name} goToHome={props.goToHome}
             nav={{
                 nested:true,
-                items:[
+                items:()=>[
                     { 
                         text: 'product structure', id: 'product structure',
                         items:[

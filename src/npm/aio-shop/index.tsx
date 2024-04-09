@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import RVD,{I_RVD_node} from './../../npm/react-virtual-dom/index.tsx';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage.js';
 import AIOPopup from './../../npm/aio-popup/aio-popup.js';
-import AIOInput from './../../npm/aio-input/aio-input.js';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import ACS from './../../npm/aio-content-slider/index.tsx';
 import {SplitNumber} from './../../npm/aio-utils/aio-utils.js';
 import { makeAutoObservable,toJS } from "mobx"
@@ -21,6 +21,8 @@ import {
     I_addProductToCart, I_addVariantToCart, I_getNewCartVariant, I_removeVariantFromCart, I_changeCartCount, I_Rates, I_renderRates, 
     I_onPayment, I_closeModal, I_getFinalPrice, I_cart_product_hasVariant, I_cart_product_hasNotVariant, I_getCartCount, I_cartInfo, I_getCartInfo 
 } from './types';
+import { I_RVD_node } from '../react-virtual-dom/types.tsx';
+import { AI } from '../aio-input/types.tsx';
 //////rvd
 export default class AIOShop implements I_AIOShop{
     unit:string;
@@ -381,7 +383,9 @@ const Checkout = observer((props: I_Checkout) => {
                 <AIOInput
                     type='radio' multiple={multiple}
                     options={options.map((o) => { return { ...o, before: o.icon } })}
-                    optionAttrs={()=>{return {className:'aio-shop-checkout-item-radio-option'}}}
+                    option={{
+                        attrs:()=>{return {className:'aio-shop-checkout-item-radio-option'}}
+                    }}
                     value={checkout[field]}
                     onChange={(value:any) => change({ [field]: value })}
                 />
@@ -581,7 +585,7 @@ const Factor = observer((props:I_Factor) => {
                     row:[
                         {
                             column:[
-                                {gap:3,align:'v',row:[icon_layout(mdiMinus),key_layout(discount.title),dp_layout(discount)]},
+                                {className:'gap-3 align-v',row:[icon_layout(mdiMinus),key_layout(discount.title),dp_layout(discount)]},
                                 {className:'aio-shop-factor-max-discount',show:!!discount.maxDiscount && discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount)} ${unit}`}
                             ]
                         },
@@ -598,7 +602,7 @@ const Factor = observer((props:I_Factor) => {
         return {className:`aio-shop-factor-extra aio-shop-factor-row`,align:'v',row:[icon_layout(mdiPlus),key_layout(title),amount_layout(amount)]}
     }
     function amount_layout(amount:number):I_RVD_node{
-        return {align:'v',gap:3,row:[{className:'aio-shop-factor-value',html:`${SplitNumber(amount)}`},{className:'aio-shop-factor-unit',html:unit}]}
+        return {className:'gap-3 align-v',row:[{className:'aio-shop-factor-value',html:`${SplitNumber(amount)}`},{className:'aio-shop-factor-unit',html:unit}]}
     }
     function dp_layout(discount:I_discount){return {className:'aio-shop-discount-percent',html:`${discount.discountPercent}%`}}
     function icon_layout(path:any){return {className:'aio-shop-factor-icon',html:<Icon path={path} size={0.6}/>}}
@@ -631,8 +635,8 @@ const Factor = observer((props:I_Factor) => {
         return {
             align:'v',flex:1,
             column:[
-                {row:[{flex:1},{html:'مبلغ قابل پرداخت',className:'aio-shop-factor-payment-text'}]},
-                {gap:3,align:'v',row:[{flex:1},amount_layout(details.payment)]}
+                {row:[{className:'flex-1'},{html:'مبلغ قابل پرداخت',className:'aio-shop-factor-payment-text'}]},
+                {className:'gap-3 align-v',row:[{flex:1},amount_layout(details.payment)]}
             ]
         }
     }
@@ -648,9 +652,9 @@ const Factor = observer((props:I_Factor) => {
                 !details.totalDiscount?{}:totalDiscount_layout(),
             ]
         }
-        return (<RVD layout={{className:`aio-shop-factor`,column:[discountCode_layout(),rows]}}/>)
+        return (<RVD rootNode={{className:`aio-shop-factor`,column:[discountCode_layout(),rows]}}/>)
     }
-    return (<RVD layout={{className:'aio-shop-factor aio-shop-factor-payment',row:[button_layout(),payment_layout()]}}/>)
+    return (<RVD rootNode={{className:'aio-shop-factor aio-shop-factor-payment',row:[button_layout(),payment_layout()]}}/>)
 })
 function ProductSlider(props:I_ProductSlider){
     let {title = '',action,before = () => false,after = () => false,products,getContext,icon} = props,context = getContext();
@@ -686,7 +690,7 @@ function ProductSlider(props:I_ProductSlider){
         let res = after(); if(!res){return {}}
         return {className:'aio-shop-product-slider-after',html:res}
     }
-    return (<RVD layout={{className:'aio-shop-product-slider',column:[header_layout(),body_layout()]}}/>)
+    return (<RVD rootNode={{className:'aio-shop-product-slider',column:[header_layout(),body_layout()]}}/>)
 }
 const ProductPage = observer((props:I_ProductPage) => {
     let {product,variantIds = !product.hasVariant?[]:product.variants.map((o:I_v)=>o.id),getContext} = props,context = getContext();
@@ -731,7 +735,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     function imageSlider(){
         return (
             <ACS
-                autoSlide={false}
+                autoSlide={0}
                 items={images.map((image:string)=>{
                     return <img src={image} alt='' height='240px'/>
                 })}
@@ -815,19 +819,19 @@ const ProductPage = observer((props:I_ProductPage) => {
         let column = [image_layout(),name_layout(),optionTypes_layout(),details_layout(),description_layout(),rates_layout(),content_layout()]
         return {flex:1,className:'aio-shop-product-page-body',column}
     }
-    return (<RVD layout={{className:'aio-shop-product-page',column:[body_layout(),footer_layout()]}}/>)
+    return (<RVD rootNode={{className:'aio-shop-product-page',column:[body_layout(),footer_layout()]}}/>)
 })
 function Rates(props:I_Rates){
     let {getContext,rates} = props,context = getContext();
     function item_layout(rate:I_pr_rate):I_RVD_node{
         let [key,value] = rate;
-        let sliderProps = {direction:'left',className:'aio-shop-rate-item-slider',type:'slider',start:0,end:5,step:0.1,value}
+        let sliderProps:AI = {direction:'left',className:'aio-shop-rate-item-slider',type:'slider',start:0,end:5,step:0.1,value}
         return {
             className:'aio-shop-rate-item',align:'v',
             row:[{html:key,className:'aio-shop-rate-item-text'},{flex:1,html:<AIOInput {...sliderProps}/>},{html:value,className:'aio-shop-rate-item-value',align:'vh'}]
         }
     }
-    return <RVD layout={{className:'aio-shop-product-page-rate-items',column:rates.map((rate:I_pr_rate)=>item_layout(rate))}}/>
+    return <RVD rootNode={{className:'aio-shop-product-page-rate-items',column:rates.map((rate:I_pr_rate)=>item_layout(rate))}}/>
 }
 const CartButton = observer((props:I_CartButton) => {
     let {product,variantId,readonly,getContext} = props;
@@ -882,10 +886,10 @@ const CartButton = observer((props:I_CartButton) => {
         return {min,max,step}
     }
     let {min,max,step} = getCartInfo();
-    if(!max){return <RVD layout={notExist_layout()}/>}
-    if(readonly){return !count?null:<RVD layout={{className:`aio-shop-cart-button aio-shop-cart-button-readonly`,align:'v',row:[icon_layout(),count_layout({width:'fit-content',padding:'0 1px'})]}}/>}
-    if(!count){return <RVD layout={{className:`aio-shop-cart-button`,html:<button className='aio-shop-cart-button-add' onClick={(e)=>{e.stopPropagation(); changeStep(step)}}>{trans.addToCart}</button>}}/>}
-    return (<RVD layout={{className:`aio-shop-cart-button`,column:[body_layout(),footer_layout()]}}/>)
+    if(!max){return <RVD rootNode={notExist_layout()}/>}
+    if(readonly){return !count?null:<RVD rootNode={{className:`aio-shop-cart-button aio-shop-cart-button-readonly`,align:'v',row:[icon_layout(),count_layout({width:'fit-content',padding:'0 1px'})]}}/>}
+    if(!count){return <RVD rootNode={{className:`aio-shop-cart-button`,html:<button className='aio-shop-cart-button-add' onClick={(e)=>{e.stopPropagation(); changeStep(step)}}>{trans.addToCart}</button>}}/>}
+    return (<RVD rootNode={{className:`aio-shop-cart-button`,column:[body_layout(),footer_layout()]}}/>)
 })
 const ProductCard = observer((props:I_ProductCard) => {
     let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{unit} = context;
@@ -948,7 +952,7 @@ const ProductCard = observer((props:I_ProductCard) => {
             column:[
                 {flex:1,html:<VariantLabels {...props}/>},
                 {
-                    gap:6,style:{fontSize:10},align:'v',
+                    className:'gap-6 align-v',style:{fontSize:10},
                     row:[
                         {html:<DiscountPercent {...dpProps}/>},
                         {html:<FinalPrice {...fpProps}/>},
@@ -986,9 +990,9 @@ const ProductCard = observer((props:I_ProductCard) => {
         //در حالت واریانت دار چون قیمت ها در پایین کارت رندر میشه پس قیمت ها رو در بادی کارت نمایش نده
         if(hasVariant && cartButton === true){return {}}
         let d = discount_layout(),f = finalPrice_layout(),c = hasVariant?{}:cartButton_layout();
-        if(type === 'v'){return {align:'v',gap:6,column:[{flex:1,column:[d,f]},c]}}
+        if(type === 'v'){return {className:'gap-6 align-v',column:[{flex:1,column:[d,f]},c]}}
         if(type === 'h'){return {align:'v',row:[c,{flex:1,column:[d,f]}]}}
-        if(type === 'hs'){return {gap:6,row:[c,f,{flex:1},d]}}
+        if(type === 'hs'){return {className:'gap-6',row:[c,f,{flex:1},d]}}
     }
     function h_layout():I_RVD_node{
         let body;
@@ -1002,7 +1006,7 @@ const ProductCard = observer((props:I_ProductCard) => {
             ]
         }
     }
-    return (<RVD layout={type === 'v'?v_layout():h_layout()}/>)
+    return (<RVD rootNode={type === 'v'?v_layout():h_layout()}/>)
 })
 function DiscountPercent(props:I_DiscountPercent){
     let {product,getContext,showPrice} = props,context = getContext(),{getCartInfo} = context;
@@ -1020,14 +1024,14 @@ function DiscountPercent(props:I_DiscountPercent){
     function price_layout(price:number):I_RVD_node{return showPrice === false?{}:{className:'aio-shop-price',html:SplitNumber(price)}}
     let {discountPercent = [],price} = getCartInfo(product,props.variantId);
     let items = discountPercent.filter((o:I_discountPercent)=>!!o.value);
-    return !items.length?null:<RVD layout={{align:'v',className:'aio-shop-discount-row',row:[{flex:1},price_layout(price),percents_layout()]}}/>
+    return !items.length?null:<RVD rootNode={{align:'v',className:'aio-shop-discount-row',row:[{flex:1},price_layout(price),percents_layout()]}}/>
 }
 type I_DiscountPercentModal = {context?:I_AIOShop_context,item:I_discountPercent}
 function DiscountPercentModal(props:I_DiscountPercentModal){
     let {item,context} = props;
     return (
         <RVD
-            layout={{
+            rootNode={{
                 className:'aio-shop-discount-percent-modal',align:'v',
                 row:[
                     {html:item.text,className:'aio-shop-discount-percent-modal-text'},
@@ -1049,7 +1053,7 @@ function FinalPrice(props:I_FinalPrice){
         return {html:SplitNumber(finalPrice),className:'aio-shop-final-price'}
     }
     function unit_layout():I_RVD_node{return {html:unit,className:'aio-shop-unit'}}
-    return (<RVD layout={{className:'gap-3',align:'v',row:[price_layout(),unit_layout()]}}/>)
+    return (<RVD rootNode={{className:'gap-3',align:'v',row:[price_layout(),unit_layout()]}}/>)
 }
 function VariantLabels(props:I_VariantLabels){
     let {product,variantId,getContext,type} = props,context = getContext();
@@ -1083,12 +1087,12 @@ function VariantLabels(props:I_VariantLabels){
     function bullet_layout():I_RVD_node{return {html:<div className='aio-shop-variant-label-row-bullet'></div>,align:'vh'}}
     function h_layout():I_RVD_node{
         return {
-            className:`aio-shop-variant-label-rows aio-shop-variant-label-rows-${type} p-0`,gap:3,
+            className:`aio-shop-variant-label-rows aio-shop-variant-label-rows-${type} p-0 gap-3`,
             row:[bullet_layout(),rows_layout()]
         }
     }
     function rows_layout():I_RVD_node{
-        return {align:'v',row:items.map((item:I_v_label)=>row_layout(item)),gap:{size:8,content:'-',attrs:{className:'align-vh'}}}
+        return {align:'v',row:items.map((item:I_v_label)=>row_layout(item)),gap:{size:8,html:'-',className:'align-vh'}}
     }
     function v_layout():I_RVD_node{
         return {
@@ -1096,5 +1100,5 @@ function VariantLabels(props:I_VariantLabels){
             column:items.map((item:I_v_label)=>row_layout(item))
         }
     }
-    return (<RVD layout={type === 'h'?h_layout():v_layout()}/>)
+    return (<RVD rootNode={type === 'h'?h_layout():v_layout()}/>)
 }
