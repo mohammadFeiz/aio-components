@@ -1,4 +1,5 @@
 import React, { Component, createRef } from "react";
+import {Geo} from './../../npm/aio-utils/index'
 import $ from "jquery";
 export default class Canvas{
   mp = {};
@@ -29,6 +30,7 @@ class CANVAS extends Component {
   constructor(props) {
     super(props);
     this.PI = Math.PI / 180;
+    this.geo = Geo();
     this.dom = createRef();
     this.width = 0;
     this.height = 0;
@@ -48,134 +50,6 @@ class CANVAS extends Component {
       canvasToClient:this.canvasToClient.bind(this),
       clientToCanvas:this.clientToCanvas.bind(this)
     })
-  }
-  getPrepDip(line){
-    var dip = this.getDip(line);
-    dip.m = -1 / dip.m;
-    return dip;
-  }
-  getDip([p1,p2]){
-    var deltaY = p1[1] - p2[1];
-    var deltaX = p1[0] - p2[0];
-    var m = deltaY / deltaX; 
-    return {deltaY,deltaX,m};
-  }
-  getAvg(arr){
-    var x = 0,y = 0,length = arr.length;
-    for(var i = 0; i < length; i++){ x += arr[i][0]; y += arr[i][1]; }
-    return [x / length,y / length]
-  }
-  getAngle(obj){
-    var {line} = obj;
-    var deltaX,deltaY,length;
-    if(obj.line){
-      deltaX = line[1][0] - line[0][0]; 
-      deltaY = line[1][1] - line[0][1];
-    }
-    else if(obj.dip){
-      deltaX = -obj.dip.deltaX; 
-      deltaY = -obj.dip.deltaY;
-    }
-    var length = this.getLength([[0,0],[deltaX,deltaY]]);
-    var angle = Math.acos(deltaX / length) / Math.PI * 180;
-    angle = Math.sign(deltaY) < 0?360 - angle:angle;
-    return parseFloat(angle.toFixed(4));
-  }
-  getLength([p1,p2]){
-    return Math.sqrt(Math.pow(p1[0] - p2[0],2) + Math.pow(p1[1] - p2[1],2))
-  }
-  getPrepFromLine(obj){
-    var {point,offset,line,dip = this.getDip(line)} = obj;
-    if(!offset){return point;}
-    var angle = this.getAngle({dip});
-    var [p1,p2] = this.getLineBySLA(point,offset,angle - 90)
-    return p2
-  }
-  getLineBySLA(p1,length,angle){  
-    if(!length){return [p1,p1]}
-    return [p1,[p1[0]+(Math.cos(angle * Math.PI / 180) * length),p1[1] + (Math.sin(angle * Math.PI / 180) * length)]];
-  }
-  getArcByPoints(item){
-    var {arcPoints,height} = item;
-    var points = [];
-    var stringPoints = [];
-    for(var i = 0; i < arcPoints.length; i++){
-      if(i === 3){break;}
-      var point = arcPoints[i];
-      var stringPoint = point.toString();
-      if(stringPoints.indexOf(stringPoint) !== -1){continue}
-      stringPoints.push(stringPoint);
-      points.push(point)
-    }
-    var p1 = points[0],p2= points[1],p3 = points[2];
-    var changeObject = {};
-    if(points.length === 1){changeObject = {r:0,x:p1[0],y:p1[1]}}
-    else if(points.length === 2){
-      let avg = this.getAvg([p1,p2]);
-      if(height){changeObject = this.getArcBy3Points(p1,this.getPrepFromLine({point:avg,line:[p1,p2],offset:height}),p2);}
-      else {changeObject = {r:this.getLength([p1,p2]) / 2,x:avg[0],y:avg[1]}}
-    }
-    else {changeObject = this.getArcBy3Points(p1,p2,p3);}
-    item = {...changeObject,...item}
-    return item
-  }
-  getArcBy3Points(p1,p2,p3) {
-    var dip1 = this.getPrepDip([p1, p2]);
-    var dip2 = this.getPrepDip([p2, p3]);
-    var point1 = this.getAvg([p1, p2]);
-    var point2 = this.getAvg([p2, p3]) 
-    var meet = this.getMeet({point1,dip1,point2,dip2});
-    if (!meet) {return false;}
-    var x = meet[0],y = meet[1];
-    var a1 = this.getAngle({line:[meet, p1]}),
-        a2 = this.getAngle({line:[meet, p2]}),
-        a3 = this.getAngle({line:[meet, p3]});
-    
-    var slice;
-    if (a1 < a2 && a2 < a3) {slice = [a1, a3];} 
-    else if (a2 < a3 && a3 < a1) {slice = [a1, a3];} 
-    else if (a3 < a1 && a1 < a2) {slice = [a1, a3];}
-    else if (a3 < a2 && a2 < a1) {slice = [a3, a1];} 
-    else if (a1 < a3 && a3 < a2) {slice = [a3, a1];} 
-    else if (a2 < a1 && a1 < a3) {slice = [a3, a1];
-    } else {slice = [0, 0];}
-    return { x, y, r: this.getLength([p1, [x, y]]),slice };
-  }
-  getMeet(obj){ //get {line1,line2} or {point1,point2,dip1,dip2}
-    var {line1,line2,point1 = line1[0],point2 = line2[0],dip1 = this.getDip(line1),dip2 = this.getDip(line2)} = obj;
-    if(dip1.m === dip2.m){return false}
-    if(Math.abs(dip1.m) === Infinity){return [point1[0],this.getYOnLineByX({point:point2,dip:dip2,x:point1[0]})]}
-    if(Math.abs(dip2.m) === Infinity){return [point2[0],this.getYOnLineByX({point:point1,dip:dip1,x:point2[0]})]}
-    var x = ((dip1.m * point1[0]) - (dip2.m * point2[0]) + point2[1] - point1[1]) / (dip1.m - dip2.m);
-    var y = dip1.m * (x - point1[0]) + point1[1];
-    return [x,y]
-  }
-  getYOnLineByX(obj){ // get {x,line} or {x,point,dip}
-    var {x,line,point = line[0],dip = this.getDip(line)} = obj;
-    if(dip.m === Infinity){return false}
-    return dip.m * (x - point[0]) + point[1];
-  }
-  getPopintsByNGon(radius,count,corner){
-    let ang = (180 - (360 / count));
-    let w = +(Math.cos(ang / 2 * Math.PI / 180) * radius).toFixed(6) * 2;
-    let h = +(Math.sin(ang / 2 * Math.PI / 180) * radius).toFixed(6);
-    let p1 = [0,-h,corner];
-    let p2 = [0 + w / 2,-h,corner];
-    let points = [p1,p2];
-    let a = 360 / count;
-    for(let i = 0; i < count - 1; i++){
-      let p = [points[i + 1][0]+(Math.cos(a * Math.PI / 180) * w),points[i + 1][1] + (Math.sin(a * Math.PI / 180) * w),corner];
-      a += 360 / count;
-      points.push(p)
-    }
-    points.push(p1);
-    return points;
-  }
-  getXOnLineByY(obj){ // get {y,line} or {y,point,dip}
-    var {y,line,point = line[0],dip = this.getDip(line)} = obj;
-    if(dip.m === 0){return false}
-    if(dip.m === Infinity){return point[0]}
-    return (y - point[1]) / dip.m + point[0];
   }
   eventHandler(selector, event, action, type = "bind") {
     var me = {mousedown: "touchstart",mousemove: "touchmove",mouseup: "touchend"};
@@ -365,7 +239,7 @@ class CANVAS extends Component {
     //converts
     if (type === 'Arc' && originalItem.arcPoints) {
       if (originalItem.arcPoints) {
-        var arc = this.getArcByPoints(originalItem);
+        var arc = this.geo.getArcByPoints(originalItem);
         updatedItem.r = arc.r;
         updatedItem.slice = arc.slice;
         updatedItem.x = arc.x;
@@ -386,7 +260,7 @@ class CANVAS extends Component {
     else if (type === 'NGon') {
       updatedItem.type = 'Line';
       let { r = 20, count = 6, corner = 0 ,x,y} = updatedItem;
-      updatedItem.points = this.getPopintsByNGon(r,count,corner);
+      updatedItem.points = this.geo.getPopintsByNGon(r,count,corner);
     }  
     else if (type === 'Triangle') {
       updatedItem.type = 'Line';
@@ -670,7 +544,7 @@ class CANVAS extends Component {
   }
   panmousemove(e) {
     var so = this.startOffset,{ zoom } = this.props,coords = this.getClient(e);
-    //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
+    //if(!this.panned && this.geo.getLength({x:so.x,y:so.y},coords) < 5){return;}
     this.panned = true;
     var x = (so.x - coords.x) / zoom + so.endX,y = (coords.y - so.y) / zoom + so.endY;
     this.setScreenPosition([x, y]);

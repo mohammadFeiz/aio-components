@@ -1928,3 +1928,74 @@
     align-items:center;
     justify-content: center;
 }
+.pinch{
+    border:2px solid;
+    border-radius:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    margin:12px;
+}
+.pinch-handle-container{
+    display:flex;
+    align-items: center;
+    width: 0;
+    height: 0;
+    justify-content: flex-end;
+    overflow: visible;
+}
+.pinch-handle{
+    position:absolute;
+    left:0;
+    height:4px;
+    background:orange;
+    display: flex;
+    align-items: center;
+}
+.pinch-point{
+    height:13px;
+    width:13px;
+    border-radius:100%;
+    background:orange;
+    position: absolute;
+    left:calc(100% - 6px);
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.pinch-scales{
+    display:flex;
+    align-items: center;
+    justify-content: flex-end;
+    width:0;
+    height:0;
+}
+.pinch-scale{
+    height:2px;
+    width:2px;
+    background:#000;
+    position: absolute;
+    left:6px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size:12px;
+}
+.pinch-label-container{
+    display:flex;
+    align-items: center;
+    justify-content: flex-end;
+    width:0;
+    height:0;
+}
+.pinch-label{
+    height:16px;
+    width:16px;
+    position: absolute;
+    left:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size:12px;
+}

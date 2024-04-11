@@ -10,7 +10,7 @@ import {
     mdiDotsHorizontal
 } from "@mdi/js";
 import $ from 'jquery';
-import {AIODate,GetClient,EventHandler,Swip} from './../../npm/aio-utils/aio-utils';
+import {AIODate,GetClient,EventHandler,Swip,getValueByStep} from './../../npm/aio-utils/index';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
@@ -106,6 +106,7 @@ export default function AIOInput(props: AI) {
     }
     let render = {
         list: () => <List />,
+        pinch:()=><Pinch/>,
         file: () => <File />,
         select: () => <Layout properties={{text:props.text || getSelectText()}}/>,
         button: () => <Layout />,
@@ -637,7 +638,7 @@ function Input() {
         let options:AI_option[] = getOptions(rootProps,types)
         return (
             <label style={{ width: '100%', height: '100%', background: value }}>
-                <input {...attrs} style={{ opacity: 0 }} />
+                <input {...attrs} style={{ opacity: 0 }} opacity rgba cmyk hsla/>
                 {!!options.length && <datalist id={datauniqid}>{options.map((o:AI_option) => <option value={o.value} />)}</datalist>}
             </label>
         )
@@ -2926,6 +2927,74 @@ export function Tree(props:any = {}) {
     }
     return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
 }
+const Pinch = () => {
+    let {rootProps}:AI_context = useContext(AICTX),{start = 0,end = 360,step = 1,label,scale,handle,attrs,onChange,size,angle = 0} = rootProps;
+    let [temp] = useState({dom:createRef()})
+    let [value,setValue] = useState<number>(getValueByStep({value:rootProps.value,start,step,end}))
+    let [scaleNode] = useState(scale_node()),[labelNode] = useState(label_node())
+    useEffect(()=>{setValue(rootProps.value)},[rootProps.value])
+    useEffect(()=>{Swip({dom:()=>$(temp.dom.current),move:({centerAngle})=>changeHandle(centerAngle)})},[])
+    function changeHandle(centerAngle){change(getValueByStep({value:getValueByAngle(centerAngle),start,step,end}))}
+    const change = (value) => {setValue(value); onChange(value)}
+    function handle_node(){
+        let angle = getAngleByValue(value);
+        let {attrs:hAttrs = {}} = handle || {}
+        let point = (rootProps.point || (()=>{}))(value,angle) || {}
+        let {attrs:pAttrs = {},html = ''} = point;
+        hAttrs = typeof hAttrs === 'function'?hAttrs(value,angle):hAttrs;
+        pAttrs = typeof pAttrs === 'function'?pAttrs(value,angle):pAttrs;
+        return (
+            <div className='pinch-handle-container' draggable={false}style={{transform:`rotate(${angle}deg)`}}>
+                <div {...hAttrs} className={'pinch-handle' + (hAttrs.className?' ' + hAttrs.className:'')} style={{width:size / 2,...hAttrs.style}} draggable={false}>
+                    <div {...pAttrs} className={'pinch-point' + (pAttrs.className?' ' + pAttrs.className:'')} style={pAttrs.style} draggable={false}>{html}</div>
+                </div>    
+            </div>
+        )
+    }
+    function label_node(){
+        let {step,list = [],html = (o)=>o} = label || {};
+        let labels = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
+        for(let i = 0; i < list.length; i++){if(labels.indexOf(list[i]) === -1){labels.push(list[i])}}
+        return labels.map((o,i)=>{
+            let angle = getAngleByValue(o);
+            let attrs = label.attrs?label.attrs(o,angle) || {}:{} 
+            return (
+                <div key={o} className='pinch-label-container' draggable={false} style={{transform:`rotate(${angle}deg)`}}>
+                    <div {...attrs} className={'pinch-label' + (attrs.className?' ' + attrs.className:'')} draggable={false} style={{transform:`rotate(${-angle}deg)`,...attrs.style}}>{html(o,angle)}</div>
+                </div>    
+            )
+        })
+    }
+    function scale_node(){
+        let {step,list = [],html = ()=>''} = scale || {};
+        let scales = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
+        for(let i = 0; i < list.length; i++){if(scales.indexOf(list[i]) === -1){scales.push(list[i])}}
+        return scales.map((o,i)=>{
+            let angle = getAngleByValue(o),scaleText = html(o,angle),attrs = scale.attrs?scale.attrs(o,angle) || {}:{}
+            return (
+                <div className='pinch-scales' key={o} draggable={false} style={{transform:`rotate(${angle}deg)`}}>
+                    <div {...attrs} className={'pinch-scale' + (attrs.className?' ' + attrs.className:'')} draggable={false}>
+                        {scaleText !== undefined && <div className='pinch-scale-text' draggable={false} style={{transform:`rotate(${-angle}deg)`}}>{scaleText}</div>}    
+                    </div>
+                </div>    
+            )
+        })
+    }
+    function pinch_node(){
+        let {className,style} = attrs || {}
+        let p = {...attrs,className:'pinch' + (className?' ' + className:''),style:{width:size,height:size,...style},ref:temp.dom}
+        return (<div {...p}>{scale && scale.dynamic?scale_node():scaleNode}{label && label.dynamic?label_node():labelNode}{handle_node()}</div>)
+    }
+    function getValueByAngle(ang){
+        return ((ang - angle) % 360) * (end - start) / 360;
+    }
+    function getAngleByValue(value){
+        let res = (value * 360 / (end - start) + angle) % 360
+        if(res < 0) {res = 360 + res}
+        return res;
+    }
+    return pinch_node()
+}
 export function AIOValidation(props) {
     let $$ = {
         translate(text) {
@@ -3426,5 +3495,3 @@ function getOptionProp(p:{props:AI,option: AI_option, key: string, def?: any, pr
 function I(path:any,size:number,p?:any){
     return <Icon path={path} size={size} {...p}/>
 }
-
-

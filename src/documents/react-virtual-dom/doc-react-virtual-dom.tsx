@@ -1,16 +1,17 @@
-import React, { Component, Fragment, createRef, useEffect, useState } from 'react';
+import React, { Component, Fragment, createRef, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.js';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
-import AIOInput from '../../npm/aio-input/aio-input.js';
+import AIOInput from '../../npm/aio-input/index.tsx';
 import AIOStorage from '../../npm/aio-storage/aio-storage.js'
-import {Swip} from './../../npm/aio-utils';
+import {Swip,Geo} from './../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
 import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
+import { AI } from '../../npm/aio-input/types.tsx';
 export default function DOC_AIOShop(props) {
     return (
         <DOC
@@ -37,7 +38,6 @@ export default function DOC_AIOShop(props) {
                     { text: 'reOrder', id: 'reOrder', render: () => <ReOrder /> },
                     { text: 'longTouch', id: 'longTouch', render: () => <LongTouch /> },
                     { text: 'Style Generator', id: 'stylegenerator', render: () => <StyleGenerator /> },
-                    { text: 'pinch', id: 'pinch', render: () => <PinchDemo /> },
                     
                 ]
             }}
@@ -2256,7 +2256,9 @@ function StyleGenerator(){
         return colors;
     }
     function change(key,value){
-        setGrd({...grd,[key]:value})
+        let grd = grdRef.current;
+        let newGrd = {...grd,[key]:value}
+        setGrd(newGrd)
     }
     function changeSelected(newSelected){
         setSelected(newSelected)
@@ -2271,13 +2273,16 @@ function StyleGenerator(){
     let [grd,setGrd] = useState({
         light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',
         borderWidth:1,contrast:50,borderRadius:6,bold:true,fontSize:14,
-        containerBG:'#fff',p:50
+        containerBG:'#fff',p:50,angle:180,bsx:0,bsy:0,bsc:'#000000',bsb:0,bss:0
     })
+    let grdRef = useRef(grd);
+    grdRef.current = grd;
     let [selected,setSelected] = useState(storage.load({name:'selected',def:[]}))
     let dark = to_dark(grd.light,grd.contrast);
     let medium = between(grd.light,dark,3)[1];
     let style = {
-        background:`linear-gradient(180deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%)`,
+        background:getGradient(),
+        boxShadow:getBoxShadow(),
         width:grd.width,height:grd.height,
         border:`${grd.borderWidth}px solid ${grd.borderColor}`,
         borderRadius:grd.borderRadius,fontWeight:grd.bold?'bold':undefined,
@@ -2289,9 +2294,14 @@ function StyleGenerator(){
             size:36,className:'w-240',html:<AIOInput type='color' value={grd[key]} onChange={(v)=>change(key,v)} className='w-36 h-36 brd-c-12'/>
         }
     }
-    function slider_node(key,start,end):I_RVD_node{
+    function slider_node(key,start,end,size = 180):I_RVD_node{
         return {
-            size:180,html:<AIOInput type='slider' showValue='inline' value={grd[key]} onChange={(v)=>change(key,v)} start={start} end={end}/>
+            size,html:<AIOInput type='slider' point={()=>{return {labelShow:'inline'}}} value={grd[key]} onChange={(v)=>change(key,v)} start={start} end={end}/>
+        }
+    }
+    function number_node(key,start,end):I_RVD_node{
+        return {
+            size:82,html:<AIOInput key={key} type='number' style={{border:'1px solid #ddd',width:80}} min={start} max={end} after={'px'} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
     function checkbox_node(key):I_RVD_node{
@@ -2302,11 +2312,51 @@ function StyleGenerator(){
             html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
+    function pinch_node(key,start,end):I_RVD_node{
+        let p:AI = {
+            attrs:{
+                style:{border:'2px solid dodgerblue'}
+            },
+            handle:{
+                attrs:{
+                    style:{height:2,background:'dodgerblue'}
+                }
+            },
+            scale:{
+                step:45,
+                attrs:()=>{return {style:{left:22,width:4,height:3,background:'dodgerblue'}}}
+            },
+            angle:-90,size:36,type:'pinch',start,end,value:grd[key],onChange:(v)=>change(key,v),
+            point:(v,angle)=>{
+                console.log(angle)
+                return {
+                    html:<div style={{transform:`rotate(-${angle}deg)`,color:'dodgerblue'}}>{v}</div>,
+                    attrs:{
+                        style:{width:16,height:16,fontSize:10,left:12,background:'#fff',border:'1px solid dodgerblue'}
+                    }
+                }
+            }
+        } 
+        return {
+            align:'vh',
+            html:<AIOInput {...p}/>
+        }
+    }
+    function getGradient(){
+        return `linear-gradient(${grd.angle}deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%)`
+    }
+    function getBoxShadow(){
+        return `${grd.bsx}px ${grd.bsy}px ${grd.bsb}px ${grd.bss}px ${grd.bsc}`
+    }
+    function label_node(text){
+        return {html:text,size:100}
+    }
     function log(i){
         let grd = selected[i].grd;
         let style = `
 {
-    background:linear-gradient(180deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%);
+    background:${getGradient()};
+    box-shadow:${getBoxShadow()},
     width:${grd.width}px;
     height:${grd.height}px;
     border:${grd.borderWidth}px solid ${grd.borderColor};
@@ -2336,38 +2386,44 @@ function StyleGenerator(){
                         {
                             row:[
                                 {
-                                    className:'p-12',
+                                    className:'p-12 gap-12',
                                     column:[
                                         {
                                             className:'align-v gap-12',
                                             row:[
-                                                {html:'Geadient'},color_node('light'),slider_node('contrast',0,100),slider_node('p',0,100)
+                                                label_node('Geadient'),color_node('light'),slider_node('contrast',0,100),slider_node('p',0,100),pinch_node('angle',0,360)
+                                            ]
+                                        },
+                                        {
+                                            className:'align-v gap-12',
+                                            row:[
+                                                label_node('box shadow'),number_node('bsx',0,12),number_node('bsy',0,12),number_node('bsb',0,24),number_node('bss',0,24),color_node('bsc')
                                             ]
                                         },
                                         {
                                             row:[
-                                                {align:'v',row:[{html:'Width'},slider_node('width',0,300)]},
-                                                {align:'v',row:[{html:'Height'},slider_node('height',0,300)]},
+                                                {align:'v',row:[label_node('Width'),slider_node('width',0,300)]},
+                                                {align:'v',row:[label_node('Height'),slider_node('height',0,300)]},
                                             ]
                                         },
                                         {
                                             className:'gap-12',
                                             row:[
-                                                {className:'align-v gap-12',row:[{html:'Color'},color_node('color')]},
-                                                {className:'align-v gap-12',row:[{html:'Border Color'},color_node('borderColor')]},
-                                                {className:'align-v gap-12',row:[{html:'Container BG'},color_node('containerBG')]}
+                                                {className:'align-v gap-12',row:[label_node('Color'),color_node('color')]},
+                                                {className:'align-v gap-12',row:[label_node('Border Color'),color_node('borderColor')]},
+                                                {className:'align-v gap-12',row:[label_node('Container BG'),color_node('containerBG')]}
                                             ]
                                         },
                                         {
                                             row:[
-                                                {align:'v',row:[{html:'Border Width'},slider_node('borderWidth',0,24)]},
-                                                {align:'v',row:[{html:'Border Radius'},slider_node('borderRadius',0,36)]}
+                                                {align:'v',row:[label_node('Border Width'),slider_node('borderWidth',0,24)]},
+                                                {align:'v',row:[label_node('Border Radius'),slider_node('borderRadius',0,36)]}
                                             ]
                                         },
                                         {
                                             align:'v',
                                             row:[
-                                                {html:'Font Size'},
+                                                label_node('Font Size'),
                                                 slider_node('fontSize',10,36),
                                                 checkbox_node('bold')
                                             ]
@@ -2393,7 +2449,7 @@ function StyleGenerator(){
                                     style:{background:containerBG},
                                     column:[
                                         {
-                                            html:<div className='align-vh' style={style}>Sample Text</div>
+                                            className:'of-visible',html:<div className='align-vh' style={style}>Sample Text</div>
                                         },
                                         {
                                             className:'of-visible br-100 absolute rvd-pointer',
@@ -2417,160 +2473,4 @@ function StyleGenerator(){
             {popup.render()}
         </>
     )
-}
-function PinchDemo(){
-    let [value,setValue] = useState(0)
-    return (
-        <Pinch
-            start={0}
-            end={360}
-            step={1}
-            value={value}
-            attrs={{style:{margin:36,border:'2px solid dodgerblue'}}}
-            scale={{
-                step:45,
-                attrs:(value)=>{return {style:{width:6,left:20}}}
-            }}
-            onChange={(value)=>setValue(value)}
-            point={{
-                attrs:{
-                    style:{left:20,background:'dodgerblue',width:20,height:20}
-                },
-                html:(value,angle)=>{ 
-                    return <div style={{transform:`rotate(-${angle}deg)`,color:'#fff',fontSize:10}}>{value}</div>
-                }
-            }}
-            handle={{attrs:{style:{background:'none'}}}}
-        />
-    )
-}
-type I_Pinch = {
-    start:number,end:number,step:number,value:number,
-    label?:{step?:number,list?:number[],text?:(v:number)=>React.ReactNode,attrs?:any,dynamic?:boolean},
-    scale?:{step?:number,list?:number[],text?:(v:number)=>React.ReactNode,attrs?:any,dynamic?:boolean},
-    onChange:(v:number)=>void,
-    handle?:{attrs?:any},
-    point?:{attrs?:any,html?:(value:number,angle:number)=>React.ReactNode},
-    attrs?:any
-}
-function Pinch(props:I_Pinch){
-    let {start = 0,end = 360,step = 1,label,scale,handle,point,attrs,onChange} = props;
-    let [temp] = useState({
-        dom:createRef(),
-    })
-    let [value,setValue] = useState<number>(getValue(props.value))
-    let [scaleNode] = useState(scale_node())
-    let [labelNode] = useState(label_node())
-    function getValue(value){
-        let res = Math.round((value - start) / step) * step + start;
-        if(res < start){res = start}
-        if(res > end){res = end}
-        return res;
-    }
-    useEffect(()=>{
-        setValue(props.value)
-    },[props.value])
-    function getLength([p1,p2]):number{
-        return Math.sqrt(Math.pow(p1[0] - p2[0],2) + Math.pow(p1[1] - p2[1],2))
-    }
-    function getAngle(obj){
-        var {line} = obj;
-        var deltaX,deltaY;
-        if(obj.line){
-            deltaX = line[1][0] - line[0][0]; 
-            deltaY = line[1][1] - line[0][1];
-        }
-        else if(obj.dip){
-            deltaX = -obj.dip.deltaX; 
-            deltaY = -obj.dip.deltaY;
-        }
-        var length:number = getLength([[0,0],[deltaX,deltaY]]);
-        var angle = Math.acos(deltaX / length) / Math.PI * 180;
-        angle = Math.sign(deltaY) < 0?360 - angle:angle;
-        return parseFloat(angle.toFixed(4));
-    }
-    useEffect(()=>{
-        Swip({
-            dom:()=>$(temp.dom.current),
-            move:({mousePosition,center})=>{
-                let {clientX,clientY} = mousePosition;
-                let angle = getAngle({line:[center,[clientX,clientY]]});
-                let value = getValue(getValueByAngle(angle));
-                setValue(value);
-                onChange(value)
-            }
-        })
-    },[])
-    function handle_node(){
-        let {attrs:hAttrs = {}} = handle || {}
-        let {attrs:pAttrs = {},html = ()=>''} = point || {}
-        let angle = getAngleByValue(value);
-        hAttrs = typeof hAttrs === 'function'?hAttrs(value,angle):hAttrs;
-        pAttrs = typeof pAttrs === 'function'?pAttrs(value,angle):pAttrs;
-        return (
-            <div className='pinch-handle-container' draggable={false}style={{transform:`rotate(${angle}deg)`}}>
-                <div {...hAttrs} className={'pinch-handle' + (hAttrs.className?' ' + hAttrs.className:'')} style={hAttrs.style} draggable={false}>
-                    <div {...pAttrs} className={'pinch-point' + (pAttrs.className?' ' + pAttrs.className:'')} style={pAttrs.style} draggable={false}>
-                        {html(value,angle)}
-                    </div>
-                </div>    
-            </div>
-        )
-    }
-    function label_node(){
-        let {step,list = [],text = (o)=>o} = label || {};
-        let labels = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
-        for(let i = 0; i < list.length; i++){
-            let v = list[i];
-            if(labels.indexOf(v) === -1){labels.push(v)}
-        }
-        return labels.map((o,i)=>{
-            let angle = getAngleByValue(o);
-            let attrs = label.attrs?label.attrs(o,angle) || {}:{} 
-            return (
-                <div key={o} className='pinch-label-container' draggable={false} style={{transform:`rotate(${angle}deg)`}}>
-                    <div {...attrs} className={'pinch-label' + (attrs.className?' ' + attrs.className:'')} draggable={false} style={{transform:`rotate(${-angle}deg)`,...attrs.style}}>{text(o)}</div>
-                </div>    
-            )
-        })
-    }
-    function scale_node(){
-        let {step,list = [],text = ()=>''} = scale || {};
-        let scales = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
-        for(let i = 0; i < list.length; i++){
-            let v = list[i];
-            if(scales.indexOf(v) === -1){scales.push(v)}
-        }
-        return scales.map((o,i)=>{
-            let angle = getAngleByValue(o);
-            let scaleText = text(o);
-            let attrs = scale.attrs?scale.attrs(o,angle) || {}:{}
-            return (
-                <div className='pinch-scales' key={o} draggable={false} style={{transform:`rotate(${angle}deg)`}}>
-                    <div {...attrs} className={'pinch-scale' + (attrs.className?' ' + attrs.className:'')} draggable={false}>
-                        {
-                            scaleText !== undefined && 
-                            <div className='pinch-scale-text' draggable={false} style={{transform:`rotate(${-angle}deg)`}}>
-                                {scaleText}
-                            </div>
-                        }    
-                    </div>
-                </div>    
-            )
-        })
-    }
-    function pinch_node(){
-        let {className} = attrs || {}
-        let p = {...attrs,className:'pinch' + (className?' ' + className:''),ref:temp.dom}
-        return (
-            <div {...p}>
-                {scale && scale.dynamic?scale_node():scaleNode}
-                {label && label.dynamic?label_node():labelNode}
-                {handle_node()}
-            </div>
-        )
-    }
-    function getValueByAngle(angle){return angle * (end - start) / 360;}
-    function getAngleByValue(value){return value * 360 / (end - start)}
-    return pinch_node()
 }

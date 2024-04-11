@@ -2,7 +2,7 @@ import { AP_modal } from "../aio-popup/types"
 import { I_RVD_node } from "../react-virtual-dom/types"
 
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons'
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons' | 'pinch'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
@@ -56,9 +56,6 @@ export type AI = {
     loading?: boolean | React.ReactNode,
     min?: number,//slider,number
     max?: number,//slider,number
-    start?:number,//slider
-    end?:number,//slider
-    step?:number,//slider
     swip?: number,
     blurChange?: boolean,
     maxLength?: number,
@@ -127,30 +124,45 @@ export type AI = {
     errorAttrs?:any,//form
     lang?:'fa' | 'en',//form,
     grooveAttrs?:any,//slider
-    point?:AI_slider_point,
+    start?:number,//slider,pinch
+    end?:number,//slider,pinch
+    step?:number,//slider,pinch
+    angle?:number,//pinch
     line?:(index:number,active:boolean)=>{
         attrs?:any,
         html?:React.ReactNode
     }
-    label?:AI_slider_label,
-    scale?:AI_slider_scale,
+    point?:AI_point,//slider,pinch
+    label?:AI_label,//slider,pinch
+    scale?:AI_scale,//slider,pinch
+    handle?:{attrs?:any},//pinch
     mapConfig?:I_Map_config,
     popupConfig?:I_Map_config
 }
-export type AI_slider_point = (index:number,value:number)=>{attrs?:any,html?:React.ReactNode,labelHtml?:React.ReactNode,labelShow?:boolean | 'inline',labelAttrs?:any}
-export type AI_slider_scale = {
-    step?:number,
-    list?:number[],
-    attrs?:(value:number)=>Object,
-    html?:(value:number)=>React.ReactNode  
+export type AI_point = (index:number,value:number)=>{
+    attrs?:any,
+    html?:React.ReactNode,
+    labelHtml?:React.ReactNode,
+    labelShow?:boolean | 'inline',
+    labelAttrs?:any
 }
-export type AI_slider_label = {
+export type AI_scale = {
     step?:number,
     list?:number[],
-    attrs?:(value:number)=>Object,
-    html?:(value:number)=>React.ReactNode,
+    dynamic?:boolean,
+    attrs?:(value:number,p?:any)=>any,
+    html?:(value:number,p?:any)=>React.ReactNode  
+}
+    
+export type AI_label = {
+    step?:number,
+    list?:number[],
+    dynamic?:boolean,
+    attrs?:(value:number,p?:any)=>any,
+    html?:(value:number,p?:any)=>React.ReactNode,
     rotate?:number | ((value:number)=>number)
 }
+    
 //notice
 //use global fixed options in List
 //create list document 
