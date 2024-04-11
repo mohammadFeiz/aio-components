@@ -2216,6 +2216,7 @@ function App(){
 function StyleGenerator(){
     let storage = AIOStorage('grdgenerator')
     let [popup] = useState(new AIOPopup())
+    let [isDown,setIsDown] = useState(false)
     function to_array(c){
         if(Array.isArray(c)){return c}
         if(c.indexOf('rgb(') === 0){
@@ -2265,29 +2266,33 @@ function StyleGenerator(){
         storage.save({name:'selected',value:newSelected})
     }
     function addSelected(){
-        changeSelected([...selected,{style:{...style},containerBG:grd.containerBG,grd:{...grd}}])
+        changeSelected([...selected,{style:{...getStyle()},containerBG:grd.containerBG,grd:{...grd}}])
     }
     function removeSelected(i){
         changeSelected(selected.filter((o,index)=>index !== i))
     }
     let [grd,setGrd] = useState({
-        light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',
+        light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',active:false,className:'my-class',
         borderWidth:1,contrast:50,borderRadius:6,bold:true,fontSize:14,
-        containerBG:'#fff',p:50,angle:180,bsx:0,bsy:0,bsc:'#000000',bsb:0,bss:0
+        containerBG:'#fff',p:50,angle:180,bsx:0,bsy:0,bsc:'#000000',bsb:0,bss:0,pointer:false
     })
     let grdRef = useRef(grd);
     grdRef.current = grd;
     let [selected,setSelected] = useState(storage.load({name:'selected',def:[]}))
     let dark = to_dark(grd.light,grd.contrast);
     let medium = between(grd.light,dark,3)[1];
-    let style = {
-        background:getGradient(),
-        boxShadow:getBoxShadow(),
-        width:grd.width,height:grd.height,
-        border:`${grd.borderWidth}px solid ${grd.borderColor}`,
-        borderRadius:grd.borderRadius,fontWeight:grd.bold?'bold':undefined,
-        fontSize:grd.fontSize,color:grd.color
-
+    
+    function getStyle(){
+        return {
+            background:getGradient(grd.active && isDown),
+            boxShadow:getBoxShadow(),
+            width:grd.width,height:grd.height,
+            border:`${grd.borderWidth}px solid ${grd.borderColor}`,
+            borderRadius:grd.borderRadius,fontWeight:grd.bold?'bold':undefined,
+            fontSize:grd.fontSize,color:grd.color,
+            cursor:grd.pointer?'pointer':undefined
+    
+        }
     }
     function color_node(key):I_RVD_node{
         return {
@@ -2304,11 +2309,15 @@ function StyleGenerator(){
             size:82,html:<AIOInput key={key} type='number' style={{border:'1px solid #ddd',width:80}} min={start} max={end} after={'px'} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
+    function text_node(key):I_RVD_node{
+        return {
+            size:200,html:<AIOInput key={key} type='text' style={{border:'1px solid #ddd'}} value={grd[key]} onChange={(v)=>change(key,v)}/>
+        }
+    }
     function checkbox_node(key):I_RVD_node{
         return {
             align:'v',
             flex:1,
-            className:'w-240',
             html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
@@ -2342,8 +2351,8 @@ function StyleGenerator(){
             html:<AIOInput {...p}/>
         }
     }
-    function getGradient(){
-        return `linear-gradient(${grd.angle}deg, ${grd.light} 0%,${medium} ${grd.p}%, ${dark} 100%)`
+    function getGradient(reverse?:boolean){
+        return `linear-gradient(${grd.angle}deg, ${reverse?dark:grd.light} 0%,${medium} ${grd.p}%, ${reverse?grd.light:dark} 100%)`
     }
     function getBoxShadow(){
         return `${grd.bsx}px ${grd.bsy}px ${grd.bsb}px ${grd.bss}px ${grd.bsc}`
@@ -2354,7 +2363,7 @@ function StyleGenerator(){
     function log(i){
         let grd = selected[i].grd;
         let style = `
-{
+.${grd.className}{
     background:${getGradient()};
     box-shadow:${getBoxShadow()},
     width:${grd.width}px;
@@ -2365,6 +2374,10 @@ function StyleGenerator(){
     font-size:${grd.fontSize}px;
     color:${grd.color};
 }
+.${grd.className}:active{
+    background:${getGradient(true)};
+}
+
         
         `
         popup.addModal({
@@ -2388,6 +2401,12 @@ function StyleGenerator(){
                                 {
                                     className:'p-12 gap-12',
                                     column:[
+                                        {
+                                            className:'align-v gap-12',
+                                            row:[
+                                                label_node('className'),text_node('className')
+                                            ]
+                                        },
                                         {
                                             className:'align-v gap-12',
                                             row:[
@@ -2425,8 +2444,11 @@ function StyleGenerator(){
                                             row:[
                                                 label_node('Font Size'),
                                                 slider_node('fontSize',10,36),
-                                                checkbox_node('bold')
+                                                checkbox_node('bold'),
+                                                checkbox_node('active'),
+                                                checkbox_node('pointer'),
                                             ]
+
                                         },
                                         {html:<button onClick={()=>addSelected()}>Add To Selected</button>}
                                     ]
@@ -2434,7 +2456,7 @@ function StyleGenerator(){
                                 {
                                     flex:1,className:'p-12 align-vh',style:{background:grd.containerBG},
                                     column:[
-                                        {html:'Sample Text',style,className:'align-vh'}
+                                        {html:'Sample Text',style:getStyle(),className:'align-vh',attrs:{onMouseDown:()=>setIsDown(true),onMouseUp:()=>setIsDown(false)}}
                                     ]
                                 }
                             ]
