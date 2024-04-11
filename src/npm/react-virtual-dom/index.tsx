@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import $ from 'jquery';
 import "./index.css";
 import { I_RVDAttrs, I_RVDNode, I_RVD_context, I_RVD_node, I_RVD_props, I_RVD_temp } from "./types";
@@ -18,6 +18,7 @@ function RVDNode(props:I_RVDNode){
     let context:I_RVD_context = useContext(RVDContext);
     let {rootProps,state,setState} = context;
     let {parent,index, level} = props;
+    let [mounted,setMounted] = useState(false);
     function getHtml(node:I_RVD_node) {
         let { html = '', loading } = node;
         html = typeof html === 'function' ? html({state,setState}) : html;
@@ -73,11 +74,16 @@ function RVDNode(props:I_RVDNode){
         else { content = getHtml(node) }
         return content
     }
+    useEffect(()=>{
+        if(typeof props.node.mountAfter === 'number'){
+            setTimeout(()=>setMounted(true),props.node.mountAfter)
+        }
+    },[])
     if (!props.node || props.node === null) { return null }
     if ((typeof props.node.show === 'function' ? props.node.show() : props.node.show) === false) { return null }
     let node = getNode()
     let content = getContent(node)
-    let attrs = new RVDAttrs({node,parent, level,index,context}).getAttrs();
+    let attrs = new RVDAttrs({node,parent, level,index,context,mounted}).getAttrs();
     let gap = getGap({ node, parent, dataId: attrs['data-id'], rtl:rootProps.rtl, index,level,context });
     return (
         <>
@@ -92,9 +98,11 @@ class RVDAttrs{
     level:number;
     index:number;
     context:I_RVD_context;
+    mounted:boolean;
     constructor(props:I_RVDAttrs){
-        let {node,parent,level,index,context} = props;
+        let {node,parent,level,index,context,mounted} = props;
         this.node = node;
+        this.mounted = mounted;
         this.parent = parent;
         this.level = level;
         this.index = index;
@@ -147,7 +155,7 @@ class RVDAttrs{
         let {classes = {}} = this.context.rootProps;
         let res = 'rvd';
         if (this.level === 0) { res += ' rvd-root' }
-        let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading,wrap} = this.node
+        let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading,wrap,mountAfter} = this.node
         if (this.node.className) {
             let className:string;
             if(Array.isArray(this.node.className)){className = this.node.className.filter((cls)=>!!cls && typeof cls === 'string').join(' ')}
@@ -167,6 +175,7 @@ class RVDAttrs{
         if(loading){res += ' rvd-parent-loading'}
         let hideClassName = getHideClassName(this.node);
         if (hideClassName) { res += ' ' + hideClassName }
+        if(!this.mounted && typeof mountAfter === 'number'){res += ' not-mounted'}
         return res;
     }
     getLongTouchAttrs = (dataId) => {
@@ -217,7 +226,15 @@ class RVDAttrs{
     
 }
 export function animate(type, selector,callback) {
-    if(type === 'removeV'){
+    if(Array.isArray(type)){
+        for (var i = 0; i < type.length; i++) {
+            var [style,time] = type[i];
+            $(selector)
+                .delay(i === 0 ? 0 : type[i - 1].time) // Add delay based on previous animation time
+                .animate(style, time, i === type.length - 1 ? callback : null);
+        }
+    }
+    else if(type === 'removeV'){
         $(selector).animate({ opacity: 0 }, 250).animate({ height: 0,padding:0,margin:0 }, 200, callback);
     } 
     else if(type === 'removeH'){
@@ -225,6 +242,9 @@ export function animate(type, selector,callback) {
     }
     else if(type === 'removeL'){
         $(selector).animate({ right: '100%' }, 250).animate({ height: 0,width:0, padding: 0,margin:0 }, 200, callback);
+    }
+    else if(type === 'removeR'){
+        $(selector).animate({ left: '100%' }, 250).animate({ height: 0,width:0, padding: 0,margin:0 }, 200, callback);
     }
     else if(type === 'remove'){
         $(selector).animate({ opacity: 0 }, 250).animate({ width: 0, height:0,padding: 0,margin:0 }, 200, callback);

@@ -141,15 +141,16 @@ export function Swip(p) {
             this.height = dom.height();
             this.left = offset.left;
             this.top = offset.top;
-            let mp = this.getMousePosition(e)
+            let mousePosition = this.getMousePosition(e)
+            let center = [this.left + this.width / 2,this.top + this.height / 2];
             this.so = {
-                client: { x: mp.clientX, y: mp.clientY }
+                client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            if (!start) { return; }
-            let res = start({ ...mp },e);
+            let res = (start || (()=>[0,0]))({mousePosition,center},e);
             if (!Array.isArray(res)) { return; }
             let x = res[0];
             let y = res[1];
+            this.so.center = center;
             this.so.x = x;
             this.so.y = y;
             EventHandler('window', 'mousemove', $.proxy(this.mouseMove, this));
@@ -177,7 +178,7 @@ export function Swip(p) {
                 if (minY !== undefined && y < minY) { y = minY }
                 if (maxY !== undefined && y > maxY) { y = maxY }
             }
-            move({ dx, dy, dist, x, y, mousePosition: { ...this.getMousePosition(e) } }, e );
+            move({ dx, dy, dist, x, y, mousePosition: { ...this.getMousePosition(e) },center:this.so.center }, e );
         },
         mouseUp(e) {
             EventHandler('window', 'mousemove', this.mouseMove, 'unbind');

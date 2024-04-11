@@ -1,10 +1,11 @@
-import React, { Component, Fragment, useState } from 'react';
+import React, { Component, Fragment, createRef, useEffect, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.js';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/aio-input.js';
 import AIOStorage from '../../npm/aio-storage/aio-storage.js'
+import {Swip} from './../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
@@ -27,6 +28,8 @@ export default function DOC_AIOShop(props) {
                     { text: 'loading', id: 'loading', render: () => <Loading /> },
                     { text: 'gap', id: 'gap', render: () => <Gap /> },
                     { text: 'Css Classes', id: 'css classes', render: () => <CssClasses /> },
+                    { text: 'className', id: 'className', render: () => <ClassName /> },
+                    { text: 'mountAfter', id: 'mountAfter', render: () => <MountAfter /> },
                     { text: 'nodeClass', id: 'node class', render: () => <NodeClass /> },
                     { text: 'animate', id: 'animate', render: () => <Animate /> },
                     { text: 'resize', id: 'resize', render: () => <Resize /> },
@@ -34,6 +37,7 @@ export default function DOC_AIOShop(props) {
                     { text: 'reOrder', id: 'reOrder', render: () => <ReOrder /> },
                     { text: 'longTouch', id: 'longTouch', render: () => <LongTouch /> },
                     { text: 'Style Generator', id: 'stylegenerator', render: () => <StyleGenerator /> },
+                    { text: 'pinch', id: 'pinch', render: () => <PinchDemo /> },
                     
                 ]
             }}
@@ -55,7 +59,7 @@ function Part(p) {
 }
 function Node() {
     function Cell(){
-        let cell:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+        let cell:I_RVD_node = {html:'A',className:'p-12 brd-c-24'};
         return cell
     }
     function Row(){
@@ -74,7 +78,7 @@ function Node() {
     }
     let CellCode = 
 `function Cell(){
-    let cell:I_RVD_node = {html:'A',style:{border:'1px solid'},className:'p-12'};
+    let cell:I_RVD_node = {html:'A',className:'p-12 brd-c-24'};
     return cell
 }`
     let RowCode = 
@@ -275,7 +279,7 @@ function Layout(){
                 }}
                 code={`
 function Layout(){
-    let node_A = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
+    let node_A = {html:'A',align:'vh',className:'brd-c-12 w-72 h-72'};
     return <RVD rootNode={node_A}/>
 }
                 `}
@@ -305,7 +309,7 @@ function Layout(){
                 `}
             />
             <Part
-                title='align-h in column'
+                title='align-h in row'
                 content={()=>{
                     let node_A:I_RVD_node = {html:'A',className:'brd-c-12 w-72 h-72 align-vh'};
                     let rootNode:I_RVD_node = {className:'w-300 h-fit brd-c-12 align-h p-12',row:[node_A,node_A]}
@@ -491,7 +495,7 @@ function Size() {
     return (
         <div className='example'>
             <Part
-                title='without align'
+                title='row of nodes'
                 content={()=>{
                     let row = {
                         row:[
@@ -516,7 +520,7 @@ function Layout(){
                 `}
             />
             <Part
-                title='without align'
+                title='column of rows'
                 content={()=>{
                     let table = {
                         column:[
@@ -589,7 +593,7 @@ function Flex() {
     return (
         <div className='example'>
             <Part
-                title='without align'
+                title='flex by className'
                 content={()=>{
                     let table = {
                         className:'w-120 h-120',
@@ -649,6 +653,75 @@ function Layout(){
                     {html:'A',className:'brd-c-16 flex-1'},
                     {html:'A',className:'brd-c-16 flex-2'},
                     {html:'A',className:'brd-c-16 flex-3'}
+                ]
+            }
+        ]
+    }
+    return <RVD rootNode={table}/>
+}
+                `}
+            />
+            <Part
+                title='flex by property'
+                content={()=>{
+                    let table = {
+                        className:'w-120 h-120',
+                        column:[
+                            {
+                                flex:1,
+                                row:[
+                                    {html:'A',flex:1,className:'brd-c-16'},
+                                    {html:'A',flex:2,className:'brd-c-16'},
+                                    {html:'A',flex:3,className:'brd-c-16'}
+                                ]
+                            },
+                            {
+                                flex:2,
+                                row:[
+                                    {html:'A',flex:1,className:'brd-c-16'},
+                                    {html:'A',flex:2,className:'brd-c-16'},
+                                    {html:'A',flex:3,className:'brd-c-16'}
+                                ]
+                            },
+                            {
+                                flex:3,
+                                row:[
+                                    {html:'A',flex:1,className:'brd-c-16'},
+                                    {html:'A',flex:2,className:'brd-c-16'},
+                                    {html:'A',flex:3,className:'brd-c-16'}
+                                ]
+                            }
+                        ]
+                    }
+                    return <RVD rootNode={table}/>
+                }}
+                code={`
+function Layout(){
+    let table = {
+        className:'w-120 h-120',
+        column:[
+            {
+                flex:1,
+                row:[
+                    {html:'A',flex:1,className:'brd-c-16'},
+                    {html:'A',flex:2,className:'brd-c-16'},
+                    {html:'A',flex:3,className:'brd-c-16'}
+                ]
+            },
+            {
+                flex:2,
+                row:[
+                    {html:'A',flex:1,className:'brd-c-16'},
+                    {html:'A',flex:2,className:'brd-c-16'},
+                    {html:'A',flex:3,className:'brd-c-16'}
+                ]
+            },
+            {
+                flex:3,
+                row:[
+                    {html:'A',flex:1,className:'brd-c-16'},
+                    {html:'A',flex:2,className:'brd-c-16'},
+                    {html:'A',flex:3,className:'brd-c-16'}
                 ]
             }
         ]
@@ -1435,6 +1508,151 @@ function CssClasses() {
         </div>
     )
 }
+function ClassName() {
+    let [round,setRound] = useState(false);
+
+    return (
+        <div className='example'>
+            <RVD 
+                rootNode={{
+                    className:'gap-12',
+                    row:[
+                        {
+                            className:'flex-1 brd-c-0 p-12',html:'box1'
+                        },
+                        {
+                            className:[
+                                'flex-1 brd-c-0 p-12 sel-off',
+                                round?'br-12':false,
+                            ],
+                            html:'click here to set br-12 className',
+                            onClick:()=>setRound(!round)
+                        }
+                    ]
+                }}
+            />
+            {AIODoc().Code(
+`let [round,setRound] = useState(false);
+return (
+    <RVD 
+        rootNode={{
+            className:'gap-12',
+            row:[
+                {
+                    className:'flex-1 brd-c-0 p-12',html:'box1'
+                },
+                {
+                    className:[
+                        'flex-1 brd-c-0 p-12 sel-off',
+                        round?'br-12':false,
+                    ],
+                    html:'click here to set br-12 className',
+                    onClick:()=>setRound(!round)
+                }
+            ]
+        }}
+    />
+)`
+            )}
+                
+        </div>
+    )
+}
+function MountAfter() {
+    let [clicked,setClicked] = useState(false)
+    return (
+        <div className='example'>
+            <button onClick={()=>setClicked(true)} className='m-b-24'>click here to set not-mounted className</button>
+            <RVD 
+                rootNode={{
+                    className:'gap-12',
+                    row:new Array(6).fill(0).map((o,i)=>{
+                        return {
+                            className:[
+                                'w-48 c-32 p-12 y-effect align-vh br-6',
+                                clicked?'not-mounted':false
+                            ],html:'box1',
+                            style:{background:'dodgerblue'},
+                            mountAfter:i * 100,
+                        }
+                    })
+                }}
+            />
+            {
+                AIODoc().Code(
+`<RVD 
+    rootNode={{
+        className:'gap-12',
+        row:new Array(12).fill(0).map((o,i)=>{
+            return {
+                className:'w-48 c-32 p-12 y-effect align-vh br-6',html:'box1',
+                mountAfter:i * 100,
+            }
+        })
+    }}
+/>`
+                )
+            }
+            {
+                AIODoc().Code(
+`.y-effect.not-mounted{
+    transform:translateX(100vw);
+    opacity:0;
+    transition:1s;
+}
+.y-effect{
+    transform:translateX(0vw);
+    opacity:1;
+    transition:1s;
+}`
+                )
+            }
+            <RVD 
+                rootNode={{
+                    className:'gap-12',
+                    column:new Array(6).fill(0).map((o,i)=>{
+                        return {
+                            className:[
+                                'w-100 c-32 p-12 x-effect align-vh br-6',
+                                clicked?'not-mounted':false
+                            ],
+                            html:'box1',
+                            style:{background:'dodgerblue'},
+                            mountAfter:i * 160,
+                        }
+                    })
+                }}
+            />
+             {
+                AIODoc().Code(
+`<RVD 
+    rootNode={{
+        className:'gap-12',
+        column:new Array(6).fill(0).map((o,i)=>{
+            return {
+                className:'w-100 c-32 p-12 x-effect align-vh br-6',html:'box1',
+                mountAfter:i * 160,
+            }
+        })
+    }}
+/>`
+                )
+            }
+            {
+                AIODoc().Code(
+`.x-effect.not-mounted{
+    transform:rotateX(90deg);
+    transition:1s;
+}
+.x-effect{
+    transform:rotateX(0deg);
+    transition:1s;
+}`
+                )
+            }   
+        </div>
+    )
+}
 function NodeClass() {
     return (
         <div className='example'>
@@ -1533,139 +1751,55 @@ function Animate() {
     ])
     function card_layout({ id,path, text, length, color }){
         return {
-            key:id,
-            style: { background: color, color: '#fff' },
-            className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',
-            onClick:(e)=>removeH(e,id),
+            key:id,style: { background: color, color: '#fff' },className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',onClick:(e)=>removeH(e,id),
             column: [
-                {
-                    html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
-                    style:{color},
-                },
-                { 
-                    html: text,
-                    className:'bold' 
-                },
-                { 
-                    html: length + ' files', 
-                    className: 'op-80 fs-p85' 
-                }
+                {html:<Icon path={path} size={0.6}/>,className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',style:{color}},
+                {html: text,className:'bold'},
+                {html: length + ' files', className: 'op-80 fs-p85'}
             ]
         }
     }
-    function removeV(e,id){
-        animate('removeV',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
+    function recentFile_node(o,p){
+        let {id,path,text,type,size,color} = o;
+        return {
+            key:id,className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
+            row:[
+                {html:<Icon path={path} size={0.6}/>,className:'w-24 h-24 br-4 c-32 align-vh',style:{background:color}},
+                {html:text,size:120,className:'bold align-v'},
+                {html:type + ' file',className:'flex-1 align-vh'},
+                {html:size,className:'flex-1 align-vh'},
+                {html:<Icon path={mdiShare} size={0.6}/>,className:'flex-1 align-vh'},
+                {html:<Icon path={mdiDotsHorizontal} size={0.6}/>,className:'flex-1 align-vh'}
+            ],
+            ...p
+        }
     }
-    function removeL(e,id){
-        animate('removeL',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
-    }
-    function removeH(e,id){
-        animate('removeH',$(e.currentTarget),()=>{
-            setFiles(files.filter((o,i)=>o.id !== id))
-        })
-    }
-
+    function removeV(e,id){animate('removeV',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
+    function removeL(e,id){animate('removeL',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
+    function removeH(e,id){animate('removeH',$(e.currentTarget),()=>{setFiles(files.filter((o,i)=>o.id !== id))})}
+    function removeR(e,id){animate('removeR',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
     return (
         <div className='example' style={{background:'#eee'}}>
             <Part
                 title='removeV'
-                content={(
-                    <RVD
-                        rootNode={{
-                            column:recentFiles.map((o,i)=>{
-                                let {id,path,text,type,size,color} = o;
-                                return {
-                                    key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
-                                    onClick:(e)=>removeV(e,o.id),
-                                    row:[
-                                        {
-                                            html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c-32 align-vh',
-                                            style:{background:color}
-                                        },
-                                        {
-                                            html:text,size:120,
-                                            className:'bold align-v'
-                                        },
-                                        {
-                                            html:type + ' file',
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:size,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiShare} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        }
-                                    ]
-                                }
-                            })
-                        }}
-                    />
-                )}
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeV(e,o.id)}))}}/>)}
                 code={`
                 
 import RVD,{animate} from 'react-virtual-dom';
 function App(){
-    let [recentFiles,setRecentFiles] = useState([
-        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
-        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
-    ])
-    function removeV(e,id){
-        animate('removeV',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
-    }
+    let [recentFiles,setRecentFiles] = useState(...)
     return (
         <RVD
             rootNode={{
                 column:recentFiles.map((o,i)=>{
-                    let {id,path,text,type,size,color} = o;
                     return {
-                        key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
-                        onClick:(e)=>removeV(e,o.id),
-                        row:[
-                            {
-                                html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c-32 align-vh',
-                                style:{background:color}
-                            },
-                            {
-                                html:text,size:120,
-                                className:'bold align-v'
-                            },
-                            {
-                                html:type + ' file',
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:size,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiShare} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            }
-                        ]
+                        ...
+                        onClick:(e)=>{
+                            animate('removeV',$(e.currentTarget),()=>{
+                                setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
+                            })
+                        },
+                        ...
                     }
                 })
             }}
@@ -1675,47 +1809,17 @@ function App(){
                 `}
             />
             <Part
-                title='removeL'
-                content={(
-                    <RVD
-                        rootNode={{row: files.map((o) => card_layout(o))}}
-                    />
-                )}
+                title='removeH'
+                content={(<RVD rootNode={{row: files.map((o) => card_layout(o))}}/>)}
                 code={`
 import RVD,{animate} from 'react-virtual-dom';
 function App(){
-    let [files,setFiles] = useState([
-        { id:'0',path: mdiListBox, text: 'Work', length: 620, color: '#6663fe',outline:true },
-        { id:'1',path: mdiAccount, text: 'Personal', length: 115, color: '#00a0b6',outline:true },
-        { id:'2',path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
-        { id:'3',path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
-    ])
-    function removeL(e,id){
-        animate('removeL',$(e.currentTarget),()=>{
-            setFiles(files.filter((o,i)=>o.id !== id))
-        })
-    }
+    let [files,setFiles] = useState(...)
     function card_layout({ id,path, text, length, color }){
         return {
-            key:id,
-            style: { background: color, color: '#fff' },
-            className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',
+            ...
             onClick:(e)=>removeH(e,id),
-            column: [
-                {
-                    html:<Icon path={path} size={0.6}/>,
-                    className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',
-                    style:{color},
-                },
-                { 
-                    html: text,
-                    className:'bold' 
-                },
-                { 
-                    html: length + ' files', 
-                    className: 'op-80 fs-p85' 
-                }
-            ]
+            ...
         }
     }
     return (
@@ -1727,44 +1831,70 @@ function App(){
                 `}
             />
             <Part
-                title='removeV'
+                title='removeL'
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeL(e,o.id)}))}}/>)}
+                code={`
+                
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [recentFiles,setRecentFiles] = useState(...)
+    return (
+        <RVD
+            rootNode={{
+                column:recentFiles.map((o,i)=>{
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        ...
+                        onClick:(e)=>removeL(e,o.id),
+                        ...
+                    }
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='removeL'
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeR(e,o.id)}))}}/>)}
+                code={`
+                
+import RVD,{animate} from 'react-virtual-dom';
+function App(){
+    let [recentFiles,setRecentFiles] = useState(...)
+    return (
+        <RVD
+            rootNode={{
+                column:recentFiles.map((o,i)=>{
+                    let {id,path,text,type,size,color} = o;
+                    return {
+                        ...
+                        onClick:(e)=>removeR(e,o.id),
+                        ...
+                    }
+                })
+            }}
+        />
+    )
+}
+                `}
+            />
+            <Part
+                title='custom(array)'
                 content={(
-                    <RVD
+                    <RVD 
                         rootNode={{
                             column:recentFiles.map((o,i)=>{
-                                let {id,path,text,type,size,color} = o;
-                                return {
-                                    key:id,
-                                    className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
-                                    onClick:(e)=>removeL(e,o.id),
-                                    row:[
-                                        {
-                                            html:<Icon path={path} size={0.6}/>,
-                                            className:'w-24 h-24 br-4 c-32 align-vh',
-                                            style:{background:color}
-                                        },
-                                        {
-                                            html:text,size:120,
-                                            className:'bold align-v'
-                                        },
-                                        {
-                                            html:type + ' file',
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:size,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiShare} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        },
-                                        {
-                                            html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                            className:'flex-1 align-vh'
-                                        }
-                                    ]
-                                }
+                                return recentFile_node(o,{
+                                    onClick:(e)=>{
+                                        animate(
+                                            [[{ height: 100,padding:12 }, 260],[{ height: 0,padding:0,margin:0 }, 260]],
+                                            $(e.currentTarget),
+                                            ()=>setRecentFiles(recentFiles.filter((rf,i)=>o.id !== rf.id)
+                                        ))
+                                    }
+                                })
                             })
                         }}
                     />
@@ -1773,54 +1903,23 @@ function App(){
                 
 import RVD,{animate} from 'react-virtual-dom';
 function App(){
-    let [recentFiles,setRecentFiles] = useState([
-        { id:'0',path: mdiCamera, text: 'IMG_100000', type: 'PNG',size:'10 MB', color: '#6663fe' },
-        { id:'1',path: mdiFileDocument, text: 'Startup pitch', type: 'AVI',size:'23 MB', color: '#00a0b6' },
-        { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
-        { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
-    ])
-    function removeV(e,id){
-        animate('removeV',$(e.currentTarget),()=>{
-            setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))
-        })
-    }
+    let [recentFiles,setRecentFiles] = useState(...)
     return (
-        <RVD
+        <RVD 
             rootNode={{
                 column:recentFiles.map((o,i)=>{
-                    let {id,path,text,type,size,color} = o;
-                    return {
-                        key:id,
-                        className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
-                        onClick:(e)=>removeV(e,o.id),
-                        row:[
-                            {
-                                html:<Icon path={path} size={0.6}/>,
-                                className:'w-24 h-24 br-4 c-32 align-vh',
-                                style:{background:color}
-                            },
-                            {
-                                html:text,size:120,
-                                className:'bold align-v'
-                            },
-                            {
-                                html:type + ' file',
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:size,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiShare} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            },
-                            {
-                                html:<Icon path={mdiDotsHorizontal} size={0.6}/>,
-                                className:'flex-1 align-vh'
-                            }
-                        ]
-                    }
+                    return recentFile_node(o,{
+                        onClick:(e)=>{
+                            animate(
+                                [
+                                    [{ height: 100,padding:12 }, 260],
+                                    [{ height: 0,padding:0,margin:0 }, 260],
+                                ],
+                                $(e.currentTarget),
+                                ()=>setRecentFiles(recentFiles.filter((rf,i)=>o.id !== rf.id)
+                            ))
+                        }
+                    })
                 })
             }}
         />
@@ -2281,9 +2380,7 @@ function StyleGenerator(){
                                     column:[
                                         {html:'Sample Text',style,className:'align-vh'}
                                     ]
-                                },
-
-                                
+                                }
                             ]
                         },
                         {
@@ -2312,8 +2409,7 @@ function StyleGenerator(){
                                         }
                                     ]
                                 }
-                            })
-                            
+                            })   
                         }
                     ]
                 }}
@@ -2321,4 +2417,160 @@ function StyleGenerator(){
             {popup.render()}
         </>
     )
+}
+function PinchDemo(){
+    let [value,setValue] = useState(0)
+    return (
+        <Pinch
+            start={0}
+            end={360}
+            step={1}
+            value={value}
+            attrs={{style:{margin:36,border:'2px solid dodgerblue'}}}
+            scale={{
+                step:45,
+                attrs:(value)=>{return {style:{width:6,left:20}}}
+            }}
+            onChange={(value)=>setValue(value)}
+            point={{
+                attrs:{
+                    style:{left:20,background:'dodgerblue',width:20,height:20}
+                },
+                html:(value,angle)=>{ 
+                    return <div style={{transform:`rotate(-${angle}deg)`,color:'#fff',fontSize:10}}>{value}</div>
+                }
+            }}
+            handle={{attrs:{style:{background:'none'}}}}
+        />
+    )
+}
+type I_Pinch = {
+    start:number,end:number,step:number,value:number,
+    label?:{step?:number,list?:number[],text?:(v:number)=>React.ReactNode,attrs?:any,dynamic?:boolean},
+    scale?:{step?:number,list?:number[],text?:(v:number)=>React.ReactNode,attrs?:any,dynamic?:boolean},
+    onChange:(v:number)=>void,
+    handle?:{attrs?:any},
+    point?:{attrs?:any,html?:(value:number,angle:number)=>React.ReactNode},
+    attrs?:any
+}
+function Pinch(props:I_Pinch){
+    let {start = 0,end = 360,step = 1,label,scale,handle,point,attrs,onChange} = props;
+    let [temp] = useState({
+        dom:createRef(),
+    })
+    let [value,setValue] = useState<number>(getValue(props.value))
+    let [scaleNode] = useState(scale_node())
+    let [labelNode] = useState(label_node())
+    function getValue(value){
+        let res = Math.round((value - start) / step) * step + start;
+        if(res < start){res = start}
+        if(res > end){res = end}
+        return res;
+    }
+    useEffect(()=>{
+        setValue(props.value)
+    },[props.value])
+    function getLength([p1,p2]):number{
+        return Math.sqrt(Math.pow(p1[0] - p2[0],2) + Math.pow(p1[1] - p2[1],2))
+    }
+    function getAngle(obj){
+        var {line} = obj;
+        var deltaX,deltaY;
+        if(obj.line){
+            deltaX = line[1][0] - line[0][0]; 
+            deltaY = line[1][1] - line[0][1];
+        }
+        else if(obj.dip){
+            deltaX = -obj.dip.deltaX; 
+            deltaY = -obj.dip.deltaY;
+        }
+        var length:number = getLength([[0,0],[deltaX,deltaY]]);
+        var angle = Math.acos(deltaX / length) / Math.PI * 180;
+        angle = Math.sign(deltaY) < 0?360 - angle:angle;
+        return parseFloat(angle.toFixed(4));
+    }
+    useEffect(()=>{
+        Swip({
+            dom:()=>$(temp.dom.current),
+            move:({mousePosition,center})=>{
+                let {clientX,clientY} = mousePosition;
+                let angle = getAngle({line:[center,[clientX,clientY]]});
+                let value = getValue(getValueByAngle(angle));
+                setValue(value);
+                onChange(value)
+            }
+        })
+    },[])
+    function handle_node(){
+        let {attrs:hAttrs = {}} = handle || {}
+        let {attrs:pAttrs = {},html = ()=>''} = point || {}
+        let angle = getAngleByValue(value);
+        hAttrs = typeof hAttrs === 'function'?hAttrs(value,angle):hAttrs;
+        pAttrs = typeof pAttrs === 'function'?pAttrs(value,angle):pAttrs;
+        return (
+            <div className='pinch-handle-container' draggable={false}style={{transform:`rotate(${angle}deg)`}}>
+                <div {...hAttrs} className={'pinch-handle' + (hAttrs.className?' ' + hAttrs.className:'')} style={hAttrs.style} draggable={false}>
+                    <div {...pAttrs} className={'pinch-point' + (pAttrs.className?' ' + pAttrs.className:'')} style={pAttrs.style} draggable={false}>
+                        {html(value,angle)}
+                    </div>
+                </div>    
+            </div>
+        )
+    }
+    function label_node(){
+        let {step,list = [],text = (o)=>o} = label || {};
+        let labels = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
+        for(let i = 0; i < list.length; i++){
+            let v = list[i];
+            if(labels.indexOf(v) === -1){labels.push(v)}
+        }
+        return labels.map((o,i)=>{
+            let angle = getAngleByValue(o);
+            let attrs = label.attrs?label.attrs(o,angle) || {}:{} 
+            return (
+                <div key={o} className='pinch-label-container' draggable={false} style={{transform:`rotate(${angle}deg)`}}>
+                    <div {...attrs} className={'pinch-label' + (attrs.className?' ' + attrs.className:'')} draggable={false} style={{transform:`rotate(${-angle}deg)`,...attrs.style}}>{text(o)}</div>
+                </div>    
+            )
+        })
+    }
+    function scale_node(){
+        let {step,list = [],text = ()=>''} = scale || {};
+        let scales = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
+        for(let i = 0; i < list.length; i++){
+            let v = list[i];
+            if(scales.indexOf(v) === -1){scales.push(v)}
+        }
+        return scales.map((o,i)=>{
+            let angle = getAngleByValue(o);
+            let scaleText = text(o);
+            let attrs = scale.attrs?scale.attrs(o,angle) || {}:{}
+            return (
+                <div className='pinch-scales' key={o} draggable={false} style={{transform:`rotate(${angle}deg)`}}>
+                    <div {...attrs} className={'pinch-scale' + (attrs.className?' ' + attrs.className:'')} draggable={false}>
+                        {
+                            scaleText !== undefined && 
+                            <div className='pinch-scale-text' draggable={false} style={{transform:`rotate(${-angle}deg)`}}>
+                                {scaleText}
+                            </div>
+                        }    
+                    </div>
+                </div>    
+            )
+        })
+    }
+    function pinch_node(){
+        let {className} = attrs || {}
+        let p = {...attrs,className:'pinch' + (className?' ' + className:''),ref:temp.dom}
+        return (
+            <div {...p}>
+                {scale && scale.dynamic?scale_node():scaleNode}
+                {label && label.dynamic?label_node():labelNode}
+                {handle_node()}
+            </div>
+        )
+    }
+    function getValueByAngle(angle){return angle * (end - start) / 360;}
+    function getAngleByValue(value){return value * 360 / (end - start)}
+    return pinch_node()
 }

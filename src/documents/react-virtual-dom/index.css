@@ -22,3 +22,97 @@
 .table-row2{
     border:3px solid yellow;
 }
+
+.y-effect.not-mounted{
+    transform:translateX(100vw);
+    opacity:0;
+    transition:1s;
+}
+.y-effect{
+    transform:translateX(0vw);
+    opacity:1;
+    transition:1s;
+}
+.x-effect.not-mounted{
+    transform:rotateX(90deg);
+    transition:1s;
+}
+.x-effect{
+    transform:rotateX(0deg);
+    transition:1s;
+}
+.pinch{
+    border:2px solid;
+    width:60px;
+    height:60px;
+    border-radius:100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    margin:12px;
+}
+.pinch-handle-container{
+    position:relative;
+    display:flex;
+    align-items: center;
+    width: 0;
+    height: 0;
+    justify-content: flex-end;
+    overflow: visible;
+}
+.pinch-handle{
+    position:absolute;
+    left:0;
+    height:4px;
+    width:30px;
+    background:orange;
+    display: flex;
+    align-items: center;
+}
+.pinch-point{
+    height:13px;
+    width:13px;
+    border-radius:100%;
+    background:orange;
+    position: absolute;
+    left:calc(100% - 6px);
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.pinch-scales{
+    display:flex;
+    align-items: center;
+    justify-content: flex-end;
+    width:0;
+    height:0;
+}
+.pinch-scale{
+    height:2px;
+    width:2px;
+    background:#000;
+    position: absolute;
+    left:24px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size:12px;
+}
+.pinch-label-container{
+    display:flex;
+    align-items: center;
+    justify-content: flex-end;
+    width:0;
+    height:0;
+}
+.pinch-label{
+    height:16px;
+    width:16px;
+    position: absolute;
+    left:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size:12px;
+}

@@ -25,7 +25,8 @@ export type I_RVD_node = {
     id?:string | number,
     onDrag?:(e:any)=>void,
     onDrop?:(e:any)=>void,
-    onResize?:(newSize:number)=>void
+    onResize?:(newSize:number)=>void,
+    mountAfter?:number
 }
 export type I_RVD_editNode = (node: I_RVD_node, parent: I_RVD_node) => I_RVD_node;
 export type I_RVD_classes = {[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
@@ -40,5 +41,5 @@ export type I_RVD_context = {getTemp:I_RVD_getTemp,setTemp:I_RVD_setTemp,rootPro
 export type I_RVDNode = {node: I_RVD_node, index: number, parent?: I_RVD_node, level: number}
 
 export type I_RVDAttrs = {
-    node:I_RVD_node,parent:I_RVD_node,level:number,index:number,context:I_RVD_context
+    node:I_RVD_node,parent:I_RVD_node,level:number,index:number,context:I_RVD_context,mounted?:boolean
 }
