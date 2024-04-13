@@ -54,7 +54,7 @@ export default function DOC_MSFLoading1({ goToHome }) {
     animation-duration:${duration + loopDelay}s;
     height:${size}px;
     object-fit:cover;
-    object-position:top 0px right ${-unitSizes}px;
+    object-position:top 0px ${model.rtl?'right':'left'} ${-unitSizes}px;
     ${loop ? 'animation-iteration-count:infinite;' : ''}
 }
 @keyframes ${className}${i + 1} {

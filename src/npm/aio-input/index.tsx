@@ -1356,9 +1356,8 @@ function Layout(props: I_Layout) {
             }
             if (types.isInput) { cls += ` aio-input-input` }
             if (rtl) { cls += ' aio-input-rtl' }
-            if(properties.className){cls += ' ' + properties.className}
-
         }
+        if(properties.className){cls += ' ' + properties.className}
         if (properties.disabled) { cls += ' disabled' }
         cls += ' ' + datauniqid;
         return cls;
