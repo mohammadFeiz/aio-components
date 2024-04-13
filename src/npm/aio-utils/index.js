@@ -17,6 +17,9 @@ export async function DownloadUrl(url, name) {
         })
         .catch(() => alert('oh no!'));
 }
+export async function stall(stallTime = 3000) {
+  await new Promise(resolve => setTimeout(resolve, stallTime));
+}
 export function FileToBase64(file, callback) {
     const fileReader = new FileReader();
     fileReader.onload = () => callback(fileReader.result);

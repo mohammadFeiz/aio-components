@@ -156,7 +156,7 @@ export default function Loading(){
                             },
                             {
                                 row: [
-                                    { input: { type: 'number' }, label: 'Duration', field: 'value.duration' },
+                                    { input: { type: 'slider',start:0.1,end:4,step:0.1 }, label: 'Duration', field: 'value.duration' },
                                     { input: { type: 'checkbox', text: 'Border' }, label: 'Border', field: 'value.border' },
                                     { input: { type: 'checkbox', text: 'Loop' }, label: 'Loop', field: 'value.loop' },
                                     { input: { type: 'checkbox', text: 'RTL' }, label: 'RTL', field: 'value.rtl' },
