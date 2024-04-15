@@ -2,12 +2,12 @@ import React, { Component,createRef, useEffect, useState } from 'react';
 import DOC, { I_DOC } from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
 import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput, { AI_table_paging } from '../../../npm/aio-input/index.tsx';
+import AIOInput from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-table.css';
 import {Icon} from '@mdi/react';
 import model from './model.js';
 import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile} from '@mdi/js';
-import { AI, AI_table_column } from '../../../npm/aio-input/index.tsx';
+import { AI, AI_table_column, AI_table_paging } from '../../../npm/aio-input/types.tsx';
 export default function DOC_AIOInput_Table(props) {
     let rows = [
         {name:'mohammad',family:'feiz',age:38,id:0},
@@ -32,7 +32,7 @@ let [rows,setRows] = useState([
                 { 
                     text: 'column properties', id: 'columnproperties',
                     items:[
-                        { text: 'column.title', id: 'column.title', render: () => <Column_Title rows={rows}/> },
+                        { text: 'column.title', id: 'column.title', render: () => <Column_Title rows={rows} rowsCode={rowsCode}/> },
                         { text: 'column.titleAttrs', id: 'column.titleAttrs', render: () => <Column_TitleAttrs rows={rows} rowsCode={rowsCode}/> },
                         { text: 'column.value', id: 'column.value', render: () => <Column_Value rows={rows} rowsCode={rowsCode} /> },
                         { text: 'column.width', id: 'column.width', render: () => <Column_Width rows={rows} rowsCode={rowsCode} /> },
@@ -187,7 +187,7 @@ return (
         </div>
     )
 }
-function Column_Title(rows) {
+function Column_Title({rows,rowsCode}) {
     let [columns] = useState<AI_table_column[]>([
         {title:()=>'Name',value:'row.name'},
         {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.family'},
@@ -202,11 +202,7 @@ function Column_Title(rows) {
             {getTable()}                
             {
                 AIODoc().Code(`
-
-let rows = [
-    {name:'mohammad',family:'feiz',age:38},
-    {name:'john',family:'doe',age:30},
-]
+${rowsCode}
 let columns = [
     {title:()=>'Name',value:'row.name'},
     {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.family'},
@@ -521,7 +517,7 @@ let [columns] = useState<AI_table_column[]>([
     {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>change(row,'family',value)}},
     {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>change(row,'age',value)}},
 ])
-function change(){
+function change(row,key,value){
     let newRows = rows.map( (o) => o.id !== row.id ? o :{...o,[key]:value})
     setRows(newRows)
 }
@@ -702,12 +698,38 @@ function Column_CellAttrs({rows:Rows,rowsCode}) {
                 AIODoc().Code(`
 ${rowsCode}
 let columns = [
-    {title:'Name',value:'row.name',input:{type:'text'},cellAttrs:{style:{background:'pink'}}},
-    {title:'Family',value:'row.family',input:{type:'text'},cellAttrs:'family_column_attrs'},
-    {title:'Age',value:'row.age',input:{type:'number'},cellAttrs:({row,column})=>{
-        if(row.age < 35){return {style:{background:'red',color:'#fff'}}}
-        return {style:{background:'green',color:'#fff'}}
-    }},
+    {
+        title:'Name',
+        value:'row.name',
+        input:{type:'text'},
+        //use direct value
+        cellAttrs:{
+            style:{background:'pink'}
+        }
+    },
+    {
+        title:'Family',
+        value:'row.family',
+        input:{type:'text'},
+        //reference to getValue props
+        cellAttrs:'family_column_attrs'
+    },
+    {
+        title:'Age',
+        value:'row.age',
+        input:{type:'number'},
+        //use function to call per row
+        cellAttrs:({row,column,rowIndex})=>{
+            if(row.age < 35){
+                return {
+                    style:{background:'red',color:'#fff'}
+                }
+            }
+            return {
+                style:{background:'green',color:'#fff'}
+            }
+        }
+    }
 ]
 return (
     <AIOInput
@@ -731,7 +753,18 @@ return (
 function Column_SubtextBeforeAfter({rows:Rows,rowsCode}) {
     let [rows,setRows] = useState(Rows);
     let [columns,setColumns] = useState<AI_table_column[]>([
-        {title:'Name',value:'row.name',input:{type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}}
+        {
+            title:'Name',
+            value:'row.name',
+            input:{
+                type:'text',
+                subtext:'row.age + " years old"',
+                before:({row,column})=>{
+                    return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
+                },
+                after:'name_column_after'
+            }
+        }
     ])
     function renderTable(){
         let p:AI = {
@@ -740,10 +773,7 @@ function Column_SubtextBeforeAfter({rows:Rows,rowsCode}) {
             columns,
             onChange:(newRows)=>setRows(newRows),
             getValue:{
-                name_column_subtext:({row,column})=>{
-                    return `${row.age} years old`
-                },
-                name_column_before:({row,column})=>{
+                name_column_before:({row,column,rowIndex})=>{
                     return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
                 },
                 name_column_after:({row,column})=>{
@@ -764,41 +794,43 @@ function Column_SubtextBeforeAfter({rows:Rows,rowsCode}) {
             {
                 AIODoc().Code(`
 
-let rows = [
-{name:'mohammad',family:'feiz',age:38},
-{name:'john',family:'doe',age:30},
-]
+${rowsCode}
 let columns = [
-{title:'Name',value:'row.name',input:{type:'text',subtext:'name_column_subtext',before:'name_column_before',after:'name_column_after'}}
-]
-function setRows(newRows){
-//update state
-}
-return (
-<AIOInput
-    type='table'
-    value={rows}
-    columns={columns}
-    onChange={(newRows)=>setRows(newRows)}
-    getValue={{
-        name_column_subtext:({row,column})=>{
-            return row.age + ' years old'
-        },
-        name_column_before:({row,column})=>{
-            return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
-        },
-        name_column_after:({row,column})=>{
-            return (
-                <div 
-                    style={{color:'#fff',background:'orange',borderRadius:6,padding:3}}
-                >{row.age}</div>
-            )
+    {
+        title:'Name',
+        value:'row.name',
+        input:{
+            type:'text',
+            subtext:'row.age + " years old"',
+            before:({row,column,rowIndex})=>{
+                return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
+            },
+            after:'name_column_after'
         }
-    }}
-    rowAttrs={(row)=>{
-        return {style:{height:48}}
-    }}
-/>
+    }
+]
+return (
+    <AIOInput
+        type='table'
+        value={rows}
+        columns={columns}
+        onChange={(newRows)=>setRows(newRows)}
+        getValue={{
+            name_column_before:({row,column})=>{
+                return <Icon path={row.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={1}/>
+            },
+            name_column_after:({row,column})=>{
+                return (
+                    <div 
+                        style={{color:'#fff',background:'orange',borderRadius:6,padding:3}}
+                    >{row.age}</div>
+                )
+            }
+        }}
+        rowAttrs={(row)=>{
+            return {style:{height:48}}
+        }}
+    />
 )
                 `)
             }
