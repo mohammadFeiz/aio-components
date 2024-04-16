@@ -13,13 +13,13 @@ import $ from 'jquery';
 import {AIODate,GetClient,EventHandler,Swip,getValueByStep} from './../../npm/aio-utils/index';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOStorage from './../../npm/aio-storage/index.js';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
 import { 
     AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_unit, AI_formItem, AI_option, 
-    AI_table_column, AI_table_paging, AI_table_sort, AI_time_unit, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
+    AI_table_column, AI_table_paging, AI_table_sort, AI_time_unit, AI_type, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
     I_DPContext, I_DPHeaderDropdown, I_DPYears, I_DP_activeDate, I_Drag, I_FileItem, I_Layout, I_MapUnit, I_Map_config, I_Map_context, 
     I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, I_SliderFill, I_SliderLabel, I_SliderPoint, I_SliderScale, I_Slider_context, 
     I_Slider_statics, I_TableGap, I_Tag, I_Tags, I_TimePopver, I_list_temp, I_mapApiKeys, type_table_context, type_table_temp, type_time_value 
@@ -149,6 +149,7 @@ function Time(){
     }
     function getValue(){
         let newValue = {};
+        
         for(let u in unit as AI_time_unit){
             if(unit[u] === true){
                 let v = Value[u];
@@ -326,8 +327,12 @@ function Image() {
         }
         catch { }
     }
+    function onPreview(e:any){
+        e.stopPropagation(); e.preventDefault(); openPopup()
+    }
     function openPopup() {
         popup.addModal({
+            position:'center',
             header: {title: '',onClose: (e) => popup.removeModal()},
             body: {
                 render: () => {
@@ -339,7 +344,15 @@ function Image() {
     }
     let IMG = url ? (
         <>
-            <img ref={dom as any} src={url} alt={placeholder} style={{ objectFit: 'cover',cursor:!onChange?'default':undefined }} width={width} height={height} />
+            <img 
+                ref={dom as any} 
+                src={url} 
+                alt={placeholder} 
+                style={{ objectFit: 'contain',cursor:!onChange?'default':undefined }} 
+                width={width} 
+                height={height}
+                onClick={!!onChange?undefined:onPreview} 
+            />
             {
                 !!deSelect && 
                 <div 
@@ -351,7 +364,7 @@ function Image() {
                     }} 
                     className='aio-input-image-remove'
                 >{I(mdiClose,1)}</div>}
-            {preview && <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); openPopup() }} className='aio-input-image-preview'>{I(mdiImage,1)}</div>}
+            {preview && !!onChange && <div onClick={(e) => onPreview(e)} className='aio-input-image-preview'>{I(mdiImage,1)}</div>}
             {popup.render()}
         </>
     ) : <span className='aio-input-image-placeholder' style={{width,height}}>{placeholder}</span>
@@ -365,7 +378,7 @@ function Image() {
     }
     return (<AIOInput {...p}/>)
 }
-function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
+function File() { return (<div className='aio-input-file-container'><Layout/><FileItems /></div>) }
 function InputFile() {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { value = [], onChange = () => { }, disabled } = rootProps;
@@ -648,7 +661,7 @@ function Input() {
 }
 function Form() {
     let {rootProps}:AI_context = useContext(AICTX)
-    let {onChange ,getErrors,body = {},inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs,style} = rootProps;
+    let {onChange ,getErrors,body = {},inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs = {},style,className} = rootProps;
     let [initialValue] = useState<any>(JSON.stringify(rootProps.value))
     let [value,setValue] = useState(rootProps.value || {})
     let [errors] = useState({})
@@ -685,8 +698,9 @@ function Form() {
         if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => input_node(o)) } }
         let className = 'aio-input-form-body';
         if (attrs.className) { className += ' ' + attrs.className }
+        if(inputs.className){className += ' ' + inputs.className}
         let style = attrs.style;
-        let res = { flex: 1, className, style, ...inputs }
+        let res = { flex: 1, style, ...inputs,className }
         return res
     }
     function Reset() {
@@ -701,7 +715,7 @@ function Form() {
     }
     function footer_node():I_RVD_node {
         if (!footer) { return {} }
-        let {onSubmit,onClose,reset,layout,attrs,submitText = 'Submit',closeText = 'Close',resetText = 'Reset',before,after} = footer;
+        let {onSubmit,onClose,reset,layout,attrs = {},submitText = 'Submit',closeText = 'Close',resetText = 'Reset',before,after} = footer;
         let disabled = isDisabled();
         if (layout) {
             let html = layout({ reset:Reset,disabled, errors: GetErrors() });
@@ -849,7 +863,7 @@ function Form() {
         }
         return AIOValidation(a);
     }
-    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : ''),style })
+    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') + (className ? ' ' + className : ''),style })
     return (
         <RVD
             editNode={(obj, parent:any = {}) => {
@@ -904,7 +918,7 @@ function Options(props:AI_Options) {
 const AITableContext = createContext({} as any);
 function Table() {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs,onChangeSort } = rootProps;
+    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs,onChangeSort,className,style } = rootProps;
     let [dom] = useState(createRef())
     let [searchValue, setSearchValue] = useState<string>('')
     let [columns, setColumns] = useState<AI_table_column[]>([]);
@@ -1077,7 +1091,7 @@ function Table() {
         return context
     }
     let ROWS = getRows();
-    let attrs = addToAttrs(rootProps.attrs,{className:'aio-input-table',style:rootProps.style,attrs:{ref:dom}})
+    let attrs = addToAttrs(rootProps.attrs,{className:['aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
     return (
         <AITableContext.Provider value={getContext(ROWS)}>
             <div {...attrs}>
@@ -1269,12 +1283,14 @@ function TableHeader() {
     let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
     return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
 }
-function TableTitle({ column, isLast }) {
+function TableTitle(p:{ column:AI_table_column, isLast:boolean }) {
+    let { column, isLast } = p;
     let { getCellAttrs } = useContext(AITableContext);
     let attrs = getCellAttrs({ column, type: 'title' });
     return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
 }
-function TableRow({ row, isLast, rowIndex }) {
+function TableRow(p:{ row:any, isLast:boolean, rowIndex:number }) {
+    let { row, isLast, rowIndex } = p;
     let { remove, rootProps, columns, getRowAttrs }: type_table_context = useContext(AITableContext);
     function getCells() {
         return columns.map((column, i) => {
@@ -1294,7 +1310,8 @@ function TableRow({ row, isLast, rowIndex }) {
         </>
     )
 }
-const TableCell = ({ row, rowIndex, column, isLast }) => {
+const TableCell = (p:{ row:any, rowIndex:number, column:AI_table_column, isLast:boolean }) => {
+    let { row, rowIndex, column, isLast } = p;
     let { getCellAttrs,rootProps,getDynamics }: type_table_context = useContext(AITableContext);
     let {onChange = ()=>{},value = []} = rootProps;
     function setCell(row: any, column: AI_table_column, cellNewValue: any) {
@@ -1304,7 +1321,7 @@ const TableCell = ({ row, rowIndex, column, isLast }) => {
         else {
             row = JSON.parse(JSON.stringify(row));
             eval(`${column.value} = cellNewValue`);
-            onChange(value.map((o) => o._id !== row._id ? o : row))
+            onChange(value.map((o:any) => o._id !== row._id ? o : row))
         }
     }
     let contentProps:AI_TableCellContent = { row, rowIndex, column,onChange:column.input?(value)=>setCell(row, column, value):undefined };
@@ -1323,16 +1340,18 @@ function TableCellContent(props:AI_TableCellContent){
     let { getDynamics }: type_table_context = useContext(AITableContext);
     let template = getDynamics({ value: column.template, row, rowIndex, column });
     if (template !== undefined) { return template }
-    let input = getDynamics({ value: column.input, row, rowIndex, column });
-    if (!input) { input = { type: 'text' } }
+    let input:AI = getDynamics({ value: column.input, row, rowIndex, column });
+    let value = getDynamics({ value: column.value, row, rowIndex, column })
+    if (!input) { return value }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
-    let convertedInput = {}
-    for (let prop in input) {
-        if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = input[prop] }
-        else { convertedInput[prop] = getDynamics({ value: input[prop], row, rowIndex, column }) }
+    let convertedInput:AI = {type:'text'}
+    for (let property in input) {
+        let prop:keyof AI = property as keyof AI;
+        let res = input[prop];
+        if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = res }
+        else { convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column }) }
     }
-    let value = getDynamics({ value: column.value, row, rowIndex, column })
     let p:AI = { ...convertedInput, value, onChange,type:input.type }
     return (<AIOInput {...p} key={row._id + ' ' + column._id} />)
 }
@@ -1357,12 +1376,12 @@ function Layout(props: I_Layout) {
             if (types.isInput) { cls += ` aio-input-input` }
             if (rtl) { cls += ' aio-input-rtl' }
         }
-        if(properties.className){cls += ' ' + properties.className}
         if (properties.disabled) { cls += ' disabled' }
+        if(properties.className){cls += ' ' + properties.className}
         cls += ' ' + datauniqid;
         return cls;
     }
-    function cls(key) {
+    function cls(key:string) {
         let className = `aio-input-${key}`;
         if (option) { className += ` aio-input-${type}-option-${key}` }
         else { className += ` aio-input-${type}-${key}` }
@@ -1491,6 +1510,7 @@ function Layout(props: I_Layout) {
     )
 }
 const DPContext = createContext({} as any);
+type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 function Calendar(props: I_Calendar) {
     let { rootProps }: AI_context = useContext(AICTX);
     let { onClose } = props;
@@ -1507,13 +1527,13 @@ function Calendar(props: I_Calendar) {
     }
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>({ ...initValue });
-    function trans(text) {
+    function trans(text:AI_date_trans) {
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
         }
         let obj = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال' }
-        let res = text;
+        let res:string = text;
         if (jalali && obj[text]) { res = obj[text] }
         return translate(res)
     }
@@ -1560,7 +1580,7 @@ function Calendar(props: I_Calendar) {
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
                 onChange(dateString, props);
-                if (changeClose) { onClose() }
+                if (changeClose && onClose) { onClose() }
             }
         }
         return context
@@ -1578,7 +1598,7 @@ function Calendar(props: I_Calendar) {
 }
 function DPToday() {
     let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
-    let { theme, jalali, unit, size } = rootProps;
+    let { theme = AIDef<string[]>('theme'), jalali, unit, size = AIDef<number>('size') } = rootProps;
     return (
         <div className='aio-input-date-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
             <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
@@ -1598,7 +1618,7 @@ function DPToday() {
 }
 function DPFooter() {
     let {rootProps, changeActiveDate, translate}:I_DPContext = useContext(DPContext);
-    let { disabled, onChange = () => { }, size,deSelect } = rootProps;
+    let { disabled, onChange = () => { }, size = AIDef<number>('size'),deSelect } = rootProps;
     if (disabled) { return null }
     let buttonStyle = { padding: `${size / 20}px 0`,fontFamily:'inherit' };
     return (
@@ -1610,10 +1630,10 @@ function DPFooter() {
 }
 function DPBody() {
     let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
-    let { unit = 'day',jalali,size } = rootProps;
+    let { unit = AIDef<AI_date_unit>('unit','date'),jalali,size = AIDef<number>('size') } = rootProps;
     function getStyle() {
-        var columnCount = { hour: 4, day: 7, month: 3 }[unit as AI_date_unit];
-        var rowCount = { hour: 6, day: 7, month: 4 }[unit as AI_date_unit];
+        var columnCount = { hour: 4, day: 7, month: 3,year:1 }[unit as AI_date_unit];
+        var rowCount = { hour: 6, day: 7, month: 4,year:1 }[unit as AI_date_unit];
         var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
         var rowHeight = { hour: size / 7, day: a, month: size / 6, year: size / 7 }[unit as AI_date_unit];
         var gridTemplateColumns = '', gridTemplateRows = '';
@@ -1639,7 +1659,7 @@ function DPBodyDay() {
     return (<>
         {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
         {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
-        {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, i + 1]} />)}
+        {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
         {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
     </>)
 }
@@ -1655,9 +1675,9 @@ function DPCellWeekday(props:I_DPCellWeekday) {
 }
 function DPCell(props:I_DPCell) {
     let {rootProps, translate, onChange}:I_DPContext = useContext(DPContext);
-    let { disabled, dateAttrs, theme, value, jalali, unit, dateDisabled } = rootProps;
+    let { disabled, dateAttrs, theme = AIDef('theme'), value, jalali, unit, dateDisabled } = rootProps;
     let { dateArray } = props;
-    function getClassName(isActive, isToday, isDisabled, className) {
+    function getClassName(isActive:boolean, isToday:boolean, isDisabled:boolean, className?:string) {
         var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
         if (isActive) { str += ' aio-input-date-active'; }
@@ -1715,21 +1735,22 @@ function DPYears(props: I_DPYears) {
         <AIOInput {...p}/>
     )
 }
-function DPYearsPopup({value:Value,onChange}){
+function DPYearsPopup(props:{value:number,onChange:(v:number)=>void}){
+    let {value:Value,onChange} = props; 
     let { rootProps,translate }: I_DPContext = useContext(DPContext);
-    let { jalali,size,theme = [] } = rootProps;
+    let { jalali,size = AIDef<number>('size'),theme = AIDef<string[]>('size') } = rootProps;
     let [start, setStart] = useState<number>(Math.floor(Value / 10) * 10);
-    let [value,setValue] = useState(Value);
+    let [value,setValue] = useState<number>(Value);
     useEffect(()=>{setValue(Value)},[Value])
-    function changePage(dir) {
+    function changePage(dir:1 | -1) {
         let newStart = start + (dir * 10)
         setStart(newStart);
     }
-    function changeValue(v){
+    function changeValue(v:number){
         setValue(v);
         onChange(v);
     }
-    function getCells(start) {
+    function getCells(start:number) {
         let cells = [];
         for (let i = start; i < start + 10; i++) {
             let active = i === value;
@@ -1766,10 +1787,10 @@ function DPYearsPopup({value:Value,onChange}){
 }
 function DPHeader() {
     let { rootProps,activeDate, changeActiveDate, months, translate }: I_DPContext = useContext(DPContext);
-    let { size, unit,jalali } = rootProps;
+    let { size = AIDef<number>('size'), unit,jalali } = rootProps;
     function getYears() {
         let p:I_DPYears = {
-            value: activeDate.year,onChange: (year) => { changeActiveDate({ year }) }
+            value: activeDate.year || 0,onChange: (year) => { changeActiveDate({ year }) }
         }
         return (<DPYears {...p} />)
     }
@@ -1801,7 +1822,7 @@ function DPHeader() {
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
     let { value, options, onChange } = props;
-    let { size, theme } = rootProps;
+    let { size = AIDef<number>('size'), theme = AIDef<number[]>('theme') } = rootProps;
     let p: AI = {
         value, options, onChange, caret: false, type: 'select',
         attrs: { className: 'aio-input-date-dropdown' },
@@ -1812,7 +1833,7 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
 function DPArrow(props: I_DPArrow) {
     let { rootProps, changeActiveDate, activeDate }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
-    let { jalali, unit, size, theme } = rootProps;
+    let { jalali, unit = AIDef<AI_date_unit>('unit','date'), size, theme } = rootProps;
     function change() {
         if (onClick) { onClick(); return }
         let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
@@ -3372,7 +3393,7 @@ class DragClass {
         }
     }
 }
-const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: string | (string[]), style?: any,attrs?:any }) => {
+const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: string | ((string | undefined | false)[]), style?: any,attrs?:any }) => {
     attrs = attrs || {};
     let { style } = p;
     let attrClassName = attrs.className?attrs.className.split(' '):[];
@@ -3444,7 +3465,7 @@ function getOptions(rootProps:AI,types:AI_types) {
         let defaultChecked = getDefaultOptionChecked(optionValue)
         let checked = getOptionProp({props:rootProps,option, key:'checked', def:defaultChecked})
         let obj = {
-            object:{...option},
+            object:option,
             attrs, text, value: optionValue, disabled, draggable,
             checkIcon: getOptionProp({props:rootProps,option, key:'checkIcon'}) || rootProps.checkIcon,
             checked,
@@ -3493,4 +3514,13 @@ function getOptionProp(p:{props:AI,option: AI_option, key: string, def?: any, pr
 }
 function I(path:any,size:number,p?:any){
     return <Icon path={path} size={size} {...p}/>
+}
+function AIDef<T>(prop:string,type?:AI_type):T{
+    let key = `${type || ''}-${prop}`;
+    let res:any = {
+        'theme':[],
+        'size':180,
+        'date-unit':'day'
+    }[key]
+    return res
 }
