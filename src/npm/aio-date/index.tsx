@@ -1,46 +1,44 @@
 class AIODateTS {
-    isMatch: (p: { date: any, matchers: string[] }) => boolean;
-    convertToArray: (p: { date: any, jalali?: boolean }) => number[];
+    isMatch: (date: any, matchers: string[]) => boolean;
+    convertToArray: (date: any, jalali?: boolean) => number[];
     getToCompaire:(o1:any,o2:any)=>{date:any,otherDate:any}
     isLess:(o1:any,o2:any)=>boolean;
     isGreater:(o1:any,o2:any)=>boolean;
     isEqual:(o1:any,o2:any)=>boolean;
     isBetween:(o1:any,o2:any)=>boolean;
-    compaire:(p:{date:any,otherDate:any})=>'less'|'greater'|'equal';
-    getWeekDay:(p:{date:any})=>{weekDay:string,index:number}
+    compaire:(date:any,otherDate:any)=>'less'|'greater'|'equal';
+    getWeekDay:(date:any)=>{weekDay:string,index:number}
     isJalali:(date:any)=>boolean;
-    getWeekDays:(p?:{jalali?:boolean})=>string[];
-    toGregorian:(p:{date:any,pattern?:string})=>string | number[];
-    toJalali:(p:{date:any,pattern?:string})=>string | number[];
+    getWeekDays:(jalali?:boolean)=>string[];
+    toGregorian:(date:any)=>number[];
+    toJalali:(date:any)=>number[];
     pattern:(date:any,pattern:string,jalali?:boolean)=>string;
     get2Digit:(n:number)=>string;
-    getMonths:(p?:{jalali?:boolean})=>string[];
+    getMonths:(jalali?:boolean)=>string[];
     getSplitter:(value:string)=>string;
-    getTime:(p:{date:any,jalali?:boolean})=>number;
-    getNextTime:(p:{date:any,offset:number,pattern?:string,jalali?:boolean})=>number[] | string;
-    getMonthDaysLength:(p:{date:any})=>number;
-    getYearDaysLength:(p:{date:any})=>number;
-    getDaysOfWeek:(p:{date:any,pattern?:string})=>any[];
-    getDatesBetween:(p:{date:any,otherDate:any,step?:number,pattern?:string})=>any[];
-    getDelta:(p:{date:any,otherDate?:any,pattern?:string,unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond'})=>{ day:number, hour:number, minute:number, second:number, tenthsecond:number, miliseconds:number, type:'ramaining'|'passed' } | string;
-    convertMiliseconds:(p:{miliseconds:number,unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond',pattern?:string})=>{ day:number, hour:number, minute:number, second:number, tenthsecond:number, miliseconds:number, type:'ramaining'|'passed' } | string;
-    getDaysOfMonth:(p:{date:any,pattern?:string})=>any[];
-    getLastDayOfMonth:(p:{date:any,pattern?:string})=>any[] | string;
-    getDateByPattern:(p:{date:any,pattern?:string,jalali?:boolean})=>string;
-    getToday:(p?:{jalali?:boolean,pattern?:string})=>string | number[];
-    getByOffset:(p:{ date:any, offset?:number, unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond', jalali?:boolean })=>number[]
-    getNextYear:(p:number[])=>number[];
-    getPrevYear:(p:number[])=>number[];
+    getTime:(date:any,jalali?:boolean)=>number;
+    getNextTime:(date:any,offset:number,jalali?:boolean)=>number[];
+    getMonthDaysLength:(date:any)=>number;
+    getYearDaysLength:(date:any)=>number;
+    getDaysOfWeek:(date:any,pattern?:string)=>any[];
+    getDatesBetween:(date:any,otherDate:any,step?:number)=>any[];
+    getDelta:(date:any,otherDate?:any,unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond')=>{ day:number, hour:number, minute:number, second:number, tenthsecond:number, miliseconds:number, type:'ramaining'|'passed' };
+    convertMiliseconds:(miliseconds:number,unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond')=>{ day:number, hour:number, minute:number, second:number, tenthsecond:number, miliseconds:number, type:'ramaining'|'passed' };
+    getDaysOfMonth:(date:any,pattern?:string)=>any[];
+    getLastDayOfMonth:(date:any)=>any[];
+    getDateByPattern:(date:any,pattern:string)=>string;
+    getToday:(jalali?:boolean)=>number[];
+    getNextYear:(date:number[])=>number[];
+    getPrevYear:(date:number[])=>number[];
     getNextHour:(date:number[])=>number[];
     getPrevHour:(date:number[])=>number[];
-    getNextDay:(p:number[])=>number[];
-    getPrevDay:(p:number[])=>number[];
-    getNextMonth:(p:number[])=>number[];
-    getPrevMonth:(p:number[])=>number[];
-    getDayIndex:(p:{date:any,unit:'week'|'year'|'month'})=>number;
+    getNextDay:(date:number[])=>number[];
+    getPrevDay:(date:number[])=>number[];
+    getNextMonth:(date:number[])=>number[];
+    getPrevMonth:(date:number[])=>number[];
+    getDayIndex:(date:any,unit:'week'|'year'|'month')=>number;
     constructor() {
-        this.isMatch = (p) => {
-            let { date, matchers } = p;
+        this.isMatch = (date,matchers) => {
             date = this.convertToArray({ date })
             for (let i = 0; i < matchers.length; i++) {
                 let matcher = matchers[i], type, targets;
@@ -100,8 +98,7 @@ class AIODateTS {
             }
             return false
         }
-        this.convertToArray = (p) => {
-            let { date, jalali } = p || {};
+        this.convertToArray = (date,jalali) => {
             if (!date) { return [] }
             let list;
             if (Array.isArray(date)) { list = [...date] }
@@ -153,15 +150,18 @@ class AIODateTS {
         }
         this.isLess = (o1, o2) => {
             if (!o1 || !o2) { return false }
-            return this.compaire(this.getToCompaire(o1, o2)) === 'less'
+            let {date,otherDate} = this.getToCompaire(o1, o2)
+            return this.compaire(date,otherDate) === 'less'
         }
         this.isEqual = (o1, o2) => {
             if (!o1 || !o2) { return false }
-            return this.compaire(this.getToCompaire(o1, o2)) === 'equal'
+            let {date,otherDate} = this.getToCompaire(o1, o2)
+            return this.compaire(date,otherDate) === 'equal'
         }
         this.isGreater = (o1, o2) => {
             if (!o1 || !o2) { return false }
-            return this.compaire(this.getToCompaire(o1, o2)) === 'greater'
+            let {date,otherDate} = this.getToCompaire(o1, o2)
+            return this.compaire(date,otherDate) === 'greater'
         }
         this.isBetween = (o1, [o2, o3]) => {
             if (!o1 || !o2 || !o3) { return false }
@@ -173,8 +173,7 @@ class AIODateTS {
             for (let i = 0; i < o1.length; i++) { if (isNaN(o2[i])) { o2[i] = o1[i] } }
             return { date: o1, otherDate: o2 }
         }
-        this.compaire = (p) => {
-            let { date, otherDate } = p;
+        this.compaire = (date, otherDate) => {
             if (!date || !otherDate) { return }
             let arr1 = this.convertToArray({ date });
             let arr2 = this.convertToArray({ date: otherDate });
@@ -186,27 +185,27 @@ class AIODateTS {
             }
             return 'equal';
         }
-        this.getWeekDay = (p) => {
-            let date = this.convertToArray({ date: p.date });
-            let jalali = this.isJalali(date);
-            let dateArray = this.toGregorian({ date }) as number[]
+        this.getWeekDay = (date) => {
+            let dateArray = this.convertToArray({ date });
+            let jalali = this.isJalali(dateArray);
+            dateArray = this.toGregorian({ date }) as number[]
             let index = new Date(dateArray[0], dateArray[1] - 1, dateArray[2]).getDay();
             if (jalali) {
                 index += 1;
                 index = index % 7;
             }
-            return { weekDay: this.getWeekDays({ jalali })[index], index };
+            return { weekDay: this.getWeekDays(jalali)[index], index };
         }
         this.isJalali = (date) => { return this.convertToArray({ date })[0] < 1700 ? true : false }
-        this.getWeekDays = (p = {}) => {
+        this.getWeekDays = (jalali) => {
             return [
                 ['شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'],
                 ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-            ][p.jalali ? 0 : 1]
+            ][jalali ? 0 : 1]
         }
-        this.toGregorian = (p) => {
-            if (!p || !p.date) { return []}
-            let arr = this.convertToArray({ date: p.date });
+        this.toGregorian = (date) => {
+            if (!date) { return []}
+            let arr = this.convertToArray({ date });
             let jalali = this.isJalali(arr);
             if (!jalali) { return arr }
             let [jy, jm, jd] = arr;
@@ -220,7 +219,6 @@ class AIODateTS {
             sal_a = [0, 31, ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             for (gm = 0; gm < 13 && gd > sal_a[gm]; gm++) gd -= sal_a[gm];
             arr[0] = gy; arr[1] = gm; arr[2] = gd;
-            if (p.pattern) { return this.pattern(arr, p.pattern) }
             return arr;
         }
         this.pattern = (date, pattern, Jalali) => {
@@ -235,10 +233,10 @@ class AIODateTS {
             if (typeof second === 'number') { pattern = pattern.replace('{second}', this.get2Digit(second)); }
             if (typeof tenthsecond === 'number') { pattern = pattern.replace('{tenthsecond}', this.get2Digit(tenthsecond)); }
             if (pattern.indexOf('{monthString}') !== -1) {
-                pattern = pattern.replace('{monthString}', this.getMonths({ jalali })[month - 1]);
+                pattern = pattern.replace('{monthString}', this.getMonths(jalali)[month - 1]);
             }
             if (pattern.indexOf('{weekDay}') !== -1) {
-                let weekDays = this.getWeekDays({ jalali });
+                let weekDays = this.getWeekDays(jalali);
                 let { index } = this.getWeekDay({ date });
                 pattern = pattern.replace('{weekDay}', weekDays[index]);
             }
@@ -251,15 +249,14 @@ class AIODateTS {
             if (ns.length === 1) { ns = '0' + n }
             return ns
         }
-        this.getMonths = ({ jalali }) => {
+        this.getMonths = (jalali) => {
             return [
                 ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',],
                 ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
             ][jalali ? 0 : 1]
         }
-        this.toJalali = (p) => {
-            if (!p || !p.date) { return }
-            let arr = this.convertToArray({ date: p.date });
+        this.toJalali = (date) => {
+            let arr = this.convertToArray({ date: date });
             let jalali = this.isJalali(arr);
             if (jalali) { return arr }
             let [gy, gm, gd] = arr;
@@ -271,7 +268,6 @@ class AIODateTS {
             if (days > 365) { jy += ~~((days - 1) / 365); days = (days - 1) % 365; }
             if (days < 186) { jm = 1 + ~~(days / 31); jd = 1 + (days % 31); } else { jm = 7 + ~~((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
             arr[0] = jy; arr[1] = jm; arr[2] = jd;
-            if (p.pattern) { return this.pattern(arr, p.pattern) }
             return arr;
         }
         this.getSplitter = (value) => {
@@ -281,8 +277,7 @@ class AIODateTS {
             }
             return splitter;
         }
-        this.getTime = (p) => {
-            let { date, jalali = this.isJalali(date) } = p || {};
+        this.getTime = (date,jalali = this.isJalali(date)) => {
             if (!date) { return }
             if (typeof date === 'number') { return date }
             date = this.convertToArray({ date });
@@ -295,30 +290,25 @@ class AIODateTS {
             time += tenthsecond * 100;
             return time;
         }
-        this.getNextTime = (p) => {
-            let { date, offset, pattern } = p || {};
-            if (!offset || !date) { return date }
-            let jalali = this.isJalali(date);
+        this.getNextTime = (date, offset,jalali = this.isJalali(date)) => {
+            if (!offset) { return date }
             let time = this.getTime({ date, jalali });
             time += offset;
             let dateArray = this.convertToArray({ date: time });
-            if (jalali || p.jalali) {
+            if (jalali) {
                 let [jy, jm, jd] = this.toJalali({ date: dateArray });
                 time[0] = jy; time[1] = jm; time[2] = jd;
             }
-            if (pattern) { return this.pattern(dateArray, pattern) }
             return time;
         }
-        this.getMonthDaysLength = (p) => {
-            let { date } = p || {};
+        this.getMonthDaysLength = (date) => {
             if (!date) { return 0}
             let [year, month] = this.convertToArray({ date });
             let jalali = this.isJalali([year, month]);
             if (jalali) { return [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, [1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) === -1 ? 29 : 30][month - 1] }
             else { return new Date(year, month - 1, 0).getDate(); }
         }
-        this.getYearDaysLength = (p) => {
-            let { date } = p || {};
+        this.getYearDaysLength = (date) => {
             if (!date) { return 0}
             let [year] = this.convertToArray({ date });
             let res = 0;
@@ -327,17 +317,15 @@ class AIODateTS {
             }
             return res
         }
-        this.getDaysOfWeek = (p) => {
-            let {date} = p || {};
+        this.getDaysOfWeek = (date,pattern) => {
             if(!date){return []}
             let dateArray = this.convertToArray(date);
             let { index } = this.getWeekDay({ date: dateArray });
-            let startDate = this.getNextTime({ date: [dateArray[0], dateArray[1], dateArray[2]], offset: -(index + 1) * 24 * 60 * 60 * 1000 });
-            let endDate = this.getNextTime({ date: [dateArray[0], dateArray[1], dateArray[2]], offset: (7 - index) * 24 * 60 * 60 * 1000 });
-            return this.getDatesBetween({ date: startDate, otherDate: endDate, pattern: p.pattern, step: 24 * 60 * 60 * 1000 })
+            let startDate = this.getNextTime([dateArray[0], dateArray[1], dateArray[2]], -(index + 1) * 24 * 60 * 60 * 1000);
+            let endDate = this.getNextTime([dateArray[0], dateArray[1], dateArray[2]], (7 - index) * 24 * 60 * 60 * 1000 );
+            return this.getDatesBetween(startDate,endDate,24 * 60 * 60 * 1000 )
         }
-        this.getDatesBetween = (p) => {
-            let { date, otherDate, step = 24 * 60 * 60 * 1000, pattern } = p || {};
+        this.getDatesBetween = (date,otherDate,step = 24 * 60 * 60 * 1000) => {
             if(!date || !otherDate){return []}
             date = this.convertToArray({ date: date });
             otherDate = this.convertToArray({ date: otherDate });
@@ -348,26 +336,19 @@ class AIODateTS {
                 console.error('AIODate().getDatesBetween() => too many dates');
                 return;
             }
-            let nextDate = this.getNextTime({ date, offset: step });
+            let nextDate = this.getNextTime(date, step);
             let res = [];
             while (this.isLess(nextDate, otherDate)) {
-                if (pattern) {
-                    res.push(this.pattern(nextDate, pattern));
-                }
-                else {
-                    res.push(nextDate);
-                }
-                nextDate = this.getNextTime({ date: nextDate, offset: step });
+                res.push(nextDate);
+                nextDate = this.getNextTime(nextDate, step);
             }
             return res
         }
-        this.getDelta = (p) => {
-            let { date, otherDate = new Date().getTime(), pattern, unit } = p || {};
+        this.getDelta = (date,otherDate,unit) => {
             let dif = this.getTime({ date }) - this.getTime({ date: otherDate });
-            return this.convertMiliseconds({ miliseconds: -dif, unit, pattern })
+            return this.convertMiliseconds(-dif, unit)
         }
-        this.convertMiliseconds = (p) => {
-            let { miliseconds = 0, unit = 'day', pattern } = p || {}
+        this.convertMiliseconds = (miliseconds = 0,unit = 'day') => {
             let type;
             if (miliseconds < 0) { type = 'passed'; miliseconds = -miliseconds }
             else if (miliseconds > 0) { type = 'remaining' }
@@ -394,54 +375,33 @@ class AIODateTS {
             if (index <= 4) {
                 tenthsecond = Math.floor(dif / (100));
             }
-            if (pattern) {
-                return this.pattern([0, 0, day, hour, minute, second, tenthsecond], pattern)
-            }
             return { day, hour, minute, second, tenthsecond, miliseconds, type }
         }
-        this.getDaysOfMonth = (p) => {
-            let {date,pattern} = p || {}; 
+        this.getDaysOfMonth = (date,pattern) => {
             let dateArray = this.convertToArray({ date });
             let firstDay = [dateArray[0], dateArray[1], 1];
             let lastDay = this.getLastDayOfMonth({ date:dateArray })
-            let betweenDayes = this.getDatesBetween({ date: firstDay, otherDate: lastDay, step: 24 * 60 * 60 * 1000 });
+            let betweenDayes = this.getDatesBetween(firstDay, lastDay, 24 * 60 * 60 * 1000 );
             let result = [firstDay];
             result = result.concat(betweenDayes);
             result.push(lastDay as number[]);
             if (pattern) {
-                return result.map((o) => this.getDateByPattern({ date: o, pattern }))
+                return result.map((o) => this.getDateByPattern(o, pattern))
             }
             return result;
         }
-        this.getLastDayOfMonth = (p) => {
-            let {date,pattern} = p || {};
+        this.getLastDayOfMonth = (date) => {
             let dateArray = this.convertToArray({ date });
             let length = this.getMonthDaysLength({ date:dateArray });
             let lastDay = [date[0], date[1], length];
-            if (pattern) {
-                return this.getDateByPattern({ date: lastDay, pattern })
-            }
             return lastDay
         }
-        this.getDateByPattern = (p) => {
-            let { date, pattern, jalali } = p;
-            return this.pattern(date, pattern, jalali)
-        }
-        this.getToday = (p) => {
-            let { jalali, pattern } = p || {};
+        this.getDateByPattern = (date,pattern) => this.pattern(date, pattern)
+        this.getToday = (jalali) => {
             let date = new Date();
             let dateArray:number[] = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), Math.round(date.getMilliseconds() / 100)]
             if (jalali) { dateArray = this.toJalali({ date:dateArray }) as number[]  }
-            if (pattern) { return this.pattern(dateArray, pattern) }
             return dateArray;
-        }
-        this.getByOffset = (p) => {
-            let { date, offset, unit = 'day', jalali } = p || {}
-            if (!offset) { return date }
-            let fn = this['get' + (offset > 0 ? 'Next' : 'Prev') + { 'hour': 'Hour', 'day': 'Day', 'month': 'Month', 'year': 'Year' }[unit]];
-            let abs = Math.abs(offset);
-            for (let i = 0; i < abs; i++) { date = fn(date, jalali); }
-            return date;
         }
         this.getNextYear = ([year, month]) => [year + 1, month, 1, 0]
         this.getPrevYear = ([year, month]) => [year - 1, month, 1, 0]
@@ -480,8 +440,7 @@ class AIODateTS {
             let [year = 0, month = 1, day = 1, hour = 0] = p || []
             return month > 1 ? [year, month - 1, day, hour] : [year - 1, 12, 1]; 
         }
-        this.getDayIndex = (p) => {
-            let { date, unit } = p || {}
+        this.getDayIndex = (date,unit) => {
             date = this.convertToArray({ date });
             if (unit === 'week') {
                 let days = this.getDaysOfWeek({ date });
