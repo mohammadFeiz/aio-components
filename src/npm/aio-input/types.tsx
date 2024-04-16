@@ -36,108 +36,109 @@ export type AI_table_column = {
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
-    rtl?: boolean,
-    popover?: AP_modal,//notice get type from aio popup
-    type: AI_type,
-    multiple?: boolean,
-    value?: any,
-    deSelect?:any,
-    editable?:boolean,
-    open?: boolean,
-    unit?: AI_date_unit | AI_time_unit,
-    jalali?: boolean,
-    placeholder?: string,
-    className?:string,
-    width?: number | string, //list
-    height?: number | string,
-    style?: any,
-    onChange?: (newValue: any, p?: any) => void,
-    disabled?: boolean,
-    loading?: boolean | React.ReactNode,
-    min?: number,//slider,number
-    max?: number,//slider,number
-    swip?: number,
-    blurChange?: boolean,
-    maxLength?: number,
-    justNumber?: boolean | (string[]),
-    filter?: string[],
-    delay?: number,
-    onClick?:()=>void,
-    inputAttrs?: any,
-    spin?: boolean,
-    justify?: boolean,
-    hideTags?: boolean,
+    after?: React.ReactNode | (() => React.ReactNode),
+    angle?:number,//pinch
     attrs?: any,
-    columns?: AI_table_column[],
-    paging?: AI_table_paging,
-    onChangePaging?: (newPaging: AI_table_paging) => void,
-    rowGap?: number,
-    columnGap?: number,
-    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
-    toolbarAttrs?: any,
-    toolbar?: React.ReactNode | (() => React.ReactNode),
-    getValue?: { [key: string]: (p: { row: any, column: AI_table_column, rowIndex: number }) => any },
-    onAdd?: Object | (() => void),
-    onRemove?: true | ((p: { row: any, action: Function, rowIndex: number }) => void),
-    excel?: string,
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-    onSearch?: true | ((searchValue: string) => void),
-    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
-    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
-    rowsTemplate?: (rows: any[]) => React.ReactNode,
-    rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
-    rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
-    headerAttrs?: any,
-    after?: React.ReactNode | ((p?:any) => React.ReactNode),
-    before?: React.ReactNode | ((p?:any) => React.ReactNode),
-    options?: any[],
-    option?:{[key in AI_optionKey]?:AI_optionProp},
-    direction?: 'left' | 'right' | 'top' | 'bottom',
-    checkIcon?: AI_checkIcon,
+    blurChange?: boolean,
+    before?: React.ReactNode | (() => React.ReactNode),
+    body?:{attrs?:any},//form
     caret?: boolean | React.ReactNode,
-    text?: React.ReactNode | (() => React.ReactNode)
-    subtext?: React.ReactNode | (() => React.ReactNode),
-    move?: any,//list
+    changeClose?:boolean,//date
+    checkIcon?: AI_checkIcon,
+    className?:string,
+    columnGap?: number,
+    columns?: AI_table_column[],
     count?: number,//list
-    size?: number,//list,date
-    stop?: number,//list
-    decay?: number,//list
-    startYear?: string | number,//date
-    endYear?: string | number,//date
-    translate?: (text: string) => string,//date,
-    theme?: string[],//date
-    search?: string,
     dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
     dateDisabled?:string[],
-    changeClose?:boolean,//date
-    preview?:boolean,
+    decay?: number,//list
+    delay?: number,
+    deSelect?:any,
+    direction?: 'left' | 'right' | 'top' | 'bottom',
+    disabled?: boolean,
+    editable?:boolean,
+    end?:number,//slider,pinch
+    endYear?: string | number,//date
+    errorAttrs?:any,//form
+    excel?: string,
+    filter?: string[],
     footer?:{
         layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
         onSubmit?:()=>void,onClose?:()=>void,reset?:boolean,attrs?:any,submitText?:string,closeText?:string,resetText?:string,
         before?:React.ReactNode,after?:React.ReactNode
     },//form
-    body?:{attrs?:any},//form
     getErrors?:(p:string[])=>void,//form
-    initialDisabled?:boolean,//form
-    inputs?:any,//form
-    labelAttrs?:any,//form
-    errorAttrs?:any,//form
-    lang?:'fa' | 'en',//form,
+    getValue?: { [key: string]: (p: { row: any, column: AI_table_column, rowIndex: number }) => any },
     grooveAttrs?:any,//slider
-    start?:number,//slider,pinch
-    end?:number,//slider,pinch
-    step?:number,//slider,pinch
-    angle?:number,//pinch
+    handle?:{attrs?:any},//pinch
+    headerAttrs?: any,
+    height?: number | string,
+    hideTags?: boolean,
+    initialDisabled?:boolean,//form
+    inputAttrs?: any,
+    inputs?:any,//form
+    jalali?: boolean,
+    justify?: boolean,
+    justNumber?: boolean | (string[]),
+    label?:AI_label,//slider,pinch
+    labelAttrs?:any,//form
+    lang?:'fa' | 'en',//form,
     line?:(index:number,active:boolean)=>{
         attrs?:any,
         html?:React.ReactNode
     }
-    point?:AI_point,//slider,pinch
-    label?:AI_label,//slider,pinch
-    scale?:AI_scale,//slider,pinch
-    handle?:{attrs?:any},//pinch
+    loading?: boolean | React.ReactNode,
     mapConfig?:I_Map_config,
+    max?: number,//slider,number
+    maxLength?: number,
+    min?: number,//slider,number
+    move?: any,//list
+    multiple?: boolean,
+    onAdd?: Object | (() => void),
+    onChange?: (newValue: any, p?: any) => void,
+    onChangePaging?: (newPaging: AI_table_paging) => void,
+    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
+    onClick?:()=>void,
+    onRemove?: true | ((p: { row: any, action: Function, rowIndex: number }) => void),
+    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    onSearch?: true | ((searchValue: string) => void),
+    open?: boolean,
+    options?: any[],
+    option?:{[key in AI_optionKey]?:AI_optionProp},
+    paging?: AI_table_paging,
+    placeholder?: string,
+    popover?: AP_modal,//notice get type from aio popup
+    point?:AI_point,//slider,pinch
     popupConfig?:I_Map_config
+    preview?:boolean,
+    rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
+    rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    rowGap?: number,
+    rowsTemplate?: (rows: any[]) => React.ReactNode,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
+    rtl?: boolean,
+    scale?:AI_scale,//slider,pinch
+    search?: string,
+    size?: number,//list,date
+    spin?: boolean,
+    start?:number,//slider,pinch
+    startYear?: string | number,//date
+    step?:number,//slider,pinch
+    stop?: number,//list
+    style?: any,
+    swip?: number,
+    subtext?: React.ReactNode | (() => React.ReactNode),
+    text?: React.ReactNode | (() => React.ReactNode)
+    theme?: string[],//date
+    toolbar?: React.ReactNode | (() => React.ReactNode),
+    toolbarAttrs?: any,
+    translate?: (text: string) => string,//date,
+    type: AI_type,
+    unit?: AI_date_unit | AI_time_unit,
+    value?: any,
+    width?: number | string, //list
+    
 }
 export type AI_point = (index:number,value:number)=>{
     attrs?:any,
