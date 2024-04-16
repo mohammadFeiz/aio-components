@@ -27,6 +27,17 @@ class AIODateTS {
     getDaysOfMonth:(p:{date:any,pattern?:string})=>any[];
     getLastDayOfMonth:(p:{date:any,pattern?:string})=>any[] | string;
     getDateByPattern:(p:{date:any,pattern?:string,jalali?:boolean})=>string;
+    getToday:(p?:{jalali?:boolean,pattern?:string})=>string | number[];
+    getByOffset:(p:{ date:any, offset?:number, unit?:'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond', jalali?:boolean })=>number[]
+    getNextYear:(p:number[])=>number[];
+    getPrevYear:(p:number[])=>number[];
+    getNextHour:(date:number[])=>number[];
+    getPrevHour:(date:number[])=>number[];
+    getNextDay:(p:number[])=>number[];
+    getPrevDay:(p:number[])=>number[];
+    getNextMonth:(p:number[])=>number[];
+    getPrevMonth:(p:number[])=>number[];
+    getDayIndex:(p:{date:any,unit:'week'|'year'|'month'})=>number;
     constructor() {
         this.isMatch = (p) => {
             let { date, matchers } = p;
@@ -416,73 +427,64 @@ class AIODateTS {
             let { date, pattern, jalali } = p;
             return this.pattern(date, pattern, jalali)
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    }
-}
-export default function AIODate() {
-    let $$ = {
-        getToday(obj = {}) {
-            let { jalali, pattern } = obj;
+        this.getToday = (p) => {
+            let { jalali, pattern } = p || {};
             let date = new Date();
-            date = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), Math.round(date.getMilliseconds() / 100)]
-            if (jalali) { date = $$.toJalali({ date }) }
-            if (pattern) { return $$.pattern(date, pattern) }
-            return date;
-        },
-        getByOffset({ date, offset, unit = 'day', jalali }) {
+            let dateArray:number[] = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), Math.round(date.getMilliseconds() / 100)]
+            if (jalali) { dateArray = this.toJalali({ date:dateArray }) as number[]  }
+            if (pattern) { return this.pattern(dateArray, pattern) }
+            return dateArray;
+        }
+        this.getByOffset = (p) => {
+            let { date, offset, unit = 'day', jalali } = p || {}
             if (!offset) { return date }
-            let fn = $$['get' + (offset > 0 ? 'Next' : 'Prev') + { 'hour': 'Hour', 'day': 'Day', 'month': 'Month', 'year': 'Year' }[unit]];
+            let fn = this['get' + (offset > 0 ? 'Next' : 'Prev') + { 'hour': 'Hour', 'day': 'Day', 'month': 'Month', 'year': 'Year' }[unit]];
             let abs = Math.abs(offset);
             for (let i = 0; i < abs; i++) { date = fn(date, jalali); }
             return date;
-        },
-        getNextYear([year, month]) {
-            return [year + 1, month, 1, 0]
-        },
-        getPrevYear([year, month]) {
-            return [year - 1, month, 1, 0]
-        },
-        getNextHour([year, month, day, hour], jalali) {
+        }
+        this.getNextYear = ([year, month]) => [year + 1, month, 1, 0]
+        this.getPrevYear = ([year, month]) => [year - 1, month, 1, 0]
+        this.getNextHour = ([year, month, day, hour])=> {
             if (hour < 23) { return [year, month, day, hour + 1] }
-            let a = $$.getNextDay([year, month, day], jalali);
+            let a = this.getNextDay([year, month, day]);
             return [a[0], a[1], a[2], 0]
-        },
-        getPrevHour([year, month, day, hour], jalali) {
+        }
+        this.getPrevHour = ([year, month, day, hour]) =>  {
             if (hour > 0) { return [year, month, day, hour - 1] }
-            let a = $$.getPrevDay([year, month, day], jalali);
+            let a = this.getPrevDay([year, month, day]);
             return [a[0], a[1], a[2], 23]
-        },
-        getNextDay([year, month, day, hour]) {
-            if (day < $$.getMonthDaysLength({ date: [year, month] })) { return [year, month, day + 1, hour] }
+        }
+        this.getNextDay = ([year, month, day, hour]) =>  {
+            if (day < this.getMonthDaysLength({ date: [year, month] })) { return [year, month, day + 1, hour] }
             if (month < 12) { return [year, month + 1, 1, hour] }
             return [year + 1, 1, 1, hour];
-        },
-        getPrevDay([year, month, day, hour], jalali) {
+        }
+        this.getPrevDay = ([year, month, day, hour]) =>  {
             if (day > 1) { return [year, month, day - 1] }
             if (month > 1) {
                 month -= 1;
-                day = $$.getMonthDaysLength({ date: [year, month] });
+                day = this.getMonthDaysLength({ date: [year, month] });
                 return [year, month, day, hour];
             }
             year -= 1;
             month = 12;
-            day = $$.getMonthDaysLength({ date: [year, month] });
+            day = this.getMonthDaysLength({ date: [year, month] });
             return [year, month, day, hour];
-        },
-        getDayIndex({ date, unit }) {
-            date = $$.convertToArray({ date });
+        }
+        this.getNextMonth = (p) => { 
+            let [year = 0, month = 1, day = 1, hour = 0] = p || []
+            return month < 12 ? [year, month + 1, day, hour] : [year + 1, 1, 1]; 
+        }
+        this.getPrevMonth = (p) => { 
+            let [year = 0, month = 1, day = 1, hour = 0] = p || []
+            return month > 1 ? [year, month - 1, day, hour] : [year - 1, 12, 1]; 
+        }
+        this.getDayIndex = (p) => {
+            let { date, unit } = p || {}
+            date = this.convertToArray({ date });
             if (unit === 'week') {
-                let days = $$.getDaysOfWeek({ date });
+                let days = this.getDaysOfWeek({ date });
                 for (let i = 0; i < days.length; i++) {
                     let [year, month, day] = days[i];
                     if (year !== date[0]) { continue }
@@ -497,44 +499,11 @@ export default function AIODate() {
             if (unit === 'year') {
                 let res = 0;
                 for (let i = 0; i < date[1] - 1; i++) {
-                    res += $$.getMonthDaysLength({ date })
+                    res += this.getMonthDaysLength({ date })
                 }
                 res += date[1];
                 return res - 1
             }
-        },
-        getNextMonth([year, month, day, hour]) { return month < 12 ? [year, month + 1, day, hour] : [year + 1, 1, 1]; },
-        getPrevMonth([year, month, day, hour]) { return month > 1 ? [year, month - 1, day, hour] : [year - 1, 12, 1]; },
-        
-    }
-    return {
-        getDaysOfWeek: $$.getDaysOfWeek,
-        getDaysOfMonth: $$.getDaysOfMonth,
-        getLastDayOfMonth: $$.getLastDayOfMonth,
-        getByOffset: $$.getByOffset,
-        getDayIndex: $$.getDayIndex,
-        toJalali: $$.toJalali,
-        toGregorian: $$.toGregorian,
-        getTime: $$.getTime,
-        getSplitter: $$.getSplitter,
-        convertToArray: $$.convertToArray,
-        compaire: $$.compaire,
-        isEqual: $$.isEqual,
-        isGreater: $$.isGreater,
-        getDelta: $$.getDelta,
-        convertMiliseconds: $$.convertMiliseconds,
-        isLess: $$.isLess,
-        isBetween: $$.isBetween,
-        getMonthDaysLength: $$.getMonthDaysLength,
-        getYearDaysLength: $$.getYearDaysLength,
-        getWeekDay: $$.getWeekDay,
-        getWeekDays: $$.getWeekDays,
-        getMonths: $$.getMonths,
-        getToday: $$.getToday,
-        isMatch: $$.isMatch,
-        getNextTime: $$.getNextTime,
-        getDatesBetween: $$.getDatesBetween,
-        getDateByPattern: $$.getDateByPattern,
-        get2Digit: $$.get2Digit
+        }
     }
 }
