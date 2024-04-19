@@ -1,23 +1,22 @@
 import React,{useReducer,createContext,useContext,useState,createRef,useEffect} from "react";
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from "../../npm/aio-input/aio-input";
-import AIOCanvas from './../../npm/aio-canvas/aio-canvas';
+import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
+import AIOInput from "../../npm/aio-input/aio-input.js";
+import AIOCanvas from './../../npm/aio-canvas/index.tsx';
 import {Swip} from '../../npm/aio-utils/index.tsx';
 import {Icon} from '@mdi/react';
-import AIODoc from './../../npm/aio-documentation/aio-documentation';
+import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
 import './index.css';
 import $ from 'jquery';
 import { Component } from "react";
-const CTX = createContext()
+import { I_canvas_item, I_canvas_type } from "../../npm/aio-canvas/types.tsx";
+const CTX = createContext({} as any)
 function Reducer(state,action){
     return {...state,[action.key]:action.value}
 }
 export default function DOC_AIO_Canvas({goToHome}){
     let [state,dispatch] = useReducer(Reducer,{
-        items:[
-            
-        ],
+        items:[],
         Canvas:new AIOCanvas(),
         types:['Group','Arc','Rectangle','Line','NGon','Triangle'],
         activeItemId:false,
@@ -25,79 +24,77 @@ export default function DOC_AIO_Canvas({goToHome}){
     })
     let startDragId;
     function getNewId(){return 'aa' + Math.round(Math.random() * 10000000);}
-    function getItemById(ids){
+    function getItemById(ids:string[]):I_canvas_item | false{
         let {items} = state;
-        let result;
+        let result:I_canvas_item | false = false;
         for(let i = 0; i < ids.length; i++){
             result = items.find((o)=>o.id[i] === ids[i]);
             if(result){items = result.items;}
         }
         return result
     }
-    function getParentById(id){
+    function getParentById(id:string[]){
         if(id.length === 1){return false}
         return getItemById(id.slice(0,id.length - 1));
     }
-    function changeItems(newItems){
+    function changeItems(newItems:I_canvas_item[]){
         state.items = newItems;
         dispatch({key:'items',value:newItems})
     }
-    function changeItem(p,obj){
+    function changeItem(p,obj:{[key in keyof I_canvas_item]?:any}){
         let {items} = state;
         let item = Array.isArray(p)?getItemById(p):p;
         for(let prop in obj){item[prop] = obj[prop]}
         changeItems(items)
     }
-    function addNewItem(type,parent){
+    function addNewItem(type:I_canvas_type,parent?:I_canvas_item){
         let id = getNewId();
-        let newItem = {
-            type,id:parent?[...parent.id,id]:[id],name:type + Math.round(Math.random() * 10000000),show:true,
-            events:{'click':()=>alert()}
-        }
+        let data = {id:parent?[...parent.data.id,id]:[id],name:type + Math.round(Math.random() * 10000000),open:true}
+        let newItem:I_canvas_item = {type,show:true,data,onClick:()=>alert()}
         if(type === 'Arc'){newItem = {...newItem,r:100}}
         else if(type === 'Rectangle'){newItem = {...newItem,width:100,height:100}}
-        else if(type === 'Group'){newItem = {...newItem,items:[],sequence:[],open:true}}
+        else if(type === 'Group'){newItem = {...newItem,items:[],sequence:[]}}
         else if(type === 'Line'){newItem = {...newItem,points:[]}}
         addItem(newItem,parent)
     }
-    function addItem(newItem,parent){
+    function addItem(newItem:I_canvas_item,parent:I_canvas_item | false){
         let {items} = state;
-        if(parent){changeItem(parent,{items:[...parent.items,newItem]})}
+        if(parent){changeItem(parent,{items:[...(parent.items as I_canvas_item[]),newItem]})}
         else {changeItems(items.concat(newItem))}
     }
-    function removeItem(item){
+    function removeItem(item:I_canvas_item){
         let {items} = state;
-        let parent = getParentById(item.id);
+        let parent:false | I_canvas_item = getParentById(item.data.id);
         if(parent){
-            let newItems = parent.items.filter((o)=>o.id.toString() !== item.id.toString());
+            let newItems = (parent.items as I_canvas_item[]).filter((o)=>o.data.id.toString() !== item.data.id.toString());
             changeItem(parent,{items:newItems});
-            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].id)}
+            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].data.id)}
             else {setActiveItemId(false)}
         }
         else {
-            let newItems = items.filter((o)=>o.id.toString() !== item.id.toString())
+            let newItems:I_canvas_item[] = items.filter((o)=>o.id.toString() !== item.data.id.toString())
             changeItems(newItems);
-            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].id)}
+            if(newItems.length){setActiveItemId(newItems[newItems.length - 1].data.id)}
             else {setActiveItemId(false)}
         }
     }
-    function cloneItem(item){
+    function cloneItem(item:I_canvas_item){
         item = JSON.parse(JSON.stringify(item))
-        let parent = getParentById(item.id);
-        let newId = parent?[...parent.id,getNewId()]:[getNewId()]
-        let newItem = {...item,id:newId,name:item.name + '-c'};
-        if(newItem.type === 'Group'){rebuildChilds(newId,newItem.items)}
+        let parent:I_canvas_item | false = getParentById(item.data.id);
+        let newId = parent?[...parent.data.id,getNewId()]:[getNewId()]
+        let newItem = {...item,id:newId,name:item.data.name + '-c'};
+        if(newItem.type === 'Group'){rebuildChilds(newId,newItem.items as I_canvas_item[])}
         addItem(newItem,parent)
     }
-    function rebuildChilds(parentId,items = [],changeName = true){
+    function rebuildChilds(parentId:string[],items:I_canvas_item[] = [],changeName:boolean = true){
         for(let i = 0; i < items.length; i++){
             let item = items[i];
             let {type} = item;
-            if(changeName){item.name = item.name + '-c'}
+            if(changeName){item.data.name = item.data.name + '-c'}
             let newId = [...parentId,getNewId()]
-            item.id = newId;
+            item.data.id = newId;
             if(type === 'Group'){
-                rebuildChilds(newId,item.items)
+                rebuildChilds(newId,item.items as I_canvas_item[])
             }
         }
     }
@@ -110,18 +107,21 @@ export default function DOC_AIO_Canvas({goToHome}){
         state.activePointIndex = index;
         dispatch({key:'activePointIndex',value:index})
     }
-    function getActivePoint(){
+    function getActivePoint():(number[] | false){
         let {activeItemId,activePointIndex} = state;
         if(activeItemId === false || activePointIndex === false){return false}
         let activeItem = getItemById(activeItemId);
-        return activeItem.points[activePointIndex];
+        if(activeItem){return activeItem.points[activePointIndex];}
+        return false
     }
     function changeActivePoint([x,y]){
         let {items} = state;
         let activePoint = getActivePoint();
-        activePoint[0] = x;
-        activePoint[1] = y;
-        changeItems(items);
+        if(activePoint){
+            activePoint[0] = x;
+            activePoint[1] = y;
+            changeItems(items);
+        }
     }
     function removePoint(item,pointIndex){
         let {items} = state;
@@ -138,17 +138,15 @@ export default function DOC_AIO_Canvas({goToHome}){
             addNewItem,
             addItem,removeItem,cloneItem,getItemById,removePoint,setActivePointIndex,getActivePoint,changeActivePoint,
             setActiveItemId,
-            dragStart:(id)=>{
-                startDragId = id;
-            },
+            dragStart:(id:string)=>startDragId = id,
             drop:(id)=>{
                 if(id.toString() === startDragId.toString()){return}
                 let startItem = getItemById(startDragId)
                 let endItem = getItemById(id)
-                if(endItem.type === 'Group'){
+                if(startItem && endItem && endItem.type === 'Group'){
                     removeItem(startItem);
-                    let newItems = endItem.items.concat(startItem);
-                    rebuildChilds(endItem.id,newItems,false)
+                    let newItems:I_canvas_item[] = (endItem.items as any[]).concat(startItem);
+                    rebuildChilds(endItem.data.id,newItems,false)
                     changeItem(endItem,{items:newItems});
                 }
             }
@@ -215,7 +213,8 @@ function Items_Header(){
         />
     )
 }
-function AddItem(props = {}){
+type I_AddItem = {parent?:I_canvas_item}
+function AddItem(props:I_AddItem){
     let {parent} = props,{types,addNewItem} = useContext(CTX)
     return (
         <AIOInput

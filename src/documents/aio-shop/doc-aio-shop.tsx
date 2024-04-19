@@ -2,7 +2,7 @@ import React, { Component,Fragment,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import products from './products.tsx';
-import AIOShop from '../../npm/aio-shop/aio-shop.js';
+import AIOShop from '../../npm/aio-shop/index.tsx';
 import './index.css';
 import { I_AIOShop, I_AIOShop_props, I_discount, I_pr, I_v } from '../../npm/aio-shop/types.js';
 import {Icon} from '@mdi/react';

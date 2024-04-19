@@ -1,10 +1,10 @@
 import { Geo } from "../aio-utils"
-
+export type I_canvas_type = 'Line'|'Image'|'Arc'|'Group'|'Text'|'Rectangle'|'NGon'|'Triangle'
 export type I_canvas_eventProps = {event:any, mousePosition:I_canvas_mousePosition,item:I_canvas_item}
 export type I_canvas_item = {
   x?:number,y?:number,rotate?:number,pivot?:[number,number],fill?:string,stroke?:string,opacity?:number,lineWidth?:number,
   lineJoin?:'mitter'|'round'|'bevel',lineCap?:'butt'|'round'|'square',dash?:number[],
-  sequence?:{prop:string,statement:string}[],slice?:[number,number],r?:number,type:'Line'|'Image'|'Arc'|'Group'|'Text'|'Rectangle'|'NGon'|'Triangle',items?:I_canvas_items
+  sequence?:{prop:string,statement:string}[],slice?:[number,number],r?:number,type:I_canvas_type,items?:I_canvas_items
   align?:[0 |1 | -1,0 |1 | -1],
   fontSize?:number,
   fontFamily?:string,
@@ -28,6 +28,7 @@ export type I_canvas_item = {
   onMouseMove?:(p:I_canvas_eventProps)=>void,
   onMouseUp?:(p:I_canvas_eventProps)=>void,
   onClick?:(p:I_canvas_eventProps)=>void,
+  data?:any
 }
 export type I_canvas_items = (I_canvas_item | (()=>I_canvas_item))[] | (()=>(I_canvas_item | (()=>I_canvas_item))[])
 export type I_canvas_canvasToClient = (pos:[number,number])=>[number,number,number,number]

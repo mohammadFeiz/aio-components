@@ -4,7 +4,7 @@ import AIOStorage from './../../npm/aio-storage/aio-storage.js';
 import AIOPopup from './../../npm/aio-popup/aio-popup.js';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import ACS from './../../npm/aio-content-slider/index.tsx';
-import {SplitNumber} from './../../npm/aio-utils/aio-utils.js';
+import {SplitNumber} from './../../npm/aio-utils/index.tsx';
 import { makeAutoObservable,toJS } from "mobx"
 import { observer } from "mobx-react-lite"
 import {Icon} from '@mdi/react';

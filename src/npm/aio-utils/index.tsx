@@ -89,7 +89,7 @@ export function ExportToExcel(rows: any[], config: any = {}) {
     }
     return o.export();
 }
-export function SplitNumber(price: number, count: number, splitter: string): string {
+export function SplitNumber(price: number, count?: number, splitter?: string): string {
     if (!price) { return '' }
     count = count || 3;
     splitter = splitter || ',';
