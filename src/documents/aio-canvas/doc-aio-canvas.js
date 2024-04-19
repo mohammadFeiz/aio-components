@@ -2,7 +2,7 @@ import React,{useReducer,createContext,useContext,useState,createRef,useEffect} 
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOInput from "../../npm/aio-input/aio-input";
 import AIOCanvas from './../../npm/aio-canvas/aio-canvas';
-import {Swip} from '../../npm/aio-utils/aio-utils';
+import {Swip} from '../../npm/aio-utils/index.tsx';
 import {Icon} from '@mdi/react';
 import AIODoc from './../../npm/aio-documentation/aio-documentation';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
