@@ -14,6 +14,7 @@ export default class Canvas {
   constructor() {
     this.height = 0;
     this.width = 0;
+    this.mousePosition = {x:0,y:0,px:0,py:0,cx:0,cy:0}
     this.listenToMousePosition = (mp) => this.mousePosition = mp
     this.canvasToClient = () => { return [0, 0, 0, 0] }
     this.clientToCanvas = () => { return [0, 0] }

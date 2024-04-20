@@ -1,6 +1,6 @@
 import React, { Component, createRef, createContext } from 'react';
-import AIOInput from './../../npm/aio-input/aio-input';
-import AIOCanvas from './../aio-canvas/aio-canvas';
+import AIOInput from './../../npm/aio-input/index.tsx';
+import AIOCanvas from './../aio-canvas/index.tsx';
 import $ from 'jquery';
 import './index.css';
 

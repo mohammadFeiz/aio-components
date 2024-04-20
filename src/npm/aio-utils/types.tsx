@@ -32,7 +32,7 @@ export type I_Swip_domLimit = {
     width:number,height:number,left:number,top:number,centerX:number,centerY:number,right:number,bottom:number
 }
 
-export type I_Date = string | number | Date | { year: number, month?: number, day?: number, hour?: number, minute?: number } | number[];
+export type I_Date = string | number | Date | { year?: number, month?: number, day?: number, hour?: number, minute?: number } | number[];
 export type I_point = number[]
 export type I_line = [I_point, I_point]
 export type I_dline = [number, number, number]//x,y,dip

@@ -48,7 +48,7 @@ export type I_canvas_props = {
   lineWidth?:number,
   rotateDirection?:'clock'|'clockwise',
   attrs?:any,
-  listenToMousePosition:(mp:I_canvas_mousePosition)=>void
+  listenToMousePosition?:(mp:I_canvas_mousePosition)=>void
 }
 
 export type I_Canvas_temp = {

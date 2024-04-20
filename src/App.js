@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import './App.css'
 import AIOStorage from './npm/aio-storage/aio-storage';
-import AIOInput from "./npm/aio-input/aio-input";
+import AIOInput from "./npm/aio-input/index.tsx";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";

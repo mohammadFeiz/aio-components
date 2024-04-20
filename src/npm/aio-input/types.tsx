@@ -1,4 +1,5 @@
 import { AP_modal } from "../aio-popup/types"
+import { AIODate } from "../aio-utils"
 import { I_RVD_node } from "../react-virtual-dom/types"
 
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
@@ -203,7 +204,8 @@ export type AI_context = {
     open: boolean,
     click: (e: any, dom: any) => void,
     optionClick: (option: AI_option) => void,
-    types: AI_types
+    types: AI_types,
+    DATE:AIODate
 }
 export type AI_types = {
     isMultiple: boolean,

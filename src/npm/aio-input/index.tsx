@@ -28,6 +28,7 @@ const AICTX = createContext({} as any);
 
 export default function AIOInput(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
+    let [DATE] = useState<AIODate>(new AIODate())
     props = getDefaultProps(props,types)
     let { type,value, onChange, attrs = {} } = props;
     let [parentDom] = useState(createRef())
@@ -100,7 +101,7 @@ export default function AIOInput(props: AI) {
     function getContext(): AI_context {
         let context: AI_context = {
             rootProps: {...props,value}, datauniqid,touch: 'ontouchstart' in document.documentElement,
-            DragOptions, open, click, optionClick,types,showPassword, setShowPassword
+            DragOptions, open, click, optionClick,types,showPassword, setShowPassword,DATE
         }
         return context
     }
@@ -135,7 +136,7 @@ AIOInput.defaultProps = {
     jalali:false,unit:'day',theme:[],size:180
 }
 function Time(){
-    let {rootProps}:AI_context = useContext(AICTX);
+    let {rootProps,DATE}:AI_context = useContext(AICTX);
     let { value:Value = {},attrs:Attrs,jalali, onChange, unit = {year:true,month:true,day:true} } = rootProps;
     if(typeof unit !== 'object'){unit = {year:true,month:true,day:true}}
     let [today] = useState(getToday())
@@ -144,7 +145,7 @@ function Time(){
     let valueRef = useRef(value);
     valueRef.current = value;
     function getToday(){
-        let today = AIODate().getToday({ jalali });
+        let today = DATE.getToday(jalali);
         return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] } 
     }
     function getValue(){
@@ -165,7 +166,7 @@ function Time(){
     }
     function getTimeText(obj) {
         if(rootProps.text){
-            let res = AIODate().getDateByPattern({date:value,pattern:rootProps.text,jalali})
+            let res = value?DATE.getDateByPattern(value,rootProps.text as string):''
             console.log(res)
             return res
         }
@@ -251,6 +252,7 @@ class Popover {
     }
 }
 function TimePopover(props: I_TimePopver) {
+    let {DATE}:AI_context = useContext(AICTX)
     let { lang = 'fa', onChange, onClose } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
     let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
@@ -265,7 +267,7 @@ function TimePopover(props: I_TimePopver) {
         let { year, month, day } = value;
         if (type === 'year') { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
         if (type === 'day') {
-            let length = !year || !month ? 31 : AIODate().getMonthDaysLength({ date: [year, month] });
+            let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
             return new Array(length).fill(0).map((o, i) => { return { text: i + 1, value: i + 1 } })
         }
@@ -522,7 +524,7 @@ function Input() {
     valueRef.current = value;
     function setSwip(){
         if (type === 'number' && swip) {
-            Swip({
+            new Swip({
                 speedY: swip, reverseY: true, minY: min, maxY: max,
                 dom: () => $(dom.current),
                 start: () => {
@@ -530,7 +532,8 @@ function Input() {
                     vref = isNaN(vref)?0:vref
                     return [0,vref]
                 },
-                move: ({ y }) => {
+                move: (p) => {
+                    let {y} = p.change;
                     if (min !== undefined && y < min) { y = min; }
                     if (max !== undefined && y > max) { y = max }
                     change(y, onChange)
@@ -917,7 +920,7 @@ function Options(props:AI_Options) {
 }
 const AITableContext = createContext({} as any);
 function Table() {
-    let { rootProps }: AI_context = useContext(AICTX);
+    let { rootProps,DATE }: AI_context = useContext(AICTX);
     let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs,onChangeSort,className,style } = rootProps;
     let [dom] = useState(createRef())
     let [searchValue, setSearchValue] = useState<string>('')
@@ -962,7 +965,7 @@ function Table() {
             else {
                 getValue = (row) => {
                     let value = getDynamics({ value: column.value, row, column })
-                    if (input && input.type === 'date') { value = AIODate().getTime({ date: value }); }
+                    if (input && input.type === 'date') { value = DATE.getTime(value); }
                     return value
                 }
             }
@@ -1347,8 +1350,8 @@ function TableCellContent(props:AI_TableCellContent){
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
     let convertedInput:AI = {type:'text'}
     for (let property in input) {
-        let prop:keyof AI = property as keyof AI;
-        let res = input[prop];
+        let prop:(keyof AI) = property as keyof AI;
+        let res:any = input[prop];
         if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = res }
         else { convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column }) }
     }
@@ -1512,12 +1515,12 @@ function Layout(props: I_Layout) {
 const DPContext = createContext({} as any);
 type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 function Calendar(props: I_Calendar) {
-    let { rootProps }: AI_context = useContext(AICTX);
+    let { rootProps,DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
     let { unit, jalali, value,disabled,size,theme, translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
-    let { getToday, convertToArray, getMonths, getWeekDay } = AIODate();
+    let { convertToArray, getMonths, getWeekDay } = AIODate();
     let [months] = useState(getMonths({ jalali }));
-    let [today, setToday] = useState(getToday({ jalali }))
+    let [today, setToday] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(getWeekDay({ date: today }).weekDay)
     let [initValue] = useState(getInitValue())
     function getInitValue() {

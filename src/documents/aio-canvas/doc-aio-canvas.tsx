@@ -1,6 +1,6 @@
-import React,{useReducer,createContext,useContext,useState,createRef,useEffect} from "react";
+import React,{useReducer,createContext,useContext,useState,createRef,useEffect, useRef} from "react";
 import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput from "../../npm/aio-input/aio-input.js";
+import AIOInput from "../../npm/aio-input/index.tsx";
 import AIOCanvas from './../../npm/aio-canvas/index.tsx';
 import {Swip} from '../../npm/aio-utils/index.tsx';
 import {Icon} from '@mdi/react';
@@ -9,30 +9,64 @@ import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircl
 import './index.css';
 import $ from 'jquery';
 import { Component } from "react";
-import { I_canvas_item, I_canvas_type } from "../../npm/aio-canvas/types.tsx";
+import { I_canvas_item, I_canvas_mousePosition, I_canvas_type } from "../../npm/aio-canvas/types.tsx";
+import Canvas from "./../../npm/aio-canvas/index.tsx";
 const CTX = createContext({} as any)
 function Reducer(state,action){
     return {...state,[action.key]:action.value}
 }
+export type I_context = {
+    onMount:()=>void,
+    goToHome:()=>void,
+    changeItem:(p:I_canvas_item | string[],obj:{[key in keyof I_canvas_item]?:any})=>void,
+    addNewItem:(type:I_canvas_type,parent?:I_canvas_item)=>void,
+    addItem:(newItem:I_canvas_item,parent:I_canvas_item | false)=>void,
+    removeItem:(item:I_canvas_item)=>void,
+    cloneItem:(item:I_canvas_item)=>void,
+    getItemById:(ids:string[] | false)=>I_canvas_item | undefined,
+    removePoint:(item:I_canvas_item,pointIndex:number)=>void,
+    setActivePointIndex:(index:number | false)=>void,
+    getActivePoint:()=>(number[] | false),
+    changeActivePoint:(p:[number,number])=>void,
+    setActiveItemId:(id:string)=>void,
+    dragStart:(id:string)=>void,
+    drop:(id:string[])=>void,
+    state:I_state,
+    addPoint:(p:number[])=>void
+}
+export type I_state = {
+    items:I_canvas_item[],
+    Canvas:Canvas,
+    types:('Group'|'Arc'|'Rectangle'|'Line'|'NGon'|'Triangle')[]
+    activeItemId:false | string[],
+    activePointIndex:false | number,
+    mounted:boolean
+}
 export default function DOC_AIO_Canvas({goToHome}){
-    let [state,dispatch] = useReducer(Reducer,{
+    let initialValue:I_state = {
+        mounted:false,
         items:[],
         Canvas:new AIOCanvas(),
         types:['Group','Arc','Rectangle','Line','NGon','Triangle'],
         activeItemId:false,
         activePointIndex:false
-    })
+    }
+    let [state,dispatch]:[I_state,any] = useReducer(Reducer,initialValue)
     let startDragId;
-    function getNewId(){return 'aa' + Math.round(Math.random() * 10000000);}
-    function getItemById(ids:string[]):I_canvas_item | false{
+    function getNewId():string{return 'aa' + Math.round(Math.random() * 10000000);}
+    function getItemById(ids:string[] | false):I_canvas_item | undefined{
         let {items} = state;
-        let result:I_canvas_item | false = false;
+        ids = ids || [];
+        let result:I_canvas_item;
         for(let i = 0; i < ids.length; i++){
-            result = items.find((o)=>o.id[i] === ids[i]);
-            if(result){items = result.items;}
+            result = items.find((o)=>o.data.id[i] === ids[i]);
+            if(result){items = result.items as I_canvas_item[];}
         }
         return result
     }
+    function addPoint(p){
+
+    } 
     function getParentById(id:string[]){
         if(id.length === 1){return false}
         return getItemById(id.slice(0,id.length - 1));
@@ -41,14 +75,14 @@ export default function DOC_AIO_Canvas({goToHome}){
         state.items = newItems;
         dispatch({key:'items',value:newItems})
     }
-    function changeItem(p,obj:{[key in keyof I_canvas_item]?:any}){
+    function changeItem(p:I_canvas_item | string[],obj:{[key in keyof I_canvas_item]?:any}){
         let {items} = state;
-        let item = Array.isArray(p)?getItemById(p):p;
+        let item:I_canvas_item | undefined = Array.isArray(p)?getItemById(p):p;
         for(let prop in obj){item[prop] = obj[prop]}
         changeItems(items)
     }
     function addNewItem(type:I_canvas_type,parent?:I_canvas_item){
-        let id = getNewId();
+        let id:string = getNewId();
         let data = {id:parent?[...parent.data.id,id]:[id],name:type + Math.round(Math.random() * 10000000),open:true}
         let newItem:I_canvas_item = {type,show:true,data,onClick:()=>alert()}
         if(type === 'Arc'){newItem = {...newItem,r:100}}
@@ -72,7 +106,7 @@ export default function DOC_AIO_Canvas({goToHome}){
             else {setActiveItemId(false)}
         }
         else {
-            let newItems:I_canvas_item[] = items.filter((o)=>o.id.toString() !== item.data.id.toString())
+            let newItems:I_canvas_item[] = items.filter((o)=>o.data.id.toString() !== item.data.id.toString())
             changeItems(newItems);
             if(newItems.length){setActiveItemId(newItems[newItems.length - 1].data.id)}
             else {setActiveItemId(false)}
@@ -81,29 +115,28 @@ export default function DOC_AIO_Canvas({goToHome}){
     function cloneItem(item:I_canvas_item){
         item = JSON.parse(JSON.stringify(item))
         let parent:I_canvas_item | false = getParentById(item.data.id);
-        let newId = parent?[...parent.data.id,getNewId()]:[getNewId()]
-        let newItem = {...item,id:newId,name:item.data.name + '-c'};
+        let newId:string[] = parent?[...parent.data.id,getNewId()]:[getNewId()]
+        let newItem:I_canvas_item = {...item,data:{id:newId,name:item.data.name + '-c'}};
         if(newItem.type === 'Group'){rebuildChilds(newId,newItem.items as I_canvas_item[])}
         addItem(newItem,parent)
     }
     function rebuildChilds(parentId:string[],items:I_canvas_item[] = [],changeName:boolean = true){
         for(let i = 0; i < items.length; i++){
-            let item = items[i];
+            let item:I_canvas_item = items[i];
             let {type} = item;
             if(changeName){item.data.name = item.data.name + '-c'}
-            let newId = [...parentId,getNewId()]
+            let newId:string[] = [...parentId,getNewId()]
             item.data.id = newId;
             if(type === 'Group'){
                 rebuildChilds(newId,item.items as I_canvas_item[])
             }
         }
     }
-
-    function setActiveItemId(id){
+    function setActiveItemId(id:string | false){
         dispatch({key:'activeItemId',value:id})
         setActivePointIndex(false)
     }
-    function setActivePointIndex(index){
+    function setActivePointIndex(index:number | false){
         state.activePointIndex = index;
         dispatch({key:'activePointIndex',value:index})
     }
@@ -116,30 +149,31 @@ export default function DOC_AIO_Canvas({goToHome}){
     }
     function changeActivePoint([x,y]){
         let {items} = state;
-        let activePoint = getActivePoint();
+        let activePoint:number[] | false = getActivePoint();
         if(activePoint){
             activePoint[0] = x;
             activePoint[1] = y;
             changeItems(items);
         }
     }
-    function removePoint(item,pointIndex){
+    function removePoint(item:I_canvas_item,pointIndex:number){
         let {items} = state;
         item.points.splice(pointIndex,1);
         changeItems(items);
         setActivePointIndex(false)
     }
     function getContext(){
-        return {
-            ...state,
+        let context:I_context = {
+            state,
             onMount:()=>dispatch({key:'mounted',value:true}),
             goToHome,
             changeItem,
             addNewItem,
+            addPoint,
             addItem,removeItem,cloneItem,getItemById,removePoint,setActivePointIndex,getActivePoint,changeActivePoint,
             setActiveItemId,
             dragStart:(id:string)=>startDragId = id,
-            drop:(id)=>{
+            drop:(id:string[])=>{
                 if(id.toString() === startDragId.toString()){return}
                 let startItem = getItemById(startDragId)
                 let endItem = getItemById(id)
@@ -151,6 +185,7 @@ export default function DOC_AIO_Canvas({goToHome}){
                 }
             }
         }
+        return context
     }
     return (
         <CTX.Provider value={getContext()}>
@@ -160,7 +195,7 @@ export default function DOC_AIO_Canvas({goToHome}){
 }
 
 function Header(){
-    let {goToHome} = useContext(CTX)
+    let {goToHome}:I_context = useContext(CTX)
     return (
         <RVD
             rootNode={{
@@ -171,28 +206,28 @@ function Header(){
     )
 }
 function Body(){
-    let {activeItemId,getItemById} = useContext(CTX);
+    let {state,getItemById}:I_context = useContext(CTX);
     return (
         <RVD
             rootNode={{
                 row:[
                     {size:240,html:<Items/>},
                     {flex:1,html:<Preview/>},
-                    {show:!!activeItemId,size:240,html:()=><Setting activeItem={getItemById(activeItemId)}/>}
+                    {show:!!state.activeItemId,size:240,html:()=><Setting activeItem={getItemById(state.activeItemId)}/>}
                 ]               
             }}
         />
     )
 }
 function Items(){
-    let {items} = useContext(CTX);
+    let {state}:I_context = useContext(CTX);
     return (
         <RVD 
             rootNode={{
                 className:'aioc-items',
                 column:[
                     {html:<Items_Header/>},
-                    {flex:1,className:'ofy-auto',html:<Items_Body items={items} level={0}/>},
+                    {flex:1,className:'ofy-auto',html:<Items_Body items={state.items} level={0}/>},
                     {size:36,className:'align-v p-h-12',style:{background:'rgba(255,255,255,.2)'},html:'items footer'}
                 ]
             }}
@@ -215,22 +250,26 @@ function Items_Header(){
 }
 type I_AddItem = {parent?:I_canvas_item}
 function AddItem(props:I_AddItem){
-    let {parent} = props,{types,addNewItem} = useContext(CTX)
+    let {parent} = props,{state,addNewItem}:I_context = useContext(CTX)
     return (
         <AIOInput
             type='select' caret={false} className='bg-off'
             text={<Icon path={mdiPlusThick} size={.7}/>}
-            options={types} optionText='option' optionValue='option'
-            optionAttrs={{className:'bg-32'}}
+            options={state.types} 
+            option={{
+                text:'option',
+                value:'option',
+                attrs:()=>{return {className:'bg-32'}}
+            }}
             popover={{attrs:{style:{color:'#333'}}}}
             onChange={(type)=>addNewItem(type,parent)}
         />
     )
 }
 function Items_Body({items,level}){
-    let {dragStart,drop,activeItemId} = useContext(CTX)
+    let {dragStart,drop,state}:I_context = useContext(CTX)
     function item_node(item){
-        let active = activeItemId && activeItemId.toString() === item.id.toString();
+        let active = state.activeItemId && state.activeItemId.toString() === item.id.toString();
         item.showPivot = !!active;            
         return {
             column:[
@@ -244,17 +283,22 @@ function Items_Body({items,level}){
     }
     return (<RVD rootNode={{className:'ofy-auto',column:items.map((item,i)=>item_node(item))}}/>)
 }
-function Item({item,level,active}){
-    let {changeItem,setActiveItemId} = useContext(CTX)
+function Item(p:{item:I_canvas_item,level:number,active:boolean}){
+    let {item,level,active} = p;
+    let {changeItem,setActiveItemId}:I_context = useContext(CTX)
     return (
         <AIOInput
             className={'aioc-item' + (active?' active':'')}
             style={{paddingLeft:level * 12}}
-            onClick={()=>setActiveItemId(item.id)}
-            before={<Icon path={item.type === 'Group'?(item.open?mdiChevronDown:mdiChevronRight):mdiCircleMedium} size={.8} onClick={item.type !== 'Group'?undefined:(e)=>{
-                e.stopPropagation();
-                changeItem(item,{open:!item.open})
-            }}/>}
+            onClick={()=>setActiveItemId(item.data.id)}
+            before={(
+                <div onClick={item.type !== 'Group'?undefined:(e)=>{
+                    e.stopPropagation();
+                    changeItem(item,{data:{...item.data,open:!item.data.open}})
+                }}>
+                    <Icon path={item.type === 'Group'?(item.data.open?mdiChevronDown:mdiChevronRight):mdiCircleMedium} size={.8}/>
+                </div>
+            )}
             after={(
                 <RVD
                     rootNode={{
@@ -267,30 +311,32 @@ function Item({item,level,active}){
                     }}
                 />
             )}
-            type='text' value={item.name}
-            onChange={(name)=>changeItem(item,{name})}
+            type='text' value={item.data.name}
+            onChange={(name)=>changeItem(item,{data:{...item.data,name}})}
         />
     )
 }
 function Preview(){
-    let {Canvas,items,onMount,mounted,activeItemId,activePointIndex,getActivePoint} = useContext(CTX)
+    let {state,onMount,getActivePoint}:I_context = useContext(CTX)
     let activePoint = getActivePoint();
     function mouseMove(){
-        let mp = Canvas.mousePosition || {};
+        let mp:I_canvas_mousePosition = state.Canvas.mousePosition;
         $('.aioc-mouse-position').html(`${mp.x} ${mp.y}`)
         $('.msf').css({left:mp.cx,top:mp.cy})
     }
     function controller(){
-        if(!mounted || activePoint === false){return null}
-        return <PointController key={activeItemId + ' ' + activePointIndex } x={activePoint[0]} y={activePoint[1]}/>
+        if(!state.mounted || activePoint === false){return null}
+        return <PointController key={state.activeItemId + ' ' + state.activePointIndex } x={activePoint[0]} y={activePoint[1]}/>
     }
     function renderCanvas(){
-        return Canvas.render({
+        return state.Canvas.render({
             onMount:()=>onMount(),
-            events:{onMouseMove:()=>mouseMove()},
+            attrs:{
+                onMouseMove:()=>mouseMove(),
+                style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
+            },
             grid:[10,10,'#444'],onPan:true,
-            style:{position: 'absolute',left: 0,top: 0,width: '100%',height: '100%'},
-            items
+            items:state.items
         })
     }
     return (
@@ -311,74 +357,75 @@ function Preview(){
         </>
     )
 }
-class PointController extends Component{
-    static contextType = CTX;
-    constructor(props){
-        super(props);
-        this.moveDom = createRef()
-        this.drawDom = createRef()
-        this.state = {
-            coords:[0,0],prevX:props.x,prevY:props.y
-        }
-        
-    }
-    componentDidMount(){
-        let {Canvas} = this.context;
-        let {x,y} = this.props;
-        this.setState({coords:Canvas.canvasToClient([x,y])})
-        Swip({
-            dom:$(this.moveDom.current),
+export type I_PointController_temp = {
+    moveDom:any
+}
+export type I_PointController = {
+    x:number,y:number
+}
+function PointController(props){
+    let {state,changeActivePoint,addPoint}:I_context = useContext(CTX)
+    let [temp] = useState({
+        moveDom:createRef(),
+        drawDom:createRef()
+    })
+    let [coords,setCoords] = useState<[number,number]>([0,0])
+    let ref = useRef(coords);
+    ref.current = coords;
+    useEffect(()=>{
+        let {Canvas} = state
+        let [x,y] = Canvas.canvasToClient([props.x,props.y]);
+        setCoords([x,y])
+        new Swip({
+            dom:$(temp.moveDom.current),
             start:()=>{
-                let {coords} = this.state;
+                let coords = ref.current;
                 return [coords[0],coords[1]];
             },
-            move:({x,y})=>{
-                this.setState({coords:[x,y]})
+            move:({change})=>{
+                let {x,y} = change;
+                setCoords([x,y])
             },
             end:()=>{
-                let {Canvas,changeActivePoint} = this.context;
-                let {coords} = this.state;
-                let p = Canvas.clientToCanvas(coords,false);
+                let p = state.Canvas.clientToCanvas(ref.current,false);
                 changeActivePoint(p)
             }
         })
-        Swip({
-            dom:$(this.drawDom.current),
+        new Swip({
+            dom:$(temp.drawDom.current),
             start:()=>{
-                let {coords} = this.state;
+                let coords = ref.current;
                 return [coords[0],coords[1]];
             },
-            move:({x,y})=>{
-                this.setState({coords:[x,y]})
+            move:({change})=>{
+                let {x,y} = change;
+                setCoords([x,y])
             },
             end:()=>{
-                let {Canvas,addPoint} = this.context;
+                let {Canvas} = this.context;
                 let {coords} = this.state;
                 let p = Canvas.clientToCanvas(coords,false);
                 addPoint(p)
             }
         })
+    },[])
+    let {Canvas} = this.context;
+    if(this.props.x !== this.state.prevX || this.props.y !== this.state.prevY){
+        setTimeout(()=>this.setState({coords:Canvas.canvasToClient([this.props.x,this.props.y]),prevX:this.props.x,prevY:this.props.y}),0)
     }
-    render(){
-        let {Canvas} = this.context;
-        if(this.props.x !== this.state.prevX || this.props.y !== this.state.prevY){
-            setTimeout(()=>this.setState({coords:Canvas.canvasToClient([this.props.x,this.props.y]),prevX:this.props.x,prevY:this.props.y}),0)
-        }
-        let {coords} = this.state;
-        return (
-            <div className='point-controller' style={{left:coords[0],top:coords[1]}}>
-                <div ref={this.moveDom} className='point-controller-button-container'><button>Move</button></div>
-                <div ref={this.drawDom} className='point-controller-button-container'><button>Draw</button></div>
-                <div className='point-controller-button-container'><button>2</button></div>
-                <div className='point-controller-button-container'><button>3</button></div>
-                <div className='point-controller-button-container'><button>4</button></div>
-                <div className='point-controller-button-container'><button>5</button></div>
-                <div className='point-controller-button-container'><button>6</button></div>
-                <div className='point-controller-button-container'><button>7</button></div>
-                
-            </div>
-        )
-    }
+    return (
+        <div className='point-controller' style={{left:coords[0],top:coords[1]}}>
+            <div ref={temp.moveDom as any} className='point-controller-button-container'><button>Move</button></div>
+            <div ref={temp.drawDom as any} className='point-controller-button-container'><button>Draw</button></div>
+            <div className='point-controller-button-container'><button>2</button></div>
+            <div className='point-controller-button-container'><button>3</button></div>
+            <div className='point-controller-button-container'><button>4</button></div>
+            <div className='point-controller-button-container'><button>5</button></div>
+            <div className='point-controller-button-container'><button>6</button></div>
+            <div className='point-controller-button-container'><button>7</button></div>
+            
+        </div>
+    )
 }
 // function PointController(props){
 //     let {Canvas,changeActivePoint} = useContext(CTX);
