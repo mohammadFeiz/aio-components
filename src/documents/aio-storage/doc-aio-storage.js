@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import RVD,{animate} from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import './index.css';
 export default class DOC_AIOStorage extends Component{
     constructor(props){

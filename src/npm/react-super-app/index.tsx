@@ -3,7 +3,7 @@ import AIOStorage from '../aio-storage/aio-storage';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import RVD from '../react-virtual-dom/react-virtual-dom';
-import AIOPopup from '../aio-popup/aio-popup';
+import AIOPopup from './../../npm/aio-popup/index.tsx';
 import './index.css';
 import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_addAlert, I_RSA_addConfirm, I_RSA_addModal, I_RSA_addPrompt, I_RSA_addSnakebar, I_RSA_closeSide, I_RSA_getNavId, I_RSA_openSide, I_RSA_props, I_RSA_removeModal, I_RSA_render, I_RSA_setNavId, I_ReactSuperApp, I_RSA_navItem } from './types';
 import { I_RVD_node } from '../react-virtual-dom/types';

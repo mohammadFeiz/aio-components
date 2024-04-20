@@ -1,7 +1,7 @@
 import React, { Component, Fragment, createRef, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import AIOPopup from '../../npm/aio-popup/index.js';
+import AIOPopup from '../../npm/aio-popup/index.tsx';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
 import AIOStorage from '../../npm/aio-storage/aio-storage.js'

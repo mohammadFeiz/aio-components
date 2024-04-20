@@ -498,7 +498,6 @@ function Setting({activeItem}){
                 <AIOInput
                     type='form' attrs={{className:'aioc-setting-form'}} value={activeItem}
                     onChange={(value)=>changeItem(activeItem,value)}
-                    inputStyle={{background:'none'}}
                     inputs={{
                         className:'gap-6',
                         column:[

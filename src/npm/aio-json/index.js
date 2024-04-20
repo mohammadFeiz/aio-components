@@ -2,7 +2,7 @@ import React,{Component,createRef} from "react";
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import {Icon} from '@mdi/react';
 import {mdiClose,mdiPlusThick,mdiCog,mdiChevronRight,mdiChevronDown,mdiContentCopy} from '@mdi/js';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import $ from 'jquery';
 import "./index.css";
 export default class AIOJson extends Component {

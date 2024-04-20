@@ -1348,7 +1348,7 @@ function TableCellContent(props:AI_TableCellContent){
     if (!input) { return value }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
-    let convertedInput:AI = {type:'text'}
+    let convertedInput:any = {type:'text'}
     for (let property in input) {
         let prop:(keyof AI) = property as keyof AI;
         let res:any = input[prop];
@@ -1518,14 +1518,13 @@ function Calendar(props: I_Calendar) {
     let { rootProps,DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
     let { unit, jalali, value,disabled,size,theme, translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
-    let { convertToArray, getMonths, getWeekDay } = AIODate();
-    let [months] = useState(getMonths({ jalali }));
+    let [months] = useState(DATE.getMonths(jalali));
     let [today, setToday] = useState(DATE.getToday(jalali))
-    let [todayWeekDay] = useState(getWeekDay({ date: today }).weekDay)
+    let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
     let [initValue] = useState(getInitValue())
     function getInitValue() {
         let date = !value || value === null ? today : value;
-        let [year, month, day] = convertToArray({ date })
+        let [year, month, day] = DATE.convertToArray(date)
         return { year, month, day }
     }
     let [thisMonthString] = useState(months[today[1] - 1])
@@ -1557,27 +1556,27 @@ function Calendar(props: I_Calendar) {
     }
     function getContext() {
         let context: I_DPContext = {
-            changeActiveDate,
+            changeActiveDate,DATE,
             translate: trans, rootProps, activeDate,
             today, todayWeekDay, thisMonthString,months,
             onChange: ({ year, month, day, hour }) => {
                 let dateArray = [year, month, day, hour];
-                let jalaliDateArray = !jalali ? AIODate().toJalali({ date: dateArray }) : dateArray;
-                let gregorianDateArray = jalali ? AIODate().toGregorian({ date: dateArray }) : dateArray;
-                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : AIODate().getWeekDay({ date: dateArray })
+                let jalaliDateArray = !jalali ? DATE.toJalali(dateArray) : dateArray;
+                let gregorianDateArray = jalali ? DATE.toGregorian(dateArray) : dateArray;
+                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : DATE.getWeekDay(dateArray)
                 let get2digit = (v) => {
                     if (v === undefined) { return }
                     v = v.toString();
                     return v.length === 1 ? `0${v}` : v
                 }
                 let dateString;
-                let splitter = typeof value === 'string' ? AIODate().getSplitter(value) : '/';
+                let splitter = typeof value === 'string' ? DATE.getSplitter(value) : '/';
                 if (unit === 'month') { dateString = `${year}${splitter}${get2digit(month)}` }
                 else if (unit === 'day') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}` }
                 else if (unit === 'hour') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}${splitter}${get2digit(hour)}` }
                 let monthString = months[month - 1];
-                let jalaliMonthString = !jalali ? AIODate().getMonths({ jalali:true })[month - 1] : monthString;
-                let gregorianMonthString = jalali ? AIODate().getMonths({ jalali:false })[month - 1] : monthString;
+                let jalaliMonthString = !jalali ? DATE.getMonths(true)[month - 1] : monthString;
+                let gregorianMonthString = jalali ? DATE.getMonths(false)[month - 1] : monthString;
                 let props = {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
@@ -1654,11 +1653,11 @@ function DPBody() {
     )
 }
 function DPBodyDay() {
-    let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
+    let {rootProps, activeDate,DATE}:I_DPContext = useContext(DPContext);
     let { theme, jalali } = rootProps;
-    let firstDayWeekDayIndex = AIODate().getWeekDay({ date: [activeDate.year, activeDate.month, 1] }).index;
-    let daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
-    let weekDays = AIODate().getWeekDays({ jalali });
+    let firstDayWeekDayIndex = DATE.getWeekDay([activeDate.year, activeDate.month, 1]).index;
+    let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
+    let weekDays = DATE.getWeekDays(jalali);
     return (<>
         {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
         {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
@@ -1677,7 +1676,7 @@ function DPCellWeekday(props:I_DPCellWeekday) {
     )
 }
 function DPCell(props:I_DPCell) {
-    let {rootProps, translate, onChange}:I_DPContext = useContext(DPContext);
+    let {rootProps, translate, onChange,DATE}:I_DPContext = useContext(DPContext);
     let { disabled, dateAttrs, theme = AIDef('theme'), value, jalali, unit, dateDisabled } = rootProps;
     let { dateArray } = props;
     function getClassName(isActive:boolean, isToday:boolean, isDisabled:boolean, className?:string) {
@@ -1688,14 +1687,13 @@ function DPCell(props:I_DPCell) {
         if (className) { str += ' className'; }
         return str;
     }
-    let { isEqual, isMatch, getMonths, getToday } = AIODate();
-    let isActive = !value ? false : AIODate().isEqual(dateArray, value);
-    let isToday = isEqual(dateArray, getToday({ jalali }))
-    let isDateDisabled = !dateDisabled ? false : isMatch({ date: dateArray, matchers: dateDisabled });
+    let isActive = !value ? false : DATE.isEqual(dateArray, value);
+    let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
+    let isDateDisabled = !dateDisabled ? false : DATE.isMatch(dateArray, dateDisabled);
     let isDisabled = disabled || isDateDisabled;
     let Attrs:any = {}
     if (dateAttrs) { 
-        Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => isMatch({ date: dateArray, matchers: o }) })
+        Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
         Attrs = Attrs || {} 
     }
     let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
@@ -1712,7 +1710,7 @@ function DPCell(props:I_DPCell) {
     if (unit === 'hour') { text = dateArray[3] + ':00' }
     else if (unit === 'day') { text = dateArray[2] }
     else if (unit === 'month') {
-        let months = getMonths({ jalali });
+        let months = DATE.getMonths(jalali);
         text = translate(!jalali ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
     }
     return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
@@ -1789,7 +1787,7 @@ function DPYearsPopup(props:{value:number,onChange:(v:number)=>void}){
     )
 }
 function DPHeader() {
-    let { rootProps,activeDate, changeActiveDate, months, translate }: I_DPContext = useContext(DPContext);
+    let { rootProps,activeDate, changeActiveDate, months, translate,DATE }: I_DPContext = useContext(DPContext);
     let { size = AIDef<number>('size'), unit,jalali } = rootProps;
     function getYears() {
         let p:I_DPYears = {
@@ -1805,7 +1803,7 @@ function DPHeader() {
         return <DPHeaderDropdown {...p} />
     }
     function getDays() {
-        let daysLength = AIODate().getMonthDaysLength({ date: [activeDate.year, activeDate.month] });
+        let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
         let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
         let p:I_DPHeaderDropdown = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
         return <DPHeaderDropdown {...p} />
@@ -1834,17 +1832,22 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     return (<AIOInput {...p} />)
 }
 function DPArrow(props: I_DPArrow) {
-    let { rootProps, changeActiveDate, activeDate }: I_DPContext = useContext(DPContext);
+    let { rootProps, changeActiveDate, activeDate,DATE }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
     let { jalali, unit = AIDef<AI_date_unit>('unit','date'), size, theme } = rootProps;
     function change() {
         if (onClick) { onClick(); return }
         let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
         let date = [activeDate.year, activeDate.month, activeDate.day]
-        let next = AIODate().getByOffset({ date, offset, unit: { 'hour': 'day', 'day': 'month', 'month': 'year' }[unit as AI_date_unit] })
-        if (unit === 'month') { changeActiveDate({ year: next[0] }) }
-        if (unit === 'day') { changeActiveDate({ year: next[0], month: next[1] }) }
-        if (unit === 'hour') { changeActiveDate({ year: next[0], month: next[1], day: next[2] }) }
+        if (unit === 'month') { changeActiveDate({ year: activeDate.year + offset }) }
+        if (unit === 'day') { 
+            let next = DATE.getNextTime(date,offset * 24 * 60 * 60 * 1000,jalali);
+            changeActiveDate({ year: next[0], month: next[1] }) 
+        }
+        if (unit === 'hour') { 
+            let next = DATE.getNextTime(date,offset * 60 * 60 * 1000,jalali);
+            changeActiveDate({ year: next[0], month: next[1], day: next[2] }) 
+        }
     }
     function getIcon() {return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight,1,{style:{ color: theme[0] }})}
     return (<div className='aio-input-date-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => change()}>{getIcon()}</div>)
@@ -2956,7 +2959,9 @@ const Pinch = () => {
     let [value,setValue] = useState<number>(getValueByStep({value:rootProps.value,start,step,end}))
     let [scaleNode] = useState(scale_node()),[labelNode] = useState(label_node())
     useEffect(()=>{setValue(rootProps.value)},[rootProps.value])
-    useEffect(()=>{Swip({dom:()=>$(temp.dom.current),move:({centerAngle})=>changeHandle(centerAngle)})},[])
+    useEffect(()=>{
+        new Swip({dom:()=>$(temp.dom.current),start:()=>[0,0],move:({change})=>changeHandle(change.centerAngle)})
+    },[])
     function changeHandle(centerAngle){change(getValueByStep({value:getValueByAngle(centerAngle),start,step,end}))}
     const change = (value) => {setValue(value); onChange(value)}
     function handle_node(){
@@ -3019,6 +3024,7 @@ const Pinch = () => {
     return pinch_node()
 }
 export function AIOValidation(props) {
+    let DATE = new AIODate();
     let $$ = {
         translate(text) {
             if (!text) { return text }
@@ -3105,25 +3111,25 @@ export function AIOValidation(props) {
         },
         dateLess(target, validation, value, a, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should be before' }) }
-            if (AIODate().isGreater(value, target) || AIODate().isEqual(value, target)) {
+            if (DATE.isGreater(value, target) || DATE.isEqual(value, target)) {
                 return this.getMessage(target, { validation, be: 'should be before' })
             }
         },
         dateLessEqual(target, validation, value, a, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'cannot be after' }) }
-            if (AIODate().isGreater(value, target)) {
+            if (DATE.isGreater(value, target)) {
                 return this.getMessage(target, { validation, be: 'cannot be after' })
             }
         },
         dateMore(target, validation, value, a, exact) {
             if (exact) { return this.getMessage(target, { validation, be: 'should be after' }) }
-            if (AIODate().isLess(value, target) || AIODate().isEqual(value, target)) {
+            if (DATE.isLess(value, target) || DATE.isEqual(value, target)) {
                 return this.getMessage(target, { validation, be: 'should be after' })
             }
         },
         dateMoreEqual(target, validation, value, a, exact) {
             if (exact) { this.getMessage(target, { validation, be: 'cannot be before' }) }
-            if (AIODate().isLess(value, target)) {
+            if (DATE.isLess(value, target)) {
                 return this.getMessage(target, { validation, be: 'cannot be before' })
             }
         },
@@ -3409,16 +3415,17 @@ const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: string | ((strin
 function getDateText(rootProps:AI) {
     let { value, unit = 'day', text, jalali, placeholder } = rootProps;
     if (value) {
-        let list = AIODate().convertToArray({ date: value });
+        let DATE = new AIODate();
+        let list = DATE.convertToArray(value);
         let [year, month = 1, day = 1, hour = 0] = list;
         list = [year, month, day, hour];
         let pattern;
-        let splitter = AIODate().getSplitter(value)
+        let splitter = DATE.getSplitter(value)
         if (text) { pattern = text }
         else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
         else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
         else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
-        return <div style={{ direction: 'ltr' }}>{AIODate().getDateByPattern({ date: list, pattern })}</div>
+        return <div style={{ direction: 'ltr' }}>{DATE.getDateByPattern(list, pattern )}</div>
     }
     return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
 }

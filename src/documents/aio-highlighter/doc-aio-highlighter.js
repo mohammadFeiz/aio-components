@@ -4,7 +4,7 @@ import AIOHighlighter from './../../npm/aio-highlighter/aio-highlighter';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { mdiHumanFemale, mdiHumanMale } from '@mdi/js';
 import { Icon } from '@mdi/react';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import $ from 'jquery';
 import './index.css';

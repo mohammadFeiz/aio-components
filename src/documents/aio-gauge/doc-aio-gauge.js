@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import {Gauge} from './../../npm/aio-chart/aio-chart';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
 import AIOJson from './../../npm/aio-json/aio-json';

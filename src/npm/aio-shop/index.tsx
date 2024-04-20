@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOStorage from './../../npm/aio-storage/aio-storage.js';
-import AIOPopup from './../../npm/aio-popup/aio-popup.js';
+import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import ACS from './../../npm/aio-content-slider/index.tsx';
 import {SplitNumber} from './../../npm/aio-utils/index.tsx';

@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import './App.css'
 import AIOStorage from './npm/aio-storage/aio-storage';
-import AIOInput from "./npm/aio-input/index.tsx";
+import AIOInput, { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Slider from "./documents/aio-input/aio-input-slider/doc-aio-input-slider";
@@ -27,15 +27,10 @@ import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import T1 from './documents/t1/t1';
 import Versions from './versions';
-AIOInput.defaults.mapApiKeys = {
+AIOInputSetStorage('mapApiKeys',{
   map:'web.0a2aa5f83d314a8c9916473aa0e01438',
   service:'service.09a2234e299a4ff585007b2894df9fca',
-}
-AIOInput.defaults.validate = true;
-// AIOInput.defaults.checkIcon = {
-//   width:12,height:12,border:'1px solid orange',background:'orange' ,padding:1
-// }
-
+})
 export default class AIOComponents extends Component{
   constructor(props){
     super(props);

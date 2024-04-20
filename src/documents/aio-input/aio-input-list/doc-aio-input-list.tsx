@@ -1,12 +1,9 @@
-import React, { Component,createRef, useState } from 'react';
+import React, { useState } from 'react';
 import DOC from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput from '../../../npm/aio-input/aio-input.js';
+import AIOInput from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-list.css';
-import {Icon} from '@mdi/react';
-import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile} from '@mdi/js';
-import { AI } from '../../../npm/aio-input/index.tsx';
+import { AI } from '../../../npm/aio-input/types.tsx';
 export default function DOC_AIOInput_Table(props) {
     return (
         <DOC

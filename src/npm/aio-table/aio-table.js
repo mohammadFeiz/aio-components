@@ -3,8 +3,8 @@ import {Icon} from '@mdi/react';
 import {mdiChevronLeft,mdiChevronRight,mdiChevronDown,mdiClose,mdiMagnify,mdiEye,mdiFilter,mdiFilterMenu,mdiSort,mdiArrowDown,mdiArrowUp,mdiFileTree,mdiFileExcel,
 mdiChevronDoubleRight,mdiChevronDoubleLeft,mdiCircleMedium} from '@mdi/js';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOInput from './../../npm/aio-input/aio-input';
-import { ExportToExcel,GetClient } from './../../npm/aio-utils/aio-utils';
+import AIOInput from './../../npm/aio-input/index.tsx';
+import { ExportToExcel,GetClient } from './../../npm/aio-utils/index.tsx';
 import $ from 'jquery';
 import './index.css';
 let TableContext = createContext();

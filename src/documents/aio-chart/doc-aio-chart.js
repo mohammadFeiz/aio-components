@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import Chart,{getFakeData} from './../../npm/aio-chart/aio-chart';
-import AIOInput from './../../npm/aio-input/aio-input';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import './index.css';
 export default class DOC_AIOForm extends Component{
     render(){

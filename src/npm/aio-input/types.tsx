@@ -265,6 +265,7 @@ export type I_Layout = {
 
 export type I_DPContext = {
     translate: (text: string) => string,
+    DATE:AIODate,
     rootProps: AI,
     activeDate: I_DP_activeDate,
     changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,

@@ -1,10 +1,10 @@
 import React, { Component, createRef } from 'react';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOStorage from './../../npm/aio-storage/aio-storage';
-import AIOInput,{getFormInputs} from './../../npm/aio-input/aio-input';
+import AIOInput,{getFormInputs} from './../../npm/aio-input/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
-import AIOPopup from './../../npm/aio-popup/aio-popup';
+import AIOPopup from './../../npm/aio-popup/index.tsx';
 import './index.css';
 export default class AIOlogin {
     constructor(props) {
