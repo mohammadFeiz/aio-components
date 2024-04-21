@@ -34,7 +34,7 @@ export type I_canvas_items = (I_canvas_item | (()=>I_canvas_item))[] | (()=>(I_c
 export type I_canvas_canvasToClient = (pos:[number,number])=>[number,number,number,number]
 export type I_canvas_clientToCanvas = (pos:[number,number],calcParentOffset?:boolean)=>[number,number]
 export type I_canvas_mousePosition = {x:number,y:number,px:number,py:number,cx:number,cy:number}
-export type I_canvas_screenPosition = [number,number];
+export type I_canvas_screenPosition = [number | string,number | string];
 export type I_canvas_getActions = (p:{clientToCanvas:I_canvas_clientToCanvas,canvasToClient:I_canvas_canvasToClient})=>void
 export type I_canvas_props = {
   onPan?:((sp:I_canvas_screenPosition)=>void) | boolean,
@@ -58,7 +58,7 @@ export type I_Canvas_temp = {
   width:number,
   height:number,
   touch:boolean,
-  getScreenPosition?:()=>I_canvas_screenPosition,
+  getScreenPosition?:()=>[number,number],
   setScreenPosition?:(sp:I_canvas_screenPosition)=>void,
   timer:number,
   interval:any,

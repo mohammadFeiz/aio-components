@@ -212,11 +212,11 @@ function CANVAS(props: I_canvas_props) {
   useEffect(() => { update() })
   useEffect(() => {
     if (props.onPan === true) {
-      temp.getScreenPosition = () => spRef.current
+      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
       temp.setScreenPosition = (sp) => SetScreenPosition(sp)
     }
     else if (typeof props.onPan === 'function') {
-      temp.getScreenPosition = () => props.screenPosition || [0, 0]
+      temp.getScreenPosition = () => props.screenPosition?[getValueByRange(props.screenPosition[0],0,temp.width),getValueByRange(props.screenPosition[1],0,temp.height)]:[0, 0]
       temp.setScreenPosition = (screenPosition) => {
         if (typeof props.onPan === 'function') { props.onPan(screenPosition) }
       }
