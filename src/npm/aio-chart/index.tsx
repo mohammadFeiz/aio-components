@@ -4,11 +4,28 @@ import AIOCanvas from './../aio-canvas/index.tsx';
 import { EventHandler } from '../aio-utils/index.tsx';
 import $ from 'jquery';
 import './index.css';
-type I_chart_filter = { start?: number, end?: number, labelSpace?: number, count?: number, filter?: { start: any, end: any, p1: any, p2: any } }
+import { I_canvas_props } from '../aio-canvas/types.tsx';
+type I_chart_details = {
+    min?: number,
+    max?: number,
+    axisToD?: { x: 'key' | 'value', y: 'key' | 'value' },
+    dToAxis?: { key: 'x' | 'y', value: 'x' | 'y' }
+    range?: { x: I_chart_filter, y: I_chart_filter },
+    keysDictionary?: { [key: string]: number },
+    barCount?: number,
+    barWidth?: number,
+    xZoom?: boolean,
+    yZoom?: boolean,
+    labelSpace?: number
+}
+type I_chart_filter = { start?: number, end?: number,step?:number, labelSpace?: number, count?: number, filter?: { start: any, end: any, p1: any, p2: any } }
 type I_chart_temp = {
     Canvas: AIOCanvas,
+    multiselect:{selectRect?:any,position?:any,start?:any,end?:any}
     elements: { points: any[], rects: any[], all: any[] },
     moved: boolean,
+    mouseDownKey:any,
+    so:{dataIndex?:number,pointIndex?:number,x?:any,y?:any}
     mouseDownDetail: {
         target?: 'point' | 'filter',
         key?: any,
@@ -17,31 +34,31 @@ type I_chart_temp = {
     keyDictionary: { [key: string]: any }[],
     dom: any,
     touch: boolean,
-    details: {
-        min?: number,
-        max?: number,
-        axisToD?: { x: 'key' | 'value', y: 'key' | 'value' },
-        dToAxis?: { key: 'x' | 'y', value: 'x' | 'y' }
-        range?: { x: I_chart_filter, y: I_chart_filter },
-        keysDictionary?: { [key: string]: number },
-        barCount?: number,
-        barWidth?: number,
-        xZoom?: boolean,
-        yZoom?: boolean,
-        labelSpace?: number
-    },
+    details: I_chart_details,
     mouseDetail: I_chart_mouseDetail,
-    transition: number
+    transition: number,
+    axisSize:[number,number]
 }
 type I_axis = 'x' | 'y'
 type I_chart_data = {
     points: any[],
-    title: string,
-    type: 'line' | 'bar',
-    color?: 'string',
-    editable?: boolean
+    title?: string,
+    type?: 'line' | 'bar',
+    color?: string,
+    editable?: boolean,
+    draggable?:boolean,
+    pointRadius?:number | ((point:any)=>number),
+    pointStrokeWidth?:number | ((point:any)=>number),
+    pointStroke?:string | ((point:any)=>string),
+    pointFill?:string | ((point:any)=>string),
+    pointText?:string | ((point:any)=>string),
+    lineWidth?:number | ((point:any)=>number),
+    lineDash?:number[] | ((point:any)=>number[]),
+    pointDash?:number[] | ((point:any)=>number[]),
+    pointTextStyle?:any | ((point:any)=>any)
+    areaColor?:string
 }
-type I_chart_line = { dash?: [number, number], lineWidth?: number, color?: string, key?: [any, any], value: [any, any] }
+type I_chart_line = { dash?: [number, number], lineWidth?: number, color?: string, key?:any, value?:any }
 type I_chart_mouseDetail = {
     x?: any, y?: any, key?: any, value?: any, addDataIndexes?: number[], target?: 'point', px?: number, py?: number, cx?: number, cy?: number, nearestPoint?: any,
     label?: { key: string, value: string, x?: any, y?: any },dataIndex?:number,
@@ -52,10 +69,7 @@ type I_chart_axis = {
 }
 type I_chart_parameter = { point: any, key: any, value: any, dataIndex: number, pointIndex: number, drag?: boolean }
 type I_Chart = {
-    filter?: {
-        key?: number[],
-        value?: number[]
-    },
+    filter?: I_chart_filterState,
     data: I_chart_data[],
     keys: any[],
     translate?: (v: string) => string,
@@ -76,7 +90,8 @@ type I_Chart = {
     multiselect?: (points: any[]) => void,
     zoomColor?: string,
     html?: (elements: any, p: any) => React.ReactNode,
-    rtl?: boolean
+    rtl?: boolean,
+    labelRotate?:number
 }
 type I_chart_popup = {
     disabled?: boolean,
@@ -91,12 +106,18 @@ type I_chart_popup = {
     onAdd?: (md: I_chart_mouseDetail) => void,
 
 }
+type I_chart_filterState = {
+    key?: number[],
+    value?: number[]
+}
+type I_chart_dataHide = { [key: string]: boolean }
 var RChartContext = createContext({} as any);
 export default function RChart(props: I_Chart) {
     let {
         keys, translate = (v) => v, labelSize = 30, keyAxis = {}, valueAxis = {}, precision = 0, hideInterfere, clickRadius = 12, reverse, lines = [], barWidth = 80,
         onChange, onRemove, onAdd, addPopup, attrs = {}, multiselect, zoomColor = '#ddd', html = () => '', rtl
     } = props;
+    let [mounted,setMounted] = useState<boolean>(false)
     let [temp] = useState<I_chart_temp>({
         Canvas: new AIOCanvas(),
         elements: { points: [], rects: [], all: [] },
@@ -107,14 +128,15 @@ export default function RChart(props: I_Chart) {
         moved: false,
         mouseDetail: {},
         transition: 0,
-        keyDictionary: []
+        keyDictionary: [],
+        so:{},
+        mouseDownKey:undefined,
+        axisSize:[keyAxis.size || 40,valueAxis.size || 50],
+        multiselect:{},
     })
-    let [filter, setFilter] = useState<{
-        key?: number[],
-        value?: number[]
-    }>(props.filter || { key: [], value: [] })
+    let [filter, setFilter] = useState<I_chart_filterState>(props.filter || { key: [], value: [] })
     let [popup, setPopup] = useState<I_chart_popup | false>(false)
-    let [dataHide, setDataHide] = useState<{ [key: string]: boolean }>({})
+    let [dataHide, setDataHide] = useState<I_chart_dataHide>({})
     let [data, setData] = useState<I_chart_data[]>(props.data || [])
     function getCanvasSize(axis: I_axis): number {
         return temp.Canvas[axis === 'x' ? 'width' : 'height']
@@ -160,17 +182,6 @@ export default function RChart(props: I_Chart) {
     function getPercentByValue(axis, point) {
         return temp.details.axisToD[axis] === 'key' ? key_getPercentByValue(axis, point) : value_getPercentByValue(axis, point)
     }
-    function changeFilter(axis, p1, p2) {
-        return temp.details.axisToD[axis] === 'key' ? key_changeFilter(p1, p2) : value_changeFilter(p1, p2);
-    }
-
-    function value_changeFilter(p1, p2) {
-        setFilter({ ...filter, value: [p1, p2] });
-    }
-    function key_changeFilter(p1, p2) {
-        filter.key = [keys[p1], keys[p2]];
-        setFilter({ ...filter, key: [keys[p1], keys[p2]] });
-    }
     function getLimitTypeNumber(data) {
         var min = Infinity, max = -Infinity;
         for (var i = 0; i < data.length; i++) {
@@ -183,11 +194,6 @@ export default function RChart(props: I_Chart) {
             }
         }
         return { min, max };
-    }
-    function getAxisSize() {
-        let { size: x = 40 } = keyAxis;
-        let { size: y = 50 } = valueAxis;
-        return [x, y]
     }
     //تمامی اطلاعات لازم روی هر نقطه درج میشود با یک لوپ
     //مشخص می شود هر کلید دارای چه نقاطی است برای تشخیص قابل اد بودن
@@ -257,13 +263,14 @@ export default function RChart(props: I_Chart) {
             if (left > space) { space = center + radius + strokeWidth / 2; }
             else { return false; }
         }
-        return {
+        let res = {
             type: 'Group', x: point._px + '%', y: point._py + '%', dataIndex, pointIndex,
             items: [
                 { type: 'Arc', r: clickRadius, fill: 'rgba(0,0,0,0)', onMouseDown: pointMouseDown, dataIndex, pointIndex },
                 { type: 'Arc', r: radius, lineWidth: strokeWidth * 2, fill, stroke, dash, slice }
             ]
         };
+        return res
     }
     function getGridLines(axis) {
         let Axis = (temp.details.axisToD[axis] === 'key' ? keyAxis : valueAxis) as I_chart_axis;
@@ -319,7 +326,7 @@ export default function RChart(props: I_Chart) {
         let barCounter = 0;
         for (let dataIndex = 0; dataIndex < data.length; dataIndex++) {
             let { points, title, type = 'line' } = data[dataIndex];
-            if (title && dataHide[title]) { continue; }
+            if (title && dataHide[title] === false) { continue; }
             if (!points || !Array.isArray(points) || points.length === 0) { continue; }
             if (type === 'line') {
                 let res = getLineChart(data[dataIndex], dataIndex);
@@ -337,7 +344,6 @@ export default function RChart(props: I_Chart) {
                 barCounter++;
             }
         }
-        this.lastData = data;
         temp.elements = Elements;
     }
     function getLineChart(data, dataIndex) {
@@ -393,7 +399,7 @@ export default function RChart(props: I_Chart) {
         } //نوع چارت و تابع گرفتن درصد با مقدار یکبار تایین می شود
         if (temp.mouseDownDetail.target !== 'point') {
             if (temp.mouseDownDetail.target !== 'filter') {
-                var limit = this.getLimitTypeNumber(data);
+                var limit = getLimitTypeNumber(data);
                 temp.details.min = limit.min;
                 temp.details.max = limit.max;
                 d.keysDictionary = {};
@@ -403,6 +409,7 @@ export default function RChart(props: I_Chart) {
             }
             temp.details.range = { x: getRange('x'), y: getRange('y') };
             temp.details.labelSpace = temp.details.range[d.dToAxis.key].labelSpace;
+            temp.transition = Math.min(temp.details.labelSpace / 100, 0.3);
         }
         d.barCount = data.filter((d) => d.type === 'bar').length;
         d.barWidth = barWidth / d.range[d.dToAxis['key']].count / d.barCount;
@@ -463,9 +470,8 @@ export default function RChart(props: I_Chart) {
     }
     function pointMouseDown(e, pos, obj) {
         var { dataIndex, pointIndex } = obj;
-        let { data } = this.state;
         if (!onChange || data[dataIndex].editable === false) { return; }
-        this.getMouseDetail(pos);
+        getMouseDetail(pos);
         var point = data[dataIndex].points[pointIndex];
         temp.mouseDownDetail = { target: 'point', key: point._key, value: point._value };
         if (onChange && data[dataIndex].draggable !== false) {
@@ -474,75 +480,71 @@ export default function RChart(props: I_Chart) {
         if (onChange || onRemove) {
             EventHandler('window', 'mouseup', pointMouseUp)
         }
-        this.so = { dataIndex, pointIndex, x: temp.mouseDetail.x, y: temp.mouseDetail.y };
+        temp.so = { dataIndex, pointIndex, x: temp.mouseDetail.x, y: temp.mouseDetail.y };
         temp.moved = false;
     }
     function pointMouseMove() {
-        let point = data[this.so.dataIndex].points[this.so.pointIndex];
+        let point = data[temp.so.dataIndex].points[temp.so.pointIndex];
         var { dToAxis } = temp.details;
         if (!temp.moved) {
-            if (Math.abs(temp.mouseDetail[dToAxis.value] - this.so[dToAxis.value]) < 8) { return; }
+            if (Math.abs(temp.mouseDetail[dToAxis.value] - temp.so[dToAxis.value]) < 8) { return; }
             if (point._value === temp.mouseDetail.value) { return; }
         }
         temp.moved = true;
-        onChange({ point, key: point._key, value: temp.mouseDetail.value, dataIndex: this.so.dataIndex, pointIndex: this.so.pointIndex, drag: true });
+        onChange({ point, key: point._key, value: temp.mouseDetail.value, dataIndex: temp.so.dataIndex, pointIndex: temp.so.pointIndex, drag: true });
     }
     function pointMouseUp() {
         EventHandler('window', 'mousemove', pointMouseMove, 'unbind')
         EventHandler('window', 'mouseup', pointMouseUp, 'unbind');
         temp.mouseDownDetail = {};
-        var { onRemove } = this.props;
-        var point = data[this.so.dataIndex].points[this.so.pointIndex];
+        var point = data[temp.so.dataIndex].points[temp.so.pointIndex];
         if (!temp.moved) {
             var title = !onChange ? translate('Remove Point') : translate('Edit Point');
             setPopup({
                 disabled: onRemove && !onChange,
-                dataIndex: this.so.dataIndex, pointIndex: this.so.pointIndex,
-                dataIndexes: [this.so.dataIndex],
+                dataIndex: temp.so.dataIndex, pointIndex: temp.so.pointIndex,
+                dataIndexes: [temp.so.dataIndex],
                 dynamicValue: point._value, staticValue: temp.mouseDetail.key,
                 onEdit: onChange, onRemove, title
             })
             return;
         }
-        var obj = { point, key: point._key, value: temp.mouseDetail.value, dataIndex: this.so.dataIndex, pointIndex: this.so.pointIndex, drag: false };
+        var obj = { point, key: point._key, value: temp.mouseDetail.value, dataIndex: temp.so.dataIndex, pointIndex: temp.so.pointIndex, drag: false };
         if (onChange) { onChange(obj) }
     }
     //کلیک روی بک گراند چارت
     function mouseDown(e, pos) {
         if ('ontouchstart' in document.documentElement) {
-            this.eventHandler('window', 'mouseup', $.proxy(this.addMouseUp, this));
-            this.getMouseDetail(pos);
+            EventHandler('window', 'mouseup', addMouseUp);
+            getMouseDetail(pos);
             return;
         }
-        this.mouseDownKey = temp.mouseDetail.key;
+        temp.mouseDownKey = temp.mouseDetail.key;
         // اگر مد افزودن فعال بود و در موقعیت فعلی موس دیتا یا دیتا هایی آمادگی دریافت نقطه جدید در این موقعیت را داشتند
         if (onAdd && temp.mouseDetail.addDataIndexes.length) {
-            this.eventHandler('window', 'mouseup', $.proxy(this.addMouseUp, this));
+            EventHandler('window', 'mouseup', addMouseUp);
         }
         if (multiselect && temp.mouseDetail.target !== 'point') {
-            this.multiselect = {};
-            this.multiselect.selectRect = $(temp.dom.current).find('.r-chart-multiselect');
-            if (reverse) {
-                this.multiselect.selectRect.css({ display: 'block', top: temp.mouseDetail.py + '%', height: '0%', width: '100%', left: 0 })
-                this.multiselect.position = temp.mouseDetail.py;
-            }
-            else {
-                this.multiselect.selectRect.css({ display: 'block', left: temp.mouseDetail.px + '%', width: '0%', height: '100%', top: 0 })
-                this.multiselect.position = temp.mouseDetail.px;
-            }
-            this.eventHandler('window', 'mousemove', $.proxy(this.multiselectMove, this));
-            this.eventHandler('window', 'mouseup', $.proxy(this.multiselectUp, this));
+            temp.multiselect = {};
+            temp.multiselect.selectRect = $(temp.dom.current).find('.r-chart-multiselect');
+            let offset,style;
+            if(reverse){offset = temp.mouseDetail.py; style = {height: '0%', width: '100%', left: 0 }}
+            else {offset = temp.mouseDetail.px; style = {width: '0%', height: '100%', top: 0}}
+            temp.multiselect.selectRect.css({ display: 'block', top: offset + '%', ...style})
+            temp.multiselect.position = offset;
+            EventHandler('window', 'mousemove', multiselectMove);
+            EventHandler('window', 'mouseup', multiselectUp);
 
         }
     }
     function addMouseUp() {
-        this.eventHandler('window', 'mouseup', this.addMouseUp, 'unbind');
+        EventHandler('window', 'mouseup', addMouseUp, 'unbind');
         if (temp.touch) {
             if (temp.mouseDetail.addDataIndexes.length === 0) {
                 return;
             }
         }
-        else { if (temp.mouseDetail.key !== this.mouseDownKey) { return; } }
+        else { if (temp.mouseDetail.key !== temp.mouseDownKey) { return; } }
         if (addPopup === false) { onAdd(temp.mouseDetail) }
         else {
             setPopup({
@@ -555,9 +557,8 @@ export default function RChart(props: I_Chart) {
         }
     }
     function multiselectMove() {
-        var { reverse } = this.props;
-        var m = this.multiselect;
-        if (temp.mouseDetail.key === this.mouseDownKey) { return; }
+        var m = temp.multiselect;
+        if (temp.mouseDetail.key === temp.mouseDownKey) { return; }
         if (!reverse) {
             var mp = temp.mouseDetail.px;
             if (mp < m.position) { m.end = m.position; m.start = mp; }
@@ -574,20 +575,20 @@ export default function RChart(props: I_Chart) {
 
     }
     function hideSelectRect() {
-        if (!this.multiselect || !this.multiselect.selectRect) { return; }
-        this.multiselect.selectRect.css({ display: 'none' });
+        if (!temp.multiselect || !temp.multiselect.selectRect) { return; }
+        temp.multiselect.selectRect.css({ display: 'none' });
     }
     function multiselectUp() {
-        this.eventHandler('window', 'mousemove', multiselectMove, 'unbind');
-        this.eventHandler('window', 'mouseup', multiselectUp, 'unbind');
-        if (!this.multiselect.start || !this.multiselect.end ||
-            Math.abs(this.multiselect.start - this.multiselect.end) < 3) { hideSelectRect(); return; }
+        EventHandler('window', 'mousemove', multiselectMove, 'unbind');
+        EventHandler('window', 'mouseup', multiselectUp, 'unbind');
+        if (!temp.multiselect.start || !temp.multiselect.end ||
+            Math.abs(temp.multiselect.start - temp.multiselect.end) < 3) { hideSelectRect(); return; }
         var points = getPointsBySelectRect();
         if (points.length !== 0) { multiselect(points); }
         hideSelectRect();
     }
     function getPointsBySelectRect() {
-        let { start, end } = this.multiselect;
+        let { start, end } = temp.multiselect;
         var result = [];
         for (let i = 0; i < temp.elements.points.length; i++) {
             let point = temp.elements.points[i];
@@ -609,119 +610,6 @@ export default function RChart(props: I_Chart) {
     }
     function changePopup(obj) {
         setPopup({ ...popup, ...obj });
-    }
-    function getHeader() {
-        let [x, y] = getAxisSize();
-        return (
-            <div className='r-chart-title' style={{ paddingLeft: y + 'px' }}>
-                {data.filter((d) => d.title !== undefined).map((d, i) => {
-                    let { color, title } = d;
-                    let style = !dataHide[d.title] ? { background: color } : { boxShadow: `inset 0 0 0 2px ${color}` };
-                    return (
-                        <div key={i} className='r-chart-title-item' onClick={() => setDataHide({ ...dataHide, [title]: !(dataHide[title] || false) })}>
-                            <div className='r-chart-title-color' style={style}></div>
-                            <div className='r-chart-title-text'>{d.title || 'untitle'}</div>
-                        </div>
-                    )
-                })}
-            </div>
-        )
-    }
-    function getLabelSlider(axis) {
-        var { range, xZoom, yZoom, axisToD } = temp.details;
-        if (!range || !range[axis]) { return null; }
-        var { start, end, step, labelSpace } = temp.details.range[axis];
-        var dAxis = axisToD[axis];
-        let Axis = dAxis === 'key' ? keyAxis : valueAxis;
-        let { edit = (a) => a } = Axis;
-        if (dAxis === 'key') {
-            temp.transition = Math.min(labelSpace / 100, 0.3);
-        }
-        var labelStyle = { x: { top: xZoom ? '24px' : '14px' }, y: { left: 'unset', right: yZoom ? '16px' : '8px', justifyContent: 'flex-end' } };
-        var { labelRotate } = this.props;
-        var d = axisToD[axis];
-        return (
-            <AIOInput type='slider'
-                point={() => { return { labelShow: false, attrs: { style: { display: 'none' } } } }}
-                className='labelSlider'
-                style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: 0 }}
-                grooveAttrs={{ style: { display: 'none' } }}
-                direction={axis === 'x' ? 'right' : 'top'} start={start} end={end}
-                label={{
-                    step,
-                    attrs: () => { return { style: { fontSize: 'inherit', ...labelStyle[axis] } } },
-                    rotate: axis === 'y' ? 0 : labelRotate,
-                    html: (value) => edit(d === 'key' ? keys[value] || '' : value)
-                }}
-                line={(index, active) => { return { attrs: { style: { opacity: 0 } } } }}
-            />
-        )
-    }
-    function filterMouseDown(e) {
-        e.preventDefault();
-        temp.mouseDownDetail.target = 'filter';
-        let container = $(temp.dom.current);
-        let filterButtons = container.find('.r-chart-filterSlider-button');
-        filterButtons.addClass('active');
-        EventHandler('window', 'mouseup', filterMouseUp);
-    }
-    function filterMouseUp() {
-        temp.mouseDownDetail = {};
-        let container = $(temp.dom.current);
-        let filterButtons = container.find('.r-chart-filterSlider-button');
-        filterButtons.removeClass('active');
-        EventHandler('window', 'mouseup', filterMouseUp, 'unbind');
-    }
-    function getFilterSlider(axis) {
-        var { axisToD } = temp.details;
-        var d = axisToD[axis];
-        let Axis = d === 'key' ? keyAxis : valueAxis;
-        let { edit = (a) => a } = Axis;
-        var { zoom } = Axis;
-        if (!zoom) { return null; }
-        var { range } = temp.details;
-        if (!range || !range[axis]) { return null; }
-        var { p1, p2, start, end } = range[axis].filter;
-        var style = {
-            x: { width: '100%', height: '16px', padding: '0 12px', top: '2px', opacity: 1 },
-            y: { width: '16px', height: '100%', padding: '12px 0', right: '0px', opacity: 1 }
-        }
-        return (
-            <AIOInput type='slider' direction={axis === 'x' ? 'right' : 'top'} start={start} end={end} multiple={true}
-                className='filterSlider'
-                style={{ position: 'absolute', ...style[axis] }}
-                value={[p1, p2]}
-                point={(index, value) => {
-                    let labelHtml = edit(d === 'key' ? keys[value] : value)
-                    return {
-                        html: (
-                            <div
-                                className={'r-chart-filterSlider-button r-chart-filterSlider-button-' + axis}
-                                onTouchStart={filterMouseDown}
-                                onMouseDown={filterMouseDown}
-                                style={{ background: zoomColor, border: `1px solid ${zoomColor}` }}
-                            ></div>
-                        ),
-                        attrs: {
-                            style: {
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                width: '30px', height: '30px', borderRadius: '0px', background: 'none'
-                            }
-                        },
-                        labelHtml
-                    }
-                }}
-                line={(index) => {
-                    let style;
-                    if (index !== 0) {
-                        style = { [axis === 'y' ? 'width' : 'height']: '1px', background: zoomColor }
-                    }
-                    return { attrs: { style } }
-                }}
-                onChange={(points) => changeFilter(axis, points[0], points[1])}
-                grooveAttrs={{ style: { display: 'none' } }}
-            />
-        )
     }
     function getAddableDataIndexes(key) {
         if (key === undefined) { return [] }
@@ -754,9 +642,8 @@ export default function RChart(props: I_Chart) {
         let { edit: keyEdit = (a) => a } = keyAxis;
         let { edit: valueEdit = (a) => a } = valueAxis;
         let { x, y, px, py } = pos;
-        let client = temp.Canvas.canvasToClient([x, y]);
-        let cx = client[0] + getAxisSize()[1];
-        let cy = client[1];
+        let cx = pos.cx + temp.axisSize[1];
+        let cy = pos.cy;
         let { key = '', keyIndex, value } = getValueByPercent({ x: px, y: py });
         let label = { key: key !== '' ? keyEdit(key) : '', value: valueEdit(value) };
         label[temp.details.dToAxis.key] = label.key;
@@ -768,7 +655,7 @@ export default function RChart(props: I_Chart) {
             cx, cy,//client mouse position on canvas
             key, value, keyIndex,
             nearestPoint: getNearestPointToMouse({ key, value }),
-            addDataIndexes: onAdd && temp.mouseDownDetail.target !== 'point' ? this.getAddableDataIndexes(key) : [],
+            addDataIndexes: onAdd && temp.mouseDownDetail.target !== 'point' ? getAddableDataIndexes(key) : [],
             label
         }
     }
@@ -809,22 +696,21 @@ export default function RChart(props: I_Chart) {
     }
     function getDataStrigify() { return temp.mouseDetail.target !== 'point' ? JSON.stringify(props.data) : 'a' }
     function getStyle() {
-        let [x, y] = getAxisSize();
-        let res: any = { gridTemplateColumns: `${y}px auto`, gridTemplateRows: `auto ${x}px`, direction: 'ltr' }
+        let res: any = { gridTemplateColumns: `${temp.axisSize[1]}px auto`, gridTemplateRows: `auto ${temp.axisSize[0]}px`, direction: 'ltr' }
         return res
     }
     useEffect(() => {
-        getDetails();
-        getElements();
         setData(props.data);
+        if(!mounted){setMounted(true)}
     }, [getDataStrigify()])
+    getDetails()
+    getElements();
     let d = temp.details;
-    let yls = getLabelSlider('y');
-    let yfs = getFilterSlider('y');
-    let xls = getLabelSlider('x');
-    let xfs = getFilterSlider('x');
+    let yls = <LabelSlider axis='y'/>
+    let yfs = <FilterSlider axis='y'/>
+    let xls = <LabelSlider axis='x'/>
+    let xfs = <FilterSlider axis='x'/>
     let HTML = html(temp.elements, d);
-    let axisSize = this.getAxisSize();
     function getPopup() {
         if (!popup) { return null }
         let p: I_ChartEdit = {
@@ -840,37 +726,44 @@ export default function RChart(props: I_Chart) {
 
     function getContext() {
         let context: I_chart_context = {
-            keyAxis, valueAxis, keys, data, rtl: !!rtl, translate
+            rootProps:props,details:temp.details,temp,mounted,dataHide,setDataHide,
+            setTemp:(newTemp)=>temp = newTemp,
+            keyAxis, valueAxis, keys, data, rtl: !!rtl, translate,
+            filter,setFilter
         }
         return context
+    }
+    function renderCanvas(){
+        let p:I_canvas_props = {
+            screenPosition: ['50%', '50%'],
+            items: temp.elements.all,
+            attrs: {
+                onMouseMove: ({event,mousePosition}) => {
+                    getMouseDetail(mousePosition);
+                    let dom = $(temp.dom.current);
+                    dom.find('.r-chart-popup-container').html('');
+                    renderMouseLabels(dom)
+                    renderPointLabels(dom);
+                },
+                onMouseDown: mouseDown
+            }
+        }
+        return temp.Canvas.render(p)
     }
     return (
         <RChartContext.Provider value={getContext()}>
             <div {...attrs} className={'r-chart' + (attrs.className ? ' ' + attrs.className : '')} ref={temp.dom}>
-                {this.getHeader()}
+                <Header/>
                 <div className='r-chart-container' style={getStyle()}>
-                    <RChartLine dir='horizontal' axisSize={axisSize} />
-                    <RChartLine dir='vertical' axisSize={axisSize} />
+                    <RChartLine dir='horizontal'/>
+                    <RChartLine dir='vertical'/>
                     {onAdd && <div className={'r-chart-popup-container r-chart-add-popup'}></div>}
                     {getPopup()}
                     <div className='r-chart-axis r-chart-axis-y'>{yls} {yfs}</div>
                     <div className='r-chart-canvas'>
                         {HTML}
                         <div className='r-chart-multiselect'></div>
-                        {temp.Canvas.render({
-                            screenPosition: ['50%', '50%'],
-                            items: temp.elements.all,
-                            attrs: {
-                                onMouseMove: (e, pos) => {
-                                    getMouseDetail(pos);
-                                    let dom = $(temp.dom.current);
-                                    dom.find('.r-chart-popup-container').html('');
-                                    renderMouseLabels(dom)
-                                    renderPointLabels(dom);
-                                },
-                                onMouseDown: mouseDown
-                            }
-                        })}
+                        {renderCanvas()}
                         <div className={'r-chart-popup-container r-chart-detail-popup'}></div>
                     </div>
                     <div className='r-chart-corner'></div>
@@ -880,8 +773,35 @@ export default function RChart(props: I_Chart) {
         </RChartContext.Provider>
     )
 }
+function Header() {
+    let {data,temp,dataHide,setDataHide}:I_chart_context = useContext(RChartContext)
+    return (
+        <div className='r-chart-title' style={{ paddingLeft: temp.axisSize[1] + 'px' }}>
+            {data.filter((d) => d.title !== undefined).map((d, i) => {
+                let { color, title } = d;
+                let active = dataHide[title] === undefined?true:dataHide[title];
+                let style = active ? { background: color } : { boxShadow: `inset 0 0 0 2px ${color}` };
+                return (
+                    <div key={i} className='r-chart-title-item' onClick={() => setDataHide({ ...dataHide, [title]: !active })}>
+                        <div className='r-chart-title-color' style={style}></div>
+                        <div className='r-chart-title-text'>{d.title || 'untitle'}</div>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
 type I_chart_context = {
+    rootProps:I_Chart,
+    dataHide:I_chart_dataHide,
+    setDataHide:(v:I_chart_dataHide)=>void,
+    mounted:boolean,
+    filter:I_chart_filterState,
+    setFilter:(v:I_chart_filterState)=>void
+    temp:I_chart_temp,
+    setTemp:(newTemp:I_chart_temp)=>void,
     keyAxis: I_chart_axis,
+    details:I_chart_details,
     valueAxis: I_chart_axis,
     keys: any[],
     data: I_chart_data[],
@@ -889,11 +809,11 @@ type I_chart_context = {
 }
 type I_RChartLine = {
     dir: 'horizontal' | 'vertical'
-    axisSize: number
 }
 function RChartLine(props: I_RChartLine) {
-    let { dir, axisSize } = props;
-    let style = dir === 'horizontal' ? { width: `calc(100% - ${axisSize[1]}px)` } : { height: `calc(100% - ${axisSize[0]}px)` }
+    let {temp}:I_chart_context = useContext(RChartContext);
+    let { dir } = props;
+    let style = dir === 'horizontal' ? { width: `calc(100% - ${temp.axisSize[1]}px)` } : { height: `calc(100% - ${temp.axisSize[0]}px)` }
     return (
         <div className={`r-chart-${dir}-line r-chart-line`} style={style}></div>
     )
@@ -1013,4 +933,120 @@ export function getFakeData(x = 100, y = 100) {
         keys.push(i.toString());
     }
     return { points, keys }
+}
+
+type I_LabelSlider = {
+    axis:'x' | 'y',
+}
+function LabelSlider(props:I_LabelSlider) {
+    let {keyAxis,valueAxis,details,rootProps}:I_chart_context = useContext(RChartContext);
+    let {axis} = props;
+    function getLabelStyle(){
+        let {xZoom,yZoom} = details;
+        if(axis === 'x'){return { top: xZoom ? '24px' : '14px' }}
+        if(axis === 'y'){return { left: 'unset', right: yZoom ? '16px' : '8px', justifyContent: 'flex-end' }}
+    }
+    let { range, axisToD } = details;
+    if (!range || !range[axis]) { return null; }
+    let { start, end, step} = range[axis];
+    let dAxis = axisToD[axis];
+    let { edit = (a) => a } = dAxis === 'key' ? keyAxis : valueAxis;
+    return (
+        <AIOInput type='slider'
+            point={() => { return { labelShow: false, attrs: { style: { display: 'none' } } } }}
+            className='labelSlider'
+            style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: 0 }}
+            grooveAttrs={{ style: { display: 'none' } }}
+            direction={axis === 'x' ? 'right' : 'top'} start={start} end={end}
+            label={{
+                step,
+                attrs: () => { return { style: { fontSize: 'inherit', ...getLabelStyle() } } },
+                rotate: axis === 'y' ? 0 : (rootProps.labelRotate || 0),
+                html: (value) => edit(axisToD[axis] === 'key' ? rootProps.keys[value] || '' : value)
+            }}
+            line={(index, active) => { return { attrs: { style: { opacity: 0 } } } }}
+        />
+    )
+}
+type I_FilterSlider = {axis:'x' | 'y'}
+function FilterSlider(props:I_FilterSlider) {
+    let {details,keyAxis,valueAxis,keys,temp,setTemp,rootProps,setFilter,filter,mounted}:I_chart_context = useContext(RChartContext);
+    if(!mounted){return null}
+    let {axis} = props;
+    var { axisToD,range } = details;
+    let { edit = (a) => a,zoom } = axisToD[axis] === 'key' ? keyAxis : valueAxis;
+    if (!zoom || !range || !range[axis]) { return null; }
+    var { p1, p2, start, end } = range[axis].filter;
+    var style = {
+        x: { width: '100%', height: '16px', padding: '0 12px', top: '2px', opacity: 1 },
+        y: { width: '16px', height: '100%', padding: '12px 0', right: '0px', opacity: 1 }
+    }
+    function filterMouseDown(e) {
+        e.preventDefault();
+        setTemp({...temp,mouseDownDetail:{...temp.mouseDownDetail,target:'filter'}})
+        let container = $(temp.dom.current);
+        let filterButtons = container.find('.r-chart-filterSlider-button');
+        filterButtons.addClass('active');
+        EventHandler('window', 'mouseup', filterMouseUp);
+    }
+    function filterMouseUp() {
+        setTemp({...temp,mouseDownDetail:{}})
+        let container = $(temp.dom.current);
+        let filterButtons = container.find('.r-chart-filterSlider-button');
+        filterButtons.removeClass('active');
+        EventHandler('window', 'mouseup', filterMouseUp, 'unbind');
+    }
+    function changeFilter(axis, p1, p2) {
+        return temp.details.axisToD[axis] === 'key' ? key_changeFilter(p1, p2) : value_changeFilter(p1, p2);
+    }
+
+    function value_changeFilter(p1, p2) {
+        setFilter({ ...filter, value: [p1, p2] });
+    }
+    function key_changeFilter(p1, p2) {
+        filter.key = [keys[p1], keys[p2]];
+        setFilter({ ...filter, key: [keys[p1], keys[p2]] });
+    }
+    console.log(filter)
+    return (
+        <AIOInput 
+            type='slider' 
+            direction={axis === 'x' ? 'right' : 'top'} 
+            start={start} 
+            end={end} 
+            multiple={true}
+            className='filterSlider'
+            style={{ position: 'absolute', ...style[axis] }}
+            value={[p1, p2]}
+            point={(index, value) => {
+                let labelHtml = edit(axisToD[axis] === 'key' ? keys[value] : value)
+                return {
+                    html: (
+                        <div
+                            className={'r-chart-filterSlider-button r-chart-filterSlider-button-' + axis}
+                            onTouchStart={filterMouseDown}
+                            onMouseDown={filterMouseDown}
+                            style={{ background: rootProps.zoomColor, border: `1px solid ${rootProps.zoomColor}` }}
+                        ></div>
+                    ),
+                    attrs: {
+                        style: {
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            width: '30px', height: '30px', borderRadius: '0px', background: 'none'
+                        }
+                    },
+                    labelHtml
+                }
+            }}
+            line={(index) => {
+                let style;
+                if (index !== 0) {
+                    style = { [axis === 'y' ? 'width' : 'height']: '1px', background: rootProps.zoomColor }
+                }
+                return { attrs: { style } }
+            }}
+            onChange={(points) => changeFilter(axis, points[0], points[1])}
+            grooveAttrs={{ style: { display: 'none' } }}
+        />
+    )
 }

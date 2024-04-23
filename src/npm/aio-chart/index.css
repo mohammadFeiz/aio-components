@@ -12,6 +12,9 @@
     position: relative;
     padding:12px;
   }
+  .r-chart .aio-input-slider{
+    background:none;
+  }
   .r-chart .labelSlider{
     position:absolute;
     left:0;top:0;

@@ -28,13 +28,14 @@ export type I_canvas_item = {
   onMouseMove?:(p:I_canvas_eventProps)=>void,
   onMouseUp?:(p:I_canvas_eventProps)=>void,
   onClick?:(p:I_canvas_eventProps)=>void,
-  data?:any
+  data?:any,
+  events?:any
 }
 export type I_canvas_items = (I_canvas_item | (()=>I_canvas_item))[] | (()=>(I_canvas_item | (()=>I_canvas_item))[])
 export type I_canvas_canvasToClient = (pos:[number,number])=>[number,number,number,number]
 export type I_canvas_clientToCanvas = (pos:[number,number],calcParentOffset?:boolean)=>[number,number]
 export type I_canvas_mousePosition = {x:number,y:number,px:number,py:number,cx:number,cy:number}
-export type I_canvas_screenPosition = [number | string,number | string];
+export type I_canvas_screenPosition = (number | string)[];
 export type I_canvas_getActions = (p:{clientToCanvas:I_canvas_clientToCanvas,canvasToClient:I_canvas_canvasToClient})=>void
 export type I_canvas_props = {
   onPan?:((sp:I_canvas_screenPosition)=>void) | boolean,

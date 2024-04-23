@@ -4,9 +4,10 @@ import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
 import AIOInput, {  } from '../../../npm/aio-input/index.tsx';
 import './index.css';
 import {Icon} from '@mdi/react';
-import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiChevronDoubleDown, mdiCheck, mdiCheckboxBlank, mdiCheckboxBlankOutline, mdiCheckOutline, mdiCheckboxMarked, mdiClose} from '@mdi/js';
+import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiChevronDoubleDown, mdiCheck, mdiCheckboxBlank, mdiCheckboxBlankOutline, mdiCheckOutline, mdiCheckboxMarked, mdiClose, mdiAccessPointPlus, mdiAccountSupervisorOutline, mdiAccountBoxMultiple, mdiAccountChild, mdiAccountBadge, mdiAccountCancel, mdiAccountClock, mdiArrowRight, mdiArrowRightBold} from '@mdi/js';
 import { AI,AI_table_column } from '../../../npm/aio-input/types.tsx';
-const types = ['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image']
+import { transform } from 'typescript';
+const types = ['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','pinch']
 export default function DOC_AIOInput_Table(props) {
     return (
         <DOC
@@ -23,8 +24,8 @@ export default function DOC_AIOInput_Table(props) {
     )
 }
 let propDic = {
-    value:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
-    onChange:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
+    value:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','pinch'],
+    onChange:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','pinch'],
     text:['select','multiselect','checkbox','date','time'],
     before:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
     after:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
@@ -34,7 +35,7 @@ let propDic = {
     loading:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
     attrs:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
     style:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
-    className:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
+    className:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image','pinch'],
     inputAttrs:['text','number','textarea','password'],
     placeholder:['text','number','textarea','password','select','date','image'],
     justify:['text','number','textarea','password','select','multiselect','color','date','time'],
@@ -72,7 +73,8 @@ let propDic = {
     changeClose:['date'],
     dateAttrs:['date'],
     width:['image'],
-    height:['image']
+    height:['image'],
+    scale:['pinch']
     
 }
 const DOC_options = [
@@ -198,12 +200,587 @@ function Input({type}){
     let [list] = useState(getList())    
     function getList(){
         let list:any[] = [
-            {property:'value',title:'value , onChange'},
+        //     {property:'value',title:'value , onChange'},
+        //     {
+        //         property:'value',title:'value',show:()=>type === 'image',
+        //         initialValue:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg',
+        //         code:`value='https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'`
+        //     },
+        //     {
+        //         title:'start step end',show:()=>type === 'pinch',
+        //         props:{start:0,end:8,step:2},
+        //         code:
+        // `start={0} 
+        // end={8} 
+        // step={2}`
+        //     },
+        //     {
+        //         title:'label (step)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,end:8,
+        //             label:{
+        //                 step:1
+        //             }
+        //         },
+        //         code:
+        // `start={0}
+        // end={8}
+        // label={{
+        //     step:1
+        // }}`
+        //     },
+        //     {
+        //         title:'label (attrs)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,end:8,
+        //             label:{
+        //                 step:1,
+        //                 attrs:(value)=>{
+        //                     return {
+        //                         style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+        //                     }
+        //                 }
+        //             }
+        //         },
+        //         code:`
+        //     start={0}
+        //     end={8}
+        //     label={{
+        //         step:1,
+        //         attrs:(value)=>{
+        //             return {
+        //                 style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+        //             }
+        //         }
+        //     }}
+        //             `
+        //     },
+        //     {
+        //         title:'label (html)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,end:8,
+        //             label:{
+        //                 step:1,
+        //                 html:(value)=>{
+        //                     return value === 5?<Icon path={mdiAccount} size={0.6}/>:value
+        //                 }
+        //             }
+        //         },
+        //         code:
+        // `start={0}
+        // end={8}
+        // label={{
+        //     step:1,
+        //     html:(value)=>{
+        //         return value === 7?<Icon path={mdiAccount} size={0.5}/>:value
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'label (offset)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,end:8,
+        //             label:{
+        //                 step:1,
+        //                 offset:-20
+        //             }
+        //         },
+        //         code:
+        // `start={0}
+        // end={8}
+        // label={{
+        //     step:1,
+        //     offset:-20
+        // }}`
+        //     },
+        //     {
+        //         title:'label (list)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,end:8,
+        //             label:{
+        //                 list:[1,2,5]
+        //             }
+        //         },
+        //         code:
+        // `start={0}
+        // end={8}
+        // label={{
+        //     list:[1,2,5]
+        // }}`
+        //     },
+        //     {
+        //         title:'scale (step)',show:()=>type === 'pinch',
+        //         props:{step:5,start:0,end:100,scale:{step:5}},
+        //         code:
+        // `start={0}
+        // end={100}
+        // step={5}
+        // scale={{
+        //     step:5
+        // }}`
+        //     },
+        //     {
+        //         title:'scale (offset)',show:()=>type === 'pinch',
+        //         props:{step:5,start:0,end:100,scale:{step:5,offset:-10}},
+        //         code:
+        // `start={0}
+        // end={100}
+        // step={5}
+        // scale={{
+        //     step:5,
+        //     offset:-10,
+        // }}`
+        //     },
+        //     {
+        //         title:'scale (attrs)',show:()=>type === 'pinch',
+        //         props:{scale:{step:10,attrs:(value)=>{return {style:{height:6,width:6,background:value > 300?'red':'#000'}}}}},
+        //         code:
+        // `scale={{
+        //     step:10,
+        //     attrs:(value)=>{
+        //         return {
+        //             style:{
+        //                 height:6,
+        //                 width:6,
+        //                 background:value > 300?'red':'#000'
+        //             }
+        //         }
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'scale (list)',show:()=>type === 'pinch',
+        //         props:{start:0,end:100,scale:{list:[20,40,60,80]}},
+        //         code:
+        // `start={0}
+        // end={100}
+        // step={5}
+        // scale={{
+        //     list:[20,40,60,80]
+        // }}`
+        //     },
+        //     {
+        //         title:'scale(html)',show:()=>type === 'pinch',
+        //         props:{
+        //             attrs:{style:{margin:36}},
+        //             start:0,
+        //             end:8,    
+        //             scale:{
+        //                 step:1,
+        //                 attrs:(value)=>{
+        //                     return {
+        //                         style:{width:24,height:24,background:'none'}
+        //                     }
+        //                 },
+        //                 html:(value)=>(
+        //                     <Icon 
+        //                         path={[
+        //                             mdiAccount,
+        //                             mdiAccountClock,
+        //                             mdiAccountCancel,
+        //                             mdiHumanMale,
+        //                             mdiAccountBadge,
+        //                             mdiAccountSupervisorOutline,
+        //                             mdiAccountBoxMultiple,
+        //                             mdiAccountChild
+        //                         ][value]} 
+        //                         size={0.7}
+        //                     />
+        //                 ) 
+        //             }
+        //         },
+        //         code:
+        // `start={0},
+        // end={8},    
+        // scale={{
+        //     step:1,
+        //     attrs:(value)=>{
+        //         return {
+        //             style:{width:24,height:24,background:'none'}
+        //         }
+        //     },
+        //     html:(value)=>(
+        //         <Icon 
+        //             path={[
+        //                 mdiAccount,
+        //                 mdiAccountClock,
+        //                 mdiAccountCancel,
+        //                 mdiHumanMale,
+        //                 mdiAccountBadge,
+        //                 mdiAccountSupervisorOutline,
+        //                 mdiAccountBoxMultiple,
+        //                 mdiAccountChild
+        //             ][value]} 
+        //             size={0.7}
+        //         />
+        //     ) 
+        // }}`
+        //     },
+        //     {
+        //         title:'handle (attrs)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             handle:(val,{disabled,angle,value})=>{
+        //                 return {
+        //                     attrs:{
+        //                         style:{
+        //                             background:'dodgerblue'
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         },
+        //         code:
+        // `start={0}
+        // end={24}
+        // handle={{
+        //     attrs:{
+        //         style:{
+        //             background:'dodgerblue'
+        //         }
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'handle (false)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             handle:false
+        //         },
+        //         code:
+        // `start={0}
+        // end={24}
+        // handle={false}`
+        //     },
+        //     {
+        //         title:'point (attrs)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             point:(value,{angle})=>{
+        //                 return {
+        //                     attrs:{
+        //                         style:{
+        //                             transform:`rotate(${-angle}deg)`,
+        //                             height:24,
+        //                             width:24,
+        //                             fontSize:10,
+        //                             background:'dodgerblue',
+        //                             color:'#fff'
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         },
+        //         code:
+        // `attrs={{style:{border:'2px solid dodgerblue'}}}
+        // start={0}
+        // end={24}
+        // point={(value,{angle})=>{
+        //     return {
+        //         attrs:{
+        //             style:{
+        //                 transform:'rotate(' + (-angle) + 'deg)',
+        //                 height:24,
+        //                 width:24,
+        //                 left:24,
+        //                 fontSize:10,
+        //                 background:'dodgerblue',
+        //                 color:'#fff'
+        //             }
+        //         }
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'point (html)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             circles:['35 2 dodgerblue'],
+        //             point:(value,{angle})=>{
+        //                 return {
+        //                     html:value,
+        //                     attrs:{
+        //                         style:{
+        //                             transform:`rotate(${-angle}deg)`,
+        //                             height:24,
+        //                             width:24,
+        //                             fontSize:10,
+        //                             background:'dodgerblue',
+        //                             color:'#fff'
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         },
+        //         code:
+        // `attrs={{style:{border:'2px solid dodgerblue'}}}
+        // start={0}
+        // end={24}
+        // point={(value,{angle})=>{
+        //     return {
+        //         html:value,
+        //         attrs:{
+        //             style:{
+        //                 transform:'rotate(' + (-angle) + 'deg)',
+        //                 height:24,
+        //                 width:24,
+        //                 left:24,
+        //                 fontSize:10,
+        //                 background:'dodgerblue',
+        //                 color:'#fff'
+        //             }
+        //         }
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'point (offset)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             circles:['35 2 dodgerblue'],
+        //             point:(value,{angle})=>{
+        //                 return {
+        //                     html:value,
+        //                     attrs:{
+        //                         style:{
+        //                             transform:`rotate(${-angle}deg)`,
+        //                             height:24,
+        //                             width:24,
+        //                             fontSize:10,
+        //                             background:'dodgerblue',
+        //                             color:'#fff'
+        //                         }
+        //                     },
+        //                     offset:-16
+        //                 }
+        //             }
+        //         },
+        //         code:
+        // `attrs={{style:{border:'2px solid dodgerblue'}}}
+        // start={0}
+        // end={24}
+        // point={(value,{angle})=>{
+        //     return {
+        //         html:value,
+        //         attrs:{
+        //             style:{
+        //                 transform:'rotate(' + (-angle) + 'deg)',
+        //                 height:24,
+        //                 width:24,
+        //                 left:24,
+        //                 fontSize:10,
+        //                 background:'dodgerblue',
+        //                 color:'#fff'
+        //             }
+        //         },
+        //         offset:-16
+        //     }
+        // }}`
+        //     },
+        //     {
+        //         title:'point (false)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:24,
+        //             point:false
+        //         },
+        //         code:
+        // `start={0}
+        // end={24}
+        // point={false}`
+        //     },
             {
-                property:'value',title:'value',show:()=>type === 'image',
-                initialValue:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg',
-                code:`value='https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'`
+                title:'disabled',show:()=>type === 'pinch',
+                props:{
+                    attrs:{style:{margin:48}},
+                    start:0,
+                    end:12,
+                    rotate:90,
+                    disabled:[4,6,7,10,11],
+                    point:false,
+                    scale:{
+                        step:1,
+                        attrs:(val,{disabled})=>{
+                            return {
+                                style:{width:6,height:6,background:disabled?'red':'#000'}
+                            }
+                        }
+                    },
+                    label:{
+                        step:1,
+                        dynamic:true,
+                        attrs:(val,{disabled,angle,value})=>{
+                            let rotate = angle > 90 && angle < 270;
+                            let active = val === value
+                            let color;
+                            if(disabled){color = 'red'}
+                            else if(active){color = '#fff'}
+                            else {color = '#00ff00'}
+                            let style = {
+                                width:40,
+                                fontSize:10,
+                                transform:`rotate(${rotate?180:0}deg)`,
+                                fontWeight:active?'bold':undefined,
+                                background:active?'dodgerblue':undefined,
+                                color,
+                                fontFamily:'arial',
+                            }
+                            return {
+                                style
+                            }
+                        },
+                        html:(value,{angle})=>{
+                            return `${angle.toFixed(0)}`
+                        }
+                    },
+                    handle:(val,{disabled,angle,value})=>{
+                        return {
+                            attrs:{
+                                style:{
+                                    background:'#000'
+                                }
+                            }
+                        }
+                    }
+                },
+                code:
+                `attrs={{style:{border:'2px solid #000',margin:48}}}
+                start={0}
+                end={12}
+                rotate={-90}
+                disabled={[4,6,7,10,11]}
+                point={false}
+                scale={{
+                    step:1,
+                    attrs:(val,{disabled})=>{
+                        return {
+                            style:{left:48,width:6,height:6,background:disabled?'red':'#000'}
+                        }
+                    }
+                }}
+                label={{
+                    step:1,
+                    dynamic:true,
+                    attrs:(val,{disabled,angle,value})=>{
+                        let rotate = angle > 90 && angle < 270;
+                        let active = val === value
+                        let color;
+                        if(disabled){color = 'red'}
+                        else if(active){color = '#fff'}
+                        else {color = '#00ff00'}
+                        let style = {
+                            width:40,
+                            fontSize:10,
+                            transform:'rotate(' + 180 +'deg)',
+                            fontWeight:active?'bold':undefined,
+                            background:active?'dodgerblue':undefined,
+                            color,
+                            fontFamily:'arial',
+                        }
+                        return {
+                            style
+                        }
+                    },
+                    html:(value)=>{
+                        return value +':00'
+                    }
+                }}
+                handle={{
+                    attrs:{
+                        style:{
+                            background:'#000'
+                        }
+                    }
+                }}`
             },
+        //     {
+        //         title:'circles',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:100,
+        //             circles:[
+        //                 '30 2 #333',
+        //                 '20 2 #777'
+        //             ]
+        //         },
+        //         code:
+        // `start={0}
+        // end={100}
+        // circles={[
+        //     '30 2 #333',
+        //     '20 2 #777'
+        // ]}`
+        //     },
+        //     {
+        //         title:'rotate (-180 deg)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:100,
+        //             rotate:-180,
+        //             label:{step:10,offset:0}
+        //         },
+        //         code:
+        // `start={0}
+        // end={100}
+        // label={{step:10,offset:0}}
+        // rotate={-180}`
+        //     },
+        //     {
+        //         title:'round (0 to 1)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:100,
+        //             round:0.5,
+        //             label:{step:10,offset:0}
+        //         },
+        //         code:
+        // `start={0}
+        // end={100}
+        // rotate:180,
+        // round={0.5}
+        // label:{step:10,offset:0}`
+        //     },
+        //     {
+        //         title:'round (0 to 1)',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:100,
+        //             round:0.25,
+        //             label:{step:20,offset:0}
+        //         },
+        //         code:
+        // `start={0}
+        // end={100}
+        // round={0.5}
+        // label:{step:10,offset:0}`
+        //     },
+        //     {
+        //         title:'ranges',show:()=>type === 'pinch',
+        //         props:{
+        //             start:0,
+        //             end:100,
+        //             ranges:[
+        //                 '40 6 red',
+        //                 '60 6 orange',
+        //                 '80 6 yellow',
+        //                 '100 6 green'    
+        //             ]
+        //         },
+        //         code:
+        // `start={0}
+        // end={100}
+        // ranges={[
+        //     '40 6 red',
+        //     '60 6 orange',
+        //     '80 6 yellow',
+        //     '100 6 green' 
+        // ]}`
+        //     },
             {
                 property:'width',title:'width',props:{width:120},
                 code:`width={120}`
@@ -810,7 +1387,7 @@ function Input({type}){
             }   
         ]
         return list.filter(({property,show = ()=>true},i)=>{
-            if(!show() || !isValidProp(type,property)){return false}
+            if(!show() || (property && !isValidProp(type,property))){return false}
             return true
         })
     }
@@ -857,7 +1434,7 @@ function DateDisabled(){
             {title:'Description',value:'row.des'},
             {
                 width:120,template:({row})=>{
-                    return <AIOInput type='date' value={ref.current} onChange={(value)=>setValue(value)} dateDisabled={JSON.parse(row.op)}/>
+                    return <AIOInput type='date' value={ref.current} onChange={(value)=>setValue(value)} disabled={JSON.parse(row.op)}/>
                 }
             }
             

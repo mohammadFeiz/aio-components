@@ -25,6 +25,7 @@ import DOC_AIOLogin from './documents/aio-login/doc-aio-login';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
+import Test from './test.tsx';
 import T1 from './documents/t1/t1';
 import Versions from './versions';
 AIOInputSetStorage('mapApiKeys',{
@@ -62,7 +63,8 @@ export default class AIOComponents extends Component{
         'aio-shop':DOC_AIOShop,
         'react-virtual-dom':DOC_ReactVirtualDom,
         'msfloading1':DOC_MSFLoading1,
-        't1':T1
+        't1':T1,
+        'test':Test
       }
     }
   }

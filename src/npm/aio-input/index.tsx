@@ -10,7 +10,7 @@ import {
     mdiDotsHorizontal
 } from "@mdi/js";
 import $ from 'jquery';
-import {AIODate,GetClient,EventHandler,Swip,getValueByStep} from './../../npm/aio-utils/index';
+import {AIODate,GetClient,EventHandler,Swip,getValueByStep,svgArc} from './../../npm/aio-utils/index';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOStorage from './../../npm/aio-storage/index.js';
@@ -133,7 +133,7 @@ export default function AIOInput(props: AI) {
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
 }
 AIOInput.defaultProps = {
-    jalali:false,unit:'day',theme:[],size:180
+    jalali:false,unit:'day',theme:[]
 }
 function Time(){
     let {rootProps,DATE}:AI_context = useContext(AICTX);
@@ -399,7 +399,7 @@ function InputFile() {
         else { result = Files.length ? Files[0] : undefined }
         onChange(result)
     }
-    let props = { disabled, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e) => change(e) }
+    let props = { disabled:disabled === true, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e) => change(e) }
     return <input {...props} />
 }
 function FileItems() {
@@ -1677,7 +1677,7 @@ function DPCellWeekday(props:I_DPCellWeekday) {
 }
 function DPCell(props:I_DPCell) {
     let {rootProps, translate, onChange,DATE}:I_DPContext = useContext(DPContext);
-    let { disabled, dateAttrs, theme = AIDef('theme'), value, jalali, unit, dateDisabled } = rootProps;
+    let { disabled, dateAttrs, theme = AIDef('theme'), value, jalali, unit } = rootProps;
     let { dateArray } = props;
     function getClassName(isActive:boolean, isToday:boolean, isDisabled:boolean, className?:string) {
         var str = 'aio-input-date-cell';
@@ -1689,8 +1689,8 @@ function DPCell(props:I_DPCell) {
     }
     let isActive = !value ? false : DATE.isEqual(dateArray, value);
     let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
-    let isDateDisabled = !dateDisabled ? false : DATE.isMatch(dateArray, dateDisabled);
-    let isDisabled = disabled || isDateDisabled;
+    let isDateDisabled = !Array.isArray(disabled) ? false : DATE.isMatch(dateArray, disabled);
+    let isDisabled = disabled === true || isDateDisabled;
     let Attrs:any = {}
     if (dateAttrs) { 
         Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
@@ -2406,7 +2406,7 @@ function Map() {
     if (!value) { value = { lat: 35.699739, lng: 51.338097 } }
     if (!value.lat) { value.lat = 35.699739 }
     if (!value.lng) { value.lng = 51.338097 }
-    let p:I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled }
+    let p:I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled:disabled === true }
     return <MapUnit {...p} />
 }
 function MapUnit(props:I_MapUnit) {
@@ -2954,72 +2954,190 @@ export function Tree(props:any = {}) {
     return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
 }
 const Pinch = () => {
-    let {rootProps}:AI_context = useContext(AICTX),{start = 0,end = 360,step = 1,label,scale,handle,attrs,onChange,size,angle = 0} = rootProps;
+    let {rootProps}:AI_context = useContext(AICTX);
+    let {start = 0,end = 360,step = 1,label,ranges = [],circles,scale,attrs,onChange,size = AIDef('size','pinch'),disabled,rotate = 0} = rootProps;
+    circles = circles || [`${(size / 2) - 1} 1 #444`]
+    let [round] = useState(getRound())
+    if(round !== 1 && !rotate){
+        rotate = 90 - (round * 180) 
+    }
+    function getRound(){
+        let {round = 1} = rootProps;
+        if(round > 1){round = 1}
+        if(round < 0.2){round = 0.2};
+        return round
+    }
     let [temp] = useState({dom:createRef()})
-    let [value,setValue] = useState<number>(getValueByStep({value:rootProps.value,start,step,end}))
-    let [scaleNode] = useState(scale_node()),[labelNode] = useState(label_node())
-    useEffect(()=>{setValue(rootProps.value)},[rootProps.value])
+    let [value,setValue] = useState<number>(getValue)
+    let [disabledDic,setDisabledDic] = useState(getDisabledDic())
+    function getDisabledDic(){
+        if(!Array.isArray(disabled)){return {}}
+        let res = {}
+        for(let i = 0; i < disabled.length; i++){
+            let key = 'a' + disabled[i];
+            res[key] = true
+        }
+        return res
+    }
+    function getValue(){
+        return getValueByStep({value:rootProps.value || start,start,step,end})
+    }
+    let [scaleNode] = useState(scales_node()),[labelNode] = useState(labels_node())
+    useEffect(()=>{setValue(rootProps.value || start)},[rootProps.value || start])
+    useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
     useEffect(()=>{
         new Swip({dom:()=>$(temp.dom.current),start:()=>[0,0],move:({change})=>changeHandle(change.centerAngle)})
     },[])
-    function changeHandle(centerAngle){change(getValueByStep({value:getValueByAngle(centerAngle),start,step,end}))}
-    const change = (value) => {setValue(value); onChange(value)}
-    function handle_node(){
+    function changeHandle(centerAngle){
+        let value = getValueByAngle(centerAngle);
+        change(getValueByStep({value,start,step,end}))
+    }
+    function isValueDisabled(value){
+        return !!disabledDic[`a${value}`]
+    }
+    const change = (value) => {
+        if(disabled === true || isValueDisabled(value)){return}
+        setValue(value); 
+        onChange(value)
+    }
+    function value_node(){
         let angle = getAngleByValue(value);
-        let {attrs:hAttrs = {}} = handle || {}
-        let point = (rootProps.point || (()=>{}))(value,angle) || {}
-        let {attrs:pAttrs = {},html = ''} = point;
-        hAttrs = typeof hAttrs === 'function'?hAttrs(value,angle):hAttrs;
-        pAttrs = typeof pAttrs === 'function'?pAttrs(value,angle):pAttrs;
+        let p = {angle,disabled:isValueDisabled(value),value}
         return (
             <div className='pinch-handle-container' draggable={false}style={{transform:`rotate(${angle}deg)`}}>
-                <div {...hAttrs} className={'pinch-handle' + (hAttrs.className?' ' + hAttrs.className:'')} style={{width:size / 2,...hAttrs.style}} draggable={false}>
-                    <div {...pAttrs} className={'pinch-point' + (pAttrs.className?' ' + pAttrs.className:'')} style={pAttrs.style} draggable={false}>{html}</div>
-                </div>    
+                {handle_node(p)}
+                {point_node(p)}
             </div>
         )
     }
-    function label_node(){
-        let {step,list = [],html = (o)=>o} = label || {};
-        let labels = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
-        for(let i = 0; i < list.length; i++){if(labels.indexOf(list[i]) === -1){labels.push(list[i])}}
-        return labels.map((o,i)=>{
-            let angle = getAngleByValue(o);
-            let attrs = label.attrs?label.attrs(o,angle) || {}:{} 
+    function handle_node(p){
+        if(rootProps.handle === false){return null}
+        if(rootProps.handle && typeof rootProps.handle !== 'function'){
+            alert(`aio-input error => in type pinch, handle props should be a function,
+            handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
+            return null
+        }
+        let handle = (rootProps.handle || (()=>{}))(value,p) || {}
+        let {attrs = {}} = handle;
+        return (
+            <div {...attrs} className={'pinch-handle' + (attrs.className?' ' + attrs.className:'')} style={{width:size / 2,...attrs.style}} draggable={false}></div>
+        )
+    }
+    function point_node(p){
+        if(rootProps.point === false){return null}
+        let point = (rootProps.point || (()=>{}))(value,p) || {}
+        let {attrs = {},html = '',offset = -8} = point;
+        let left = getLeftByOffset(offset,value,p)
+        return <div {...attrs} className={'pinch-point' + (attrs.className?' ' + attrs.className:'')} style={{left,...attrs.style}} draggable={false}>{html}</div>
+    }
+    function getLeftByOffset(offset,value,p){
+        let o = typeof offset === 'function'?offset(value,p):offset;
+        return size / 2 + o
+    }
+    function getList(item){
+        let {step,list = []} = item;
+        if(!step){return []}
+        let stepLength = Math.floor((end - start) / step) + (round !== 1?1:0)
+        let res = new Array(stepLength).fill(0).map((o,i)=>i * step);
+        for(let i = 0; i < list.length; i++){
+            if(res.indexOf(list[i]) === -1){res.push(list[i])}
+        }
+        return res;
+    }
+    function getListDetails(item,itemValue,def){
+        let angle = getAngleByValue(itemValue);
+        let p = {angle,disabled:isValueDisabled(itemValue),value}
+        let left = getLeftByOffset(item.offset || def.offset,itemValue,p);
+        let text = (item.html || def.html)(itemValue,p);
+        let attrs = item.attrs?(item.attrs(itemValue,p) || {}):{}
+        return {angle,left,text,attrs}
+    }
+    function labels_node(){return getList(label || {}).map((o,i)=>label_node(o))}
+    function label_node(labelValue){
+        let {angle,left,text,attrs} = getListDetails(label || {},labelValue,{offset:6,html:(o)=>o});
+        let p = {key:labelValue,draggable:false,className:'pinch-label-container',style:{transform:`rotate(${angle}deg)`}}
+        return (<div {...p}>{label_text_node(angle,left,text,attrs)}</div>)
+    }
+    function label_text_node(angle,left,text,attrs){
+        let p = addToAttrs(attrs,{className:'pinch-label',style:{transform:`rotate(${-angle}deg)`,left,...attrs.style},attrs:{draggable:false}})
+        return <div {...p}>{text}</div>
+    }
+    function scales_node(){
+        scale = scale || {};
+        let scales = getList(scale);
+        return scales.map((o,i)=>{
+            let {angle,left,text,attrs} = getListDetails(scale,o,{offset:3,html:()=>{}});
             return (
-                <div key={o} className='pinch-label-container' draggable={false} style={{transform:`rotate(${angle}deg)`}}>
-                    <div {...attrs} className={'pinch-label' + (attrs.className?' ' + attrs.className:'')} draggable={false} style={{transform:`rotate(${-angle}deg)`,...attrs.style}}>{html(o,angle)}</div>
+                <div className='pinch-scale-container' key={o} draggable={false} style={{transform:`rotate(${angle}deg)`}}>
+                    {scale_node(attrs,left,angle,text)}
                 </div>    
             )
         })
     }
-    function scale_node(){
-        let {step,list = [],html = ()=>''} = scale || {};
-        let scales = new Array(step?Math.floor((end - start) / step):0).fill(0).map((o,i)=>i * step);
-        for(let i = 0; i < list.length; i++){if(scales.indexOf(list[i]) === -1){scales.push(list[i])}}
-        return scales.map((o,i)=>{
-            let angle = getAngleByValue(o),scaleText = html(o,angle),attrs = scale.attrs?scale.attrs(o,angle) || {}:{}
-            return (
-                <div className='pinch-scales' key={o} draggable={false} style={{transform:`rotate(${angle}deg)`}}>
-                    <div {...attrs} className={'pinch-scale' + (attrs.className?' ' + attrs.className:'')} draggable={false}>
-                        {scaleText !== undefined && <div className='pinch-scale-text' draggable={false} style={{transform:`rotate(${-angle}deg)`}}>{scaleText}</div>}    
-                    </div>
-                </div>    
-            )
-        })
+    function scale_node(attrs,left,angle,text){
+        let p = addToAttrs(attrs,{className:'pinch-scale',style:{left},attrs:{draggable:false}});
+        return (<div {...p}>{scale_text_node(text,angle)}</div>)
+    }
+    function scale_text_node(text,angle){
+        if(text === undefined){return null}
+        return <div className='pinch-scale-text' draggable={false} style={{transform:`rotate(${-angle}deg)`}}>{text}</div>
+    }
+    function getRanges(){
+        let pathes = []
+        let from = start;
+        for(let i = 0; i < ranges.length; i++){
+            let [stringValue,stringThickness,color] = ranges[i].split(' ');
+            let to = +stringValue,thickness = +stringThickness,radius = (size / 2) - (thickness / 2)
+            pathes.push(arc_node(thickness,color,from,to,radius,90));
+            from = to;
+        }
+        return pathes
+    }
+    function getCircles(){
+        let pathes = []
+        for(let i = 0; i < circles.length; i++){
+            let [stringRadius,stringThickness,color] = circles[i].split(' ');
+            let from = start,to = end,radius = +stringRadius,thickness = +stringThickness;
+            if(radius > size / 2 - thickness / 2){radius = size / 2 - thickness / 2} 
+            radius = Math.round(radius)
+            pathes.push(arc_node(thickness,color,from,to,radius,90));
+        }
+        return pathes;
+    }
+    function svg_node(){
+        if(!ranges.length && !circles.length){return null}
+        let rangePathes = []; try{rangePathes = getRanges()} catch{rangePathes = []}
+        let circlePathes = []; try{circlePathes = getCircles()} catch{circlePathes = []} 
+        let pathes = [...circlePathes,...rangePathes]
+        return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
+    }
+    function arc_node(thickness:number,color:string,from:number,to:number,radius:number,rotate:number){ 
+        let startAngle = getAngleByValue(from) + rotate;
+        let endAngle = getAngleByValue(to) + rotate;
+        if(endAngle === 0){endAngle = 360}
+        let x = size / 2,y = size / 2;
+        return <path d={svgArc(x,y,radius,startAngle,endAngle)} stroke={color} strokeWidth={thickness} fill='transparent'/>
     }
     function pinch_node(){
         let {className,style} = attrs || {}
         let p = {...attrs,className:'pinch' + (className?' ' + className:''),style:{width:size,height:size,...style},ref:temp.dom}
-        return (<div {...p}>{scale && scale.dynamic?scale_node():scaleNode}{label && label.dynamic?label_node():labelNode}{handle_node()}</div>)
+        return (
+            <div {...p}>
+                {svg_node()}
+                {scale && scale.dynamic?scales_node():scaleNode}
+                {label && label.dynamic?labels_node():labelNode}
+                {value_node()}
+            </div>
+        )
     }
     function getValueByAngle(ang){
-        return ((ang - angle) % 360) * (end - start) / 360;
+        let angle = (((ang - rotate - 180) % 360) / round);
+        if(angle < 0){angle = 360 + angle}
+        return angle * (end - start) / 360;
     }
     function getAngleByValue(value){
-        let res = (value * 360 / (end - start) + angle) % 360
-        if(res < 0) {res = 360 + res}
-        return res;
+        let res = (((value * 360 / (end - start))) * round) + rotate + 180;
+        return res % 360;
     }
     return pinch_node()
 }
@@ -3439,7 +3557,7 @@ function getDefaultProps(props,types:AI_types){
     else if(props.type === 'time'){
         if(!props.value){props.value = {}}
     }
-    props.disabled = !!props.disabled || !!props.loading;
+    if(props.loading === true){props.disabled = true}
     if(types.isMultiple){
         if(!props.value){props.value = []}
         else if(valueType !== 'array'){props.value = [props.value]}
@@ -3530,6 +3648,7 @@ function AIDef<T>(prop:string,type?:AI_type):T{
     let res:any = {
         'theme':[],
         'size':180,
+        'pinch-size':72,
         'date-unit':'day'
     }[key]
     return res

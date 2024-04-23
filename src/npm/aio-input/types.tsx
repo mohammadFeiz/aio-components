@@ -46,17 +46,17 @@ export type AI = {
     caret?: boolean | React.ReactNode,
     changeClose?:boolean,//date
     checkIcon?: AI_checkIcon,
+    circles?:string[],
     className?:string,
     columnGap?: number,
     columns?: AI_table_column[],
     count?: number,//list
     dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
-    dateDisabled?:string[],
     decay?: number,//list
     delay?: number,
     deSelect?:any,
     direction?: 'left' | 'right' | 'top' | 'bottom',
-    disabled?: boolean,
+    disabled?: boolean | any[],
     editable?:boolean,
     end?:number,//slider,pinch
     endYear?: string | number,//date
@@ -71,7 +71,7 @@ export type AI = {
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: { row: any, column: AI_table_column, rowIndex: number }) => any },
     grooveAttrs?:any,//slider
-    handle?:{attrs?:any},//pinch
+    handle?:((value:number,p:any)=>{attrs?:any}) | false,//pinch
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
@@ -109,9 +109,12 @@ export type AI = {
     paging?: AI_table_paging,
     placeholder?: string,
     popover?: AP_modal,//notice get type from aio popup
-    point?:AI_point,//slider,pinch
+    point?:false | AI_point,//slider,pinch
     popupConfig?:I_Map_config
     preview?:boolean,
+    ranges?:string[],
+    rotate?:number,
+    round?:number,
     rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
     rowAttrs?: (p: { row: any, rowIndex: number }) => any,
     rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
@@ -141,9 +144,10 @@ export type AI = {
     width?: number | string, //list
     
 }
-export type AI_point = (index:number,value:number)=>{
+export type AI_point = (index:number,p:any)=>{
     attrs?:any,
     html?:React.ReactNode,
+    offset?:number,
     labelHtml?:React.ReactNode,
     labelShow?:boolean | 'inline',
     labelAttrs?:any
@@ -152,6 +156,7 @@ export type AI_scale = {
     step?:number,
     list?:number[],
     dynamic?:boolean,
+    offset?:number | ((value,p?:any)=>number),
     attrs?:(value:number,p?:any)=>any,
     html?:(value:number,p?:any)=>React.ReactNode  
 }
@@ -160,6 +165,7 @@ export type AI_label = {
     step?:number,
     list?:number[],
     dynamic?:boolean,
+    offset?:number | ((value,p?:any)=>number),
     attrs?:(value:number,p?:any)=>any,
     html?:(value:number,p?:any)=>React.ReactNode,
     rotate?:number | ((value:number)=>number)

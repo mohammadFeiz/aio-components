@@ -1929,13 +1929,13 @@
     justify-content: center;
 }
 .pinch{
-    border:2px solid;
     border-radius:100%;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
     margin:12px;
+    position: relative;
 }
 .pinch-handle-container{
     display:flex;
@@ -1944,6 +1944,12 @@
     height: 0;
     justify-content: flex-end;
     overflow: visible;
+    position:relative;
+}
+.pinch-scale-text{
+    display:flex;
+    align-items: center;
+    justify-content: center;
 }
 .pinch-handle{
     position:absolute;
@@ -1964,7 +1970,7 @@
     align-items: center;
     justify-content: center;
 }
-.pinch-scales{
+.pinch-scale-container{
     display:flex;
     align-items: center;
     justify-content: flex-end;

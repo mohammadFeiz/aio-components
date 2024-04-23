@@ -257,15 +257,15 @@ export class Swip {
     geo: Geo;
     timeout: any;
     count: number;
-    domLimit:I_Swip_domLimit;
-    parentLimit:I_Swip_domLimit;
+    domLimit: I_Swip_domLimit;
+    parentLimit: I_Swip_domLimit;
     getDom: () => any;
     getParent: () => any;
     init: () => void;
     dx: number;
     dy: number;
-    cx:number;
-    cy:number;
+    cx: number;
+    cy: number;
     dist: number;
     so: { client?: { x: number, y: number }, x?: number, y?: number };
     getPercentByValue: (value: number, start: number, end: number) => number;
@@ -273,9 +273,9 @@ export class Swip {
     mouseDown: (e: any) => void;
     mouseMove: (e: any) => void;
     mouseUp: (e: any) => void;
-    getDOMLimit:(type:'dom'|'parent')=>I_Swip_domLimit;
-    change:I_Swip_change;
-    getPage:()=>any;
+    getDOMLimit: (type: 'dom' | 'parent') => I_Swip_domLimit;
+    change: I_Swip_change;
+    getPage: () => any;
     constructor(p: I_Swip) {
         this.p = p;
         this.geo = new Geo();
@@ -299,9 +299,9 @@ export class Swip {
             }
         }
         this.getPercentByValue = (value, start, end) => { return 100 * (value - start) / (end - start) }
-        this.getPage = ()=>{
-            let {page} = this.p;
-            return page?page():$(window);
+        this.getPage = () => {
+            let { page } = this.p;
+            return page ? page() : $(window);
         }
         this.getMousePosition = (e: any) => {
             let page = this.getPage();
@@ -311,35 +311,35 @@ export class Swip {
             let xp = this.getPercentByValue(x, 0, this.domLimit.width), yp = this.getPercentByValue(y, 0, this.domLimit.height);
             return { xp, yp, clientX: client.x, clientY: client.y, x, y }
         }
-        this.getDOMLimit = (type):I_Swip_domLimit=>{
-            let dom = type === 'dom'?this.getDom():this.getParent();
+        this.getDOMLimit = (type): I_Swip_domLimit => {
+            let dom = type === 'dom' ? this.getDom() : this.getParent();
             let offset = dom.offset();
             let DOM = {
-                width:dom.width(),
-                height:dom.height(),
-                left:offset.left,
-                top:offset.top,
-                centerX:0,
-                centerY:0
+                width: dom.width(),
+                height: dom.height(),
+                left: offset.left,
+                top: offset.top,
+                centerX: 0,
+                centerY: 0
             };
             return {
                 ...DOM,
-                centerX:DOM.left + DOM.width / 2, 
-                centerY:DOM.top + DOM.height / 2,
-                right:DOM.left + DOM.width,
-                bottom:DOM.top + DOM.height 
+                centerX: DOM.left + DOM.width / 2,
+                centerY: DOM.top + DOM.height / 2,
+                right: DOM.left + DOM.width,
+                bottom: DOM.top + DOM.height
             }
         }
         this.mouseDown = (e) => {
             this.domLimit = this.getDOMLimit('dom');
-            this.parentLimit = p.parent?this.getDOMLimit('parent'):undefined;
+            this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
             let mousePosition = this.getMousePosition(e)
             this.cx = mousePosition.clientX;
-            this.cy = mousePosition.clientY; 
+            this.cy = mousePosition.clientY;
             this.so = {
                 client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            let res = (p.start || (() => [0, 0]))({ mousePosition, domLimit:this.domLimit,parentLimit:this.parentLimit,event:e });
+            let res = (p.start || (() => [0, 0]))({ mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e });
             if (!Array.isArray(res)) { return; }
             let x = res[0], y = res[1];
             this.so = { ...this.so, x, y }
@@ -347,15 +347,15 @@ export class Swip {
             EventHandler('window', 'mouseup', $.proxy(this.mouseUp, this))
         }
         this.mouseMove = (e: any) => {
-            let {speedX = 1,speedY = 1,stepX = 1,stepY = 1,reverseX,reverseY,insideX,insideY} = this.p;
+            let { speedX = 1, speedY = 1, stepX = 1, stepY = 1, reverseX, reverseY, insideX, insideY } = this.p;
             let mousePosition = this.getMousePosition(e), client = GetClient(e);
             let dx = client.x - this.cx, dy = client.y - this.cy;
             dx = Math.round(dx * speedX) * (reverseX ? -1 : 1)
             dy = Math.round(dy * speedY) * (reverseY ? -1 : 1)
-            if(typeof stepX === 'number'){
+            if (typeof stepX === 'number') {
                 dx = Math.round(dx / stepX) * stepX;
             }
-            if(typeof stepY === 'number'){
+            if (typeof stepY === 'number') {
                 dy = Math.round(dy / stepY) * stepY;
             }
             if (dx === this.dx && dy === this.dy) { return }
@@ -363,7 +363,7 @@ export class Swip {
             this.dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
             let angle = this.geo.getAngle([[this.cx, this.cy], [client.x, client.y]])
             let centerAngle = this.geo.getAngle([
-                [this.domLimit.centerX,this.domLimit.centerY], 
+                [this.domLimit.centerX, this.domLimit.centerY],
                 [mousePosition.clientX, mousePosition.clientY]
             ])
             let x, y;
@@ -375,39 +375,39 @@ export class Swip {
                 if (minY !== undefined && y < minY) { y = minY }
                 if (maxY !== undefined && y > maxY) { y = maxY }
             }
-            if(stepX === true){
+            if (stepX === true) {
                 x = Math.round(x / this.domLimit.width) * this.domLimit.width;
             }
-            if(stepY === true){
+            if (stepY === true) {
                 y = Math.round(y / this.domLimit.height) * this.domLimit.height;
             }
-            if(insideX){
-                if(this.parentLimit){
-                    if(x > this.parentLimit.width - this.domLimit.width){x = this.parentLimit.width - this.domLimit.width}
-                    if(x < 0){x = 0}
+            if (insideX) {
+                if (this.parentLimit) {
+                    if (x > this.parentLimit.width - this.domLimit.width) { x = this.parentLimit.width - this.domLimit.width }
+                    if (x < 0) { x = 0 }
                 }
                 else {
                     alert('Swip error => you set insideX prop but missing parent props')
                 }
             }
-            if(insideY){
-                if(this.parentLimit){
-                    if(y > this.parentLimit.height - this.domLimit.height){y = this.parentLimit.height - this.domLimit.height}
-                    if(y < 0){y = 0}
+            if (insideY) {
+                if (this.parentLimit) {
+                    if (y > this.parentLimit.height - this.domLimit.height) { y = this.parentLimit.height - this.domLimit.height }
+                    if (y < 0) { y = 0 }
                 }
                 else {
                     alert('Swip error => you set insideY prop but missing parent props')
                 }
             }
-            
-            this.change = {x, y, dx, dy, dist: this.dist, angle, centerAngle}
 
-            let p:I_Swip_parameter = {
-                change:this.change, 
+            this.change = { x, y, dx, dy, dist: this.dist, angle, centerAngle }
+
+            let p: I_Swip_parameter = {
+                change: this.change,
                 mousePosition,
-                domLimit:this.domLimit,
-                parentLimit:this.parentLimit,
-                event:e
+                domLimit: this.domLimit,
+                parentLimit: this.parentLimit,
+                event: e
             }
             if (this.p.move) { this.p.move(p); }
         }
@@ -415,11 +415,11 @@ export class Swip {
             EventHandler('window', 'mousemove', this.mouseMove, 'unbind');
             EventHandler('window', 'mouseup', this.mouseUp, 'unbind');
             let mousePosition = this.getMousePosition(e);
-            let p:I_Swip_parameter = {
-                change:this.change,
-                event:e,
-                domLimit:this.domLimit,
-                parentLimit:this.parentLimit,
+            let p: I_Swip_parameter = {
+                change: this.change,
+                event: e,
+                domLimit: this.domLimit,
+                parentLimit: this.parentLimit,
                 mousePosition,
 
             }
@@ -866,7 +866,7 @@ export class Geo {
     setLineByOrtho: (line: I_line, ortho: number) => I_line
     rotateSpline: (points: I_point[], angle: number, center: I_point) => I_point[]
     isPointInPath: (points: I_point[], point: I_point) => boolean
-    getDXF:(p:{type:'line'|'rect'|'arc',obj:any}[])=>string;
+    getDXF: (p: { type: 'line' | 'rect' | 'arc', obj: any }[]) => string;
     constructor() {
         this.getAngle = (l) => {
             let line: I_line = this.getLineType(l) === 'DLine' ? this.getLineByDLine(l as I_dline) : (l as I_line)
@@ -1155,17 +1155,17 @@ export class Geo {
                         "0" + "\r\n";
                     return res;
                 },
-                rect: function (rect:I_rect) {
+                rect: function (rect: I_rect) {
                     let [p1, p2] = rect;
                     var rectangle = '';
-                    rectangle += this.line([[p1[0], p1[1]],[p2[0], p2[1]]]);
-                    rectangle += this.line([[p2[0], p1[1]],[p2[0], p2[1]]]);
-                    rectangle += this.line([[p2[0], p2[1]],[p1[0], p2[1]]]);
-                    rectangle += this.line([[p1[0], p2[1]],[p1[0], p1[1]]]);
+                    rectangle += this.line([[p1[0], p1[1]], [p2[0], p2[1]]]);
+                    rectangle += this.line([[p2[0], p1[1]], [p2[0], p2[1]]]);
+                    rectangle += this.line([[p2[0], p2[1]], [p1[0], p2[1]]]);
+                    rectangle += this.line([[p1[0], p2[1]], [p1[0], p1[1]]]);
                     return rectangle;
                 },
-                arc: function (arc:I_arc) {
-                    let { x, y, r, slice = [0,360] } = arc
+                arc: function (arc: I_arc) {
+                    let { x, y, r, slice = [0, 360] } = arc
                     let res = '';
                     res +=
                         "ARC" + "\r\n" +
@@ -1192,7 +1192,7 @@ export class Geo {
             }
             let entities = '';
             for (let i = 0; i < list.length; i++) {
-                var { type,obj } = list[i];
+                var { type, obj } = list[i];
                 entities += get[type](obj)
             }
             var dxfText =
@@ -1209,4 +1209,29 @@ export class Geo {
             return dxfText;
         }
     }
+}
+function svgArcRange(centerX, centerY, radius, angleInDegrees) {
+    let angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
+    };
+}
+
+export function svgArc(x, y, radius, startAngle, endAngle) {
+    if(startAngle === endAngle || endAngle - startAngle === 360){
+        startAngle = 0; endAngle = 359.99;
+    }
+    
+    let start = svgArcRange(x, y, radius, endAngle);
+    let end = svgArcRange(x, y, radius, startAngle);
+
+    let largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+    let d = [
+        "M", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+    ].join(" ");
+
+    return d;
 }

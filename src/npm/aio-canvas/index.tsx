@@ -76,6 +76,7 @@ function CANVAS(props: I_canvas_props) {
     draw([line1, line2]);
   }
   function update() {
+    if(!temp.ctx){return}
     var dom = $(temp.dom.current);
     temp.width = dom.width();
     temp.height = dom.height();
@@ -120,7 +121,7 @@ function CANVAS(props: I_canvas_props) {
     let Items = typeof items === "function" ? items() : items;
     var ctx = temp.ctx;
     for (let i = 0; i < Items.length; i++) {
-      let item: I_canvas_item = getItem(Items[i], parent);
+      let item: I_canvas_item = getItem(Items[i], parent,i);
       if (item.show === false) { continue; }
       ctx.save();
       ctx.beginPath();
@@ -153,7 +154,8 @@ function CANVAS(props: I_canvas_props) {
       if (item.showPivot) {
         showPivot(item.x, item.y);
       }
-      if (temp.eventMode && item[temp.eventMode]) {
+        
+      if (temp.eventMode && (item.events || {})[temp.eventMode]) {
         let X = temp.mousePosition.x * zoom + temp.axisPosition[0] + temp.screen[0];
         let Y = -temp.mousePosition.y * zoom + temp.axisPosition[1] + temp.screen[1];// in isPointInPath and isPointInStroke value of under axis is positive 
         if (item.fill && ctx.isPointInPath(X, Y)) {
@@ -211,15 +213,18 @@ function CANVAS(props: I_canvas_props) {
   }
   useEffect(() => { update() })
   useEffect(() => {
-    if (props.onPan === true) {
-      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
-      temp.setScreenPosition = (sp) => SetScreenPosition(sp)
-    }
-    else if (typeof props.onPan === 'function') {
+    if (typeof props.onPan === 'function') {
       temp.getScreenPosition = () => props.screenPosition?[getValueByRange(props.screenPosition[0],0,temp.width),getValueByRange(props.screenPosition[1],0,temp.height)]:[0, 0]
       temp.setScreenPosition = (screenPosition) => {
         if (typeof props.onPan === 'function') { props.onPan(screenPosition) }
       }
+    }
+    else if(props.onPan === true){
+      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
+      temp.setScreenPosition = (sp) => SetScreenPosition(sp)
+    } 
+    else {
+      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
     }
     $(window).on("resize", resize);
     temp.ctx = temp.ctx || temp.dom.current.getContext("2d");
@@ -261,10 +266,8 @@ function CANVAS(props: I_canvas_props) {
     if (!Array.isArray(corner)) { return corner }
     return corner[index] || 0
   }
-  function getItem(ITEM: I_canvas_item | (() => I_canvas_item), parent: I_canvas_item) {
-    let item: I_canvas_item;
-    try { item = JSON.parse(JSON.stringify(typeof ITEM === "function" ? ITEM() : ITEM)) }
-    catch { }
+  function getItem(ITEM: I_canvas_item | (() => I_canvas_item), parent: I_canvas_item,index:number) {
+    let item: I_canvas_item = typeof ITEM === "function" ? ITEM() : ITEM
     let { x: parentx = 0, y: parenty = 0, opacity: parentOpacity = 1, fill: parentFill, stroke: parentStroke, sequence } = parent || { x: 0, y: 0, sequence: [], opacity: 1 };
     let sequenceProps: I_canvas_item = { type: item.type, fill: parentFill, stroke: parentStroke, rotate: 0, x: 0, y: 0, slice: undefined, opacity: 1, lineWidth: props.lineWidth || 1, r: undefined };
     try {
@@ -288,10 +291,10 @@ function CANVAS(props: I_canvas_props) {
       r = sequenceProps.r,
       lineJoin = 'miter',
       lineCap = 'butt',
-      showPivot = false
+      showPivot = false,
     } = item;
     let updatedItem: I_canvas_item = { ...item, fill, stroke, rotate, slice, opacity, lineWidth, r, x, y, showPivot, lineJoin: lineJoin as any, lineCap, rect: false };
-    if (!updatedItem.stroke && !updatedItem.fill) { updatedItem.stroke = "#000"; }
+    if (type !== 'Group' && !updatedItem.stroke && !updatedItem.fill) { updatedItem.stroke = "#000"; }
     //set related props
     updatedItem.rotate = getValueByRange(updatedItem.rotate, 0, 360);
     updatedItem.x = getValueByRange(updatedItem.x, 0, temp.width) + parentx;
@@ -343,6 +346,7 @@ function CANVAS(props: I_canvas_props) {
       console.log(updatedItem.points)
     }
     var result = { ...originalItem, ...updatedItem };
+    result.events = parent.events || result.events
     return result;
   }
 
@@ -360,7 +364,7 @@ function CANVAS(props: I_canvas_props) {
       }
     }
     else { items = item.items; }
-    draw(items, { type: 'Group', x: X, y: Y, rotate: item.rotate, opacity: item.opacity, fill: item.fill, stroke: item.stroke, sequence: item.sequence }, index);
+    draw(items, { ...item, x: X, y: Y}, index);
   }
   function drawText(p: I_canvas_item) {
     let { align = [0, 0], fontSize = 12, fontFamily = 'arial', text = "Text", fill, stroke, pivotedCoords = [] } = p;
@@ -500,7 +504,7 @@ function CANVAS(props: I_canvas_props) {
     temp.mousePosition = getMousePosition(e);
     temp.eventMode = "onMouseDown";
     update();
-    if (temp.item) { temp.item.onMouseDown({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
+    if (temp.item && temp.item.events && temp.item.events.onMouseDown) { temp.item.events.onMouseDown({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
     else if (temp.setScreenPosition) { panmousedown(e) }
     else if (attrs.onMouseDown) { attrs.onMouseDown(e, temp.mousePosition) }
     temp.item = undefined; temp.eventMode = false;
@@ -509,7 +513,7 @@ function CANVAS(props: I_canvas_props) {
     temp.mousePosition = getMousePosition(e);
     temp.eventMode = "onMouseUp";
     update();
-    if (temp.item) { temp.item.onMouseUp({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
+    if (temp.item && temp.item.events && temp.item.events.onMouseUp) { temp.item.events.onMouseUp({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
     else if (attrs.onMouseUp) { attrs.onMouseUp(e, temp.mousePosition) }
     temp.item = undefined; temp.eventMode = false;
   }
@@ -517,7 +521,7 @@ function CANVAS(props: I_canvas_props) {
     temp.mousePosition = getMousePosition(e);//in onClick calc with no touch
     temp.eventMode = "onClick";
     update();
-    if (temp.item) { temp.item.onClick({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
+    if (temp.item && temp.item.events && temp.item.events.onClick) { temp.item.events.onClick({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
     else if (attrs.onClick) { attrs.onClick(e, temp.mousePosition) }
     temp.item = undefined; temp.eventMode = false;
   }
