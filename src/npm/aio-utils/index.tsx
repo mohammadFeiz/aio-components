@@ -1220,13 +1220,34 @@ function svgArcRange(centerX, centerY, radius, angleInDegrees) {
 
 export function svgArc(x, y, radius, startAngle, endAngle) {
     if(startAngle === endAngle || endAngle - startAngle === 360){
-        startAngle = 0; endAngle = 359.99;
+        startAngle = 0; endAngle = 360;
     }
-    
+    if(startAngle === 360){startAngle = 359.99}
+    if(endAngle === 360){endAngle = 359.99}
     let start = svgArcRange(x, y, radius, endAngle);
     let end = svgArcRange(x, y, radius, startAngle);
 
-    let largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    let largeArcFlag;
+    if(endAngle - startAngle < -180){
+        console.log(0)
+        largeArcFlag = '0'
+    }
+    else if(endAngle - startAngle < 0){
+        //console.log(1)
+        largeArcFlag = '1'
+    }
+    else if(endAngle - startAngle <= 180){
+        //console.log(2)
+        largeArcFlag = '0'
+    }
+    else if(endAngle - startAngle <= 360){
+        //console.log(3)
+        largeArcFlag = '1'
+    }
+    else{
+        //console.log(4)
+        largeArcFlag = '0'
+    }
 
     let d = [
         "M", start.x, start.y,

@@ -1,0 +1,211 @@
+.aio-input-slider {
+    width: 100%;
+}
+.aio-input-slider .aio-slider.horizontal{
+    height:100%;
+}
+
+.aio-input-slider-horizontal {
+    height: 36px;
+}
+
+.aio-input-slider-vertical {
+    width: 36px;
+    height: 100%;
+}
+
+.aio-input-slider-vertical .aio-input-slider-content {
+    height: 100%;
+}
+
+.aio-input-slider-vertical .aio-input-slider-value {
+    height: 100%;
+}
+
+.aio-input-slider-value {
+    overflow: visible;
+}
+.aio-slider {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0 12px;
+    cursor: pointer;
+    height: 50px;
+}
+
+.aio-slider.disabled {
+    cursor: not-allowed;
+}
+
+.aio-slider.horizontal {
+    width: 100%;
+
+}
+
+.aio-slider.vertical {
+    height: 100%;
+    width: 50px;
+}
+
+.aio-slider-line {
+    position: relative;
+    background: #ddd;
+    z-index: 10;
+}
+
+.aio-slider.horizontal .aio-slider-line {
+    height: 2px;
+    width: 100%;
+}
+
+.aio-slider.vertical .aio-slider-line {
+    height: 100%;
+    width: 3px;
+}
+
+.aio-slider-point-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.aio-slider-point {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: dodgerblue;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aio-slider-value {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 11px;
+    top: -26px;
+    background: dodgerblue;
+    color: #fff;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.aio-slider-fill-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.aio-slider.horizontal .aio-slider-fill-container {
+    height: 100%;
+}
+
+.aio-slider.vertical .aio-slider-fill-container {
+    width: 100%;
+}
+
+.aio-slider-fill {
+    position: absolute;
+
+}
+
+.aio-slider-fill-active {
+    background: dodgerblue;
+
+}
+
+.aio-slider.horizontal .aio-slider-fill {
+    width: 100%;
+    height: 2px;
+}
+
+.aio-slider.vertical .aio-slider-fill {
+    width: 2px;
+    height: 100%;
+}
+
+.aio-slider-label-container {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 0;
+    height: 0;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 100;
+
+}
+
+.aio-slider.horizontal .aio-slider-label-container {
+    top: 34px;
+}
+
+.aio-slider.vertical .aio-slider-label-container {
+    left: 34px;
+}
+
+.aio-slider-scale-container {
+    position: absolute;
+    align-items: center !important;
+    justify-content: center !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    z-index: 10;
+    width:0;
+    height:0;
+}
+
+.aio-slider-scale-container * {
+    flex-shrink: 0;
+}
+.aio-slider-scale{
+    background:#ddd;
+    position: absolute;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-slider.horizontal .aio-slider-scale {
+    height: 10px;
+    width: 1px;
+}
+
+.aio-slider.vertical .aio-slider-scale {
+    width: 10px;
+    height: 1px;
+}
+
+.aio-slider-value-inline {
+    height: 24px;
+    top: calc(50% - 12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    box-sizing: border-box;
+    position: absolute;
+    white-space: nowrap;
+    color: #fff;
+    border-radius: 3px;
+}
+.aio-input-slider .aio-slider {
+    padding: 0 12px;
+}
+
+
+.aio-input-slider-value {
+    height: 100%;
+}

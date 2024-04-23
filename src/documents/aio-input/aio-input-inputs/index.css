@@ -19,3 +19,33 @@
     text-decoration: underline;
     font-size:12px;
 }
+.pinch-scale-small{
+    width:4px; 
+    height:1px;
+}
+.pinch-scale-medium{
+    width:8px; 
+    height:2px;
+}
+.pinch-scale-large{
+    width:12px; 
+    height:3px;
+}
+.pinch-scale-red{
+    background:red;
+}
+.range-scale-small{
+    height:4px; 
+    width:1px;
+}
+.range-scale-medium{
+    height:8px; 
+    width:2px;
+}
+.range-scale-large{
+    height:12px; 
+    width:3px;
+}
+.range-scale-red{
+    background:red;
+}

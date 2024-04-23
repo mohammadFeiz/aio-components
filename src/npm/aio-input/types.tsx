@@ -3,7 +3,7 @@ import { AIODate } from "../aio-utils"
 import { I_RVD_node } from "../react-virtual-dom/types"
 
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons' | 'pinch'
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons' | 'pinch' | 'range'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
@@ -112,7 +112,7 @@ export type AI = {
     point?:false | AI_point,//slider,pinch
     popupConfig?:I_Map_config
     preview?:boolean,
-    ranges?:string[],
+    ranges?:string[] | ((value:number)=>string[]),
     rotate?:number,
     round?:number,
     rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
@@ -158,6 +158,8 @@ export type AI_scale = {
     dynamic?:boolean,
     offset?:number | ((value,p?:any)=>number),
     attrs?:(value:number,p?:any)=>any,
+    style?:((value:number,p?:any)=>any) | (any[]),
+    className?:((value:number,p?:any)=>any) | (any[]),
     html?:(value:number,p?:any)=>React.ReactNode  
 }
     
@@ -167,6 +169,8 @@ export type AI_label = {
     dynamic?:boolean,
     offset?:number | ((value,p?:any)=>number),
     attrs?:(value:number,p?:any)=>any,
+    style?:((value:number,p?:any)=>any) | (any[]),
+    className?:((value:number,p?:any)=>any) | (any[]),
     html?:(value:number,p?:any)=>React.ReactNode,
     rotate?:number | ((value:number)=>number)
 }
