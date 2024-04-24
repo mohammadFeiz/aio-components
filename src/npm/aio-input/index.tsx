@@ -2602,17 +2602,17 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         return {
             root:`aio-input-slider${pinch?' aio-input-slider-pinch':''}`,
             range:'aio-input-slider-range',
-            'scale-text':'aio-input-slider-scale-text',
-            'scale':`aio-input-slider-scale`,
-            'scale-container':'aio-input-slider-scale-container',
-            'label':'aio-input-slider-label',
             'label-container':'aio-input-slider-label-container',
+            'label':'aio-input-slider-label',
+            'scale-container':'aio-input-slider-scale-container',
+            'scale':`aio-input-slider-scale`,
             'point':'aio-input-slider-point',
             'handle':'aio-input-handle',
             'handle-container':'aio-input-handle-container'
         }
     }
-    let [scaleNode] = useState(scales_node()),[labelNode] = useState(labels_node())
+    let [def_scale] = useState(items_node('scale',true));
+    let [def_label] = useState(items_node('label',true));
     useEffect(()=>{setValue(rootProps.value || start)},[rootProps.value || start])
     useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
     useEffect(()=>{
@@ -2738,8 +2738,9 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         }
         
     }
-    function getItemClassName(item,itemValue,p){
-        if(typeof item.className === 'function'){return item.className(itemValue,p) || {}}
+    function getItemTextClassName(item,itemValue,p,type){
+        let className = cls[type],result;
+        if(typeof item.className === 'function'){result = item.className(itemValue,p) || {}}
         if(Array.isArray(item.className)){
             let res = [];
             //use in eval dont remove it //////////////
@@ -2761,69 +2762,61 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
                 }
             }
             catch{}
-            return res.length?res.join(' '):''
+            result = res.length?res.join(' '):''
         }
+        if(result){className += ' ' + result}
+        return className
     }
     function getListDetails(item,itemValue,def,type){
         let p = getP(itemValue);
         let distance = getDistanceByOffset(item.offset,itemValue,p,type)
         let text = (item.html || def.html)(itemValue,p);
         let attrs = item.attrs?(item.attrs(itemValue,p) || {}):{}
-        let className = getItemClassName(item,itemValue,p)
         let style = getItemStyle(item,itemValue,p)
-        //let PROPS = addToAttrs(attrs,{className:[cls['label'],className],style:labelTextStyle,attrs:{draggable:false}})
-        return {p,distance,text,attrs,style,className}
+        let containerStyle = getItemContainerStyle(distance,p);
+        let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
+        let textProps = {className:getItemTextClassName(item,itemValue,p,type),style:getTextStyle(p,attrs,style,distance,type),draggable:false}
+        return {text,textProps,containerProps}
     }
-    function labels_node(){return getList(label || {}).map((o,i)=>label_node(o))}
-    function scales_node(){
-        scale = scale || {};
-        return getList(scale || {}).map((o,i)=>{
-            let {text,attrs,style,className,distance,p} = getListDetails(scale,o,{html:()=>{},offset:0},'scale');
-            let itemContainerStyle = getItemContainerStyle(distance,p);
-            return (
-                <div className={cls['scale-container']} key={o} draggable={false} style={itemContainerStyle}>
-                    {scale_node({attrs,text,style,className,p,distance})}
-                </div>    
-            )
-        })
-    }
-    function scale_node({attrs,text,style,className,p,distance}){
-        let textStyle = getTextStyle(p,attrs,style,distance,'scale');
-        let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:textStyle,attrs:{draggable:false}});
-        return (<div {...PROPS}>{scale_text_node(text,p)}</div>)
-    }
-    function getItemContainerStyle(distance,p){
-        if(!pinch){return {left:p.left+'%',...distance}}
-        else{return {transform:`rotate(${p.angle}deg)`}}
-    }
-    function label_node(labelValue){
-        let {p,distance,text,attrs,style,className} = getListDetails(label || {},labelValue,{html:(o)=>o},'label');
-        let itemContainerStyle = getItemContainerStyle(distance,p);
-        let PROPS = {key:labelValue,draggable:false,className:cls['label-container'],style:itemContainerStyle}
-        return (<div {...PROPS}>{label_text_node({p,text,attrs,style,className,distance})}</div>)
-    }
-    
-    
     function getTextStyle(p,attrs,style,distance,type){
         if(type === 'scale'){return {...attrs.style,...style,...distance}}
         let res:any = {};
         if(pinch){
-            res.transform = `rotate(${-p.angle}deg)`
+            if(type === 'label'){res.transform = `rotate(${-p.angle}deg)`}
             res = {...res,...distance}
         }
         return {...res,...attrs.style,...style}
     }
-    function label_text_node({p,text,attrs,style,className,distance}){
-        let textStyle = getTextStyle(p,attrs,style,distance,'label');
-        let PROPS = addToAttrs(attrs,{className:[cls['label'],className],style:textStyle,attrs:{draggable:false}})
-        return <div {...PROPS}>{text}</div>
-    }
     
-    function scale_text_node(text,p){
-        if(text === undefined){return null}
-        let style = pinch?{transform:`rotate(${-p.angle}deg)`}:{}
-        return <div className={cls['scale-text']} draggable={false} style={style}>{text}</div>
+    function root_node(){
+        let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
+        let p = addToAttrs(attrs,{className:[cls.root,className],style:rootStyle,attrs:{ref:temp.dom}})
+        return (
+            <div {...p}>
+                {!pinch && lines_node()}
+                {!!pinch && svg_node()}
+                {items_node('scale')}
+                {items_node('label')}
+                {value_node()}
+            </div>
+        )
     }
+    function items_node(type:'scale'|'label',init?:boolean){
+        let entity = {label,scale}[type]
+        if(!entity){return null}
+        if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
+        return getList(entity).map((itemValue,i)=>item_node(entity,itemValue,type))
+    }
+    function item_node(entity,itemValue,type){
+        let def = type === 'label'?{html:(o)=>o}:{html:()=>{},offset:0};
+        let {text,textProps,containerProps} = getListDetails(entity,itemValue,def,type);
+        return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
+    }
+    function getItemContainerStyle(distance,p){
+        if(!pinch){return {left:p.left+'%',...distance}}
+        else{return {transform:`rotate(${p.angle}deg)`}}
+    } 
+    
     function getRanges(){
         let res = []
         let from = start;
@@ -2878,19 +2871,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         let endLeft = getXPByValue(to);
         return <div className={cls.range} style={{height:thickness,left:startLeft + '%',width:(endLeft - startLeft) + '%',background:color}}/>
     }
-    function root_node(){
-        let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
-        let p = addToAttrs(attrs,{className:[cls.root,className],style:rootStyle,attrs:{ref:temp.dom}})
-        return (
-            <div {...p}>
-                {!pinch && lines_node()}
-                {!!pinch && svg_node()}
-                {scale && scale.dynamic?scales_node():scaleNode}
-                {label && label.dynamic?labels_node():labelNode}
-                {value_node()}
-            </div>
-        )
-    }
+    
     function getValueByAngle(ang){
         let angle = (((ang - temp.rotate - 180) % 360) / temp.round);
         if(angle < 0){angle = 360 + angle}

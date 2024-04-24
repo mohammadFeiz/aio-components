@@ -24,8 +24,8 @@ export default function DOC_AIOInput_Table(props) {
     )
 }
 let propDic = {
-    value:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','pinch'],
-    onChange:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','pinch'],
+    value:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
+    onChange:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
     text:['select','multiselect','checkbox','date','time'],
     before:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
     after:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
@@ -844,562 +844,564 @@ function Input({type}){
     )
 }
 function PinchExamples(type){
-    if(type !== 'pinch' && type !== 'range'){return []}
+    if(type !== 'pinch' && type !== 'slider'){return []}
     return [
-        {
-            title:'start step end',
-            props:{start:0,end:8,step:2},
-            code:
-        `start={0} 
-        end={8} 
-        step={2}`
-        },
-        {
-            title:'label (step)',
-            props:{
-                start:0,end:8,
-                label:{
-                    step:1
-                }
-            },
-            code:
-        `start={0}
-        end={8}
-        label={{
-            step:1
-        }}`
-        },
-        {
-            title:'label (attrs)',
-            props:{
-                start:0,end:8,
-                label:{
-                    step:1,
-                    attrs:(value)=>{
-                        return {
-                            style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
-                        }
-                    }
-                }
-            },
-            code:`
-        start={0}
-        end={8}
-        label={{
-            step:1,
-            attrs:(value)=>{
-                return {
-                    style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
-                }
-            }
-        }}
-                `
-        },
-        {
-            title:'label (html)',
-            props:{
-                start:0,end:8,
-                label:{
-                    step:1,
-                    html:(value)=>{
-                        return value === 5?<Icon path={mdiAccount} size={0.6}/>:value
-                    }
-                }
-            },
-            code:
-    `start={0}
-    end={8}
-    label={{
-        step:1,
-        html:(value)=>{
-            return value === 7?<Icon path={mdiAccount} size={0.5}/>:value
-        }
-    }}`
-        },
-        {
-            title:'label (offset)',
-            props:{
-                start:0,end:8,
-                label:{
-                    step:1,
-                    offset:-20
-                }
-            },
-            code:
-    `start={0}
-    end={8}
-    label={{
-        step:1,
-        offset:-20
-    }}`
-        },
-        {
-            title:'label (list)',
-            props:{
-                start:0,end:8,
-                label:{
-                    list:[1,2,5]
-                }
-            },
-            code:
-    `start={0}
-    end={8}
-    label={{
-        list:[1,2,5]
-    }}`
-        },
-        {
-            title:'scale (step)',
-            props:{step:5,start:0,end:100,scale:{step:5}},
-            code:
-        `start={0}
-        end={100}
-        step={5}
-        scale={{
-            step:5
-        }}`
-        },
-        ()=>{
-            let a = type === 'range'?'height':'width'
-            let b = type === 'range'?'width':'height'
-            return {
-                title:'scale (attrs)',
-                props:{
-                    step:5,
-                    start:0,
-                    end:60,
-                    scale:{
-                        step:1,
-                        attrs:(value)=>{
-                            let a,b;
-                            if(value % 10 === 0){b = 12; a = 3}
-                            else if(value % 5 === 0){b = 8; a = 2}
-                            else {b = 4; a = 1}
-                            let background = value >= 40?'red':'#333'
-                            return {
-                                style:{width:(type === 'range'?a:b),height:(type === 'range'?b:a),background}
-                            }
-                        }
-                    }
-                },
-                code:
-        `start={0}
-        end={60}
-        step={5}
-        scale={{
-            step:1,
-            attrs:(value)=>{
-                let width,height;
-                if(value % 10 === 0){${a} = 12; ${b} = 3}
-                else if(value % 5 === 0){${a} = 8; ${b} = 2}
-                else {${a} = 4; ${b} = 1}
-                let background = value >= 40?'red':'#333'
-                return {
-                    style:{width,height,background}
-                }
-            }
-        }}`
-            }
-        },
-        ()=>{
-            let a = type === 'range'?'height':'width'
-            let b = type === 'range'?'width':'height'
-            return {
-                title:'scale (style function)',
-                props:{
-                    step:5,
-                    start:0,
-                    end:60,
-                    scale:{
-                        step:1,
-                        style:(value)=>{
-                            let a,b;
-                            if(value % 10 === 0){a = 8; b = 3}
-                            else if(value % 5 === 0){a = 5; b = 2}
-                            else {a = 2; b = 1}
-                            let background = value >= 40?'red':'#333'
-                            return {width:(type === 'range'?b:a),height:(type === 'range'?a:b),background}
-                        }
-                    }
-                },
-                code:
-        `step={5}
-        start={0}
-        end={60}
-        scale={{
-            step:1,
-            style:(value)=>{
-                let width,height;
-                if(value % 10 === 0){${a} = 8; ${b} = 3}
-                else if(value % 5 === 0){${a} = 5; ${b} = 2}
-                else {${a} = 2; ${b} = 1}
-                let background = value >= 40?'red':'#333'
-                return {width,height,background}
-            }
-        }}`
-            }
-        },
-        ()=>{
-            let a = type === 'range'?'height':'width'
-            let b = type === 'range'?'width':'height'
-            return {
-                title:'scale (style array)',
-                props:{
-                    step:5,
-                    start:0,
-                    end:60,
-                    scale:{
-                        step:1,
-                        style:[
-                            [{[a]:4,[b]:1,background:"#333"}],
-                            [{[a]:8,[b]:2},'value % 5 === 0'],
-                            [{[a]:12,[b]:3},'value % 10 === 0'],
-                            [{background:"red"},'value >= 40']
-                        ]
-                    }
-                },
-                code:
-        `step={5}
-        start={0}
-        end={60}
-        scale={{
-            step:1,
-            style:[
-                [{${a}:2,${b}:1,background:"#333"}],
-                [{${a}:5,${b}:2},'value % 5 === 0'],
-                [{${a}:8,${b}:3},'value % 10 === 0'],
-                [{background:"red"},'value >= 40']
-            ]
-        }}`
-            }
-        },
-        ()=>{
-            return {
-                title:'scale (className function)',
-                props:{
-                    step:5,
-                    start:0,
-                    end:60,
-                    scale:{
-                        step:1,
-                        className:(value)=>{
-                            let className = ''
-                            if(value % 10 === 0){className = `${type}-scale-large`}
-                            else if(value % 5 === 0){className = `${type}-scale-medium`}
-                            else {className = `${type}-scale-small`}
-                            className += value >= 40?` ${type}-scale-red`:''
-                            return className
-                        }
-                    }
-                },
-                code:
-        `step={5}
-        start={0}
-        end={60}
-        scale={{
-            step:1,
-            className:(value)=>{
-                let className = ''
-                if(value % 10 === 0){className = 'scale-large'}
-                else if(value % 5 === 0){className = 'scale-medium'}
-                else {className = 'scale-small'}
-                className += value >= 40?' scale-red':''
-                return className
-            }
-        }}`
-            }
-        },
-        ()=>{
-            return {
-                title:'scale (className array)',
-                props:{
-                    step:5,
-                    start:0,
-                    end:60,
-                    scale:{
-                        step:1,
-                        className:[
-                            [`${type}-scale-small`],
-                            [`${type}-scale-medium`,'value % 5 === 0',true],
-                            [`${type}-scale-large`,'value % 10 === 0',true],
-                            [`${type}-scale-red`,'value >= 40']
-                        ]
-                    }
-                },
-                code:
-        `step={5}
-        start={0}
-        end={60}
-        scale={{
-            step:1,
-            className:[
-                ['scale-small'],
-                ['scale-medium','value % 5 === 0',true],
-                ['scale-large','value % 10 === 0',true],
-                ['scale-red','value >= 40']
-            ]
-        }}`
-            }
-        },
-        {
-            title:'scale (offset)',
-            props:{step:5,start:0,end:100,scale:{step:5,offset:-10}},
-            code:
-        `start={0}
-        end={100}
-        step={5}
-        scale={{
-            step:5,
-            offset:-10,
-        }}`
-        },
-        {
-            title:'scale (list)',
-            props:{start:0,end:100,scale:{list:[20,40,60,80]}},
-            code:
-        `start={0}
-        end={100}
-        step={5}
-        scale={{
-            list:[20,40,60,80]
-        }}`
-        },
-        {
-            title:'scale(html)',
-            props:{
-                attrs:{style:{margin:36}},
-                start:0,
-                end:8,    
-                scale:{
-                    step:1,
-                    attrs:(value)=>{
-                        return {
-                            style:{width:24,height:24,background:'none'}
-                        }
-                    },
-                    html:(value)=>(
-                        <Icon 
-                            path={[
-                                mdiAccount,
-                                mdiAccountClock,
-                                mdiAccountCancel,
-                                mdiHumanMale,
-                                mdiAccountBadge,
-                                mdiAccountSupervisorOutline,
-                                mdiAccountBoxMultiple,
-                                mdiAccountChild,
-                                mdiAccountArrowDown
-                            ][value]} 
-                            size={0.7}
-                        />
-                    ) 
-                }
-            },
-            code:
-        `start={0},
-        end={8},    
-        scale={{
-            step:1,
-            attrs:(value)=>{
-                return {
-                    style:{width:24,height:24,background:'none'}
-                }
-            },
-            html:(value)=>(
-                <Icon 
-                    path={[
-                        mdiAccount,
-                        mdiAccountClock,
-                        mdiAccountCancel,
-                        mdiHumanMale,
-                        mdiAccountBadge,
-                        mdiAccountSupervisorOutline,
-                        mdiAccountBoxMultiple,
-                        mdiAccountChild
-                    ][value]} 
-                    size={0.7}
-                />
-            ) 
-        }}`
-        },
-        {
-            title:'handle (attrs)',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:24,
-                handle:(val,{disabled,angle,value})=>{
-                    return {
-                        attrs:{
-                            style:{
-                                background:'dodgerblue'
-                            }
-                        }
-                    }
-                }
-            },
-            code:
-    `start={0}
-    end={24}
-    handle={{
-        attrs:{
-            style:{
-                background:'dodgerblue'
-            }
-        }
-    }}`
-        },
-        {
-            title:'handle (false)',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:24,
-                handle:false
-            },
-            code:
-    `start={0}
-    end={24}
-    handle={false}`
-        },
-        {
-            title:'point (attrs)',
-            props:{
-                start:0,
-                end:24,
-                point:(value,{angle})=>{
-                    return {
-                        attrs:{
-                            style:{
-                                transform:`rotate(${-angle}deg)`,
-                                height:24,
-                                width:24,
-                                fontSize:10,
-                                background:'dodgerblue',
-                                color:'#fff'
-                            }
-                        }
-                    }
-                }
-            },
-            code:
-    `attrs={{style:{border:'2px solid dodgerblue'}}}
-    start={0}
-    end={24}
-    point={(value,{angle})=>{
-        return {
-            attrs:{
-                style:{
-                    transform:'rotate(' + (-angle) + 'deg)',
-                    height:24,
-                    width:24,
-                    left:24,
-                    fontSize:10,
-                    background:'dodgerblue',
-                    color:'#fff'
-                }
-            }
-        }
-    }}`
-        },
-        {
-            title:'point (html)',
-            props:{
-                start:0,
-                end:24,
-                circles:['35 2 dodgerblue'],
-                point:(value,{angle})=>{
-                    return {
-                        html:value,
-                        attrs:{
-                            style:{
-                                transform:`rotate(${-angle}deg)`,
-                                height:24,
-                                width:24,
-                                fontSize:10,
-                                background:'dodgerblue',
-                                color:'#fff'
-                            }
-                        }
-                    }
-                }
-            },
-            code:
-    `attrs={{style:{border:'2px solid dodgerblue'}}}
-    start={0}
-    end={24}
-    point={(value,{angle})=>{
-        return {
-            html:value,
-            attrs:{
-                style:{
-                    transform:'rotate(' + (-angle) + 'deg)',
-                    height:24,
-                    width:24,
-                    left:24,
-                    fontSize:10,
-                    background:'dodgerblue',
-                    color:'#fff'
-                }
-            }
-        }
-    }}`
-        },
-        {
-            title:'point (offset)',
-            props:{
-                start:0,
-                end:24,
-                circles:['35 2 dodgerblue'],
-                point:(value,{angle})=>{
-                    return {
-                        html:value,
-                        attrs:{
-                            style:{
-                                transform:`rotate(${-angle}deg)`,
-                                height:24,
-                                width:24,
-                                fontSize:10,
-                                background:'dodgerblue',
-                                color:'#fff'
-                            }
-                        },
-                        offset:-16
-                    }
-                }
-            },
-            code:
-    `attrs={{style:{border:'2px solid dodgerblue'}}}
-    start={0}
-    end={24}
-    point={(value,{angle})=>{
-        return {
-            html:value,
-            attrs:{
-                style:{
-                    transform:'rotate(' + (-angle) + 'deg)',
-                    height:24,
-                    width:24,
-                    left:24,
-                    fontSize:10,
-                    background:'dodgerblue',
-                    color:'#fff'
-                }
-            },
-            offset:-16
-        }
-    }}`
-        },
-        {
-            title:'point (false)',
-            props:{
-                start:0,
-                end:24,
-                point:false
-            },
-            code:
-    `start={0}
-    end={24}
-    point={false}`
-        },
+    //     {
+    //         title:'start step end',
+    //         props:{start:0,end:8,step:2},
+    //         code:
+    //     `start={0} 
+    //     end={8} 
+    //     step={2}`
+    //     },
+    //     {
+    //         title:'label (step)',
+    //         props:{
+    //             start:0,end:8,
+    //             label:{
+    //                 step:1
+    //             }
+    //         },
+    //         code:
+    //     `start={0}
+    //     end={8}
+    //     label={{
+    //         step:1
+    //     }}`
+    //     },
+    //     {
+    //         title:'label (attrs)',
+    //         props:{
+    //             start:0,end:8,
+    //             label:{
+    //                 step:1,
+    //                 attrs:(value)=>{
+    //                     return {
+    //                         style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         code:`
+    //     start={0}
+    //     end={8}
+    //     label={{
+    //         step:1,
+    //         attrs:(value)=>{
+    //             return {
+    //                 style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+    //             }
+    //         }
+    //     }}
+    //             `
+    //     },
+    //     {
+    //         title:'label (html)',
+    //         props:{
+    //             start:0,end:8,
+    //             label:{
+    //                 step:1,
+    //                 html:(value)=>{
+    //                     return value === 5?<Icon path={mdiAccount} size={0.6}/>:value
+    //                 }
+    //             }
+    //         },
+    //         code:
+    // `start={0}
+    // end={8}
+    // label={{
+    //     step:1,
+    //     html:(value)=>{
+    //         return value === 7?<Icon path={mdiAccount} size={0.5}/>:value
+    //     }
+    // }}`
+    //     },
+    //     {
+    //         title:'label (offset)',
+    //         props:{
+    //             start:0,end:8,
+    //             label:{
+    //                 step:1,
+    //                 offset:-20
+    //             }
+    //         },
+    //         code:
+    // `start={0}
+    // end={8}
+    // label={{
+    //     step:1,
+    //     offset:-20
+    // }}`
+    //     },
+    //     {
+    //         title:'label (list)',
+    //         props:{
+    //             start:0,end:8,
+    //             label:{
+    //                 list:[1,2,5]
+    //             }
+    //         },
+    //         code:
+    // `start={0}
+    // end={8}
+    // label={{
+    //     list:[1,2,5]
+    // }}`
+    //     },
+    //     {
+    //         title:'scale (step)',
+    //         props:{step:5,start:0,end:100,scale:{step:5}},
+    //         code:
+    //     `start={0}
+    //     end={100}
+    //     step={5}
+    //     scale={{
+    //         step:5
+    //     }}`
+    //     },
+    //     ()=>{
+    //         let a = type === 'range'?'height':'width'
+    //         let b = type === 'range'?'width':'height'
+    //         return {
+    //             title:'scale (attrs)',
+    //             props:{
+    //                 step:5,
+    //                 start:0,
+    //                 end:60,
+    //                 scale:{
+    //                     step:1,
+    //                     attrs:(value)=>{
+    //                         let a,b;
+    //                         if(value % 10 === 0){b = 12; a = 3}
+    //                         else if(value % 5 === 0){b = 8; a = 2}
+    //                         else {b = 4; a = 1}
+    //                         let background = value >= 40?'red':'#333'
+    //                         return {
+    //                             style:{width:(type === 'range'?a:b),height:(type === 'range'?b:a),background}
+    //                         }
+    //                     }
+    //                 }
+    //             },
+    //             code:
+    //     `start={0}
+    //     end={60}
+    //     step={5}
+    //     scale={{
+    //         step:1,
+    //         attrs:(value)=>{
+    //             let width,height;
+    //             if(value % 10 === 0){${a} = 12; ${b} = 3}
+    //             else if(value % 5 === 0){${a} = 8; ${b} = 2}
+    //             else {${a} = 4; ${b} = 1}
+    //             let background = value >= 40?'red':'#333'
+    //             return {
+    //                 style:{width,height,background}
+    //             }
+    //         }
+    //     }}`
+    //         }
+    //     },
+    //     ()=>{
+    //         let a = type === 'range'?'height':'width'
+    //         let b = type === 'range'?'width':'height'
+    //         return {
+    //             title:'scale (style function)',
+    //             props:{
+    //                 step:5,
+    //                 start:0,
+    //                 end:60,
+    //                 scale:{
+    //                     step:1,
+    //                     style:(value)=>{
+    //                         let a,b;
+    //                         if(value % 10 === 0){a = 8; b = 3}
+    //                         else if(value % 5 === 0){a = 5; b = 2}
+    //                         else {a = 2; b = 1}
+    //                         let background = value >= 40?'red':'#333'
+    //                         return {width:(type === 'range'?b:a),height:(type === 'range'?a:b),background}
+    //                     }
+    //                 }
+    //             },
+    //             code:
+    //     `step={5}
+    //     start={0}
+    //     end={60}
+    //     scale={{
+    //         step:1,
+    //         style:(value)=>{
+    //             let width,height;
+    //             if(value % 10 === 0){${a} = 8; ${b} = 3}
+    //             else if(value % 5 === 0){${a} = 5; ${b} = 2}
+    //             else {${a} = 2; ${b} = 1}
+    //             let background = value >= 40?'red':'#333'
+    //             return {width,height,background}
+    //         }
+    //     }}`
+    //         }
+    //     },
+    //     ()=>{
+    //         let a = type === 'range'?'height':'width'
+    //         let b = type === 'range'?'width':'height'
+    //         return {
+    //             title:'scale (style array)',
+    //             props:{
+    //                 step:5,
+    //                 start:0,
+    //                 end:60,
+    //                 scale:{
+    //                     step:1,
+    //                     style:[
+    //                         [{[a]:4,[b]:1,background:"#333"}],
+    //                         [{[a]:8,[b]:2},'value % 5 === 0'],
+    //                         [{[a]:12,[b]:3},'value % 10 === 0'],
+    //                         [{background:"red"},'value >= 40']
+    //                     ]
+    //                 }
+    //             },
+    //             code:
+    //     `step={5}
+    //     start={0}
+    //     end={60}
+    //     scale={{
+    //         step:1,
+    //         style:[
+    //             [{${a}:2,${b}:1,background:"#333"}],
+    //             [{${a}:5,${b}:2},'value % 5 === 0'],
+    //             [{${a}:8,${b}:3},'value % 10 === 0'],
+    //             [{background:"red"},'value >= 40']
+    //         ]
+    //     }}`
+    //         }
+    //     },
+    //     ()=>{
+    //         return {
+    //             title:'scale (className function)',
+    //             props:{
+    //                 step:5,
+    //                 start:0,
+    //                 end:60,
+    //                 scale:{
+    //                     step:1,
+    //                     className:(value)=>{
+    //                         let className = ''
+    //                         if(value % 10 === 0){className = `${type}-scale-large`}
+    //                         else if(value % 5 === 0){className = `${type}-scale-medium`}
+    //                         else {className = `${type}-scale-small`}
+    //                         className += value >= 40?` ${type}-scale-red`:''
+    //                         return className
+    //                     }
+    //                 }
+    //             },
+    //             code:
+    //     `step={5}
+    //     start={0}
+    //     end={60}
+    //     scale={{
+    //         step:1,
+    //         className:(value)=>{
+    //             let className = ''
+    //             if(value % 10 === 0){className = 'scale-large'}
+    //             else if(value % 5 === 0){className = 'scale-medium'}
+    //             else {className = 'scale-small'}
+    //             className += value >= 40?' scale-red':''
+    //             return className
+    //         }
+    //     }}`
+    //         }
+    //     },
+    //     ()=>{
+    //         return {
+    //             title:'scale (className array)',
+    //             props:{
+    //                 step:5,
+    //                 start:0,
+    //                 end:60,
+    //                 scale:{
+    //                     step:1,
+    //                     className:[
+    //                         [`${type}-scale-small`],
+    //                         [`${type}-scale-medium`,'value % 5 === 0',true],
+    //                         [`${type}-scale-large`,'value % 10 === 0',true],
+    //                         [`${type}-scale-red`,'value >= 40']
+    //                     ]
+    //                 }
+    //             },
+    //             code:
+    //     `step={5}
+    //     start={0}
+    //     end={60}
+    //     scale={{
+    //         step:1,
+    //         className:[
+    //             ['scale-small'],
+    //             ['scale-medium','value % 5 === 0',true],
+    //             ['scale-large','value % 10 === 0',true],
+    //             ['scale-red','value >= 40']
+    //         ]
+    //     }}`
+    //         }
+    //     },
+    //     {
+    //         title:'scale (offset)',
+    //         props:{step:5,start:0,end:100,scale:{step:5,offset:-10}},
+    //         code:
+    //     `start={0}
+    //     end={100}
+    //     step={5}
+    //     scale={{
+    //         step:5,
+    //         offset:-10,
+    //     }}`
+    //     },
+    //     {
+    //         title:'scale (list)',
+    //         props:{start:0,end:100,scale:{list:[20,40,60,80]}},
+    //         code:
+    //     `start={0}
+    //     end={100}
+    //     step={5}
+    //     scale={{
+    //         list:[20,40,60,80]
+    //     }}`
+    //     },
+    //     {
+    //         title:'scale(html)',
+    //         props:{
+    //             attrs:{style:{margin:36}},
+    //             start:0,
+    //             end:8,    
+    //             scale:{
+    //                 step:1,
+    //                 style:(value,{angle})=>{
+    //                     return {
+    //                         width:24,height:24,background:'none',
+    //                         transform:type === 'slider'?undefined:`rotate(${-angle}deg)`
+    //                     }
+    //                 },
+    //                 html:(value)=>(
+    //                     <Icon 
+    //                         path={[
+    //                             mdiAccount,
+    //                             mdiAccountClock,
+    //                             mdiAccountCancel,
+    //                             mdiHumanMale,
+    //                             mdiAccountBadge,
+    //                             mdiAccountSupervisorOutline,
+    //                             mdiAccountBoxMultiple,
+    //                             mdiAccountChild,
+    //                             mdiAccountArrowDown
+    //                         ][value]} 
+    //                         size={0.7}
+    //                     />
+    //                 ) 
+    //             }
+    //         },
+    //         code:
+    //     `start={0},
+    //     end={8},    
+    //     scale={{
+    //         step:1,
+    //         style:(value,{angle})=>{
+    //             return {
+    //                 width:24,height:24,background:'none',
+    //                 ${type === 'pinch'?"transform:`rotate(${-angle}deg)`":''}
+    //             }
+    //         },
+    //         html:(value)=>(
+    //             <Icon 
+    //                 path={[
+    //                     mdiAccount,
+    //                     mdiAccountClock,
+    //                     mdiAccountCancel,
+    //                     mdiHumanMale,
+    //                     mdiAccountBadge,
+    //                     mdiAccountSupervisorOutline,
+    //                     mdiAccountBoxMultiple,
+    //                     mdiAccountChild
+    //                 ][value]} 
+    //                 size={0.7}
+    //             />
+    //         ) 
+    //     }}`
+    //     },
+    //     {
+    //         title:'handle (attrs)',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             handle:(val,{disabled,angle,value})=>{
+    //                 return {
+    //                     attrs:{
+    //                         style:{
+    //                             background:'dodgerblue'
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         code:
+    // `start={0}
+    // end={24}
+    // handle={{
+    //     attrs:{
+    //         style:{
+    //             background:'dodgerblue'
+    //         }
+    //     }
+    // }}`
+    //     },
+    //     {
+    //         title:'handle (false)',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             handle:false
+    //         },
+    //         code:
+    // `start={0}
+    // end={24}
+    // handle={false}`
+    //     },
+    //     {
+    //         title:'point (attrs)',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             point:(value,{angle})=>{
+    //                 return {
+    //                     attrs:{
+    //                         style:{
+    //                             transform:`rotate(${-angle}deg)`,
+    //                             height:24,
+    //                             width:24,
+    //                             fontSize:10,
+    //                             background:'dodgerblue',
+    //                             color:'#fff'
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         code:
+    // `attrs={{style:{border:'2px solid dodgerblue'}}}
+    // start={0}
+    // end={24}
+    // point={(value,{angle})=>{
+    //     return {
+    //         attrs:{
+    //             style:{
+    //                 transform:'rotate(' + (-angle) + 'deg)',
+    //                 height:24,
+    //                 width:24,
+    //                 left:24,
+    //                 fontSize:10,
+    //                 background:'dodgerblue',
+    //                 color:'#fff'
+    //             }
+    //         }
+    //     }
+    // }}`
+    //     },
+    //     {
+    //         title:'point (html)',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             circles:['35 2 dodgerblue'],
+    //             point:(value,{angle})=>{
+    //                 return {
+    //                     html:value,
+    //                     attrs:{
+    //                         style:{
+    //                             transform:`rotate(${-angle}deg)`,
+    //                             height:24,
+    //                             width:24,
+    //                             fontSize:10,
+    //                             background:'dodgerblue',
+    //                             color:'#fff'
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         code:
+    // `attrs={{style:{border:'2px solid dodgerblue'}}}
+    // start={0}
+    // end={24}
+    // point={(value,{angle})=>{
+    //     return {
+    //         html:value,
+    //         attrs:{
+    //             style:{
+    //                 transform:'rotate(' + (-angle) + 'deg)',
+    //                 height:24,
+    //                 width:24,
+    //                 left:24,
+    //                 fontSize:10,
+    //                 background:'dodgerblue',
+    //                 color:'#fff'
+    //             }
+    //         }
+    //     }
+    // }}`
+    //     },
+    //     {
+    //         title:'point (offset)',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             circles:['35 2 dodgerblue'],
+    //             point:(value,{angle})=>{
+    //                 return {
+    //                     html:value,
+    //                     attrs:{
+    //                         style:{
+    //                             transform:`rotate(${-angle}deg)`,
+    //                             height:24,
+    //                             width:24,
+    //                             fontSize:10,
+    //                             background:'dodgerblue',
+    //                             color:'#fff'
+    //                         }
+    //                     },
+    //                     offset:-16
+    //                 }
+    //             }
+    //         },
+    //         code:
+    // `attrs={{style:{border:'2px solid dodgerblue'}}}
+    // start={0}
+    // end={24}
+    // point={(value,{angle})=>{
+    //     return {
+    //         html:value,
+    //         attrs:{
+    //             style:{
+    //                 transform:'rotate(' + (-angle) + 'deg)',
+    //                 height:24,
+    //                 width:24,
+    //                 left:24,
+    //                 fontSize:10,
+    //                 background:'dodgerblue',
+    //                 color:'#fff'
+    //             }
+    //         },
+    //         offset:-16
+    //     }
+    // }}`
+    //     },
+    //     {
+    //         title:'point (false)',
+    //         props:{
+    //             start:0,
+    //             end:24,
+    //             point:false
+    //         },
+    //         code:
+    // `start={0}
+    // end={24}
+    // point={false}`
+    //     },
         {
             title:'disabled',show:()=>type === 'pinch',
             props:{
@@ -1504,225 +1506,225 @@ function PinchExamples(type){
                 }
             }}`
         },
-        {
-            title:'disabled',show:()=>type === 'range',
-            props:{
-                attrs:{style:{margin:12}},
-                start:0,
-                end:12,
-                disabled:[4,6,7,10,11],
-                point:false,
-                scale:{
-                    step:1,
-                    attrs:(val,{disabled})=>{
-                        return {
-                            style:{width:6,height:6,background:disabled?'red':'#000'}
-                        }
-                    }
-                },
-                label:{
-                    step:1,
-                    dynamic:true,
-                    attrs:(val,{disabled,angle,value})=>{
-                        let rotate = angle > 90 && angle < 270;
-                        let active = val === value
-                        let color;
-                        if(disabled){color = 'red'}
-                        else if(active){color = '#fff'}
-                        else {color = '#00ff00'}
-                        let style = {
-                            width:40,
-                            padding:active?'2px 6px':0,
-                            fontSize:10,
-                            transform:`rotate(${rotate?180:0}deg)`,
-                            fontWeight:active?'bold':undefined,
-                            background:active?'dodgerblue':undefined,
-                            color,
-                            fontFamily:'arial',
-                        }
-                        return {
-                            style
-                        }
-                    },
-                    html:(value)=>{
-                        return `${value}:00`
-                    }
-                }
-            },
-            code:
-        `attrs={{style:{margin:12}}}
-        start={0}
-        end={12}
-        disabled={[4,6,7,10,11]}
-        point={false}
-        scale={{
-            step:1,
-            attrs:(val,{disabled})=>{
-                return {
-                    style:{left:48,width:6,height:6,background:disabled?'red':'#000'}
-                }
-            }
-        }}
-        label={{
-            step:1,
-            dynamic:true,
-            attrs:(val,{disabled,angle,value})=>{
-                let rotate = angle > 90 && angle < 270;
-                let active = val === value
-                let color;
-                if(disabled){color = 'red'}
-                else if(active){color = '#fff'}
-                else {color = '#00ff00'}
-                let style = {
-                    width:40,
-                    padding:active?'2px 6px':0,
-                    fontSize:10,
-                    transform:'rotate(' + (rotate?180:0) 'deg)',
-                    fontWeight:active?'bold':undefined,
-                    background:active?'dodgerblue':undefined,
-                    color,
-                    fontFamily:'arial',
-                }
-                return {
-                    style
-                }
-            },
-            html:(value)=>{
-                return value +':00'
-            }
-        }}`
-        },
-        {
-            title:'circles',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:100,
-                circles:[
-                    '30 2 #333',
-                    '20 2 #777'
-                ]
-            },
-            code:
-    `start={0}
-    end={100}
-    circles={[
-        '30 2 #333',
-        '20 2 #777'
-    ]}`
-        },
-        {
-            title:'rotate (-180 deg)',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:100,
-                rotate:-180,
-                label:{step:10,offset:0}
-            },
-            code:
-    `start={0}
-    end={100}
-    label={{step:10,offset:0}}
-    rotate={-180}`
-        },
-        {
-            title:'round (0 to 1)',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:100,
-                round:0.5,
-                label:{step:10,offset:0}
-            },
-            code:
-    `start={0}
-    end={100}
-    rotate:180,
-    round={0.5}
-    label:{step:10,offset:0}`
-        },
-        {
-            title:'round (0 to 1)',show:()=>type === 'pinch',
-            props:{
-                start:0,
-                end:100,
-                round:0.25,
-                label:{step:20,offset:0}
-            },
-            code:
-    `start={0}
-    end={100}
-    round={0.5}
-    label:{step:10,offset:0}`
-        },
-        {
-            title:'ranges (array on strings)',
-            props:{
-                start:0,
-                end:100,
-                ranges:[
-                    '40 6 red',
-                    '60 6 orange',
-                    '80 6 yellow',
-                    '100 6 green'    
-                ]
-            },
-            code:
-    `start={0}
-    end={100}
-    ranges={[
-        '40 6 red',
-        '60 6 orange',
-        '80 6 yellow',
-        '100 6 green' 
-    ]}`
-        },
-        {
-            title:'ranges (function returns array of strings)',
-            props:{
-                start:0,
-                end:100,
-                circles:[],
-                handle:false,
-                point:(value,{angle})=>{
-                    return {
-                        attrs:{
-                            style:{
-                                width:24,height:24,background:'dodgerblue',color:'#fff',transform:`rotate(${-angle}deg)`,fontSize:10
-                            }
-                        },
-                        offset:type === 'pinch'?-15:0,
-                        html:value
-                    }
-                },
-                ranges:(value)=>{
-                    return [
-                        `${value} 4 dodgerblue`,
-                        `100 5 #f8f8f8`
-                    ]
-                }
-            },
-            code:
-    `start={0}
-    end={100}
-    circles={[]}
-    handle={false}
-    point={(value,{angle})=>{
-        return {
-            attrs:{
-                style:{
-                    width:24,height:24,background:'dodgerblue',color:'#fff',transform:'rotate(' + -angle + 'deg)',fontSize:10
-                }
-            },
-            html:value,    
-            ${type === 'pinch'?'offset:-15,':''}
-        }
-    }}
-    ranges={(value)=>{
-        return [
-            value + '4 dodgerblue',
-            '100 5 #f8f8f8'
-        ]
-    }}`
-        },
+    //     {
+    //         title:'disabled',show:()=>type === 'range',
+    //         props:{
+    //             attrs:{style:{margin:12}},
+    //             start:0,
+    //             end:12,
+    //             disabled:[4,6,7,10,11],
+    //             point:false,
+    //             scale:{
+    //                 step:1,
+    //                 attrs:(val,{disabled})=>{
+    //                     return {
+    //                         style:{width:6,height:6,background:disabled?'red':'#000'}
+    //                     }
+    //                 }
+    //             },
+    //             label:{
+    //                 step:1,
+    //                 dynamic:true,
+    //                 attrs:(val,{disabled,angle,value})=>{
+    //                     let rotate = angle > 90 && angle < 270;
+    //                     let active = val === value
+    //                     let color;
+    //                     if(disabled){color = 'red'}
+    //                     else if(active){color = '#fff'}
+    //                     else {color = '#00ff00'}
+    //                     let style = {
+    //                         width:40,
+    //                         padding:active?'2px 6px':0,
+    //                         fontSize:10,
+    //                         transform:`rotate(${rotate?180:0}deg)`,
+    //                         fontWeight:active?'bold':undefined,
+    //                         background:active?'dodgerblue':undefined,
+    //                         color,
+    //                         fontFamily:'arial',
+    //                     }
+    //                     return {
+    //                         style
+    //                     }
+    //                 },
+    //                 html:(value)=>{
+    //                     return `${value}:00`
+    //                 }
+    //             }
+    //         },
+    //         code:
+    //     `attrs={{style:{margin:12}}}
+    //     start={0}
+    //     end={12}
+    //     disabled={[4,6,7,10,11]}
+    //     point={false}
+    //     scale={{
+    //         step:1,
+    //         attrs:(val,{disabled})=>{
+    //             return {
+    //                 style:{left:48,width:6,height:6,background:disabled?'red':'#000'}
+    //             }
+    //         }
+    //     }}
+    //     label={{
+    //         step:1,
+    //         dynamic:true,
+    //         attrs:(val,{disabled,angle,value})=>{
+    //             let rotate = angle > 90 && angle < 270;
+    //             let active = val === value
+    //             let color;
+    //             if(disabled){color = 'red'}
+    //             else if(active){color = '#fff'}
+    //             else {color = '#00ff00'}
+    //             let style = {
+    //                 width:40,
+    //                 padding:active?'2px 6px':0,
+    //                 fontSize:10,
+    //                 transform:'rotate(' + (rotate?180:0) 'deg)',
+    //                 fontWeight:active?'bold':undefined,
+    //                 background:active?'dodgerblue':undefined,
+    //                 color,
+    //                 fontFamily:'arial',
+    //             }
+    //             return {
+    //                 style
+    //             }
+    //         },
+    //         html:(value)=>{
+    //             return value +':00'
+    //         }
+    //     }}`
+    //     },
+    //     {
+    //         title:'circles',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             circles:[
+    //                 '30 2 #333',
+    //                 '20 2 #777'
+    //             ]
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // circles={[
+    //     '30 2 #333',
+    //     '20 2 #777'
+    // ]}`
+    //     },
+    //     {
+    //         title:'rotate (-180 deg)',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             rotate:-180,
+    //             label:{step:10,offset:0}
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // label={{step:10,offset:0}}
+    // rotate={-180}`
+    //     },
+    //     {
+    //         title:'round (0 to 1)',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             round:0.5,
+    //             label:{step:10,offset:0}
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // rotate:180,
+    // round={0.5}
+    // label:{step:10,offset:0}`
+    //     },
+    //     {
+    //         title:'round (0 to 1)',show:()=>type === 'pinch',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             round:0.25,
+    //             label:{step:20,offset:0}
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // round={0.5}
+    // label:{step:10,offset:0}`
+    //     },
+    //     {
+    //         title:'ranges (array on strings)',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             ranges:[
+    //                 '40 6 red',
+    //                 '60 6 orange',
+    //                 '80 6 yellow',
+    //                 '100 6 green'    
+    //             ]
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // ranges={[
+    //     '40 6 red',
+    //     '60 6 orange',
+    //     '80 6 yellow',
+    //     '100 6 green' 
+    // ]}`
+    //     },
+    //     {
+    //         title:'ranges (function returns array of strings)',
+    //         props:{
+    //             start:0,
+    //             end:100,
+    //             circles:[],
+    //             handle:false,
+    //             point:(value,{angle})=>{
+    //                 return {
+    //                     attrs:{
+    //                         style:{
+    //                             width:24,height:24,background:'dodgerblue',color:'#fff',transform:`rotate(${-angle}deg)`,fontSize:10
+    //                         }
+    //                     },
+    //                     offset:type === 'pinch'?-15:0,
+    //                     html:value
+    //                 }
+    //             },
+    //             ranges:(value)=>{
+    //                 return [
+    //                     `${value} 4 dodgerblue`,
+    //                     `100 5 #f8f8f8`
+    //                 ]
+    //             }
+    //         },
+    //         code:
+    // `start={0}
+    // end={100}
+    // circles={[]}
+    // handle={false}
+    // point={(value,{angle})=>{
+    //     return {
+    //         attrs:{
+    //             style:{
+    //                 width:24,height:24,background:'dodgerblue',color:'#fff',transform:'rotate(' + -angle + 'deg)',fontSize:10
+    //             }
+    //         },
+    //         html:value,    
+    //         ${type === 'pinch'?'offset:-15,':''}
+    //     }
+    // }}
+    // ranges={(value)=>{
+    //     return [
+    //         value + '4 dodgerblue',
+    //         '100 5 #f8f8f8'
+    //     ]
+    // }}`
+    //     },
     ]
 }
 function DateDisabled(){
