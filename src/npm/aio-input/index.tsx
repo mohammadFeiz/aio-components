@@ -2603,7 +2603,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             root:`aio-input-slider${pinch?' aio-input-slider-pinch':''}`,
             range:'aio-input-slider-range',
             'scale-text':'aio-input-slider-scale-text',
-            'scale':`aio-input-slider-scale${pinch?'slider-pinch':''}`,
+            'scale':`aio-input-slider-scale`,
             'scale-container':'aio-input-slider-scale-container',
             'label':'aio-input-slider-label',
             'label-container':'aio-input-slider-label-container',
@@ -2687,7 +2687,9 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         let def = {
             'pinch-point':-8,
             'point':0,
-            'pinch-label':8
+            'pinch-label':8,
+            'pinch-scale':4,
+            
         }
         let res = typeof offset === 'function'?offset(value,p):offset;
         if(res === undefined){
@@ -2804,13 +2806,21 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             let itemContainerStyle = getItemContainerStyle(distance,p);
             return (
                 <div className={cls['scale-container']} key={o} draggable={false} style={itemContainerStyle}>
-                    {scale_node({attrs,text,style,className,p})}
+                    {scale_node({attrs,text,style,className,p,distance})}
                 </div>    
             )
         })
     }
-    function scale_node({attrs,text,style,className,p}){
-        let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:{...style},attrs:{draggable:false}});
+    function getScaleStyle(p,attrs,style,distance){
+        let res:any = {};
+        if(pinch){
+            res = {...res,...attrs.style,...style,...distance}
+        }
+        return {...res,...attrs.style,...style}
+    }
+    function scale_node({attrs,text,style,className,p,distance}){
+        let scaleTextStyle = getScaleStyle(p,attrs,style,distance);
+        let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:scaleTextStyle,attrs:{draggable:false}});
         return (<div {...PROPS}>{scale_text_node(text,p)}</div>)
     }
     function scale_text_node(text,p){

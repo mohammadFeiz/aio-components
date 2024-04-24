@@ -19,19 +19,19 @@
     text-decoration: underline;
     font-size:12px;
 }
-.pinch-scale-small{
+.aio-input-slider-pinch .pinch-scale-small{
     width:4px; 
     height:1px;
 }
-.pinch-scale-medium{
+.aio-input-slider-pinch .pinch-scale-medium{
     width:8px; 
     height:2px;
 }
-.pinch-scale-large{
+.aio-input-slider-pinch .pinch-scale-large{
     width:12px; 
     height:3px;
 }
-.pinch-scale-red{
+.aio-input-slider-pinch .pinch-scale-red{
     background:red;
 }
 .range-scale-small{
