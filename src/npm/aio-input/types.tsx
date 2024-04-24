@@ -62,6 +62,7 @@ export type AI = {
     endYear?: string | number,//date
     errorAttrs?:any,//form
     excel?: string,
+    fill?:{thickness?:number,color?:string,className?:string,style?:any},
     filter?: string[],
     footer?:{
         layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,

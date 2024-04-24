@@ -24,6 +24,7 @@ import {
     I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, 
     I_TableGap, I_Tag, I_Tags, I_TimePopver, I_list_temp, I_mapApiKeys, type_table_context, type_table_temp, type_time_value 
 } from './types.tsx';
+import { I_Swip_mousePosition } from '../aio-utils/types.tsx';
 const AICTX = createContext({} as any);
 
 export default function AIOInput(props: AI) {
@@ -2572,7 +2573,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     let {rootProps}:AI_context = useContext(AICTX);
     let {
         start = 0,end = 360,step = 1,label,ranges,circles = [],scale,attrs,
-        onChange,size = AIDef('size','pinch'),disabled,className,style} = rootProps;
+        onChange,size = AIDef('size','pinch'),disabled,className,style,fill} = rootProps;
     ranges = ranges || [`${end} 2 #ddd`]
     let [temp] = useState<any>(getTemp())
     let [cls] = useState<any>(getCls())
@@ -2601,14 +2602,15 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     function getCls(){
         return {
             root:`aio-input-slider${pinch?' aio-input-slider-pinch':''}`,
-            range:'aio-input-slider-range',
+            'range':'aio-input-slider-range',
             'label-container':'aio-input-slider-label-container',
             'label':'aio-input-slider-label',
             'scale-container':'aio-input-slider-scale-container',
             'scale':`aio-input-slider-scale`,
             'point':'aio-input-slider-point',
             'handle':'aio-input-handle',
-            'handle-container':'aio-input-handle-container'
+            'handle-container':'aio-input-handle-container',
+            'fill':'aio-input-slider-fill',
         }
     }
     let [def_scale] = useState(items_node('scale',true));
@@ -2622,15 +2624,38 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
                 temp.start = valueRef.current;
                 return [0,0];
             },
-            move:({change})=>changeHandle(change)
+            move:({change,mousePosition})=>changeHandle({dx:change.dx,centerAngle:mousePosition.centerAngle}),
+            onClick:function (p){click(p.mousePosition)}
         })
     },[])
-    function changeHandle(change){
-        let newValue = !!pinch?getChangedValue_pinch(change):getChangedValue_range(change);
-        if(disabled === true || isValueDisabled(newValue)){return}
+    function changeValue(newValue:number){
+        if(newValue < start){newValue = start}
+        if(newValue > end){newValue = end}
         setValue(newValue); 
         onChange(newValue)
     }
+    function click(mousePosition:I_Swip_mousePosition){
+        if(disabled === true){return} 
+        let clickedValue;
+        if(pinch){clickedValue = getValueByAngle(mousePosition.centerAngle);}
+        else {clickedValue = getValueByXP(mousePosition.xp);}
+        if(clickedValue < valueRef.current){changeSlider1Unit(-1)}
+        else if(clickedValue > valueRef.current){changeSlider1Unit(1)}
+    }
+    function changeSlider1Unit(dir: 1 | -1){
+        let value = valueRef.current;
+        let newValue = value + (dir * step)
+        while(isValueDisabled(newValue) && (dir === -1?newValue > start:newValue < end)){
+            newValue = newValue + (dir * step)
+        }
+        changeValue(newValue)
+    }
+    function changeHandle(obj){
+        let newValue = !!pinch?getChangedValue_pinch(obj):getChangedValue_range(obj);
+        if(disabled === true || isValueDisabled(newValue)){return}
+        changeValue(newValue)
+    }
+    
     function getChangedValue_pinch({centerAngle}){
         return getValueByStep({value:getValueByAngle(centerAngle),start,step,end}) 
     }
@@ -2826,14 +2851,11 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             let to = +stringValue
             let thickness = +stringThickness;
             let radius = (size / 2) - (thickness / 2);
-            let rangeItem = pinch?arc_node(thickness,color,from,to,radius,90):range_node(thickness,color,from,to);
+            let rangeItem = pinch?arc_node(thickness,color,from,to,radius,90):range_node({thickness,color,from,to,className:cls['range']});
             res.push(rangeItem);
             from = to;
         }
         return res
-    }
-    function getFills(){
-        return ['']
     }
     function lines_node(){
         let rangeDivs = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
@@ -2865,11 +2887,20 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         }
         return pathes;
     }
+    function getFills(){
+        let {thickness,style = {},className:fillClassName,color} = fill || {};
+        let from = start;
+        let to = value;
+        let className = cls['fill'];
+        if(fillClassName){className += ' ' + fillClassName}
+        return [range_node({thickness,color,from,to,className,style})]
+    }
     
-    function range_node(thickness:number,color:string,from:number,to:number){ 
+    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}){ 
+        let {thickness,color,from,to,className} = p;
         let startLeft = getXPByValue(from);
         let endLeft = getXPByValue(to);
-        return <div className={cls.range} style={{height:thickness,left:startLeft + '%',width:(endLeft - startLeft) + '%',background:color}}/>
+        return <div className={className} style={{height:thickness,left:startLeft + '%',width:(endLeft - startLeft) + '%',background:color,...style}}/>
     }
     
     function getValueByAngle(ang){

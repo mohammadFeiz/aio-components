@@ -270,12 +270,14 @@ export class Swip {
     so: { client?: { x: number, y: number }, x?: number, y?: number };
     getPercentByValue: (value: number, start: number, end: number) => number;
     getMousePosition: (e: any) => I_Swip_mousePosition
+    click: (e: any) => void;
     mouseDown: (e: any) => void;
     mouseMove: (e: any) => void;
     mouseUp: (e: any) => void;
     getDOMLimit: (type: 'dom' | 'parent') => I_Swip_domLimit;
     change: I_Swip_change;
     getPage: () => any;
+    isMoving:boolean;
     constructor(p: I_Swip) {
         this.p = p;
         this.geo = new Geo();
@@ -288,6 +290,7 @@ export class Swip {
         this.cx = 0;
         this.cy = 0;
         this.dist = 0;
+        this.isMoving = false;
         this.init = () => {
             this.count++;
             if (this.count > 10) { clearTimeout(this.timeout); return }
@@ -295,7 +298,10 @@ export class Swip {
             if (!res.length) { this.timeout = setTimeout(() => this.init(), 400) }
             else {
                 clearTimeout(this.timeout);
-                EventHandler(this.getDom(), 'mousedown', $.proxy(this.mouseDown, this))
+                EventHandler(this.getDom(), 'mousedown', $.proxy(this.mouseDown, this));
+                if(p.onClick){
+                    EventHandler(this.getDom(), 'click', $.proxy(this.click, this));    
+                }
             }
         }
         this.getPercentByValue = (value, start, end) => { return 100 * (value - start) / (end - start) }
@@ -304,12 +310,18 @@ export class Swip {
             return page ? page() : $(window);
         }
         this.getMousePosition = (e: any) => {
+            this.domLimit = this.getDOMLimit('dom');
             let page = this.getPage();
             let st = page.scrollTop();
             let sl = page.scrollLeft();
             let client = GetClient(e), x = client.x - this.domLimit.left + sl, y = client.y - this.domLimit.top + st;
             let xp = this.getPercentByValue(x, 0, this.domLimit.width), yp = this.getPercentByValue(y, 0, this.domLimit.height);
-            return { xp, yp, clientX: client.x, clientY: client.y, x, y }
+            let centerAngle = this.geo.getAngle([
+                [this.domLimit.centerX, this.domLimit.centerY],
+                [client.x, client.y]
+            ])
+            let res:I_Swip_mousePosition = { xp, yp, clientX: client.x, clientY: client.y, x, y,centerAngle }
+            return res;
         }
         this.getDOMLimit = (type): I_Swip_domLimit => {
             let dom = type === 'dom' ? this.getDom() : this.getParent();
@@ -330,7 +342,17 @@ export class Swip {
                 bottom: DOM.top + DOM.height
             }
         }
+        this.click = (e)=>{
+            //jeloye click bad az drag ro bayad begirim choon click call mishe 
+            if(this.isMoving){console.log('prevent click after move'); return}
+            this.domLimit = this.getDOMLimit('dom');
+            this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
+            let mousePosition = this.getMousePosition(e)
+            let clickParams:I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            p.onClick(clickParams)
+        }
         this.mouseDown = (e) => {
+            this.isMoving = false;
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
             let mousePosition = this.getMousePosition(e)
@@ -339,7 +361,8 @@ export class Swip {
             this.so = {
                 client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            let res = (p.start || (() => [0, 0]))({ mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e });
+            let startParams:I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            let res = (p.start || (() => [0, 0]))(startParams);
             if (!Array.isArray(res)) { return; }
             let x = res[0], y = res[1];
             this.so = { ...this.so, x, y }
@@ -359,13 +382,10 @@ export class Swip {
                 dy = Math.round(dy / stepY) * stepY;
             }
             if (dx === this.dx && dy === this.dy) { return }
+            this.isMoving = true;
             this.dx = dx; this.dy = dy;
             this.dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
             let angle = this.geo.getAngle([[this.cx, this.cy], [client.x, client.y]])
-            let centerAngle = this.geo.getAngle([
-                [this.domLimit.centerX, this.domLimit.centerY],
-                [mousePosition.clientX, mousePosition.clientY]
-            ])
             let x, y;
             if (this.so.x !== undefined && this.so.y !== undefined) {
                 x = this.so.x + dx; y = this.so.y + dy;
@@ -400,7 +420,7 @@ export class Swip {
                 }
             }
 
-            this.change = { x, y, dx, dy, dist: this.dist, angle, centerAngle }
+            this.change = { x, y, dx, dy, dist: this.dist, angle }
 
             let p: I_Swip_parameter = {
                 change: this.change,
@@ -409,11 +429,14 @@ export class Swip {
                 parentLimit: this.parentLimit,
                 event: e
             }
-            if (this.p.move) { this.p.move(p); }
+            if (this.p.move) {this.p.move(p);}
         }
         this.mouseUp = (e: any) => {
             EventHandler('window', 'mousemove', this.mouseMove, 'unbind');
             EventHandler('window', 'mouseup', this.mouseUp, 'unbind');
+            //chon click bad az mouseUp call mishe mouseUp isMoving ro zoodtar false mikone (pas nemitoone jeloye click bad az harekat ro begire), pas bayad in amal ba yek vaghfe anjam beshe
+            //jeloye clicke bad az harekat ro migirim ta bad az drag kardan function click call nashe
+            setTimeout(()=>this.isMoving = false,10);
             let mousePosition = this.getMousePosition(e);
             let p: I_Swip_parameter = {
                 change: this.change,
@@ -421,7 +444,6 @@ export class Swip {
                 domLimit: this.domLimit,
                 parentLimit: this.parentLimit,
                 mousePosition,
-
             }
             if (this.p.end) { this.p.end(p) }
         }

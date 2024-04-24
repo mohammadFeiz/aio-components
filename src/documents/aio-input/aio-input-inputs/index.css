@@ -34,18 +34,18 @@
 .aio-input-slider-pinch .pinch-scale-red{
     background:red;
 }
-.range-scale-small{
+.slider-scale-small{
     height:4px; 
     width:1px;
 }
-.range-scale-medium{
+.slider-scale-medium{
     height:8px; 
     width:2px;
 }
-.range-scale-large{
+.slider-scale-large{
     height:12px; 
     width:3px;
 }
-.range-scale-red{
+.slider-scale-red{
     background:red;
 }

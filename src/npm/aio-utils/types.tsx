@@ -1,9 +1,9 @@
-export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number };
+export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number,centerAngle:number };
 export type I_Swip_change = {
     x:number,y:number,
     dx:number,dy:number,
     dist:number,
-    angle:number,centerAngle:number,
+    angle:number,
 }
 export type I_Swip_parameter = {
     change?:I_Swip_change,mousePosition:I_Swip_mousePosition,domLimit:I_Swip_domLimit,parentLimit:I_Swip_domLimit,event:any
@@ -11,6 +11,7 @@ export type I_Swip_parameter = {
 export type I_Swip = {
     dom: ()=>any, 
     parent?:()=>any,
+    onClick?:(p:I_Swip_parameter)=>void,
     page?:()=>any,
     start: (p:I_Swip_parameter) => number[],
     move: (p: I_Swip_parameter) => void,
