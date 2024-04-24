@@ -1,4 +1,4 @@
-.my-input{
+.my-input:not(.aio-input-slider-pinch){
     border:1px solid #eee;
 }
 .badge{

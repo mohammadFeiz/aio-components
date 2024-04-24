@@ -2632,7 +2632,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         onChange(newValue)
     }
     function getChangedValue_pinch({centerAngle}){
-        return getValueByAngle(centerAngle);
+        return getValueByStep({value:getValueByAngle(centerAngle),start,step,end}) 
     }
     function getChangedValue_range({dx}){
         let xp = getXPByX(dx);
@@ -2686,10 +2686,9 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     function getDistanceByOffset(offset:any,value,p,type){
         let def = {
             'pinch-point':-8,
-            'point':0,
             'pinch-label':8,
             'pinch-scale':4,
-            
+            'point':0
         }
         let res = typeof offset === 'function'?offset(value,p):offset;
         if(res === undefined){
@@ -2772,36 +2771,13 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         let attrs = item.attrs?(item.attrs(itemValue,p) || {}):{}
         let className = getItemClassName(item,itemValue,p)
         let style = getItemStyle(item,itemValue,p)
+        //let PROPS = addToAttrs(attrs,{className:[cls['label'],className],style:labelTextStyle,attrs:{draggable:false}})
         return {p,distance,text,attrs,style,className}
     }
     function labels_node(){return getList(label || {}).map((o,i)=>label_node(o))}
-    function getItemContainerStyle(distance,p){
-        if(!pinch){return {left:p.left+'%',...distance}}
-        else{return {transform:`rotate(${p.angle}deg)`}}
-    }
-    function label_node(labelValue){
-        let {p,distance,text,attrs,style,className} = getListDetails(label || {},labelValue,{html:(o)=>o},'label');
-        let itemContainerStyle = getItemContainerStyle(distance,p);
-        let PROPS = {key:labelValue,draggable:false,className:cls['label-container'],style:itemContainerStyle}
-        return (<div {...PROPS}>{label_text_node({p,text,attrs,style,className,distance})}</div>)
-    }
-    function getLabelTextStyle(p,attrs,style,distance){
-        let res:any = {};
-        if(pinch){
-            res.transform = `rotate(${-p.angle}deg)`
-            res = {...res,...distance}
-        }
-        return {...res,...attrs.style,...style}
-    }
-    function label_text_node({p,text,attrs,style,className,distance}){
-        let labelTextStyle = getLabelTextStyle(p,attrs,style,distance);
-        let PROPS = addToAttrs(attrs,{className:[cls['label'],className],style:labelTextStyle,attrs:{draggable:false}})
-        return <div {...PROPS}>{text}</div>
-    }
     function scales_node(){
         scale = scale || {};
-        let scales = getList(scale);
-        return scales.map((o,i)=>{
+        return getList(scale || {}).map((o,i)=>{
             let {text,attrs,style,className,distance,p} = getListDetails(scale,o,{html:()=>{},offset:0},'scale');
             let itemContainerStyle = getItemContainerStyle(distance,p);
             return (
@@ -2812,10 +2788,37 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         })
     }
     function scale_node({attrs,text,style,className,p,distance}){
-        let scaleTextStyle = {...attrs.style,...style,...distance}
-        let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:scaleTextStyle,attrs:{draggable:false}});
+        let textStyle = getTextStyle(p,attrs,style,distance,'scale');
+        let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:textStyle,attrs:{draggable:false}});
         return (<div {...PROPS}>{scale_text_node(text,p)}</div>)
     }
+    function getItemContainerStyle(distance,p){
+        if(!pinch){return {left:p.left+'%',...distance}}
+        else{return {transform:`rotate(${p.angle}deg)`}}
+    }
+    function label_node(labelValue){
+        let {p,distance,text,attrs,style,className} = getListDetails(label || {},labelValue,{html:(o)=>o},'label');
+        let itemContainerStyle = getItemContainerStyle(distance,p);
+        let PROPS = {key:labelValue,draggable:false,className:cls['label-container'],style:itemContainerStyle}
+        return (<div {...PROPS}>{label_text_node({p,text,attrs,style,className,distance})}</div>)
+    }
+    
+    
+    function getTextStyle(p,attrs,style,distance,type){
+        if(type === 'scale'){return {...attrs.style,...style,...distance}}
+        let res:any = {};
+        if(pinch){
+            res.transform = `rotate(${-p.angle}deg)`
+            res = {...res,...distance}
+        }
+        return {...res,...attrs.style,...style}
+    }
+    function label_text_node({p,text,attrs,style,className,distance}){
+        let textStyle = getTextStyle(p,attrs,style,distance,'label');
+        let PROPS = addToAttrs(attrs,{className:[cls['label'],className],style:textStyle,attrs:{draggable:false}})
+        return <div {...PROPS}>{text}</div>
+    }
+    
     function scale_text_node(text,p){
         if(text === undefined){return null}
         let style = pinch?{transform:`rotate(${-p.angle}deg)`}:{}
@@ -2839,17 +2842,6 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     function getFills(){
         return ['']
     }
-    function getCircles(){
-        let pathes = []
-        for(let i = 0; i < circles.length; i++){
-            let [stringRadius,stringThickness,color] = circles[i].split(' ');
-            let from = start,to = end,radius = +stringRadius,thickness = +stringThickness;
-            if(radius > size / 2 - thickness / 2){radius = size / 2 - thickness / 2} 
-            radius = Math.round(radius)
-            pathes.push(arc_node(thickness,color,from,to,radius,90));
-        }
-        return pathes;
-    }
     function lines_node(){
         let rangeDivs = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
         let fillDivs = []; try{fillDivs = getFills()} catch{fillDivs = []} 
@@ -2869,6 +2861,18 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         let x = size / 2,y = size / 2;
         return <path d={svgArc(x,y,radius,startAngle,endAngle)} stroke={color} strokeWidth={thickness} fill='transparent'/>
     }
+    function getCircles(){
+        let pathes = []
+        for(let i = 0; i < circles.length; i++){
+            let [stringRadius,stringThickness,color] = circles[i].split(' ');
+            let from = start,to = end,radius = +stringRadius,thickness = +stringThickness;
+            if(radius > size / 2 - thickness / 2){radius = size / 2 - thickness / 2} 
+            radius = Math.round(radius)
+            pathes.push(arc_node(thickness,color,from,to,radius,90));
+        }
+        return pathes;
+    }
+    
     function range_node(thickness:number,color:string,from:number,to:number){ 
         let startLeft = getXPByValue(from);
         let endLeft = getXPByValue(to);
