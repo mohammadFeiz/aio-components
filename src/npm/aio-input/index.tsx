@@ -2811,15 +2811,8 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             )
         })
     }
-    function getScaleStyle(p,attrs,style,distance){
-        let res:any = {};
-        if(pinch){
-            res = {...res,...attrs.style,...style,...distance}
-        }
-        return {...res,...attrs.style,...style}
-    }
     function scale_node({attrs,text,style,className,p,distance}){
-        let scaleTextStyle = getScaleStyle(p,attrs,style,distance);
+        let scaleTextStyle = {...attrs.style,...style,...distance}
         let PROPS = addToAttrs(attrs,{className:[cls['scale'],className],style:scaleTextStyle,attrs:{draggable:false}});
         return (<div {...PROPS}>{scale_text_node(text,p)}</div>)
     }
