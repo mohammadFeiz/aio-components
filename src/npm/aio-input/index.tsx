@@ -19,6 +19,8 @@ import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
 import { 
     AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_unit, AI_formItem, AI_option, 
+    AI_scale, 
+    AI_scales, 
     AI_table_column, AI_table_paging, AI_table_sort, AI_time_unit, AI_type, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
     I_DPContext, I_DPHeaderDropdown, I_DPYears, I_DP_activeDate, I_Drag, I_FileItem, I_Layout, I_MapUnit, I_Map_config, I_Map_context, 
     I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, 
@@ -2572,7 +2574,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     let pinch = CPROPS.pinch;
     let {rootProps}:AI_context = useContext(AICTX);
     let {
-        start = 0,end = 360,step = 1,label,ranges,circles = [],scale,attrs,
+        start = 0,end = 360,step = 1,ranges,circles = [],scale,attrs,
         onChange,size = AIDef('size','pinch'),disabled,className,style,fill} = rootProps;
     ranges = ranges || [`${end} 2 #ddd`]
     let [temp] = useState<any>(getTemp())
@@ -2739,42 +2741,42 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         }
         return res;
     }
-    function getItemStyle(item,itemValue,p){
-        if(typeof item.style === 'function'){return item.style(itemValue,p) || {}}
-        if(Array.isArray(item.style)){
+    function getItemStyle(style:any,itemValue,p){
+        if(!style){return {}}
+        if(Array.isArray(style)){
             let res = {};
             //use in eval dont remove it //////////////
             let props = rootProps,value = itemValue; //
             let {angle,disabled} = p;                //
             ///////////////////////////////////////////
             try{
-                for(let i = 0; i < item.style.length; i++){
-                    let [style,condition] = item.style[i];
+                for(let i = 0; i < style.length; i++){
+                    let [st,condition] = style[i];
                     let bool = true;
                     if(condition){
                         let evalStr = `bool=${condition}`;
                         eval(evalStr);
                     }
-                    if(bool){res = {...res,...style}}
+                    if(bool){res = {...res,...st}}
                 }
             }
             catch{}
             return res
         }
-        
+        return style
     }
-    function getItemTextClassName(item,itemValue,p,type){
+    function getItemTextClassName(itemClassName:string,itemValue,p,type){
         let className = cls[type],result;
-        if(typeof item.className === 'function'){result = item.className(itemValue,p) || {}}
-        if(Array.isArray(item.className)){
+        if(!itemClassName){return className}
+        if(Array.isArray(itemClassName)){
             let res = [];
             //use in eval dont remove it //////////////
             let props = rootProps,value = itemValue; //
             let {angle,disabled} = p;                //
             ///////////////////////////////////////////
             try{
-                for(let i = 0; i < item.className.length; i++){
-                    let [className,condition,overwrite] = item.className[i];
+                for(let i = 0; i < itemClassName.length; i++){
+                    let [className,condition,overwrite] = itemClassName[i];
                     let bool = true;
                     if(condition){
                         let evalStr = `bool=${condition}`;
@@ -2789,18 +2791,19 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             catch{}
             result = res.length?res.join(' '):''
         }
+        else {result = itemClassName}
         if(result){className += ' ' + result}
         return className
     }
-    function getListDetails(item,itemValue,def,type){
+    function getListDetails(item:AI_scale,itemValue,type){
         let p = getP(itemValue);
-        let distance = getDistanceByOffset(item.offset,itemValue,p,type)
-        let text = (item.html || def.html)(itemValue,p);
-        let attrs = item.attrs?(item.attrs(itemValue,p) || {}):{}
-        let style = getItemStyle(item,itemValue,p)
+        let {offset = 0,html = type === 'label'?itemValue:undefined,attrs = {},style,className} = item(itemValue,p);
+        let distance = getDistanceByOffset(offset,itemValue,p,type)
+        let text = html;
+        let itemStyle = getItemStyle(style,itemValue,p)
         let containerStyle = getItemContainerStyle(distance,p);
         let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
-        let textProps = {className:getItemTextClassName(item,itemValue,p,type),style:getTextStyle(p,attrs,style,distance,type),draggable:false}
+        let textProps = {className:getItemTextClassName(className,itemValue,p,type),style:getTextStyle(p,attrs,itemStyle,distance,type),draggable:false}
         return {text,textProps,containerProps}
     }
     function getTextStyle(p,attrs,style,distance,type){
@@ -2827,14 +2830,14 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         )
     }
     function items_node(type:'scale'|'label',init?:boolean){
-        let entity = {label,scale}[type]
+        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
+        let setting = {label:rootProps.label,scale:rootProps.scale}[type]
         if(!entity){return null}
         if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
-        return getList(entity).map((itemValue,i)=>item_node(entity,itemValue,type))
+        return getList(entity).map((itemValue,i)=>item_node(setting || (()=>{return {}}),itemValue,type))
     }
-    function item_node(entity,itemValue,type){
-        let def = type === 'label'?{html:(o)=>o}:{html:()=>{},offset:0};
-        let {text,textProps,containerProps} = getListDetails(entity,itemValue,def,type);
+    function item_node(setting:AI_scale,itemValue,type){
+        let {text,textProps,containerProps} = getListDetails(setting,itemValue,type);
         return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
     }
     function getItemContainerStyle(distance,p){
@@ -2888,7 +2891,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         return pathes;
     }
     function getFills(){
-        let {thickness,style = {},className:fillClassName,color} = fill || {};
+        let {thickness,style,className:fillClassName,color} = fill || {};
         let from = start;
         let to = value;
         let className = cls['fill'];
@@ -2897,7 +2900,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     }
     
     function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}){ 
-        let {thickness,color,from,to,className} = p;
+        let {thickness,color,from,to,className,style} = p;
         let startLeft = getXPByValue(from);
         let endLeft = getXPByValue(to);
         return <div className={className} style={{height:thickness,left:startLeft + '%',width:(endLeft - startLeft) + '%',background:color,...style}}/>

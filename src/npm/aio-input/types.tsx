@@ -82,7 +82,8 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
-    label?:AI_label,//slider,pinch
+    label?:AI_scale,//slider,pinch
+    labels?:AI_scales,//slider,pinch
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
     line?:(index:number,active:boolean)=>{
@@ -124,6 +125,7 @@ export type AI = {
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
     rtl?: boolean,
     scale?:AI_scale,//slider,pinch
+    scales?:AI_scales,//slider,pinch
     search?: string,
     size?: number,//list,date
     spin?: boolean,
@@ -153,29 +155,19 @@ export type AI_point = (index:number,p:any)=>{
     labelShow?:boolean | 'inline',
     labelAttrs?:any
 }
-export type AI_scale = {
-    step?:number,
+export type AI_scales = {
     list?:number[],
-    dynamic?:boolean,
-    offset?:number | ((value,p?:any)=>number),
-    attrs?:(value:number,p?:any)=>any,
-    style?:((value:number,p?:any)=>any) | (any[]),
-    className?:((value:number,p?:any)=>any) | (any[]),
-    html?:(value:number,p?:any)=>React.ReactNode  
-}
-    
-export type AI_label = {
     step?:number,
-    list?:number[],
-    dynamic?:boolean,
-    offset?:number | ((value,p?:any)=>number),
-    attrs?:(value:number,p?:any)=>any,
-    style?:((value:number,p?:any)=>any) | (any[]),
-    className?:((value:number,p?:any)=>any) | (any[]),
-    html?:(value:number,p?:any)=>React.ReactNode,
-    rotate?:number | ((value:number)=>number)
+    dynamic?:boolean
 }
-    
+export type AI_scale = (value:number,p:{angle:number,disabled:boolean,value:number})=>{
+    offset?:number,
+    attrs?:any,
+    style?:{[key:string]:string | number},
+    className?:string,
+    html?:React.ReactNode,
+    rotate?:number
+}    
 //notice
 //use global fixed options in List
 //create list document 

@@ -858,14 +858,14 @@ function PinchExamples(type){
             title:'label (step)',
             props:{
                 start:0,end:8,
-                label:{
+                labels:{
                     step:1
                 }
             },
             code:
         `start={0}
         end={8}
-        label={{
+        labels={{
             step:1
         }}`
         },
@@ -873,14 +873,15 @@ function PinchExamples(type){
             title:'label (attrs)',
             props:{
                 start:0,end:8,
-                label:{
-                    step:1,
-                    attrs:(value)=>{
-                        return {
+                labels:{step:1},
+                label:(value)=>{
+                    return {
+                        attrs:{
                             style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
                         }
                     }
                 }
+                
             },
             code:`
         start={0}
@@ -899,10 +900,10 @@ function PinchExamples(type){
             title:'label (html)',
             props:{
                 start:0,end:8,
-                label:{
-                    step:1,
-                    html:(value)=>{
-                        return value === 5?<Icon path={mdiAccount} size={0.6}/>:value
+                labels:{step:1},
+                label:(value)=>{
+                    return {
+                        html:value === 5?<Icon path={mdiAccount} size={0.6}/>:value
                     }
                 }
             },
@@ -920,9 +921,9 @@ function PinchExamples(type){
             title:'label (offset)',
             props:{
                 start:0,end:8,
-                label:{
-                    step:1,
-                    offset:-20
+                labels:{step:1},
+                label:()=>{
+                    return {offset:-20}
                 }
             },
             code:
@@ -937,9 +938,7 @@ function PinchExamples(type){
             title:'label (list)',
             props:{
                 start:0,end:8,
-                label:{
-                    list:[1,2,5]
-                }
+                labels:{list:[1,2,5]}
             },
             code:
     `start={0}
@@ -950,7 +949,7 @@ function PinchExamples(type){
         },
         {
             title:'scale (step)',
-            props:{step:5,start:0,end:100,scale:{step:5}},
+            props:{step:5,start:0,end:100,scales:{step:5}},
             code:
         `start={0}
         end={100}
@@ -968,18 +967,18 @@ function PinchExamples(type){
                     step:5,
                     start:0,
                     end:60,
-                    scale:{
-                        step:1,
-                        attrs:(value)=>{
-                            let a,b;
-                            if(value % 10 === 0){b = 12; a = 3}
-                            else if(value % 5 === 0){b = 8; a = 2}
-                            else {b = 4; a = 1}
-                            let background = value >= 40?'red':'#333'
-                            return {
+                    scales:{step:1},
+                    scale:(value)=>{
+                        let a,b;
+                        if(value % 10 === 0){b = 12; a = 3}
+                        else if(value % 5 === 0){b = 8; a = 2}
+                        else {b = 4; a = 1}
+                        let background = value >= 40?'red':'#333'   
+                        return {
+                            attrs:{
                                 style:{width:(type === 'slider'?a:b),height:(type === 'slider'?b:a),background}
                             }
-                        }
+                        }  
                     }
                 },
                 code:
@@ -1005,20 +1004,20 @@ function PinchExamples(type){
             let a = type === 'slider'?'height':'width'
             let b = type === 'slider'?'width':'height'
             return {
-                title:'scale (style function)',
+                title:'scale (style object)',
                 props:{
                     step:5,
                     start:0,
                     end:60,
-                    scale:{
-                        step:1,
-                        style:(value)=>{
-                            let a,b;
-                            if(value % 10 === 0){a = 8; b = 3}
-                            else if(value % 5 === 0){a = 5; b = 2}
-                            else {a = 2; b = 1}
-                            let background = value >= 40?'red':'#333'
-                            return {width:(type === 'slider'?b:a),height:(type === 'slider'?a:b),background}
+                    scales:{step:1},
+                    scale:(value)=>{
+                        let a,b;
+                        if(value % 10 === 0){a = 8; b = 3}
+                        else if(value % 5 === 0){a = 5; b = 2}
+                        else {a = 2; b = 1}
+                        let background = value >= 40?'red':'#333'
+                        return {
+                            style:{width:(type === 'slider'?b:a),height:(type === 'slider'?a:b),background}
                         }
                     }
                 },
@@ -1048,14 +1047,17 @@ function PinchExamples(type){
                     step:5,
                     start:0,
                     end:60,
-                    scale:{
-                        step:1,
-                        style:[
-                            [{[a]:4,[b]:1,background:"#333"}],
-                            [{[a]:8,[b]:2},'value % 5 === 0'],
-                            [{[a]:12,[b]:3},'value % 10 === 0'],
-                            [{background:"red"},'value >= 40']
-                        ]
+                    scales:{step:1},
+                    scale:()=>{
+                        return {
+                            style:[
+                                [{[a]:4,[b]:1,background:"#333"}],
+                                [{[a]:8,[b]:2},'value % 5 === 0'],
+                                [{[a]:12,[b]:3},'value % 10 === 0'],
+                                [{background:"red"},'value >= 40']
+                            ]
+                        }
+                        
                     }
                 },
                 code:
@@ -1075,21 +1077,19 @@ function PinchExamples(type){
         },
         ()=>{
             return {
-                title:'scale (className function)',
+                title:'scale (className string)',
                 props:{
                     step:5,
                     start:0,
                     end:60,
-                    scale:{
-                        step:1,
-                        className:(value)=>{
-                            let className = ''
-                            if(value % 10 === 0){className = `${type}-scale-large`}
-                            else if(value % 5 === 0){className = `${type}-scale-medium`}
-                            else {className = `${type}-scale-small`}
-                            className += value >= 40?` ${type}-scale-red`:''
-                            return className
-                        }
+                    scales:{step:1},
+                    scale:(value)=>{
+                        let className = ''
+                        if(value % 10 === 0){className = `${type}-scale-large`}
+                        else if(value % 5 === 0){className = `${type}-scale-medium`}
+                        else {className = `${type}-scale-small`}
+                        className += value >= 40?` ${type}-scale-red`:''
+                        return {className}
                     }
                 },
                 code:
@@ -1116,14 +1116,16 @@ function PinchExamples(type){
                     step:5,
                     start:0,
                     end:60,
-                    scale:{
-                        step:1,
-                        className:[
-                            [`${type}-scale-small`],
-                            [`${type}-scale-medium`,'value % 5 === 0',true],
-                            [`${type}-scale-large`,'value % 10 === 0',true],
-                            [`${type}-scale-red`,'value >= 40']
-                        ]
+                    scales:{step:1},
+                    scale:()=>{
+                        return {
+                            className:[
+                                [`${type}-scale-small`],
+                                [`${type}-scale-medium`,'value % 5 === 0',true],
+                                [`${type}-scale-large`,'value % 10 === 0',true],
+                                [`${type}-scale-red`,'value >= 40']
+                            ]
+                        }
                     }
                 },
                 code:
@@ -1143,7 +1145,7 @@ function PinchExamples(type){
         },
         {
             title:'scale (offset)',
-            props:{step:5,start:0,end:100,scale:{step:5,offset:-10}},
+            props:{step:5,start:0,end:100,scales:{step:5},scale:()=>{return {offset:-10}}},
             code:
         `start={0}
         end={100}
@@ -1155,7 +1157,7 @@ function PinchExamples(type){
         },
         {
             title:'scale (list)',
-            props:{start:0,end:100,scale:{list:[20,40,60,80]}},
+            props:{start:0,end:100,scales:{list:[20,40,60,80]}},
             code:
         `start={0}
         end={100}
@@ -1170,30 +1172,28 @@ function PinchExamples(type){
                 attrs:{style:{margin:36}},
                 start:0,
                 end:8,    
-                scale:{
-                    step:1,
-                    style:(value,{angle})=>{
-                        return {
+                scales:{step:1},
+                scale:(value,{angle})=>{
+                    return {
+                        style:{
                             width:24,height:24,background:'none',
                             transform:type === 'slider'?undefined:`rotate(${-angle}deg)`
-                        }
-                    },
-                    html:(value)=>(
-                        <Icon 
-                            path={[
-                                mdiAccount,
-                                mdiAccountClock,
-                                mdiAccountCancel,
-                                mdiHumanMale,
-                                mdiAccountBadge,
-                                mdiAccountSupervisorOutline,
-                                mdiAccountBoxMultiple,
-                                mdiAccountChild,
-                                mdiAccountArrowDown
-                            ][value]} 
-                            size={0.7}
-                        />
-                    ) 
+                        },
+                        html:<Icon 
+                        path={[
+                            mdiAccount,
+                            mdiAccountClock,
+                            mdiAccountCancel,
+                            mdiHumanMale,
+                            mdiAccountBadge,
+                            mdiAccountSupervisorOutline,
+                            mdiAccountBoxMultiple,
+                            mdiAccountChild,
+                            mdiAccountArrowDown
+                        ][value]} 
+                        size={0.7}
+                    />
+                    }
                 }
             },
             code:
@@ -1411,39 +1411,37 @@ function PinchExamples(type){
                 rotate:90,
                 disabled:[4,6,7,10,11],
                 point:false,
-                scale:{
-                    step:1,
-                    attrs:(val,{disabled})=>{
-                        return {
+                scales:{step:1},
+                scale:(value,{disabled})=>{
+                    return {
+                        attrs:{
                             style:{width:6,height:6,background:disabled?'red':'#000'}
                         }
                     }
                 },
-                label:{
+                labels:{
                     step:1,
-                    dynamic:true,
-                    attrs:(val,{disabled,angle,value})=>{
-                        let rotate = angle > 90 && angle < 270;
-                        let active = val === value
-                        let color;
-                        if(disabled){color = 'red'}
-                        else if(active){color = '#fff'}
-                        else {color = '#00ff00'}
-                        let style = {
-                            width:40,
-                            fontSize:10,
-                            transform:`rotate(${rotate?180:0}deg)`,
-                            fontWeight:active?'bold':undefined,
-                            background:active?'dodgerblue':undefined,
-                            color,
-                            fontFamily:'arial',
-                        }
-                        return {
-                            style
-                        }
-                    },
-                    html:(value,{angle})=>{
-                        return `${angle.toFixed(0)}`
+                    dynamic:true
+                },
+                label:(val,{disabled,angle,value})=>{
+                    let rotate = angle > 90 && angle < 270;
+                    let active = val === value
+                    let color;
+                    if(disabled){color = 'red'}
+                    else if(active){color = '#fff'}
+                    else {color = '#00ff00'}
+                    let style = {
+                        width:40,
+                        fontSize:10,
+                        transform:`rotate(${rotate?180:0}deg)`,
+                        fontWeight:active?'bold':undefined,
+                        background:active?'dodgerblue':undefined,
+                        color,
+                        fontFamily:'arial',
+                    }
+                    return {
+                        style,
+                        html:`${angle.toFixed(0)}`
                     }
                 },
                 handle:(val,{disabled,angle,value})=>{
@@ -1514,41 +1512,35 @@ function PinchExamples(type){
                 end:12,
                 disabled:[4,6,7,10,11],
                 point:false,
-                scale:{
-                    step:1,
-                    attrs:(val,{disabled})=>{
-                        return {
-                            style:{width:6,height:6,background:disabled?'red':'#000'}
-                        }
+                scales:{step:1},
+                scale:(value,{disabled})=>{
+                    return {
+                        style:{width:6,height:6,background:disabled?'red':'#000'}
                     }
                 },
-                label:{
+                labels:{
                     step:1,
-                    dynamic:true,
-                    offset:16,
-                    attrs:(val,{disabled,angle,value})=>{
-                        let rotate = angle > 90 && angle < 270;
-                        let active = val === value
-                        let color;
-                        if(disabled){color = 'red'}
-                        else if(active){color = '#fff'}
-                        else {color = '#00ff00'}
-                        let style = {
-                            width:40,
-                            padding:active?'2px 6px':0,
-                            fontSize:10,
-                            transform:`rotate(${rotate?180:0}deg)`,
-                            fontWeight:active?'bold':undefined,
-                            background:active?'dodgerblue':undefined,
-                            color,
-                            fontFamily:'arial',
-                        }
-                        return {
-                            style
-                        }
-                    },
-                    html:(value)=>{
-                        return `${value}:00`
+                    dynamic:true
+                },
+                label:(val,{disabled,value})=>{
+                    let active = val === value
+                    let color;
+                    if(disabled){color = 'red'}
+                    else if(active){color = '#fff'}
+                    else {color = '#00ff00'}
+                    let style = {
+                        width:40,
+                        padding:active?'2px 6px':0,
+                        fontSize:10,
+                        fontWeight:active?'bold':undefined,
+                        background:active?'dodgerblue':undefined,
+                        color,
+                        fontFamily:'arial',
+                    }
+                    return {
+                        offset:16,
+                        style,
+                        html:`${value}:00`
                     }
                 }
             },
@@ -1621,7 +1613,10 @@ function PinchExamples(type){
                 start:0,
                 end:100,
                 rotate:-180,
-                label:{step:10,offset:0}
+                labels:{step:10},
+                label:()=>{
+                    return {offset:0}
+                }
             },
             code:
     `start={0}
@@ -1635,7 +1630,12 @@ function PinchExamples(type){
                 start:0,
                 end:100,
                 round:0.5,
-                label:{step:10,offset:0}
+                labels:{step:10},
+                label:()=>{
+                    return {
+                        offset:10
+                    }
+                }
             },
             code:
     `start={0}
@@ -1650,7 +1650,12 @@ function PinchExamples(type){
                 start:0,
                 end:100,
                 round:0.25,
-                label:{step:20,offset:0}
+                labels:{step:20},
+                label:()=>{
+                    return {
+                        offset:0
+                    }
+                }
             },
             code:
     `start={0}

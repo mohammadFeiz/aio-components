@@ -1740,6 +1740,7 @@
     justify-content: center;
     overflow: visible;
     position:relative;
+    z-index:10;
 }
 .aio-input-slider-pinch .aio-input-handle-container{
     justify-content: flex-end;
@@ -1824,4 +1825,5 @@
     background: dodgerblue;
     height: 4px;
     position: absolute;
+    z-index:10;
 }
