@@ -1774,7 +1774,7 @@
     justify-content: center;
     font-size:12px;
 }
-.range-point-container{
+.aio-input-range-point-container{
     position: absolute;
     display:flex;
     align-items: center;

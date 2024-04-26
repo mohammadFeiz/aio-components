@@ -151,6 +151,8 @@ export type AI = {
 }
 export type AI_point = (index:number,p:any)=>{
     attrs?:any,
+    className?:string,
+    style?:any,
     html?:React.ReactNode,
     offset?:number,
     labelHtml?:React.ReactNode,

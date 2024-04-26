@@ -2624,31 +2624,6 @@ const Range = () => {
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
-    function updateLabels() {
-        if(pinch){return}
-        let container = $(temp.dom.current);
-        let labels = container.find(cls['label-container']);
-        if (!labels.length) { return; }
-        let firstLabel = labels.eq(0);
-        let firstLabelHProp = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
-        let end = firstLabel.offset().left + (!reverse?firstLabel[firstLabelHProp]():0);
-        for (let i = 1; i < labels.length; i++) {
-            let label = labels.eq(i);
-            let hProp = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
-            label.css({ display: 'flex' })
-            let left = label.offset().left
-            let width = label[hProp]();
-            let right = left + width;
-            if(!reverse){
-                if (left < end + 5) {label.css({ display: 'none' })}
-                else { end = left + width; }
-            }
-            else {
-                if (right > end - 5) {label.css({ display: 'none' })}
-                else { end = left; }
-            }   
-        }
-    }
     function changeValue(newValue:number){
         if(newValue < start){newValue = start}
         if(newValue > end){newValue = end}
@@ -2706,15 +2681,8 @@ const Range = () => {
         return res
     }
     function value_node(){
-        let p = getP(value);
-        let angle = fixAngle(getAngleByValue(value));
-        let disabled = isValueDisabled(value) 
-        return (
-            <div {...pointContainerProps(value)}>
-                <RangeHandle rootProps={rootProps} value={value} temp={temp} angle={angle} disabled={disabled}/>
-                <RangePoint disabled={disabled} angle={angle} mainValue={value} rootProps={rootProps} value={value}/>
-            </div>
-        )
+        let PROPS:I_RangeValue = {rootProps,value,disabled:isValueDisabled(value),angle:fixAngle(getAngleByValue(value)),mainValue:value}
+        return (<div {...pointContainerProps(value)}><RangeHandle {...PROPS}/> <RangePoint {...PROPS} /></div>)
     }
     function getDistanceByOffset(offset:any,value,p,type){
         let def = {'pinch-point':-8,'pinch-label':8,'pinch-scale':4,'point':0}
@@ -2819,27 +2787,22 @@ const Range = () => {
     function getXPByX(x){return x * 100 / $(temp.dom.current).width();}
     return root_node()
 }
-type I_RangePoint = {rootProps:AI,value:number,disabled:boolean,angle:number,mainValue:number}
-function RangePoint(props:I_RangePoint){
+type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,mainValue:number}
+function RangePoint(props:I_RangeValue){
     let {rootProps,value,disabled,angle,mainValue} = props;
     if(rootProps.point === false){return null}
     let {pinch,size = 72} = rootProps;
     let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value:mainValue}) || {}
-    let {attrs = {},html = '',offset = pinch ? -8 : 0} = point;
-    function getStyle(){
-        if(!pinch){
-            let sign = offset < 0?'-':'+';
-            let top = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
-            return {top}
-        }
-        else {return {left:size / 2 + offset}}
-    }
-    let PROPS = addToAttrs(attrs,{className:'aio-input-range-point',style:getStyle(),attrs:{draggable:false}})
-    return <div {...PROPS}>{html}</div>
+    let {attrs = {},className,style,html = '',offset = 0} = point;
+    let PROPS = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false}})
+    return (
+        <div className='aio-input-range-point-container' style={pinch?{left:size / 2 + offset}:{top:offset}} draggable={false}>
+            <div {...PROPS}>{html}</div>
+        </div>
+    )
 }
-type I_RangeHandle = {rootProps:AI,value:number,temp:any,angle:number,disabled:boolean}
-function RangeHandle(props:I_RangeHandle){
-    let {rootProps,value,temp,angle,disabled} = props;
+function RangeHandle(props:I_RangeValue){
+    let {rootProps,value,angle,disabled,mainValue} = props;
     let {handle = (()=>{}),size = 72,pinch} = rootProps;
     if(handle === false || !pinch){return null}
     if(handle && typeof handle !== 'function'){
@@ -2847,15 +2810,14 @@ function RangeHandle(props:I_RangeHandle){
         handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
         return null
     }
-    let cls = temp.getCls()
-    let {attrs = {}} = handle(value,{angle,disabled}) || {}
-    let PROPS = addToAttrs(attrs,{className:cls['handle'],style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
+    let {attrs = {}} = handle(value,{angle,disabled,value:mainValue}) || {}
+    let PROPS = addToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
     return (<div {...PROPS}></div>)
 }
 type I_RangeItems = {type:'scale'|'label',rootProps:AI,temp:any}
 function RangeItems(props:I_RangeItems){
     let {type,rootProps,temp} = props;
-    let {pinch,start = 0,end = 360,round = 1} = rootProps;
+    let {pinch,start = 0,end = 360,round = 1,reverse} = rootProps;
     let [def_scale] = useState(getDefScale);
     function getDefScale(){return render(true)}
     let [def_label] = useState(getDefLabel);
@@ -2872,6 +2834,33 @@ function RangeItems(props:I_RangeItems){
         }
         return res;
     }
+    function updateLabels() {
+        if(pinch || type !== 'label'){return}
+        let container = $(temp.dom.current);
+        let labels = container.find('.aio-input-range-label');
+        if (!labels.length) { return; }
+        let firstLabel = labels.eq(0);
+        let firstLabelHProp = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
+        let end = firstLabel.offset().left + (!reverse?firstLabel[firstLabelHProp]():0);
+        for (let i = 1; i < labels.length; i++) {
+            let label = labels.eq(i);
+            let hProp = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
+            label.css({ display: 'flex' })
+            let left = label.offset().left
+            let width = label[hProp]();
+            let right = left + width;
+            if(!reverse){
+                if (left < end + 5) {label.css({ display: 'none' })}
+                else { end = left + width; }
+            }
+            else {
+                if (right > end - 5) {label.css({ display: 'none' })}
+                else { end = left; }
+            }   
+        }
+    }
+    useEffect(()=>{$(window).on('resize', updateLabels)},[])
+    useEffect(()=>{updateLabels()})
     function render(init:boolean){
         let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
         let setting = {label:rootProps.label,scale:rootProps.scale}[type] || (()=>{return {}})
