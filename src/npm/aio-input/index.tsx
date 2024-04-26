@@ -110,8 +110,7 @@ export default function AIOInput(props: AI) {
     }
     let render = {
         list: () => <List />,
-        slider:()=><Slider/>,
-        pinch:()=><Slider pinch={true}/>,
+        range:()=><Range/>,
         file: () => <File />,
         select: () => <Layout properties={{text:props.text || getSelectText()}}/>,
         button: () => <Layout />,
@@ -973,7 +972,7 @@ function Table() {
                 }
             }
             let type;
-            if (input && ['number', 'date', 'slider'].indexOf(input.type) !== -1) { type = 'number' }
+            if (input && ['number', 'date', 'range'].indexOf(input.type) !== -1) { type = 'number' }
             else { type = sort.type || 'string' }
             let sortItem: AI_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
             sorts.push(sortItem)
@@ -1375,10 +1374,6 @@ function Layout(props: I_Layout) {
         }
         else {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
-            if (type === 'slider') {
-                if (direction === 'top' || direction === 'bottom') { cls += ' aio-input-slider-vertical' }
-                else { cls += ' aio-input-slider-horizontal' }
-            }
             if (types.isInput) { cls += ` aio-input-input` }
             if (rtl) { cls += ' aio-input-rtl' }
         }
@@ -2570,22 +2565,18 @@ export function Tree(props:any = {}) {
     }
     return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
 }
-const Slider = (CPROPS?:{pinch?:boolean}) => {
-    let pinch = CPROPS.pinch;
+const Range = () => {
     let {rootProps}:AI_context = useContext(AICTX);
     let {
-        start = 0,end = 360,step = 1,ranges,circles = [],scale,attrs,
-        onChange,size = AIDef('size','pinch'),disabled,className,style,fill} = rootProps;
+        start = 0,end = 360,step = 1,ranges,circles = [],reverse,pinch,
+        onChange,size = AIDef('size','pinch'),disabled,className,fill} = rootProps;
     ranges = ranges || [`${end} 2 #ddd`]
     let [temp] = useState<any>(getTemp())
     let [cls] = useState<any>(getCls())
     function getTemp(){
         let dom = createRef();
         let {round = 1,rotate = 0} = rootProps;
-        if(round > 1){round = 1}
-        if(round < 0.2){round = 0.2};
-        if(round !== 1 && !rotate){rotate = 90 - (round * 180)}
-        return {dom,round,rotate,start:0}    
+        return {dom,round,rotate,start:0,h:reverse?'right':'left'}    
     }
     let [value,setValue] = useState<number>(getValue())
     function getValue(){return getValueByStep({value:rootProps.value || start,start,step,end})}
@@ -2603,24 +2594,28 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     }
     function getCls(){
         return {
-            root:`aio-input-slider${pinch?' aio-input-slider-pinch':''}`,
-            'range':'aio-input-slider-range',
-            'label-container':'aio-input-slider-label-container',
-            'label':'aio-input-slider-label',
-            'scale-container':'aio-input-slider-scale-container',
-            'scale':`aio-input-slider-scale`,
-            'point':'aio-input-slider-point',
+            root:`aio-input-range${pinch?' aio-input-range-pinch':''}`,
+            'range':'aio-input-range-range',
+            'label-container':'aio-input-range-label-container',
+            'label':'aio-input-range-label',
+            'scale-container':'aio-input-range-scale-container',
+            'scale':`aio-input-range-scale`,
+            'point':'aio-input-range-point',
             'handle':'aio-input-handle',
             'handle-container':'aio-input-handle-container',
-            'fill':'aio-input-slider-fill',
+            'fill':'aio-input-range-fill',
+            'reverse':'aio-input-range-reverse'
         }
     }
-    let [def_scale] = useState(items_node('scale',true));
-    let [def_label] = useState(items_node('label',true));
+    let [def_scale] = useState(getDefScale);
+    function getDefScale(){return items_node('scale',true)}
+    let [def_label] = useState(getDefLabel);
+    function getDefLabel(){return items_node('label',true)}
     useEffect(()=>{setValue(rootProps.value || start)},[rootProps.value || start])
     useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
     useEffect(()=>{
         new Swip({
+            reverseX:!!reverse,
             dom:()=>$(temp.dom.current),
             start:()=>{
                 temp.start = valueRef.current;
@@ -2630,6 +2625,31 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
+    function updateLabels() {
+        if(pinch){return}
+        let container = $(temp.dom.current);
+        let labels = container.find(cls['label-container']);
+        if (!labels.length) { return; }
+        let firstLabel = labels.eq(0);
+        let firstLabelHProp = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
+        let end = firstLabel.offset().left + (!reverse?firstLabel[firstLabelHProp]():0);
+        for (let i = 1; i < labels.length; i++) {
+            let label = labels.eq(i);
+            let hProp = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
+            label.css({ display: 'flex' })
+            let left = label.offset().left
+            let width = label[hProp]();
+            let right = left + width;
+            if(!reverse){
+                if (left < end + 5) {label.css({ display: 'none' })}
+                else { end = left + width; }
+            }
+            else {
+                if (right > end - 5) {label.css({ display: 'none' })}
+                else { end = left; }
+            }   
+        }
+    }
     function changeValue(newValue:number){
         if(newValue < start){newValue = start}
         if(newValue > end){newValue = end}
@@ -2641,10 +2661,10 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         let clickedValue;
         if(pinch){clickedValue = getValueByAngle(mousePosition.centerAngle);}
         else {clickedValue = getValueByXP(mousePosition.xp);}
-        if(clickedValue < valueRef.current){changeSlider1Unit(-1)}
-        else if(clickedValue > valueRef.current){changeSlider1Unit(1)}
+        if(clickedValue < valueRef.current){change1Unit(-1)}
+        else if(clickedValue > valueRef.current){change1Unit(1)}
     }
-    function changeSlider1Unit(dir: 1 | -1){
+    function change1Unit(dir: 1 | -1){
         let value = valueRef.current;
         let newValue = value + (dir * step)
         while(isValueDisabled(newValue) && (dir === -1?newValue > start:newValue < end)){
@@ -2673,17 +2693,17 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
     function isValueDisabled(value){return !!disabledDic[`a${value}`]}
     function pointContainerProps(value){
         let style;
-        if(!pinch){style = {left:getXPByValue(value) + '%'}}
-        else {style = {transform:`rotate(${getAngleByValue(value)}deg)`}}
+        if(!pinch){style = {[temp.h]:getXPByValue(value) + '%'}}
+        else {style = {transform:`rotate(${fixAngle(getAngleByValue(value))}deg)`}}
         return {className:cls['handle-container'],draggable:false,style}
     }
     function getP(val){
         let res:any = {disabled:isValueDisabled(val),value}
         if(!!pinch){
-            res.angle = getAngleByValue(val);
+            res.angle = fixAngle(getAngleByValue(val));
             res.left = size / 2;
         }
-        else {res.left = getXPByValue(val)}
+        else {res.h = getXPByValue(val)}
         return res
     }
     function value_node(){
@@ -2711,16 +2731,9 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         return <div {...PROPS}>{html}</div>
     }
     function getDistanceByOffset(offset:any,value,p,type){
-        let def = {
-            'pinch-point':-8,
-            'pinch-label':8,
-            'pinch-scale':4,
-            'point':0
-        }
+        let def = {'pinch-point':-8,'pinch-label':8,'pinch-scale':4,'point':0}
         let res = typeof offset === 'function'?offset(value,p):offset;
-        if(res === undefined){
-            res = def[`${pinch?'pinch-':''}${type}`] || 0;
-        }
+        if(res === undefined){res = def[`${pinch?'pinch-':''}${type}`] || 0;}
         if(!pinch){
             let sign = offset < 0?'-':'+';
             let top = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
@@ -2729,8 +2742,7 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         else {return {left:size / 2 + res}}
     }
     function getList(item){
-        let {step,list = []} = item;
-        let res = [];
+        let {step,list = []} = item,res = [];
         if(step){
             let endStep = !pinch || temp.round !== 1;
             let stepLength = Math.floor((end - start) / step) + (endStep?1:0);
@@ -2741,93 +2753,32 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         }
         return res;
     }
-    function getItemStyle(style:any,itemValue,p){
-        if(!style){return {}}
-        if(Array.isArray(style)){
-            let res = {};
-            //use in eval dont remove it //////////////
-            let props = rootProps,value = itemValue; //
-            let {angle,disabled} = p;                //
-            ///////////////////////////////////////////
-            try{
-                for(let i = 0; i < style.length; i++){
-                    let [st,condition] = style[i];
-                    let bool = true;
-                    if(condition){
-                        let evalStr = `bool=${condition}`;
-                        eval(evalStr);
-                    }
-                    if(bool){res = {...res,...st}}
-                }
-            }
-            catch{}
-            return res
-        }
-        return style
-    }
-    function getItemTextClassName(itemClassName:string,itemValue,p,type){
-        let className = cls[type],result;
-        if(!itemClassName){return className}
-        if(Array.isArray(itemClassName)){
-            let res = [];
-            //use in eval dont remove it //////////////
-            let props = rootProps,value = itemValue; //
-            let {angle,disabled} = p;                //
-            ///////////////////////////////////////////
-            try{
-                for(let i = 0; i < itemClassName.length; i++){
-                    let [className,condition,overwrite] = itemClassName[i];
-                    let bool = true;
-                    if(condition){
-                        let evalStr = `bool=${condition}`;
-                        eval(evalStr);
-                    }
-                    if(bool){
-                        if(overwrite){res = [className]}
-                        else{res = [...res,className]}
-                    }
-                }
-            }
-            catch{}
-            result = res.length?res.join(' '):''
-        }
-        else {result = itemClassName}
-        if(result){className += ' ' + result}
-        return className
-    }
-    function getListDetails(item:AI_scale,itemValue,type){
+    function getListDetails(listItem:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
         let p = getP(itemValue);
-        let {offset = 0,html = type === 'label'?itemValue:undefined,attrs = {},style,className} = item(itemValue,p);
+        let item:AI_scale = listItem(itemValue,p);
+        let {offset = !pinch && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className} = item;
         let distance = getDistanceByOffset(offset,itemValue,p,type)
         let text = html;
-        let itemStyle = getItemStyle(style,itemValue,p)
         let containerStyle = getItemContainerStyle(distance,p);
         let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
-        let textProps = {className:getItemTextClassName(className,itemValue,p,type),style:getTextStyle(p,attrs,itemStyle,distance,type),draggable:false}
+        let textProps = {className:`${cls[type]}${className?' ' + className:''}`,style:getTextStyle(item,p,distance,type),draggable:false}
         return {text,textProps,containerProps}
     }
-    function getTextStyle(p,attrs,style,distance,type){
-        if(type === 'scale'){return {...attrs.style,...style,...distance}}
-        let res:any = {};
+    function getItemContainerStyle(distance,p){return !pinch?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
+    function getTextStyle(item:AI_scale,p:any,distance:any,type:'scale' | 'label'){
+        let {attrs = {},style,fixAngle = (type === 'label')} = item;
         if(pinch){
-            if(type === 'label'){res.transform = `rotate(${-p.angle}deg)`}
-            res = {...res,...distance}
+            let res:any = {};
+            if(fixAngle){res.transform = `rotate(${-p.angle}deg)`}
+            return {...res,...distance,...attrs.style,...style}
         }
-        return {...res,...attrs.style,...style}
+        return {...attrs.style,...style}
     }
-    
     function root_node(){
+        let {style,attrs = {}} = rootProps;
         let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
-        let p = addToAttrs(attrs,{className:[cls.root,className],style:rootStyle,attrs:{ref:temp.dom}})
-        return (
-            <div {...p}>
-                {!pinch && lines_node()}
-                {!!pinch && svg_node()}
-                {items_node('scale')}
-                {items_node('label')}
-                {value_node()}
-            </div>
-        )
+        let p = addToAttrs(attrs,{className:[cls.root,className,reverse?cls['reverse']:undefined],style:rootStyle,attrs:{ref:temp.dom}})
+        return (<div {...p}>{!pinch && lines_node()} {!!pinch && svg_node()} {items_node('scale')} {items_node('label')} {value_node()}</div>)
     }
     function items_node(type:'scale'|'label',init?:boolean){
         let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
@@ -2836,19 +2787,12 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
         return getList(entity).map((itemValue,i)=>item_node(setting || (()=>{return {}}),itemValue,type))
     }
-    function item_node(setting:AI_scale,itemValue,type){
+    function item_node(setting:(value:number,p:any)=>AI_scale,itemValue,type){
         let {text,textProps,containerProps} = getListDetails(setting,itemValue,type);
         return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
     }
-    function getItemContainerStyle(distance,p){
-        if(!pinch){return {left:p.left+'%',...distance}}
-        else{return {transform:`rotate(${p.angle}deg)`}}
-    } 
-    
     function getRanges(){
-        let res = []
-        let from = start;
-        let list = typeof ranges === 'function'?ranges(value):ranges;
+        let res = [],from = start,list = typeof ranges === 'function'?ranges(value):ranges;
         for(let i = 0; i < list.length; i++){
             let [stringValue,stringThickness,color] = list[i].split(' ');
             let to = +stringValue
@@ -2873,11 +2817,13 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
     }
     function arc_node(thickness:number,color:string,from:number,to:number,radius:number,rotate:number){ 
-        let startAngle = getAngleByValue(from,rotate);
-        let endAngle = getAngleByValue(to,rotate);
+        let startAngle = fixAngle(getAngleByValue(from,rotate));
+        let endAngle = fixAngle(getAngleByValue(to,rotate));
         if(endAngle === 0){endAngle = 360}
         let x = size / 2,y = size / 2;
-        return <path d={svgArc(x,y,radius,startAngle,endAngle)} stroke={color} strokeWidth={thickness} fill='transparent'/>
+        let a = startAngle, b = endAngle;
+        if(reverse){b = startAngle; a = endAngle}
+        return <path d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
     }
     function getCircles(){
         let pathes = []
@@ -2891,31 +2837,33 @@ const Slider = (CPROPS?:{pinch?:boolean}) => {
         return pathes;
     }
     function getFills(){
+        if(fill === false){return null}
         let {thickness,style,className:fillClassName,color} = fill || {};
-        let from = start;
-        let to = value;
-        let className = cls['fill'];
+        let from = start,to = value,className = cls['fill'];
         if(fillClassName){className += ' ' + fillClassName}
         return [range_node({thickness,color,from,to,className,style})]
     }
-    
     function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}){ 
         let {thickness,color,from,to,className,style} = p;
-        let startLeft = getXPByValue(from);
-        let endLeft = getXPByValue(to);
-        return <div className={className} style={{height:thickness,left:startLeft + '%',width:(endLeft - startLeft) + '%',background:color,...style}}/>
+        let startSide = getXPByValue(from);
+        let endSide = getXPByValue(to);
+        return <div className={className} style={{height:thickness,[temp.h]:startSide + '%',width:(endSide - startSide) + '%',background:color,...style}}/>
     }
-    
-    function getValueByAngle(ang){
-        let angle = (((ang - temp.rotate - 180) % 360) / temp.round);
-        if(angle < 0){angle = 360 + angle}
-        return angle * (end - start) / 360;
+    function getValueByAngle(angle){
+        let fillAngle = 360 * temp.round;
+        let emptyAngle = 360 - fillAngle;
+        if(reverse){angle = 180 - angle}
+        angle -= temp.rotate; angle -= emptyAngle / 2; angle -= 90; angle = fixAngle(angle);
+        return angle * (end - start) / fillAngle;
     }
     function getAngleByValue(value:number,ang?:number){
-        let res = (((value * 360 / (end - start))) * temp.round) + temp.rotate + 180;
-        res += (ang || 0)
-        return res % 360;
+        let fillAngle = 360 * temp.round;
+        let emptyAngle = 360 - fillAngle;
+        let res = value * fillAngle / (end - start);
+        res += 90; res += emptyAngle / 2; res += temp.rotate; res += (ang || 0)
+        return reverse?res = 180 - res:res;
     }
+    function fixAngle(angle){angle = angle % 360; return angle < 0?angle = 360 + angle:angle}
     function getXPByValue(value) {return 100 * (value - start) / (end - start);}
     function getValueByXP(xp){return xp * (end - start) / 100;}
     function getXPByX(x){return x * 100 / $(temp.dom.current).width();}
@@ -3242,7 +3190,7 @@ function getTypes(props) {
     let { type, multiple } = props;
     let isMultiple;
     if (type === 'multiselect' || type === 'table') { isMultiple = true }
-    else if (type === 'radio' || type === 'slider' || type === 'file' || type === 'buttons') { isMultiple = !!multiple }
+    else if (type === 'radio' || type === 'range' || type === 'file' || type === 'buttons') { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
         isMultiple,

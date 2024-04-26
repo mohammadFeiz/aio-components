@@ -62,7 +62,7 @@ export type AI = {
     endYear?: string | number,//date
     errorAttrs?:any,//form
     excel?: string,
-    fill?:{thickness?:number,color?:string,className?:string,style?:any},
+    fill?:false | {thickness?:number,color?:string,className?:string,style?:any},
     filter?: string[],
     footer?:{
         layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
@@ -82,7 +82,7 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
-    label?:AI_scale,//slider,pinch
+    label?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//slider,pinch
     labels?:AI_scales,//slider,pinch
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
@@ -109,12 +109,14 @@ export type AI = {
     options?: any[],
     option?:{[key in AI_optionKey]?:AI_optionProp},
     paging?: AI_table_paging,
+    pinch?:boolean,
     placeholder?: string,
     popover?: AP_modal,//notice get type from aio popup
     point?:false | AI_point,//slider,pinch
     popupConfig?:I_Map_config
     preview?:boolean,
     ranges?:string[] | ((value:number)=>string[]),
+    reverse?:boolean,
     rotate?:number,
     round?:number,
     rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
@@ -124,7 +126,7 @@ export type AI = {
     rowsTemplate?: (rows: any[]) => React.ReactNode,
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
     rtl?: boolean,
-    scale?:AI_scale,//slider,pinch
+    scale?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//slider,pinch
     scales?:AI_scales,//slider,pinch
     search?: string,
     size?: number,//list,date
@@ -160,14 +162,15 @@ export type AI_scales = {
     step?:number,
     dynamic?:boolean
 }
-export type AI_scale = (value:number,p:{angle:number,disabled:boolean,value:number})=>{
+export type AI_scale = {
     offset?:number,
+    fixAngle?:boolean,
     attrs?:any,
     style?:{[key:string]:string | number},
     className?:string,
     html?:React.ReactNode,
     rotate?:number
-}    
+}
 //notice
 //use global fixed options in List
 //create list document 

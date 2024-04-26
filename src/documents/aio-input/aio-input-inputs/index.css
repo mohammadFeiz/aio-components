@@ -19,19 +19,19 @@
     text-decoration: underline;
     font-size:12px;
 }
-.aio-input-slider-pinch .pinch-scale-small{
+.aio-input-range-pinch .pinch-scale-small{
     width:4px; 
     height:1px;
 }
-.aio-input-slider-pinch .pinch-scale-medium{
+.aio-input-range-pinch .pinch-scale-medium{
     width:8px; 
     height:2px;
 }
-.aio-input-slider-pinch .pinch-scale-large{
+.aio-input-range-pinch .pinch-scale-large{
     width:12px; 
     height:3px;
 }
-.aio-input-slider-pinch .pinch-scale-red{
+.aio-input-range-pinch .pinch-scale-red{
     background:red;
 }
 .slider-scale-small{
