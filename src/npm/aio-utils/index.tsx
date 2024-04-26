@@ -188,7 +188,13 @@ export function CalculateDistance(lat1, lon1, lat2, lon2) {
     const distance = R * c;
     return distance;
 }
-
+export function getEventAttrs(eventType:'onMouseDown'|'onMouseMove'|'onMouseUp',callback){
+    let touch = IsTouch()
+    let fixedEvent:string;
+    if(touch){fixedEvent = {'onMouseDown':'onTouchStart','onMouseMove':'onTouchMove','onMouseUp':'onTouchEnd'}[eventType];}
+    else {fixedEvent = eventType}
+    return {[fixedEvent]:callback}
+}
 function toRadians(degrees) {
     return degrees * (Math.PI / 180);
 }
@@ -278,6 +284,7 @@ export class Swip {
     change: I_Swip_change;
     getPage: () => any;
     isMoving:boolean;
+    centerAngle:number;
     constructor(p: I_Swip) {
         this.p = p;
         this.geo = new Geo();
@@ -291,6 +298,7 @@ export class Swip {
         this.cy = 0;
         this.dist = 0;
         this.isMoving = false;
+        this.centerAngle = 0;
         this.init = () => {
             this.count++;
             if (this.count > 10) { clearTimeout(this.timeout); return }
@@ -356,6 +364,7 @@ export class Swip {
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
             let mousePosition = this.getMousePosition(e)
+            this.centerAngle = mousePosition.centerAngle;
             this.cx = mousePosition.clientX;
             this.cy = mousePosition.clientY;
             this.so = {
@@ -375,6 +384,8 @@ export class Swip {
             let dx = client.x - this.cx, dy = client.y - this.cy;
             dx = Math.round(dx * speedX) * (reverseX ? -1 : 1)
             dy = Math.round(dy * speedY) * (reverseY ? -1 : 1)
+            let deltaCenterAngle = mousePosition.centerAngle - this.centerAngle;
+            //if(deltaCenterAngle < 0){deltaCenterAngle += 360}
             if (typeof stepX === 'number') {
                 dx = Math.round(dx / stepX) * stepX;
             }
@@ -420,7 +431,7 @@ export class Swip {
                 }
             }
 
-            this.change = { x, y, dx, dy, dist: this.dist, angle }
+            this.change = { x, y, dx, dy, dist: this.dist, angle,deltaCenterAngle }
 
             let p: I_Swip_parameter = {
                 change: this.change,

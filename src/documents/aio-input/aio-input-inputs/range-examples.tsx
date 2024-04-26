@@ -3,15 +3,15 @@ import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple
 import {Icon} from "@mdi/react"
 
 export default function RangeExamples({pinch,reverse}){
-    let index = 19;
+    let index = 28;
     return [
         {
             title:'start step end',
-            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:8,step:2},
+            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:100,step:1,labels:{step:10}},
             code:
     `start={0} 
-    end={8} 
-    step={2}
+    end={100} 
+    step={1}
     ${pinch?'pinch={true}':''}`
         },
         {
@@ -887,7 +887,18 @@ export default function RangeExamples({pinch,reverse}){
     }}
     ${reverse?'reverse={true}':''}
     ${pinch?'pinch={true}':''}`
+        },
+        {
+            title:'multiple',
+            initialValue:[0,4],
+            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:100,step:1,multiple:true},
+            code:
+    `start={0} 
+    end={100} 
+    step={2}
+    ${pinch?'pinch={true}':''}`
         }
+        
     ].map((o,i)=>{
         return {...o,title:i + ' - ' + o.title}
     }).filter((o,i)=>{

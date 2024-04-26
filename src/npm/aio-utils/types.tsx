@@ -4,6 +4,7 @@ export type I_Swip_change = {
     dx:number,dy:number,
     dist:number,
     angle:number,
+    deltaCenterAngle:number,
 }
 export type I_Swip_parameter = {
     change?:I_Swip_change,mousePosition:I_Swip_mousePosition,domLimit:I_Swip_domLimit,parentLimit:I_Swip_domLimit,event:any

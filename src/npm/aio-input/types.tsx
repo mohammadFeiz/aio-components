@@ -62,7 +62,7 @@ export type AI = {
     endYear?: string | number,//date
     errorAttrs?:any,//form
     excel?: string,
-    fill?:false | {thickness?:number,color?:string,className?:string,style?:any},
+    fill?:false | AI_fill | ((index:number)=>AI_fill),
     filter?: string[],
     footer?:{
         layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
@@ -115,7 +115,7 @@ export type AI = {
     point?:false | AI_point,//slider,pinch
     popupConfig?:I_Map_config
     preview?:boolean,
-    ranges?:string[] | ((value:number)=>string[]),
+    ranges?:string[] | ((value:number | number[])=>string[]),
     reverse?:boolean,
     rotate?:number,
     round?:number,
@@ -173,6 +173,7 @@ export type AI_scale = {
     html?:React.ReactNode,
     rotate?:number
 }
+export type AI_fill = {thickness?:number,color?:string,className?:string,style?:any}
 //notice
 //use global fixed options in List
 //create list document 

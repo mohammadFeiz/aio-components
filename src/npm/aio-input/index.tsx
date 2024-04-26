@@ -10,7 +10,7 @@ import {
     mdiDotsHorizontal
 } from "@mdi/js";
 import $ from 'jquery';
-import {AIODate,GetClient,EventHandler,Swip,getValueByStep,svgArc} from './../../npm/aio-utils/index';
+import {AIODate,GetClient,EventHandler,Swip,getValueByStep,svgArc, getEventAttrs} from './../../npm/aio-utils/index';
 import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOStorage from './../../npm/aio-storage/index.js';
@@ -2565,10 +2565,10 @@ export function Tree(props:any = {}) {
     }
     return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
 }
-const Range = () => {
+const Range = ():React.ReactNode => {
     let {rootProps}:AI_context = useContext(AICTX);
     let {
-        start = 0,end = 360,step = 1,ranges,circles = [],reverse,pinch,
+        start = 0,end = 360,min = start,max = end,step = 1,ranges,circles = [],reverse,pinch,multiple,
         onChange,size = AIDef('size','pinch'),disabled,className,fill} = rootProps;
     ranges = ranges || [`${end} 2 #ddd`]
     let [temp] = useState<any>(getTemp())
@@ -2581,8 +2581,18 @@ const Range = () => {
             getP,isValueDisabled,fixAngle,getDistanceByOffset,getCls
         }    
     }
-    let [value,setValue] = useState<number>(getValue())
-    function getValue(){return getValueByStep({value:rootProps.value || start,start,step,end})}
+    function getValidValue(value):number[] {
+        if (!Array.isArray(value)) {value = [value || 0]}
+        for (let i = 0; i < value.length; i++) {
+            let point = value[i] || 0;
+            point = Math.round((point - start) / step) * step + start;
+            if (point < min) { point = min; }
+            if (point > max) { point = max; }
+            value[i] = point;
+        }
+        return value
+    }
+    let value:number[] = getValidValue(rootProps.value);
     let valueRef = useRef(value);
     valueRef.current = value;
     let [disabledDic,setDisabledDic] = useState(getDisabledDic())
@@ -2610,68 +2620,117 @@ const Range = () => {
             'reverse':'aio-input-range-reverse'
         }
     }
-    useEffect(()=>{setValue(rootProps.value || start)},[rootProps.value || start])
     useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
     useEffect(()=>{
         new Swip({
             reverseX:!!reverse,
             dom:()=>$(temp.dom.current),
-            start:()=>{
-                temp.start = valueRef.current;
+            start:({event})=>{
+                let target = $(event.target);
+                if(target.hasClass('aio-input-range-point')){
+                    let index = target.attr('data-index');
+                    temp.index = +index;
+                }
+                else {
+                    temp.index = false
+                }
+                temp.start = [...valueRef.current];
                 return [0,0];
             },
-            move:({change,mousePosition})=>changeHandle({dx:change.dx,centerAngle:mousePosition.centerAngle}),
+            move:({change})=>changeHandle(change),
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
-    function changeValue(newValue:number){
-        if(newValue < start){newValue = start}
-        if(newValue > end){newValue = end}
-        setValue(newValue); 
-        onChange(newValue)
+    function changeValue(newValue:number[]){
+        newValue = getValidValue(newValue)
+        onChange(multiple?newValue:newValue[0])
     }
     function click(mousePosition:I_Swip_mousePosition){
-        if(disabled === true){return} 
-        let clickedValue;
+        if(disabled === true || temp.index !== false){return} 
+        let value = valueRef.current;
+        let clickedValue:number;
         if(pinch){clickedValue = getValueByAngle(mousePosition.centerAngle);}
         else {clickedValue = getValueByXP(mousePosition.xp);}
-        if(clickedValue < valueRef.current){change1Unit(-1)}
-        else if(clickedValue > valueRef.current){change1Unit(1)}
+        if(clickedValue < value[value.length - 1] && clickedValue > value[0]){return}
+        if(clickedValue < value[0]){change1Unit(-1)}
+        else{change1Unit(1)}
     }
-    function change1Unit(dir: 1 | -1){
+    function isValueValid(value:number[]):boolean{
+        for(let i = 0; i < value.length; i++){if(isValueDisabled(value[i])){return false}}
+        return true
+    }
+    function moveAll(newValue:number[],offset:number,ifFailedReturnOriginalValue?:boolean):number[]{
+        let res = newValue.map((o:number)=>o + offset)
+        if(res[0] < start || res[res.length - 1] > end){return ifFailedReturnOriginalValue?valueRef.current:newValue}
+        return res;
+    }
+    function change1Unit(dir: 1 | -1):void{
         let value = valueRef.current;
-        let newValue = value + (dir * step)
-        while(isValueDisabled(newValue) && (dir === -1?newValue > start:newValue < end)){
-            newValue = newValue + (dir * step)
+        let newValue = [...value];
+        let lastValue = JSON.stringify(newValue)
+        newValue = moveAll(newValue,dir * step);
+        while(!isValueValid(newValue) && JSON.stringify(newValue) !== lastValue){
+            lastValue = JSON.stringify(newValue)
+            newValue = moveAll(newValue,dir * step)
         }
         changeValue(newValue)
     }
-    function changeHandle(obj){
-        let newValue = !!pinch?getChangedValue_pinch(obj):getChangedValue_range(obj);
-        if(disabled === true || isValueDisabled(newValue)){return}
+    function changeHandle(obj:{dx:number,deltaCenterAngle:number}):void{
+        if(disabled === true){return}
+        let newValue = getChangedValue(obj);
         changeValue(newValue)
     }
-    
-    function getChangedValue_pinch({centerAngle}){
-        return getValueByStep({value:getValueByAngle(centerAngle),start,step,end}) 
+    function getIndexLimit(index:number){
+        let value = valueRef.current;
+        let before:number,after:number;
+        if(index === 0){before = start}
+        else {before = value[index - 1]}
+        if(index === value.length - 1){after = end}
+        else {after = value[index + 1]}
+        return {before,after} 
     }
-    function getChangedValue_range({dx}){
-        let xp = getXPByX(dx);
-        let deltaValue = getValueByXP(xp);
-        let newValue = temp.start + deltaValue;
-        newValue = getValueByStep({value:newValue,start,step,end}) 
-        if(newValue < start){newValue = start}
-        if(newValue > end){newValue = end}
-        return newValue
+    function getChangedValue(obj:{dx:number,deltaCenterAngle:number}):number[]{
+        let {dx,deltaCenterAngle} = obj;
+        let deltaValue;
+        let range = end - start;
+        if(pinch){
+            let v = deltaCenterAngle * (end - start) / 360;
+            v = Math.round(v / step) * step;
+            deltaValue = v;
+        }
+        else {deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;}
+        let startValue = [...temp.start];
+        let index = temp.index;
+        if(temp.index === false){
+            let newValue = moveAll(startValue,deltaValue,true);
+            return !isValueValid(newValue)?valueRef.current:newValue;
+        }
+        else {
+            let {before,after} = getIndexLimit(index)
+            let newUnit = startValue[index] + deltaValue;
+            if(newUnit < start){
+                let delta = newUnit - start;
+                newUnit = range + delta
+            }
+            if(newUnit > end){
+                let delta = newUnit - end;
+                newUnit = start + delta;
+            }
+            if(newUnit > after){newUnit = after}
+            if(newUnit < before){newUnit = before}
+            if(isValueDisabled(newUnit)){return valueRef.current}
+            startValue[index] = newUnit;
+            return startValue;
+        }
     }
-    function isValueDisabled(value){return !!disabledDic[`a${value}`]}
-    function pointContainerProps(value){
+    function isValueDisabled(value:number):boolean{return !!disabledDic[`a${value}`]}
+    function pointContainerProps(value:number){
         let style;
         if(!pinch){style = {[temp.h]:getXPByValue(value) + '%'}}
         else {style = {transform:`rotate(${fixAngle(getAngleByValue(value))}deg)`}}
-        return {className:cls['handle-container'],draggable:false,style}
+        return {className:'aio-input-handle-container',draggable:false,style}
     }
-    function getP(val){
+    function getP(val:number){
         let res:any = {disabled:isValueDisabled(val),value}
         if(!!pinch){
             res.angle = fixAngle(getAngleByValue(val));
@@ -2680,11 +2739,16 @@ const Range = () => {
         else {res.h = getXPByValue(val)}
         return res
     }
-    function value_node(){
-        let PROPS:I_RangeValue = {rootProps,value,disabled:isValueDisabled(value),angle:fixAngle(getAngleByValue(value)),mainValue:value}
-        return (<div {...pointContainerProps(value)}><RangeHandle {...PROPS}/> <RangePoint {...PROPS} /></div>)
+    function value_node():React.ReactNode[]{
+        return value.map((unitValue,i)=>{
+            let PROPS:I_RangeValue = {
+                rootProps,value:unitValue,index:i,disabled:isValueDisabled(unitValue),
+                angle:fixAngle(getAngleByValue(unitValue)),parentDom:temp.dom
+            }
+            return (<div {...pointContainerProps(unitValue)} key={i}><RangeHandle {...PROPS}/> <RangePoint {...PROPS} /></div>)
+        })
     }
-    function getDistanceByOffset(offset:any,value,p,type){
+    function getDistanceByOffset(offset:any,value:number,p:any,type:'scale' | 'label'){
         let def = {'pinch-point':-8,'pinch-label':8,'pinch-scale':4,'point':0}
         let res = typeof offset === 'function'?offset(value,p):offset;
         if(res === undefined){res = def[`${pinch?'pinch-':''}${type}`] || 0;}
@@ -2695,7 +2759,7 @@ const Range = () => {
         }
         else {return {left:size / 2 + res}}
     }
-    function root_node(){
+    function root_node():React.ReactNode{
         let {style,attrs = {}} = rootProps;
         let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
         let p = addToAttrs(attrs,{className:[cls.root,className,reverse?cls['reverse']:undefined],style:rootStyle,attrs:{ref:temp.dom}})
@@ -2706,11 +2770,12 @@ const Range = () => {
                 <RangeItems key='scale' type='scale' rootProps={rootProps} temp={temp}/>
                 <RangeItems key='label' type='label' rootProps={rootProps} temp={temp}/>
                 {value_node()}
+                <div style={{left:200,position:'absolute'}}>{value.toString()}</div>
             </div>
         )
     }
-    function getRanges(){
-        let res = [],from = start,list = typeof ranges === 'function'?ranges(value):ranges;
+    function getRanges():React.ReactNode[]{
+        let res = [],from = start,list = typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges;
         for(let i = 0; i < list.length; i++){
             let [stringValue,stringThickness,color] = list[i].split(' ');
             let to = +stringValue
@@ -2722,19 +2787,19 @@ const Range = () => {
         }
         return res
     }
-    function lines_node(){
+    function lines_node():React.ReactNode[]{
         let rangeDivs = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
         let fillDivs = []; try{fillDivs = getFills()} catch{fillDivs = []} 
         return [...rangeDivs,...fillDivs]
     }
-    function svg_node(){
+    function svg_node():React.ReactNode{
         if(!ranges.length && !circles.length){return null}
         let rangePathes = []; try{rangePathes = getRanges()} catch{rangePathes = []}
         let circlePathes = []; try{circlePathes = getCircles()} catch{circlePathes = []} 
         let pathes = [...circlePathes,...rangePathes]
         return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
     }
-    function arc_node(thickness:number,color:string,from:number,to:number,radius:number,rotate:number){ 
+    function arc_node(thickness:number,color:string,from:number,to:number,radius:number,rotate:number):React.ReactNode{ 
         let startAngle = fixAngle(getAngleByValue(from,rotate));
         let endAngle = fixAngle(getAngleByValue(to,rotate));
         if(endAngle === 0){endAngle = 360}
@@ -2743,7 +2808,7 @@ const Range = () => {
         if(reverse){b = startAngle; a = endAngle}
         return <path d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
     }
-    function getCircles(){
+    function getCircles():React.ReactNode[]{
         let pathes = []
         for(let i = 0; i < circles.length; i++){
             let [stringRadius,stringThickness,color] = circles[i].split(' ');
@@ -2754,20 +2819,27 @@ const Range = () => {
         }
         return pathes;
     }
-    function getFills(){
+    function getFills():React.ReactNode[]{
         if(fill === false){return null}
-        let {thickness,style,className:fillClassName,color} = fill || {};
-        let from = start,to = value,className = cls['fill'];
-        if(fillClassName){className += ' ' + fillClassName}
-        return [range_node({thickness,color,from,to,className,style})]
+        let limit = value.length === 1?[start,value[0]]:[...value]; 
+        let res:React.ReactNode[] = [];
+        for(let i = 1; i < limit.length; i++){
+            let {thickness,style,className:fillClassName,color} = (typeof fill === 'function'?fill(i):fill) || {};
+            let from = limit[i - 1];
+            let to = limit[i];
+            let className = cls['fill'];
+            if(fillClassName){className += ' ' + fillClassName}
+            res.push(range_node({thickness,color,from,to,className,style}))
+        }
+        return res
     }
-    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}){ 
+    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}):React.ReactNode{ 
         let {thickness,color,from,to,className,style} = p;
         let startSide = getXPByValue(from);
         let endSide = getXPByValue(to);
         return <div className={className} style={{height:thickness,[temp.h]:startSide + '%',width:(endSide - startSide) + '%',background:color,...style}}/>
     }
-    function getValueByAngle(angle){
+    function getValueByAngle(angle:number){
         let fillAngle = 360 * temp.round;
         let emptyAngle = 360 - fillAngle;
         if(reverse){angle = 180 - angle}
@@ -2781,28 +2853,36 @@ const Range = () => {
         res += 90; res += emptyAngle / 2; res += temp.rotate; res += (ang || 0)
         return reverse?res = 180 - res:res;
     }
-    function fixAngle(angle){angle = angle % 360; return angle < 0?angle = 360 + angle:angle}
-    function getXPByValue(value) {return 100 * (value - start) / (end - start);}
-    function getValueByXP(xp){return xp * (end - start) / 100;}
-    function getXPByX(x){return x * 100 / $(temp.dom.current).width();}
+    function fixAngle(angle:number):number{angle = angle % 360; return angle < 0?angle = 360 + angle:angle}
+    function getXPByValue(value:number):number {return 100 * (value - start) / (end - start);}
+    function getValueByXP(xp:number):number{return xp * (end - start) / 100;}
+    function getXPByX(x:number):number{return x * 100 / $(temp.dom.current).width();}
     return root_node()
 }
-type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,mainValue:number}
+type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,index:number,parentDom:any}
 function RangePoint(props:I_RangeValue){
-    let {rootProps,value,disabled,angle,mainValue} = props;
+    let [temp] = useState({
+        dom:createRef()
+    })
+    let {rootProps,value,disabled,angle,index,parentDom} = props;
     if(rootProps.point === false){return null}
     let {pinch,size = 72} = rootProps;
-    let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value:mainValue}) || {}
+    let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value}) || {}
     let {attrs = {},className,style,html = '',offset = 0} = point;
-    let PROPS = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false}})
+    let zIndexAttrs = getEventAttrs('onMouseDown',(e)=>{
+        let containers = $(parentDom.current).find('aio-input-handle-container');
+        containers.css({zIndex:10});
+        containers.eq(index).css({zIndex:100})
+    })
+    let PROPS = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
     return (
-        <div className='aio-input-range-point-container' style={pinch?{left:size / 2 + offset}:{top:offset}} draggable={false}>
+        <div ref={temp.dom as any} className='aio-input-range-point-container' style={pinch?{left:size / 2 + offset}:{top:offset}} draggable={false}>
             <div {...PROPS}>{html}</div>
         </div>
     )
 }
 function RangeHandle(props:I_RangeValue){
-    let {rootProps,value,angle,disabled,mainValue} = props;
+    let {rootProps,value,angle,disabled} = props;
     let {handle = (()=>{}),size = 72,pinch} = rootProps;
     if(handle === false || !pinch){return null}
     if(handle && typeof handle !== 'function'){
@@ -2810,7 +2890,7 @@ function RangeHandle(props:I_RangeValue){
         handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
         return null
     }
-    let {attrs = {}} = handle(value,{angle,disabled,value:mainValue}) || {}
+    let {attrs = {}} = handle(value,{angle,disabled,value}) || {}
     let PROPS = addToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
     return (<div {...PROPS}></div>)
 }
