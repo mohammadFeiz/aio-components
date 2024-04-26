@@ -2576,7 +2576,10 @@ const Range = () => {
     function getTemp(){
         let dom = createRef();
         let {round = 1,rotate = 0} = rootProps;
-        return {dom,round,rotate,start:0,h:reverse?'right':'left'}    
+        return {
+            dom,round,rotate,start:0,h:reverse?'right':'left',
+            getP,isValueDisabled,fixAngle,getDistanceByOffset,getCls
+        }    
     }
     let [value,setValue] = useState<number>(getValue())
     function getValue(){return getValueByStep({value:rootProps.value || start,start,step,end})}
@@ -2607,10 +2610,6 @@ const Range = () => {
             'reverse':'aio-input-range-reverse'
         }
     }
-    let [def_scale] = useState(getDefScale);
-    function getDefScale(){return items_node('scale',true)}
-    let [def_label] = useState(getDefLabel);
-    function getDefLabel(){return items_node('label',true)}
     useEffect(()=>{setValue(rootProps.value || start)},[rootProps.value || start])
     useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
     useEffect(()=>{
@@ -2707,28 +2706,15 @@ const Range = () => {
         return res
     }
     function value_node(){
-        let p = getP(value)
-        return (<div {...pointContainerProps(value)}>{!!pinch && handle_node(p)}{point_node(p)}</div>)
-    }
-    function handle_node(p){
-        if(rootProps.handle === false){return null}
-        if(rootProps.handle && typeof rootProps.handle !== 'function'){
-            alert(`aio-input error => in type pinch, handle props should be a function,
-            handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
-            return null
-        }
-        let handle = (rootProps.handle || (()=>{}))(value,p) || {}
-        let {attrs = {}} = handle;
-        let PROPS = addToAttrs(attrs,{className:cls['handle'],style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
-        return (<div {...PROPS}></div>)
-    }
-    function point_node(p){
-        if(rootProps.point === false){return null}
-        let point = (rootProps.point || (()=>{}))(value,p) || {}
-        let {attrs = {},html = '',offset} = point;
-        let distStyle = getDistanceByOffset(offset,value,p,'point');
-        let PROPS = addToAttrs(attrs,{className:cls['point'],style:distStyle,attrs:{draggable:false}})
-        return <div {...PROPS}>{html}</div>
+        let p = getP(value);
+        let angle = fixAngle(getAngleByValue(value));
+        let disabled = isValueDisabled(value) 
+        return (
+            <div {...pointContainerProps(value)}>
+                <RangeHandle rootProps={rootProps} value={value} temp={temp} angle={angle} disabled={disabled}/>
+                <RangePoint disabled={disabled} angle={angle} mainValue={value} rootProps={rootProps} value={value}/>
+            </div>
+        )
     }
     function getDistanceByOffset(offset:any,value,p,type){
         let def = {'pinch-point':-8,'pinch-label':8,'pinch-scale':4,'point':0}
@@ -2741,55 +2727,19 @@ const Range = () => {
         }
         else {return {left:size / 2 + res}}
     }
-    function getList(item){
-        let {step,list = []} = item,res = [];
-        if(step){
-            let endStep = !pinch || temp.round !== 1;
-            let stepLength = Math.floor((end - start) / step) + (endStep?1:0);
-            res = new Array(stepLength).fill(0).map((o,i)=>i * step);
-        }
-        for(let i = 0; i < list.length; i++){
-            if(res.indexOf(list[i]) === -1){res.push(list[i])}
-        }
-        return res;
-    }
-    function getListDetails(listItem:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
-        let p = getP(itemValue);
-        let item:AI_scale = listItem(itemValue,p);
-        let {offset = !pinch && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className} = item;
-        let distance = getDistanceByOffset(offset,itemValue,p,type)
-        let text = html;
-        let containerStyle = getItemContainerStyle(distance,p);
-        let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
-        let textProps = {className:`${cls[type]}${className?' ' + className:''}`,style:getTextStyle(item,p,distance,type),draggable:false}
-        return {text,textProps,containerProps}
-    }
-    function getItemContainerStyle(distance,p){return !pinch?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
-    function getTextStyle(item:AI_scale,p:any,distance:any,type:'scale' | 'label'){
-        let {attrs = {},style,fixAngle = (type === 'label')} = item;
-        if(pinch){
-            let res:any = {};
-            if(fixAngle){res.transform = `rotate(${-p.angle}deg)`}
-            return {...res,...distance,...attrs.style,...style}
-        }
-        return {...attrs.style,...style}
-    }
     function root_node(){
         let {style,attrs = {}} = rootProps;
         let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
         let p = addToAttrs(attrs,{className:[cls.root,className,reverse?cls['reverse']:undefined],style:rootStyle,attrs:{ref:temp.dom}})
-        return (<div {...p}>{!pinch && lines_node()} {!!pinch && svg_node()} {items_node('scale')} {items_node('label')} {value_node()}</div>)
-    }
-    function items_node(type:'scale'|'label',init?:boolean){
-        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
-        let setting = {label:rootProps.label,scale:rootProps.scale}[type]
-        if(!entity){return null}
-        if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
-        return getList(entity).map((itemValue,i)=>item_node(setting || (()=>{return {}}),itemValue,type))
-    }
-    function item_node(setting:(value:number,p:any)=>AI_scale,itemValue,type){
-        let {text,textProps,containerProps} = getListDetails(setting,itemValue,type);
-        return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
+        return (
+            <div {...p}>
+                {!pinch && lines_node()} 
+                {!!pinch && svg_node()} 
+                <RangeItems key='scale' type='scale' rootProps={rootProps} temp={temp}/>
+                <RangeItems key='label' type='label' rootProps={rootProps} temp={temp}/>
+                {value_node()}
+            </div>
+        )
     }
     function getRanges(){
         let res = [],from = start,list = typeof ranges === 'function'?ranges(value):ranges;
@@ -2868,6 +2818,99 @@ const Range = () => {
     function getValueByXP(xp){return xp * (end - start) / 100;}
     function getXPByX(x){return x * 100 / $(temp.dom.current).width();}
     return root_node()
+}
+type I_RangePoint = {rootProps:AI,value:number,disabled:boolean,angle:number,mainValue:number}
+function RangePoint(props:I_RangePoint){
+    let {rootProps,value,disabled,angle,mainValue} = props;
+    if(rootProps.point === false){return null}
+    let {pinch,size = 72} = rootProps;
+    let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value:mainValue}) || {}
+    let {attrs = {},html = '',offset = pinch ? -8 : 0} = point;
+    function getStyle(){
+        if(!pinch){
+            let sign = offset < 0?'-':'+';
+            let top = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
+            return {top}
+        }
+        else {return {left:size / 2 + offset}}
+    }
+    let PROPS = addToAttrs(attrs,{className:'aio-input-range-point',style:getStyle(),attrs:{draggable:false}})
+    return <div {...PROPS}>{html}</div>
+}
+type I_RangeHandle = {rootProps:AI,value:number,temp:any,angle:number,disabled:boolean}
+function RangeHandle(props:I_RangeHandle){
+    let {rootProps,value,temp,angle,disabled} = props;
+    let {handle = (()=>{}),size = 72,pinch} = rootProps;
+    if(handle === false || !pinch){return null}
+    if(handle && typeof handle !== 'function'){
+        alert(`aio-input error => in type pinch, handle props should be a function,
+        handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
+        return null
+    }
+    let cls = temp.getCls()
+    let {attrs = {}} = handle(value,{angle,disabled}) || {}
+    let PROPS = addToAttrs(attrs,{className:cls['handle'],style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
+    return (<div {...PROPS}></div>)
+}
+type I_RangeItems = {type:'scale'|'label',rootProps:AI,temp:any}
+function RangeItems(props:I_RangeItems){
+    let {type,rootProps,temp} = props;
+    let {pinch,start = 0,end = 360,round = 1} = rootProps;
+    let [def_scale] = useState(getDefScale);
+    function getDefScale(){return render(true)}
+    let [def_label] = useState(getDefLabel);
+    function getDefLabel(){return render(true)}
+    function getList(item){
+        let {step,list = []} = item,res = [];
+        if(step){
+            let endStep = !pinch || round !== 1;
+            let stepLength = Math.floor((end - start) / step) + (endStep?1:0);
+            res = new Array(stepLength).fill(0).map((o,i)=>i * step);
+        }
+        for(let i = 0; i < list.length; i++){
+            if(res.indexOf(list[i]) === -1){res.push(list[i])}
+        }
+        return res;
+    }
+    function render(init:boolean){
+        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
+        let setting = {label:rootProps.label,scale:rootProps.scale}[type] || (()=>{return {}})
+        if(!entity){return null}
+        if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
+        return getList(entity).map((itemValue,i)=>{
+            return <RangeItem key={type + itemValue} setting={setting} itemValue={itemValue} type={type} rootProps={rootProps} temp={temp}/>
+        })
+    }
+    return render(false)
+}
+type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label',temp:any,rootProps:AI}
+function RangeItem(props:I_RangeItem){
+    let {setting,itemValue,type,temp,rootProps} = props;
+    let {pinch} = rootProps;
+    let cls = temp.getCls();
+    function getContainerStyle(distance,p){return !pinch?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
+    function getTextStyle(item:AI_scale,p:any,distance:any,type:'scale' | 'label'){
+        let {attrs = {},style,fixAngle = (type === 'label')} = item;
+        if(pinch){
+            let res:any = {};
+            if(fixAngle){res.transform = `rotate(${-p.angle}deg)`}
+            return {...res,...distance,...attrs.style,...style}
+        }
+        return {...attrs.style,...style}
+    }
+    function getDetails(listItem:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
+        let p = temp.getP(itemValue);
+        let item:AI_scale = listItem(itemValue,p);
+        let {offset = !pinch && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className} = item;
+        let distance = temp.getDistanceByOffset(offset,itemValue,p,type)
+        let text = html;
+        let containerStyle = getContainerStyle(distance,p);
+        let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
+        let textProps = {className:`${cls[type]}${className?' ' + className:''}`,style:getTextStyle(item,p,distance,type),draggable:false}
+        return {text,textProps,containerProps}
+    }
+    let {text,textProps,containerProps} = getDetails(setting,itemValue,type);
+    return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
 }
 export function AIOValidation(props) {
     let DATE = new AIODate();

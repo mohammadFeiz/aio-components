@@ -3,7 +3,7 @@ import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple
 import {Icon} from "@mdi/react"
 
 export default function RangeExamples({pinch,reverse}){
-    let index = 2;
+    let index;
     return [
         {
             title:'start step end',
@@ -853,7 +853,8 @@ export default function RangeExamples({pinch,reverse}){
                                 width:24,height:24,background:'dodgerblue',color:'#fff',transform:`rotate(${-angle}deg)`,fontSize:10
                             }
                         },
-                        html:value
+                        html:value,
+                        offset:pinch?-14:0
                     }
                 },
                 ranges:(value)=>{
