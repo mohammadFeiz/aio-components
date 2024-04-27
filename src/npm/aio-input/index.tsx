@@ -2637,7 +2637,7 @@ const Range = ():React.ReactNode => {
                 temp.start = [...valueRef.current];
                 return [0,0];
             },
-            move:({change})=>changeHandle(change),
+            move:({change,mousePosition})=>changeHandle({dx:change.dx,deltaCenterAngle:change.deltaCenterAngle,centerAngle:mousePosition.centerAngle}),
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
@@ -2675,7 +2675,7 @@ const Range = ():React.ReactNode => {
         }
         changeValue(newValue)
     }
-    function changeHandle(obj:{dx:number,deltaCenterAngle:number}):void{
+    function changeHandle(obj:{dx:number,deltaCenterAngle:number,centerAngle:number}):void{
         if(disabled === true){return}
         let newValue = getChangedValue(obj);
         changeValue(newValue)
@@ -2689,35 +2689,43 @@ const Range = ():React.ReactNode => {
         else {after = value[index + 1]}
         return {before,after} 
     }
-    function getChangedValue(obj:{dx:number,deltaCenterAngle:number}):number[]{
-        let {dx,deltaCenterAngle} = obj;
-        let deltaValue;
-        let range = end - start;
-        if(pinch){
-            let v = deltaCenterAngle * (end - start) / 360;
-            v = Math.round(v / step) * step;
-            deltaValue = v;
-        }
-        else {deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;}
+    function getChangedValue(obj:{dx:number,deltaCenterAngle:number,centerAngle:number}):number[]{
+        let {dx,deltaCenterAngle,centerAngle} = obj;
         let startValue = [...temp.start];
         let index = temp.index;
-        if(temp.index === false){
+        let range = end - start;
+        if(index === false){
+            let deltaValue;
+            if(pinch){
+                let v = deltaCenterAngle * (end - start) / 360;
+                v = Math.round(v / step) * step;
+                deltaValue = v;
+                
+            }
+            else {deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;}
             let newValue = moveAll(startValue,deltaValue,true);
             return !isValueValid(newValue)?valueRef.current:newValue;
         }
         else {
             let {before,after} = getIndexLimit(index)
-            let newUnit = startValue[index] + deltaValue;
-            if(newUnit < start){
-                let delta = newUnit - start;
-                newUnit = range + delta
+            let newUnit:number;
+            if(pinch){
+                newUnit = getValueByAngle(centerAngle);
+                if(newUnit > after || newUnit < before){
+                    let deltaAfter = newUnit - after;
+                    if(deltaAfter < 0){deltaAfter += range;}
+                    let deltaBefore = before - newUnit;
+                    if(deltaBefore < 0){deltaBefore += range;}
+                    if(deltaAfter < deltaBefore){newUnit = after}
+                    else {newUnit = before}
+                }
             }
-            if(newUnit > end){
-                let delta = newUnit - end;
-                newUnit = start + delta;
+            else {
+                let deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;
+                newUnit = startValue[index] + deltaValue;
+                if(newUnit > after){newUnit = after}
+                if(newUnit < before){newUnit = before}
             }
-            if(newUnit > after){newUnit = after}
-            if(newUnit < before){newUnit = before}
             if(isValueDisabled(newUnit)){return valueRef.current}
             startValue[index] = newUnit;
             return startValue;
