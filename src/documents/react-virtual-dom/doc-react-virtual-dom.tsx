@@ -2300,9 +2300,8 @@ function StyleGenerator(){
         }
     }
     function slider_node(key,start,end,size = 180):I_RVD_node{
-        return {
-            size,html:<AIOInput type='slider' point={()=>{return {labelShow:'inline'}}} value={grd[key]} onChange={(v)=>change(key,v)} start={start} end={end}/>
-        }
+        let p:AI = {type:'range',point:(value)=>{return {html:value}},value:grd[key],onChange:(v)=>change(key,v),start,end}
+        return {size,html:<AIOInput {...p}/>}
     }
     function number_node(key,start,end):I_RVD_node{
         return {
@@ -2321,21 +2320,26 @@ function StyleGenerator(){
             html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
-    function pinch_node(key,start,end):I_RVD_node{
+    function range_node(key,start,end):I_RVD_node{
         let p:AI = {
+            type:'range',
             attrs:{
                 style:{border:'2px solid dodgerblue'}
             },
-            handle:{
-                attrs:{
-                    style:{height:2,background:'dodgerblue'}
+            handle:()=>{
+                return {
+                    attrs:{
+                        style:{height:2,background:'dodgerblue'}
+                    }
                 }
             },
-            scale:{
-                step:45,
-                attrs:()=>{return {style:{left:22,width:4,height:3,background:'dodgerblue'}}}
+            scales:{step:45},
+            scale:()=>{
+                return {
+                    attrs:()=>{return {style:{left:22,width:4,height:3,background:'dodgerblue'}}}
+                }
             },
-            angle:-90,size:36,type:'pinch',start,end,value:grd[key],onChange:(v)=>change(key,v),
+            rotate:-90,size:36,round:1,start,end,value:grd[key],onChange:(v)=>change(key,v),
             point:(v,angle)=>{
                 console.log(angle)
                 return {
@@ -2410,7 +2414,7 @@ function StyleGenerator(){
                                         {
                                             className:'align-v gap-12',
                                             row:[
-                                                label_node('Geadient'),color_node('light'),slider_node('contrast',0,100),slider_node('p',0,100),pinch_node('angle',0,360)
+                                                label_node('Geadient'),color_node('light'),slider_node('contrast',0,100),slider_node('p',0,100),range_node('angle',0,360)
                                             ]
                                         },
                                         {

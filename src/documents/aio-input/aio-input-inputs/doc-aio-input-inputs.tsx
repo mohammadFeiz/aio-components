@@ -37,7 +37,7 @@ let propDic = {
     loading:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image'],
     attrs:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
     style:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
-    className:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image','pinch'],
+    className:['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','image'],
     inputAttrs:['text','number','textarea','password'],
     placeholder:['text','number','textarea','password','select','date','image'],
     justify:['text','number','textarea','password','select','multiselect','color','date','time'],
@@ -199,7 +199,7 @@ return (
 }
 function Input({type}){
     let [setting,setSetting] = useState({
-        pinch:false,
+        round:false,
         reverse:false
     })
     let [list,setList] = useState(getList(setting))    
@@ -726,9 +726,9 @@ function Input({type}){
             <div style={{height:36,width:'100%',display:'flex',alignItems:'center',gap:12}}>
                 <AIOInput
                     type='checkbox'
-                    text='pinch'
-                    value={!!setting.pinch}
-                    onChange={()=>changeSetting({...setting,pinch:!setting.pinch})}
+                    text='round'
+                    value={!!setting.round}
+                    onChange={()=>changeSetting({...setting,round:!setting.round})}
                 />
                 <AIOInput
                     type='checkbox'

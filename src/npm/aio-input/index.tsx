@@ -1,13 +1,12 @@
 /**varsion 8.1.3 */
-import React, { createRef, useContext, createContext, Fragment, useState, useEffect, useRef } from 'react';
+import React, { createRef, useContext, createContext, Fragment, useState, useEffect, useRef, FC } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import Axios from 'axios';
 import { Icon } from '@mdi/react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
     mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
-    mdiCrosshairsGps,
-    mdiDotsHorizontal
+    mdiCrosshairsGps,mdiDotsHorizontal
 } from "@mdi/js";
 import $ from 'jquery';
 import {AIODate,GetClient,EventHandler,Swip,getValueByStep,svgArc, getEventAttrs} from './../../npm/aio-utils/index';
@@ -18,15 +17,16 @@ import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
 import { 
-    AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_unit, AI_formItem, AI_option, 
+    AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_trans, AI_date_unit, AI_formItem, AI_option, 
+    AI_optionKey, 
     AI_scale, 
     AI_scales, 
-    AI_table_column, AI_table_paging, AI_table_sort, AI_time_unit, AI_type, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
+    AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, AI_time_unit, AI_type, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
     I_DPContext, I_DPHeaderDropdown, I_DPYears, I_DP_activeDate, I_Drag, I_FileItem, I_Layout, I_MapUnit, I_Map_config, I_Map_context, 
     I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, 
     I_TableGap, I_Tag, I_Tags, I_TimePopver, I_list_temp, I_mapApiKeys, type_table_context, type_table_temp, type_time_value 
 } from './types.tsx';
-import { I_Swip_mousePosition } from '../aio-utils/types.tsx';
+import { I_Swip_mousePosition, I_Swip_parameter } from '../aio-utils/types.tsx';
 const AICTX = createContext({} as any);
 
 export default function AIOInput(props: AI) {
@@ -59,6 +59,7 @@ export default function AIOInput(props: AI) {
     )
     function getSelectText() {
         let { options = [] } = props;
+        options = typeof options === 'function'?options():options
         let option = options.find((option) => value === undefined ? false : getOptionProp({props,option, key:'value'}) === value);
         if (option === undefined) { return }
         return getOptionProp({props:props,option, key:'text'})
@@ -70,13 +71,13 @@ export default function AIOInput(props: AI) {
         if (popover) { popup.addModal(popover); }
         else { popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0) }
     }
-    function click(e, dom) {
+    function click(e:any, dom:any) {
         if (type === 'checkbox') { if (onChange) { onChange(!value) } }
         else if (temp.getPopover) {toggle(temp.getPopover(dom,props.options))}
         else if(typeof props.onClick === 'function'){props.onClick()}
         else if (attrs.onClick) { attrs.onClick(); }
     }
-    function optionClick(option) {
+    function optionClick(option:AI_option) {
         let { attrs = {}, onClick, close, text } = option;
         if (onClick) { onClick(option.object); }
         else if (attrs.onClick) { attrs.onClick(option); }
@@ -85,7 +86,7 @@ export default function AIOInput(props: AI) {
             else if (types.isMultiple) {
                 let {maxLength} = props,newValue;
                 if (value.indexOf(option.value) === -1) { newValue = value.concat(option.value) }
-                else { newValue = value.filter((o) => o !== option.value) }
+                else { newValue = value.filter((o:any) => o !== option.value) }
                 while(maxLength && newValue.length > maxLength){
                     newValue = newValue.slice(1,newValue.length)
                 }
@@ -95,7 +96,6 @@ export default function AIOInput(props: AI) {
                 if(option.value !== props.value){onChange(option.value, option)}
                 else if(props.deSelect === true){onChange(undefined, option)}
                 else if(typeof props.deSelect === 'function'){props.deSelect()}
-                
             }
         }
         if (close) { toggle(false) }
@@ -108,7 +108,7 @@ export default function AIOInput(props: AI) {
         }
         return context
     }
-    let render = {
+    let render:{[key in AI_type]:()=>React.ReactNode} = {
         list: () => <List />,
         range:()=><Range/>,
         file: () => <File />,
@@ -134,9 +134,6 @@ export default function AIOInput(props: AI) {
     if (!type || !render[type]) { return null }
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
 }
-AIOInput.defaultProps = {
-    jalali:false,unit:'day',theme:[]
-}
 function Time(){
     let {rootProps,DATE}:AI_context = useContext(AICTX);
     let { value:Value = {},attrs:Attrs,jalali, onChange, unit = {year:true,month:true,day:true} } = rootProps;
@@ -151,25 +148,26 @@ function Time(){
         return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] } 
     }
     function getValue(){
-        let newValue = {};
-        
-        for(let u in unit as AI_time_unit){
+        let newValue:any = {};
+        let u:AI_timeUnits;
+        unit = unit as AI_time_unit
+        for(u in unit){
             if(unit[u] === true){
                 let v = Value[u];
-                let min = {year:1000,month:1,day:1,hour:0,minute:0,second:0}[u]
-                let max = {year:3000,month:12,day:31,hour:23,minute:59,second:59}[u]
+                let min:number = {year:1000,month:1,day:1,hour:0,minute:0,second:0}[u] as number
+                let max:number = {year:3000,month:12,day:31,hour:23,minute:59,second:59}[u] as number
                 if(v !== undefined && typeof v !== 'number' || v < min || v > max){
                     alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`)
                 }
-                newValue[u] = v === undefined?today[u]:v
+                let res:number = v === undefined?today[u]:v;
+                newValue[u] = res;
             }       
         }
         return newValue;
     }
-    function getTimeText(obj) {
+    function getTimeText(obj:any) {
         if(rootProps.text){
             let res = value?DATE.getDateByPattern(value,rootProps.text as string):''
-            console.log(res)
             return res
         }
         let text = [], dateArray = [];
@@ -197,7 +195,7 @@ function Time(){
         }
         return <AIOInput {...p}/>
     }
-    function renderPopover(close){
+    function renderPopover(close:()=>void){
         let p:I_TimePopver = {value:valueRef.current,onChange,onClose:close}
         return <TimePopover {...p} />
     }
@@ -240,7 +238,7 @@ class Popover {
                 body:{
                     ...body,
                     render:({close})=>{
-                        if (rootProps.type === 'button') { return body.render({ close }) }
+                        if (rootProps.type === 'button') { return (body.render || (()=>''))({ close }) }
                         else if (rootProps.type === 'date') { let p:I_Calendar = {onClose:close}; return <Calendar {...p} /> }
                         else {return body.render?body.render({ close }):<Options />}
                     }
@@ -253,22 +251,23 @@ class Popover {
         }
     }
 }
+type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 function TimePopover(props: I_TimePopver) {
     let {DATE}:AI_context = useContext(AICTX)
     let { lang = 'fa', onChange, onClose } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
     let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
     let [value, setValue] = useState<type_time_value>({ ...props.value })
-    function change(obj) { 
+    function change(obj:{[key in AI_timeUnits]?:number}) { 
         setValue({ ...value, ...obj }) 
     }
-    function translate(key) {
+    function translate(key:AI_timeUnits | 'Submit') {
         return lang === 'fa' ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت' }[key] : key
     }
-    function getTimeOptions(type) {
+    function getTimeOptions(type:AI_timeUnits):{text:number,value:number}[] {
         let { year, month, day } = value;
-        if (type === 'year') { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
-        if (type === 'day') {
+        if (type === 'year' && startYear && endYear) { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
+        if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
             return new Array(length).fill(0).map((o, i) => { return { text: i + 1, value: i + 1 } })
@@ -276,7 +275,7 @@ function TimePopover(props: I_TimePopver) {
         if (type === 'month') { return new Array(12).fill(0).map((o, i) => { return { text: i + 1, value: i + 1 } }) }
         return new Array(type === 'hour' ? 24 : 60).fill(0).map((o, i) => { return { text: i, value: i } })
     }
-    function layout(type):I_RVD_node {
+    function layout(type:'year'|'month'|'day'|'hour'|'minute'|'second'):I_RVD_node {
         if (typeof value[type] !== 'number') { return {} }
         let options = getTimeOptions(type);
         let p:AI = {type:'list',value:value[type],options,size:48,width:72,onChange:(v)=>change({[type]:v})}
@@ -287,7 +286,10 @@ function TimePopover(props: I_TimePopver) {
             ]
         }
     }
-    function submit() {onChange(value); onClose();}
+    function submit() {
+        if(onChange){onChange(value);} 
+        onClose();
+    }
     return (
         <RVD
             rootNode={{
@@ -378,7 +380,7 @@ function Image() {
     let p:AI = {
         disabled,
         type:'file',justify:true,text:IMG,attrs:{ style: { width: '100%', height: '100%', padding: 0 } },
-        onChange:(file) => changeUrl(file, (url) => onChange(url))
+        onChange:(file) => changeUrl(file, (url:string) => onChange(url))
     }
     return (<AIOInput {...p}/>)
 }
@@ -386,7 +388,7 @@ function File() { return (<div className='aio-input-file-container'><Layout/><Fi
 function InputFile() {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { value = [], onChange = () => { }, disabled } = rootProps;
-    function change(e) {
+    function change(e:any) {
         let Files = e.target.files;
         let result;
         if (types.isMultiple) {
@@ -401,7 +403,7 @@ function InputFile() {
         else { result = Files.length ? Files[0] : undefined }
         onChange(result)
     }
-    let props = { disabled:disabled === true, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e) => change(e) }
+    let props = { disabled:disabled === true, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e:any) => change(e) }
     return <input {...props} />
 }
 function FileItems() {
@@ -419,7 +421,7 @@ function FileItem(props:I_FileItem) {
     let {rootProps}:AI_context = useContext(AICTX);
     let { onChange = () => { }, value = [] } = rootProps;    
     let { file, index } = props;
-    function getFile(file) {
+    function getFile(file:any):{minName:string,sizeString:string | false} {
         let filename = file.name || 'untitle';
         let fileSize = file.size || 0;
         let nameLength = 20;
@@ -451,7 +453,7 @@ function FileItem(props:I_FileItem) {
         }
         onChange(newValue);
     }
-    function renderString(minName, sizeString) {
+    function renderString(minName:string, sizeString:string | false) {
         let size;
         if (sizeString === false) { size = '' }
         else { size = ` ( ${sizeString})` }
@@ -484,24 +486,19 @@ function Tags(props:I_Tags) {
     let { rootProps }: AI_context = useContext(AICTX);
     let { value = [], rtl, hideTags,disabled } = rootProps;
     if (!value.length || hideTags) { return null }
-    return (
-        <div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>
-            {
-                value.map((o, i) => {
-                    let option = options.find((option:AI_option) => o === option.value)
-                    if (option === undefined) { return null }
-                    return <Tag key={i} value={o} option={option} />
-                })
-            }
-        </div>
-    )
+    let tags = value.map((o:AI_option, i:number) => {
+        let option = options.find((option:AI_option) => o === option.value)
+        if (option === undefined) { return null }
+        return <Tag key={i} value={o} option={option} />
+    })
+    return !tags.length?null:<div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
 function Tag(props:I_Tag) {
     let { rootProps } = useContext(AICTX);
     let {onChange = () => { }} = rootProps;
     let {option,value} = props;
     let {text,tagAttrs = {},tagBefore = I(mdiCircleMedium,0.7),tagAfter,disabled} = option;
-    let onRemove = disabled ? undefined : () => { onChange(rootProps.value.filter((o) => o !== value)) }
+    let onRemove = disabled ? undefined : () => { onChange(rootProps.value.filter((o:any) => o !== value)) }
     return (
         <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
             <div className='aio-input-tag-icon'>{tagBefore}</div>
@@ -534,8 +531,8 @@ function Input() {
                     vref = isNaN(vref)?0:vref
                     return [0,vref]
                 },
-                move: (p) => {
-                    let {y} = p.change;
+                move: (p:I_Swip_parameter) => {
+                    let {y} = p.change || {y:0};
                     if (min !== undefined && y < min) { y = min; }
                     if (max !== undefined && y > max) { y = max }
                     change(y, onChange)
@@ -563,12 +560,12 @@ function Input() {
     useEffect(() => { 
         update()
     }, [rootProps.value])
-    function convertPersianDigits(value) {
+    function convertPersianDigits(value:string) {
         try {
             value = value.toString();
-            let res = '';
+            let res:string = '';
             for (let i = 0; i < value.length; i++) {
-                let dic = {
+                let dic:any = {
                     "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9"
                 }
                 res += dic[value[i]] || value[i];
@@ -578,7 +575,7 @@ function Input() {
         catch { }
         return value
     }
-    function change(value, onChange) {
+    function change(value:any, onChange?:(value:any)=>void) {
         if (types.hasKeyboard) {
             if (value) {
                 value = convertPersianDigits(value);
@@ -618,19 +615,19 @@ function Input() {
         }
         if (rootProps.type === 'number') { if (value && !isNaN(+value)) { value = +value; } }
         setValue(value);
-        if (!blurChange) {
+        if (!blurChange && onChange) {
             clearTimeout(temp.btimeout);
             temp.btimeout = setTimeout(() => onChange(value), 500);
         }
     }
-    function click(e){
+    function click(){
         if(temp.clicked){return}
         temp.clicked = true;
         $(dom.current).focus().select();
     }
-    function blur(onChange) { 
+    function blur(onChange?:(value:any)=>void) { 
         temp.clicked = false
-        if (blurChange) { onChange(value) } 
+        if (blurChange && onChange) { onChange(value) } 
     }
     function getInputAttrs() {
         let InputAttrs = addToAttrs(inputAttrs, {
@@ -639,8 +636,8 @@ function Input() {
         })
         let p = {
             ...InputAttrs, value, type, ref: dom, disabled, placeholder, list: rootProps.options?datauniqid:undefined,
-            onClick:(e)=>click(e),
-            onChange: onChange ? (e) => change(e.target.value, onChange) : undefined,
+            onClick:(e:any)=>click(),
+            onChange: onChange ? (e:any) => change(e.target.value, onChange) : undefined,
             onBlur: () => blur(onChange)
         }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
@@ -664,108 +661,40 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
-function Form() {
-    let {rootProps}:AI_context = useContext(AICTX)
-    let {onChange ,getErrors,body = {},inputs,footer, initialDisabled,rtl, disabled,labelAttrs,errorAttrs,lang,attrs = {},style,className} = rootProps;
-    let [initialValue] = useState<any>(JSON.stringify(rootProps.value))
-    let [value,setValue] = useState(rootProps.value || {})
-    let [errors] = useState({})
-    let [reportedErrors] = useState<string>()
-    function getValue() {
-        let res;
-        if(onChange){res = rootProps.value}
-        else{res = value}
-        return res || {}
+type AI_FormContext = {
+    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
+    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
+    setValue:(itemValue:any, formItem:AI_formItem)=>void
+}
+const Formcontext = createContext({} as any);
+const Form:FC = ()=>{
+    let {rootProps}:AI_context = useContext(AICTX);
+    let {inputs,lang,onChange,attrs,style,className} = rootProps;
+    let [errors] = useState<{[key:string]:string|undefined}>({})
+    function getErrorList() { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o])] }
+    function getError(formItem:AI_formItem, value:any) {
+        let { validations = [], input } = formItem;
+        if (!validations.length || !input) { return '' }
+        //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
+        if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
+        let a:AV_props = {value, title: formItem.label || '', lang,validations}
+        return new AIOValidation(a).validate();
     }
-    function GetErrors() { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o])] }
-    function removeError(field) {
-        let newErrors = {}
-        for (let prop in errors) { if (prop !== field) { newErrors[prop] = errors[prop] } }
-        errors = newErrors
+    function setError(key:string,value:string | undefined){
+        let newErrors = errors = {...errors,[key]:value}
+        let fixedErrors:{[key:string]:string} = {};
+        let prop:string
+        for (prop in newErrors) { if (newErrors[prop]) { fixedErrors[prop] = newErrors[prop] as string } }
+        errors = fixedErrors;
     }
-    function SetValue(p:{ itemValue:any, formItem?:AI_formItem, field?:string }) {
-        //اگر فرم آیتم ارسال شد یعنی در حال تغییر مستقیم توسط یک اینپوت هستیم
-        //اگر فیلد ارسال شد یعنی خارج از برنامه داریم یک پروپرتی را چنج می کنیم پس ارور هندلینگ نباید انجام شود
-        let { itemValue, formItem, field } = p;
-        let Field = field || formItem.field
-        let value = getValue();
-        let newValue = setValueByField(value, Field, itemValue);
-        if (!field) {
-            let error = getError(formItem, itemValue)
-            if (error) { errors[Field] = error }
-            else { removeError(Field) }
-        }
-        if (onChange) { onChange(newValue, GetErrors()) }
-        else { setValue(newValue) }
-    }
-    function body_node():I_RVD_node {
-        let { attrs = {} } = body;
-        if (Array.isArray(inputs)) { inputs = { column: inputs.map((o) => input_node(o)) } }
-        let className = 'aio-input-form-body';
-        if (attrs.className) { className += ' ' + attrs.className }
-        if(inputs.className){className += ' ' + inputs.className}
-        let style = attrs.style;
-        let res = { flex: 1, style, ...inputs,className }
-        return res
-    }
-    function Reset() {
-        if (onChange) { onChange(JSON.parse(initialValue)) }
-        else { SetValue(JSON.parse(initialValue) ) }
-    }
-    function isDisabled(){
-        let disabled = false;
-        if (!!GetErrors().length) { disabled = true }
-        else if (initialDisabled && initialValue === JSON.stringify(getValue())) { disabled = true }
-        return disabled
-    }
-    function footer_node():I_RVD_node {
-        if (!footer) { return {} }
-        let {onSubmit,onClose,reset,layout,attrs = {},submitText = 'Submit',closeText = 'Close',resetText = 'Reset',before,after} = footer;
-        let disabled = isDisabled();
-        if (layout) {
-            let html = layout({ reset:Reset,disabled, errors: GetErrors() });
-            if(!html || html === null){return {}}
-            return { html }
-        }
-        return {
-            className: 'aio-input-form-footer' + (attrs.className ? ' ' + attrs.className : ''), style: attrs.style,
-            html: (
-                <>
-                    {!!before && before}
-                    {!!onClose && <button onClick={() => onClose()} className='aio-input-form-close-button aio-input-form-footer-button'>{closeText}</button>}
-                    {!!reset && <button onClick={() => Reset()} className='aio-input-form-reset-button aio-input-form-footer-button'>{resetText}</button>}
-                    {!!onSubmit && <button disabled={disabled} onClick={() => onSubmit()} className='aio-input-form-submit-button aio-input-form-footer-button'>{submitText}</button>}
-                    {!!after && after}
-                </>
-            )
-        }
-    }
-    function getDefaultValue(p:AI) {
-        if(p.multiple){return []}
-        if(p.type === 'multiselect'){return []}
-    }
-    function getValueByField(p:{ field:string | ((value:any)=>string), def?:any, functional?:boolean, value?:any }) {
-        let { field, def, functional, value = getValue() } = p;
-        let a;
-        if (functional && typeof field === 'function') { a = field(value); }
-        else if (typeof field === 'string') {
-            if (field.indexOf('value.') !== -1 /*|| field.indexOf('props.') !== -1*/) {
-                try { eval(`a = ${field}`); }
-                catch { }
-            }
-            else { a = field }
-        }
-        else { a = field }
-        return a === undefined ? def : a;
-    }
-    function setValueByField(obj = {}, field, value) {
+    function setValueByField(obj:any = {}, field:string, value:any) {
         try {
             field = field.replaceAll('[', '.');
             field = field.replaceAll(']', '');
         }
         catch { }
-        var fields = field.split('.');
-        var node = obj;
+        let fields = field.split('.');
+        let node = obj;
         for (let i = 0; i < fields.length - 1; i++) {
             let f = fields[i];
             if (f === 'value') { continue }
@@ -779,113 +708,130 @@ function Form() {
         node[fields[fields.length - 1]] = value;
         return obj;
     }
-    useEffect(()=>{
-        reportErrors()
-    })
-    function reportErrors() {
-        if (!getErrors) { return }
-        let errors = GetErrors();
-        if (JSON.stringify(errors) !== reportedErrors) {
-            getErrors(errors);
-            reportedErrors = JSON.stringify(errors)
+    function getValueByField(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any }) {
+        let { field, def, functional, value = rootProps.value || {},formItem,formItemValue } = p;
+        let a;
+        if (functional && typeof field === 'function') { a = field({model:value,formItem,value:formItemValue}); }
+        else if (typeof field === 'string') {
+            if (field.indexOf('value.') !== -1 || field.indexOf('data.') !== -1) {
+                let data = {...rootProps.data};
+                try { eval(`a = ${field}`); }
+                catch { }
+            }
+            else { a = field }
         }
+        else { a = field }
+        return a === undefined ? def : a;
     }
-    function getAttrs(propsAttrs:any = {}, ownAttrs:any = {}) {
-        let style = { ...propsAttrs.style, ...ownAttrs.style }
-        return { ...propsAttrs, ...ownAttrs, style }
+    
+    function setValue(itemValue:any, formItem:AI_formItem) {
+        let {value = {}} = rootProps;
+        let field = formItem.field;
+        if(!field){
+            alert('aio-input error => in type form there is an form item missing field property')
+            return
+        }
+        let newValue = setValueByField(value, field, itemValue);
+        let error = getError(formItem, itemValue)
+        setError(field,error)
+        if(onChange){onChange(newValue, {formItem,errors:getErrorList(),newFormItemValue:itemValue})}
     }
+    
+    function getContext(){
+        let context:AI_FormContext = {
+            rootProps,setValue,
+            setError,
+            getError,getValueByField
+        }
+        return context;
+    }
+    let p = addToAttrs(attrs,{className:['aio-input-form',className],style})
+    return (
+        <Formcontext.Provider value={getContext()}>
+            <form {...p}>
+                <FormItem formItem={inputs}/>
+            </form>
+        </Formcontext.Provider>
+    )
+}
+type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column'}
+const FormItem:FC<AI_FormItem> = (props) => {
+    let {setError}:AI_FormContext = useContext(Formcontext)
+    let {formItem,parentType} = props;
+    let {html,row,column,input,field,flex,size,show} = formItem;
+    if(show === false){return null}
+    function getInner():React.ReactNode{
+        if(input){return <FormInput formItem={formItem} setError={(v:string | undefined)=>setError(field as string,v)}/>}
+        if(html){return html;}
+        if(row){return row.map((o:AI_formItem,i:number)=><FormItem key={i} formItem={o} parentType='row'/>)}
+        if(column){return column.map((o:AI_formItem,i:number)=><FormItem key={i} formItem={o} parentType='column'/>)}
+    }
+    let className = 'aio-input-form-item'
+    if(row){className += ' aio-input-form-item-row'}
+    else if(column){className += ' aio-input-form-item-column'}
+    let style:{[key:string]:number | string} = {};
+    if(flex){style.flex = flex}
+    else if(size){
+        if(parentType === 'row'){style.width = size}
+        else if(parentType === 'column'){style.height = size}
+    }
+    else {
+        style.flex = 1;
+    }
+    return (<section className={className} style={style}>{getInner()}</section>)
+}
+type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
+const FormInput:FC<AI_FormInput> = (props)=>{
+    let {rootProps,getError,getValueByField,setValue}:AI_FormContext = useContext(Formcontext)
+    let {rtl,disabled} = rootProps;
+    let {formItem,setError} = props;
+    let {input,label, field } = formItem;
+    if(!input){return null}
     function getInputProps(input:AI, formItem:AI_formItem) {
-        let value = getValueByField({ field: formItem.field, def: getDefaultValue(input) });
         let props:AI = {
             rtl, value,type:input.type,
-            onChange: (value) => {
-                if (input.type === 'map' && formItem.addressField && value.address) {
-                    SetValue({ itemValue: value.address, field: formItem.addressField })
-                }
-                SetValue({ itemValue: value, formItem })
-            }, attrs: {},inputAttrs:{},disabled:false,point:()=>{return {labelShow:'inline'}}
+            onChange: (value) => setValue(value, formItem), attrs: {},inputAttrs:{},disabled:false,point:()=>{return {labelShow:'inline'}}
         };
-        for (let prop in input) {
-            let functional = ['options'].indexOf(prop) !== -1;
-            props[prop] = getValueByField({ field: input[prop], functional })
+        let prop:keyof AI;
+        for (prop in input) {
+            let functional = ['options','columns'].indexOf(prop) !== -1;
+            props[prop] = getValueByField({ field: input[prop], functional,formItem,formItemValue:value })
         }
         props.value = value;
         let { attrs = {} } = input;
-        for (let prop in attrs) { props.attrs[prop] = getValueByField({ field: attrs[prop] }) }
+        for (let prop in attrs) { props.attrs[prop] = getValueByField({ field: attrs[prop],formItem }) }
         if (disabled) { props.disabled = true; }
         if (['text', 'number', 'password', 'textarea'].indexOf(input.type) !== -1) {
             let { inputAttrs = {} } = input;
             props.inputAttrs = {};
-            for (let prop in inputAttrs) { props.inputAttrs[prop] = getValueByField({ field: inputAttrs[prop] }) }
+            for (let prop in inputAttrs) { props.inputAttrs[prop] = getValueByField({ field: inputAttrs[prop],formItem }) }
         }
+        let classes = [props.className]
+        if(error){classes.push('has-error')}
+        let Attrs = addToAttrs(props.attrs,{className:error?'has-error':undefined})
+        props.attrs = Attrs;
         return props;
     }
-    function get_node(key, value, attrs):I_RVD_node {
-        if (!value) { return {} }
-        let cls = 'aio-input-form';
-        let className = { 'label': `${cls}-label`, 'footer': `${cls}-item-footer`, 'error': `${cls}-error` }[key];
-        attrs = addToAttrs(attrs, { className })
-        return { html: value, align: 'v', attrs }
+    function getDefaultValue(p:AI) {
+        if(p.multiple){return []}
+        if(p.type === 'multiselect'){return []}
     }
-    function input_node(formItem:AI_formItem):I_RVD_node {
-        let { label, footer, input, flex, size, field } = formItem;
-        let value = getValueByField({ field, def: getDefaultValue(input) });
-        let error = getError(formItem, value)
-        if (error) { errors[field] = error }
-        else { errors[field] = undefined }
-        let LabelAttrs = getAttrs(labelAttrs, formItem.labelAttrs)
-        let ErrorAttrs = getAttrs(errorAttrs, formItem.errorAttrs)
-        let InputProps:AI = getInputProps(input, formItem);
-        return {
-            flex, size, className: 'aio-input-form-item',
-            column: [
-                {
-                    flex: 1, className: 'aio-input-form-item-input-container of-visible',
-                    column: [
-                        get_node('label', label, LabelAttrs),
-                        { className: 'aio-input-form-item-input-container of-visible', html: <AIOInput {...InputProps} /> },
-                    ]
-                },
-                footer?{html:footer}:{},
-                get_node('error', error, ErrorAttrs)
-            ]
-        }
-    }
-    function getError(o, value) {
-        let { validations = [], input } = o;
-        let { type } = input;
-        if (!validations.length || type === 'html') { return '' }
-        //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
-        if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
-        let a = {
-            value, title: o.label, lang,
-            validations: validations.map((a) => {
-                let params = a[2] || {};
-                let target = typeof a[1] === 'function' ? a[1] : getValueByField({ field: a[1], def: '' });
-                let operator = a[0];
-                return [operator, target, params]
-            })
-        }
-        return AIOValidation(a);
-    }
-    attrs = addToAttrs(attrs, { className: 'aio-input-form' + (rtl ? ' aio-input-form-rtl' : '') + (className ? ' ' + className : ''),style })
+    let value = getValueByField({ field, def: input?getDefaultValue(input):undefined,formItem });
+    let error = getError(formItem, value)
+    setError(error)
+    let InputProps:AI = getInputProps(input, formItem);
     return (
-        <RVD
-            editNode={(obj, parent:any = {}) => {
-                let show = getValueByField({ field: obj.show, def: true });
-                if (show === false) { return false }
-                if (obj.input) { return input_node({ ...obj, flex: parent.row && !obj.size && !obj.flex ? 1 : undefined }) }
-                if (parent.input) { obj.className = 'of-visible' }
-                return { ...obj }
-            }}
-            rootNode={{ attrs, column: [body_node(), footer_node()] }}
-        />
+        <section className='aio-input-form-input'>
+            {label && <section className='aio-input-form-label'>{label}</section>}
+            <AIOInput {...InputProps}/>
+            {error && <section className='aio-input-form-error'>{error}</section>}
+        </section>
     )
 }
 function Options(props:AI_Options) {
     let { rootProps, types }:AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
-    function renderSearchBox(options) {
+    function renderSearchBox(options:any[]) {
         if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
         return (
@@ -897,7 +843,7 @@ function Options(props:AI_Options) {
             </div>
         )
     }
-    function getRenderOptions(options) {
+    function getRenderOptions(options:any[]) {
         let renderIndex = 0;
         return options.map((option, i) => {
             if (searchValue) {
@@ -938,10 +884,10 @@ function Table() {
         className:'aio-input-table-row',
     }))
     let [sorts, setSorts] = useState<AI_table_sort[]>([])
-    console.log(sorts)
     function getColumns() {
         let {columns = []} = rootProps;
-        let searchColumns = [], excelColumns = [];
+        columns = typeof columns === 'function'?columns():columns;
+        let searchColumns:AI_table_column[] = [], excelColumns:AI_table_column[] = [];
         let updatedColumns = columns.map((o) => {
             let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
             let column = { ...o, _id: id };
@@ -965,13 +911,13 @@ function Table() {
             let getValue;
             if (sort.getValue) { getValue = sort.getValue }
             else {
-                getValue = (row) => {
+                getValue = (row:any) => {
                     let value = getDynamics({ value: column.value, row, column })
                     if (input && input.type === 'date') { value = DATE.getTime(value); }
                     return value
                 }
             }
-            let type;
+            let type:'string' | 'number' | 'date';
             if (input && ['number', 'date', 'range'].indexOf(input.type) !== -1) { type = 'number' }
             else { type = sort.type || 'string' }
             let sortItem: AI_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
@@ -982,13 +928,14 @@ function Table() {
     function getDynamics(p: { value: any, row?: any, column?: AI_table_column, def?: any, rowIndex?: number }) {
         let { value, row, column, def, rowIndex } = p;
         if (paging) {
-            let { serverSide, number, size } = paging;
-            rowIndex += ((number - 1) * size) 
+            let { number, size } = paging;
+            if(rowIndex)rowIndex += ((number - 1) * size) 
         }
         let type = typeof value;
         if (type === 'string') {
             let result = value;
-            if (getValue[value]) { result = getValue[value]({ row, column, rowIndex }) }
+            let param:AI_table_param = { row, column:column as AI_table_column, rowIndex:rowIndex as number }
+            if (getValue[value]) { result = getValue[value](param) }
             else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
             return result === undefined ? def : result;
         }
@@ -1000,14 +947,10 @@ function Table() {
         let columns:AI_table_column[] = getColumns();
         getSorts(columns);
     }, [])
-    function add() {
-        if (typeof onAdd === 'function') { onAdd(); }
-        else if (typeof onAdd === 'object') { onChange([onAdd, ...value]) }
-    }
-    function remove(row, index) {
-        let action = () => onChange(value.filter((o, i) => o._id !== row._id));
-        if (typeof onRemove === 'function') { onRemove({ row, action, rowIndex: index }); }
-        else if (onRemove === true) { action(); }
+    function add() {typeof onAdd === 'function'?onAdd():onChange([{...onAdd}, ...value])}
+    function remove(row:any, index:number) {
+        let action = () => onChange(value.filter((o:any) => o._id !== row._id));
+        typeof onRemove === 'function'?onRemove({ row, action, rowIndex: index }):action();
     }
     function exportToExcel() {
         let list = [];
@@ -1015,13 +958,14 @@ function Table() {
             let row = value[i], json:any = {};
             for (let j = 0; j < excelColumns.length; j++) {
                 let column = excelColumns[j], { excel, value } = column;
+                if(typeof excel !== 'string'){continue}
                 json[excel] = getDynamics({ value, row, column, rowIndex: i })
             }
             list.push(json)
         }
         ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
     }
-    function getSearchedRows(rows) {
+    function getSearchedRows(rows:{[key:string]:any}[]) {
         if (onSearch !== true) { return rows }
         if (!searchColumns.length || !searchValue) { return rows }
         return AIOInputSearch(rows, searchValue, (row, index) => {
@@ -1034,11 +978,13 @@ function Table() {
             return str
         })
     }
-    function sortRows(rows = [], sorts = []) {
-        if (!sorts.length) { return rows }
+    function sortRows(rows:{[key:string]:any}[], sorts:AI_table_sort[]) {
+        if(!rows){return []}
+        if (!sorts || !sorts.length) { return rows }
         return rows.sort((a, b) => {
             for (let i = 0; i < sorts.length; i++) {
                 let { dir, getValue } = sorts[i];
+                if(!getValue){return 0}
                 let aValue = getValue(a), bValue = getValue(b);
                 if (aValue < bValue) { return -1 * (dir === 'dec' ? -1 : 1); }
                 if (aValue > bValue) { return 1 * (dir === 'dec' ? -1 : 1); }
@@ -1047,7 +993,7 @@ function Table() {
             return 0;
         });
     }
-    function getSortedRows(rows) {
+    function getSortedRows(rows:{[key:string]:any}[]) {
         if (temp.isInitSortExecuted) { return rows }
         if (onChangeSort) { return rows }
         let activeSorts = sorts.filter((sort) => sort.active !== false);
@@ -1057,19 +1003,20 @@ function Table() {
         onChange(sortedRows);
         return sortedRows;  
     }
-    function getRows() {
+    function getRows():AI_table_rows {
         let searchedRows = getSearchedRows(value);
         let sortedRows = getSortedRows(searchedRows);
         let pagedRows = paging && !paging.serverSide ? sortedRows.slice((paging.number - 1) * paging.size, paging.number * paging.size) : sortedRows;
         return { rows: value, searchedRows, sortedRows, pagedRows }
     }
     //calculate style of cells and title cells
-    function getCellStyle(column) {
+    function getCellStyle(column:AI_table_column) {
         let width = getDynamics({ value: column.width });
         let minWidth = getDynamics({ value: column.minWidth });
         return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth }
     }
-    function getCellAttrs({ row, rowIndex, column, type }) {
+    function getCellAttrs(p:{ row:any, rowIndex:number, column:AI_table_column, type:'title'|'cell' }) {
+        let { row, rowIndex, column, type } = p;
         let {cellAttrs,titleAttrs} = column;
         let attrs = getDynamics({ value: type === 'title'?titleAttrs:cellAttrs, column, def: {}, row, rowIndex });
         let justify = getDynamics({ value: column.justify, def: false });
@@ -1078,25 +1025,25 @@ function Table() {
         if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
         return { ...attrs }
     }
-    function getRowAttrs(row, rowIndex) {
+    function getRowAttrs(row:any, rowIndex:number) {
         let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
         let obj = addToAttrs(attrs, { className: 'aio-input-table-row' })
         if (DragRows !== false) { obj = { ...obj, ...DragRows.getAttrs(value,rowIndex) } }
         return obj;
     }
-    function search(searchValue) {
-        if (onSearch === true) { setSearchValue(searchValue) }
-        else { onSearch(searchValue) }
+    function search(searchValue:string) {
+        if(onSearch === true) { setSearchValue(searchValue) }
+        else if(typeof onSearch === 'function'){ onSearch(searchValue) }
     }
-    function getContext(ROWS) {
+    function getContext(ROWS:AI_table_rows) {
         let context: type_table_context = {
             ROWS, addToAttrs, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
             add, remove, search, exportToExcel,getDynamics
         }
         return context
     }
-    let ROWS = getRows();
-    let attrs = addToAttrs(rootProps.attrs,{className:['aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
+    let ROWS:AI_table_rows = getRows();
+    let attrs = addToAttrs(rootProps.attrs,{className:['aio-input aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
     return (
         <AITableContext.Provider value={getContext(ROWS)}>
             <div {...attrs}>
@@ -1122,7 +1069,7 @@ function TablePaging() {
     function fix(paging: AI_table_paging):AI_table_paging {
         if(typeof rootProps.onChangePaging !== 'function'){
             alert('aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input')
-            return;
+            return {number:0,size:0};
         }
         let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
         if (!serverSide) { length = ROWS.sortedRows.length }
@@ -1134,18 +1081,23 @@ function TablePaging() {
         temp.start = start; temp.end = end; temp.pages = pages;
         return { ...paging, length, number, size, sizes }
     }
-    let [paging, setPaging] = useState<AI_table_paging>(fix(rootProps.paging));
+    let [paging, setPaging] = useState<AI_table_paging>(fix(rootProps.paging || {size:0,number:0}));
     useEffect(() => {
-        setPaging(fix(rootProps.paging));
-    }, [rootProps.paging.size,rootProps.paging.number,rootProps.paging.length])
-    function changePaging(obj) {
+        if(rootProps.paging){setPaging(fix(rootProps.paging))}
+    }, [(rootProps.paging || {size:0,number:0,length:0}).size,(rootProps.paging || {size:0,number:0,length:0}).number,(rootProps.paging || {size:0,number:0,length:0}).length])
+    function changePaging(obj:{[key in keyof AI_table_paging]?:any}) {
         let newPaging:AI_table_paging = fix({ ...paging, ...obj });
         setPaging(newPaging);
-        if (newPaging.serverSide) {
-            clearTimeout(temp.timeout);
-            temp.timeout = setTimeout(() => rootProps.onChangePaging(newPaging), 800);
+        if(rootProps.onChangePaging){
+            if (newPaging.serverSide) {
+                clearTimeout(temp.timeout);
+                temp.timeout = setTimeout(() => {
+                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
+                    if(rootProps.onChangePaging){rootProps.onChangePaging(newPaging)}
+                }, 800);
+            }
+            else { rootProps.onChangePaging(newPaging) }
         }
-        else { rootProps.onChangePaging(newPaging) }
     }
     let { number, size, sizes } = paging;
     let buttons = [];
@@ -1163,7 +1115,7 @@ function TablePaging() {
         }
     }
     function changeSizeButton() {
-        if (!sizes.length) { return null }
+        if (!sizes || !sizes.length) { return null }
         let p: AI = {
             attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
             type: 'select', value: size, options: sizes, option:{text:'option',value:'option'},
@@ -1203,10 +1155,10 @@ function TableRows() {
 }
 function TableToolbar() {
     let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
-    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value } = rootProps;
+    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value,addText } = rootProps;
     toolbarAttrs = addToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
     if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
-    function changeSort(sortId, changeObject) {
+    function changeSort(sortId:string, changeObject:any) {
         let newSorts = sorts.map((sort) => {
             if (sort.sortId === sortId) {
                 let newSort = { ...sort, ...changeObject }
@@ -1216,7 +1168,7 @@ function TableToolbar() {
         });
         changeSorts(newSorts)
     }
-    async function changeSorts(sorts) {
+    async function changeSorts(sorts:AI_table_sort[]) {
         if (onChangeSort) {
             let res = await onChangeSort(sorts)
             if (res !== false) { setSorts(sorts); }
@@ -1256,7 +1208,7 @@ function TableToolbar() {
                     )
                 }
             },
-            attrs:{ className: 'aio-input-table-toolbar-icon' },
+            attrs:{ className: 'aio-input-table-toolbar-button' },
             text:I(mdiSort,0.7),
             onSwap:(newSorts,from,to) => changeSorts(newSorts),
             onChange:(value, option) => changeSort(value, { active: !option.checked })
@@ -1264,6 +1216,14 @@ function TableToolbar() {
         return (
             <AIOInput {...p} key='sortbutton'/>
         )
+    }
+    function getAddText(){
+        let {addText} = rootProps;
+        if(!rootProps.addText){return I(mdiPlusThick,0.8)}
+        if(typeof addText === 'function'){
+            return addText(value)
+        }
+        return addText
     }
     return (
         <>
@@ -1273,8 +1233,8 @@ function TableToolbar() {
                     {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={I(mdiMagnify,0.7)} />}
                 </div>
                 {button()}
-                {!!excelColumns.length && <div className='aio-input-table-toolbar-icon' onClick={() => exportToExcel()}>{I(mdiFileExcel,0.8)}</div>}
-                {!!onAdd && <div className='aio-input-table-toolbar-icon' onClick={() => add()}>{I(mdiPlusThick,0.8)}</div>}
+                {!!excelColumns.length && <div className='aio-input-table-toolbar-button' onClick={() => exportToExcel()}>{I(mdiFileExcel,0.8)}</div>}
+                {!!onAdd && <div className='aio-input-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
             </div>
             <TableGap dir='h' />
         </>
@@ -1461,15 +1421,16 @@ function Layout(props: I_Layout) {
         let onClick;
         //ممکنه این یک آپشن باشه باید دیزیبل پرنتش هم چک بشه تا دیزیبل بشه
         if (!disabled) {
-            if (option === undefined) { onClick = (e) => { e.stopPropagation(); click(e, dom) } }
-            else { onClick = (e) => { e.stopPropagation(); optionClick(option) } }
+            if (option === undefined) { onClick = (e:any) => { e.stopPropagation(); click(e, dom) } }
+            else { onClick = (e:any) => { e.stopPropagation(); optionClick(option) } }
         }
         attrs = addToAttrs(attrs, {
             className: getClassName(),
             style: { ...style, justifyContent: justify ? 'center' : undefined, zIndex }
         })
         let p = { ...attrs, onClick, ref: dom, disabled }
-        if (draggable) {p = {...p,...DragOptions.getAttrs(rootProps.options,realIndex)}}
+        let options:any[] = typeof rootProps.options === 'function'?rootProps.options():(rootProps.options || []);
+        if (draggable) {p = {...p,...DragOptions.getAttrs(options,realIndex || 0)}}
         return p;
     }
     function getProperties() {
@@ -1511,11 +1472,10 @@ function Layout(props: I_Layout) {
     )
 }
 const DPContext = createContext({} as any);
-type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 function Calendar(props: I_Calendar) {
     let { rootProps,DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
-    let { unit, jalali, value,disabled,size,theme, translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
+    let { unit = AIDef<string>('date-unit'), jalali, value,disabled,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme'), translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
     let [today, setToday] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
@@ -1527,17 +1487,19 @@ function Calendar(props: I_Calendar) {
     }
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>({ ...initValue });
-    function trans(text:AI_date_trans) {
+    let adRef = useRef(activeDate);
+    adRef.current = activeDate
+    function trans(text:string) {
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
         }
-        let obj = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال' }
-        let res:string = text;
+        let obj:any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال' }
+        let res;
         if (jalali && obj[text]) { res = obj[text] }
-        return translate(res)
+        return translate(text)
     }
-    function changeActiveDate(obj) {
+    function changeActiveDate(obj:'today' | {[key in 'year'|'month'|'day']?:number}) {
         let newActiveDate;
         if (obj === 'today') {
             let [year, month, day] = today;
@@ -1555,17 +1517,18 @@ function Calendar(props: I_Calendar) {
     function getContext() {
         let context: I_DPContext = {
             changeActiveDate,DATE,
-            translate: trans, rootProps, activeDate,
+            translate: trans, rootProps, activeDate:adRef.current,
             today, todayWeekDay, thisMonthString,months,
-            onChange: ({ year, month, day, hour }) => {
+            onChange: (p:{ year?:number, month?:number, day?:number, hour?:number }) => {
+                let { year = 1000, month = 1, day = 1, hour = 0 } = p;
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = !jalali ? DATE.toJalali(dateArray) : dateArray;
                 let gregorianDateArray = jalali ? DATE.toGregorian(dateArray) : dateArray;
                 let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : DATE.getWeekDay(dateArray)
-                let get2digit = (v) => {
+                let get2digit = (v:number) => {
                     if (v === undefined) { return }
-                    v = v.toString();
-                    return v.length === 1 ? `0${v}` : v
+                    let vn:string = v.toString();
+                    return vn.length === 1 ? `0${vn}` : vn
                 }
                 let dateString;
                 let splitter = typeof value === 'string' ? DATE.getSplitter(value) : '/';
@@ -1588,7 +1551,7 @@ function Calendar(props: I_Calendar) {
     return (
         <DPContext.Provider value={getContext()}>
             <div className='aio-input-date-container' style={{ display: 'flex' }}>
-                <div className='aio-input-date-calendar' style={getPopupStyle()}>
+                <div className='aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0 aio-input-date-theme-stroke0' style={getPopupStyle()}>
                     <DPHeader /><DPBody /><DPFooter />
                 </div>
                 <DPToday />
@@ -1598,9 +1561,9 @@ function Calendar(props: I_Calendar) {
 }
 function DPToday() {
     let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
-    let { theme = AIDef<string[]>('theme'), jalali, unit, size = AIDef<number>('size') } = rootProps;
+    let { theme = AIDef<string[]>('theme'), jalali, unit = AIDef<string>('date-unit'), size = AIDef<number>('date-size') } = rootProps;
     return (
-        <div className='aio-input-date-today' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
+        <div className='aio-input-date-today aio-input-date-theme-color1 aio-input-date-theme-bg0' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
             <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
             {
                 (unit === 'day' || unit === 'hour') &&
@@ -1618,7 +1581,7 @@ function DPToday() {
 }
 function DPFooter() {
     let {rootProps, changeActiveDate, translate}:I_DPContext = useContext(DPContext);
-    let { disabled, onChange = () => { }, size = AIDef<number>('size'),deSelect } = rootProps;
+    let { disabled, onChange = () => { }, size = AIDef<number>('date-size'),deSelect } = rootProps;
     if (disabled) { return null }
     let buttonStyle = { padding: `${size / 20}px 0`,fontFamily:'inherit' };
     return (
@@ -1630,7 +1593,7 @@ function DPFooter() {
 }
 function DPBody() {
     let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
-    let { unit = AIDef<AI_date_unit>('unit','date'),jalali,size = AIDef<number>('size') } = rootProps;
+    let { unit = AIDef<AI_date_unit>('date-unit'),jalali,size = AIDef<number>('date-size') } = rootProps;
     function getStyle() {
         var columnCount = { hour: 4, day: 7, month: 3,year:1 }[unit as AI_date_unit];
         var rowCount = { hour: 6, day: 7, month: 4,year:1 }[unit as AI_date_unit];
@@ -1644,44 +1607,44 @@ function DPBody() {
     }
     return (
         <div className='aio-input-date-body' style={getStyle()}>
-            {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, activeDate.month, activeDate.day, i]} />)}
+            {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, activeDate.month as number, activeDate.day as number, i]} />)}
             {unit === 'day' && <DPBodyDay />}
-            {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year, i + 1]} />)}
+            {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, i + 1]} />)}
         </div>
     )
 }
 function DPBodyDay() {
     let {rootProps, activeDate,DATE}:I_DPContext = useContext(DPContext);
-    let { theme, jalali } = rootProps;
-    let firstDayWeekDayIndex = DATE.getWeekDay([activeDate.year, activeDate.month, 1]).index;
-    let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
+    let { theme = AIDef<string[]>('theme'), jalali } = rootProps;
+    let firstDayWeekDayIndex = DATE.getWeekDay([activeDate.year as number, activeDate.month as number, 1]).index;
+    let daysLength = DATE.getMonthDaysLength([activeDate.year as number, activeDate.month as number]);
     let weekDays = DATE.getWeekDays(jalali);
     return (<>
         {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-        {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
+        {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
         {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
-        {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
+        {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
     </>)
 }
 function DPCellWeekday(props:I_DPCellWeekday) {
     let {rootProps, translate}:I_DPContext = useContext(DPContext);
-    let { theme, jalali } = rootProps;
+    let { theme = AIDef<string[]>('theme'), jalali } = rootProps;
     let { weekDay } = props;
     return (
-        <div className='aio-input-date-weekday aio-input-date-cell' style={{ background: theme[1], color: theme[0] }}>
+        <div className='aio-input-date-weekday aio-input-date-cell aio-input-date-theme-bg1 aio-input-date-theme-color0' style={{ background: theme[1], color: theme[0] }}>
             <span>{translate(weekDay.slice(0, !jalali ? 2 : 1))}</span>
         </div>
     )
 }
 function DPCell(props:I_DPCell) {
     let {rootProps, translate, onChange,DATE}:I_DPContext = useContext(DPContext);
-    let { disabled, dateAttrs, theme = AIDef('theme'), value, jalali, unit } = rootProps;
+    let { disabled, dateAttrs, theme = AIDef<string[]>('theme'), value, jalali, unit = AIDef<string>('date-unit')} = rootProps;
     let { dateArray } = props;
     function getClassName(isActive:boolean, isToday:boolean, isDisabled:boolean, className?:string) {
         var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
-        if (isActive) { str += ' aio-input-date-active'; }
-        if (isToday) { str += ' today'; }
+        if (isActive) { str += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'; }
+        if (isToday) { str += ' today aio-input-date-theme-border0'; }
         if (className) { str += ' className'; }
         return str;
     }
@@ -1713,52 +1676,51 @@ function DPCell(props:I_DPCell) {
     }
     return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
 }
-function DPYears(props: I_DPYears) {
-    let {rootProps}:I_DPContext = useContext(DPContext);
-    let {theme = []} = rootProps;
-    let { value, onChange } = props;
-    let valueRef = useRef(value);
-    valueRef.current = value;
+function DPHeaderItem(props:{unit:'year'|'month'}){
+    let {unit} = props;
+    let {rootProps,DATE,activeDate,months}:I_DPContext = useContext(DPContext);
+    let {theme = AIDef<string[]>('theme'),jalali} = rootProps;
+    if(!activeDate || !activeDate[unit]){return null}
+    let text = unit === 'year'?activeDate.year:months[(activeDate[unit] as number) - 1]
+    let POPUP = unit === 'year'?DPYearsPopup:DPMonthsPopup;
     let p:AI = {
-        type:'button',text:value,justify:true,caret:false,
+        type:'button',text,justify:true,caret:false,
         attrs: { className: 'aio-input-date-dropdown' },
         popover:{
-            fitTo:'.aio-input-date-calendar',
+            fitTo:'.aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0',
             attrs:{style:{background: theme[1], color: theme[0]}},
             body:{
-                render:({close})=><DPYearsPopup value={valueRef.current} onChange={(v)=>{onChange(v); close()}}/>
+                render:({close})=><POPUP onClose={close}/>
             }
         }
     }
-    return (
-        <AIOInput {...p}/>
-    )
+    return (<AIOInput {...p}/>)
 }
-function DPYearsPopup(props:{value:number,onChange:(v:number)=>void}){
-    let {value:Value,onChange} = props; 
-    let { rootProps,translate }: I_DPContext = useContext(DPContext);
-    let { jalali,size = AIDef<number>('size'),theme = AIDef<string[]>('size') } = rootProps;
-    let [start, setStart] = useState<number>(Math.floor(Value / 10) * 10);
-    let [value,setValue] = useState<number>(Value);
-    useEffect(()=>{setValue(Value)},[Value])
+function DPYearsPopup(props:{onClose:()=>void}){
+    let {onClose} = props;
+    let { rootProps,translate,activeDate,changeActiveDate }: I_DPContext = useContext(DPContext);
+    let { jalali,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme') } = rootProps;
+    let [start, setStart] = useState<number>(Math.floor((activeDate.year as number) / 10) * 10);
+    let [value,setValue] = useState<number>(activeDate.year as number);
+    useEffect(()=>{setValue(activeDate.year as number)},[activeDate.year])
     function changePage(dir:1 | -1) {
         let newStart = start + (dir * 10)
         setStart(newStart);
     }
     function changeValue(v:number){
         setValue(v);
-        onChange(v);
+        changeActiveDate({year:v});
+        onClose();
     }
     function getCells(start:number) {
         let cells = [];
         for (let i = start; i < start + 10; i++) {
             let active = i === value;
-            let p = {
-                style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},
-                className:'aio-input-date-cell' + (active?' aio-input-date-active':''),
-                key:i,onClick:() => changeValue(i)
-            }
-            cells.push(<div {...p}>{i}</div>)
+            let className = 'aio-input-date-cell'
+            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
+            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
+            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
+            cells.push(<div {...p} key={i}>{i}</div>)
         }
         return cells
     }
@@ -1784,23 +1746,50 @@ function DPYearsPopup(props:{value:number,onChange:(v:number)=>void}){
         </div>
     )
 }
+function DPMonthsPopup(props:{onClose:()=>void}){
+    let {onClose} = props; 
+    let { rootProps,DATE,changeActiveDate,activeDate }: I_DPContext = useContext(DPContext);
+    let { jalali,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme') } = rootProps;
+    let [months] = useState<string[]>(DATE.getMonths(jalali));
+    let month = activeDate.month;
+    function changeValue(v:number){
+        changeActiveDate({month:v});
+        onClose()
+    }
+    function getCells() {
+        let cells = [];
+        for (let i = 1; i <= 12; i++) {
+            let active = i === month;
+            let className = 'aio-input-date-cell'
+            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
+            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
+            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
+            cells.push(<div {...p} key={i}>{months[i - 1].slice(0,3)}</div>)
+        }
+        return cells
+    }
+    function getBodyStyle() {
+        var columnCount = 3;
+        var rowCount = 4;
+        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
+        var rowHeight = size / 6;
+        var gridTemplateColumns = '', gridTemplateRows = '';
+        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
+        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
+        let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
+        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
+    }
+    return (
+        <div className='aio-input-date-months'>
+            <div style={getBodyStyle()} className='aio-input-date-years-body'>{getCells()}</div>
+        </div>
+    )
+}
 function DPHeader() {
-    let { rootProps,activeDate, changeActiveDate, months, translate,DATE }: I_DPContext = useContext(DPContext);
-    let { size = AIDef<number>('size'), unit,jalali } = rootProps;
-    function getYears() {
-        let p:I_DPYears = {
-            value: activeDate.year || 0,onChange: (year) => { changeActiveDate({ year }) }
-        }
-        return (<DPYears {...p} />)
-    }
-    function getMonths() {
-        let p:I_DPHeaderDropdown = {
-            value: activeDate.month, onChange: (month) => { changeActiveDate({ month }) },
-            options: months.map((o, i) => { return { value: i + 1, text: translate(!jalali ? o.slice(0, 3) : o) } })
-        }
-        return <DPHeaderDropdown {...p} />
-    }
-    function getDays() {
+    let { rootProps,activeDate, changeActiveDate,DATE }: I_DPContext = useContext(DPContext);
+    let { size = AIDef<number>('date-size'), unit = AIDef<string>('date-unit') } = rootProps;
+    function getDays():React.ReactNode {
+        if(!activeDate || !activeDate.year || !activeDate.month){return null}
         let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
         let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
         let p:I_DPHeaderDropdown = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
@@ -1810,8 +1799,8 @@ function DPHeader() {
         <div className='aio-input-date-header' style={{ height: size / 4 }}>
             <DPArrow type='minus' />
             <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 12) }}>
-                {getYears()}
-                {unit !== 'month' ? getMonths() : null}
+                <DPHeaderItem unit='year'/>
+                {unit !== 'month' ? <DPHeaderItem unit='month'/> : null}
                 {unit === 'hour' ? getDays() : null}
             </div>
             <DPArrow type='plus' />
@@ -1821,10 +1810,10 @@ function DPHeader() {
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
     let { value, options, onChange } = props;
-    let { size = AIDef<number>('size'), theme = AIDef<number[]>('theme') } = rootProps;
+    let { size = AIDef<number>('date-size'), theme = AIDef<number[]>('theme') } = rootProps;
     let p: AI = {
         value, options, onChange, caret: false, type: 'select',
-        attrs: { className: 'aio-input-date-dropdown' },
+        attrs: { className: 'aio-input-date-dropdown aio-input-date-theme-bg1 aio-input-date-theme-color0' },
         option:{style:()=>{return { height: size / 6, background: theme[1], color: theme[0] }} },
     }
     return (<AIOInput {...p} />)
@@ -1832,12 +1821,12 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
 function DPArrow(props: I_DPArrow) {
     let { rootProps, changeActiveDate, activeDate,DATE }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
-    let { jalali, unit = AIDef<AI_date_unit>('unit','date'), size, theme } = rootProps;
+    let { jalali, unit = AIDef<AI_date_unit>('date-unit'), size = AIDef<number>('date-size'), theme = AIDef<string[]>('theme') } = rootProps;
     function change() {
         if (onClick) { onClick(); return }
         let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
-        let date = [activeDate.year, activeDate.month, activeDate.day]
-        if (unit === 'month') { changeActiveDate({ year: activeDate.year + offset }) }
+        let date = [activeDate.year as number, activeDate.month as number, activeDate.day as number]
+        if (unit === 'month') { changeActiveDate({ year: (activeDate.year as number) + offset }) }
         if (unit === 'day') { 
             let next = DATE.getNextTime(date,offset * 24 * 60 * 60 * 1000,jalali);
             changeActiveDate({ year: next[0], month: next[1] }) 
@@ -1847,21 +1836,22 @@ function DPArrow(props: I_DPArrow) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] }) 
         }
     }
-    function getIcon() {return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight,1,{style:{ color: theme[0] }})}
+    function getIcon() {return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight,1,{style:{ color: theme[0] },className:'aio-input-date-theme-color0'})}
     return (<div className='aio-input-date-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => change()}>{getIcon()}</div>)
 
 }
 function List() {
     let {rootProps}:AI_context = useContext(AICTX);
-    let { attrs = {},size = 36, width,count = 3,options = [],editable = true,stop = 3,decay = 8,onChange = ()=>{} } = rootProps;
+    let { attrs = {},size = 36, width,count = 3,editable = true,stop = 3,decay = 8,onChange = ()=>{} } = rootProps;
+    let options:any[] = typeof rootProps.options === 'function'?rootProps.options():rootProps.options || []; 
     let [temp] = useState<I_list_temp>({
         dom:createRef(),
         activeIndex:0,
         interval:undefined,
         moved:false,
-        lastY:undefined,
-        deltaY:undefined,
-        so:undefined
+        lastY:0,
+        deltaY:0,
+        so:{y:0,top:0,limit:{top:0,bottom:0}}
     })
     function getStyle() {
         var height = count * (size);
@@ -1869,7 +1859,7 @@ function List() {
     }
     function getOptions() {
         temp.activeIndex = 0;
-        return options.map((option, i) => {
+        return options.map((option:any, i:number) => {
             let value = getOptionProp({props:rootProps,option, key:'value'});
             let text = getOptionProp({props:rootProps,option, key:'text', def:''});
             let style = getOptionProp({props:rootProps,option, key:'style', def:{}});
@@ -1877,8 +1867,8 @@ function List() {
             return <div key={i} data-index={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
         })
     }
-    function getIndexByTop(top) {return Math.round(((count * size) - size - (2 * top)) / (2 * size));}
-    function getTopByIndex(index) {return (count - 2 * index - 1) * size / 2;}
+    function getIndexByTop(top:number) {return Math.round(((count * size) - size - (2 * top)) / (2 * size));}
+    function getTopByIndex(index:number) {return (count - 2 * index - 1) * size / 2;}
     function getContainerStyle() { return { top: getTopByIndex(temp.activeIndex) }; }
     function moveDown() {
         if (temp.activeIndex >= options.length - 1) { return }
@@ -1887,7 +1877,7 @@ function List() {
         setStyle({ top: newTop });
         setBoldStyle(temp.activeIndex);
     }
-    function setBoldStyle(index) {
+    function setBoldStyle(index:number) {
         $(temp.dom.current).find('.aio-input-list-option').removeClass('active');
         $(temp.dom.current).find('.aio-input-list-option[data-index=' + (index) + ']').addClass('active');
     }
@@ -1898,19 +1888,19 @@ function List() {
         setStyle({ top: newTop });
         setBoldStyle(temp.activeIndex);
     }
-    function keyDown(e) {
+    function keyDown(e:any) {
         if (!editable) { return }
         if (e.keyCode === 38) { moveUp(); }
         else if (e.keyCode === 40) { moveDown(); }
     }
     function getLimit() {return { top: getTopByIndex(-1), bottom: getTopByIndex(options.length) }}
-    function getTrueTop(top) {
+    function getTrueTop(top:number) {
         let index = getIndexByTop(top);
         if (index < 0) { index = 0 }
         if (index > options.length - 1) { index = options.length - 1 }
         return getTopByIndex(index);
     }
-    function mouseDown(e) {
+    function mouseDown(e:any) {
         if (!editable) { return }
         EventHandler('window', 'mousemove', mouseMove);
         EventHandler('window', 'mouseup', mouseUp);
@@ -1930,13 +1920,13 @@ function List() {
         var top = parseInt($(temp.dom.current).find('.aio-input-list-options').css('top'));
         return getTrueTop(top);
     }
-    function fixTop(value) {
+    function fixTop(value:number) {
         let { top, bottom } = temp.so.limit;
         if (value > top) { return top }
         if (value < bottom) { return bottom }
         return value;
     }
-    function mouseMove(e) {
+    function mouseMove(e:any) {
         temp.moved = true;
         var client = GetClient(e);
         let y = client.y;
@@ -1951,15 +1941,15 @@ function List() {
         setBoldStyle(index);
         setStyle({ top: newTop });
     }
-    function setStyle(obj) { $(temp.dom.current).find('.aio-input-list-options').css(obj); }
-    function mouseUp(e) {
+    function setStyle(obj:any) { $(temp.dom.current).find('.aio-input-list-options').css(obj); }
+    function mouseUp() {
         EventHandler('window', 'mousemove', mouseMove, 'unbind');
         EventHandler('window', 'mouseup', mouseUp, 'unbind');
         if (!temp.moved) { return }
         temp.moved = false;
         move(temp.deltaY, temp.so.newTop)
     }
-    function move(deltaY, startTop = getTop()) {
+    function move(deltaY:number, startTop = getTop()) {
         if (decay < 0) { decay = 0 }
         if (decay > 99) { decay = 99 }
         decay = 1 + decay / 1000;
@@ -2001,7 +1991,7 @@ function List() {
 const MapContext = createContext({} as any);
 function Map() {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { popupConfig, mapConfig, onChange, disabled, attrs, value } = rootProps;
+    let { popupConfig, mapConfig = {}, onChange = ()=>{}, disabled, attrs, value } = rootProps;
     let [isScriptAdded,setIsScriptAdded] = useState<boolean>(false);
     useEffect(()=>{
         let scr = document.getElementById('aio-input-map-neshan');
@@ -2022,7 +2012,7 @@ function Map() {
     return <MapUnit {...p} />
 }
 function MapUnit(props:I_MapUnit) {
-    let [mapApiKeys] = useState<I_mapApiKeys>(AIOStorage('aio-input-storage').load({ name: 'mapApiKeys', def: { map: '', service: '' } }));
+    let [mapApiKeys] = useState<I_mapApiKeys>((AIOStorage('aio-input-storage') as any).load({ name: 'mapApiKeys', def: { map: '', service: '' } }));
     let {onClose,mapConfig = {},onChange = () => { },disabled, attrs = {},popupConfig} = props;
     let {area,zoom:Zoom = 14, traffic = false,markers = [], zoomControl = false, maptype = 'dreamy-gold', poi = true,draggable = true } = mapConfig;
     let [showPopup,setShowPopup] = useState<boolean>(false)
@@ -2058,11 +2048,11 @@ function MapUnit(props:I_MapUnit) {
         }
         temp.map = new temp.L.Map(temp.dom.current, config);
         Marker.addMapMarker(value);
-        temp.map.on('click', (e) => {
+        temp.map.on('click', (e:any) => {
             if (attrs.onClick) { return }
-            if (onChange) { let { lat, lng } = e.latlng; temp.map.panTo({ lat, lng }) }
+            if (!!onChange) { let { lat, lng } = e.latlng; temp.map.panTo({ lat, lng }) }
         });
-        temp.map.on('move', (e) => {
+        temp.map.on('move', (e:any) => {
             if(!changeView){return}
             let { lat, lng } = e.target.getCenter()
             move({ lat, lng })
@@ -2080,8 +2070,8 @@ function MapUnit(props:I_MapUnit) {
     function ipLookUp() {
         $.ajax('http://ip-api.com/json')
             .then(
-                (response) => {let { lat, lon } = response; flyTo({lat,lng:lon})},
-                (data, status) => console.log('Request failed.  Returned status of', status)
+                (response:any) => {let { lat, lon } = response; flyTo({lat,lng:lon})},
+                (data:any, status:any) => console.log('Request failed.  Returned status of', status)
             );
     }
     function handlePermission() {
@@ -2091,7 +2081,8 @@ function MapUnit(props:I_MapUnit) {
             else if (result.state === 'denied') { console.log(result.state); }
         });
     }
-    async function getAddress({ lat, lng }) {
+    async function getAddress(p:I_Map_coords) {
+        let { lat, lng } = p;
         try {
             let res = await Axios.get(`https://api.neshan.org/v5/reverse?lat=${lat}&lng=${lng}`, { headers: { 'Api-Key': mapApiKeys.service, Authorization: false } });
             return res.status !== 200 ? '' : res.data.formatted_address;
@@ -2120,7 +2111,7 @@ function MapUnit(props:I_MapUnit) {
         }
         catch (err) { return '' }
     }
-    async function showPath(path) {
+    async function showPath(path:string) {
         try { await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`, { headers: { 'Api-Key': mapApiKeys.service } }); }
         catch (err) { return '' }
     }
@@ -2130,7 +2121,7 @@ function MapUnit(props:I_MapUnit) {
         temp.map.flyTo([coords.lat, coords.lng], zoom, { animate, duration: 1 });
     }
     function panTo(coords:{lat:number,lng:number}) { temp.map.panTo(coords) }
-    async function updateAddress(coords) {
+    async function updateAddress(coords:I_Map_coords) {
         if(!mapConfig.address){return}
         let { lat, lng } = coords;
         clearTimeout(temp.atimeout);
@@ -2144,12 +2135,12 @@ function MapUnit(props:I_MapUnit) {
             onChange({ lat, lng, address });
         }, 1200);
     }
-    function change(value) {
+    function change(value:I_Map_coords) {
         let {lat,lng} = value;
         onChange({ lat, lng, address });
         updateAddress(value)
     }
-    function move(value) {
+    function move(value:I_Map_coords) {
         if (temp.mapMarker) { temp.mapMarker.setLatLng(value) }
         clearTimeout(temp.atimeout); clearTimeout(temp.btimeout);
         temp.btimeout = setTimeout(async () => {setValue(value); change(value)}, 500);
@@ -2209,6 +2200,8 @@ class MarkerClass{
     marker:boolean | string;
     htmls:string[];
     constructor(getTemp:()=>I_Map_temp,getMapConfig:()=>I_Map_config){
+        this.markers = [];
+        this.htmls = [];
         this.updateMarkers = (markers)=>{
             this.markers = markers;
             this.htmls = this.getHtmls();
@@ -2278,7 +2271,7 @@ function MapHeader() {
     let [loading, setLoading] = useState(false);
     let [showResult, setShowResult] = useState(false);
     let dom = createRef();
-    let timeout;
+    let timeout:any;
     async function changeSearch(searchValue:string) {
         let { lat, lng } = value;
         setSearchValue(searchValue);
@@ -2323,7 +2316,7 @@ function MapHeader() {
         if (typeof title !== 'string' && !onClose) { return {} }
         return {
             row: [
-                { show: !!onClose, html: I(mdiChevronRight,1), className: 'aio-input-map-close align-vh', onClick: () => onClose() },
+                { show: !!onClose, html: I(mdiChevronRight,1), className: 'aio-input-map-close align-vh', onClick: () => {if(onClose){onClose()}} },
                 { show: typeof title === 'string', html: title, className: 'aio-input-map-title align-v' },
             ]
         }
@@ -2344,7 +2337,7 @@ function MapFooter() {
     function submit_node():I_RVD_node {
         if (!mapConfig.isPopup) { return {} }
         let {submitText = 'Submit'} = mapConfig;
-        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); onClose() }}>{submitText}</button>) }
+        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); if(onClose){onClose()} }}>{submitText}</button>) }
     }
     function details_node():I_RVD_node {
         if (!mapConfig.address) { return {} }
@@ -2359,7 +2352,7 @@ function MapFooter() {
 }
 function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, index: number) => any) {
     if (!searchValue) { return items }
-    function isMatch(keys, value) {
+    function isMatch(keys:string[], value:string) {
         for (let i = 0; i < keys.length; i++) {
             if (value.indexOf(keys[i]) === -1) { return false }
         }
@@ -2368,20 +2361,21 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
     let keys = searchValue.split(' ');
     return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
-function ExportToExcel(rows, config:any = {}) { 
+function ExportToExcel(rows:any[], config:any = {}) { 
     let { promptText = 'Inter Excel File Name' } = config; 
     let o = { 
-        fixPersianAndArabicNumbers(str) { 
+        fixPersianAndArabicNumbers(str:string):string { 
             if (typeof str !== 'string') { return str } 
             let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g], 
                 arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; 
-            for (var i = 0; i < 10; i++) {str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);} 
+            let i:number;
+                for (i = 0; i < 10; i++) {str = str.replace(persianNumbers[i], i.toString()).replace(arabicNumbers[i], i.toString());} 
             return str; 
         }, 
-        getJSON(rows) { 
+        getJSON(rows:any[]) { 
             let result = []; 
             for (let i = 0; i < rows.length; i++) { 
-                let json = rows[i], fixedJson = {}; 
+                let json = rows[i], fixedJson:any = {}; 
                 for (let prop in json) {fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} 
                 result.push(fixedJson); 
             } 
@@ -2420,9 +2414,9 @@ function ExportToExcel(rows, config:any = {}) {
     }; 
     return o.export(); 
 }
-async function DownloadUrl(url, name) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
-function JSXToHTML(html) { return ReactDOMServer.renderToStaticMarkup(html) }
-function GetDistance(p1, p2) {
+async function DownloadUrl(url:string, name:string) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
+function JSXToHTML(html:any) { return ReactDOMServer.renderToStaticMarkup(html) }
+function GetDistance(p1:I_Map_coords, p2:I_Map_coords) {
     let { lat: lat1, lng: lon1 } = p1;
     let { lat: lat2, lng: lon2 } = p2;
     let rad = Math.PI / 180;
@@ -2431,13 +2425,13 @@ function GetDistance(p1, p2) {
 }
 export function Acardion(props:any = {}) {
     let { items, singleOpen } = props;
-    let [openDic, setOpenDic] = useState({})
-    function toggle(id) {
+    let [openDic, setOpenDic] = useState<any>({})
+    function toggle(id:any) {
         let open = !!openDic[id]
         if (singleOpen) { setOpenDic(open ? {} : { [id]: true }) }
         else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
     }
-    function item_node(o):I_RVD_node {
+    function item_node(o:any):I_RVD_node {
         let { id } = o;
         let open = !!openDic[id];
         return {
@@ -2448,7 +2442,7 @@ export function Acardion(props:any = {}) {
             ]
         }
     }
-    function item_header_node(o, open):I_RVD_node {
+    function item_header_node(o:any, open:boolean):I_RVD_node {
         let { name, after, id, headerAttrs = {} } = o;
         let className = 'aio-input-acardion-header';
         if (open) { className += ' open' }
@@ -2462,7 +2456,7 @@ export function Acardion(props:any = {}) {
             ]
         }
     }
-    function item_content_node(o, open):I_RVD_node {
+    function item_content_node(o:any, open:boolean):I_RVD_node {
         let { content, contentAttrs = {} } = o;
         if (!open) { return {} }
         return {
@@ -2475,17 +2469,17 @@ export function Acardion(props:any = {}) {
         <RVD
             rootNode={{
                 className: 'aio-input-acardion',
-                column: items.map((o) => item_node(o))
+                column: items.map((o:any) => item_node(o))
             }}
         />
     )
 }
 export function Tree(props:any = {}) {
     let { getText, getBefore, getOptions, getSubtext, onAdd, onRemove, data, indent = 12, getOptionBefore, onChange } = props;
-    let [openDic, setOpenDic] = useState({})
+    let [openDic, setOpenDic] = useState<any>({})
     function getColumn() { return getColumn_req([...data], 0, undefined); }
-    function getColumn_req(model, level, parent) {
-        return model.map((o, i) => {
+    function getColumn_req(model:any, level:number, parent:any) {
+        return model.map((o:any, i:number) => {
             let childs = o.childs || []
             return {
                 style: { paddingRight: level * indent },
@@ -2503,14 +2497,14 @@ export function Tree(props:any = {}) {
         else { data.push(obj) }
         onChange(data);
     }
-    async function remove(o, parent) {
+    async function remove(o:any, parent:any) {
         let res = await onRemove(o, parent);
         if (!res) { return }
-        if (!parent) { data = data.filter((row) => row.id !== o.id) }
-        else { parent.childs = parent.childs.filter((row) => row.id !== o.id); }
+        if (!parent) { data = data.filter((row:any) => row.id !== o.id) }
+        else { parent.childs = parent.childs.filter((row:any) => row.id !== o.id); }
         onChange(data)
     }
-    function GetOptions(row, parent) {
+    function GetOptions(row:any, parent:any) {
         let res = [];
         if (onAdd) {
             res.push({ text: 'افزودن', value: 'add', before: getOptionBefore ? getOptionBefore('add') : undefined, onClick: () => add(row) })
@@ -2525,7 +2519,7 @@ export function Tree(props:any = {}) {
         }
         return res
     }
-    function row_node(o, parent):I_RVD_node {
+    function row_node(o:any, parent:any):I_RVD_node {
 
         let toggle = o.childs.length ? I(openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown,1) : ''
         let Options = () => {
@@ -2568,20 +2562,20 @@ export function Tree(props:any = {}) {
 const Range = ():React.ReactNode => {
     let {rootProps}:AI_context = useContext(AICTX);
     let {
-        start = 0,end = 360,min = start,max = end,step = 1,ranges,circles = [],reverse,pinch,multiple,
-        onChange,size = AIDef('size','pinch'),disabled,className,fill} = rootProps;
-    ranges = ranges || [`${end} 2 #ddd`]
+        start = 0,end = 360,min = start,max = end,step = 1,ranges,circles = [],reverse,round,multiple,text,
+        onChange,size = AIDef<number>('range-size'),disabled,className,fill} = rootProps;
+        ranges = ranges || [`${end} 2 #ddd`]
     let [temp] = useState<any>(getTemp())
     let [cls] = useState<any>(getCls())
     function getTemp(){
         let dom = createRef();
-        let {round = 1,rotate = 0} = rootProps;
+        let {rotate = 0} = rootProps;
         return {
-            dom,round,rotate,start:0,h:reverse?'right':'left',
+            dom,rotate,start:0,h:reverse?'right':'left',
             getP,isValueDisabled,fixAngle,getDistanceByOffset,getCls
         }    
     }
-    function getValidValue(value):number[] {
+    function getValidValue(value:number[]):number[] {
         if (!Array.isArray(value)) {value = [value || 0]}
         for (let i = 0; i < value.length; i++) {
             let point = value[i] || 0;
@@ -2598,7 +2592,7 @@ const Range = ():React.ReactNode => {
     let [disabledDic,setDisabledDic] = useState(getDisabledDic())
     function getDisabledDic(){
         if(!Array.isArray(disabled)){return {}}
-        let res = {}
+        let res:{[key:string]:boolean} = {}
         for(let i = 0; i < disabled.length; i++){
             let key = 'a' + disabled[i];
             res[key] = true
@@ -2607,7 +2601,7 @@ const Range = ():React.ReactNode => {
     }
     function getCls(){
         return {
-            root:`aio-input-range${pinch?' aio-input-range-pinch':''}`,
+            root:`aio-input-range${round?' aio-input-range-round':''}`,
             'range':'aio-input-range-range',
             'label-container':'aio-input-range-label-container',
             'label':'aio-input-range-label',
@@ -2637,11 +2631,14 @@ const Range = ():React.ReactNode => {
                 temp.start = [...valueRef.current];
                 return [0,0];
             },
-            move:({change,mousePosition})=>changeHandle({dx:change.dx,deltaCenterAngle:change.deltaCenterAngle,centerAngle:mousePosition.centerAngle}),
+            move:({change,mousePosition})=>{
+                if(change){changeHandle({dx:change.dx,deltaCenterAngle:change.deltaCenterAngle,centerAngle:mousePosition.centerAngle})}
+            },
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
     function changeValue(newValue:number[]){
+        if(!onChange){return}
         newValue = getValidValue(newValue)
         onChange(multiple?newValue:newValue[0])
     }
@@ -2649,7 +2646,7 @@ const Range = ():React.ReactNode => {
         if(disabled === true || temp.index !== false){return} 
         let value = valueRef.current;
         let clickedValue:number;
-        if(pinch){clickedValue = getValueByAngle(mousePosition.centerAngle);}
+        if(round){clickedValue = getValueByAngle(mousePosition.centerAngle);}
         else {clickedValue = getValueByXP(mousePosition.xp);}
         if(clickedValue < value[value.length - 1] && clickedValue > value[0]){return}
         if(clickedValue < value[0]){change1Unit(-1)}
@@ -2696,7 +2693,7 @@ const Range = ():React.ReactNode => {
         let range = end - start;
         if(index === false){
             let deltaValue;
-            if(pinch){
+            if(round){
                 let v = deltaCenterAngle * (end - start) / 360;
                 v = Math.round(v / step) * step;
                 deltaValue = v;
@@ -2709,7 +2706,7 @@ const Range = ():React.ReactNode => {
         else {
             let {before,after} = getIndexLimit(index)
             let newUnit:number;
-            if(pinch){
+            if(round){
                 newUnit = getValueByAngle(centerAngle);
                 if(newUnit > after || newUnit < before){
                     let deltaAfter = newUnit - after;
@@ -2734,13 +2731,13 @@ const Range = ():React.ReactNode => {
     function isValueDisabled(value:number):boolean{return !!disabledDic[`a${value}`]}
     function pointContainerProps(value:number){
         let style;
-        if(!pinch){style = {[temp.h]:getXPByValue(value) + '%'}}
+        if(!round){style = {[temp.h]:getXPByValue(value) + '%'}}
         else {style = {transform:`rotate(${fixAngle(getAngleByValue(value))}deg)`}}
         return {className:'aio-input-handle-container',draggable:false,style}
     }
     function getP(val:number){
         let res:any = {disabled:isValueDisabled(val),value}
-        if(!!pinch){
+        if(!!round){
             res.angle = fixAngle(getAngleByValue(val));
             res.left = size / 2;
         }
@@ -2757,10 +2754,10 @@ const Range = ():React.ReactNode => {
         })
     }
     function getDistanceByOffset(offset:any,value:number,p:any,type:'scale' | 'label'){
-        let def = {'pinch-point':-8,'pinch-label':8,'pinch-scale':4,'point':0}
+        let def:{[key:string]:number} = {'round-point':-8,'round-label':8,'round-scale':4,'point':0}
         let res = typeof offset === 'function'?offset(value,p):offset;
-        if(res === undefined){res = def[`${pinch?'pinch-':''}${type}`] || 0;}
-        if(!pinch){
+        if(res === undefined){res = def[`${round?'round-':''}${type}`] || 0;}
+        if(!round){
             let sign = offset < 0?'-':'+';
             let top = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
             return {top}
@@ -2769,41 +2766,41 @@ const Range = ():React.ReactNode => {
     }
     function root_node():React.ReactNode{
         let {style,attrs = {}} = rootProps;
-        let rootStyle = !pinch?{...style}:{...style,width:size,height:size};
+        let rootStyle = !round?{...style}:{...style,width:size,height:size};
         let p = addToAttrs(attrs,{className:[cls.root,className,reverse?cls['reverse']:undefined],style:rootStyle,attrs:{ref:temp.dom}})
         return (
             <div {...p}>
-                {!pinch && lines_node()} 
-                {!!pinch && svg_node()} 
+                {text !== undefined && <div className='aio-input-range-text'>{typeof text === 'function'?text():text}</div>}
+                {!round && lines_node()} 
+                {!!round && svg_node()} 
                 <RangeItems key='scale' type='scale' rootProps={rootProps} temp={temp}/>
                 <RangeItems key='label' type='label' rootProps={rootProps} temp={temp}/>
                 {value_node()}
-                <div style={{left:200,position:'absolute'}}>{value.toString()}</div>
             </div>
         )
     }
     function getRanges():React.ReactNode[]{
-        let res = [],from = start,list = typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges;
+        let res = [],from = start,list = (typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges) || [];
         for(let i = 0; i < list.length; i++){
             let [stringValue,stringThickness,color] = list[i].split(' ');
             let to = +stringValue
             let thickness = +stringThickness;
             let radius = (size / 2) - (thickness / 2);
-            let rangeItem = pinch?arc_node(thickness,color,from,to,radius,90):range_node({thickness,color,from,to,className:cls['range']});
+            let rangeItem = round?arc_node(thickness,color,from,to,radius,90):range_node({thickness,color,from,to,className:cls['range'],key:'range' + i});
             res.push(rangeItem);
             from = to;
         }
         return res
     }
     function lines_node():React.ReactNode[]{
-        let rangeDivs = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
-        let fillDivs = []; try{fillDivs = getFills()} catch{fillDivs = []} 
+        let rangeDivs:React.ReactNode[] = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
+        let fillDivs:React.ReactNode[] = []; try{fillDivs = getFills()} catch{fillDivs = []} 
         return [...rangeDivs,...fillDivs]
     }
     function svg_node():React.ReactNode{
-        if(!ranges.length && !circles.length){return null}
-        let rangePathes = []; try{rangePathes = getRanges()} catch{rangePathes = []}
-        let circlePathes = []; try{circlePathes = getCircles()} catch{circlePathes = []} 
+        if(!(ranges || []).length && !circles.length){return null}
+        let rangePathes:React.ReactNode[] = []; try{rangePathes = getRanges()} catch{rangePathes = []}
+        let circlePathes:React.ReactNode[] = []; try{circlePathes = getCircles()} catch{circlePathes = []} 
         let pathes = [...circlePathes,...rangePathes]
         return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
     }
@@ -2814,7 +2811,7 @@ const Range = ():React.ReactNode => {
         let x = size / 2,y = size / 2;
         let a = startAngle, b = endAngle;
         if(reverse){b = startAngle; a = endAngle}
-        return <path d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
+        return <path key={`from${from}to${to}`} d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
     }
     function getCircles():React.ReactNode[]{
         let pathes = []
@@ -2828,7 +2825,7 @@ const Range = ():React.ReactNode => {
         return pathes;
     }
     function getFills():React.ReactNode[]{
-        if(fill === false){return null}
+        if(fill === false){return []}
         let limit = value.length === 1?[start,value[0]]:[...value]; 
         let res:React.ReactNode[] = [];
         for(let i = 1; i < limit.length; i++){
@@ -2837,25 +2834,26 @@ const Range = ():React.ReactNode => {
             let to = limit[i];
             let className = cls['fill'];
             if(fillClassName){className += ' ' + fillClassName}
-            res.push(range_node({thickness,color,from,to,className,style}))
+            res.push(range_node({thickness,color,from,to,className,style,key:'fill' + i}))
         }
         return res
     }
-    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}):React.ReactNode{ 
-        let {thickness,color,from,to,className,style} = p;
+    
+    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any,key:any}):React.ReactNode{ 
+        let {thickness,color,from,to,className,style,key} = p;
         let startSide = getXPByValue(from);
         let endSide = getXPByValue(to);
-        return <div className={className} style={{height:thickness,[temp.h]:startSide + '%',width:(endSide - startSide) + '%',background:color,...style}}/>
+        return <div key={key} className={className} style={{height:thickness,[temp.h]:startSide + '%',width:(endSide - startSide) + '%',background:color,...style}}/>
     }
     function getValueByAngle(angle:number){
-        let fillAngle = 360 * temp.round;
+        let fillAngle = 360 * round;
         let emptyAngle = 360 - fillAngle;
         if(reverse){angle = 180 - angle}
         angle -= temp.rotate; angle -= emptyAngle / 2; angle -= 90; angle = fixAngle(angle);
         return angle * (end - start) / fillAngle;
     }
     function getAngleByValue(value:number,ang?:number){
-        let fillAngle = 360 * temp.round;
+        let fillAngle = 360 * round;
         let emptyAngle = 360 - fillAngle;
         let res = value * fillAngle / (end - start);
         res += 90; res += emptyAngle / 2; res += temp.rotate; res += (ang || 0)
@@ -2874,27 +2872,27 @@ function RangePoint(props:I_RangeValue){
     })
     let {rootProps,value,disabled,angle,index,parentDom} = props;
     if(rootProps.point === false){return null}
-    let {pinch,size = 72} = rootProps;
+    let {round,size = 72} = rootProps;
     let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value}) || {}
     let {attrs = {},className,style,html = '',offset = 0} = point;
-    let zIndexAttrs = getEventAttrs('onMouseDown',(e)=>{
+    let zIndexAttrs = getEventAttrs('onMouseDown',()=>{
         let containers = $(parentDom.current).find('aio-input-handle-container');
         containers.css({zIndex:10});
         containers.eq(index).css({zIndex:100})
     })
     let PROPS = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
     return (
-        <div ref={temp.dom as any} className='aio-input-range-point-container' style={pinch?{left:size / 2 + offset}:{top:offset}} draggable={false}>
+        <div ref={temp.dom as any} className='aio-input-range-point-container' style={round?{left:size / 2 + offset}:{top:offset}} draggable={false}>
             <div {...PROPS}>{html}</div>
         </div>
     )
 }
 function RangeHandle(props:I_RangeValue){
     let {rootProps,value,angle,disabled} = props;
-    let {handle = (()=>{}),size = 72,pinch} = rootProps;
-    if(handle === false || !pinch){return null}
+    let {handle = (()=>{}),size = 72,round} = rootProps;
+    if(handle === false || !round){return null}
     if(handle && typeof handle !== 'function'){
-        alert(`aio-input error => in type pinch, handle props should be a function,
+        alert(`aio-input error => in type round, handle props should be a function,
         handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
         return null
     }
@@ -2903,17 +2901,17 @@ function RangeHandle(props:I_RangeValue){
     return (<div {...PROPS}></div>)
 }
 type I_RangeItems = {type:'scale'|'label',rootProps:AI,temp:any}
-function RangeItems(props:I_RangeItems){
+const RangeItems:FC<I_RangeItems> = (props) => {
     let {type,rootProps,temp} = props;
-    let {pinch,start = 0,end = 360,round = 1,reverse} = rootProps;
-    let [def_scale] = useState(getDefScale);
-    function getDefScale(){return render(true)}
-    let [def_label] = useState(getDefLabel);
-    function getDefLabel(){return render(true)}
-    function getList(item){
-        let {step,list = []} = item,res = [];
+    let {round,start = 0,end = 360,reverse} = rootProps;
+    let [def_scale] = useState<React.ReactNode>(getDefScale);
+    function getDefScale(){return RENDER(true)}
+    let [def_label] = useState<React.ReactNode>(getDefLabel);
+    function getDefLabel(){return RENDER(true)}
+    function getList(item:AI_scales):number[]{
+        let {step,list = []} = item,res:number[] = [];
         if(step){
-            let endStep = !pinch || round !== 1;
+            let endStep = !round || round !== 1;
             let stepLength = Math.floor((end - start) / step) + (endStep?1:0);
             res = new Array(stepLength).fill(0).map((o,i)=>i * step);
         }
@@ -2923,7 +2921,7 @@ function RangeItems(props:I_RangeItems){
         return res;
     }
     function updateLabels() {
-        if(pinch || type !== 'label'){return}
+        if(round || type !== 'label'){return}
         let container = $(temp.dom.current);
         let labels = container.find('.aio-input-range-label');
         if (!labels.length) { return; }
@@ -2949,26 +2947,35 @@ function RangeItems(props:I_RangeItems){
     }
     useEffect(()=>{$(window).on('resize', updateLabels)},[])
     useEffect(()=>{updateLabels()})
-    function render(init:boolean){
-        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type]
+    function RENDER(init:boolean):React.ReactNode{
+        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type] as AI_scales
         let setting = {label:rootProps.label,scale:rootProps.scale}[type] || (()=>{return {}})
         if(!entity){return null}
-        if(!init && !entity.dynamic){return {scale:def_scale,label:def_label}[type]}
-        return getList(entity).map((itemValue,i)=>{
-            return <RangeItem key={type + itemValue} setting={setting} itemValue={itemValue} type={type} rootProps={rootProps} temp={temp}/>
-        })
+        if(!init && !entity.dynamic){
+            let dic:{scale:React.ReactNode,label:React.ReactNode} = {scale:def_scale,label:def_label}
+            return dic[type] as React.ReactNode
+        }
+        return (
+            <>
+                {
+                    getList(entity).map((itemValue,i)=>{
+                        return <RangeItem key={type + itemValue} setting={setting} itemValue={itemValue} type={type} rootProps={rootProps} temp={temp}/>
+                    })
+                }
+            </>
+        )
     }
-    return render(false)
+    return <>{RENDER(false)}</>
 }
 type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label',temp:any,rootProps:AI}
 function RangeItem(props:I_RangeItem){
     let {setting,itemValue,type,temp,rootProps} = props;
-    let {pinch} = rootProps;
+    let {round} = rootProps;
     let cls = temp.getCls();
-    function getContainerStyle(distance,p){return !pinch?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
+    function getContainerStyle(distance:any,p:any){return !round?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
     function getTextStyle(item:AI_scale,p:any,distance:any,type:'scale' | 'label'){
         let {attrs = {},style,fixAngle = (type === 'label')} = item;
-        if(pinch){
+        if(round){
             let res:any = {};
             if(fixAngle){res.transform = `rotate(${-p.angle}deg)`}
             return {...res,...distance,...attrs.style,...style}
@@ -2978,242 +2985,203 @@ function RangeItem(props:I_RangeItem){
     function getDetails(listItem:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
         let p = temp.getP(itemValue);
         let item:AI_scale = listItem(itemValue,p);
-        let {offset = !pinch && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className} = item;
+        let {offset = !round && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className,attrs} = item;
         let distance = temp.getDistanceByOffset(offset,itemValue,p,type)
         let text = html;
         let containerStyle = getContainerStyle(distance,p);
         let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
-        let textProps = {className:`${cls[type]}${className?' ' + className:''}`,style:getTextStyle(item,p,distance,type),draggable:false}
+        let textProps = addToAttrs(attrs,{className:[cls[type],className],style:getTextStyle(item,p,distance,type),attrs:{draggable:false}})
         return {text,textProps,containerProps}
     }
     let {text,textProps,containerProps} = getDetails(setting,itemValue,type);
-    return (<div {...containerProps}><div {...textProps}>{text}</div></div>)
+    return (<div {...containerProps} key={containerProps.key}><div {...textProps}>{text}</div></div>)
 }
-export function AIOValidation(props) {
-    let DATE = new AIODate();
-    let $$ = {
-        translate(text) {
-            if (!text) { return text }
-            let { lang } = props;
+type AV_operator = 'contain' | 'not_contain' | 'function' | 'required'
+type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
+type AV_item = {title?:string,targetName?:string,message?:string,operator:AV_operator,target:any}
+export class AIOValidation{
+    contain:(target:any, value:any)=>{result:boolean,targetName:string};
+    equal:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
+    less:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
+    less_equal:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
+    greater:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
+    greater_equal:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
+    getMessage:(operator:AV_operator,targetName:string,validation:AV_item, unit:string) =>string;
+    translate:(operator:AV_operator)=>string
+    getResult:(p:{target:any, validation:AV_item, value:any, unit:string,operator:AV_operator}) => string | undefined
+    getValidation:()=>string | undefined;
+    validate:()=>string | undefined
+    constructor(props:AV_props){
+        let {lang = 'en'} = props;
+        let DATE = new AIODate();
+        this.contain = (target, value) => {
+            let result,targetName;
+            if(Array.isArray(value)){result = value.indexOf(target) !== -1}
+            else if (target === 'number') {result = /\d/.test(value); targetName = 'number';}
+            else if (target === 'letter') {result = /[a-zA-Z]/.test(value); targetName = 'letter';}
+            else if (target === 'uppercase') {result = /[A-Z]/.test(value); targetName = 'uppercase'}  
+            else if (target === 'lowercase') {result = /[a-z]/.test(value); targetName = 'lowercase'}  
+            else if (target === 'symbol') {result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value); targetName = 'symbol'}  
+            else if (typeof target.test === 'function') {result = target.test(value); targetName = target.toString()}  
+            else {result = value.indexOf(target) !== -1; targetName = target}   
+            return {result,targetName}
+        }
+        this.equal = (target, value,isDate) => {
+            let valueType = Array.isArray(value)?'array':typeof value;
+            let targetType = Array.isArray(value)?'array':typeof target;
+            let result;
+            if(isDate){result = DATE.isEqual(value,target)}
+            else if((valueType === 'array' || valueType === 'string') && targetType === 'number'){result = value.length === target}
+            else {result = JSON.stringify(value) === JSON.stringify(target)}
+            return {result,targetName:target}
+        }
+        this.less = (target, value,isDate) => {
+            let valueType = Array.isArray(value)?'array':typeof value;
+            let targetType = Array.isArray(value)?'array':typeof target;
+            let result;
+            if(isDate){result = DATE.isLess(value,target)}
+            else if(targetType === 'number' && valueType === 'number'){result = value < target}
+            else if((valueType === 'array' || valueType === 'string') && targetType === 'number'){result = value.length < target}
+            else {result = false}
+            return {result,targetName:target}
+        }
+        this.less_equal = (target, value,isDate) => {
+            let valueType = Array.isArray(value)?'array':typeof value;
+            let targetType = Array.isArray(value)?'array':typeof target;
+            let lessResult;
+            if(isDate){lessResult = DATE.isLess(value,target)}
+            else if(targetType === 'number' && valueType === 'number'){lessResult = value < target}
+            else if((valueType === 'array' || valueType === 'string') && targetType === 'number'){lessResult = value.length < target}
+            else {lessResult = false}
+            let {result:equalResult} = this.equal(target,value,isDate)
+            return {result:equalResult && lessResult,targetName:target}
+        }
+        this.greater = (target, value,isDate) => {
+            let valueType = Array.isArray(value)?'array':typeof value;
+            let targetType = Array.isArray(value)?'array':typeof target;
+            let result;
+            if(isDate){result = DATE.isGreater(value,target)}
+            else if(targetType === 'number' && valueType === 'number'){result = value > target}
+            else if((valueType === 'array' || valueType === 'string') && targetType === 'number'){result = value.length > target}
+            else {result = false}
+            return {result,targetName:target}
+        }
+        this.greater_equal = (target, value,isDate) => {
+            let valueType = Array.isArray(value)?'array':typeof value;
+            let targetType = Array.isArray(value)?'array':typeof target;
+            let greaterResult;
+            if(isDate){greaterResult = DATE.isGreater(value,target)}
+            else if(targetType === 'number' && valueType === 'number'){greaterResult = value > target}
+            else if((valueType === 'array' || valueType === 'string') && targetType === 'number'){greaterResult = value.length > target}
+            else {greaterResult = false}
+            let {result:equalResult} = this.equal(target,value,isDate)
+            return {result:equalResult && greaterResult,targetName:target}
+        }
+        this.translate = (operator) => {
             let dict = {
-                'should be contain': 'باید شامل',
-                'should be before': 'باید قبل از',
-                'cannot be after': 'نمی تواند بعد از',
-                'should be after': 'باید بعد از',
-                'cannot be before': 'نمی تواند قبل از',
-                'should not be contain': 'نمی تواند شامل',
-                'should be less than': 'باید کمتر از',
-                'should be more than': 'باید بیشتر از',
-                'could not be more than': 'نباید بزرگ تر از',
-                'could not be less than': 'نباید کوچک تر از',
-                'character(s)': 'کاراکتر',
-                'item(s)': 'مورد',
-                'should be equal': 'باید برابر',
-                'cannot be equal': 'نمی تواند برابر'
+                contain:{en:'should be contain',fa:'باید شامل'},
+                not_contain:{en:'should not be contain',fa:'نمی تواند شامل'},
+                less:{en:'should be less than',fa:'باید کمتر از'},
+                greater:{en:'should be more than',fa:'باید بیشتر از'},
+                not_greater:{en:'could not be more than',fa:'نباید بزرگ تر از'},
+                not_less:{en:'could not be less than',fa:'نباید کوچک تر از'},
+                equal:{en:'should be equal',fa:'باید برابر'},
+                not_equal:{en:'cannot be equal',fa:'نمی تواند برابر'},
+                function:{en:'',fa:''},
+                required:{en:'',fa:''}
             }
-            return lang === 'fa' ? dict[text] : text
-        },
-        getMessage(target, { be, validation, unit = '' }) {
-            let params = validation[2] || {}
-            let { title = props.title, target: targetPresentation = target, message } = params;
+            return dict[operator][lang]
+        }
+        this.getMessage = (operator,targetName,validation, unit) => {
+            let { title = props.title, targetName: TargetName = targetName, message } = validation;
             if (message) { return message }
-            return `${title} ${this.translate(be)} ${JSON.stringify(targetPresentation)} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
-        },
-        contain(target, validation, value) {
-            let config = { be: 'should be contain', validation };
-            if (target === 'number') { if (!/\d/.test(value)) { return this.getMessage('number', config) } }
-            else if (target === 'letter') { if (!/[a-zA-Z]/.test(value)) { return this.getMessage('letter', config) } }
-            else if (target === 'uppercase') { if (!/[A-Z]/.test(value)) { return this.getMessage('uppercase', config) } }
-            else if (target === 'lowercase') { if (!/[a-z]/.test(value)) { return this.getMessage('lowercase', config) } }
-            else if (target === 'symbol') { if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value)) { return this.getMessage('symbol', config) } }
-            else if (typeof target.test === 'function') { if (!target.test(value)) { return this.getMessage(target.toString(), config) } }
-            else { if (value.indexOf(target) === -1 && target !== undefined) { return this.getMessage(target, config) } }
-        },
-        notContain(target, validation, value) {
-            let config = { be: 'should not be contain', validation };
-            if (target === 'number') { if (/\d/.test(value)) { return this.getMessage('number', config) } }
-            else if (target === 'letter') { if (/[a-zA-Z]/.test(value)) { return this.getMessage('letter', config) } }
-            else if (target === 'uppercase') { if (/[A-Z]/.test(value)) { return this.getMessage('uppercase', config) } }
-            else if (target === 'lowercase') { if (/[a-z]/.test(value)) { return this.getMessage('lowercase', config) } }
-            else if (target === 'symbol') { if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value)) { return this.getMessage('symbol', config) } }
-            else if (typeof target.test === 'function') { if (target.test(value)) { return this.getMessage(target.toString(), config) } }
-            else { if (value.indexOf(target) !== -1) { return this.getMessage(target, config) } }
-        },
-        length(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be contain', unit }) }
-            if (value && value.length !== target) { return this.getMessage(target, { validation, be: 'should be contain', unit }) }
-        },
-        notLength(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should not be contain', unit }) }
-            if (value && value.length === target) { return this.getMessage(target, { validation, be: 'should not be contain', unit }) }
-        },
-        lengthLess(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be less than', unit }) }
-            if (value && value.length >= target) { return this.getMessage(target, { validation, be: 'should be less than', unit }) }
-        },
-        lengthLessEqual(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'could not be more than', unit }) }
-            if (value && value.length > target) { return this.getMessage(target, { validation, be: 'could not be more than', unit }) }
-        },
-        lengthMore(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be more than', unit }) }
-            if (value && value.length <= target) { return this.getMessage(target, { validation, be: 'should be more than', unit }) }
-        },
-        lengthMoreEqual(target, validation, value, unit, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'could not be less than', unit }) }
-            if (value && value.length < target) { return this.getMessage(target, { validation, be: 'could not be less than', unit }) }
-        },
-        equal(target, validation, value, a, exact) {
-            if (exact) { this.getMessage(target, { validation, be: 'should be equal' }) }
-            if (JSON.stringify(value) !== JSON.stringify(target)) {
-                return this.getMessage(target, { validation, be: 'should be equal' })
-            }
-        },
-        not(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'cannot be equal' }) }
-            if (JSON.stringify(value) === JSON.stringify(target)) {
-                return this.getMessage(target, { validation, be: 'cannot be equal' })
-            }
-        },
-        dateLess(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be before' }) }
-            if (DATE.isGreater(value, target) || DATE.isEqual(value, target)) {
-                return this.getMessage(target, { validation, be: 'should be before' })
-            }
-        },
-        dateLessEqual(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'cannot be after' }) }
-            if (DATE.isGreater(value, target)) {
-                return this.getMessage(target, { validation, be: 'cannot be after' })
-            }
-        },
-        dateMore(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be after' }) }
-            if (DATE.isLess(value, target) || DATE.isEqual(value, target)) {
-                return this.getMessage(target, { validation, be: 'should be after' })
-            }
-        },
-        dateMoreEqual(target, validation, value, a, exact) {
-            if (exact) { this.getMessage(target, { validation, be: 'cannot be before' }) }
-            if (DATE.isLess(value, target)) {
-                return this.getMessage(target, { validation, be: 'cannot be before' })
-            }
-        },
-        less(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be less than' }) }
-            if (typeof value === 'number' && typeof target === 'number' && value >= target) {
-                return this.getMessage(target, { validation, be: 'should be less than' })
-            }
-        },
-        lessEqual(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'could not be more than' }) }
-            if (typeof value === 'number' && typeof target === 'number' && value > target) {
-                return this.getMessage(target, { validation, be: 'could not be more than' })
-            }
-        },
-        more(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'should be more than' }) }
-            if (typeof value === 'number' && typeof target === 'number' && value <= target) {
-                return this.getMessage(target, { validation, be: 'should be more than' })
-            }
-        },
-        moreEqual(target, validation, value, a, exact) {
-            if (exact) { return this.getMessage(target, { validation, be: 'could not be less than' }) }
-            if (typeof value === 'number' && typeof target === 'number' && value < target) {
-                return this.getMessage(target, { validation, be: 'could not be less than' })
-            }
-        },
-        getResult(fn, target, validation, value, unit) {
+            return `${title} ${this.translate(operator)} ${TargetName} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
+        }
+        this.getResult = (p:{target:any, validation:AV_item, value:any, unit:string,operator:AV_operator}) => {
+            let {target, validation, value, unit,operator} = p;
             target = Array.isArray(target) ? target : [target];
-            if (Array.isArray(target)) {
-                let matchedTargets = [];
-                let notMatchedTargets = [];
-                for (let i = 0; i < target.length; i++) {
-                    let result = this[fn](target[i], validation, value, unit)
-                    if (!result) { matchedTargets.push(target[i]) }
-                    else { notMatchedTargets.push(target[i]) }
+            let targetNames = [];
+            let error = true;
+            let operatorName:string = operator,not = false,isDate = false;
+            let dateIndex = operator.indexOf('date_');
+            if(dateIndex === 0){
+                isDate = true;
+                operatorName = operatorName.slice(dateIndex,operatorName.length);
+            }
+            let notIndex = operatorName.indexOf('not_');
+            if(notIndex === 0){
+                not = true;
+                operatorName = operator.slice(notIndex,operator.length);
+            }
+            
+            
+            for (let i = 0; i < target.length; i++) {
+                let fn:any = (this as any)[operatorName];
+                let {result,targetName} = fn(target[i], value, isDate)
+                if((not && result) || (!not && !result)){
+                    targetNames.push(targetName);
                 }
-                if (matchedTargets.length) { return }
-                // if(notMatchedTargets.length > 3){
-                //   notMatchedTargets = [notMatchedTargets[0],notMatchedTargets[1],notMatchedTargets[2],'...']
-                // }
-                return this[fn](notMatchedTargets.join(' or '), validation, value, unit, true)
+                else {
+                    error = false;
+                    break
+                }
             }
-            else {
-                let result = this[fn](target, validation, value, unit)
-                if (result) { return result }
-            }
-
-        },
-        getValidation() {
-            let { lang = 'en', value, validations = [] } = props;
+            if(error){return this.getMessage(operator,targetNames.join(' or '), validation,unit)}
+        }
+        this.getValidation = () => {
+            let { value, validations = [] } = props;
             let unit = '';
-            if (Array.isArray(value)) { unit = this.translate('item(s)') }
-            else if (typeof value === 'string') { unit = this.translate('character(s)') }
+            if (Array.isArray(value)) { unit = lang === 'fa'?'کاراکتر':'character(s)' }
+            else if (typeof value === 'string') { unit = lang === 'fa'?'مورد':'items(s)' }
             for (let i = 0; i < validations.length; i++) {
-                let [type, target, params = {}] = validations[i];
+                let {operator, target, title = props.title} = validations[i];
                 let result;
-                if (type === 'function') {
+                if (operator === 'function') {
                     result = target(value);
                 }
-                else if (type === 'required') {
+                else if (operator === 'required') {
                     if (value === undefined || value === null || value === '' || value === false || value.length === 0) {
-                        let { title = props.title } = params;
                         if (lang === 'en') { return `${title} is required` }
                         if (lang === 'fa') { return `وارد کردن ${title} ضروری است` }
                     }
                 }
-                else if (type === 'contain') { result = this.getResult('contain', target, validations[i], value) }
-                else if (type === '!contain') { result = this.getResult('notContain', target, validations[i], value) }
-                else if (type === 'length') { result = this.getResult('length', target, validations[i], value, unit) }
-                else if (type === '!length') { result = this.getResult('notLength', target, validations[i], value, unit) }
-                else if (type === 'length<') { result = this.getResult('lengthLess', target, validations[i], value, unit) }
-                else if (type === 'length<=') { result = this.getResult('lengthLessEqual', target, validations[i], value, unit) }
-                else if (type === 'length>') { result = this.getResult('lengthMore', target, validations[i], value, unit) }
-                else if (type === 'length>=') { result = this.getResult('lengthMoreEqual', target, validations[i], value, unit) }
-                else if (type === '=') { result = this.getResult('equal', target, validations[i], value) }
-                else if (type === '!=') { result = this.getResult('not', target, validations[i], value) }
-                else if (type === '<') { result = this.getResult('less', target, validations[i], value) }
-                else if (type === '<=') { result = this.getResult('lessEqual', target, validations[i], value) }
-                else if (type === '>') { result = this.getResult('more', target, validations[i], value) }
-                else if (type === '>=') { result = this.getResult('moreEqual', target, validations[i], value) }
-                else if (type === 'date<') { result = this.getResult('dateLess', target, validations[i], value) }
-                else if (type === 'date<=') { result = this.getResult('dateLessEqual', target, validations[i], value) }
-                else if (type === 'date>') { result = this.getResult('dateMore', target, validations[i], value) }
-                else if (type === 'date>=') { result = this.getResult('dateMoreEqual', target, validations[i], value) }
+                else {
+                    result = this.getResult({operator, target, validation:validations[i], value,unit})
+                }
                 if (result) { return result }
             }
-            return ''
+            return
         }
+        this.validate = ()=>{
+            let validation;
+            try { validation = this.getValidation() } catch { validation = '' }
+            return validation;
+        }    
     }
-    props.translate = props.translate || function (text) { return text }
-    props.lang = props.lang || 'en';
-    let validation;
-    try { validation = $$.getValidation() } catch { validation = '' }
-    return validation;
 }
-export function AIOInputSetStorage(name, value) {
-    let storage = AIOStorage('aio-input-storage');
+export function AIOInputSetStorage(name:string, value:any) {
+    let storage:any = AIOStorage('aio-input-storage');
     storage.save({ name, value })
 }
-export function getFormInputs(fields, path) {
-    function getInput(input) { return typeof input === 'string' ? getFormInput(input, path) : input }
+export function getFormInputs(fields:string[], path?:string) {
+    function getInput(input:any) { return typeof input === 'string' ? getFormInput(input, path) : input }
     return fields.map((o) => Array.isArray(o) ? { row: o.map((oo) => getInput(oo)) } : getInput(o))
 }
-export function getFormInput(Field, path) {
-    function getOptions(field, path) {
-        return {
+export function getFormInput(Field:string, path?:string) {
+    function getOptions(field:string, path?:string) {
+        let dic:any = {
             militaryservice: () => ['مشمول', 'معاف', 'پایان خدمت'], gender: () => ['مرد', 'زن'], married: () => ['مجرد', 'متاهل'], state: () => Object.keys(getCities()),
-            city: () => (value) => {
+            city: () => (value?:any) => {
                 let state;
                 try { eval(`state = value${path ? '.' + path : ''}.state`) } catch { }
                 return !state ? [] : getCities()[state]
             },
 
-        }[field]()
+        }
+        return dic[field]()
     }
-    function getField(field) { return `value${path ? `.${path}` : ''}.${field}` }
-    function getBase(field) {
+    function getField(field:string) { return `value${path ? `.${path}` : ''}.${field}` }
+    function getBase(field:string) {
         let list = field.split('_');
         if (list.length >= 3) {
             let inputProps = {}
@@ -3222,7 +3190,7 @@ export function getFormInput(Field, path) {
             }
             return { field: list[0], input: { type: list[1], ...inputProps }, label: list[2], extra: {} }
         }
-        let { input, label, extra = {} } = {
+        let { input, label, extra = {} }:any = {
             fullname: { input: { type: 'text' }, label: 'نام و نام خانوادگی' },
             firstname: { input: { type: 'text' }, label: 'نام' },
             lastname: { input: { type: 'text' }, label: 'نام خانوادگی' },
@@ -3300,7 +3268,7 @@ function getCities() {
         "یزد": ["ابرکوه", "احمدآباد", "اردکان", "اشکذر", "بافق", "بفروئیه", "بهاباد", "تفت", "حمیدیا", "خضرآباد", "دیهوک", "رضوانشهر", "زارچ", "شاهدیه", "طبس", "عقدا", "مروست", "مهردشت", "مهریز", "میبد", "ندوشن", "نیر", "هرات", "یزد"]
     }
 }
-function getTypes(props) {
+function getTypes(props:AI) {
     function isDropdown(){
         if(['select', 'multiselect', 'date','time'].indexOf(type) !== -1){return true}
         if(['text', 'number', 'textarea'].indexOf(type) !== -1 && props.options){return true}
@@ -3333,7 +3301,7 @@ class DragClass {
     className:string;
     getAttrs:(list:any[],index:number)=>void;
     constructor(p:{onChange:(list:any[],from:any,to:any)=>void,className:string}) {
-        this.dragIndex = undefined;
+        this.dragIndex = 0;
         this.className = p.className;
         this.onChange = p.onChange;
         this.start = (e) => { this.dragIndex = parseInt($(e.target).attr('data-index')); }
@@ -3362,32 +3330,32 @@ class DragClass {
                 ['data-index']:index,
                 onDragStart:this.start,
                 onDragOver:this.over,
-                onDrop:(e)=>this.drop(e,list),
+                onDrop:(e:any)=>this.drop(e,list),
                 draggable:true
             }
         }
     }
 }
-const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: string | ((string | undefined | false)[]), style?: any,attrs?:any }) => {
+const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: any, style?: any,attrs?:any }) => {
     attrs = attrs || {};
     let { style } = p;
     let attrClassName = attrs.className?attrs.className.split(' '):[];
     let className = p.className?(Array.isArray(p.className)?p.className:p.className.split(' ')):[];
-    let classNames = [...attrClassName,...className.filter((o)=>!!o)];
+    let classNames = [...attrClassName,...className.filter((o:any)=>!!o)];
     let newClassName = classNames.length ? classNames.join(' ') : undefined
     let newStyle = { ...attrs.style, ...style };
     return { ...attrs, className: newClassName, style: newStyle,...p.attrs }
 }
 function getDateText(rootProps:AI) {
-    let { value, unit = 'day', text, jalali, placeholder } = rootProps;
+    let { value, unit = AIDef<string>('date-unit'), text, jalali, placeholder } = rootProps;
     if (value) {
         let DATE = new AIODate();
         let list = DATE.convertToArray(value);
         let [year, month = 1, day = 1, hour = 0] = list;
         list = [year, month, day, hour];
-        let pattern;
+        let pattern:string = '{}';
         let splitter = DATE.getSplitter(value)
-        if (text) { pattern = text }
+        if (text && (typeof text === 'string' || typeof text === 'number')) { pattern = text.toString() }
         else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
         else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
         else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
@@ -3395,8 +3363,8 @@ function getDateText(rootProps:AI) {
     }
     return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
 }
-function D2S(n) { n = n.toString(); return n.length === 1 ? '0' + n : n }
-function getDefaultProps(props,types:AI_types){
+function D2S(n:number) { let ns:string = n.toString(); return ns.length === 1 ? '0' + ns : ns }
+function getDefaultProps(props:AI,types:AI_types){
     let valueType = Array.isArray(props.value)?'array':typeof props.value;
     props = {...props}
     if(props.type === 'multiselect'){
@@ -3415,17 +3383,15 @@ function getDefaultProps(props,types:AI_types){
     }
     return props;
 }
-function getOptions(rootProps:AI,types:AI_types) {
+function getOptions(rootProps:AI,types:AI_types):AI_option[] {
     let { options = [],deSelect } = rootProps;
+    if(typeof options === 'function'){options = options()}
     let result = [];
     let renderIndex = 0;
-    let draggable = types.isDropdown && types.hasOption && rootProps.onSwap;
-    function getDefaultOptionChecked(v){
+    let draggable:boolean = types.isDropdown && types.hasOption && !!rootProps.onSwap;
+    function getDefaultOptionChecked(v:any){
         if (rootProps.type === 'multiselect') { return rootProps.value.indexOf(v) !== -1 }
         if (rootProps.type === 'radio') { return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v }
-    }
-    function setActiveClassName(attrs){
-        return addToAttrs(attrs, { className: 'active' })
     }
     if(deSelect && typeof deSelect !== 'function' && deSelect !== true){options = [deSelect,...options]}
     for (let i = 0; i < options.length; i++) {
@@ -3441,7 +3407,8 @@ function getOptions(rootProps:AI,types:AI_types) {
         let defaultChecked = getDefaultOptionChecked(optionValue)
         let checked = getOptionProp({props:rootProps,option, key:'checked', def:defaultChecked})
         let obj = {
-            object:option,
+            object:option,show,
+            loading:rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
             checkIcon: getOptionProp({props:rootProps,option, key:'checkIcon'}) || rootProps.checkIcon,
             checked,
@@ -3459,17 +3426,17 @@ function getOptions(rootProps:AI,types:AI_types) {
             renderIndex, realIndex: i
         }
         if(types.isMultiple){
-            if (rootProps.value.indexOf(optionValue) !== -1) { obj.attrs = setActiveClassName(obj.attrs) }
+            if (rootProps.value.indexOf(optionValue) !== -1) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
         }
         else {
-            if (optionValue === rootProps.value) { obj.attrs = setActiveClassName(obj.attrs) }
+            if (optionValue === rootProps.value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
         }
         result.push(obj)
         renderIndex++;
     }
     return result;
 }
-function getOptionProp(p:{props:AI,option: AI_option, key: string, def?: any, preventFunction?: boolean}) {
+function getOptionProp(p:{props:AI,option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean}) {
     let {props,option, key, def, preventFunction} = p;
     let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option, props) : option[key]
     if (optionResult !== undefined) { return optionResult }
@@ -3491,13 +3458,12 @@ function getOptionProp(p:{props:AI,option: AI_option, key: string, def?: any, pr
 function I(path:any,size:number,p?:any){
     return <Icon path={path} size={size} {...p}/>
 }
-function AIDef<T>(prop:string,type?:AI_type):T{
-    let key = `${type || ''}-${prop}`;
+function AIDef<T>(prop:string):T{
     let res:any = {
         'theme':[],
-        'size':180,
-        'pinch-size':72,
+        'date-size':180,
+        'range-size':72,
         'date-unit':'day'
-    }[key]
+    }[prop]
     return res
 }

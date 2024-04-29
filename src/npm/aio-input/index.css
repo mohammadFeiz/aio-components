@@ -19,7 +19,6 @@
 .aio-input input {
     font-family: inherit;
     font-size: inherit;
-    text-align: inherit;
 }
 
 .aio-input input,
@@ -359,7 +358,7 @@
     border: 1px solid #ddd;
     overflow: hidden;
     cursor: auto;
-    
+    border-top:none;
 }
 
 .aio-input-tag {
@@ -593,106 +592,6 @@
     padding: 6px;
 }
 
-.aio-input-form {
-    width: 100%;
-    font-size: 14px;
-}
-
-.aio-input-form-rtl {
-    direction: rtl;
-}
-
-.aio-input-form-label {
-    font-size: 85%;
-    padding: 0 6px;
-}
-
-.rvd.aio-input-form-body {
-    padding: 12px;
-    overflow-y: auto;
-}
-
-.aio-input-form-error {
-    color: red;
-    font-size: 10px;
-    justify-content: flex-end;
-}
-
-.rvd.aio-input-form-item {
-    overflow: visible;
-}
-
-.aio-input-form-footer {
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    justify-content: flex-end;
-    padding:12px;
-    gap:12px;
-}
-
-.aio-input-form-footer-button {
-    height: 36px;
-    padding: 0 24px;
-    border: 1px solid dodgerblue;
-    color: dodgerblue;
-    border-radius: 6px;
-    background: none;
-}
-
-.aio-input-form-footer-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-}
-
-.aio-input-form-submit-button {
-    background: dodgerblue;
-    color: #fff;
-    border: none;
-    font-family:inherit;
-}
-
-.aio-input-form-header {
-    border-bottom: 1px solid #ddd;
-    display: flex;
-    padding-left: 12px;
-    align-items: center;
-    box-sizing: border-box;
-    height: 48px;
-}
-
-.aio-input-form-rtl .aio-input-form-header {
-    padding: 0;
-    padding-right: 12px;
-}
-
-.aio-input-form-close-icon {
-    height: 100%;
-    width: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.aio-input-form-title {
-    font-size: 120%;
-    font-weight: bold;
-}
-
-.aio-input-form-subtitle {
-    font-size: 90%;
-    opacity: 0.5;
-    font-weight: bold;
-}
-
-.aio-input-form .aio-input {
-    width: 100%;
-    border: 1px solid #ddd;
-    min-height: 30px;
-}
-
-
-
 
 .aio-input-table {
     box-sizing: border-box;
@@ -748,11 +647,10 @@
     display: flex;
     min-width: fit-content;
     background:#fff;
-    height:36px;
 }
 
 .aio-input-table-cell {
-    padding: 0 12px;
+    padding: 6px 12px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -767,9 +665,10 @@
 .aio-input-table-cell .aio-input {
     width: 100%;
     background: none;
-    border: 1px solid transparent;
+    border: 1px solid #ddd;
     border-radius: 0;
     background: none;
+    height:100%;
 }
 
 .aio-input-table .aio-input-text {
@@ -793,8 +692,8 @@
 .aio-input-table-toolbar {
     left: 0;
     display: flex;
-    height: 36px;
     width: 100%;
+    padding:6px;
     align-items: center;
     background: #f8f8f8;
     z-index: 100;
@@ -808,12 +707,12 @@
     align-items: center;
 }
 
-.aio-input-table-toolbar-icon {
+.aio-input-table-toolbar-button {
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
+    min-width: 36px;
     border: none;
     background: none;
 }
@@ -1439,15 +1338,7 @@
     height: 100%;
 }
 
-.aio-input-form .aio-input-image {
-    width: fit-content;
 
-}
-
-.aio-input-form .aio-input-image .aio-input-file {
-    border: none;
-    background: none;
-}
 
 .aio-input-content-justify {
     flex: none;
@@ -1729,7 +1620,7 @@
 .aio-input-range-reverse{
     direction:rtl;
 }
-.aio-input-range-pinch{
+.aio-input-range-round{
     border-radius:100%;
     justify-content: center;
     margin:12px;
@@ -1745,7 +1636,7 @@
     position:relative;
     z-index:10;
 }
-.aio-input-range-pinch .aio-input-handle-container{
+.aio-input-range-round .aio-input-handle-container{
     justify-content: flex-end;
 }
 .aio-input-handle{
@@ -1764,7 +1655,7 @@
     width:0;
     height:0;
 }
-.aio-input-range-pinch .aio-input-range-label-container{
+.aio-input-range-round .aio-input-range-label-container{
     justify-content: flex-end;
 }
 .aio-input-range-label{
@@ -1804,7 +1695,7 @@
     width:0;
     height:0;
 }
-.aio-input-range-pinch .aio-input-range-scale-container{
+.aio-input-range-round .aio-input-range-scale-container{
     justify-content: flex-end;
 }
 
@@ -1819,7 +1710,7 @@
     height:6px;
     
 }
-.aio-input-range-pinch .aio-input-range-scale{
+.aio-input-range-round .aio-input-range-scale{
     height:2px;
     width:6px;
     left:6px;
@@ -1829,4 +1720,36 @@
     height: 4px;
     position: absolute;
     z-index:10;
+}
+.aio-input-form-item-column{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+.aio-input-form-item-row{
+    display:flex;
+    gap:12px;
+}
+.aio-input-form-label{
+    margin-bottom:4px;
+    display:flex;
+    padding:3px 6px;
+}
+.aio-input-form-input{
+    display:flex;
+    flex-direction: column;
+}
+.aio-input-form-input > .aio-input{
+    border:1px solid #ddd;
+}
+.aio-input-form-error{
+    font-size:11px;
+    color:red;
+    display:flex;
+    margin:3px;
+}
+.aio-input-select-value{
+    display:flex;
+    justify-content: flex-start;
+    text-align:left;
 }

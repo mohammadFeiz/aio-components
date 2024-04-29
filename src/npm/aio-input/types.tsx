@@ -3,19 +3,29 @@ import { AIODate } from "../aio-utils"
 import { I_RVD_node } from "../react-virtual-dom/types"
 
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'slider' | 'checkbox' | 'form' | 'time' | 'buttons' | 'pinch' | 'range'
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
-    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close'
+    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
 )
-export type AI_formItem = I_RVD_node & {
-    field:string,
+export type AI_formItem = {
+    field?:string,
     label?:string,
     addressField?:string,
     footer?:React.ReactNode,
-    input:AI,
+    input?:AI,
     labelAttrs?:any,
-    errorAttrs?:any
+    errorAttrs?:any,
+    validations?:any[],
+    row?:AI_formItem[],
+    column?:AI_formItem[],
+    html?:React.ReactNode,
+    className?:string,
+    style?:any,
+    attrs?:any,
+    show?:boolean | (()=>boolean),
+    flex?:number,
+    size?:number
 }
 export type AI_table_column = {
     title?: any,
@@ -37,8 +47,8 @@ export type AI_table_column = {
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
+    addText?:React.ReactNode | ((value:any)=>React.ReactNode),
     after?: React.ReactNode | (() => React.ReactNode),
-    angle?:number,//pinch
     attrs?: any,
     blurChange?: boolean,
     before?: React.ReactNode | (() => React.ReactNode),
@@ -49,8 +59,9 @@ export type AI = {
     circles?:string[],
     className?:string,
     columnGap?: number,
-    columns?: AI_table_column[],
+    columns?: AI_table_column[] | ((p?:any)=>AI_table_column[]),
     count?: number,//list
+    data?:any,
     dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
     decay?: number,//list
     delay?: number,
@@ -58,7 +69,7 @@ export type AI = {
     direction?: 'left' | 'right' | 'top' | 'bottom',
     disabled?: boolean | any[],
     editable?:boolean,
-    end?:number,//slider,pinch
+    end?:number,//range
     endYear?: string | number,//date
     errorAttrs?:any,//form
     excel?: string,
@@ -70,9 +81,9 @@ export type AI = {
         before?:React.ReactNode,after?:React.ReactNode
     },//form
     getErrors?:(p:string[])=>void,//form
-    getValue?: { [key: string]: (p: { row: any, column: AI_table_column, rowIndex: number }) => any },
+    getValue?: { [key: string]: (p: AI_table_param) => any },
     grooveAttrs?:any,//slider
-    handle?:((value:number,p:any)=>{attrs?:any}) | false,//pinch
+    handle?:((value:number,p:any)=>{attrs?:any}) | false,//range
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
@@ -82,8 +93,8 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
-    label?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//slider,pinch
-    labels?:AI_scales,//slider,pinch
+    label?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//range
+    labels?:AI_scales,//range
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
     line?:(index:number,active:boolean)=>{
@@ -97,7 +108,7 @@ export type AI = {
     min?: number,//slider,number
     move?: any,//list
     multiple?: boolean,
-    onAdd?: Object | (() => void),
+    onAdd?: {[key:string]:any} | (() => void),
     onChange?: (newValue: any, p?: any) => void,
     onChangePaging?: (newPaging: AI_table_paging) => void,
     onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
@@ -106,13 +117,12 @@ export type AI = {
     onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
     onSearch?: true | ((searchValue: string) => void),
     open?: boolean,
-    options?: any[],
+    options?: any[] | ((p?:any)=>any[]),
     option?:{[key in AI_optionKey]?:AI_optionProp},
     paging?: AI_table_paging,
-    pinch?:boolean,
     placeholder?: string,
     popover?: AP_modal,//notice get type from aio popup
-    point?:false | AI_point,//slider,pinch
+    point?:false | AI_point,//range
     popupConfig?:I_Map_config
     preview?:boolean,
     ranges?:string[] | ((value:number | number[])=>string[]),
@@ -126,14 +136,14 @@ export type AI = {
     rowsTemplate?: (rows: any[]) => React.ReactNode,
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
     rtl?: boolean,
-    scale?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//slider,pinch
-    scales?:AI_scales,//slider,pinch
+    scale?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//range
+    scales?:AI_scales,//range
     search?: string,
     size?: number,//list,date
     spin?: boolean,
-    start?:number,//slider,pinch
+    start?:number,//range
     startYear?: string | number,//date
-    step?:number,//slider,pinch
+    step?:number,//range
     stop?: number,//list
     style?: any,
     swip?: number,
@@ -149,6 +159,9 @@ export type AI = {
     width?: number | string, //list
     
 }
+export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
+export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
+
 export type AI_point = (index:number,p:any)=>{
     attrs?:any,
     className?:string,
@@ -182,6 +195,7 @@ export type AI_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
 export type AI_optionProp = string | ((option: any,p?:any) => any)
 export type AI_option = {
     object:any,
+    show:any,
     checked: boolean,
     checkIcon: AI_checkIcon,
     after: React.ReactNode | (() => React.ReactNode),
@@ -198,11 +212,13 @@ export type AI_option = {
     value:any,
     tagAttrs:any,
     tagBefore:any,
-    tagAfter:any
+    tagAfter:any,
+    onClick?:(o:any)=>void,
+    close?:boolean
 }
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
-export type AI_addToAttrs = (attrs: any, p: { className?: string | (string[]), style?: any,attrs?:any }) => any
+export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any,attrs?:any }) => any
 export type AI_context = {
     rootProps: AI,
     showPassword: boolean,
@@ -237,6 +253,7 @@ export type AI_table_paging = {
     length?: number,
     sizes?: number[]
 }
+export type AI_table_rows = { rows: any[], searchedRows:any[], sortedRows:any[], pagedRows:any[] }
 export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
 export type type_table_context = {
     rootProps: AI,
@@ -257,7 +274,7 @@ export type AI_Popover_props = {
     getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types
 }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange: (value: type_time_value) => void, onClose: () => void }
+export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange?: (value: type_time_value) => void, onClose: () => void }
 export type I_FileItem = {file:any,index:number}
 export type I_Multiselect = {options:AI_option[]}
 export type I_Tags = {options:AI_option[]}
@@ -380,8 +397,8 @@ export type I_Map_context = {
     address:string,
     goToCurrent:()=>void,
     mapConfig:I_Map_config,
-    popupConfig:I_Map_config,
-    onClose:()=>void,
+    popupConfig?:I_Map_config,
+    onClose?:()=>void,
     onChange:(value:I_Map_value)=>void
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }

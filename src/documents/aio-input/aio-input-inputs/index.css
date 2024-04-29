@@ -1,4 +1,4 @@
-.my-input:not(.aio-input-slider-pinch){
+.my-input:not(.aio-input-slider-round){
     border:1px solid #eee;
 }
 .badge{
@@ -19,19 +19,19 @@
     text-decoration: underline;
     font-size:12px;
 }
-.aio-input-range-pinch .pinch-scale-small{
+.aio-input-range-round .round-scale-small{
     width:4px; 
     height:1px;
 }
-.aio-input-range-pinch .pinch-scale-medium{
+.aio-input-range-round .round-scale-medium{
     width:8px; 
     height:2px;
 }
-.aio-input-range-pinch .pinch-scale-large{
+.aio-input-range-round .round-scale-large{
     width:12px; 
     height:3px;
 }
-.aio-input-range-pinch .pinch-scale-red{
+.aio-input-range-round .round-scale-red{
     background:red;
 }
 .slider-scale-small{

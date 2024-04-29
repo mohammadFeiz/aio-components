@@ -2,22 +2,22 @@ import React from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale } from "@mdi/js"
 import {Icon} from "@mdi/react"
 
-export default function RangeExamples({pinch,reverse}){
-    let index = 28;
+export default function RangeExamples({round,reverse}){
+    let index;
     return [
         {
             title:'start step end',
-            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:100,step:1,labels:{step:10}},
+            props:{reverse:!!reverse,round:!!round,start:0,end:100,step:1,labels:{step:10}},
             code:
     `start={0} 
     end={100} 
     step={1}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'label (step)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,start:0,end:8,
+                reverse:!!reverse,round:!!round,start:0,end:8,
                 labels:{
                     step:1
                 }
@@ -28,13 +28,15 @@ export default function RangeExamples({pinch,reverse}){
     labels={{
         step:1
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (attrs)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,start:0,end:8,
+                reverse:!!reverse,
+                round:!!round?1:undefined,
+                start:0,end:8,
                 labels:{step:1},
                 label:(value)=>{
                     return {
@@ -56,13 +58,15 @@ export default function RangeExamples({pinch,reverse}){
                 }
             }
         }}
-        ${pinch?'pinch={true}':''}
+        ${round?'round={1}':''}
         ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (html)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,start:0,end:8,
+                reverse:!!reverse,
+                round:!!round?1:undefined,
+                start:0,end:8,
                 labels:{step:1},
                 label:(value)=>{
                     return {
@@ -79,13 +83,15 @@ export default function RangeExamples({pinch,reverse}){
             html:value === 5?<Icon path={mdiAccount} size={0.6}/>:value
         }
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (offset)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,start:0,end:8,
+                reverse:!!reverse,
+                round:!!round?1:undefined,
+                start:0,end:8,
                 labels:{step:1},
                 label:()=>{
                     return {offset:-20}
@@ -98,13 +104,15 @@ export default function RangeExamples({pinch,reverse}){
     label={()=>{
         return {offset:-20}
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (list)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,start:0,end:8,
+                reverse:!!reverse,
+                round:!!round?1:undefined,
+                start:0,end:8,
                 labels:{list:[1,2,5]}
             },
             code:
@@ -113,12 +121,14 @@ export default function RangeExamples({pinch,reverse}){
     labels={{
         list:[1,2,5]
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (step)',
-            props:{reverse:!!reverse,pinch:!!pinch,step:5,start:0,end:100,scales:{step:5}},
+            props:{reverse:!!reverse,
+                round:!!round?1:undefined,
+                step:5,start:0,end:100,scales:{step:5}},
             code:
     `start={0}
     end={100}
@@ -126,13 +136,15 @@ export default function RangeExamples({pinch,reverse}){
     scales={{
         step:5
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (attrs)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,step:5,start:0,end:60,scales:{step:1},
+                reverse:!!reverse,
+                round:!!round?1:undefined,
+                step:5,start:0,end:60,scales:{step:1},
                 scale:(value)=>{
                     let width,height;
                     if(value % 10 === 0){height = 12; width = 3}
@@ -141,7 +153,7 @@ export default function RangeExamples({pinch,reverse}){
                     let background = value >= 40?'red':'#333'   
                     return {
                         attrs:{
-                            style:{width:pinch?height:width,height:pinch?width:height,background}
+                            style:{width:round?height:width,height:round?width:height,background}
                         }
                     }  
                 }
@@ -158,17 +170,18 @@ export default function RangeExamples({pinch,reverse}){
         let background = value >= 40?'red':'#333'   
         return {
             attrs:{
-                style:{width:pinch?height:width,height:pinch?width:height,background}
+                style:{width,height,background}
             }
         }  
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (style object)',
             props:{
-                pinch:!!pinch,reverse:!!reverse,
+                round:!!round?1:undefined,
+                reverse:!!reverse,
                 step:5,
                 start:0,
                 end:60,
@@ -180,7 +193,7 @@ export default function RangeExamples({pinch,reverse}){
                     else {height = 2; width = 1}
                     let background = value >= 40?'red':'#333'
                     return {
-                        style:{width:pinch?height:width,height:pinch?width:height,background}
+                        style:{width:round?height:width,height:round?width:height,background}
                     }
                 }
             },
@@ -191,31 +204,32 @@ export default function RangeExamples({pinch,reverse}){
     scales={{step:1}}
     scale={(value)=>{
         let height,width;
-        if(value % 10 === 0){${pinch?'width':'height'} = 8; ${pinch?'height':'width'} = 3}
-        else if(value % 5 === 0){${pinch?'width':'height'} = 5; ${pinch?'height':'width'} = 2}
-        else {${pinch?'width':'height'} = 2; ${pinch?'height':'width'} = 1}
+        if(value % 10 === 0){${round?'width':'height'} = 8; ${round?'height':'width'} = 3}
+        else if(value % 5 === 0){${round?'width':'height'} = 5; ${round?'height':'width'} = 2}
+        else {${round?'width':'height'} = 2; ${round?'height':'width'} = 1}
         let background = value >= 40?'red':'#333'
         return {
             style:{width,height,background}
         }
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (className string)',
             props:{
-                pinch:!!pinch,reverse:!!reverse,
+                round:!!round?1:undefined,
+                reverse:!!reverse,
                 step:5,
                 start:0,
                 end:60,
                 scales:{step:1},
                 scale:(value)=>{
                     let className = ''
-                    if(value % 10 === 0){className = `${pinch?'pinch':'slider'}-scale-large`}
-                    else if(value % 5 === 0){className = `${pinch?'pinch':'slider'}-scale-medium`}
-                    else {className = `${pinch?'pinch':'slider'}-scale-small`}
-                    className += value >= 40?` ${pinch?'pinch':'slider'}-scale-red`:''
+                    if(value % 10 === 0){className = `${round?'round':'slider'}-scale-large`}
+                    else if(value % 5 === 0){className = `${round?'round':'slider'}-scale-medium`}
+                    else {className = `${round?'round':'slider'}-scale-small`}
+                    className += value >= 40?` ${round?'round':'slider'}-scale-red`:''
                     return {className}
                 }
             },
@@ -226,18 +240,20 @@ export default function RangeExamples({pinch,reverse}){
     scales={{step:1}}
     scale={(value)=>{
         let className = ''
-        if(value % 10 === 0){className = '${pinch?'pinch':'slider'}-scale-large'}
-        else if(value % 5 === 0){className = '${pinch?'pinch':'slider'}-scale-medium'}
-        else {className = '${pinch?'pinch':'slider'}-scale-small'}
-        className += value >= 40?' ${pinch?'pinch':'slider'}-scale-red':''
+        if(value % 10 === 0){className = '${round?'round':'slider'}-scale-large'}
+        else if(value % 5 === 0){className = '${round?'round':'slider'}-scale-medium'}
+        else {className = '${round?'round':'slider'}-scale-small'}
+        className += value >= 40?' ${round?'round':'slider'}-scale-red':''
         return {className}
     }}
-    ${pinch?'pinch={true}':''}
+    ${round?'round={1}':''}
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (offset)',
-            props:{reverse:!!reverse,pinch:!!pinch,step:5,start:0,end:100,scales:{step:5},scale:()=>{return {offset:-10}}},
+            props:{reverse:!!reverse,
+                round:!!round?1:undefined,
+                step:5,start:0,end:100,scales:{step:5},scale:()=>{return {offset:-10}}},
             code:
         `start={0}
         end={100}
@@ -247,11 +263,13 @@ export default function RangeExamples({pinch,reverse}){
             return {offset:-10}
         }}
         ${reverse?'reverse={true}':''}
-        ${pinch?'pinch={true}':''}`
+        ${round?'round={1}':''}`
         },
         {
             title:'scale (list)',
-            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:100,scales:{list:[20,40,60,80]}},
+            props:{reverse:!!reverse,
+                round:!!round?1:undefined,
+                start:0,end:100,scales:{list:[20,40,60,80]}},
             code:
         `start={0}
         end={100}
@@ -260,12 +278,13 @@ export default function RangeExamples({pinch,reverse}){
             list:[20,40,60,80]
         }}
         ${reverse?'reverse={true}':''}
-        ${pinch?'pinch={true}':''}`
+        ${round?'round={1}':''}`
         },
         {
             title:'scale(html)',
             props:{
-                reverse:!!reverse,pinch:!!pinch,
+                reverse:!!reverse,
+                round:!!round?1:undefined,
                 style:{margin:36},
                 start:0,
                 end:8,    
@@ -274,7 +293,7 @@ export default function RangeExamples({pinch,reverse}){
                     return {
                         style:{
                             width:24,height:24,background:'none',
-                            transform:!pinch?undefined:`rotate(${-angle}deg)`
+                            transform:!round?undefined:`rotate(${-angle}deg)`
                         },
                         html:<Icon 
                         path={[
@@ -321,12 +340,12 @@ export default function RangeExamples({pinch,reverse}){
             }
         }}
         ${reverse?'reverse={true}':''}
-        ${pinch?'pinch={true}':''}`
+        ${round?'round={1}':''}`
         },
         {
-            title:'handle (attrs)',show:()=>!!pinch,
+            title:'handle (attrs)',show:()=>!!round,
             props:{
-                pinch:true,
+                round:1,
                 start:0,
                 end:24,
                 handle:(val,{disabled,angle,value})=>{
@@ -340,7 +359,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-    `pinch={true}
+    `round={1}
     start={0}
     end={24}
     handle={{
@@ -352,15 +371,15 @@ export default function RangeExamples({pinch,reverse}){
     }}`
         },
         {
-            title:'handle (false)',show:()=>!!pinch,
+            title:'handle (false)',show:()=>!!round,
             props:{
-                pinch:true,
+                round:1,
                 start:0,
                 end:24,
                 handle:false
             },
             code:
-    `pinch={true}
+    `round={1}
     start={0}
     end={24}
     handle={false}`
@@ -369,7 +388,7 @@ export default function RangeExamples({pinch,reverse}){
             title:'point (attrs)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:24,
                 point:(value,{angle})=>{
@@ -407,13 +426,13 @@ export default function RangeExamples({pinch,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'point (html)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:24,
                 circles:['35 2 dodgerblue'],
@@ -454,13 +473,13 @@ export default function RangeExamples({pinch,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'point (offset)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:24,
                 circles:['35 2 dodgerblue'],
@@ -503,13 +522,13 @@ export default function RangeExamples({pinch,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'point (false)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:24,
                 point:false
@@ -519,17 +538,16 @@ export default function RangeExamples({pinch,reverse}){
     end={24}
     point={false}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
-            title:'disabled',show:()=>!pinch,
+            title:'disabled',show:()=>!round,
             props:{
-                reverse:!!reverse,pinch:!!pinch,
+                reverse:!!reverse,round:!!round?1:undefined,
                 attrs:{style:{margin:12}},
                 start:0,
                 end:12,
                 disabled:[4,6,7,10,11],
-                point:false,
                 scales:{step:1},
                 scale:(value,{disabled})=>{
                     return {
@@ -599,13 +617,13 @@ export default function RangeExamples({pinch,reverse}){
                 html:${'`${value}:00`'}
             }
         }}
-        ${pinch?'pinch={true}':''}
+        ${round?'round={1}':''}
         ${reverse?'reverse={true}':''}`
         },
         {
-            title:'disabled',show:()=>!!pinch,
+            title:'disabled',show:()=>!!round,
             props:{
-                pinch:true,
+                round:1,
                 attrs:{style:{margin:48}},
                 start:0,
                 end:12,
@@ -657,7 +675,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-        `pinch={true}
+        `round={1}
         attrs={{style:{border:'2px solid #000',margin:48}}}
         start={0}
         end={12}
@@ -708,9 +726,9 @@ export default function RangeExamples({pinch,reverse}){
         }}`
         },
         {
-            title:'circles',show:()=>!!pinch,
+            title:'circles',show:()=>!!round,
             props:{
-                pinch:true,
+                round:1,
                 start:0,
                 end:100,
                 circles:[
@@ -719,7 +737,7 @@ export default function RangeExamples({pinch,reverse}){
                 ]
             },
             code:
-    `pinch={true}
+    `round={1}
     start={0}
     end={100}
     circles={[
@@ -728,9 +746,9 @@ export default function RangeExamples({pinch,reverse}){
     ]}`
         },
         {
-            title:'rotate (-180 deg)',show:()=>!!pinch,
+            title:'rotate (-180 deg)',show:()=>!!round,
             props:{
-                pinch:true,
+                round:1,
                 start:0,
                 end:100,
                 rotate:-180,
@@ -740,16 +758,15 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-    `pinch={true}
+    `round={1}
     start={0}
     end={100}
     label={{step:10,offset:0}}
     rotate={-180}`
         },
         {
-            title:'round (0 to 1)',show:()=>!!pinch,
+            title:'round (0 to 1)',show:()=>!!round,
             props:{
-                pinch:true,
                 start:0,
                 end:100,
                 round:0.75,
@@ -761,7 +778,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-    `pinch={true}
+    `round={0.75}
     start={0}
     end={100}
     rotate:180,
@@ -769,9 +786,8 @@ export default function RangeExamples({pinch,reverse}){
     label:{step:10,offset:0}`
         },
         {
-            title:'round (0 to 1)',show:()=>!!pinch,
+            title:'round (0 to 1)',show:()=>!!round,
             props:{
-                pinch:true,
                 start:0,
                 end:100,
                 round:0.5,
@@ -783,7 +799,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-    `pinch={true}
+    `round={0.5}
     start={0}
     end={100}
     rotate:180,
@@ -791,9 +807,8 @@ export default function RangeExamples({pinch,reverse}){
     label:{step:10,offset:0}`
         },
         {
-            title:'round (0 to 1)',show:()=>!!pinch,
+            title:'round (0 to 1)',show:()=>!!round,
             props:{
-                pinch:true,
                 start:0,
                 end:100,
                 round:0.25,
@@ -805,7 +820,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             code:
-    `pinch={true}
+    `round={0.25}
     start={0}
     end={100}
     round={0.25}
@@ -815,7 +830,7 @@ export default function RangeExamples({pinch,reverse}){
             title:'ranges (array on strings)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:100,
                 ranges:[
@@ -835,13 +850,13 @@ export default function RangeExamples({pinch,reverse}){
         '100 6 green' 
     ]}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'ranges (function returns array of strings)',
             props:{
                 reverse:!!reverse,
-                pinch:!!pinch,
+                round:!!round?1:undefined,
                 start:0,
                 end:100,
                 circles:[],
@@ -876,7 +891,7 @@ export default function RangeExamples({pinch,reverse}){
                 }
             },
             html:value,    
-            ${pinch?'offset:-15,':''}
+            ${round?'offset:-15,':''}
         }
     }}
     ranges={(value)=>{
@@ -886,17 +901,17 @@ export default function RangeExamples({pinch,reverse}){
         ]
     }}
     ${reverse?'reverse={true}':''}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         },
         {
             title:'multiple',
             initialValue:[0,4],
-            props:{reverse:!!reverse,pinch:!!pinch,start:0,end:100,step:1,multiple:true},
+            props:{reverse:!!reverse,round:!!round,start:0,end:100,step:1,multiple:true},
             code:
     `start={0} 
     end={100} 
     step={2}
-    ${pinch?'pinch={true}':''}`
+    ${round?'round={1}':''}`
         }
         
     ].map((o,i)=>{
