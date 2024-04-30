@@ -1,7 +1,7 @@
 import React from 'react';
 import Axios from 'axios';
 import AIOStorage from './../../npm/aio-storage/index';
-import AIODate from './../../npm/aio-date/index';
+import {AIODate} from './../../npm/aio-utils/index';
 import AIOPopup from './../../npm/aio-popup/index';
 import $ from 'jquery';
 import './index.css';
@@ -18,7 +18,7 @@ type AA_cache = { name: string, time: number };
 export type AA_props = {
     id: string, getAppState?: () => any, baseUrl: string, token?: string, loader?: () => React.ReactNode,
     onCatch?: AA_onCatch, getError?: AA_getError,
-    apis:AA_apis,mock?:any
+    apis:AA_apis,mock?:any,lang:'en' | 'fa'
 }
 export type AA_apiSetting = {
     description?:string,
@@ -80,10 +80,12 @@ export default class AIOApis {
     dateToString:(date:any,pattern?:string)=>string;
     dateToNumber:(date:any)=>any;
     dateToArray:(date:any,jalali?:boolean)=>number[];
+    DATE:AIODate;
     constructor(props: AA_props) {
-        let { id, getAppState = () => { }, baseUrl, token, loader,apis,mock = {} } = props
+        let { id, getAppState = () => { }, baseUrl, token, loader,apis,mock = {},lang = 'en' } = props
         let storage = AIOStorage(id) as I_AIOStorage;
         this.storage = storage;
+        this.DATE = new AIODate()
         this.getAppState = getAppState;
         this.setStorage = (name: string, value: any) => storage.save({ name, value })
         this.getStorage = (name, def) => storage.load({ name, def });
@@ -96,13 +98,13 @@ export default class AIOApis {
             new AIOPopup().addAlert({type,text,subtext,time})
         }
         this.dateToString = (date,pattern = '{year}/{month}/{day}')=>{
-            return AIODate().getDateByPattern({date,pattern})
+            return this.DATE.getDateByPattern(date,pattern)
         }
         this.dateToNumber = (date)=>{
-            return AIODate().getTime({date})
+            return this.DATE.getTime(date)
         }
         this.dateToArray = (date,jalali)=>{
-            return AIODate().convertToArray({date,jalali})
+            return this.DATE.convertToArray(date,jalali)
         }
         this.getLoading = (id) => {
             console.log(`aio-service show loading by ${id}`)
@@ -155,7 +157,7 @@ export default class AIOApis {
             if(message.error === false){return}
             let text:string;
             if(typeof message.error === 'string'){text = message.error}
-            else {text = `${description} با خطا روبرو شد`}
+            else {text = lang === 'fa'?`${description} با خطا روبرو شد`:`An error was occured in ${description}`}
             this.addAlert('error',text,result,message.time );
         }
         this.showSuccessMessage = (m)=>{
@@ -163,7 +165,7 @@ export default class AIOApis {
             if (!message.success) {return}
             let subtext = typeof message.success === 'function' ? message.success(result) : message.success;
             if (subtext === true) { subtext = '' }
-            this.addAlert('success',`${description} با موفقیت انجام شد`, subtext as string,message.time);
+            this.addAlert('success',lang === 'fa'?`${description} با موفقیت انجام شد`:`${description} was successfull`, subtext as string,message.time);
         }
         this.responseToResult = async (p) => {
             let {url,method,body,getResult,config = {}} = p;
@@ -245,14 +247,3 @@ export default class AIOApis {
     }
 }
 
-export type fsdfsfsdfsd = {
-    loading?: boolean, loadingParent?: string,token?:string,
-    message?:AA_message,
-    onError?:(result:string)=>void,
-    onSuccess?:(result:any)=>void,
-    onCatch?: AA_onCatch, 
-    getError?: AA_getError,
-    errorResult?:any,
-    description?:string,
-    cache?: { name: string, time: number },
-}
