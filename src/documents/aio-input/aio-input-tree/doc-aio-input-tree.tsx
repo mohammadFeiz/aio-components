@@ -24,7 +24,14 @@ function Basic(){
             childs:[
                 {name:'row0-0',id:'row0-0',active:true},
                 {name:'row0-1',id:'row0-1'},
-                {name:'row0-2',id:'row0-2'},        
+                {
+                    name:'row0-2',id:'row0-2',
+                    childs:[
+                        {name:'row0-2-0',id:'row0-2-0'},
+                        {name:'row0-2-1',id:'row0-2-1',active:true},
+                        {name:'row0-2-2',id:'row0-2-2'}                
+                    ]
+                },        
             ]
         },
         {name:'row1',id:'row1'},

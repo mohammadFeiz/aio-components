@@ -864,7 +864,7 @@ function Options(props:AI_Options) {
 }
 function Layout(props: I_Layout) {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open,showPassword,setShowPassword }: AI_context = useContext(AICTX)
-    let { option, realIndex, renderIndex,toggle } = props;
+    let { option, realIndex, renderIndex,toggle,indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     function getClassName() {
@@ -879,6 +879,7 @@ function Layout(props: I_Layout) {
             if (types.isInput) { cls += ` aio-input-input` }
             if (rtl) { cls += ' aio-input-rtl' }
         }
+        if(indent){cls += ` aio-input-indent-${indent.size}`}
         if (properties.disabled) { cls += ' disabled' }
         if(properties.className){cls += ' ' + properties.className}
         cls += ' ' + datauniqid;
@@ -1006,8 +1007,20 @@ function Layout(props: I_Layout) {
         if(toggle === undefined){return null}
         return (<div className="aio-input-toggle" onClick={(e)=>toggle.onClick(e)}>{getToggleIcon()}</div>)
     }
+    function Indent(){
+        if(!indent){return null}
+        let {count} = indent;
+        return (
+            <div className="aio-input-indents">
+                {new Array(count).fill(0).map((o,i)=>{
+                    return <div className={`aio-input-indent`}></div>
+                })}
+            </div>
+        )
+    }
     let properties = getProperties();
     let content = (<>
+        {Indent()}
         {DragIcon()}
         {Toggle()}
         {CheckIcon()}
@@ -1190,7 +1203,7 @@ export const Acardion:FC<I_Acardion> = (props) => {
     }
     function SetOpen(newOpen:boolean,id:string){
         if (!multiple) { setOpenDic(!newOpen ? {} : { [id]: true }) }
-            else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
+        else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
     }
     function toggle(id:any) {
         let open = !!openDic[id]
@@ -1237,27 +1250,42 @@ const AcardionBody:FC<I_AcardionBody> = (props)=>{
     let {html} = typeof body === 'function'?body():body
     return (<div className={`aio-input-acardion-body`}>{html}</div>)
 }
-type I_TreeContext = {toggle:(id:string)=>void,mountedDic:{[id:string]:boolean},openDic:{[id:string]:boolean},rootProps:AI,types:any,add:any,remove:any}
+type I_TreeContext = {
+    toggle:(id:string)=>void,
+    mountedDic:{[id:string]:boolean},
+    openDic:{[id:string]:boolean},
+    rootProps:AI,
+    types:any,
+    add:any,
+    remove:any,
+    indent:number
+}
 //should implement
 //inlineEdit
 //toggleIcon
+type I_treeItem = {
+    option:AI_option,row:any,level:number,index:number,parent?:any,parentId?:string,
+    id:string,open:boolean,indent:{size:number,count:number}}
 const TreeContext = createContext({} as any);
 const Tree:FC = () => {
     let {rootProps,types}:AI_context = useContext(AICTX);
     let { onAdd, onRemove,value = [],onChange } = rootProps;
     let [openDic, setOpenDic] = useState<any>({})
     let [mountedDic, setMountedDic] = useState<{[id:string]:boolean}>({})
+    let [indent] = useState<number>(getIndent)
     console.log(openDic,mountedDic)
-    function SetMounted(id:string){
-        setMountedDic({ ...mountedDic, [id]: !mountedDic[id] })
-    }
-    function SetOpen(id:string){
-        //if(!openDic[id] === false){return}
-        setOpenDic({ ...openDic, [id]: !openDic[id] })
+    function SetMounted(id:string){setMountedDic({ ...mountedDic, [id]: !mountedDic[id] })}
+    function SetOpen(id:string){setOpenDic({ ...openDic, [id]: !openDic[id] })}
+    function getIndent(){
+        let {indent = 12} = rootProps;
+        if(typeof indent !== 'number'){indent = 12}
+        indent = Math.round(indent / 6) * 6;
+        if(indent < 0){indent = 0}
+        if(indent > 60){indent = 60}
+        return indent;
     }
     function toggle(id:any) {
-        let open = !!openDic[id]
-        let time = 500
+        let open = !!openDic[id],time = 300;
         if(!open){SetOpen(id); setTimeout(()=>SetMounted(id),0)}
         else {SetMounted(id); setTimeout(()=>SetOpen(id),time)}
     }    
@@ -1291,101 +1319,68 @@ const Tree:FC = () => {
         }
         onChange(value)
     }
-    function getContext(){
-        let context:I_TreeContext = {
-            toggle,rootProps,mountedDic,openDic,add,remove,types
-        }
-        return context;
-    }
+    function getContext():I_TreeContext{return {toggle,rootProps,mountedDic,openDic,add,remove,types,indent}}
     return (
         <TreeContext.Provider value={getContext()}>
-            <div className="aio-input-tree">
-                <TreeHeader/>
-                <TreeBody rows={value} level={0}/>
-            </div>
+            <div className="aio-input-tree"><TreeHeader/><TreeBody rows={value} level={0}/></div>
         </TreeContext.Provider>
     )
 }
 const TreeHeader:FC = ()=>{
     const {rootProps,add}:I_TreeContext = useContext(TreeContext);
     let {addText = 'add'} = rootProps;
-    return (
-        <div className="aio-input-tree-header">
-            <button onClick={() => add()}>{I(mdiPlusThick,.8)}{addText}</button>
-        </div>
-    )
+    return (<div className="aio-input-tree-header"><button onClick={() => add()}>{I(mdiPlusThick,.8)}{addText}</button></div>)
 }
 type I_TreeOptions = {row:any,parent?:any}
 const TreeOptions:FC<I_TreeOptions> = (props)=>{
     let {row,parent} = props;
-    let {rootProps,add,remove,types}:I_TreeContext = useContext(TreeContext);
+    let {rootProps,add,remove}:I_TreeContext = useContext(TreeContext);
     let { onAdd, onRemove,addText = 'Add',removeText = 'Remove' } = rootProps;
     let options = typeof rootProps.options === 'function'?rootProps.options({row,parent}):rootProps.options;
     function GetOptions() {
         let res = [];
         if (onAdd) {res.push({ text: addText, value: 'add', before: I(mdiPlusThick,0.7), onClick: () => add(row) })}
-        let Options = (options || []).map((o)=>{
-            return {...o,onClick:()=>{if(o.onClick){o.onClick(row,parent)}}}
-        })
+        let Options = (options || []).map((o)=>{return {...o,onClick:()=>{if(o.onClick){o.onClick(row,parent)}}}})
         res = [...res,...Options]
         if (onRemove) {res.push({ text: removeText, value: 'remove', before: I(mdiDelete,0.7), onClick: () => remove(row, parent) })}
         return res
     }
     let Options = GetOptions();
     if(!Options.length){return null}
-    return (
-        <AIOInput type='select' caret={false} style={{ background: 'none' }} options={GetOptions()} text={I(mdiDotsHorizontal,0.7)} />
-    )
+    let p:AI = {type:'select',caret:false,className:'aio-input-tree-options-button',options:GetOptions(),text:I(mdiDotsHorizontal,0.7)}
+    return <AIOInput {...p}/>;
 }
 type I_TreeBody = {rows:any[],level:number,parent?:any,parentId?:string}
 const TreeBody:FC<I_TreeBody> = (props)=>{
-    let {rootProps,types,openDic,mountedDic}:I_TreeContext = useContext(TreeContext);
+    let {rootProps,types,openDic,mountedDic,indent}:I_TreeContext = useContext(TreeContext);
     let {rows,level,parent,parentId} = props;
-    let {rowHeight = 36,rowGap = 12} = rootProps;
     let options = getOptions({rootProps,types,options:rows,properties:{
         after:(row:AI_option)=><TreeOptions row={row.object} parent={parent}/>
     }})
-    let open = parentId === undefined?true:openDic[parentId];
+    let open = parentId === undefined?true:!!openDic[parentId];
     let mounted = parentId == undefined?true:mountedDic[parentId];
-    function getStyle(open){
-        if(mounted){
-            let l = rows.length;
-            let size = (rowHeight * l) + ((l - 1) * rowGap);
-            return {minHeight:size}
-        }
-        else {
-            return {minHeight:0}
-        }
-    } 
     return (
-        <div style={getStyle(open)} className={`aio-input-tree-body${open?' open':''}${!mounted?' not-mounted':''}`}>
-            {options.map((option:any, i:number) => <TreeRow row={rows[i]} option={option} level={level}/>)}
+        <div className={`aio-input-tree-body${open?' open':''}${!mounted?' not-mounted':''}`}>
+            {options.map((option:any, index:number) => {
+                let item:I_treeItem = {row:rows[index],option,index,level,parent,parentId,id:option.value,open,indent:{count:level,size:indent}}
+                let p = {className:`aio-input-tree-row`}
+                return <div {...p}><TreeRow item={item}/><TreeChilds item={item}/></div>;
+            })}
         </div>
     )
 }
-type I_TreeRow = {row:any,option:AI_option,level:number}
-const TreeRow:FC<I_TreeRow> = (props) => {
-    let {openDic,rootProps,toggle}:I_TreeContext = useContext(TreeContext);
-    let {indent = 12} = rootProps;
-    let {row,option,level} = props;
-    let {value} = option;
-    let childs = row.childs || []
-    let open = !!openDic[value];
-    let toggleState:(0|1|2) = !childs.length?2:(open?1:0);
-    function getChilds(){
-        if(!childs || !childs.length){return null}
-        if(!openDic[option.value]){return null}
-        return <TreeBody rows={childs} level={level + 1} parent={row} parentId={option.value}/>
-    }
-    return (
-        <div 
-            style={{paddingLeft:level * indent}}
-            className={`aio-input-tree-row`}
-        >
-            <Layout option={option} properties={{onClick:()=>{}}} toggle={{state:toggleState,onClick:()=>toggle(value)}}/>
-            {getChilds()}  
-        </div>
-    )
+const TreeRow:FC<{item:I_treeItem}> = (props)=>{
+    let {toggle,openDic}:I_TreeContext = useContext(TreeContext);
+    let {option,row,id,indent} = props.item;
+    let {childs = []} = row;
+    let toggleState:(0|1|2) = !childs.length?2:(!!openDic[id]?1:0);
+    let p:I_Layout = {indent,option,properties:{onClick:()=>{}},toggle:{state:toggleState,onClick:()=>toggle(id)}};
+    return <Layout {...p}/>;
+}
+const TreeChilds:FC<{item:I_treeItem}> = (props) => {
+    let {row,level,id,open} = props.item,{childs = []} = row;
+    if(!open || !childs || !childs.length){return null}
+    return <TreeBody rows={childs} level={level + 1} parent={row} parentId={id}/>
 }
 export class AIOValidation{
     contain:(target:any, value:any)=>{result:boolean,targetName:string};

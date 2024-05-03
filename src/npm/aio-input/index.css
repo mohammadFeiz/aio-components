@@ -1636,17 +1636,14 @@
     border-radius:4px;
     color:#fff;    
 }
-.aio-input-toggle{
-    width:24px;
-    height:24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+
 .aio-input-tree-option{
-    margin-bottom:6px;
-    padding:6px;
+    padding:0;
     gap:6px;
+    height:36px;
+    background:#fff;
+    position: relative;
+    z-index:10;
 }
 .aio-input-tree-body{
     position:relative;
@@ -1656,18 +1653,20 @@
 .aio-input-tree-row{
     position:relative;
 }
-.aio-input-tree-body{
-    transition: transform .3s;
+.aio-input-tree-body .aio-input-tree-row{
+    transition: transform .3s,margin-top .3s;
     transition-timing-function: cubic-bezier(.16,2.02,.84,.96);
     transform:scaleY(1);
     transform-origin: top;
     overflow:hidden;
+    margin-top: 0px;
 }
-.aio-input-tree-body.not-mounted{
-    transition: transform .3s;
+.aio-input-tree-body.not-mounted .aio-input-tree-row{
+    transition: transform .3s,margin-top .3s;
     transform:scaleY(0); 
     transform-origin: top;
     transform-style: preserve-3d;
+    margin-top: -48px;
 }
 
 .aio-input-date-years{
@@ -1849,4 +1848,49 @@
     display:flex;
     justify-content: flex-start;
     text-align:left;
+}
+.aio-input-toggle{
+    width:24px;
+    height:24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-input-indents{
+    height:100%;
+    display:flex;
+}
+.aio-input-indent{
+    background:yellow;
+    height:100%;
+}
+.aio-input-indent-6 .aio-input-indent{
+    width:6px;
+}
+.aio-input-indent-12 .aio-input-indent{
+    width:12px;
+}
+.aio-input-indent-18 .aio-input-indent{
+    width:18px;
+}
+.aio-input-indent-24 .aio-input-indent{
+    width:24px;
+}
+.aio-input-indent-30 .aio-input-indent{
+    width:30px;
+}
+.aio-input-indent-36 .aio-input-indent{
+    width:36px;
+}
+.aio-input-indent-42 .aio-input-indent{
+    width:42px;
+}
+.aio-input-indent-48 .aio-input-indent{
+    width:48px;
+}
+.aio-input-indent-54 .aio-input-indent{
+    width:54px;
+}
+.aio-input-indent-60 .aio-input-indent{
+    width:60px;
 }

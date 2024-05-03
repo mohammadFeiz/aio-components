@@ -283,7 +283,7 @@ export type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:numbe
 
 export type I_Layout = {
     option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
-    properties?: any,
+    properties?: any,indent?:{size:number,count:number},
     toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void}
 }
 
