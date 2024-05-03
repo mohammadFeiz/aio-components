@@ -283,10 +283,10 @@ export type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:numbe
 
 export type I_Layout = {
     option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
-    properties?: any,indent?:{size:number,count:number},
+    properties?: any,indent?:AI_indent,
     toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void}
 }
-
+export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent}
 export type I_DPContext = {
     translate: (text: string) => string,
     DATE:AIODate,

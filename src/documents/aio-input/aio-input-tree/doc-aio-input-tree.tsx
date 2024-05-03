@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import DOC from "../../../resuse-components/doc"
 import AIOInput from "../../../npm/aio-input"
 import { AI } from "../../../npm/aio-input/types"
-import { mdiAccount, mdiEye } from "@mdi/js"
+import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiCheckboxMarkedOutline, mdiEye, mdiFolder } from "@mdi/js"
 import Icon from '@mdi/react';
 export default function DOC_Tree(props) {
     return (
@@ -31,7 +31,8 @@ function Basic(){
                         {name:'row0-2-1',id:'row0-2-1',active:true},
                         {name:'row0-2-2',id:'row0-2-2'}                
                     ]
-                },        
+                },
+                {name:'row0-3',id:'row0-3'}        
             ]
         },
         {name:'row1',id:'row1'},
@@ -59,8 +60,9 @@ function Basic(){
             value:'option.id',
             checked:(row)=>!!row.active,
             subtext:(row)=>row.id,
-            before:()=><Icon path={mdiAccount} size={0.6}/>,
-            after:(row)=>row.active?'active':'deactive'
+            before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
+            after:(row)=>row.active?'active':'deactive',
+            checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>]
         }
     }
     return (
