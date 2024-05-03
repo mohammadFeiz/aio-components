@@ -5,7 +5,7 @@ import AIOPopup from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import {Icon} from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
-import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
+import RVD from '../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
 import { AP_modal, AP_snackebar } from '../../npm/aio-popup/types.tsx';

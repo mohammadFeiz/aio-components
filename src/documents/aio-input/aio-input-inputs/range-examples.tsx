@@ -2,22 +2,22 @@ import React from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale } from "@mdi/js"
 import {Icon} from "@mdi/react"
 
-export default function RangeExamples({round,reverse}){
-    let index;
+export default function RangeExamples({round,reverse,vertical}){
+    let index = 20;
     return [
         {
             title:'start step end',
-            props:{reverse:!!reverse,round:!!round,start:0,end:100,step:1,labels:{step:10}},
+            props:{reverse:!!reverse,vertical:!!vertical,round:!!round,start:0,end:100,step:1,labels:{step:10}},
             code:
     `start={0} 
     end={100} 
     step={1}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'label (step)',
             props:{
-                reverse:!!reverse,round:!!round,start:0,end:8,
+                reverse:!!reverse,vertical:!!vertical,round:!!round,start:0,end:8,
                 labels:{
                     step:1
                 }
@@ -28,13 +28,13 @@ export default function RangeExamples({round,reverse}){
     labels={{
         step:1
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (attrs)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,end:8,
                 labels:{step:1},
@@ -58,13 +58,13 @@ export default function RangeExamples({round,reverse}){
                 }
             }
         }}
-        ${round?'round={1}':''}
+        ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
         ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (html)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,end:8,
                 labels:{step:1},
@@ -83,13 +83,13 @@ export default function RangeExamples({round,reverse}){
             html:value === 5?<Icon path={mdiAccount} size={0.6}/>:value
         }
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (offset)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,end:8,
                 labels:{step:1},
@@ -104,13 +104,13 @@ export default function RangeExamples({round,reverse}){
     label={()=>{
         return {offset:-20}
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'label (list)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,end:8,
                 labels:{list:[1,2,5]}
@@ -121,12 +121,12 @@ export default function RangeExamples({round,reverse}){
     labels={{
         list:[1,2,5]
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (step)',
-            props:{reverse:!!reverse,
+            props:{reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 step:5,start:0,end:100,scales:{step:5}},
             code:
@@ -136,13 +136,13 @@ export default function RangeExamples({round,reverse}){
     scales={{
         step:5
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (attrs)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 step:5,start:0,end:60,scales:{step:1},
                 scale:(value)=>{
@@ -153,7 +153,7 @@ export default function RangeExamples({round,reverse}){
                     let background = value >= 40?'red':'#333'   
                     return {
                         attrs:{
-                            style:{width:round?height:width,height:round?width:height,background}
+                            style:{width:round || vertical?height:width,height:round || vertical?width:height,background}
                         }
                     }  
                 }
@@ -164,9 +164,9 @@ export default function RangeExamples({round,reverse}){
     step={5}
     scale={(value)=>{
         let width,height;
-        if(value % 10 === 0){height = 12; width = 3}
-        else if(value % 5 === 0){height = 8; width = 2}
-        else {height = 4; width = 1}
+        if(value % 10 === 0){${round || vertical?'width':'height'} = 12; ${!round && !vertical?'width':'height'} = 3}
+        else if(value % 5 === 0){${round || vertical?'width':'height'} = 8; ${!round && !vertical?'width':'height'} = 2}
+        else {${round || vertical?'width':'height'} = 4; ${!round && !vertical?'width':'height'} = 1}
         let background = value >= 40?'red':'#333'   
         return {
             attrs:{
@@ -174,14 +174,14 @@ export default function RangeExamples({round,reverse}){
             }
         }  
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (style object)',
             props:{
                 round:!!round?1:undefined,
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 step:5,
                 start:0,
                 end:60,
@@ -193,7 +193,7 @@ export default function RangeExamples({round,reverse}){
                     else {height = 2; width = 1}
                     let background = value >= 40?'red':'#333'
                     return {
-                        style:{width:round?height:width,height:round?width:height,background}
+                        style:{width:round || vertical?height:width,height:round || vertical?width:height,background}
                     }
                 }
             },
@@ -204,32 +204,32 @@ export default function RangeExamples({round,reverse}){
     scales={{step:1}}
     scale={(value)=>{
         let height,width;
-        if(value % 10 === 0){${round?'width':'height'} = 8; ${round?'height':'width'} = 3}
-        else if(value % 5 === 0){${round?'width':'height'} = 5; ${round?'height':'width'} = 2}
-        else {${round?'width':'height'} = 2; ${round?'height':'width'} = 1}
+        if(value % 10 === 0){${round || vertical?'width':'height'} = 8; ${!round && !vertical?'width':'height'} = 3}
+        else if(value % 5 === 0){${round || vertical?'width':'height'} = 5; ${!round && !vertical?'width':'height'} = 2}
+        else {${round || vertical?'width':'height'} = 2; ${!round && !vertical?'width':'height'} = 1}
         let background = value >= 40?'red':'#333'
         return {
             style:{width,height,background}
         }
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (className string)',
             props:{
                 round:!!round?1:undefined,
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 step:5,
                 start:0,
                 end:60,
                 scales:{step:1},
                 scale:(value)=>{
                     let className = ''
-                    if(value % 10 === 0){className = `${round?'round':'slider'}-scale-large`}
-                    else if(value % 5 === 0){className = `${round?'round':'slider'}-scale-medium`}
-                    else {className = `${round?'round':'slider'}-scale-small`}
-                    className += value >= 40?` ${round?'round':'slider'}-scale-red`:''
+                    if(value % 10 === 0){className = `${round?'round':'slider'}${vertical?'-vertical':''}-scale-large`}
+                    else if(value % 5 === 0){className = `${round?'round':'slider'}${vertical?'-vertical':''}-scale-medium`}
+                    else {className = `${round?'round':'slider'}${vertical?'-vertical':''}-scale-small`}
+                    className += value >= 40?` ${round?'round':'slider'}${vertical?'-vertical':''}-scale-red`:''
                     return {className}
                 }
             },
@@ -240,18 +240,18 @@ export default function RangeExamples({round,reverse}){
     scales={{step:1}}
     scale={(value)=>{
         let className = ''
-        if(value % 10 === 0){className = '${round?'round':'slider'}-scale-large'}
-        else if(value % 5 === 0){className = '${round?'round':'slider'}-scale-medium'}
-        else {className = '${round?'round':'slider'}-scale-small'}
-        className += value >= 40?' ${round?'round':'slider'}-scale-red':''
+        if(value % 10 === 0){className = '${round?'round':'slider'}${vertical?'-vertical':''}-scale-large'}
+        else if(value % 5 === 0){className = '${round?'round':'slider'}${vertical?'-vertical':''}-scale-medium'}
+        else {className = '${round?'round':'slider'}${vertical?'-vertical':''}-scale-small'}
+        className += value >= 40?' ${round?'round':'slider'}${vertical?'-vertical':''}-scale-red':''
         return {className}
     }}
-    ${round?'round={1}':''}
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
     ${reverse?'reverse={true}':''}`
         },
         {
             title:'scale (offset)',
-            props:{reverse:!!reverse,
+            props:{reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 step:5,start:0,end:100,scales:{step:5},scale:()=>{return {offset:-10}}},
             code:
@@ -263,11 +263,11 @@ export default function RangeExamples({round,reverse}){
             return {offset:-10}
         }}
         ${reverse?'reverse={true}':''}
-        ${round?'round={1}':''}`
+        ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'scale (list)',
-            props:{reverse:!!reverse,
+            props:{reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,end:100,scales:{list:[20,40,60,80]}},
             code:
@@ -278,12 +278,12 @@ export default function RangeExamples({round,reverse}){
             list:[20,40,60,80]
         }}
         ${reverse?'reverse={true}':''}
-        ${round?'round={1}':''}`
+        ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'scale(html)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 style:{margin:36},
                 start:0,
@@ -340,7 +340,7 @@ export default function RangeExamples({round,reverse}){
             }
         }}
         ${reverse?'reverse={true}':''}
-        ${round?'round={1}':''}`
+        ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'handle (attrs)',show:()=>!!round,
@@ -387,7 +387,7 @@ export default function RangeExamples({round,reverse}){
         {
             title:'point (attrs)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:24,
@@ -426,12 +426,12 @@ export default function RangeExamples({round,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'point (html)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:24,
@@ -473,12 +473,12 @@ export default function RangeExamples({round,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'point (offset)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:24,
@@ -522,12 +522,12 @@ export default function RangeExamples({round,reverse}){
         }
     }}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'point (false)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:24,
@@ -538,12 +538,12 @@ export default function RangeExamples({round,reverse}){
     end={24}
     point={false}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'disabled',show:()=>!round,
             props:{
-                reverse:!!reverse,round:!!round?1:undefined,
+                reverse:!!reverse,vertical:!!vertical,round:!!round?1:undefined,
                 attrs:{style:{margin:12}},
                 start:0,
                 end:12,
@@ -617,7 +617,7 @@ export default function RangeExamples({round,reverse}){
                 html:${'`${value}:00`'}
             }
         }}
-        ${round?'round={1}':''}
+        ${round?'round={1}':''} ${vertical?'vertical={true}':''} 
         ${reverse?'reverse={true}':''}`
         },
         {
@@ -627,10 +627,9 @@ export default function RangeExamples({round,reverse}){
                 attrs:{style:{margin:48}},
                 start:0,
                 end:12,
-                //rotate:180,
+                rotate:180,
                 disabled:[4,6,7,10,11],
                 point:false,
-                rotate:180,
                 scales:{step:1},
                 scale:(value,{disabled})=>{
                     return {
@@ -829,7 +828,7 @@ export default function RangeExamples({round,reverse}){
         {
             title:'ranges (array on strings)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:100,
@@ -850,12 +849,12 @@ export default function RangeExamples({round,reverse}){
         '100 6 green' 
     ]}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'ranges (function returns array of strings)',
             props:{
-                reverse:!!reverse,
+                reverse:!!reverse,vertical:!!vertical,
                 round:!!round?1:undefined,
                 start:0,
                 end:100,
@@ -901,17 +900,17 @@ export default function RangeExamples({round,reverse}){
         ]
     }}
     ${reverse?'reverse={true}':''}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         },
         {
             title:'multiple',
             initialValue:[0,4],
-            props:{reverse:!!reverse,round:!!round,start:0,end:100,step:1,multiple:true},
+            props:{reverse:!!reverse,vertical:!!vertical,round:!!round,start:0,end:100,step:1,multiple:true},
             code:
     `start={0} 
     end={100} 
     step={2}
-    ${round?'round={1}':''}`
+    ${round?'round={1}':''} ${vertical?'vertical={true}':''} `
         }
         
     ].map((o,i)=>{

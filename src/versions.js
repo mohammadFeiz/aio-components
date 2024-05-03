@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import RVD from './npm/react-virtual-dom/react-virtual-dom';
+import RVD from './npm/react-virtual-dom/index.tsx';
 import Icon from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 export default function Versions({goToHome}){

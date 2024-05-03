@@ -1,7 +1,7 @@
 import React, { useState, createContext, useContext } from 'react';
-import RSA from './../../npm/react-super-app/react-super-app';
+import RSA from './../../npm/react-super-app/index.tsx';
 import AIOInput from './../../npm/aio-input/index.tsx';
-import RVD, { renderCard, renderCards, renderCardsRow } from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD, { renderCard, renderCards, renderCardsRow } from './../../npm/react-virtual-dom/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiChevronRight, mdiAccount, mdiDelete, mdiMinus, mdiPlus, mdiHome } from '@mdi/js';
 import './t1.css';

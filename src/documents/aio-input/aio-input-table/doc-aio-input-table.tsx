@@ -1,7 +1,7 @@
 import React, { Component,createRef, useEffect, useState } from 'react';
 import DOC, { I_DOC } from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
+import RVD from '../../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-table.css';
 import {Icon} from '@mdi/react';

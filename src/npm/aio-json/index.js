@@ -1,5 +1,5 @@
 import React,{Component,createRef} from "react";
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import {Icon} from '@mdi/react';
 import {mdiClose,mdiPlusThick,mdiCog,mdiChevronRight,mdiChevronDown,mdiContentCopy} from '@mdi/js';
 import AIOInput from './../../npm/aio-input/index.tsx';

@@ -199,8 +199,9 @@ return (
 }
 function Input({type}){
     let [setting,setSetting] = useState({
-        round:false,
-        reverse:false
+        round:true,
+        reverse:false,
+        vertical:false
     })
     let [list,setList] = useState(getList(setting))    
     function changeSetting(setting){
@@ -735,6 +736,12 @@ function Input({type}){
                     text='reverse'
                     value={!!setting.reverse}
                     onChange={()=>changeSetting({...setting,reverse:!setting.reverse})}
+                />
+                <AIOInput
+                    type='checkbox'
+                    text='vertical'
+                    value={!!setting.vertical}
+                    onChange={()=>changeSetting({...setting,vertical:!setting.vertical})}
                 />
             </div>
         )

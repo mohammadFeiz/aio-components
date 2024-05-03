@@ -1,6 +1,6 @@
 import Axios from "axios";
 import AIODate from "./../../npm/aio-date/aio-date";
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import AIOPopup from "./../../npm/aio-popup/aio-popup";
 import './index.css';
 import $ from "jquery";

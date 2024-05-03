@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import {Gauge} from './../../npm/aio-chart/aio-chart';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import AIOJson from './../../npm/aio-json/aio-json';
 import { Icon } from '@mdi/react';
 import { mdiDelete, mdiPlusThick, mdiClose } from '@mdi/js';
-import RVD from '../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from '../../npm/react-virtual-dom/index.tsx';
 import './index.css';
 export default class DOC_AIOGauge extends Component {
     render() {

@@ -1,9 +1,7 @@
 import { AP_modal } from "../aio-popup/types"
-import { AIODate } from "../aio-utils"
-import { I_RVD_node } from "../react-virtual-dom/types"
-
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range'
+import { AIODate } from "./../aio-utils"
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' | 'tree'|
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
@@ -48,11 +46,11 @@ export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
     addText?:React.ReactNode | ((value:any)=>React.ReactNode),
-    after?: React.ReactNode | (() => React.ReactNode),
+    after?: React.ReactNode | ((p?:any) => React.ReactNode),
     attrs?: any,
     blurChange?: boolean,
-    before?: React.ReactNode | (() => React.ReactNode),
-    body?:{attrs?:any},//form
+    before?: React.ReactNode | ((p?:any) => React.ReactNode),
+    body?:{attrs?:any,html?:React.ReactNode} | ((value?:any)=>{attrs?:any,html?:React.ReactNode}),//form
     caret?: boolean | React.ReactNode,
     changeClose?:boolean,//date
     checkIcon?: AI_checkIcon,
@@ -66,7 +64,6 @@ export type AI = {
     decay?: number,//list
     delay?: number,
     deSelect?:any,
-    direction?: 'left' | 'right' | 'top' | 'bottom',
     disabled?: boolean | any[],
     editable?:boolean,
     end?:number,//range
@@ -82,11 +79,11 @@ export type AI = {
     },//form
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
-    grooveAttrs?:any,//slider
     handle?:((value:number,p:any)=>{attrs?:any}) | false,//range
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
+    indent?:number,
     initialDisabled?:boolean,//form
     inputAttrs?: any,
     inputs?:any,//form
@@ -108,12 +105,12 @@ export type AI = {
     min?: number,//slider,number
     move?: any,//list
     multiple?: boolean,
-    onAdd?: {[key:string]:any} | (() => void),
+    onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void>),
     onChange?: (newValue: any, p?: any) => void,
     onChangePaging?: (newPaging: AI_table_paging) => void,
     onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
     onClick?:()=>void,
-    onRemove?: true | ((p: { row: any, action: Function, rowIndex: number }) => void),
+    onRemove?: true | ((p: { row: any, action?: Function, rowIndex?: number,parent?:any }) => Promise<boolean | void>),
     onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
     onSearch?: true | ((searchValue: string) => void),
     open?: boolean,
@@ -126,6 +123,7 @@ export type AI = {
     popupConfig?:I_Map_config
     preview?:boolean,
     ranges?:string[] | ((value:number | number[])=>string[]),
+    removeText?:string,
     reverse?:boolean,
     rotate?:number,
     round?:number,
@@ -156,6 +154,7 @@ export type AI = {
     type: AI_type,
     unit?: AI_date_unit | AI_time_unit,
     value?: any,
+    vertical?:boolean,
     width?: number | string, //list
     
 }
@@ -168,9 +167,6 @@ export type AI_point = (index:number,p:any)=>{
     style?:any,
     html?:React.ReactNode,
     offset?:number,
-    labelHtml?:React.ReactNode,
-    labelShow?:boolean | 'inline',
-    labelAttrs?:any
 }
 export type AI_scales = {
     list?:number[],
@@ -198,8 +194,8 @@ export type AI_option = {
     show:any,
     checked: boolean,
     checkIcon: AI_checkIcon,
-    after: React.ReactNode | (() => React.ReactNode),
-    before: React.ReactNode | (() => React.ReactNode),
+    after: React.ReactNode | ((p?:any) => React.ReactNode),
+    before: React.ReactNode | ((p?:any) => React.ReactNode),
     draggable: boolean,
     text: React.ReactNode,
     subtext: React.ReactNode,
@@ -230,7 +226,8 @@ export type AI_context = {
     click: (e: any, dom: any) => void,
     optionClick: (option: AI_option) => void,
     types: AI_types,
-    DATE:AIODate
+    DATE:AIODate,
+
 }
 export type AI_types = {
     isMultiple: boolean,
@@ -286,7 +283,8 @@ export type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:numbe
 
 export type I_Layout = {
     option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
-    properties?: any
+    properties?: any,
+    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void}
 }
 
 export type I_DPContext = {
@@ -296,7 +294,7 @@ export type I_DPContext = {
     activeDate: I_DP_activeDate,
     changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
     onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
-    today: any, todayWeekDay: any, thisMonthString: any,months:string[]
+    today: any, todayWeekDay: any, thisMonthString: any,months:string[],
 
 }
 export type I_Calendar = { onClose?: () => void }
@@ -305,10 +303,6 @@ export type I_DP_activeDate = { year?: number, month?: number, day?: number }
 export type I_DPCellWeekday = {weekDay:string}
 
 export type I_DPCell = {dateArray:number[]}
-
-export type I_DPYears = {
-    value: number, onChange: (newValue: number) => void
-}
 
 export type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
 
@@ -402,3 +396,30 @@ export type I_Map_context = {
     onChange:(value:I_Map_value)=>void
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
+export type I_RangeContext = {
+    getXPByValue:(value:number)=>number,
+    fixAngle:(angle:number)=>number,
+    getAngleByValue:(value:number,extra?:number)=>number,
+    isValueDisabled:(value:number)=>boolean,
+    getSide:()=>'left'|'right'|'top'|'bottom',
+    getOffset:()=>'top'|'left',
+    rootProps:AI,dom:any,value:number[],
+}
+export type I_RangeValueContainer = {itemValue:number,index:number}
+export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}
+export type I_RangeArc = {rootProps:AI,thickness:number,color:string,from:number,to:number,radius:number,rotate:number}
+export type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,index:number,parentDom:any}
+export type I_RangeItems = {type:'scale'|'label'}
+export type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'}
+export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
+export type AI_FormContext = {
+    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
+    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
+    setValue:(itemValue:any, formItem:AI_formItem)=>void
+}
+export type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column'}
+export type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
+export type AV_operator = 'contain' | 'not_contain' | 'function' | 'required'
+export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
+export type AV_item = {title?:string,targetName?:string,message?:string,operator:AV_operator,target:any}
+

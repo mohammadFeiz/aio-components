@@ -77,21 +77,67 @@ export function HandleBackButton(callback: () => void = () => { }) {
         callback()
     };
 }
+export class DragClass {
+    dragIndex: number;
+    onChange:(list:any[],from:any,to:any)=>void;
+    start:(e:any)=>void;
+    over:(e:any)=>void;
+    drop:(e:any,list:any[])=>void;
+    swap:(arr:any[],from:any,to:any)=>any[];
+    className:string;
+    getAttrs:(list:any[],index:number)=>void;
+    constructor(p:{onChange:(list:any[],from:any,to:any)=>void,className:string}) {
+        this.dragIndex = 0;
+        this.className = p.className;
+        this.onChange = p.onChange;
+        this.start = (e) => { this.dragIndex = parseInt($(e.target).attr('data-index') as any); }
+        this.over = (e) => { e.preventDefault(); }
+        this.drop = (e,list) => {
+            e.stopPropagation();
+            let from = this.dragIndex, dom = $(e.target);
+            if (!dom.hasClass(this.className)) { dom = dom.parents(`.${this.className}`); };
+            if (!dom.hasClass(this.className)) { return };
+            let to = parseInt(dom.attr('data-index') as any);
+            if (from === to) { return }
+            if (typeof this.onChange === 'function') { 
+                let newList = this.swap(list, from, to);
+                this.onChange(newList, list[from], list[to]) 
+            }
+        }
+        this.swap = (arr, from, to) => {
+            if (to === from + 1) { let a = to; to = from; from = a; }
+            let Arr = arr.map((o, i) => { o._testswapindex = i; return o })
+            let fromIndex = Arr[from]._testswapindex
+            Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
+            return Arr.filter((o) => o._testswapindex !== fromIndex)
+        }
+        this.getAttrs = (list,index)=>{
+            return {
+                ['data-index']:index,
+                onDragStart:this.start,
+                onDragOver:this.over,
+                onDrop:(e:any)=>this.drop(e,list),
+                draggable:true
+            }
+        }
+    }
+}
 export function GetClient(e: any): { x: number, y: number } { return 'ontouchstart' in document.documentElement && e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } }
 export function ExportToExcel(rows: any[], config: any = {}) {
     let { promptText = 'Inter Excel File Name' } = config;
     let o = {
-        fixPersianAndArabicNumbers(str) {
+        fixPersianAndArabicNumbers(str:string):string {
             if (typeof str !== 'string') { return str }
-            var persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
+            let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
                 arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
-            for (var i = 0; i < 10; i++) { str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i); }
+            let i:number;
+            for (i = 0; i < 10; i++) { str = str.replace(persianNumbers[i], i.toString()).replace(arabicNumbers[i], i.toString()); }
             return str;
         },
-        getJSON(rows) {
+        getJSON(rows:any[]) {
             let result = [];
             for (let i = 0; i < rows.length; i++) {
-                let json = rows[i], fixedJson = {};
+                let json = rows[i], fixedJson:any = {};
                 for (let prop in json) { fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop]) }
                 result.push(fixedJson);
             }
@@ -99,29 +145,25 @@ export function ExportToExcel(rows: any[], config: any = {}) {
         },
         export() {
             let name = window.prompt(promptText);
-            if (!name || name === null || !name.length) return;
+            if (!name || name === null || !name.length) { return };
             var data = this.getJSON(rows);
             var arrData = typeof data != "object" ? JSON.parse(data) : data;
-            var CSV = "";
-            // CSV += 'title';
-            CSV += '\r\n\n';
+            var CSV = ""; CSV += '\r\n\n';
             if (true) {
                 let row = "";
                 for (let index in arrData[0]) { row += index + ","; }
-                row = row.slice(0, -1);
-                CSV += row + "\r\n";
+                row = row.slice(0, -1); CSV += row + "\r\n";
             }
             for (var i = 0; i < arrData.length; i++) {
                 let row = "";
                 for (let index in arrData[i]) { row += '"' + arrData[i][index] + '",'; }
-                row.slice(0, row.length - 1);
-                CSV += row + "\r\n";
+                row.slice(0, row.length - 1); CSV += row + "\r\n";
             }
             if (CSV === "") { alert("Invalid data"); return; }
             var fileName = name.replace(/ /g, "_");
             var universalBOM = "\uFEFF";
             var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV);
-            var link: any = document.createElement("a");
+            let link: any = document.createElement("a");
             link.href = uri;
             link.style = "visibility:hidden";
             link.download = fileName + ".csv";
@@ -395,7 +437,7 @@ export class Swip {
         }
         this.click = (e)=>{
             //jeloye click bad az drag ro bayad begirim choon click call mishe 
-            if(this.isMoving){console.log('prevent click after move'); return}
+            if(this.isMoving){return}
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
             let mousePosition = this.getMousePosition(e)

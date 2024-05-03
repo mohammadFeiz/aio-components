@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import AIOStorage from './../../npm/aio-storage/aio-storage.js';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import ACS from './../../npm/aio-content-slider/index.tsx';
@@ -75,9 +75,9 @@ export default class AIOShop implements I_AIOShop{
         for(let prop in props){this[prop] = props[prop]}
         this.setCheckout = (checkout:I_checkout)=>{this.checkout = checkout};
         this.popup = new AIOPopup();
-        let storage = AIOStorage(`ShopClass_${this.shopId}`);
+        let storage:AIOStorage = new AIOStorage(`ShopClass_${this.shopId}`);
         let cart:I_cart;
-        if(props.cart === 'cache'){cart = storage.load({name:'cart',def:[]})}
+        if(props.cart === 'cache'){cart = storage.load('cart',[])}
         else if(Array.isArray(props.cart)){cart = props.cart}
         else {cart = []}
         this.cart = cart;
@@ -825,7 +825,7 @@ function Rates(props:I_Rates){
     let {getContext,rates} = props,context = getContext();
     function item_layout(rate:I_pr_rate):I_RVD_node{
         let [key,value] = rate;
-        let sliderProps:AI = {direction:'left',className:'aio-shop-rate-item-slider',type:'slider',start:0,end:5,step:0.1,value}
+        let sliderProps:AI = {reverse:true,className:'aio-shop-rate-item-slider',type:'range',start:0,end:5,step:0.1,value}
         return {
             className:'aio-shop-rate-item',align:'v',
             row:[{html:key,className:'aio-shop-rate-item-text'},{flex:1,html:<AIOInput {...sliderProps}/>},{html:value,className:'aio-shop-rate-item-value',align:'vh'}]

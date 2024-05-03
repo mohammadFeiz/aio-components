@@ -1,8 +1,8 @@
 import React, { Component, useEffect, useState } from 'react';
-import AIOStorage from '../aio-storage/aio-storage';
+import AIOStorage from '../aio-storage/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD from '../react-virtual-dom/react-virtual-dom';
+import RVD from '../react-virtual-dom/index.tsx';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import './index.css';
 import { I_RSA_Navigation, I_RSA_SideMenu, I_RSA_addAlert, I_RSA_addConfirm, I_RSA_addModal, I_RSA_addPrompt, I_RSA_addSnakebar, I_RSA_closeSide, I_RSA_getNavId, I_RSA_openSide, I_RSA_props, I_RSA_removeModal, I_RSA_render, I_RSA_setNavId, I_ReactSuperApp, I_RSA_navItem } from './types';
@@ -62,11 +62,11 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   let {rootProps,getActions,popup} = props
   let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body,maxWidth} = rootProps;
   let [showSplash,setShowSplash] = useState<boolean>(!!splash);
-  let [storage] = useState(AIOStorage('rsa-cache-' + id))
+  let [storage] = useState<AIOStorage>(new AIOStorage('rsa-cache-' + id))
   let navItems = typeof nav.items === 'function'?nav.items():nav.items;
   let [navId,SETNAVID] = useState<false | string>(false)
   useEffect(()=>{
-    let navId = (nav.cache?initNavId(storage.load({name:'navId',def:initNavId()})):initNavId())
+    let navId = (nav.cache?initNavId(storage.load('navId',initNavId())):initNavId())
     SETNAVID(navId);
     if (splash) { setTimeout(() => setShowSplash(false), splashTime) }
     getActions({openSide,closeSide,setNavId,getNavId})
@@ -78,7 +78,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   }
   function getNavId(){return navId}
   function setNavId(navId:string){
-    if(nav.cache){storage.save({name:'navId',value:navId})}
+    if(nav.cache){storage.save('navId',navId)}
     SETNAVID(navId)
   }
   function header_node(activeNav):I_RVD_node {

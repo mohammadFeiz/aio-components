@@ -5,6 +5,7 @@ import { EventHandler } from '../aio-utils/index.tsx';
 import $ from 'jquery';
 import './index.css';
 import { I_canvas_props } from '../aio-canvas/types.tsx';
+import { AI_point } from '../aio-input/types.tsx';
 type I_chart_details = {
     min?: number,
     max?: number,
@@ -952,17 +953,21 @@ function LabelSlider(props:I_LabelSlider) {
     let dAxis = axisToD[axis];
     let { edit = (a) => a } = dAxis === 'key' ? keyAxis : valueAxis;
     return (
-        <AIOInput type='slider'
-            point={() => { return { labelShow: false, attrs: { style: { display: 'none' } } } }}
+        <AIOInput type='range'
+            point={false}
             className='labelSlider'
             style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', padding: 0 }}
-            grooveAttrs={{ style: { display: 'none' } }}
-            direction={axis === 'x' ? 'right' : 'top'} start={start} end={end}
-            label={{
-                step,
-                attrs: () => { return { style: { fontSize: 'inherit', ...getLabelStyle() } } },
-                rotate: axis === 'y' ? 0 : (rootProps.labelRotate || 0),
-                html: (value) => edit(axisToD[axis] === 'key' ? rootProps.keys[value] || '' : value)
+            ranges={[]}
+            reverse={axis === 'y'} 
+            vertical={axis === 'y'}
+            start={start} end={end}
+            labels={{step}}
+            label={(value)=>{
+                return {
+                    style: { fontSize: 'inherit', ...getLabelStyle() },
+                    rotate: axis === 'y' ? 0 : (rootProps.labelRotate || 0),
+                    html: edit(axisToD[axis] === 'key' ? rootProps.keys[value] || '' : value)
+                }
             }}
             line={(index, active) => { return { attrs: { style: { opacity: 0 } } } }}
         />
@@ -1010,16 +1015,17 @@ function FilterSlider(props:I_FilterSlider) {
     console.log(filter)
     return (
         <AIOInput 
-            type='slider' 
-            direction={axis === 'x' ? 'right' : 'top'} 
+            type='range' 
             start={start} 
             end={end} 
             multiple={true}
             className='filterSlider'
             style={{ position: 'absolute', ...style[axis] }}
             value={[p1, p2]}
-            point={(index, value) => {
-                let labelHtml = edit(axisToD[axis] === 'key' ? keys[value] : value)
+            reverse={axis === 'y'} 
+            vertical={axis === 'y'}
+            point={(value) => {
+                let html = edit(axisToD[axis] === 'key' ? keys[value] : value)
                 return {
                     html: (
                         <div
@@ -1027,26 +1033,23 @@ function FilterSlider(props:I_FilterSlider) {
                             onTouchStart={filterMouseDown}
                             onMouseDown={filterMouseDown}
                             style={{ background: rootProps.zoomColor, border: `1px solid ${rootProps.zoomColor}` }}
-                        ></div>
+                        >{html}</div>
                     ),
-                    attrs: {
-                        style: {
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: '30px', height: '30px', borderRadius: '0px', background: 'none'
-                        }
-                    },
-                    labelHtml
+                    style: {
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '30px', height: '30px', borderRadius: '0px', background: 'none'
+                    }
                 }
             }}
-            line={(index) => {
+            fill={(index) => {
                 let style;
                 if (index !== 0) {
                     style = { [axis === 'y' ? 'width' : 'height']: '1px', background: rootProps.zoomColor }
                 }
-                return { attrs: { style } }
+                return { style }
             }}
             onChange={(points) => changeFilter(axis, points[0], points[1])}
-            grooveAttrs={{ style: { display: 'none' } }}
+            ranges={[]}
         />
     )
 }

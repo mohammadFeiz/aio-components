@@ -1,6 +1,6 @@
 import React from 'react';
 import Axios from 'axios';
-import AIOStorage from './../../npm/aio-storage/index';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import {AIODate} from './../../npm/aio-utils/index';
 import AIOPopup from './../../npm/aio-popup/index';
 import $ from 'jquery';
@@ -62,7 +62,7 @@ type AA_request_params = {
     parameter?:any
 };
 export default class AIOApis {
-    storage: I_AIOStorage;
+    storage: AIOStorage;
     fn:AA_fn;
     getAppState: () => any;
     setStorage: AA_setStorage;
@@ -83,13 +83,13 @@ export default class AIOApis {
     DATE:AIODate;
     constructor(props: AA_props) {
         let { id, getAppState = () => { }, baseUrl, token, loader,apis,mock = {},lang = 'en' } = props
-        let storage = AIOStorage(id) as I_AIOStorage;
+        let storage:AIOStorage = new AIOStorage(id);
         this.storage = storage;
         this.DATE = new AIODate()
         this.getAppState = getAppState;
-        this.setStorage = (name: string, value: any) => storage.save({ name, value })
-        this.getStorage = (name, def) => storage.load({ name, def });
-        this.removeStorage = (name) => storage.remove({name})
+        this.setStorage = (name: string, value: any) => storage.save(name, value)
+        this.getStorage = (name, def) => storage.load(name, def);
+        this.removeStorage = (name) => storage.remove(name)
         this.setToken = (token?: string) => { 
             let res = token || props.token; 
             if (res) { Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`; } 
@@ -197,7 +197,7 @@ export default class AIOApis {
                 return res;
             }
             let {onError,onSuccess,errorResult,cache,message = {},description = id,token} = config;
-            if (cache) { let res = this.storage.load({name:cache.name,time:cache.time}); if (res !== undefined) { return res } }
+            if (cache) { let res = this.storage.load(cache.name,undefined,cache.time); if (res !== undefined) { return res } }
             this.setToken(token);
             this.handleLoading(true, id, config);
             let result = await this.responseToResult(p)
@@ -209,7 +209,7 @@ export default class AIOApis {
             else {
                 this.showSuccessMessage({result,message,description});
                 if(result === undefined){result = errorResult}
-                if(cache){this.storage.save({name:cache.name,value:result})}
+                if(cache){this.storage.save(cache.name,result)}
                 if(onSuccess){onSuccess(result);}
             }
             this.handleLoading(false, id, config);

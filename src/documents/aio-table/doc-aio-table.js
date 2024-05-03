@@ -6,7 +6,7 @@ import tree_model from './tree-model';
 import {mdiHumanFemale,mdiHumanMale} from '@mdi/js';
 import {Icon} from '@mdi/react';
 import AIOInput from './../../npm/aio-input/index.tsx';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import './index.css';
 export default class DOC_AIOForm extends Component{
     render(){

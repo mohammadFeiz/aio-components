@@ -1,7 +1,7 @@
 import React, { Component,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOLogin from './../../npm/aio-login/aio-login';
 import {Icon} from '@mdi/react';
 import { mdiAccount, mdiLock } from '@mdi/js';

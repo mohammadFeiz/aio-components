@@ -49,3 +49,18 @@
 .slider-scale-red{
     background:red;
 }
+.aio-input-range-vertical .slider-vertical-scale-small{
+    width:4px; 
+    height:1px;
+}
+.aio-input-range-vertical .slider-vertical-scale-medium{
+    width:8px; 
+    height:2px;
+}
+.aio-input-range-vertical .slider-vertical-scale-large{
+    width:12px; 
+    height:3px;
+}
+.aio-input-range-vertical .slider-vertical-scale-red{
+    background:red;
+}

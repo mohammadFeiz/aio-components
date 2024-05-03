@@ -1,40 +1,36 @@
 /**varsion 8.1.3 */
-import React, { createRef, useContext, createContext, Fragment, useState, useEffect, useRef, FC } from 'react';
+import React, { createRef, useContext, createContext, useState, useEffect, useRef, FC } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import Axios from 'axios';
-import { Icon } from '@mdi/react';
 import {
-    mdiChevronDown, mdiLoading, mdiAttachment, mdiChevronRight, mdiClose, mdiCircleMedium, mdiArrowUp, mdiArrowDown,
-    mdiSort, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,
-    mdiCrosshairsGps,mdiDotsHorizontal
+    mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium,mdiMagnify, 
+    mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline,mdiDotsHorizontal,
+    mdiChevronRight,
+    mdiDelete
 } from "@mdi/js";
 import $ from 'jquery';
-import {AIODate,GetClient,EventHandler,Swip,getValueByStep,svgArc, getEventAttrs} from './../../npm/aio-utils/index';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import {AIODate,GetClient,EventHandler,Swip,DragClass, I_Swip_parameter} from './../aio-utils';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
-import AIOStorage from './../../npm/aio-storage/index.js';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
 import { 
-    AI, AI_Options, AI_Popover_props, AI_TableCellContent, AI_addToAttrs, AI_context, AI_date_trans, AI_date_unit, AI_formItem, AI_option, 
-    AI_optionKey, 
-    AI_scale, 
-    AI_scales, 
-    AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, AI_time_unit, AI_type, AI_types, I_Calendar, I_DPArrow, I_DPCell, I_DPCellWeekday, 
-    I_DPContext, I_DPHeaderDropdown, I_DPYears, I_DP_activeDate, I_Drag, I_FileItem, I_Layout, I_MapUnit, I_Map_config, I_Map_context, 
-    I_Map_coords, I_Map_marker, I_Map_temp, I_Multiselect, 
-    I_TableGap, I_Tag, I_Tags, I_TimePopver, I_list_temp, I_mapApiKeys, type_table_context, type_table_temp, type_time_value 
+    AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_Options, AI_Popover_props, AI_context,AI_formItem, AI_option,AI_optionKey, 
+    AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar,I_Drag, I_FileItem, I_Layout, 
+    I_Multiselect, I_Tag, I_Tags, I_TimePopver, I_list_temp, type_time_value 
 } from './types.tsx';
-import { I_Swip_mousePosition, I_Swip_parameter } from '../aio-utils/types.tsx';
-const AICTX = createContext({} as any);
-
+import {AICTX,Def,I,addToAttrs} from './utils.js';
+import Calendar from './date.tsx';
+import Range from './range.tsx';
+import Table from './table.tsx';
+import Map from './map.tsx';
 export default function AIOInput(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
     let [DATE] = useState<AIODate>(new AIODate())
     props = getDefaultProps(props,types)
     let { type,value, onChange, attrs = {} } = props;
-    let [parentDom] = useState(createRef())
+    let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
     let [temp] = useState<any>({
         getPopover:initGetPopover()
@@ -69,7 +65,13 @@ export default function AIOInput(props: AI) {
         if (!!popover === !!open) { return }
         setOpen(!!popover)
         if (popover) { popup.addModal(popover); }
-        else { popup.removeModal(); setTimeout(() => $(parentDom.current).focus(), 0) }
+        else { 
+            popup.removeModal(); 
+            setTimeout(() => {
+                let parent = $(parentDom.current)
+                $(parentDom.current).focus()
+            }, 0) 
+        }
     }
     function click(e:any, dom:any) {
         if (type === 'checkbox') { if (onChange) { onChange(!value) } }
@@ -100,7 +102,6 @@ export default function AIOInput(props: AI) {
         }
         if (close) { toggle(false) }
     }
-    
     function getContext(): AI_context {
         let context: AI_context = {
             rootProps: {...props,value}, datauniqid,touch: 'ontouchstart' in document.documentElement,
@@ -109,12 +110,14 @@ export default function AIOInput(props: AI) {
         return context
     }
     let render:{[key in AI_type]:()=>React.ReactNode} = {
+        acardion:()=><Acardion options={getOptions({rootProps:props,types})}/>,
+        tree:()=><Tree/>,
         list: () => <List />,
         range:()=><Range/>,
         file: () => <File />,
         select: () => <Layout properties={{text:props.text || getSelectText()}}/>,
         button: () => <Layout />,
-        multiselect: () => <Multiselect options={getOptions(props,types)} />,
+        multiselect: () => <Multiselect options={getOptions({rootProps:props,types})} />,
         radio: () => <Layout properties={{text:<Options />}} />,
         tabs: () => <Layout properties={{text:<Options />}} />,
         buttons: () => <Layout properties={{text:<Options />}} />,
@@ -251,7 +254,6 @@ class Popover {
         }
     }
 }
-type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 function TimePopover(props: I_TimePopver) {
     let {DATE}:AI_context = useContext(AICTX)
     let { lang = 'fa', onChange, onClose } = props;
@@ -307,7 +309,7 @@ function Image() {
     let [popup] = useState(new AIOPopup());
     let { value, width, height, onChange, disabled, placeholder, preview,deSelect } = rootProps;
     let [url, setUrl] = useState<string>();
-    let dom = createRef()
+    let dom:any = createRef()
     // if(typeof value === 'object'){
     //     let fr = new FileReader();
     //     fr.onload = function () {
@@ -494,7 +496,7 @@ function Tags(props:I_Tags) {
     return !tags.length?null:<div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
 function Tag(props:I_Tag) {
-    let { rootProps } = useContext(AICTX);
+    let { rootProps }:AI_context = useContext(AICTX);
     let {onChange = () => { }} = rootProps;
     let {option,value} = props;
     let {text,tagAttrs = {},tagBefore = I(mdiCircleMedium,0.7),tagAfter,disabled} = option;
@@ -515,7 +517,7 @@ function Input() {
         min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400, disabled, options, placeholder,
         inputAttrs, spin = true, justify
     } = rootProps;
-    let [dom] = useState(createRef())
+    let [dom] = useState<any>(createRef())
     let [temp] = useState<any>({atimeout:undefined,btimeout:undefined,clicked:false})
     let [datauniqid] = useState(`ac${Math.round(Math.random() * 100000)}`)
     let [value, setValue] = useState<any>(rootProps.value || '');
@@ -650,7 +652,7 @@ function Input() {
     let attrs = getInputAttrs()
     if (!attrs.onChange) { return value }
     else if (type === 'color') {
-        let options:AI_option[] = getOptions(rootProps,types)
+        let options:AI_option[] = getOptions({rootProps,types})
         return (
             <label style={{ width: '100%', height: '100%', background: value }}>
                 <input {...attrs} style={{ opacity: 0 }} opacity rgba cmyk hsla/>
@@ -661,11 +663,7 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
-type AI_FormContext = {
-    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
-    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
-    setValue:(itemValue:any, formItem:AI_formItem)=>void
-}
+
 const Formcontext = createContext({} as any);
 const Form:FC = ()=>{
     let {rootProps}:AI_context = useContext(AICTX);
@@ -754,7 +752,6 @@ const Form:FC = ()=>{
         </Formcontext.Provider>
     )
 }
-type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column'}
 const FormItem:FC<AI_FormItem> = (props) => {
     let {setError}:AI_FormContext = useContext(Formcontext)
     let {formItem,parentType} = props;
@@ -780,7 +777,6 @@ const FormItem:FC<AI_FormItem> = (props) => {
     }
     return (<section className={className} style={style}>{getInner()}</section>)
 }
-type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
 const FormInput:FC<AI_FormInput> = (props)=>{
     let {rootProps,getError,getValueByField,setValue}:AI_FormContext = useContext(Formcontext)
     let {rtl,disabled} = rootProps;
@@ -790,12 +786,12 @@ const FormInput:FC<AI_FormInput> = (props)=>{
     function getInputProps(input:AI, formItem:AI_formItem) {
         let props:AI = {
             rtl, value,type:input.type,
-            onChange: (value) => setValue(value, formItem), attrs: {},inputAttrs:{},disabled:false,point:()=>{return {labelShow:'inline'}}
+            onChange: (value) => setValue(value, formItem), attrs: {},inputAttrs:{},disabled:false,point:(value)=>{return {html:value}}
         };
         let prop:keyof AI;
         for (prop in input) {
             let functional = ['options','columns'].indexOf(prop) !== -1;
-            props[prop] = getValueByField({ field: input[prop], functional,formItem,formItemValue:value })
+            (props[prop] as any) = getValueByField({ field: input[prop], functional,formItem,formItemValue:value })
         }
         props.value = value;
         let { attrs = {} } = input;
@@ -854,7 +850,7 @@ function Options(props:AI_Options) {
             return <Layout {...p} />
         });
     }
-    let options = props.options || getOptions(rootProps, types);
+    let options = props.options || getOptions({rootProps, types});
     if (!options.length) { return null }
     let renderOptions = getRenderOptions(options);
     let className = `aio-input-options aio-input-${rootProps.type}-options`
@@ -866,464 +862,10 @@ function Options(props:AI_Options) {
         </>
     )
 }
-const AITableContext = createContext({} as any);
-function Table() {
-    let { rootProps,DATE }: AI_context = useContext(AICTX);
-    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs,onChangeSort,className,style } = rootProps;
-    let [dom] = useState(createRef())
-    let [searchValue, setSearchValue] = useState<string>('')
-    let [columns, setColumns] = useState<AI_table_column[]>([]);
-    let [searchColumns, setSearchColumns] = useState<AI_table_column[]>([]);
-    let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
-    let [temp] = useState<type_table_temp>({})
-    let [DragRows] = useState<I_Drag | false>(!onSwap?false:new DragClass({
-        onChange:(newRows,from,to)=>{
-            if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
-            else { onChange(newRows) }
-        },
-        className:'aio-input-table-row',
-    }))
-    let [sorts, setSorts] = useState<AI_table_sort[]>([])
-    function getColumns() {
-        let {columns = []} = rootProps;
-        columns = typeof columns === 'function'?columns():columns;
-        let searchColumns:AI_table_column[] = [], excelColumns:AI_table_column[] = [];
-        let updatedColumns = columns.map((o) => {
-            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
-            let column = { ...o, _id: id };
-            if (search) { searchColumns.push(column) }
-            if (excel) { excelColumns.push(column) }
-            return column
-        })
-        setColumns(updatedColumns);
-        setSearchColumns(searchColumns)
-        setExcelColumns(excelColumns);
-        return updatedColumns;
-    }
-    function getSorts(columns:AI_table_column[]) {
-        let sorts = [];
-        for (let i = 0; i < columns.length; i++) {
-            let column = columns[i];
-            let { _id, input } = column;
-            let sort = column.sort === true ? {} : column.sort;
-            if (!sort) { continue }
-            let { active = false, dir = 'dec' } = sort as AI_table_sort;
-            let getValue;
-            if (sort.getValue) { getValue = sort.getValue }
-            else {
-                getValue = (row:any) => {
-                    let value = getDynamics({ value: column.value, row, column })
-                    if (input && input.type === 'date') { value = DATE.getTime(value); }
-                    return value
-                }
-            }
-            let type:'string' | 'number' | 'date';
-            if (input && ['number', 'date', 'range'].indexOf(input.type) !== -1) { type = 'number' }
-            else { type = sort.type || 'string' }
-            let sortItem: AI_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
-            sorts.push(sortItem)
-        }
-        setSorts(sorts);
-    }
-    function getDynamics(p: { value: any, row?: any, column?: AI_table_column, def?: any, rowIndex?: number }) {
-        let { value, row, column, def, rowIndex } = p;
-        if (paging) {
-            let { number, size } = paging;
-            if(rowIndex)rowIndex += ((number - 1) * size) 
-        }
-        let type = typeof value;
-        if (type === 'string') {
-            let result = value;
-            let param:AI_table_param = { row, column:column as AI_table_column, rowIndex:rowIndex as number }
-            if (getValue[value]) { result = getValue[value](param) }
-            else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
-            return result === undefined ? def : result;
-        }
-        if (type === 'undefined') { return def }
-        if (type === 'function') { return value({ row, column, rowIndex }) }
-        return value === undefined ? def : value
-    }
-    useEffect(() => {
-        let columns:AI_table_column[] = getColumns();
-        getSorts(columns);
-    }, [])
-    function add() {typeof onAdd === 'function'?onAdd():onChange([{...onAdd}, ...value])}
-    function remove(row:any, index:number) {
-        let action = () => onChange(value.filter((o:any) => o._id !== row._id));
-        typeof onRemove === 'function'?onRemove({ row, action, rowIndex: index }):action();
-    }
-    function exportToExcel() {
-        let list = [];
-        for (let i = 0; i < value.length; i++) {
-            let row = value[i], json:any = {};
-            for (let j = 0; j < excelColumns.length; j++) {
-                let column = excelColumns[j], { excel, value } = column;
-                if(typeof excel !== 'string'){continue}
-                json[excel] = getDynamics({ value, row, column, rowIndex: i })
-            }
-            list.push(json)
-        }
-        ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
-    }
-    function getSearchedRows(rows:{[key:string]:any}[]) {
-        if (onSearch !== true) { return rows }
-        if (!searchColumns.length || !searchValue) { return rows }
-        return AIOInputSearch(rows, searchValue, (row, index) => {
-            let str = '';
-            for (let i = 0; i < searchColumns.length; i++) {
-                let column = searchColumns[i];
-                let value = getDynamics({ value: column.value, row, def: '', column, rowIndex: index });
-                if (value) { str += value + ' ' }
-            }
-            return str
-        })
-    }
-    function sortRows(rows:{[key:string]:any}[], sorts:AI_table_sort[]) {
-        if(!rows){return []}
-        if (!sorts || !sorts.length) { return rows }
-        return rows.sort((a, b) => {
-            for (let i = 0; i < sorts.length; i++) {
-                let { dir, getValue } = sorts[i];
-                if(!getValue){return 0}
-                let aValue = getValue(a), bValue = getValue(b);
-                if (aValue < bValue) { return -1 * (dir === 'dec' ? -1 : 1); }
-                if (aValue > bValue) { return 1 * (dir === 'dec' ? -1 : 1); }
-                if (i === sorts.length - 1) { return 0; }
-            }
-            return 0;
-        });
-    }
-    function getSortedRows(rows:{[key:string]:any}[]) {
-        if (temp.isInitSortExecuted) { return rows }
-        if (onChangeSort) { return rows }
-        let activeSorts = sorts.filter((sort) => sort.active !== false);
-        if (!activeSorts.length || !rows.length) { return rows }
-        temp.isInitSortExecuted = true; 
-        let sortedRows = sortRows(rows, activeSorts);
-        onChange(sortedRows);
-        return sortedRows;  
-    }
-    function getRows():AI_table_rows {
-        let searchedRows = getSearchedRows(value);
-        let sortedRows = getSortedRows(searchedRows);
-        let pagedRows = paging && !paging.serverSide ? sortedRows.slice((paging.number - 1) * paging.size, paging.number * paging.size) : sortedRows;
-        return { rows: value, searchedRows, sortedRows, pagedRows }
-    }
-    //calculate style of cells and title cells
-    function getCellStyle(column:AI_table_column) {
-        let width = getDynamics({ value: column.width });
-        let minWidth = getDynamics({ value: column.minWidth });
-        return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth }
-    }
-    function getCellAttrs(p:{ row:any, rowIndex:number, column:AI_table_column, type:'title'|'cell' }) {
-        let { row, rowIndex, column, type } = p;
-        let {cellAttrs,titleAttrs} = column;
-        let attrs = getDynamics({ value: type === 'title'?titleAttrs:cellAttrs, column, def: {}, row, rowIndex });
-        let justify = getDynamics({ value: column.justify, def: false });
-        let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '')
-        attrs = addToAttrs(attrs, { className: cls, style: getCellStyle(column) });
-        if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
-        return { ...attrs }
-    }
-    function getRowAttrs(row:any, rowIndex:number) {
-        let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
-        let obj = addToAttrs(attrs, { className: 'aio-input-table-row' })
-        if (DragRows !== false) { obj = { ...obj, ...DragRows.getAttrs(value,rowIndex) } }
-        return obj;
-    }
-    function search(searchValue:string) {
-        if(onSearch === true) { setSearchValue(searchValue) }
-        else if(typeof onSearch === 'function'){ onSearch(searchValue) }
-    }
-    function getContext(ROWS:AI_table_rows) {
-        let context: type_table_context = {
-            ROWS, addToAttrs, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
-            add, remove, search, exportToExcel,getDynamics
-        }
-        return context
-    }
-    let ROWS:AI_table_rows = getRows();
-    let attrs = addToAttrs(rootProps.attrs,{className:['aio-input aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
-    return (
-        <AITableContext.Provider value={getContext(ROWS)}>
-            <div {...attrs}>
-                <TableToolbar />
-                <div className='aio-input-table-unit'><TableHeader /><TableRows /></div>
-                {paging ? <TablePaging /> : ''}
-            </div>
-        </AITableContext.Provider>
-    )
-}
-function TableGap(props:I_TableGap) {
-    let { rootProps }: type_table_context = useContext(AITableContext)
-    let { rowGap, columnGap } = rootProps;
-    let { dir } = props;
-    let style;
-    if (dir === 'h') { style = { height: rowGap } }
-    else { style = { width: columnGap } }
-    return <div className={`aio-input-table-border-${dir}`} style={style}></div>
-}
-function TablePaging() {
-    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
-    let [temp] = useState<{ timeout: any,start:any,end:any,pages:any }>({timeout:undefined,start:undefined,end:undefined,pages:0})
-    function fix(paging: AI_table_paging):AI_table_paging {
-        if(typeof rootProps.onChangePaging !== 'function'){
-            alert('aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input')
-            return {number:0,size:0};
-        }
-        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
-        if (!serverSide) { length = ROWS.sortedRows.length }
-        if (sizes.indexOf(size) === -1) { size = sizes[0] }
-        let pages = Math.ceil(length / size);
-        number = number > pages ? pages : number;
-        number = number < 1 ? 1 : number;
-        let start = number - 3,end = number + 3;
-        temp.start = start; temp.end = end; temp.pages = pages;
-        return { ...paging, length, number, size, sizes }
-    }
-    let [paging, setPaging] = useState<AI_table_paging>(fix(rootProps.paging || {size:0,number:0}));
-    useEffect(() => {
-        if(rootProps.paging){setPaging(fix(rootProps.paging))}
-    }, [(rootProps.paging || {size:0,number:0,length:0}).size,(rootProps.paging || {size:0,number:0,length:0}).number,(rootProps.paging || {size:0,number:0,length:0}).length])
-    function changePaging(obj:{[key in keyof AI_table_paging]?:any}) {
-        let newPaging:AI_table_paging = fix({ ...paging, ...obj });
-        setPaging(newPaging);
-        if(rootProps.onChangePaging){
-            if (newPaging.serverSide) {
-                clearTimeout(temp.timeout);
-                temp.timeout = setTimeout(() => {
-                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
-                    if(rootProps.onChangePaging){rootProps.onChangePaging(newPaging)}
-                }, 800);
-            }
-            else { rootProps.onChangePaging(newPaging) }
-        }
-    }
-    let { number, size, sizes } = paging;
-    let buttons = [];
-    let isFirst = true
-    for (let i = temp.start; i <= temp.end; i++) {
-        if (i < 1 || i > temp.pages) {
-            buttons.push(<button key={i} className={'aio-input-table-paging-button aio-input-table-paging-button-hidden'}>{i}</button>)
-        }
-        else {
-            let index;
-            if (isFirst) { index = 1; isFirst = false; }
-            else if (i === Math.min(temp.end, temp.pages)) { index = temp.pages }
-            else { index = i; }
-            buttons.push(<button key={index} className={'aio-input-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
-        }
-    }
-    function changeSizeButton() {
-        if (!sizes || !sizes.length) { return null }
-        let p: AI = {
-            attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
-            type: 'select', value: size, options: sizes, option:{text:'option',value:'option'},
-            onChange: (value) => changePaging({ size: value }),
-            popover: { fitHorizontal: true},
-        }
-        return (<AIOInput {...p} />)
-    }
-    return (
-        <div className='aio-input-table-paging'>
-            {buttons}
-            {changeSizeButton()}
-        </div>
-    )
-}
-function TableRows() {
-    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
-    let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
-    let rows = ROWS.pagedRows || [];
-    let content;
-    if (rowsTemplate) { content = rowsTemplate(rows) }
-    else if (rows.length) {
-        content = rows.map((o, i) => {
-            let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;
-            o._id = o._id === undefined ? id : o._id;
-            let isLast = i === rows.length - 1, Row;
-            if (rowTemplate) { Row = rowTemplate({ row: o, rowIndex: i, isLast }) }
-            else { Row = <TableRow key={o._id} row={o} rowIndex={i} isLast={isLast} /> }
-            return (<Fragment key={o._id}>{rowBefore({ row: o, rowIndex: i })}{Row}{rowAfter({ row: o, rowIndex: i })}</Fragment>)
-        })
-    }
-    else if (placeholder) {
-        content = <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
-    }
-    else {return null}
-    return <div className='aio-input-table-rows'>{content}</div>
-}
-function TableToolbar() {
-    let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
-    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value,addText } = rootProps;
-    toolbarAttrs = addToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
-    if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
-    function changeSort(sortId:string, changeObject:any) {
-        let newSorts = sorts.map((sort) => {
-            if (sort.sortId === sortId) {
-                let newSort = { ...sort, ...changeObject }
-                return newSort;
-            }
-            return sort
-        });
-        changeSorts(newSorts)
-    }
-    async function changeSorts(sorts:AI_table_sort[]) {
-        if (onChangeSort) {
-            let res = await onChangeSort(sorts)
-            if (res !== false) { setSorts(sorts); }
-        }
-        else {
-            setSorts(sorts);
-            let activeSorts = sorts.filter((sort) => sort.active !== false);
-            if (activeSorts.length) {
-                onChange(sortRows(value, activeSorts))
-            }
-        }
-    }
-
-    function button() {
-        if (!sorts.length) { return null }
-        let p:AI = {
-            popover:{ 
-                header: { 
-                    attrs: { className: 'aio-input-table-toolbar-popover-header' }, 
-                    title: 'Sort', 
-                    onClose: false 
-                }, 
-                pageSelector: '.aio-input-table'
-            },
-            caret:false,type:'select',options:sorts,
-            option:{
-                text:'option.title',
-                checked:'!!option.active',
-                close:()=>false,
-                value:'option.sortId',
-                after:(option)=>{
-                    let {dir = 'dec',sortId} = option;
-                    return (
-                        <div onClick={(e) => { e.stopPropagation(); changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) }}>
-                            {I(dir === 'dec' ? mdiArrowDown : mdiArrowUp,0.8)}
-                        </div>
-                    )
-                }
-            },
-            attrs:{ className: 'aio-input-table-toolbar-button' },
-            text:I(mdiSort,0.7),
-            onSwap:(newSorts,from,to) => changeSorts(newSorts),
-            onChange:(value, option) => changeSort(value, { active: !option.checked })
-        }
-        return (
-            <AIOInput {...p} key='sortbutton'/>
-        )
-    }
-    function getAddText(){
-        let {addText} = rootProps;
-        if(!rootProps.addText){return I(mdiPlusThick,0.8)}
-        if(typeof addText === 'function'){
-            return addText(value)
-        }
-        return addText
-    }
-    return (
-        <>
-            <div {...toolbarAttrs}>
-                {toolbar && <div className='aio-input-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
-                <div className='aio-input-table-search'>
-                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={I(mdiMagnify,0.7)} />}
-                </div>
-                {button()}
-                {!!excelColumns.length && <div className='aio-input-table-toolbar-button' onClick={() => exportToExcel()}>{I(mdiFileExcel,0.8)}</div>}
-                {!!onAdd && <div className='aio-input-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
-            </div>
-            <TableGap dir='h' />
-        </>
-    )
-}
-function TableHeader() {
-    let { rootProps, columns }: type_table_context = useContext(AITableContext);
-    let { headerAttrs, onRemove } = rootProps;
-    headerAttrs = addToAttrs(headerAttrs, { className: 'aio-input-table-header' })
-    let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
-    let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
-    return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
-}
-function TableTitle(p:{ column:AI_table_column, isLast:boolean }) {
-    let { column, isLast } = p;
-    let { getCellAttrs } = useContext(AITableContext);
-    let attrs = getCellAttrs({ column, type: 'title' });
-    return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
-}
-function TableRow(p:{ row:any, isLast:boolean, rowIndex:number }) {
-    let { row, isLast, rowIndex } = p;
-    let { remove, rootProps, columns, getRowAttrs }: type_table_context = useContext(AITableContext);
-    function getCells() {
-        return columns.map((column, i) => {
-            let key = row._id + ' ' + column._id;
-            let isLast = i === columns.length - 1;
-            return (<TableCell isLast={isLast} key={key} row={row} rowIndex={rowIndex} column={column} />)
-        })
-    }
-    let { onRemove } = rootProps;
-    return (
-        <>
-            <div key={row._id} {...getRowAttrs(row, rowIndex)}>
-                {getCells()}
-                {onRemove ? <><TableGap dir='v' /><button className='aio-input-table-remove' onClick={() => remove(row, rowIndex)}>{I(mdiClose,0.8)}</button></> : null}
-            </div>
-            <TableGap dir='h' />
-        </>
-    )
-}
-const TableCell = (p:{ row:any, rowIndex:number, column:AI_table_column, isLast:boolean }) => {
-    let { row, rowIndex, column, isLast } = p;
-    let { getCellAttrs,rootProps,getDynamics }: type_table_context = useContext(AITableContext);
-    let {onChange = ()=>{},value = []} = rootProps;
-    function setCell(row: any, column: AI_table_column, cellNewValue: any) {
-        if (column.input && column.input.onChange) { 
-            column.input.onChange({ value: cellNewValue, row, column }) 
-        }
-        else {
-            row = JSON.parse(JSON.stringify(row));
-            eval(`${column.value} = cellNewValue`);
-            onChange(value.map((o:any) => o._id !== row._id ? o : row))
-        }
-    }
-    let contentProps:AI_TableCellContent = { row, rowIndex, column,onChange:column.input?(value)=>setCell(row, column, value):undefined };
-    let key = row._id + ' ' + column._id;
-    return (
-        <Fragment key={key}>
-            <div {...getCellAttrs({ row, rowIndex, column, type: 'cell' })} >
-                <TableCellContent {...contentProps} key={key}/>
-            </div>
-            {!isLast && <TableGap dir='v' />}
-        </Fragment>
-    )
-}
-function TableCellContent(props:AI_TableCellContent){
-    let {row,column,rowIndex,onChange} = props;
-    let { getDynamics }: type_table_context = useContext(AITableContext);
-    let template = getDynamics({ value: column.template, row, rowIndex, column });
-    if (template !== undefined) { return template }
-    let input:AI = getDynamics({ value: column.input, row, rowIndex, column });
-    let value = getDynamics({ value: column.value, row, rowIndex, column })
-    if (!input) { return value }
-    //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
-    input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
-    let convertedInput:any = {type:'text'}
-    for (let property in input) {
-        let prop:(keyof AI) = property as keyof AI;
-        let res:any = input[prop];
-        if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = res }
-        else { convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column }) }
-    }
-    let p:AI = { ...convertedInput, value, onChange,type:input.type }
-    return (<AIOInput {...p} key={row._id + ' ' + column._id} />)
-}
 function Layout(props: I_Layout) {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open,showPassword,setShowPassword }: AI_context = useContext(AICTX)
-    let { option, realIndex, renderIndex } = props;
-    let { type, rtl, direction = 'right' } = rootProps;
+    let { option, realIndex, renderIndex,toggle } = props;
+    let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     function getClassName() {
         let cls;
@@ -1422,7 +964,11 @@ function Layout(props: I_Layout) {
         //ممکنه این یک آپشن باشه باید دیزیبل پرنتش هم چک بشه تا دیزیبل بشه
         if (!disabled) {
             if (option === undefined) { onClick = (e:any) => { e.stopPropagation(); click(e, dom) } }
-            else { onClick = (e:any) => { e.stopPropagation(); optionClick(option) } }
+            else { onClick = (e:any) => { 
+                e.stopPropagation(); 
+                if((props.properties || {}).onClick){props.properties.onClick()}
+                else {optionClick(option)}
+            } }
         }
         attrs = addToAttrs(attrs, {
             className: getClassName(),
@@ -1452,9 +998,18 @@ function Layout(props: I_Layout) {
         let { className = obj.className} = p; 
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style,before,after,className }    
     }
+    function getToggleIcon(){
+        if(toggle === undefined || toggle.state === 2){return null}
+        return I(toggle.state === 1?mdiChevronDown:mdiChevronRight,0.8)
+    }
+    function Toggle(){
+        if(toggle === undefined){return null}
+        return (<div className="aio-input-toggle" onClick={(e)=>toggle.onClick(e)}>{getToggleIcon()}</div>)
+    }
     let properties = getProperties();
     let content = (<>
         {DragIcon()}
+        {Toggle()}
         {CheckIcon()}
         {BeforeAfter('before')}
         {Text()}
@@ -1470,375 +1025,6 @@ function Layout(props: I_Layout) {
             {!!option && type === 'tabs' && <div className='aio-input-tabs-option-bar'></div>}
         </div>
     )
-}
-const DPContext = createContext({} as any);
-function Calendar(props: I_Calendar) {
-    let { rootProps,DATE }: AI_context = useContext(AICTX);
-    let { onClose } = props;
-    let { unit = AIDef<string>('date-unit'), jalali, value,disabled,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme'), translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
-    let [months] = useState(DATE.getMonths(jalali));
-    let [today, setToday] = useState(DATE.getToday(jalali))
-    let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
-    let [initValue] = useState(getInitValue())
-    function getInitValue() {
-        let date = !value || value === null ? today : value;
-        let [year, month, day] = DATE.convertToArray(date)
-        return { year, month, day }
-    }
-    let [thisMonthString] = useState(months[today[1] - 1])
-    let [activeDate, setActiveDate] = useState<I_DP_activeDate>({ ...initValue });
-    let adRef = useRef(activeDate);
-    adRef.current = activeDate
-    function trans(text:string) {
-        if (text === 'Today') {
-            if (unit === 'month') { text = 'This Month' }
-            else if (unit === 'hour') { text = 'This Hour' }
-        }
-        let obj:any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال' }
-        let res;
-        if (jalali && obj[text]) { res = obj[text] }
-        return translate(text)
-    }
-    function changeActiveDate(obj:'today' | {[key in 'year'|'month'|'day']?:number}) {
-        let newActiveDate;
-        if (obj === 'today') {
-            let [year, month, day] = today;
-            newActiveDate = { year, month, day: unit === 'month' ? 1 : day };
-        }
-        else { newActiveDate = { ...activeDate, ...obj } }
-        setActiveDate(newActiveDate)
-    }
-    function getPopupStyle() {
-        return {
-            width: size, fontSize: size / 17, background: theme[1], color: theme[0], stroke: theme[0],
-            cursor: disabled === true ? 'not-allowed' : undefined,
-        };
-    }
-    function getContext() {
-        let context: I_DPContext = {
-            changeActiveDate,DATE,
-            translate: trans, rootProps, activeDate:adRef.current,
-            today, todayWeekDay, thisMonthString,months,
-            onChange: (p:{ year?:number, month?:number, day?:number, hour?:number }) => {
-                let { year = 1000, month = 1, day = 1, hour = 0 } = p;
-                let dateArray = [year, month, day, hour];
-                let jalaliDateArray = !jalali ? DATE.toJalali(dateArray) : dateArray;
-                let gregorianDateArray = jalali ? DATE.toGregorian(dateArray) : dateArray;
-                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : DATE.getWeekDay(dateArray)
-                let get2digit = (v:number) => {
-                    if (v === undefined) { return }
-                    let vn:string = v.toString();
-                    return vn.length === 1 ? `0${vn}` : vn
-                }
-                let dateString;
-                let splitter = typeof value === 'string' ? DATE.getSplitter(value) : '/';
-                if (unit === 'month') { dateString = `${year}${splitter}${get2digit(month)}` }
-                else if (unit === 'day') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}` }
-                else if (unit === 'hour') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}${splitter}${get2digit(hour)}` }
-                let monthString = months[month - 1];
-                let jalaliMonthString = !jalali ? DATE.getMonths(true)[month - 1] : monthString;
-                let gregorianMonthString = jalali ? DATE.getMonths(false)[month - 1] : monthString;
-                let props = {
-                    months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
-                    year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
-                }
-                onChange(dateString, props);
-                if (changeClose && onClose) { onClose() }
-            }
-        }
-        return context
-    }
-    return (
-        <DPContext.Provider value={getContext()}>
-            <div className='aio-input-date-container' style={{ display: 'flex' }}>
-                <div className='aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0 aio-input-date-theme-stroke0' style={getPopupStyle()}>
-                    <DPHeader /><DPBody /><DPFooter />
-                </div>
-                <DPToday />
-            </div>
-        </DPContext.Provider>
-    );
-}
-function DPToday() {
-    let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
-    let { theme = AIDef<string[]>('theme'), jalali, unit = AIDef<string>('date-unit'), size = AIDef<number>('date-size') } = rootProps;
-    return (
-        <div className='aio-input-date-today aio-input-date-theme-color1 aio-input-date-theme-bg0' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
-            <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
-            {
-                (unit === 'day' || unit === 'hour') &&
-                <>
-                    <div style={{ fontSize: size / 11 }}>{!jalali ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
-                    <div style={{ fontSize: size / 12 * 4, height: size / 12 * 4 }}>{today[2]}</div>
-                    <div style={{ fontSize: size / 11 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>
-                </>
-            }
-            {unit === 'month' && <div style={{ fontSize: size / 8 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
-            <div style={{ fontSize: size / 11 }}>{today[0]}</div>
-            {unit === 'hour' && <div style={{ fontSize: size / 10 }}>{today[3] + ':00'}</div>}
-        </div>
-    )
-}
-function DPFooter() {
-    let {rootProps, changeActiveDate, translate}:I_DPContext = useContext(DPContext);
-    let { disabled, onChange = () => { }, size = AIDef<number>('date-size'),deSelect } = rootProps;
-    if (disabled) { return null }
-    let buttonStyle = { padding: `${size / 20}px 0`,fontFamily:'inherit' };
-    return (
-        <div className='aio-input-date-footer' style={{ fontSize: size / 13 }}>
-            {!!deSelect && <button style={buttonStyle} onClick={() => typeof deSelect === 'function'?deSelect():onChange(undefined)}>{translate('Clear')}</button>}
-            <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
-        </div>
-    )
-}
-function DPBody() {
-    let {rootProps, activeDate}:I_DPContext = useContext(DPContext);
-    let { unit = AIDef<AI_date_unit>('date-unit'),jalali,size = AIDef<number>('date-size') } = rootProps;
-    function getStyle() {
-        var columnCount = { hour: 4, day: 7, month: 3,year:1 }[unit as AI_date_unit];
-        var rowCount = { hour: 6, day: 7, month: 4,year:1 }[unit as AI_date_unit];
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = { hour: size / 7, day: a, month: size / 6, year: size / 7 }[unit as AI_date_unit];
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
-    }
-    return (
-        <div className='aio-input-date-body' style={getStyle()}>
-            {unit === 'hour' && new Array(24).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, activeDate.month as number, activeDate.day as number, i]} />)}
-            {unit === 'day' && <DPBodyDay />}
-            {unit === 'month' && new Array(12).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, i + 1]} />)}
-        </div>
-    )
-}
-function DPBodyDay() {
-    let {rootProps, activeDate,DATE}:I_DPContext = useContext(DPContext);
-    let { theme = AIDef<string[]>('theme'), jalali } = rootProps;
-    let firstDayWeekDayIndex = DATE.getWeekDay([activeDate.year as number, activeDate.month as number, 1]).index;
-    let daysLength = DATE.getMonthDaysLength([activeDate.year as number, activeDate.month as number]);
-    let weekDays = DATE.getWeekDays(jalali);
-    return (<>
-        {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-        {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
-        {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
-        {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
-    </>)
-}
-function DPCellWeekday(props:I_DPCellWeekday) {
-    let {rootProps, translate}:I_DPContext = useContext(DPContext);
-    let { theme = AIDef<string[]>('theme'), jalali } = rootProps;
-    let { weekDay } = props;
-    return (
-        <div className='aio-input-date-weekday aio-input-date-cell aio-input-date-theme-bg1 aio-input-date-theme-color0' style={{ background: theme[1], color: theme[0] }}>
-            <span>{translate(weekDay.slice(0, !jalali ? 2 : 1))}</span>
-        </div>
-    )
-}
-function DPCell(props:I_DPCell) {
-    let {rootProps, translate, onChange,DATE}:I_DPContext = useContext(DPContext);
-    let { disabled, dateAttrs, theme = AIDef<string[]>('theme'), value, jalali, unit = AIDef<string>('date-unit')} = rootProps;
-    let { dateArray } = props;
-    function getClassName(isActive:boolean, isToday:boolean, isDisabled:boolean, className?:string) {
-        var str = 'aio-input-date-cell';
-        if (isDisabled) { str += ' aio-input-date-disabled' }
-        if (isActive) { str += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'; }
-        if (isToday) { str += ' today aio-input-date-theme-border0'; }
-        if (className) { str += ' className'; }
-        return str;
-    }
-    let isActive = !value ? false : DATE.isEqual(dateArray, value);
-    let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
-    let isDateDisabled = !Array.isArray(disabled) ? false : DATE.isMatch(dateArray, disabled);
-    let isDisabled = disabled === true || isDateDisabled;
-    let Attrs:any = {}
-    if (dateAttrs) { 
-        Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
-        Attrs = Attrs || {} 
-    }
-    let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
-    let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }) };
-    let style:any = {}
-    if (!isDisabled) { style.background = theme[1]; }
-    if (className.indexOf('aio-input-date-active') !== -1) {
-        style.background = theme[0];
-        style.color = theme[1];
-    }
-    if (className.indexOf('today') !== -1) { style.border = `1px solid ${theme[0]}` }
-    style = { ...style, ...Attrs.style }
-    let text;
-    if (unit === 'hour') { text = dateArray[3] + ':00' }
-    else if (unit === 'day') { text = dateArray[2] }
-    else if (unit === 'month') {
-        let months = DATE.getMonths(jalali);
-        text = translate(!jalali ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1])
-    }
-    return <div style={style} onClick={onClick} className={className}>{isDisabled ? <del>{text}</del> : text}</div>
-}
-function DPHeaderItem(props:{unit:'year'|'month'}){
-    let {unit} = props;
-    let {rootProps,DATE,activeDate,months}:I_DPContext = useContext(DPContext);
-    let {theme = AIDef<string[]>('theme'),jalali} = rootProps;
-    if(!activeDate || !activeDate[unit]){return null}
-    let text = unit === 'year'?activeDate.year:months[(activeDate[unit] as number) - 1]
-    let POPUP = unit === 'year'?DPYearsPopup:DPMonthsPopup;
-    let p:AI = {
-        type:'button',text,justify:true,caret:false,
-        attrs: { className: 'aio-input-date-dropdown' },
-        popover:{
-            fitTo:'.aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0',
-            attrs:{style:{background: theme[1], color: theme[0]}},
-            body:{
-                render:({close})=><POPUP onClose={close}/>
-            }
-        }
-    }
-    return (<AIOInput {...p}/>)
-}
-function DPYearsPopup(props:{onClose:()=>void}){
-    let {onClose} = props;
-    let { rootProps,translate,activeDate,changeActiveDate }: I_DPContext = useContext(DPContext);
-    let { jalali,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme') } = rootProps;
-    let [start, setStart] = useState<number>(Math.floor((activeDate.year as number) / 10) * 10);
-    let [value,setValue] = useState<number>(activeDate.year as number);
-    useEffect(()=>{setValue(activeDate.year as number)},[activeDate.year])
-    function changePage(dir:1 | -1) {
-        let newStart = start + (dir * 10)
-        setStart(newStart);
-    }
-    function changeValue(v:number){
-        setValue(v);
-        changeActiveDate({year:v});
-        onClose();
-    }
-    function getCells(start:number) {
-        let cells = [];
-        for (let i = start; i < start + 10; i++) {
-            let active = i === value;
-            let className = 'aio-input-date-cell'
-            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
-            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
-            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
-            cells.push(<div {...p} key={i}>{i}</div>)
-        }
-        return cells
-    }
-    function getBodyStyle() {
-        var columnCount = 3;
-        var rowCount = 4;
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = size / 6;
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
-    }
-    return (
-        <div className='aio-input-date-years'>
-            <div className='aio-input-date-years-header'>
-                <DPArrow type='minus' onClick={() => changePage(-1)} />
-                <div className='aio-input-date-years-label' style={{fontSize:size / 15}}>{translate('Select Year')}</div>
-                <DPArrow type='plus' onClick={() => changePage(1)} />
-            </div>
-            <div style={getBodyStyle()} className='aio-input-date-years-body'>{getCells(start)}</div>
-        </div>
-    )
-}
-function DPMonthsPopup(props:{onClose:()=>void}){
-    let {onClose} = props; 
-    let { rootProps,DATE,changeActiveDate,activeDate }: I_DPContext = useContext(DPContext);
-    let { jalali,size = AIDef<number>('date-size'),theme = AIDef<string[]>('theme') } = rootProps;
-    let [months] = useState<string[]>(DATE.getMonths(jalali));
-    let month = activeDate.month;
-    function changeValue(v:number){
-        changeActiveDate({month:v});
-        onClose()
-    }
-    function getCells() {
-        let cells = [];
-        for (let i = 1; i <= 12; i++) {
-            let active = i === month;
-            let className = 'aio-input-date-cell'
-            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
-            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
-            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
-            cells.push(<div {...p} key={i}>{months[i - 1].slice(0,3)}</div>)
-        }
-        return cells
-    }
-    function getBodyStyle() {
-        var columnCount = 3;
-        var rowCount = 4;
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = size / 6;
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
-    }
-    return (
-        <div className='aio-input-date-months'>
-            <div style={getBodyStyle()} className='aio-input-date-years-body'>{getCells()}</div>
-        </div>
-    )
-}
-function DPHeader() {
-    let { rootProps,activeDate, changeActiveDate,DATE }: I_DPContext = useContext(DPContext);
-    let { size = AIDef<number>('date-size'), unit = AIDef<string>('date-unit') } = rootProps;
-    function getDays():React.ReactNode {
-        if(!activeDate || !activeDate.year || !activeDate.month){return null}
-        let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
-        let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
-        let p:I_DPHeaderDropdown = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
-        return <DPHeaderDropdown {...p} />
-    }
-    return (
-        <div className='aio-input-date-header' style={{ height: size / 4 }}>
-            <DPArrow type='minus' />
-            <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 12) }}>
-                <DPHeaderItem unit='year'/>
-                {unit !== 'month' ? <DPHeaderItem unit='month'/> : null}
-                {unit === 'hour' ? getDays() : null}
-            </div>
-            <DPArrow type='plus' />
-        </div>
-    )
-}
-function DPHeaderDropdown(props: I_DPHeaderDropdown) {
-    let { rootProps }: I_DPContext = useContext(DPContext);
-    let { value, options, onChange } = props;
-    let { size = AIDef<number>('date-size'), theme = AIDef<number[]>('theme') } = rootProps;
-    let p: AI = {
-        value, options, onChange, caret: false, type: 'select',
-        attrs: { className: 'aio-input-date-dropdown aio-input-date-theme-bg1 aio-input-date-theme-color0' },
-        option:{style:()=>{return { height: size / 6, background: theme[1], color: theme[0] }} },
-    }
-    return (<AIOInput {...p} />)
-}
-function DPArrow(props: I_DPArrow) {
-    let { rootProps, changeActiveDate, activeDate,DATE }: I_DPContext = useContext(DPContext);
-    let { type, onClick } = props;
-    let { jalali, unit = AIDef<AI_date_unit>('date-unit'), size = AIDef<number>('date-size'), theme = AIDef<string[]>('theme') } = rootProps;
-    function change() {
-        if (onClick) { onClick(); return }
-        let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
-        let date = [activeDate.year as number, activeDate.month as number, activeDate.day as number]
-        if (unit === 'month') { changeActiveDate({ year: (activeDate.year as number) + offset }) }
-        if (unit === 'day') { 
-            let next = DATE.getNextTime(date,offset * 24 * 60 * 60 * 1000,jalali);
-            changeActiveDate({ year: next[0], month: next[1] }) 
-        }
-        if (unit === 'hour') { 
-            let next = DATE.getNextTime(date,offset * 60 * 60 * 1000,jalali);
-            changeActiveDate({ year: next[0], month: next[1], day: next[2] }) 
-        }
-    }
-    function getIcon() {return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight,1,{style:{ color: theme[0] },className:'aio-input-date-theme-color0'})}
-    return (<div className='aio-input-date-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => change()}>{getIcon()}</div>)
-
 }
 function List() {
     let {rootProps}:AI_context = useContext(AICTX);
@@ -1988,1017 +1174,219 @@ function List() {
         </div>
     );
 }
-const MapContext = createContext({} as any);
-function Map() {
-    let { rootProps }: AI_context = useContext(AICTX);
-    let { popupConfig, mapConfig = {}, onChange = ()=>{}, disabled, attrs, value } = rootProps;
-    let [isScriptAdded,setIsScriptAdded] = useState<boolean>(false);
-    useEffect(()=>{
-        let scr = document.getElementById('aio-input-map-neshan');
-        try {
-            const script = document.createElement("script");
-            script.src = `https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js`;
-            script.id = 'aio-input-map-neshan'
-            script.onload = () => setIsScriptAdded(true);
-            document.body.appendChild(script);
-        }
-        catch (err) { console.log(err) }
-    },[])
-    if(!isScriptAdded){return null}
-    if (!value) { value = { lat: 35.699739, lng: 51.338097 } }
-    if (!value.lat) { value.lat = 35.699739 }
-    if (!value.lng) { value.lng = 51.338097 }
-    let p:I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled:disabled === true }
-    return <MapUnit {...p} />
-}
-function MapUnit(props:I_MapUnit) {
-    let [mapApiKeys] = useState<I_mapApiKeys>((AIOStorage('aio-input-storage') as any).load({ name: 'mapApiKeys', def: { map: '', service: '' } }));
-    let {onClose,mapConfig = {},onChange = () => { },disabled, attrs = {},popupConfig} = props;
-    let {area,zoom:Zoom = 14, traffic = false,markers = [], zoomControl = false, maptype = 'dreamy-gold', poi = true,draggable = true } = mapConfig;
-    let [showPopup,setShowPopup] = useState<boolean>(false)
-    let [value,setValue] = useState<{lat:number,lng:number}>(props.value)
-    let [address,setAddress] = useState<string>('')
-    let [addressLoading,setAddressLoading] = useState<boolean>(false)
-    let [zoom,setZoom] = useState<number>(Zoom);
-    let [mounted,setMounted] = useState<boolean>(false)
-    let [temp] = useState<I_Map_temp>({
-        datauniqid:'mp' + (Math.round(Math.random() * 10000000)),
-        markers:[],
-        dom:createRef(),
-        map:undefined,
-        L:(window as any).L,
-        atimeout:undefined,
-        btimeout:undefined,
-        area:undefined,
-        mapMarker:undefined,
-        lastChange:undefined
-    })
-    let [Marker] = useState(new MarkerClass(()=>temp,()=>mapConfig));
-    Marker.updateMarkers(markers);
-    useEffect(()=>{if(mounted){Marker.addMarkersToMap(value)}},[JSON.stringify(Marker.htmls)])
-    let changeView = !!draggable && !disabled;
-    //maptype: "dreamy" | 'standard-day'  
-    useEffect(()=>{
-        let config = {
-            key: mapApiKeys.map, maptype, poi, traffic,
-            center: [value.lat, value.lng], zoom,
-            dragging: !disabled,
-            scrollWheelZoom: 'center',
-            zoomControl
-        }
-        temp.map = new temp.L.Map(temp.dom.current, config);
-        Marker.addMapMarker(value);
-        temp.map.on('click', (e:any) => {
-            if (attrs.onClick) { return }
-            if (!!onChange) { let { lat, lng } = e.latlng; temp.map.panTo({ lat, lng }) }
-        });
-        temp.map.on('move', (e:any) => {
-            if(!changeView){return}
-            let { lat, lng } = e.target.getCenter()
-            move({ lat, lng })
-        });
-        setMounted(true);
-        update()
-    },[])
-    function handleArea() {
-        if (temp.area) { temp.area.remove() }
-        if (area && temp.L && temp.map) {
-            let { color = 'dodgerblue', opacity = 0.1, radius = 1000, lat, lng } = area;
-            temp.area = temp.L.circle([lat, lng], { color, fillColor: color, fillOpacity: opacity, radius }).addTo(temp.map);
-        }
-    }
-    function ipLookUp() {
-        $.ajax('http://ip-api.com/json')
-            .then(
-                (response:any) => {let { lat, lon } = response; flyTo({lat,lng:lon})},
-                (data:any, status:any) => console.log('Request failed.  Returned status of', status)
-            );
-    }
-    function handlePermission() {
-        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-            if (result.state === 'granted') { console.log(result.state); }
-            else if (result.state === 'prompt') { console.log(result.state); }
-            else if (result.state === 'denied') { console.log(result.state); }
-        });
-    }
-    async function getAddress(p:I_Map_coords) {
-        let { lat, lng } = p;
-        try {
-            let res = await Axios.get(`https://api.neshan.org/v5/reverse?lat=${lat}&lng=${lng}`, { headers: { 'Api-Key': mapApiKeys.service, Authorization: false } });
-            return res.status !== 200 ? '' : res.data.formatted_address;
-        }
-        catch (err) { return '' }
-    }
-    function goToCurrent() {
-        if ("geolocation" in navigator) {
-            handlePermission();
-            // check if geolocation is supported/enabled on current browser
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    let { latitude: lat, longitude: lng } = position.coords;
-                    flyTo({lat, lng});
-                },
-                (error_message) => { ipLookUp() }
-            )
-        }
-        else { ipLookUp() }
-    }
-    async function route(from = [35.699739, 51.338097], to = [35.699939, 51.338497]) {
-        try {
-            let param = { headers: { 'Api-Key': mapApiKeys.service } }
-            let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
-            await Axios.get(url, param);
-        }
-        catch (err) { return '' }
-    }
-    async function showPath(path:string) {
-        try { await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`, { headers: { 'Api-Key': mapApiKeys.service } }); }
-        catch (err) { return '' }
-    }
-    function flyTo(coords:I_Map_coords) {
-        if (!coords) { return }
-        let animate = GetDistance(value, coords) > 0.3;
-        temp.map.flyTo([coords.lat, coords.lng], zoom, { animate, duration: 1 });
-    }
-    function panTo(coords:{lat:number,lng:number}) { temp.map.panTo(coords) }
-    async function updateAddress(coords:I_Map_coords) {
-        if(!mapConfig.address){return}
-        let { lat, lng } = coords;
-        clearTimeout(temp.atimeout);
-        if(temp.lastChange && lat === temp.lastChange.lat && lng === temp.lastChange.lng){return}
-        temp.lastChange = {lat,lng}
-        setAddressLoading(true)
-        temp.atimeout = setTimeout(async () => {
-            let address = await getAddress({ lat, lng });
-            setAddress(address);
-            setAddressLoading(false);
-            onChange({ lat, lng, address });
-        }, 1200);
-    }
-    function change(value:I_Map_coords) {
-        let {lat,lng} = value;
-        onChange({ lat, lng, address });
-        updateAddress(value)
-    }
-    function move(value:I_Map_coords) {
-        if (temp.mapMarker) { temp.mapMarker.setLatLng(value) }
-        clearTimeout(temp.atimeout); clearTimeout(temp.btimeout);
-        temp.btimeout = setTimeout(async () => {setValue(value); change(value)}, 500);
-    }
-    function update(){
-        flyTo(props.value);  
-        handleArea()
-        Marker.addMarkersToMap(value);
-        updateAddress(value);
-    }
-    useEffect(()=>{if(mounted){handleArea()}},[JSON.stringify(area || {})])
-    useEffect(()=>{if(mounted){update()}},[props.value.lat,props.value.lng,Zoom])
-    function getContext() {
-        let context:I_Map_context = { mapApiKeys, value,addressLoading,address, flyTo, goToCurrent,onClose,mapConfig,popupConfig,onChange }
-        return context;
-    }
-    function renderPopup() {
-        if (showPopup) {
-            let props:I_MapUnit = {
-                value,
-                disabled,
-                mapConfig: {...popupConfig,isPopup:true},
-                onClose: () => setShowPopup(false),
-                attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
-                onChange: (obj) => move(obj)
-            }
-            return <MapUnit {...props} />
-        }
-        return null
-    }
-    function header_node():I_RVD_node{return { html: <MapHeader /> }}
-    function body_node():I_RVD_node{return { flex: 1, attrs: { ref: temp.dom }, html: '' }}
-    function footer_node():I_RVD_node{return { html: <MapFooter /> }}
-    return (
-        <>
-            <MapContext.Provider value={getContext()}>
-                <RVD
-                    rootNode={{
-                        className: 'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : ''), style: attrs.style,
-                        onClick: () => {if (popupConfig) { setShowPopup(true) }},
-                        column: [header_node(), body_node(), footer_node()]
-                    }}
-                />
-            </MapContext.Provider>
-            {renderPopup()}
-        </>
-    )
-}
-class MarkerClass{
-    getHtml:(marker:I_Map_marker)=>string;
-    getHtmls:()=>string[];
-    updateMarkers:(markers:I_Map_marker[])=>void;
-    getIcon:(html:string)=>any;
-    addMapMarker:(value:{lat:number,lng:number})=>void;
-    addMarkersToMap:(value:{lat:number,lng:number})=>void;
-    markers:I_Map_marker[];
-    marker:boolean | string;
-    htmls:string[];
-    constructor(getTemp:()=>I_Map_temp,getMapConfig:()=>I_Map_config){
-        this.markers = [];
-        this.htmls = [];
-        this.updateMarkers = (markers)=>{
-            this.markers = markers;
-            this.htmls = this.getHtmls();
-        }
-        this.getHtml = (marker) => {
-            let temp = getTemp();
-            let {datauniqid:id} = temp;
-            let { size = 20, color = 'orange', html, text,lat,lng } = marker;
-            let innerSize = size * 0.4;
-            let borderSize = Math.ceil(size / 10);
-            let innerTop = Math.round(size / 25);
-            let top = `-${(size / 2 + innerSize)}px`;
-            let style1 = `transform:translateY(${top});flex-shrink:0;color:${color};width:${size}px;height:${size}px;border:${borderSize}px solid;position:relative;border-radius:100%;display:flex;align-items:center;justify-content:center;`
-            let style2 = `position:absolute;left:calc(50% - ${innerSize}px);top:calc(100% - ${innerTop}px);border-top:${innerSize}px solid ${color};border-left:${innerSize}px solid transparent;border-right:${innerSize}px solid transparent;`
-            let innerHtml = '', innerText = '';
-            if (html) { innerHtml = JSXToHTML(html) }
-            if (text) { innerText = JSXToHTML(text) }
-            //data-lat va data-lng baraye tashkhise taghire mogheiat az rooye string
-            return (`<div class='aio-input-map-marker' data-lat='${lat}' data-lng='${lng}' data-parent='${id}' style="${style1}">${innerHtml}<div class='aio-input-map-marker-text'>${innerText}</div><div style="${style2}"></div></div>`)
-        }
-        let mapConfig = getMapConfig();
-        let {marker = true} = mapConfig;
-        this.marker = typeof marker === 'boolean'?marker:this.getHtml(marker);
-        this.getHtmls = ()=>{
-            return this.markers.map((o:I_Map_marker)=>this.getHtml(o))
-        }
-        this.getIcon = (html) => {
-            if(typeof html !== 'string'){return false}
-            let temp = getTemp();
-            return { icon: temp.L.divIcon({ html })}
-        }
-        this.addMarkersToMap = ()=>{
-            let m = this.marker;
-            if(m === false){return}
-            let icon = m === true || m === undefined?undefined:this.getIcon(this.getHtml(m as I_Map_marker))
-            return (lat:number,lng:number,temp:I_Map_temp)=>temp.mapMarker = temp.L.marker([lat, lng],icon).addTo(temp.map)
-        }
-        this.addMapMarker = (value) => {
-            let temp = getTemp();
-            if(this.marker === false){return}
-            let icon = this.marker === true || this.marker === undefined?undefined:this.getIcon(this.marker)
-            temp.mapMarker = temp.L.marker([value.lat, value.lng],icon).addTo(temp.map)
-        }
-        this.addMarkersToMap = (value) => {
-            let temp = getTemp();
-            if (!temp.map || !temp.L) { return }
-            if (temp.markers.length) {
-                for (let i = 0; i < temp.markers.length; i++) { temp.markers[i].remove(); }
-                temp.markers = [];
-            }
-            for (let i = 0; i < this.htmls.length; i++) {
-                let h = this.htmls[i];
-                let icon = this.getIcon(h);
-                let { lat = value.lat, lng = value.lng, popup = () => '' } = this.markers[i];
-                let pres:any = popup(this.markers[i])
-                if (typeof pres !== 'string') { try { pres = pres.toString() } catch { } }
-                temp.markers.push(temp.L.marker([lat, lng], icon).addTo(temp.map).bindPopup(pres))
-            }
-        }
-    }
-}
-function MapHeader() {
-    let {value, flyTo, goToCurrent, mapApiKeys,mapConfig = {}, onClose}:I_Map_context = useContext(MapContext);
-    let { title, search } = mapConfig;
-    let [searchValue, setSearchValue] = useState('');
-    let [searchResult, setSearchResult] = useState<{title:string,address:string,location:{x:number,y:number}}[]>([]);
-    let [loading, setLoading] = useState(false);
-    let [showResult, setShowResult] = useState(false);
-    let dom = createRef();
-    let timeout:any;
-    async function changeSearch(searchValue:string) {
-        let { lat, lng } = value;
-        setSearchValue(searchValue);
-        clearTimeout(timeout);
-        if(!searchValue){
-            setSearchResult([]);
-            return;
-        }
-        timeout = setTimeout(async () => {
-            try {
-                let param = { headers: { 'Api-Key': mapApiKeys.service, 'Authorization': false } }
-                let url = `https://api.neshan.org/v1/search?term=${decodeURI(searchValue)}&lat=${lat}&lng=${lng}`;
-                setLoading(true); let res = await Axios.get(url, param); setLoading(false)
-                if (res.status !== 200) { return }
-                setSearchResult(res.data.items)
-            }
-            catch (err) { }
-        }, 1000)
-    }
-    function input_node():I_RVD_node {
-        if (!search) { return {} }
-        let p:AI = {
-            type:'text',placeholder:search,className:'aio-input-map-serach-input',value:searchValue,attrs:{ref:dom},options:searchResult,
-            before:<div onClick={()=>goToCurrent()} className='align-vh'>{I(mdiCrosshairsGps,0.6)}</div>,
-            after:()=>{
-                let path,spin,size,onClick;
-                if(loading){path = mdiLoading; spin = 0.4; size = 1;}
-                else if(!!showResult && !!searchResult.length){path = mdiClose; size = 0.8; onClick = ()=>{changeSearch('')}}
-                else {path = mdiMagnify; size=0.8;}
-                return (<div className='aio-input-map-serach-icon align-vh' onClick={onClick}>{I(path,size,{spin})}</div>)
-            },
-            option:{
-                text:'option.title',value:'option.location.x + "-" + option.location.y',close:()=>true,
-                subtext:'option.address',
-                onClick:(option)=>flyTo({lat:option.object.location.y, lng:option.object.location.x})
-            },
-            onChange:(searchValue:string)=>changeSearch(searchValue)
-        }
-        return {className: 'aio-input-map-search',html:<AIOInput {...p}/>}
-    }
-    function header_node():I_RVD_node {
-        if (typeof title !== 'string' && !onClose) { return {} }
-        return {
-            row: [
-                { show: !!onClose, html: I(mdiChevronRight,1), className: 'aio-input-map-close align-vh', onClick: () => {if(onClose){onClose()}} },
-                { show: typeof title === 'string', html: title, className: 'aio-input-map-title align-v' },
-            ]
-        }
-    }
-    if (!search && !title && !onClose) { return null }
-    return (
-        <RVD
-            rootNode={{
-                className: 'aio-input-map-header of-visible' + (searchResult && searchResult.length && showResult ? ' aio-input-map-header-open' : ''),
-                column: [header_node(), input_node()]
-            }}
-        />
-    )
-}
-function MapFooter() {
-    let {value,addressLoading,address,onClose, onChange,mapConfig = {}}:I_Map_context = useContext(MapContext);
-    let { lat, lng } = value;
-    function submit_node():I_RVD_node {
-        if (!mapConfig.isPopup) { return {} }
-        let {submitText = 'Submit'} = mapConfig;
-        return { html: (<button className='aio-input-map-submit' onClick={async () => { onChange(value); if(onClose){onClose()} }}>{submitText}</button>) }
-    }
-    function details_node():I_RVD_node {
-        if (!mapConfig.address) { return {} }
-        return addressLoading?loading_node():{ className:'flex-1',column: [address_node(), coords_node()] }
-    }
-    function loading_node():I_RVD_node{return { html: I(mdiLoading,1,{spin:0.4}), className: 'align-v flex-1' }}
-    function address_node():I_RVD_node{return { html: address, className: 'aio-input-map-address flex-1' }}
-    function coords_node():I_RVD_node{return { show: !!lat && !!lng, html: () => `${lat} - ${lng}`, className: 'aio-input-map-coords' }}
-    function root_node():I_RVD_node{return {className: 'aio-input-map-footer',row: [details_node(),submit_node()]}}
-    if(!mapConfig.isPopup && !mapConfig.address){return null}
-    return (<RVD rootNode={root_node()} />)
-}
-function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, index: number) => any) {
-    if (!searchValue) { return items }
-    function isMatch(keys:string[], value:string) {
-        for (let i = 0; i < keys.length; i++) {
-            if (value.indexOf(keys[i]) === -1) { return false }
-        }
-        return true
-    }
-    let keys = searchValue.split(' ');
-    return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
-}
-function ExportToExcel(rows:any[], config:any = {}) { 
-    let { promptText = 'Inter Excel File Name' } = config; 
-    let o = { 
-        fixPersianAndArabicNumbers(str:string):string { 
-            if (typeof str !== 'string') { return str } 
-            let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g], 
-                arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g]; 
-            let i:number;
-                for (i = 0; i < 10; i++) {str = str.replace(persianNumbers[i], i.toString()).replace(arabicNumbers[i], i.toString());} 
-            return str; 
-        }, 
-        getJSON(rows:any[]) { 
-            let result = []; 
-            for (let i = 0; i < rows.length; i++) { 
-                let json = rows[i], fixedJson:any = {}; 
-                for (let prop in json) {fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop])} 
-                result.push(fixedJson); 
-            } 
-            return result; 
-        }, 
-        export() { 
-            let name = window.prompt(promptText); 
-            if (!name || name === null || !name.length) { return }; 
-            var data = this.getJSON(rows); 
-            var arrData = typeof data != "object" ? JSON.parse(data) : data; 
-            var CSV = ""; CSV += '\r\n\n'; 
-            if (true) { 
-                let row = ""; 
-                for (let index in arrData[0]) {row += index + ",";} 
-                row = row.slice(0, -1); CSV += row + "\r\n"; 
-            } 
-            for (var i = 0; i < arrData.length; i++) { 
-                let row = ""; 
-                for (let index in arrData[i]) {row += '"' + arrData[i][index] + '",';} 
-                row.slice(0, row.length - 1); CSV += row + "\r\n"; 
-            } 
-            if (CSV === "") { 
-                alert("Invalid data"); return; 
-            } 
-            var fileName = name.replace(/ /g, "_"); 
-            var universalBOM = "\uFEFF"; 
-            var uri = "data:text/csv;charset=utf-8," + encodeURIComponent(universalBOM + CSV); 
-            let link:any = document.createElement("a"); 
-            link.href = uri; 
-            link.style = "visibility:hidden"; 
-            link.download = fileName + ".csv"; 
-            document.body.appendChild(link); 
-            link.click(); 
-            document.body.removeChild(link); 
-        } 
-    }; 
-    return o.export(); 
-}
 async function DownloadUrl(url:string, name:string) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
-function JSXToHTML(html:any) { return ReactDOMServer.renderToStaticMarkup(html) }
-function GetDistance(p1:I_Map_coords, p2:I_Map_coords) {
-    let { lat: lat1, lng: lon1 } = p1;
-    let { lat: lat2, lng: lon2 } = p2;
-    let rad = Math.PI / 180;
-    let radius = 6371; //earth radius in kilometers
-    return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
-}
-export function Acardion(props:any = {}) {
-    let { items, singleOpen } = props;
+type I_AcardionContext = {toggle:(id:string)=>void,mountedDic:{[id:string]:boolean},openDic:{[id:string]:boolean},rootProps:AI}
+type I_Acardion = {options:AI_option[]}
+const AcardionContext = createContext({} as any);
+export const Acardion:FC<I_Acardion> = (props) => {
+    const {rootProps}:AI_context = useContext(AICTX);
+    const {multiple,vertical = true} = rootProps;
+    let { options } = props;
     let [openDic, setOpenDic] = useState<any>({})
+    let [mountedDic, setMountedDic] = useState<{[id:string]:boolean}>({})
+    function SetMounted(newOpen:boolean,id:string){
+        if (!multiple) { setMountedDic(!newOpen ? {} : { [id]: true }) }
+        else { setMountedDic({ ...mountedDic, [id]: !mountedDic[id] }) }
+    }
+    function SetOpen(newOpen:boolean,id:string){
+        if (!multiple) { setOpenDic(!newOpen ? {} : { [id]: true }) }
+            else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
+    }
     function toggle(id:any) {
         let open = !!openDic[id]
-        if (singleOpen) { setOpenDic(open ? {} : { [id]: true }) }
-        else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
+        let time = 500
+        if(!open){SetOpen(!open,id); setTimeout(()=>SetMounted(!open,id),0)}
+        else {SetMounted(!open,id); setTimeout(()=>SetOpen(!open,id),time)}
     }
-    function item_node(o:any):I_RVD_node {
-        let { id } = o;
-        let open = !!openDic[id];
-        return {
-            className: 'aio-input-acardion-item',
-            column: [
-                item_header_node(o, open),
-                item_content_node(o, open)
-            ]
+    function getContext(){
+        let context:I_AcardionContext = {
+            toggle,rootProps,mountedDic,openDic
         }
-    }
-    function item_header_node(o:any, open:boolean):I_RVD_node {
-        let { name, after, id, headerAttrs = {} } = o;
-        let className = 'aio-input-acardion-header';
-        if (open) { className += ' open' }
-        if (headerAttrs.className) { className += ' ' + headerAttrs.className }
-        return {
-            className: 'aio-input-acardion-header align-v' + (open ? ' open' : ''),
-            row: [
-                { html: I(open ? mdiChevronDown : mdiChevronLeft,0.8), className: 'aio-input-acardion-toggle align-vh', onClick: () => toggle(id) },
-                { html: name, flex: 1, className: 'aio-input-acardion-name' },
-                { show: !!after, html: () => typeof after === 'function' ? after(open) : after, className: 'aio-input-acardion-after align-vh' }
-            ]
-        }
-    }
-    function item_content_node(o:any, open:boolean):I_RVD_node {
-        let { content, contentAttrs = {} } = o;
-        if (!open) { return {} }
-        return {
-            style: contentAttrs.style,
-            className: 'aio-input-acardion-content' + (contentAttrs.className ? ' ' + contentAttrs.className : ''),
-            html: content()
-        }
+        return context;
     }
     return (
-        <RVD
-            rootNode={{
-                className: 'aio-input-acardion',
-                column: items.map((o:any) => item_node(o))
-            }}
-        />
+        <AcardionContext.Provider value={getContext()}>
+            <div className={`aio-input-acardion${vertical?' aio-input-acardion-vertical':' aio-input-acardion-horizontal'}`}>
+                {options.map((option:AI_option) => <AcardionItem option={option}/>)}
+            </div>
+        </AcardionContext.Provider>
     )
 }
-export function Tree(props:any = {}) {
-    let { getText, getBefore, getOptions, getSubtext, onAdd, onRemove, data, indent = 12, getOptionBefore, onChange } = props;
-    let [openDic, setOpenDic] = useState<any>({})
-    function getColumn() { return getColumn_req([...data], 0, undefined); }
-    function getColumn_req(model:any, level:number, parent:any) {
-        return model.map((o:any, i:number) => {
-            let childs = o.childs || []
-            return {
-                style: { paddingRight: level * indent },
-                column: [
-                    row_node(o, parent),
-                    { show: !!childs.length && openDic[o.id] !== false, column: getColumn_req(childs, level + 1, o) }
-                ]
-            }
-        })
-    }
-    async function add(parent?:any) {
-        let obj = await onAdd(parent);
-        if (!obj) { return }
-        if (parent) { parent.childs = parent.childs || []; parent.childs.push(obj); }
-        else { data.push(obj) }
-        onChange(data);
-    }
-    async function remove(o:any, parent:any) {
-        let res = await onRemove(o, parent);
-        if (!res) { return }
-        if (!parent) { data = data.filter((row:any) => row.id !== o.id) }
-        else { parent.childs = parent.childs.filter((row:any) => row.id !== o.id); }
-        onChange(data)
-    }
-    function GetOptions(row:any, parent:any) {
-        let res = [];
-        if (onAdd) {
-            res.push({ text: 'افزودن', value: 'add', before: getOptionBefore ? getOptionBefore('add') : undefined, onClick: () => add(row) })
-        }
-        let options = getOptions ? getOptions(row) : [];
-        for (let i = 0; i < options.length; i++) {
-            let { text, value, onClick } = options[i];
-            res.push({ text, value, before: getOptionBefore ? getOptionBefore(value) : undefined, onClick })
-        }
-        if (onRemove) {
-            res.push({ text: 'حذف', value: 'remove', before: getOptionBefore ? getOptionBefore('remove') : undefined, onClick: () => remove(row, parent) })
-        }
-        return res
-    }
-    function row_node(o:any, parent:any):I_RVD_node {
-
-        let toggle = o.childs.length ? I(openDic[o.id] === false ? mdiChevronLeft : mdiChevronDown,1) : ''
-        let Options = () => {
-            let options = GetOptions(o, parent)
-            if (!options.length) { return false }
-            return (<AIOInput key={o.id} type='select' caret={false} style={{ background: 'none' }} options={options} text={I(mdiDotsHorizontal,0.8)} />)
-        }
-        let before = getBefore ? getBefore(o, parent) : undefined
-        let subtext = getSubtext ? getSubtext(o, parent) : undefined
-        let text = getText ? getText(o, parent) : undefined
-        let options = Options()
-        return {
-            className: 'aio-input-tree-row',
-            row: [
-                { className: 'aio-input-tree-toggle align-vh', html: toggle, onClick: () => setOpenDic({ ...openDic, [o.id]: openDic[o.id] === undefined ? false : !openDic[o.id] }) },
-                { className: 'aio-input-tree-before align-vh', show: !!before, html: before },
-                {
-                    className: 'aio-input-tree-texts align-v flex-1',
-                    column: [
-                        { html: text, className: 'aio-input-tree-text align-v' },
-                        { show: !!subtext, html: subtext, className: 'aio-input-tree-subtext align-v' }
-                    ]
-                },
-                { show: !!options, html: () => options, className: 'aio-input-tree-options align-vh' }
-            ]
-        }
-    }
-    function header_node():I_RVD_node {
-        if (!onAdd) { return {} }
-        return {
-            className: 'aio-input-tree-header align-v',
-            html: () => <button onClick={() => add()}>{I(mdiPlusThick,.8)}افزودن</button>
-        }
-    }
-    function body_node():I_RVD_node {
-        return { className: 'aio-input-tree-body', column: getColumn() }
-    }
-    return (<RVD rootNode={{ className: 'aio-input-tree', column: [header_node(), body_node()] }} />)
-}
-const Range = ():React.ReactNode => {
-    let {rootProps}:AI_context = useContext(AICTX);
-    let {
-        start = 0,end = 360,min = start,max = end,step = 1,ranges,circles = [],reverse,round,multiple,text,
-        onChange,size = AIDef<number>('range-size'),disabled,className,fill} = rootProps;
-        ranges = ranges || [`${end} 2 #ddd`]
-    let [temp] = useState<any>(getTemp())
-    let [cls] = useState<any>(getCls())
-    function getTemp(){
-        let dom = createRef();
-        let {rotate = 0} = rootProps;
-        return {
-            dom,rotate,start:0,h:reverse?'right':'left',
-            getP,isValueDisabled,fixAngle,getDistanceByOffset,getCls
-        }    
-    }
-    function getValidValue(value:number[]):number[] {
-        if (!Array.isArray(value)) {value = [value || 0]}
-        for (let i = 0; i < value.length; i++) {
-            let point = value[i] || 0;
-            point = Math.round((point - start) / step) * step + start;
-            if (point < min) { point = min; }
-            if (point > max) { point = max; }
-            value[i] = point;
-        }
-        return value
-    }
-    let value:number[] = getValidValue(rootProps.value);
-    let valueRef = useRef(value);
-    valueRef.current = value;
-    let [disabledDic,setDisabledDic] = useState(getDisabledDic())
-    function getDisabledDic(){
-        if(!Array.isArray(disabled)){return {}}
-        let res:{[key:string]:boolean} = {}
-        for(let i = 0; i < disabled.length; i++){
-            let key = 'a' + disabled[i];
-            res[key] = true
-        }
-        return res
-    }
-    function getCls(){
-        return {
-            root:`aio-input-range${round?' aio-input-range-round':''}`,
-            'range':'aio-input-range-range',
-            'label-container':'aio-input-range-label-container',
-            'label':'aio-input-range-label',
-            'scale-container':'aio-input-range-scale-container',
-            'scale':`aio-input-range-scale`,
-            'point':'aio-input-range-point',
-            'handle':'aio-input-handle',
-            'handle-container':'aio-input-handle-container',
-            'fill':'aio-input-range-fill',
-            'reverse':'aio-input-range-reverse'
-        }
-    }
-    useEffect(()=>{setDisabledDic(getDisabledDic())},[JSON.stringify(disabled)])
-    useEffect(()=>{
-        new Swip({
-            reverseX:!!reverse,
-            dom:()=>$(temp.dom.current),
-            start:({event})=>{
-                let target = $(event.target);
-                if(target.hasClass('aio-input-range-point')){
-                    let index = target.attr('data-index');
-                    temp.index = +index;
-                }
-                else {
-                    temp.index = false
-                }
-                temp.start = [...valueRef.current];
-                return [0,0];
-            },
-            move:({change,mousePosition})=>{
-                if(change){changeHandle({dx:change.dx,deltaCenterAngle:change.deltaCenterAngle,centerAngle:mousePosition.centerAngle})}
-            },
-            onClick:function (p){click(p.mousePosition)}
-        })
-    },[])
-    function changeValue(newValue:number[]){
-        if(!onChange){return}
-        newValue = getValidValue(newValue)
-        onChange(multiple?newValue:newValue[0])
-    }
-    function click(mousePosition:I_Swip_mousePosition){
-        if(disabled === true || temp.index !== false){return} 
-        let value = valueRef.current;
-        let clickedValue:number;
-        if(round){clickedValue = getValueByAngle(mousePosition.centerAngle);}
-        else {clickedValue = getValueByXP(mousePosition.xp);}
-        if(clickedValue < value[value.length - 1] && clickedValue > value[0]){return}
-        if(clickedValue < value[0]){change1Unit(-1)}
-        else{change1Unit(1)}
-    }
-    function isValueValid(value:number[]):boolean{
-        for(let i = 0; i < value.length; i++){if(isValueDisabled(value[i])){return false}}
-        return true
-    }
-    function moveAll(newValue:number[],offset:number,ifFailedReturnOriginalValue?:boolean):number[]{
-        let res = newValue.map((o:number)=>o + offset)
-        if(res[0] < start || res[res.length - 1] > end){return ifFailedReturnOriginalValue?valueRef.current:newValue}
-        return res;
-    }
-    function change1Unit(dir: 1 | -1):void{
-        let value = valueRef.current;
-        let newValue = [...value];
-        let lastValue = JSON.stringify(newValue)
-        newValue = moveAll(newValue,dir * step);
-        while(!isValueValid(newValue) && JSON.stringify(newValue) !== lastValue){
-            lastValue = JSON.stringify(newValue)
-            newValue = moveAll(newValue,dir * step)
-        }
-        changeValue(newValue)
-    }
-    function changeHandle(obj:{dx:number,deltaCenterAngle:number,centerAngle:number}):void{
-        if(disabled === true){return}
-        let newValue = getChangedValue(obj);
-        changeValue(newValue)
-    }
-    function getIndexLimit(index:number){
-        let value = valueRef.current;
-        let before:number,after:number;
-        if(index === 0){before = start}
-        else {before = value[index - 1]}
-        if(index === value.length - 1){after = end}
-        else {after = value[index + 1]}
-        return {before,after} 
-    }
-    function getChangedValue(obj:{dx:number,deltaCenterAngle:number,centerAngle:number}):number[]{
-        let {dx,deltaCenterAngle,centerAngle} = obj;
-        let startValue = [...temp.start];
-        let index = temp.index;
-        let range = end - start;
-        if(index === false){
-            let deltaValue;
-            if(round){
-                let v = deltaCenterAngle * (end - start) / 360;
-                v = Math.round(v / step) * step;
-                deltaValue = v;
-                
-            }
-            else {deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;}
-            let newValue = moveAll(startValue,deltaValue,true);
-            return !isValueValid(newValue)?valueRef.current:newValue;
-        }
-        else {
-            let {before,after} = getIndexLimit(index)
-            let newUnit:number;
-            if(round){
-                newUnit = getValueByAngle(centerAngle);
-                if(newUnit > after || newUnit < before){
-                    let deltaAfter = newUnit - after;
-                    if(deltaAfter < 0){deltaAfter += range;}
-                    let deltaBefore = before - newUnit;
-                    if(deltaBefore < 0){deltaBefore += range;}
-                    if(deltaAfter < deltaBefore){newUnit = after}
-                    else {newUnit = before}
-                }
-            }
-            else {
-                let deltaValue = Math.round(getValueByXP(getXPByX(dx)) / step) * step;
-                newUnit = startValue[index] + deltaValue;
-                if(newUnit > after){newUnit = after}
-                if(newUnit < before){newUnit = before}
-            }
-            if(isValueDisabled(newUnit)){return valueRef.current}
-            startValue[index] = newUnit;
-            return startValue;
-        }
-    }
-    function isValueDisabled(value:number):boolean{return !!disabledDic[`a${value}`]}
-    function pointContainerProps(value:number){
-        let style;
-        if(!round){style = {[temp.h]:getXPByValue(value) + '%'}}
-        else {style = {transform:`rotate(${fixAngle(getAngleByValue(value))}deg)`}}
-        return {className:'aio-input-handle-container',draggable:false,style}
-    }
-    function getP(val:number){
-        let res:any = {disabled:isValueDisabled(val),value}
-        if(!!round){
-            res.angle = fixAngle(getAngleByValue(val));
-            res.left = size / 2;
-        }
-        else {res.h = getXPByValue(val)}
-        return res
-    }
-    function value_node():React.ReactNode[]{
-        return value.map((unitValue,i)=>{
-            let PROPS:I_RangeValue = {
-                rootProps,value:unitValue,index:i,disabled:isValueDisabled(unitValue),
-                angle:fixAngle(getAngleByValue(unitValue)),parentDom:temp.dom
-            }
-            return (<div {...pointContainerProps(unitValue)} key={i}><RangeHandle {...PROPS}/> <RangePoint {...PROPS} /></div>)
-        })
-    }
-    function getDistanceByOffset(offset:any,value:number,p:any,type:'scale' | 'label'){
-        let def:{[key:string]:number} = {'round-point':-8,'round-label':8,'round-scale':4,'point':0}
-        let res = typeof offset === 'function'?offset(value,p):offset;
-        if(res === undefined){res = def[`${round?'round-':''}${type}`] || 0;}
-        if(!round){
-            let sign = offset < 0?'-':'+';
-            let top = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
-            return {top}
-        }
-        else {return {left:size / 2 + res}}
-    }
-    function root_node():React.ReactNode{
-        let {style,attrs = {}} = rootProps;
-        let rootStyle = !round?{...style}:{...style,width:size,height:size};
-        let p = addToAttrs(attrs,{className:[cls.root,className,reverse?cls['reverse']:undefined],style:rootStyle,attrs:{ref:temp.dom}})
-        return (
-            <div {...p}>
-                {text !== undefined && <div className='aio-input-range-text'>{typeof text === 'function'?text():text}</div>}
-                {!round && lines_node()} 
-                {!!round && svg_node()} 
-                <RangeItems key='scale' type='scale' rootProps={rootProps} temp={temp}/>
-                <RangeItems key='label' type='label' rootProps={rootProps} temp={temp}/>
-                {value_node()}
-            </div>
-        )
-    }
-    function getRanges():React.ReactNode[]{
-        let res = [],from = start,list = (typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges) || [];
-        for(let i = 0; i < list.length; i++){
-            let [stringValue,stringThickness,color] = list[i].split(' ');
-            let to = +stringValue
-            let thickness = +stringThickness;
-            let radius = (size / 2) - (thickness / 2);
-            let rangeItem = round?arc_node(thickness,color,from,to,radius,90):range_node({thickness,color,from,to,className:cls['range'],key:'range' + i});
-            res.push(rangeItem);
-            from = to;
-        }
-        return res
-    }
-    function lines_node():React.ReactNode[]{
-        let rangeDivs:React.ReactNode[] = []; try{rangeDivs = getRanges()} catch{rangeDivs = []}
-        let fillDivs:React.ReactNode[] = []; try{fillDivs = getFills()} catch{fillDivs = []} 
-        return [...rangeDivs,...fillDivs]
-    }
-    function svg_node():React.ReactNode{
-        if(!(ranges || []).length && !circles.length){return null}
-        let rangePathes:React.ReactNode[] = []; try{rangePathes = getRanges()} catch{rangePathes = []}
-        let circlePathes:React.ReactNode[] = []; try{circlePathes = getCircles()} catch{circlePathes = []} 
-        let pathes = [...circlePathes,...rangePathes]
-        return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
-    }
-    function arc_node(thickness:number,color:string,from:number,to:number,radius:number,rotate:number):React.ReactNode{ 
-        let startAngle = fixAngle(getAngleByValue(from,rotate));
-        let endAngle = fixAngle(getAngleByValue(to,rotate));
-        if(endAngle === 0){endAngle = 360}
-        let x = size / 2,y = size / 2;
-        let a = startAngle, b = endAngle;
-        if(reverse){b = startAngle; a = endAngle}
-        return <path key={`from${from}to${to}`} d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
-    }
-    function getCircles():React.ReactNode[]{
-        let pathes = []
-        for(let i = 0; i < circles.length; i++){
-            let [stringRadius,stringThickness,color] = circles[i].split(' ');
-            let from = start,to = end,radius = +stringRadius,thickness = +stringThickness;
-            if(radius > size / 2 - thickness / 2){radius = size / 2 - thickness / 2} 
-            radius = Math.round(radius)
-            pathes.push(arc_node(thickness,color,from,to,radius,90));
-        }
-        return pathes;
-    }
-    function getFills():React.ReactNode[]{
-        if(fill === false){return []}
-        let limit = value.length === 1?[start,value[0]]:[...value]; 
-        let res:React.ReactNode[] = [];
-        for(let i = 1; i < limit.length; i++){
-            let {thickness,style,className:fillClassName,color} = (typeof fill === 'function'?fill(i):fill) || {};
-            let from = limit[i - 1];
-            let to = limit[i];
-            let className = cls['fill'];
-            if(fillClassName){className += ' ' + fillClassName}
-            res.push(range_node({thickness,color,from,to,className,style,key:'fill' + i}))
-        }
-        return res
-    }
-    
-    function range_node(p:{thickness?:number,color?:string,from:number,to:number,className?:string,style?:any,key:any}):React.ReactNode{ 
-        let {thickness,color,from,to,className,style,key} = p;
-        let startSide = getXPByValue(from);
-        let endSide = getXPByValue(to);
-        return <div key={key} className={className} style={{height:thickness,[temp.h]:startSide + '%',width:(endSide - startSide) + '%',background:color,...style}}/>
-    }
-    function getValueByAngle(angle:number){
-        let fillAngle = 360 * round;
-        let emptyAngle = 360 - fillAngle;
-        if(reverse){angle = 180 - angle}
-        angle -= temp.rotate; angle -= emptyAngle / 2; angle -= 90; angle = fixAngle(angle);
-        return angle * (end - start) / fillAngle;
-    }
-    function getAngleByValue(value:number,ang?:number){
-        let fillAngle = 360 * round;
-        let emptyAngle = 360 - fillAngle;
-        let res = value * fillAngle / (end - start);
-        res += 90; res += emptyAngle / 2; res += temp.rotate; res += (ang || 0)
-        return reverse?res = 180 - res:res;
-    }
-    function fixAngle(angle:number):number{angle = angle % 360; return angle < 0?angle = 360 + angle:angle}
-    function getXPByValue(value:number):number {return 100 * (value - start) / (end - start);}
-    function getValueByXP(xp:number):number{return xp * (end - start) / 100;}
-    function getXPByX(x:number):number{return x * 100 / $(temp.dom.current).width();}
-    return root_node()
-}
-type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,index:number,parentDom:any}
-function RangePoint(props:I_RangeValue){
-    let [temp] = useState({
-        dom:createRef()
-    })
-    let {rootProps,value,disabled,angle,index,parentDom} = props;
-    if(rootProps.point === false){return null}
-    let {round,size = 72} = rootProps;
-    let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value}) || {}
-    let {attrs = {},className,style,html = '',offset = 0} = point;
-    let zIndexAttrs = getEventAttrs('onMouseDown',()=>{
-        let containers = $(parentDom.current).find('aio-input-handle-container');
-        containers.css({zIndex:10});
-        containers.eq(index).css({zIndex:100})
-    })
-    let PROPS = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
+type I_AcardionItem = {option:AI_option}
+const AcardionItem:FC<I_AcardionItem> = (props) => {
+    const {openDic,mountedDic,toggle}:I_AcardionContext = useContext(AcardionContext);
+    let {option} = props;
+    let {value} = option;
+    let open = !!openDic[value]
+    let mounted = !!mountedDic[value];
     return (
-        <div ref={temp.dom as any} className='aio-input-range-point-container' style={round?{left:size / 2 + offset}:{top:offset}} draggable={false}>
-            <div {...PROPS}>{html}</div>
+        <div className={`aio-input-acardion-item${open?' open':''}${!mounted?' not-mounted':''}`}>
+            <Layout option={option} properties={{onClick:()=>toggle(value)}}/>
+            <AcardionBody option={option}/>
         </div>
     )
 }
-function RangeHandle(props:I_RangeValue){
-    let {rootProps,value,angle,disabled} = props;
-    let {handle = (()=>{}),size = 72,round} = rootProps;
-    if(handle === false || !round){return null}
-    if(handle && typeof handle !== 'function'){
-        alert(`aio-input error => in type round, handle props should be a function,
-        handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
-        return null
-    }
-    let {attrs = {}} = handle(value,{angle,disabled,value}) || {}
-    let PROPS = addToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
-    return (<div {...PROPS}></div>)
+type I_AcardionBody = {option:AI_option}
+const AcardionBody:FC<I_AcardionBody> = (props)=>{
+    let {openDic,rootProps}:I_AcardionContext = useContext(AcardionContext);
+    let {option} = props;
+    let {text,value} = option;
+    let open = !!openDic[value]
+    let {body} = rootProps;
+    if(!open){return null}
+    let {html} = typeof body === 'function'?body():body
+    return (<div className={`aio-input-acardion-body`}>{html}</div>)
 }
-type I_RangeItems = {type:'scale'|'label',rootProps:AI,temp:any}
-const RangeItems:FC<I_RangeItems> = (props) => {
-    let {type,rootProps,temp} = props;
-    let {round,start = 0,end = 360,reverse} = rootProps;
-    let [def_scale] = useState<React.ReactNode>(getDefScale);
-    function getDefScale(){return RENDER(true)}
-    let [def_label] = useState<React.ReactNode>(getDefLabel);
-    function getDefLabel(){return RENDER(true)}
-    function getList(item:AI_scales):number[]{
-        let {step,list = []} = item,res:number[] = [];
-        if(step){
-            let endStep = !round || round !== 1;
-            let stepLength = Math.floor((end - start) / step) + (endStep?1:0);
-            res = new Array(stepLength).fill(0).map((o,i)=>i * step);
-        }
-        for(let i = 0; i < list.length; i++){
-            if(res.indexOf(list[i]) === -1){res.push(list[i])}
-        }
-        return res;
+type I_TreeContext = {toggle:(id:string)=>void,mountedDic:{[id:string]:boolean},openDic:{[id:string]:boolean},rootProps:AI,types:any,add:any,remove:any}
+//should implement
+//inlineEdit
+//toggleIcon
+const TreeContext = createContext({} as any);
+const Tree:FC = () => {
+    let {rootProps,types}:AI_context = useContext(AICTX);
+    let { onAdd, onRemove,value = [],onChange } = rootProps;
+    let [openDic, setOpenDic] = useState<any>({})
+    let [mountedDic, setMountedDic] = useState<{[id:string]:boolean}>({})
+    console.log(openDic,mountedDic)
+    function SetMounted(id:string){
+        setMountedDic({ ...mountedDic, [id]: !mountedDic[id] })
     }
-    function updateLabels() {
-        if(round || type !== 'label'){return}
-        let container = $(temp.dom.current);
-        let labels = container.find('.aio-input-range-label');
-        if (!labels.length) { return; }
-        let firstLabel = labels.eq(0);
-        let firstLabelHProp = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
-        let end = firstLabel.offset().left + (!reverse?firstLabel[firstLabelHProp]():0);
-        for (let i = 1; i < labels.length; i++) {
-            let label = labels.eq(i);
-            let hProp = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
-            label.css({ display: 'flex' })
-            let left = label.offset().left
-            let width = label[hProp]();
-            let right = left + width;
-            if(!reverse){
-                if (left < end + 5) {label.css({ display: 'none' })}
-                else { end = left + width; }
-            }
-            else {
-                if (right > end - 5) {label.css({ display: 'none' })}
-                else { end = left; }
-            }   
-        }
+    function SetOpen(id:string){
+        //if(!openDic[id] === false){return}
+        setOpenDic({ ...openDic, [id]: !openDic[id] })
     }
-    useEffect(()=>{$(window).on('resize', updateLabels)},[])
-    useEffect(()=>{updateLabels()})
-    function RENDER(init:boolean):React.ReactNode{
-        let entity:AI_scales = {label:rootProps.labels,scale:rootProps.scales}[type] as AI_scales
-        let setting = {label:rootProps.label,scale:rootProps.scale}[type] || (()=>{return {}})
-        if(!entity){return null}
-        if(!init && !entity.dynamic){
-            let dic:{scale:React.ReactNode,label:React.ReactNode} = {scale:def_scale,label:def_label}
-            return dic[type] as React.ReactNode
-        }
-        return (
-            <>
-                {
-                    getList(entity).map((itemValue,i)=>{
-                        return <RangeItem key={type + itemValue} setting={setting} itemValue={itemValue} type={type} rootProps={rootProps} temp={temp}/>
-                    })
-                }
-            </>
-        )
+    function toggle(id:any) {
+        let open = !!openDic[id]
+        let time = 500
+        if(!open){SetOpen(id); setTimeout(()=>SetMounted(id),0)}
+        else {SetMounted(id); setTimeout(()=>SetOpen(id),time)}
+    }    
+    async function add(parent?:any) {
+        let newRow:any;
+        if(typeof onAdd === 'function'){newRow = await onAdd({parent})}
+        else {newRow = onAdd}
+        if (!newRow) { return }
+        if (parent) { parent.childs = parent.childs || []; parent.childs.push(newRow); }
+        else { value.push(newRow) }
+        onChange(value);
     }
-    return <>{RENDER(false)}</>
+    async function remove(row:any, parent:any) {
+        let res:boolean;
+        if(typeof onRemove === 'function'){res = await onRemove({row,parent}) as boolean}
+        else {res = true}
+        if (!res) { return }
+        if (!parent) { 
+            value = value.filter((o:any) => {
+                let rowValue = getOptionProp({option:row,key:'value',props:rootProps})
+                let oValue = getOptionProp({option:o,key:'value',props:rootProps})
+                return rowValue !== oValue
+            }) 
+        }
+        else { 
+            parent.childs = parent.childs.filter((o:any) => {
+                let rowValue = getOptionProp({option:row,key:'value',props:rootProps})
+                let oValue = getOptionProp({option:o,key:'value',props:rootProps})
+                return rowValue !== oValue
+            }); 
+        }
+        onChange(value)
+    }
+    function getContext(){
+        let context:I_TreeContext = {
+            toggle,rootProps,mountedDic,openDic,add,remove,types
+        }
+        return context;
+    }
+    return (
+        <TreeContext.Provider value={getContext()}>
+            <div className="aio-input-tree">
+                <TreeHeader/>
+                <TreeBody rows={value} level={0}/>
+            </div>
+        </TreeContext.Provider>
+    )
 }
-type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label',temp:any,rootProps:AI}
-function RangeItem(props:I_RangeItem){
-    let {setting,itemValue,type,temp,rootProps} = props;
-    let {round} = rootProps;
-    let cls = temp.getCls();
-    function getContainerStyle(distance:any,p:any){return !round?{[temp.h]:p.h+'%',...distance}:{transform:`rotate(${p.angle}deg)`}} 
-    function getTextStyle(item:AI_scale,p:any,distance:any,type:'scale' | 'label'){
-        let {attrs = {},style,fixAngle = (type === 'label')} = item;
-        if(round){
-            let res:any = {};
-            if(fixAngle){res.transform = `rotate(${-p.angle}deg)`}
-            return {...res,...distance,...attrs.style,...style}
-        }
-        return {...attrs.style,...style}
-    }
-    function getDetails(listItem:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
-        let p = temp.getP(itemValue);
-        let item:AI_scale = listItem(itemValue,p);
-        let {offset = !round && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className,attrs} = item;
-        let distance = temp.getDistanceByOffset(offset,itemValue,p,type)
-        let text = html;
-        let containerStyle = getContainerStyle(distance,p);
-        let containerProps = {className:cls[`${type}-container`],style:containerStyle,draggable:false,key:itemValue};
-        let textProps = addToAttrs(attrs,{className:[cls[type],className],style:getTextStyle(item,p,distance,type),attrs:{draggable:false}})
-        return {text,textProps,containerProps}
-    }
-    let {text,textProps,containerProps} = getDetails(setting,itemValue,type);
-    return (<div {...containerProps} key={containerProps.key}><div {...textProps}>{text}</div></div>)
+const TreeHeader:FC = ()=>{
+    const {rootProps,add}:I_TreeContext = useContext(TreeContext);
+    let {addText = 'add'} = rootProps;
+    return (
+        <div className="aio-input-tree-header">
+            <button onClick={() => add()}>{I(mdiPlusThick,.8)}{addText}</button>
+        </div>
+    )
 }
-type AV_operator = 'contain' | 'not_contain' | 'function' | 'required'
-type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
-type AV_item = {title?:string,targetName?:string,message?:string,operator:AV_operator,target:any}
+type I_TreeOptions = {row:any,parent?:any}
+const TreeOptions:FC<I_TreeOptions> = (props)=>{
+    let {row,parent} = props;
+    let {rootProps,add,remove,types}:I_TreeContext = useContext(TreeContext);
+    let { onAdd, onRemove,addText = 'Add',removeText = 'Remove' } = rootProps;
+    let options = typeof rootProps.options === 'function'?rootProps.options({row,parent}):rootProps.options;
+    function GetOptions() {
+        let res = [];
+        if (onAdd) {res.push({ text: addText, value: 'add', before: I(mdiPlusThick,0.7), onClick: () => add(row) })}
+        let Options = (options || []).map((o)=>{
+            return {...o,onClick:()=>{if(o.onClick){o.onClick(row,parent)}}}
+        })
+        res = [...res,...Options]
+        if (onRemove) {res.push({ text: removeText, value: 'remove', before: I(mdiDelete,0.7), onClick: () => remove(row, parent) })}
+        return res
+    }
+    let Options = GetOptions();
+    if(!Options.length){return null}
+    return (
+        <AIOInput type='select' caret={false} style={{ background: 'none' }} options={GetOptions()} text={I(mdiDotsHorizontal,0.7)} />
+    )
+}
+type I_TreeBody = {rows:any[],level:number,parent?:any,parentId?:string}
+const TreeBody:FC<I_TreeBody> = (props)=>{
+    let {rootProps,types,openDic,mountedDic}:I_TreeContext = useContext(TreeContext);
+    let {rows,level,parent,parentId} = props;
+    let {rowHeight = 36,rowGap = 12} = rootProps;
+    let options = getOptions({rootProps,types,options:rows,properties:{
+        after:(row:AI_option)=><TreeOptions row={row.object} parent={parent}/>
+    }})
+    let open = parentId === undefined?true:openDic[parentId];
+    let mounted = parentId == undefined?true:mountedDic[parentId];
+    function getStyle(open){
+        if(mounted){
+            let l = rows.length;
+            let size = (rowHeight * l) + ((l - 1) * rowGap);
+            return {minHeight:size}
+        }
+        else {
+            return {minHeight:0}
+        }
+    } 
+    return (
+        <div style={getStyle(open)} className={`aio-input-tree-body${open?' open':''}${!mounted?' not-mounted':''}`}>
+            {options.map((option:any, i:number) => <TreeRow row={rows[i]} option={option} level={level}/>)}
+        </div>
+    )
+}
+type I_TreeRow = {row:any,option:AI_option,level:number}
+const TreeRow:FC<I_TreeRow> = (props) => {
+    let {openDic,rootProps,toggle}:I_TreeContext = useContext(TreeContext);
+    let {indent = 12} = rootProps;
+    let {row,option,level} = props;
+    let {value} = option;
+    let childs = row.childs || []
+    let open = !!openDic[value];
+    let toggleState:(0|1|2) = !childs.length?2:(open?1:0);
+    function getChilds(){
+        if(!childs || !childs.length){return null}
+        if(!openDic[option.value]){return null}
+        return <TreeBody rows={childs} level={level + 1} parent={row} parentId={option.value}/>
+    }
+    return (
+        <div 
+            style={{paddingLeft:level * indent}}
+            className={`aio-input-tree-row`}
+        >
+            <Layout option={option} properties={{onClick:()=>{}}} toggle={{state:toggleState,onClick:()=>toggle(value)}}/>
+            {getChilds()}  
+        </div>
+    )
+}
 export class AIOValidation{
     contain:(target:any, value:any)=>{result:boolean,targetName:string};
     equal:(target:any, value:any,isDate:boolean)=>{result:boolean,targetName:string};
@@ -3160,8 +1548,8 @@ export class AIOValidation{
     }
 }
 export function AIOInputSetStorage(name:string, value:any) {
-    let storage:any = AIOStorage('aio-input-storage');
-    storage.save({ name, value })
+    let storage:AIOStorage = new AIOStorage('aio-input-storage');
+    storage.save(name, value)
 }
 export function getFormInputs(fields:string[], path?:string) {
     function getInput(input:any) { return typeof input === 'string' ? getFormInput(input, path) : input }
@@ -3277,7 +1665,7 @@ function getTypes(props:AI) {
     }
     let { type, multiple } = props;
     let isMultiple;
-    if (type === 'multiselect' || type === 'table') { isMultiple = true }
+    if (type === 'multiselect' || type === 'table' || type === 'tree') { isMultiple = true }
     else if (type === 'radio' || type === 'range' || type === 'file' || type === 'buttons') { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
@@ -3291,63 +1679,8 @@ function getTypes(props:AI) {
         hasSearch: ['multiselect', 'table', 'select'].indexOf(type) !== -1
     }
 }
-class DragClass {
-    dragIndex: number;
-    onChange:(list:any[],from:any,to:any)=>void;
-    start:(e:any)=>void;
-    over:(e:any)=>void;
-    drop:(e:any,list:any[])=>void;
-    swap:(arr:any[],from:any,to:any)=>any[];
-    className:string;
-    getAttrs:(list:any[],index:number)=>void;
-    constructor(p:{onChange:(list:any[],from:any,to:any)=>void,className:string}) {
-        this.dragIndex = 0;
-        this.className = p.className;
-        this.onChange = p.onChange;
-        this.start = (e) => { this.dragIndex = parseInt($(e.target).attr('data-index')); }
-        this.over = (e) => { e.preventDefault(); }
-        this.drop = (e,list) => {
-            e.stopPropagation();
-            let from = this.dragIndex, dom = $(e.target);
-            if (!dom.hasClass(this.className)) { dom = dom.parents(`.${this.className}`); };
-            if (!dom.hasClass(this.className)) { return };
-            let to = parseInt(dom.attr('data-index'));
-            if (from === to) { return }
-            if (typeof this.onChange === 'function') { 
-                let newList = this.swap(list, from, to);
-                this.onChange(newList, list[from], list[to]) 
-            }
-        }
-        this.swap = (arr, from, to) => {
-            if (to === from + 1) { let a = to; to = from; from = a; }
-            let Arr = arr.map((o, i) => { o._testswapindex = i; return o })
-            let fromIndex = Arr[from]._testswapindex
-            Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
-            return Arr.filter((o) => o._testswapindex !== fromIndex)
-        }
-        this.getAttrs = (list,index)=>{
-            return {
-                ['data-index']:index,
-                onDragStart:this.start,
-                onDragOver:this.over,
-                onDrop:(e:any)=>this.drop(e,list),
-                draggable:true
-            }
-        }
-    }
-}
-const addToAttrs: AI_addToAttrs = (attrs: any, p: { className?: any, style?: any,attrs?:any }) => {
-    attrs = attrs || {};
-    let { style } = p;
-    let attrClassName = attrs.className?attrs.className.split(' '):[];
-    let className = p.className?(Array.isArray(p.className)?p.className:p.className.split(' ')):[];
-    let classNames = [...attrClassName,...className.filter((o:any)=>!!o)];
-    let newClassName = classNames.length ? classNames.join(' ') : undefined
-    let newStyle = { ...attrs.style, ...style };
-    return { ...attrs, className: newClassName, style: newStyle,...p.attrs }
-}
 function getDateText(rootProps:AI) {
-    let { value, unit = AIDef<string>('date-unit'), text, jalali, placeholder } = rootProps;
+    let { value, unit = Def<string>('date-unit'), text, jalali, placeholder } = rootProps;
     if (value) {
         let DATE = new AIODate();
         let list = DATE.convertToArray(value);
@@ -3383,8 +1716,10 @@ function getDefaultProps(props:AI,types:AI_types){
     }
     return props;
 }
-function getOptions(rootProps:AI,types:AI_types):AI_option[] {
-    let { options = [],deSelect } = rootProps;
+function getOptions(p:{rootProps:AI,types:AI_types,options?:any[],properties?:any}):AI_option[] {
+    let {rootProps,types,properties = {}} = p;
+    let { deSelect } = rootProps;
+    let options = p.options || rootProps.options || [];
     if(typeof options === 'function'){options = options()}
     let result = [];
     let renderIndex = 0;
@@ -3394,35 +1729,42 @@ function getOptions(rootProps:AI,types:AI_types):AI_option[] {
         if (rootProps.type === 'radio') { return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v }
     }
     if(deSelect && typeof deSelect !== 'function' && deSelect !== true){options = [deSelect,...options]}
+    function updateOptionByProperties(option:AI_option){
+        for(let prop in properties){
+            option[prop] = properties[prop](option)
+        }
+        return option
+    }
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!getOptionProp({props:rootProps,option, key:'disabled'});
-        let show = getOptionProp({props:rootProps,option, key:'show'})
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!getOptionProp({props:rootProps,option, key:'disabled',renderIndex, realIndex: i});
+        let show = getOptionProp({props:rootProps,option, key:'show',renderIndex, realIndex: i})
         if (show === false) { continue }
-        let text = getOptionProp({props:rootProps,option, key:'text'});
+        let text = getOptionProp({props:rootProps,option, key:'text',renderIndex, realIndex: i});
         //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
         //if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
-        let optionValue = getOptionProp({props:rootProps,option, key:'value'})
-        let attrs = getOptionProp({props:rootProps,option, key:'attrs', def:{}});
+        let optionValue = getOptionProp({props:rootProps,option, key:'value',renderIndex, realIndex: i})
+        let attrs = getOptionProp({props:rootProps,option, key:'attrs', def:{},renderIndex, realIndex: i});
         let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = getOptionProp({props:rootProps,option, key:'checked', def:defaultChecked})
+        let checked = getOptionProp({props:rootProps,option, key:'checked', def:defaultChecked,renderIndex, realIndex: i})
+        //object:option => do not remove mutability to use original value of option in for example tree row
         let obj = {
             object:option,show,
             loading:rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
-            checkIcon: getOptionProp({props:rootProps,option, key:'checkIcon'}) || rootProps.checkIcon,
+            checkIcon: getOptionProp({props:rootProps,option, key:'checkIcon',renderIndex, realIndex: i}) || rootProps.checkIcon,
             checked,
-            before: getOptionProp({props:rootProps,option, key:'before'}),
-            after: getOptionProp({props:rootProps,option, key:'after'}),
-            justify: getOptionProp({props:rootProps,option, key:'justify'}),
-            subtext: getOptionProp({props:rootProps,option, key:'subtext'}),
-            onClick: getOptionProp({props:rootProps,option, key:'onClick', preventFunction:true}),
-            className: getOptionProp({props:rootProps,option, key:'className'}),
-            style: getOptionProp({props:rootProps,option, key:'style'}),
-            tagAttrs: getOptionProp({props:rootProps,option, key:'tagAttrs'}),
-            tagBefore: getOptionProp({props:rootProps,option, key:'tagBefore'}),
-            close: getOptionProp({props:rootProps,option, key:'close', def:rootProps.type !== 'multiselect'}),
-            tagAfter: getOptionProp({props:rootProps,option, key:'tagAfter'}),
+            before: getOptionProp({props:rootProps,option, key:'before',renderIndex, realIndex: i}),
+            after: getOptionProp({props:rootProps,option, key:'after',renderIndex, realIndex: i}),
+            justify: getOptionProp({props:rootProps,option, key:'justify',renderIndex, realIndex: i}),
+            subtext: getOptionProp({props:rootProps,option, key:'subtext',renderIndex, realIndex: i}),
+            onClick: getOptionProp({props:rootProps,option, key:'onClick', preventFunction:true,renderIndex, realIndex: i}),
+            className: getOptionProp({props:rootProps,option, key:'className',renderIndex, realIndex: i}),
+            style: getOptionProp({props:rootProps,option, key:'style',renderIndex, realIndex: i}),
+            tagAttrs: getOptionProp({props:rootProps,option, key:'tagAttrs',renderIndex, realIndex: i}),
+            tagBefore: getOptionProp({props:rootProps,option, key:'tagBefore',renderIndex, realIndex: i}),
+            close: getOptionProp({props:rootProps,option, key:'close', def:rootProps.type !== 'multiselect',renderIndex, realIndex: i}),
+            tagAfter: getOptionProp({props:rootProps,option, key:'tagAfter',renderIndex, realIndex: i}),
             renderIndex, realIndex: i
         }
         if(types.isMultiple){
@@ -3431,14 +1773,14 @@ function getOptions(rootProps:AI,types:AI_types):AI_option[] {
         else {
             if (optionValue === rootProps.value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
         }
-        result.push(obj)
+        result.push(updateOptionByProperties(obj))
         renderIndex++;
     }
     return result;
 }
-function getOptionProp(p:{props:AI,option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean}) {
-    let {props,option, key, def, preventFunction} = p;
-    let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option, props) : option[key]
+function getOptionProp(p:{props:AI,option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean,realIndex?:number,renderIndex?:number}) {
+    let {props,option, key, def, preventFunction,realIndex,renderIndex} = p;
+    let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key]({...option,realIndex,renderIndex}, props) : option[key]
     if (optionResult !== undefined) { return optionResult }
     let prop = (props.option || {})[key];
     if (typeof prop === 'string') {
@@ -3450,20 +1792,8 @@ function getOptionProp(p:{props:AI,option: AI_option, key: AI_optionKey, def?: a
         catch { }
     }
     if (typeof prop === 'function' && !preventFunction) {
-        let res = prop(option, props);
+        let res = prop({...option,realIndex,renderIndex}, props);
         return res === undefined ? def : res;
     }
     return prop !== undefined ? prop : def;
-}
-function I(path:any,size:number,p?:any){
-    return <Icon path={path} size={size} {...p}/>
-}
-function AIDef<T>(prop:string):T{
-    let res:any = {
-        'theme':[],
-        'date-size':180,
-        'range-size':72,
-        'date-unit':'day'
-    }[prop]
-    return res
 }

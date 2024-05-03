@@ -4,7 +4,7 @@ import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
-import AIOStorage from '../../npm/aio-storage/aio-storage.js'
+import AIOStorage from '../../npm/aio-storage/index.tsx'
 import {Swip,Geo} from './../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
@@ -2214,7 +2214,7 @@ function App(){
 //linear-gradient(180deg, #000, #666);
 
 function StyleGenerator(){
-    let storage = AIOStorage('grdgenerator')
+    let storage:AIOStorage = new AIOStorage('grdgenerator')
     let [popup] = useState(new AIOPopup())
     let [isDown,setIsDown] = useState(false)
     function to_array(c){
@@ -2263,7 +2263,7 @@ function StyleGenerator(){
     }
     function changeSelected(newSelected){
         setSelected(newSelected)
-        storage.save({name:'selected',value:newSelected})
+        storage.save('selected',newSelected)
     }
     function addSelected(){
         changeSelected([...selected,{style:{...getStyle()},containerBG:grd.containerBG,grd:{...grd}}])
@@ -2278,7 +2278,7 @@ function StyleGenerator(){
     })
     let grdRef = useRef(grd);
     grdRef.current = grd;
-    let [selected,setSelected] = useState(storage.load({name:'selected',def:[]}))
+    let [selected,setSelected] = useState(storage.load('selected',[]))
     let dark = to_dark(grd.light,grd.contrast);
     let medium = between(grd.light,dark,3)[1];
     

@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
-import AIOStorage from './../../npm/aio-storage/aio-storage';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
+import AIOStorage from './../../npm/aio-storage/index.tsx';
 import AIOInput,{getFormInputs} from './../../npm/aio-input/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';

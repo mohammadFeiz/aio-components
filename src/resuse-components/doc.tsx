@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import RSA from '../npm/react-super-app/react-super-app';
+import RSA from '../npm/react-super-app/index.tsx';
 import {I_RSA, I_RSA_props,I_RSA_nav} from './../npm/react-super-app/types';
 export type I_DOC = {name:string,goToHome:()=>void,nav:I_RSA_nav}
 export default function DOC(props:I_DOC){

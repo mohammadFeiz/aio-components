@@ -1,5 +1,5 @@
 import React,{useReducer,createContext,useContext,useState,createRef,useEffect, useRef} from "react";
-import RVD from '../../npm/react-virtual-dom/react-virtual-dom.js';
+import RVD from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from "../../npm/aio-input/index.tsx";
 import AIOCanvas from './../../npm/aio-canvas/index.tsx';
 import {Swip} from '../../npm/aio-utils/index.tsx';

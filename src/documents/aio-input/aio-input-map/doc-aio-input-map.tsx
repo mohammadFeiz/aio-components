@@ -1,8 +1,9 @@
 import React, { Component,createRef, useState } from 'react';
 import DOC,{I_DOC} from '../../../resuse-components/doc.tsx';
 import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../../npm/react-virtual-dom/react-virtual-dom.js';
-import AIOInput,{AI,I_Map_area,I_Map_marker} from '../../../npm/aio-input/index.tsx';
+import RVD from '../../../npm/react-virtual-dom/index.tsx';
+import AIOInput from '../../../npm/aio-input/index.tsx';
+import {AI,I_Map_area,I_Map_marker} from '../../../npm/aio-input/types.tsx';
 import './doc-aio-input-map.css';
 import {Icon} from '@mdi/react';
 import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift, mdiAccount } from '@mdi/js';

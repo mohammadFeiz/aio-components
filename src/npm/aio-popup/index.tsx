@@ -2,7 +2,7 @@ import React, { Component, createRef, useEffect, useRef, useState, isValidElemen
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/react-virtual-dom';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
 import { AP_ModalBody, AP_ModalHeader, AP_Popup, AP_Popups, AP_Snackebar, AP_SnackebarItem, AP_confirm, AP_prompt, AP_alert, AP_modal, AP_modal_button, AP_props, AP_snackebar, AP_footer } from './types';
