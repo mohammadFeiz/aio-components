@@ -1221,6 +1221,7 @@
     background: #fff;
     width: fit-content !important;
     padding: 12px !important;
+    font-family: inherit;
 }
 
 .aio-input-time-popover .aio-input-list {
@@ -1236,10 +1237,6 @@
     width: 100%;
     height: 48px;
     pointer-events: none;
-}
-
-.aio-input-time-popover .aio-input-list-option {
-    font-family: inherit;
 }
 
 .aio-input-time-popover .aio-input-list-option:after {
@@ -1263,7 +1260,30 @@
     height: 1px;
     pointer-events: none;
 }
-
+.aio-input-time-popover .aio-input-time-popover-content{
+    direction:ltr;
+}
+.aio-input-time-popover .aio-input-time-popover-body{
+    display:flex;
+}
+.aio-input-time-popover .aio-input-time-popover-item{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+.aio-input-time-popover .aio-input-time-popover-footer{
+    display:flex;
+    padding:6px;
+}
+.aio-input-time-popover .aio-input-time-popover-footer button{
+    background:dodgerblue;
+    color:#fff;
+    border-radius:4px;
+    border:none;
+    font-size:14px;
+    font-family: inherit;
+    padding:6px 24px;
+}
 .aio-input.disabled .aio-input-option {
     cursor: not-allowed;
     opacity: 0.5;
@@ -1493,6 +1513,8 @@
     margin-top: 12px;
     border-radius: 4px;
     color: #666;
+    display:flex;
+    flex-direction: column;
 }
 
 .aio-input-map-serach-results {

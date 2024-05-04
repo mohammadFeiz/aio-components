@@ -511,7 +511,7 @@ function AddModal() {
                             attrs:{style:{background:'lightblue'}},
                             onClose:()=>{
                                 alert('close popup');
-                                this.popup.removeModal()
+                                popup.removeModal()
                             }
                         },
                         body:{
@@ -541,7 +541,7 @@ function AddModal() {
                                 <RVD
                                     rootNode={{
                                         row:[
-                                            {style:{maxHeight:400},html:'this is my sample text in modal',className:'align-v flex-1 ofy-auto'},
+                                            {style:{maxHeight:400},html:'my sample text in modal',className:'align-v flex-1 ofy-auto'},
                                             {
                                                 gap:{size:6},
                                                 column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]   
@@ -689,7 +689,7 @@ function Popup1(props:any){
                 row:[
                     {
                         style:{maxHeight:400,overflowY:'auto'},
-                        html:'this is my sample text in modal',
+                        html:'my sample text in modal',
                         className:'align-v flex-1'
                     },
                     {
@@ -711,7 +711,7 @@ function ModalPosition() {
             <RVD
                 rootNode={{
                     row:[
-                        {style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',className:'align-v flex-1'},
+                        {style:{maxHeight:400,overflowY:'auto'},html:'my sample text in modal',className:'align-v flex-1'},
                         {gap:{size:6},column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
                     ]
                 }}
@@ -726,7 +726,7 @@ function ModalPosition() {
                     column:[
                         {
                             flex:1,className:'ofy-auto',
-                            html:'this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal this is my sample text in modal '
+                            html:'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet?'
                         },
                         {
                             gap:{size:6},
@@ -810,7 +810,7 @@ function Alert() {
         popup.addAlert({
             text:'my alert text',
             time:10,
-            subtext:'this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert this is the subtext of my alert ',
+            subtext:'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit',
             closeText:'بستن',
             ...obj
         })
@@ -822,21 +822,21 @@ function Alert() {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'error',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'error'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>position:'top'</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'error',
 closeText:'بستن',
@@ -844,14 +844,14 @@ position:'top'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'error',position:'top'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error',position:'top'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>position:'bottom'</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'error',
 closeText:'بستن',
@@ -859,21 +859,21 @@ position:'bottom'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'error',position:'bottom'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error',position:'bottom'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>alert type error</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'warning',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'error'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             
             <h3>alert type error</h3>
@@ -881,213 +881,356 @@ closeText:'بستن'
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'warning',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'error'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>alert type warning</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'warning',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'warning'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'warning'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>alert type success</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'success',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'success'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'success'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>alert type info</h3>
             {
                 AIODoc().Code(`
 instance.addAlert({
 text:'my alert text',
-subtext:'this is the subtext of my alert',
+subtext:'my subtext of my alert',
 time:10,
 type:'info',
 closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addAlert({type:'info'})}>Open Alert</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'info'})}>Open Alert</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            {this.popup.render()}
+            {popup.render()}
         </div>
     )
 }
 function Snackebar() {
     let [popup] = useState(new AIOPopup())
-    function addSnackebar(obj:AP_snackebar){
+    let [rtlPopup] = useState(new AIOPopup({rtl:true}))
+    function addSnackebar(obj?:{[key in keyof AP_snackebar]?:any},rtl?:boolean){
         let {
             text = 'my snackebar title',
-            subtext ='this is the subtext of my snackebar . please click on action',
-            time = 12,
+            subtext ='my subtext of my snackebar . please click on action',
+            time,
             type = 'error',
-            rtl = false,
             verticalAlign = 'end',
             horizontalAlign = 'center',
             icon,
             attrs
-        } = obj
-        popup.addSnackebar({text,subtext,time,type,rtl,verticalAlign,horizontalAlign,icon,attrs})
+        } = obj || {}
+        if(rtl){
+            rtlPopup.addSnackebar({text,subtext,time,type,verticalAlign,horizontalAlign,icon,attrs})
+        }
+        else {
+            popup.addSnackebar({text,subtext,time,type,verticalAlign,horizontalAlign,icon,attrs})
+        }
+        
     }
     return (
         <div className='example'>
-            <h3>addSnackebar</h3>
+            <h3>import</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'error'
-})
+import AIOPopup from 'aio-popup';
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar()}>Open snackebar</button>
+            <h3>create instance</h3>
+            {
+                AIODoc().Code(`
+const [popup] = useState(new AIOPopup())
+                `)
+            }
+            <h3>snackebar type</h3>
+            {
+                AIODoc().Code(`
+type I_config = {
+    id?:string, //uniq id (optional)
+    text:string, //main text
+    subtext?:string, //subtext (optional)
+    icon?:React.ReactNode,
+    time?:number,
+    action?:{text:string,onClick:()=>void},
+    type:'success'|'error'|'warning'|'info',
+    verticalAlign?:'start' | 'end',
+    horizontalAlign?:'start' | 'center' | 'end',
+    onClose?:false
+    attrs?:any
+}
+                `)
+            }
+            <h3>show snackebar</h3>
+            {
+                AIODoc().Code(`
+popup.addSnackebar(config:I_config)
+                `)
+            }
+            <h3>Basic Example</h3>
+            {
+                AIODoc().Code(`
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar.',
+            type:'error'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
+
+
+                `)
+            }
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar()}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>rtl</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'error'
-rtl:true
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup({rtl:true}))
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'error'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({rtl:true})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({},true)}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>time</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:3,
-type:'error'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            time:3,
+            type:'error'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({time:3})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({time:3})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
 
             <h3>type info</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'info'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'info'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'info'})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'info'})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>type error</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'error'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'error'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'error'})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'error'})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>type warning</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'warning'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'warning'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'warning'})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'warning'})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>type success</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'success'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'success'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({type:'success'})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'success'})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
 
             <h3>verticalAlign</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'error'
-verticalAlign:'start'
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'error'
+            verticalAlign:'start'
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({verticalAlign:'top'})}>Open snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({verticalAlign:'start'})}>Add Snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>icon</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'success'
-verticalAlign:'start',
-icon:(
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
-        <g clip-path="url(#clip0_1364_21722)">
-            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
-        </g>
-        <defs>
-        <clipPath id="clip0_1364_21722">
-            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-        </clipPath>
-        </defs>
-    </svg>
-)
-})
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'success'
+            verticalAlign:'start',
+            icon:(
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                    <g clip-path="url(#clip0_1364_21722)">
+                        <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                    </g>
+                    <defs>
+                    <clipPath id="clip0_1364_21722">
+                        <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
+                    </clipPath>
+                    </defs>
+                </svg>
+            )
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
+}
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
                 verticalAlign:'start',type:'success',
                 icon:(
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1107,32 +1250,43 @@ icon:(
             <h3>attrs</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'success'
-verticalAlign:'start',
-icon:(
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
-        <g clip-path="url(#clip0_1364_21722)">
-            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
-        </g>
-        <defs>
-        <clipPath id="clip0_1364_21722">
-            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-        </clipPath>
-        </defs>
-    </svg>
-),
-attrs:{
-    className:'my-snackebar'
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'success'
+            verticalAlign:'start',
+            icon:(
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                    <g clip-path="url(#clip0_1364_21722)">
+                        <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                    </g>
+                    <defs>
+                    <clipPath id="clip0_1364_21722">
+                        <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
+                    </clipPath>
+                    </defs>
+                </svg>
+            ),
+            attrs:{
+                className:'my-snackebar'
+            }
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
 }
-})
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
                 verticalAlign:'start',type:'success',
                 icon:(
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1155,33 +1309,44 @@ attrs:{
             <h3>horizontalAlign</h3>
             {
                 AIODoc().Code(`
-instance.addSnackebar({
-text:'my snackebar title',
-subtext:'this is the subtext of my snackebar . please click on action',
-time:12,
-type:'success'
-verticalAlign:'start',
-horizontalAlign:'end',
-icon:(
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
-        <g clip-path="url(#clip0_1364_21722)">
-            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
-        </g>
-        <defs>
-        <clipPath id="clip0_1364_21722">
-            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-        </clipPath>
-        </defs>
-    </svg>
-),
-attrs:{
-    className:'my-snackebar'
+import AIOPopup from 'aio-popup';
+const example = () => {
+    const [popup] = useState(new AIOPopup())
+    function addSnackebar(){
+        popup.addSnackebar({
+            text:'my snackebar title',
+            subtext:'my subtext of my snackebar . please click on action',
+            type:'success'
+            verticalAlign:'start',
+            horizontalAlign:'end',
+            icon:(
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                    <g clip-path="url(#clip0_1364_21722)">
+                        <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                    </g>
+                    <defs>
+                    <clipPath id="clip0_1364_21722">
+                        <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
+                    </clipPath>
+                    </defs>
+                </svg>
+            ),
+            attrs:{
+                className:'my-snackebar'
+            }
+        })
+    }
+    return (
+        <>
+            <button onClick={() => addSnackebar()}>Add Snackebar</button>
+            {popup.render()}
+        </>
+    )
 }
-})
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => this.addSnackebar({
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
                 verticalAlign:'start',type:'success',
                 horizontalAlign:'end',
                 icon:(
@@ -1203,7 +1368,8 @@ attrs:{
             })}>Open snackebar</button>
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
 
-            {this.popup.render()}
+            {popup.render()}
+            {rtlPopup.render()}
         </div>
     )
 }
@@ -1222,7 +1388,7 @@ function Popover() {
                 rootNode={{
                     className:'p-6',
                     row:[
-                        {style:{maxHeight:400,overflowY:'auto'},html:'this is my sample text in modal',className:'align-v flex-1'},
+                        {style:{maxHeight:400,overflowY:'auto'},html:'my sample text in modal',className:'align-v flex-1'},
                         {size:12},
                         {gap:{size:6},column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
                     ]
@@ -1290,11 +1456,11 @@ function Popover() {
             {
                 AIODoc().Code(`
 instance.addModal({
-position:'popover',
-popover:{
-    getTarget:()=>$(this.dom1.current),
-},
-body:{render:({close})=>this.v_layout(close)}
+    position:'popover',
+    popover:{
+        getTarget:()=>$(dom1.current),
+    },
+    body:{render:({close})=>v_layout(close)}
 })
                 `)
             }
@@ -1306,12 +1472,12 @@ body:{render:({close})=>this.v_layout(close)}
 instance.addModal({
 position:'popover',
 popover:{
-    getTarget:()=>$(this.dom2.current),
+    getTarget:()=>$(dom2.current),
     fixStyle:(a,b)=>{
         return {...a,top:a.top + 36}
     }
 },
-body:{render:()=>this.v_layout()},
+body:{render:()=>v_layout()},
 })
                 `)
             }
@@ -1322,11 +1488,11 @@ body:{render:()=>this.v_layout()},
                 AIODoc().Code(`
 instance.addModal({
 popover:{
-    getTarget:()=>$(this.dom3.current),
+    getTarget:()=>$(dom3.current),
     fitHorizontal:true
 },
 position:'popover',
-body:{render:()=>this.v_layout()},
+body:{render:()=>v_layout()},
 
 })
                 `)
@@ -1339,7 +1505,7 @@ body:{render:()=>this.v_layout()},
 instance.addModal({
 position:'popover',
 popover:{
-    getTarget:()=>$(this.dom4.current),
+    getTarget:()=>$(dom4.current),
     fitHorizontal:true,
 },
 body:{render:()=>content},
@@ -1360,7 +1526,7 @@ attrs:{
 instance.addModal({
 backdrop:false,
 popover:{
-    getTarget:()=>$(this.dom5.current),
+    getTarget:()=>$(dom5.current),
     fitHorizontal:true,
 },
 position:'popover',

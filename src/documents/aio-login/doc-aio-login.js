@@ -2,7 +2,7 @@ import React, { Component,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import AIOLogin from './../../npm/aio-login/aio-login';
+import AIOLogin from './../../npm/aio-login/index.js';
 import {Icon} from '@mdi/react';
 import { mdiAccount, mdiLock } from '@mdi/js';
 export default class DOC_AIOLogin extends Component {

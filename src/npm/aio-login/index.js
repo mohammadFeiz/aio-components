@@ -1,8 +1,9 @@
 import React, { Component, createRef } from 'react';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import {Storage} from './../../npm/aio-utils/index.tsx';
-import AIOInput,{getFormInputs} from './../../npm/aio-input/index.tsx';
+import AIOInput from './../../npm/aio-input/index.tsx';
 import { Icon } from '@mdi/react';
+import {GetCities} from './../../npm/aio-utils/index.tsx';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import './index.css';
@@ -599,4 +600,75 @@ function AIOLoginValidator(props) {
         if (typeof forget !== 'object') { alert(message) }
         if (['phoneNumber', 'email'].indexOf(forget.mode) === -1) { alert(message); console.log(message); return; }
     }
+}
+
+function getFormInputs(fields, path) {
+    function getInput(input) { return typeof input === 'string' ? getFormInput(input, path) : input }
+    return fields.map((o) => Array.isArray(o) ? { row: o.map((oo) => getInput(oo)) } : getInput(o))
+}
+function getFormInput(Field, path) {
+    function getOptions(field, path) {
+        let dic = {
+            militaryservice: () => ['مشمول', 'معاف', 'پایان خدمت'], gender: () => ['مرد', 'زن'], married: () => ['مجرد', 'متاهل'], state: () => Object.keys(GetCities()),
+            city: () => (value) => {
+                let state;
+                try { eval(`state = value${path ? '.' + path : ''}.state`) } catch { }
+                return !state ? [] : GetCities()[state]
+            },
+
+        }
+        return dic[field]()
+    }
+    function getField(field) { return `value${path ? `.${path}` : ''}.${field}` }
+    function getBase(field) {
+        let list = field.split('_');
+        if (list.length >= 3) {
+            let inputProps = {}
+            if (list[3]) {
+                try { inputProps = JSON.parse(list[3]) } catch { }
+            }
+            return { field: list[0], input: { type: list[1], ...inputProps }, label: list[2], extra: {} }
+        }
+        let { input, label, extra = {} } = {
+            fullname: { input: { type: 'text' }, label: 'نام و نام خانوادگی' },
+            firstname: { input: { type: 'text' }, label: 'نام' },
+            lastname: { input: { type: 'text' }, label: 'نام خانوادگی' },
+            username: { input: { type: 'text' }, label: 'نام کاربری' },
+            address: { input: { type: 'textarea' }, label: 'آدرس' },
+            email: { input: { type: 'text' }, label: 'ایمیل' },
+            father: { input: { type: 'text' }, label: 'نام پدر' },
+            phone: { input: { type: 'text', maxLength: 11, justNumber: true }, label: 'شماره تلفن' },
+            mobile: { input: { type: 'text', maxLength: 11, justNumber: true }, label: 'شماره همراه' },
+            postal: { input: { type: 'text', justNumber: true }, label: 'کد پستی' },
+            nationalcode: { input: { type: 'text', maxLength: 10, justNumber: true }, label: 'کد ملی' },
+            idnumber: { input: { type: 'text' }, label: 'شماره شناسنامه' },
+            cardbank: { input: { type: 'text', justNumber: true, maxLength: 16 }, label: 'شماره کارت' },
+            state: { input: { type: 'select' }, label: 'استان' },
+            city: { input: { type: 'select' }, label: 'شهر' },
+            gender: { input: { type: 'radio' }, label: 'جنسیت' },
+            married: { input: { type: 'radio' }, label: 'وضعیت تاهل' },
+            password: { input: { type: 'password' }, label: 'رمز عبور' },
+            repassword: {
+                input: { type: 'password' }, label: 'تکرار رمز عبور',
+                extra: { validations: [['=', getField('password'), { message: 'تکرار رمز صحیح نیست' }]] }
+            },
+            militaryservice: { input: { type: 'radio' }, label: 'وضعیت خدمت' },
+            location: {
+                input: {
+                    type: 'map', mapConfig: { draggable: false, zoomable: false, showAddress: false },
+                    popup: { mapConfig: { search: true, title: 'ثبت موقعیت جغرافیایی', zoomable: true, draggable: true } },
+                    style: { height: 90, minHeight: 90 }
+                },
+                label: 'موقعیت جغرافیایی', extra: { addressField: getField('address') }
+            },
+        }[field];
+        return { input, label, extra, field }
+    }
+    let required = false;
+    if (Field.indexOf('*') === 0) { Field = Field.slice(1, Field.length); required = true }
+    let { input, label, extra, field } = getBase(Field);
+    let inputProps = { ...input }
+    if (['select', 'radio'].indexOf(input.type) !== -1) { inputProps = { ...inputProps, optionText: 'option', optionValue: 'option', options: getOptions(field, path) } }
+    if (['select'].indexOf(input.type) !== -1) { inputProps = { ...inputProps, popover: { fitHorizontal: true } } }
+    return { field: `value${path ? `.${path}` : ''}.${field}`, validations: required ? [['required']] : undefined, label, input: inputProps, ...extra }
 }

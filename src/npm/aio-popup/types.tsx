@@ -39,17 +39,16 @@ export type AP_alert = {
 }
 
 export type AP_snackebar = {
-  icon?:React.ReactNode,
   id?:string,
-  time?:number,
   text:string,
   subtext?:string,
+  icon?:React.ReactNode,
+  time?:number,
   action?:{text:string,onClick:()=>void},
   type:'success'|'error'|'warning'|'info',
   verticalAlign?:'start' | 'end',
   horizontalAlign?:'start' | 'center' | 'end',
   onClose?:false
-  rtl?:boolean,
   attrs?:any
 }
 export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,attrs?:any}

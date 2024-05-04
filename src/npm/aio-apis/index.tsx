@@ -5,14 +5,20 @@ import AIOPopup from './../../npm/aio-popup/index';
 import $ from 'jquery';
 import './index.css';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
-type AA_message = {error?:boolean | string,success?:((p:{result:any,appState:any,parameter:any})=>string|boolean) | string | boolean,time?:number}
+type AA_success_fn = (p:{result:any,appState:any,parameter:any})=>string|boolean
+type AA_message = {
+    error?:boolean | string,
+    success?:AA_success_fn | string | boolean,
+    time?:number,
+    type?:'alert'|'snackebar'
+}
 type AA_onCatch = (err: any, config: AA_apiSetting) => string;
 type AA_getError = (response: any, confing: AA_apiSetting) => string | false;
 type AA_cache = { name: string, time: number };
 export type AA_props = {
     id: string, getAppState?: () => any, baseUrl: string, token?: string, loader?: () => React.ReactNode,
     onCatch?: AA_onCatch, getError?: AA_getError,
-    apis:AA_apis,mock?:any,lang:'en' | 'fa'
+    apis:AA_apis,mock?:any,lang:'en' | 'fa',
 }
 export type AA_apiSetting = {
     description?:string,
@@ -67,7 +73,7 @@ export default class AIOApis {
     handleLoading: AA_handleLoading;
     responseToResult: (p:AA_request_params) => Promise<any>;
     request:(p:AA_request_params)=>Promise<any>;
-    addAlert:(type:'success' | 'error',text:string,subtext?:string,time?:number)=>void;
+    addAlert:(p:{type:'success' | 'error' | 'warning' | 'info',text:string,subtext?:string,message:AA_message})=>void;
     handleCacheVersions:(cacheVersions:{[key:string]:number})=>{[key:string]:boolean};
     showErrorMessage:(m:AA_messageParameter)=>void;
     showSuccessMessage:(m:AA_messageParameter)=>void;
@@ -88,8 +94,12 @@ export default class AIOApis {
             let res = token || props.token; 
             if (res) { Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`; } 
         }
-        this.addAlert = (type:'success' | 'error' | 'warning' | 'info',text:string,subtext?:string,time?:number)=>{
-            new AIOPopup().addAlert({type,text,subtext,time})
+        this.addAlert = (p)=>{
+            let {type,text,subtext,message} = p;
+            let {time,type:alertType = 'alert'} = message
+            alertType = alertType || 'alert'
+            if(alertType === 'alert'){new AIOPopup().addAlert({type,text,subtext,time})}
+            else {new AIOPopup().addSnackebar({type,text,subtext,time})} 
         }
         this.dateToString = (date,pattern = '{year}/{month}/{day}')=>{
             return this.DATE.getDateByPattern(date,pattern)
@@ -152,14 +162,14 @@ export default class AIOApis {
             let text:string;
             if(typeof message.error === 'string'){text = message.error}
             else {text = lang === 'fa'?`${description} با خطا روبرو شد`:`An error was occured in ${description}`}
-            this.addAlert('error',text,result,message.time );
+            this.addAlert({type:'error',text,subtext:result,message} );
         }
         this.showSuccessMessage = (m)=>{
             let {result,message,description} = m;
             if (!message.success) {return}
             let subtext = typeof message.success === 'function' ? message.success(result) : message.success;
             if (subtext === true) { subtext = '' }
-            this.addAlert('success',lang === 'fa'?`${description} با موفقیت انجام شد`:`${description} was successfull`, subtext as string,message.time);
+            this.addAlert({type:'success',text:lang === 'fa'?`${description} با موفقیت انجام شد`:`${description} was successfull`, subtext:subtext as string,message});
         }
         this.responseToResult = async (p) => {
             let {url,method,body,getResult,config = {}} = p;

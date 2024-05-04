@@ -11,30 +11,31 @@ import { I_RVD_node } from '../react-virtual-dom/types';
 export default class AIOPopup {
   rtl?: boolean;
   render: () => React.ReactNode;
-  _addModal: (p: AP_modal) => void;
   addModal: (p: AP_modal) => void;
   addAlert: (p: AP_alert) => void;
   removeModal: (arg?: string, animate?: boolean) => void;
   _removeModal: (arg?: string, animate?: boolean) => void;
   addSnackebar: (p: AP_snackebar) => void;
-  _addSnackebar: (p: AP_snackebar) => void;
   getModals: () => AP_modal[];
   _getModals: () => AP_modal[];
   addConfirm: (p: AP_confirm) => void;
   addPrompt: (p: AP_prompt) => void;
   popupId?: string;
+  isRenderCalled:boolean;
   constructor(obj?: AP_props) {
     let { rtl = false, id } = obj || {}
+    this.isRenderCalled = false;
     this.rtl = rtl;
-    this._addModal = () => { };
-    this._removeModal = () => { };
-    this._addSnackebar = () => { };
+    this.addModal = () => {alert('aio-popup error => missing call AIOPopup instance.render() in your project')};
+    this.removeModal = () => {alert('aio-popup error => missing call AIOPopup instance.render() in your project') };
+    this.addSnackebar = () => { };
     this._getModals = () => [];
     this.render = () => {
+      this.isRenderCalled = true;
       let popupsProps: AP_Popups = {
         rtl, id,
         getActions: ({ addModal, removeModal, getModals }) => {
-          this._addModal = addModal;
+          this.addModal = addModal;
           this._removeModal = removeModal;
           this._getModals = getModals;
         }
@@ -42,7 +43,7 @@ export default class AIOPopup {
       let snackebarProps: AP_Snackebar = {
         rtl,
         getActions: ({ add }) => {
-          this._addSnackebar = add;
+          this.addSnackebar = add;
         }
       }
       return (
@@ -52,12 +53,8 @@ export default class AIOPopup {
         </>
       )
     }
-    this.addModal = (obj) => {
-      this._addModal(obj)
-    };
     this.addAlert = (obj) => Alert(obj);
     this.removeModal = (arg, animate = true) => { if (this._removeModal) { this._removeModal(arg, animate) } };
-    this.addSnackebar = (obj: AP_snackebar) => this._addSnackebar(obj)
     this.getModals = () => {
       let res = this._getModals()
       return Array.isArray(res) ? res : []
