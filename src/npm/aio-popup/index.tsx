@@ -1,12 +1,103 @@
-import React, { Component, createRef, useEffect, useRef, useState, isValidElement, Fragment } from 'react';
+import React, { Component, createRef, useEffect, useState, isValidElement } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
-import RVD from './../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
-import { AP_ModalBody, AP_ModalHeader, AP_Popup, AP_Popups, AP_Snackebar, AP_SnackebarItem, AP_confirm, AP_prompt, AP_alert, AP_modal, AP_modal_button, AP_props, AP_snackebar, AP_footer } from './types';
-import { I_RVD_node } from '../react-virtual-dom/types';
+export type AP_props = {rtl?:boolean,id?:string}
+export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
+export type AP_header = {
+  title?:string,subtitle?:string,buttons?:AP_modal_button[],onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),backButton?:()=>void,attrs?:any
+}
+export type AP_backdrop = false | {attrs?:any,close?:boolean}
+export type AP_body = {render?:(p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode,attrs?:any}
+export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]}
+
+export type AP_modal = {
+    getTarget?:()=>any,
+    pageSelector?:string,
+    openRelatedTo?:string
+    fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,
+    fitTo?:string,
+    rtl?:boolean,
+    id?:string,
+    onClose?:boolean | (()=>void),
+    position?:AP_position,
+    attrs?:any,
+    backdrop?:AP_backdrop,
+    header?:AP_header,
+    state?:any,
+    footer?:AP_footer,
+    body?:AP_body,
+    animate?:boolean,
+    fitHorizontal?:boolean
+}
+export type AP_alert = { 
+  icon?:false | React.ReactNode,
+  position?:AP_position,
+  type:'success'|'error'|'warning'|'info',
+  text?:React.ReactNode,
+  subtext?:string,
+  time?:number,
+  className?:string,
+  closeText?:string,
+  animate?:boolean
+}
+
+export type AP_snackebar = {
+  id?:string,
+  text:string,
+  subtext?:string,
+  icon?:React.ReactNode,
+  time?:number,
+  action?:{text:string,onClick:()=>void},
+  type:'success'|'error'|'warning'|'info',
+  verticalAlign?:'start' | 'end',
+  horizontalAlign?:'start' | 'center' | 'end',
+  onClose?:false
+  attrs?:any
+}
+export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,attrs?:any}
+export type AP_prompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel?:()=>void,attrs?:any}
+export type AP_modal_button = [text:React.ReactNode,attrs?:any | ((p:{state:any,setState:(v:any)=>void})=>any)]
+export type AP_Popups = {
+  getActions:(p:{
+    removeModal:(p?:string,animate?:boolean)=>void,
+    addModal:(p:AP_modal)=>void,
+    getModals:()=>AP_modal[]
+  })=>void,
+  rtl:boolean,
+  id?:string
+}
+
+export type AP_Popup = {
+  modal:AP_modal,
+  rtl:boolean,
+  index:number,
+  isLast:boolean,
+  onClose:()=>void,
+  removeModal:(p?:string,animate?:boolean)=>void,
+}
+
+export type AP_ModalHeader = {
+  rtl:boolean,header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void
+}
+
+export type AP_ModalBody = {
+  body?:AP_body,
+  handleClose:()=>void,
+  updatePopoverStyle:()=>void,
+  state:any,setState:(state:any)=>void
+}
+
+export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
+
+export type AP_SnackebarItem = {
+  item:AP_snackebar,
+  onRemove:(id:string)=>void,
+  index:number,
+  rtl:boolean
+}
 
 export default class AIOPopup {
   rtl?: boolean;
@@ -267,18 +358,18 @@ function Popup(props: AP_Popup) {
     }
     close();
   }
-  function header_node(): I_RVD_node {
-    if (typeof header !== 'object') { return {} }
-    return { html: <ModalHeader rtl={rtl} header={header} handleClose={() => close()} state={state} setState={(value) => setState(value)} />, className: 'of-visible' }
+  function header_node(): React.ReactNode {
+    if (typeof header !== 'object') { return null }
+    return <ModalHeader rtl={rtl} header={header} handleClose={() => close()} state={state} setState={(value) => setState(value)} />
   }
-  function body_node(): I_RVD_node {
+  function body_node(): React.ReactNode {
     let p: AP_ModalBody = { body, handleClose: () => close(), state, setState: ((value) => setState(value)), updatePopoverStyle }
-    return { flex: 1, html: <ModalBody {...p} /> }
+    return <ModalBody {...p} />
   }
-  function footer_node(): I_RVD_node {
+  function footer_node(): React.ReactNode {
     let handleClose = close;
     let props = { footer, handleClose, state, setState };
-    return { html: <ModalFooter {...props} /> }
+    return <ModalFooter {...props} />
   }
   function getBackDropClassName() {
     let className = 'aio-popup-backdrop';
@@ -339,14 +430,10 @@ function Popup(props: AP_Popup) {
   }
   let style: any = { ...popoverStyle, ...attrs.style, flex: 'none' }
   let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
+  let p = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style,display:'flex',flexDirection:'column'}}
   return (
     <div {...backdropProps} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
-      <RVD
-        rootNode={{
-          attrs: { ...attrs, ref: temp.dom, style: undefined, className: undefined, 'data-uniq-id': temp.dui, [ev]: mouseDown },
-          className: getClassName(), style, column: [header_node(), body_node(), footer_node()]
-        }}
-      />
+      <div {...p}>{header_node()} {body_node()} {footer_node()}</div> 
     </div>
   )
 }
@@ -358,48 +445,54 @@ function ModalHeader(props: AP_ModalHeader) {
     e.stopPropagation(); e.preventDefault();
     if (typeof onClose === 'function') { onClose({ state, setState }) } else { handleClose() }
   }
-  function backButton_node(): I_RVD_node {
-    if (!backButton || onClose === false) { return {} }
+  function backButton_node(): React.ReactNode {
+    if (!backButton || onClose === false) { return null }
     let path, style;
     if (rtl) { path = mdiChevronRight; style = { marginLeft: 12 } }
     else { path = mdiChevronLeft; style = { marginRight: 12 } }
-    return { html: <Icon path={path} size={1} />, className: 'align-vh', onClick: (e) => close(e), style }
+    return (
+      <div 
+        style={{display:'flex',alignItems:'center',justifyContent:'center',...style}}
+        onClick={(e)=>close(e)}
+      ><Icon path={path} size={1} /></div>
+    )
   }
-  function title_node(): I_RVD_node {
-    if (!title) { return {} }
-    if (!subtitle) {
-      return { html: title, className: 'aio-popup-title align-v flex-1' }
-    }
+  function title_node(): React.ReactNode {
+    if (!title) { return null }
+    if (!subtitle) {return <div className="aio-popup-title" style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
     else {
-      return {
-        className: 'align-v flex-1',
-        column: [
-          { html: title, className: 'aio-popup-title' },
-          { html: subtitle, className: 'aio-popup-subtitle' }
-        ]
-      }
+      return (
+        <div style={{display:'flex',flexDirection:'column',justifyContent:'center',flex:1}}>
+          <div className="aio-popup-title">{title}</div>
+          <div className="aio-popup-subtitle">{subtitle}</div>
+        </div>
+      )
     }
   }
-  function buttons_node(): I_RVD_node {
-    if (!buttons.length) { return {} }
-    return {
-      className: 'align-vh gap-6',
-      row: () => buttons.map(([text, attrs = {}]) => {
-        let { onClick = () => { }, className } = attrs;
-        let Attrs = { ...attrs };
-        Attrs.className = 'aio-popup-header-button' + (className ? ' ' + className : '');
-        Attrs.onClick = () => onClick({ close: handleClose, state, setState })
-        return { html: (<button {...Attrs}>{text}</button>), className: 'align-vh' }
-      })
-    }
+  function buttons_node(): React.ReactNode {
+    if (!buttons.length) { return null }
+    return (
+      <div className="aio-popup-header-buttons">
+        {buttons.map((o:AP_modal_button) => button_node(o))}
+      </div>
+    )
   }
-  function close_node(): I_RVD_node {
-    if (backButton || onClose === false) { return {} }
-    return { html: <Icon path={mdiClose} size={0.8} />, onClick: (e) => close(e), className: 'aio-popup-header-close-button align-vh' }
+  function button_node(p:AP_modal_button):React.ReactNode{
+    let [text, attrs = {}] = p;
+    let { onClick = () => { }, className } = attrs;
+    let Attrs = { ...attrs };
+    Attrs.className = 'aio-popup-header-button' + (className ? ' ' + className : '');
+    Attrs.onClick = () => onClick({ close: handleClose, state, setState })
+    return (<button {...Attrs}>{text}</button>)
+  }
+  function close_node(): React.ReactNode {
+    if (backButton || onClose === false) { return null }
+    return (<div className="aio-popup-header-close-button" onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>)
   }
   let className = 'aio-popup-header' + (attrs.className ? ' ' + attrs.className : '')
   let style = attrs.style;
-  return (<RVD rootNode={{ attrs, className, style, row: [backButton_node(), title_node(), buttons_node(), close_node()] }} />)
+  let p = {...attrs,className,style}
+  return (<div {...p}>{backButton_node()} {title_node()} {buttons_node()} {close_node()}</div>)
 }
 function ModalBody(props: AP_ModalBody) {
   let { handleClose, body, updatePopoverStyle, state = {}, setState } = props;

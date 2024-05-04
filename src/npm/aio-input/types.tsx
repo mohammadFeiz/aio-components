@@ -1,4 +1,4 @@
-import { AP_modal } from "../aio-popup/types"
+import { AP_modal } from "../aio-popup"
 import { AIODate } from "./../aio-utils"
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' | 'tree'|
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'

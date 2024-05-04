@@ -124,6 +124,7 @@
 }
 
 .aio-popup-header {
+  display:flex;
   border-bottom: 1px solid #e7e9ec;
   background: #fff;
   color: #323130;
@@ -157,15 +158,22 @@
   border-top: 1px solid #f2f4f7;
   justify-content: flex-end;
 }
-
+.aio-popup-header-buttons{
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  gap:6px;
+}
 .aio-popup-header-button {
   padding: 0 6px;
   background: none;
   border: none;
   cursor: pointer;
 }
-
 .aio-popup-header-close-button {
+  display:flex;
+  align-items: center;
+  justify-content: center;
   width: 36px;
 }
 

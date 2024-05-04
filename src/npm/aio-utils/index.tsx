@@ -61,7 +61,7 @@ export async function DownloadUrl(url: string, name: string) {
         })
         .catch(() => alert('oh no!'));
 }
-export async function stall(stallTime: number = 3000) {
+export async function Stall(stallTime: number = 3000) {
     await new Promise(resolve => setTimeout(resolve, stallTime));
 }
 export function FileToBase64(file: any, callback?: (result: any) => void) {
