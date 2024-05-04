@@ -87,6 +87,7 @@ export default function AIOInput(props: AI) {
         else if (attrs.onClick) { attrs.onClick(option); }
         else if (onChange) {
             if (types.isInput) { /*do nothing*/ }
+            else if(type === 'tree'){/*do nothing*/}
             else if (types.isMultiple) {
                 let { maxLength } = props, newValue;
                 if (value.indexOf(option.value) === -1) { newValue = value.concat(option.value) }
@@ -1013,7 +1014,7 @@ function Layout(props: I_Layout) {
     }
     function Toggle(indent:AI_indent) {
         if (toggle === undefined) { return null }
-        return (<div className="aio-input-toggle" onClick={(e) => toggle.onClick(e)}>
+        return (<div className="aio-input-toggle" onClick={(e) => {e.stopPropagation(); toggle.onClick(e)}}>
             <div className='aio-input-toggle-icon'>{getToggleIcon()}</div>
             {
                 !!indent.childsLength && 
@@ -1301,7 +1302,7 @@ type I_TreeContext = {
 //toggleIcon
 type I_treeItem = {
     option: AI_option, row: any, parent?: any, parentId?: string,
-    id: string, open: boolean, indent: AI_indent
+    id: string, open: boolean, indent: AI_indent,parentOpen:boolean
 }
 const TreeContext = createContext({} as any);
 const Tree: FC = () => {
@@ -1384,7 +1385,7 @@ const TreeOptions: FC<I_TreeOptions> = (props) => {
     }
     let Options = GetOptions();
     if (!Options.length) { return null }
-    let p: AI = { type: 'select', caret: false, className: 'aio-input-tree-options-button', options: GetOptions(), text: I(mdiDotsHorizontal, 0.7) }
+    let p: AI = { type: 'select', caret: false,popover:{openRelatedTo:'.aio-input-tree'}, className: 'aio-input-tree-options-button', options: GetOptions(), text: I(mdiDotsHorizontal, 0.7) }
     return <AIOInput {...p} />;
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string,parentIndent?:AI_indent }
@@ -1393,18 +1394,20 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     let { rows, level, parent, parentId,parentIndent } = props;
     let options = getOptions({
         rootProps, types, options: rows, properties: {
-            after: (row: AI_option) => <TreeOptions row={row.object} parent={parent} />
+            after: (option: AI_option) => <TreeOptions row={option.object} parent={parent} />
         }
     })
-    let open = parentId === undefined ? true : !!openDic[parentId];
+    let parentOpen = parentId === undefined ? true : !!openDic[parentId];
     let mounted = parentId == undefined ? true : mountedDic[parentId];
     return (
-        <div className={`aio-input-tree-body${open ? ' open' : ''}${!mounted ? ' not-mounted' : ''}`}>
+        <div className={`aio-input-tree-body${!parent ? ' aio-input-tree-root' : ''}${parentOpen ? ' open' : ''}${!mounted ? ' not-mounted' : ' mounted'}`}>
             {options.map((option: any, index: number) => {
                 let row = rows[index];
+                let id = option.value;
                 let {childs = []} = row;
+                let open = !!openDic[id];
                 let item: I_treeItem = { 
-                    row,option, parent, parentId, id: option.value, open, 
+                    row,option, parent, parentId, id, parentOpen,open, 
                     indent: { level,childsLength:childs.length, size: indent,index,isLastChild:index === options.length - 1,isFirstChild:index === 0,parentIndent } 
                 }
                 let p = { className: `aio-input-tree-row` }
@@ -1418,7 +1421,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
     let { option, row, id, indent } = props.item;
     let { childs = [] } = row;
     let toggleState: (0 | 1 | 2) = !childs.length ? 2 : (!!openDic[id] ? 1 : 0);
-    let p: I_Layout = { indent, option, properties: { onClick: () => { } }, toggle: { state: toggleState, onClick: () => toggle(id) } };
+    let p: I_Layout = { indent, option, toggle: { state: toggleState, onClick: () => toggle(id) } };
     return <Layout {...p} />;
 }
 const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
@@ -1704,7 +1707,7 @@ function getTypes(props: AI) {
     }
     let { type, multiple } = props;
     let isMultiple;
-    if (type === 'multiselect' || type === 'table' || type === 'tree') { isMultiple = true }
+    if (type === 'multiselect' || type === 'table') { isMultiple = true }
     else if (type === 'radio' || type === 'range' || type === 'file' || type === 'buttons') { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
@@ -1751,7 +1754,8 @@ function getDefaultProps(props: AI, types: AI_types) {
         else if (valueType !== 'array') { props.value = [props.value] }
     }
     else {
-        if (valueType === 'array') { props.value = props.value[0] }
+        if(props.type === 'tree'){}
+        else if (valueType === 'array') { props.value = props.value[0] }
     }
     return props;
 }

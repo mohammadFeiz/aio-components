@@ -1825,7 +1825,6 @@
     height:36px;
     background:#fff;
     position: relative;
-    z-index:10;
 }
 .aio-input-tree-body{
     position:relative;
@@ -1849,6 +1848,10 @@
     transform-origin: top;
     transform-style: preserve-3d;
     margin-top: -48px;
+}
+
+.aio-input-tree-body.mounted .aio-input-tree-row{
+    transform:unset;
 }
 .aio-input-toggle{
     width:100%;

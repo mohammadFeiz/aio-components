@@ -221,7 +221,7 @@ type AP_Popup_temp = {
 }
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
-  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector, fixStyle = (o) => o, fitTo } = modal;
+  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,openRelatedTo, fixStyle = (o) => o, fitTo } = modal;
   let [temp] = useState<AP_Popup_temp>({
     dom: createRef(),
     backdropDom: createRef(),
@@ -306,7 +306,7 @@ function Popup(props: AP_Popup) {
     let target = getTarget();
     if (!target || !target.length) { return {} }
     let popup = $(temp.dom.current);
-    let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector, fitTo, attrs, rtl })
+    let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector,openRelatedTo, fitTo, attrs, rtl })
     return { ...style, position: 'absolute' }
   }
   function keyDown(e: any) {
@@ -622,15 +622,16 @@ type AP_align = {
   fixStyle?: (o: any, p: { targetLimit: any, pageLimit: any }) => any,
   attrs?: any,
   pageSelector?: string,
+  openRelatedTo?:string,
   rtl?: boolean,
   fitTo?: string
 }
 function Align(p: AP_align) {
-  let { dom, target, fitHorizontal, fixStyle = (o) => o, attrs = {}, fitTo, pageSelector, rtl } = p;
+  let { dom, target, fitHorizontal, fixStyle = (o) => o, attrs = {}, fitTo, pageSelector, rtl,openRelatedTo } = p;
   let $$ = {
     getDomLimit(dom: any, type: 'popover' | 'page' | 'target') {
       if (fitTo && type === 'popover') {
-        let parent = target.parents(fitTo);
+        let parent = target.parents(fitTo);//notice be jaye target dom
         if (parent.length) {
           let { left, top } = parent.offset()
           let width = parent.width();
@@ -670,6 +671,19 @@ function Align(p: AP_align) {
       if (pageLimit.bottom > bodyHeight) { pageLimit.bottom = bodyHeight; }
       return pageLimit;
     },
+    getRelatedToLmit(){
+      if(!openRelatedTo){return}
+      let elem = dom.parents(openRelatedTo);
+      if(!elem.length){return}
+      let offset = elem.offset();
+      let left = offset.left - window.pageXOffset;
+      let top = offset.top - window.pageYOffset;
+      let width = elem.outerWidth();
+      let height = elem.outerHeight();
+      let right = left + width;
+      let bottom = top + height;
+      return {left,top,right,bottom,width,height}
+    },
     align() {
       let pageLimit = $$.getPageLimit();
       let targetLimit = $$.getDomLimit(target, 'target');
@@ -684,6 +698,8 @@ function Align(p: AP_align) {
           domLimit.right = targetLimit.left + targetLimit.width
         }
         else {
+          let relatedToLimit = $$.getRelatedToLmit()
+          let parentLimit = relatedToLimit || pageLimit;
           //اگر راست به چپ باید باشد
           if (rtl) {
             //راست المان را با راست هدف ست کن
@@ -691,7 +707,7 @@ function Align(p: AP_align) {
             //چپ المان را بروز رسانی کن
             domLimit.left = domLimit.right - domLimit.width;
             //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
-            if (domLimit.left < pageLimit.left) { domLimit.left = pageLimit.left; }
+            if (domLimit.left < parentLimit.left) { domLimit.left = parentLimit.left; }
           }
           //اگر چپ به راست باید باشد
           else {
@@ -700,7 +716,7 @@ function Align(p: AP_align) {
             //راست المان را بروز رسانی کن
             domLimit.right = domLimit.left + domLimit.width;
             //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
-            if (domLimit.right > pageLimit.right) { domLimit.left = pageLimit.right - domLimit.width; }
+            if (domLimit.right > parentLimit.right) { domLimit.left = parentLimit.right - domLimit.width; }
           }
         }
         //اگر المان از سمت پایین صفحه بیرون زد

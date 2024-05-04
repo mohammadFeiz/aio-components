@@ -10,6 +10,7 @@ export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]
 export type AP_modal = {
     getTarget?:()=>any,
     pageSelector?:string,
+    openRelatedTo?:string
     fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,
     fitTo?:string,
     rtl?:boolean,

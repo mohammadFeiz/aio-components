@@ -20,7 +20,7 @@ export default function DOC_Tree(props) {
 function Basic(){
     let [value,setValue] = useState<any>([
         {
-            name:'row0',id:'row-0',
+            name:'row-0',id:'row-0',
             childs:[
                 {name:'row0-0',id:'row0-0',active:true},
                 {name:'row0-1',id:'row0-1'},
@@ -35,16 +35,15 @@ function Basic(){
                 {name:'row0-3',id:'row0-3'}        
             ]
         },
-        {name:'row1',id:'row1'},
-        {name:'row2',id:'row2',active:true},
-        {name:'row3',id:'row3'}
+        {name:'row-1',id:'row-1'},
+        {name:'row-2',id:'row-2',active:true},
+        {name:'row-3',id:'row-3'}
     ])
     let p:AI = {
         type:'tree',
         value:[...value],
         onAdd:{name:'New Name',value:'a' + Math.round(Math.random())},
         onRemove:true,
-        onChange:(value)=>setValue(value),
         options:[
             {
                 text:'Preview',
@@ -58,11 +57,18 @@ function Basic(){
         option:{
             text:'option.name',
             value:'option.id',
-            checked:(row)=>!!row.active,
+            checked:(row)=>{
+                return !!row.active
+            },
             subtext:(row)=>row.id,
             before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
             after:(row)=>row.active?'active':'deactive',
-            checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>]
+            checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>],
+            onClick:(row)=>{
+                row.active = !row.active;
+                //very important to use ... before value
+                setValue([...value])
+            }
         }
     }
     return (
