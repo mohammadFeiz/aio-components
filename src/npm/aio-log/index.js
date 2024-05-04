@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Icon } from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiClose } from "@mdi/js";
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
+import {Storage} from './../../npm/aio-utils/index.tsx';
 import "./index.css";
 import $ from 'jquery';
 import AIOInput from "./../../npm/aio-input/aio-input";
@@ -11,7 +11,7 @@ import AIOInput from "./../../npm/aio-input/aio-input";
 export default class Logs {
     constructor(id) {
         if (!id){alert('aio-log error => missing id properties to create instance')}
-        this.logStorage = AIOStorage(id);
+        this.logStorage = new Storage(id);
         this.logs = this.logStorage.load({ name: 'logs', def: [] })
     }
     update = (logs) => {

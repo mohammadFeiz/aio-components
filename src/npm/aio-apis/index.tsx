@@ -1,15 +1,9 @@
 import React from 'react';
 import Axios from 'axios';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
-import {AIODate} from './../../npm/aio-utils/index';
+import {AIODate,Storage} from './../../npm/aio-utils/index';
 import AIOPopup from './../../npm/aio-popup/index';
 import $ from 'jquery';
 import './index.css';
-type I_AIOStorage = {
-    save: (p: { name: string, value: any }) => void,
-    load: (p: { name: string, def?: any,time?:number }) => any,
-    remove:(p:{name:string})=>void
-}
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
 type AA_message = {error?:boolean | string,success?:((p:{result:any,appState:any,parameter:any})=>string|boolean) | string | boolean,time?:number}
 type AA_onCatch = (err: any, config: AA_apiSetting) => string;
@@ -62,7 +56,7 @@ type AA_request_params = {
     parameter?:any
 };
 export default class AIOApis {
-    storage: AIOStorage;
+    storage: Storage;
     fn:AA_fn;
     getAppState: () => any;
     setStorage: AA_setStorage;
@@ -83,7 +77,7 @@ export default class AIOApis {
     DATE:AIODate;
     constructor(props: AA_props) {
         let { id, getAppState = () => { }, baseUrl, token, loader,apis,mock = {},lang = 'en' } = props
-        let storage:AIOStorage = new AIOStorage(id);
+        let storage:Storage = new Storage(id);
         this.storage = storage;
         this.DATE = new AIODate()
         this.getAppState = getAppState;

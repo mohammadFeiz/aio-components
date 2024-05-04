@@ -4,8 +4,7 @@ import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
-import AIOStorage from '../../npm/aio-storage/index.tsx'
-import {Swip,Geo} from './../../npm/aio-utils';
+import {Swip,Geo,Storage} from './../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
@@ -2214,7 +2213,7 @@ function App(){
 //linear-gradient(180deg, #000, #666);
 
 function StyleGenerator(){
-    let storage:AIOStorage = new AIOStorage('grdgenerator')
+    let storage:Storage = new Storage('grdgenerator')
     let [popup] = useState(new AIOPopup())
     let [isDown,setIsDown] = useState(false)
     function to_array(c){

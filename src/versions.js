@@ -15,7 +15,6 @@ export default function Versions({goToHome}){
                 "aio-date": "latest",
                 "axios": "1.2.1",
                 "aio-popup": "latest",
-                "aio-storage":"latest"
             }
         },
         'aio-login':{
@@ -26,7 +25,6 @@ export default function Versions({goToHome}){
                 "@mdi/react": "1.6.1",
                 "react-virtual-dom": "latest",
                 "aio-popup": "latest",
-                "aio-storage": "latest",
                 "aio-input": "latest"
             }
         },
@@ -37,7 +35,6 @@ export default function Versions({goToHome}){
                 "@mdi/js": "7.0.96",
                 "@mdi/react": "1.6.1",
                 "aio-popup": "latest",
-                "aio-storage": "latest",
                 "react-virtual-dom": "latest"
               },            
         },
@@ -47,7 +44,6 @@ export default function Versions({goToHome}){
             "dependencies": {
                 "jquery": "3.6.1",
                 "aio-date": "latest",
-                "aio-storage": "latest",
                 "axios": "1.2.1"
             }
         },
@@ -91,11 +87,6 @@ export default function Versions({goToHome}){
             version:'4.1.0',
             dependencies:{}
         },
-        'aio-storage':{
-            open:false,
-            version:'4.0.1',
-            dependencies:{}
-        }
     })
     let componentsList = Object.keys(components);
     return (

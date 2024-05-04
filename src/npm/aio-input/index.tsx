@@ -1,18 +1,16 @@
 /**varsion 8.1.3 */
 import React, { createRef, useContext, createContext, useState, useEffect, useRef, FC } from 'react';
-import * as ReactDOMServer from 'react-dom/server';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
-    mdiPlusThick, mdiChevronLeft, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline, mdiDotsHorizontal,
+    mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline, mdiDotsHorizontal,
     mdiChevronRight,
     mdiDelete,
     mdiCircleSmall
 } from "@mdi/js";
 import $ from 'jquery';
-import { AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter } from './../aio-utils';
+import { AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter,AddToAttrs,Storage } from './../aio-utils';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
 import './index.css';
 import { I_RVD_node } from '../react-virtual-dom/types';
 import { AP_modal } from '../aio-popup/types';
@@ -21,7 +19,7 @@ import {
     AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar, I_Drag, I_FileItem, I_Layout,
     I_Multiselect, I_Tag, I_Tags, I_TimePopver, I_list_temp, type_time_value
 } from './types.tsx';
-import { AICTX, Def, I, addToAttrs } from './utils.js';
+import { AICTX, Def, I,GetOptionProps,GetOptions } from './utils.js';
 import Calendar from './date.tsx';
 import Range from './range.tsx';
 import Table from './table.tsx';
@@ -58,9 +56,9 @@ export default function AIOInput(props: AI) {
     function getSelectText() {
         let { options = [] } = props;
         options = typeof options === 'function' ? options() : options
-        let option = options.find((option) => value === undefined ? false : getOptionProp({ props, option, key: 'value' }) === value);
+        let option = options.find((option) => value === undefined ? false : GetOptionProps({ props, option, key: 'value' }) === value);
         if (option === undefined) { return }
-        return getOptionProp({ props: props, option, key: 'text' })
+        return GetOptionProps({ props: props, option, key: 'text' })
     }
     function toggle(popover: any) {
         let open = !!popup.getModals().length
@@ -113,14 +111,14 @@ export default function AIOInput(props: AI) {
         return context
     }
     let render: { [key in AI_type]: () => React.ReactNode } = {
-        acardion: () => <Acardion options={getOptions({ rootProps: props, types })} />,
+        acardion: () => <Acardion options={GetOptions({ rootProps: props, types })} />,
         tree: () => <Tree />,
         list: () => <List />,
         range: () => <Range />,
         file: () => <File />,
         select: () => <Layout properties={{ text: props.text || getSelectText() }} />,
         button: () => <Layout />,
-        multiselect: () => <Multiselect options={getOptions({ rootProps: props, types })} />,
+        multiselect: () => <Multiselect options={GetOptions({ rootProps: props, types })} />,
         radio: () => <Layout properties={{ text: <Options /> }} />,
         tabs: () => <Layout properties={{ text: <Options /> }} />,
         buttons: () => <Layout properties={{ text: <Options /> }} />,
@@ -190,12 +188,12 @@ function Time() {
     }
     function renderButton() {
         let { onChange, style, popover = {}, className } = rootProps;
-        let attrs = addToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
+        let attrs = AddToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
         let text: string = getTimeText(value)
         let p: AI = {
             ...rootProps, text, attrs, type: 'button',
             popover: !onChange ? undefined : {
-                position: 'center', ...popover, attrs: addToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
+                position: 'center', ...popover, attrs: AddToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
                 body: { render: ({ close }) => renderPopover(close) }
             }
         }
@@ -230,7 +228,7 @@ class Popover {
             let { rtl, type } = rootProps;
             let { body = {} } = popover;
             let backdrop = !popover.backdrop ? {} : popover.backdrop;
-            backdrop = { ...backdrop, attrs: addToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
+            backdrop = { ...backdrop, attrs: AddToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
             let target: React.ReactNode = $(dom.current)
             let config: AP_modal = {
                 //props that have default but can change by user
@@ -251,7 +249,7 @@ class Popover {
                 },
                 pageSelector: '.aio-input-backdrop.' + id,
                 getTarget: () => target,
-                attrs: addToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
+                attrs: AddToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
             }
             return config;
         }
@@ -635,7 +633,7 @@ function Input() {
         if (blurChange && onChange) { onChange(value) }
     }
     function getInputAttrs() {
-        let InputAttrs = addToAttrs(inputAttrs, {
+        let InputAttrs = AddToAttrs(inputAttrs, {
             className: !spin ? 'no-spin' : undefined,
             style: justify ? { textAlign: 'center' } : undefined
         })
@@ -655,7 +653,7 @@ function Input() {
     let attrs = getInputAttrs()
     if (!attrs.onChange) { return value }
     else if (type === 'color') {
-        let options: AI_option[] = getOptions({ rootProps, types })
+        let options: AI_option[] = GetOptions({ rootProps, types })
         return (
             <label style={{ width: '100%', height: '100%', background: value }}>
                 <input {...attrs} style={{ opacity: 0 }} opacity rgba cmyk hsla />
@@ -746,7 +744,7 @@ const Form: FC = () => {
         }
         return context;
     }
-    let p = addToAttrs(attrs, { className: ['aio-input-form', className], style })
+    let p = AddToAttrs(attrs, { className: ['aio-input-form', className], style })
     return (
         <Formcontext.Provider value={getContext()}>
             <form {...p}>
@@ -807,7 +805,7 @@ const FormInput: FC<AI_FormInput> = (props) => {
         }
         let classes = [props.className]
         if (error) { classes.push('has-error') }
-        let Attrs = addToAttrs(props.attrs, { className: error ? 'has-error' : undefined })
+        let Attrs = AddToAttrs(props.attrs, { className: error ? 'has-error' : undefined })
         props.attrs = Attrs;
         return props;
     }
@@ -853,7 +851,7 @@ function Options(props: AI_Options) {
             return <Layout {...p} />
         });
     }
-    let options = props.options || getOptions({ rootProps, types });
+    let options = props.options || GetOptions({ rootProps, types });
     if (!options.length) { return null }
     let renderOptions = getRenderOptions(options);
     let className = `aio-input-options aio-input-${rootProps.type}-options`
@@ -883,6 +881,13 @@ function Layout(props: I_Layout) {
             if (rtl) { cls += ' aio-input-rtl' }
         }
         if (indent) { cls += ` aio-input-indent-${indent.size}` }
+        if (type === 'tree') { 
+            let size = rootProps.size || Def('tree-size');
+            size = Math.round(size / 12) * 12;
+            if(size < 24){size = 24}
+            if(size > 120){size = 120}
+            cls += ` aio-input-size-${size}` 
+        }
         if (properties.disabled) { cls += ' disabled' }
         if (properties.className) { cls += ' ' + properties.className }
         cls += ' ' + datauniqid;
@@ -976,7 +981,7 @@ function Layout(props: I_Layout) {
                 }
             }
         }
-        attrs = addToAttrs(attrs, {
+        attrs = AddToAttrs(attrs, {
             className: getClassName(),
             style: { ...style, justifyContent: justify ? 'center' : undefined, zIndex }
         })
@@ -1004,30 +1009,31 @@ function Layout(props: I_Layout) {
         let { className = obj.className } = p;
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className }
     }
-    function getToggleIcon() {
+    function getToggleIcon(state:0|1|2) {
         if (toggle === undefined) { return null }
         let path;
-        if(toggle.state === 2){path = mdiCircleSmall}
-        else if(toggle.state === 1){path = mdiChevronDown}
+        if(state === 2){path = mdiCircleSmall}
+        else if(state === 1){path = mdiChevronDown}
         else {path = mdiChevronRight}
         return I(path, 1)
     }
     function Toggle(indent:AI_indent) {
         if (toggle === undefined) { return null }
+        let state = toggle.state;
         return (<div className="aio-input-toggle" onClick={(e) => {e.stopPropagation(); toggle.onClick(e)}}>
-            <div className='aio-input-toggle-icon'>{getToggleIcon()}</div>
+            <div className='aio-input-toggle-icon'>{getToggleIcon(state)}</div>
             {
-                !!indent.childsLength && 
+                state === 1 && 
                 <svg className='aio-input-toggle-line aio-input-indent-line'>
-                    <path d={`M${indent.size / 2} ${0} L${indent.size / 2} ${6} Z`}></path>
+                    <path d={`M${indent.size / 2} ${0} L${indent.size / 2} ${indent.height / 2 - 12} Z`}></path>
                 </svg>
             }
         </div>)
     }
     function indentIcon(indent:AI_indent,order) {
-        let {parentIndent,size,level,isLastChild} = indent;
+        let {parentIndent,size,level,isLastChild,height} = indent;
         if (!level) { return false }
-        let x0 = size / 2,x1 = size,y0 = 0,y1 = 18,y2 = 36,pathes = [];
+        let x0 = size / 2,x1 = size,y0 = 0,y1 = height / 2,y2 = height,pathes = [];
         if(order === level - 1){
             //horizontal line
             pathes.push(<path d={`M${x0} ${y1} L${x1} ${y1} Z`}></path>)
@@ -1096,9 +1102,9 @@ function List() {
     function getOptions() {
         temp.activeIndex = 0;
         return options.map((option: any, i: number) => {
-            let value = getOptionProp({ props: rootProps, option, key: 'value' });
-            let text = getOptionProp({ props: rootProps, option, key: 'text', def: '' });
-            let style = getOptionProp({ props: rootProps, option, key: 'style', def: {} });
+            let value = GetOptionProps({ props: rootProps, option, key: 'value' });
+            let text = GetOptionProps({ props: rootProps, option, key: 'text', def: '' });
+            let style = GetOptionProps({ props: rootProps, option, key: 'style', def: {} });
             if (value === rootProps.value) { temp.activeIndex = i; }
             return <div key={i} data-index={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
         })
@@ -1284,7 +1290,7 @@ const AcardionBody: FC<I_AcardionBody> = (props) => {
     let open = !!openDic[value]
     let { body } = rootProps;
     if (!open) { return null }
-    let { html } = typeof body === 'function' ? body() : body
+    let { html } = typeof body === 'function' ? body(value) : body
     return (<div className={`aio-input-acardion-body`}>{html}</div>)
 }
 type I_TreeContext = {
@@ -1295,7 +1301,8 @@ type I_TreeContext = {
     types: any,
     add: any,
     remove: any,
-    indent: number
+    indent: number,
+    size:number
 }
 //should implement
 //inlineEdit
@@ -1307,7 +1314,7 @@ type I_treeItem = {
 const TreeContext = createContext({} as any);
 const Tree: FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { onAdd, onRemove, value = [], onChange } = rootProps;
+    let { onAdd, onRemove, value = [], onChange,size = Def('tree-size') } = rootProps;
     let [openDic, setOpenDic] = useState<any>({})
     let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
     let [indent] = useState<number>(getIndent)
@@ -1343,21 +1350,21 @@ const Tree: FC = () => {
         if (!res) { return }
         if (!parent) {
             value = value.filter((o: any) => {
-                let rowValue = getOptionProp({ option: row, key: 'value', props: rootProps })
-                let oValue = getOptionProp({ option: o, key: 'value', props: rootProps })
+                let rowValue = GetOptionProps({ option: row, key: 'value', props: rootProps })
+                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps })
                 return rowValue !== oValue
             })
         }
         else {
             parent.childs = parent.childs.filter((o: any) => {
-                let rowValue = getOptionProp({ option: row, key: 'value', props: rootProps })
-                let oValue = getOptionProp({ option: o, key: 'value', props: rootProps })
+                let rowValue = GetOptionProps({ option: row, key: 'value', props: rootProps })
+                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps })
                 return rowValue !== oValue
             });
         }
         onChange(value)
     }
-    function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent } }
+    function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent,size } }
     return (
         <TreeContext.Provider value={getContext()}>
             <div className="aio-input-tree"><TreeHeader /><TreeBody rows={value} level={0} /></div>
@@ -1367,15 +1374,17 @@ const Tree: FC = () => {
 const TreeHeader: FC = () => {
     const { rootProps, add }: I_TreeContext = useContext(TreeContext);
     let { addText = 'add' } = rootProps;
+    addText = typeof addText === 'function'?addText('header'):addText;
     return (<div className="aio-input-tree-header"><button onClick={() => add()}>{I(mdiPlusThick, .8)}{addText}</button></div>)
 }
 type I_TreeOptions = { row: any, parent?: any }
 const TreeOptions: FC<I_TreeOptions> = (props) => {
     let { row, parent } = props;
     let { rootProps, add, remove }: I_TreeContext = useContext(TreeContext);
-    let { onAdd, onRemove, addText = 'Add', removeText = 'Remove' } = rootProps;
+    let { onAdd, onRemove, removeText = 'Remove' } = rootProps;
+    let addText:React.ReactNode = (typeof rootProps.addText === 'function'?rootProps.addText(row):rootProps.addText) || 'Add';
     let options = typeof rootProps.options === 'function' ? rootProps.options({ row, parent }) : rootProps.options;
-    function GetOptions() {
+    function getOptions() {
         let res = [];
         if (onAdd) { res.push({ text: addText, value: 'add', before: I(mdiPlusThick, 0.7), onClick: () => add(row) }) }
         let Options = (options || []).map((o) => { return { ...o, onClick: () => { if (o.onClick) { o.onClick(row, parent) } } } })
@@ -1383,16 +1392,16 @@ const TreeOptions: FC<I_TreeOptions> = (props) => {
         if (onRemove) { res.push({ text: removeText, value: 'remove', before: I(mdiDelete, 0.7), onClick: () => remove(row, parent) }) }
         return res
     }
-    let Options = GetOptions();
+    let Options = getOptions();
     if (!Options.length) { return null }
-    let p: AI = { type: 'select', caret: false,popover:{openRelatedTo:'.aio-input-tree'}, className: 'aio-input-tree-options-button', options: GetOptions(), text: I(mdiDotsHorizontal, 0.7) }
+    let p: AI = { type: 'select', caret: false,popover:{openRelatedTo:'.aio-input-tree'}, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
     return <AIOInput {...p} />;
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string,parentIndent?:AI_indent }
 const TreeBody: FC<I_TreeBody> = (props) => {
-    let { rootProps, types, openDic, mountedDic, indent }: I_TreeContext = useContext(TreeContext);
+    let { rootProps, types, openDic, mountedDic, indent,size }: I_TreeContext = useContext(TreeContext);
     let { rows, level, parent, parentId,parentIndent } = props;
-    let options = getOptions({
+    let options = GetOptions({
         rootProps, types, options: rows, properties: {
             after: (option: AI_option) => <TreeOptions row={option.object} parent={parent} />
         }
@@ -1408,7 +1417,7 @@ const TreeBody: FC<I_TreeBody> = (props) => {
                 let open = !!openDic[id];
                 let item: I_treeItem = { 
                     row,option, parent, parentId, id, parentOpen,open, 
-                    indent: { level,childsLength:childs.length, size: indent,index,isLastChild:index === options.length - 1,isFirstChild:index === 0,parentIndent } 
+                    indent: { height:size,level,childsLength:childs.length, size: indent,index,isLastChild:index === options.length - 1,isFirstChild:index === 0,parentIndent } 
                 }
                 let p = { className: `aio-input-tree-row` }
                 return <div {...p}><TreeRow item={item} /><TreeChilds item={item} /></div>;
@@ -1590,7 +1599,7 @@ export class AIOValidation {
     }
 }
 export function AIOInputSetStorage(name: string, value: any) {
-    let storage: AIOStorage = new AIOStorage('aio-input-storage');
+    let storage: Storage = new Storage('aio-input-storage');
     storage.save(name, value)
 }
 export function getFormInputs(fields: string[], path?: string) {
@@ -1722,7 +1731,7 @@ function getTypes(props: AI) {
     }
 }
 function getDateText(rootProps: AI) {
-    let { value, unit = Def<string>('date-unit'), text, jalali, placeholder } = rootProps;
+    let { value, unit = Def('date-unit'), text, jalali, placeholder } = rootProps;
     if (value) {
         let DATE = new AIODate();
         let list = DATE.convertToArray(value);
@@ -1758,85 +1767,4 @@ function getDefaultProps(props: AI, types: AI_types) {
         else if (valueType === 'array') { props.value = props.value[0] }
     }
     return props;
-}
-function getOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any }): AI_option[] {
-    let { rootProps, types, properties = {} } = p;
-    let { deSelect } = rootProps;
-    let options = p.options || rootProps.options || [];
-    if (typeof options === 'function') { options = options() }
-    let result = [];
-    let renderIndex = 0;
-    let draggable: boolean = types.isDropdown && types.hasOption && !!rootProps.onSwap;
-    function getDefaultOptionChecked(v: any) {
-        if (rootProps.type === 'multiselect') { return rootProps.value.indexOf(v) !== -1 }
-        if (rootProps.type === 'radio') { return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v }
-    }
-    if (deSelect && typeof deSelect !== 'function' && deSelect !== true) { options = [deSelect, ...options] }
-    function updateOptionByProperties(option: AI_option) {
-        for (let prop in properties) {
-            option[prop] = properties[prop](option)
-        }
-        return option
-    }
-    for (let i = 0; i < options.length; i++) {
-        let option = options[i];
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!getOptionProp({ props: rootProps, option, key: 'disabled', renderIndex, realIndex: i });
-        let show = getOptionProp({ props: rootProps, option, key: 'show', renderIndex, realIndex: i })
-        if (show === false) { continue }
-        let text = getOptionProp({ props: rootProps, option, key: 'text', renderIndex, realIndex: i });
-        //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
-        //if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
-        let optionValue = getOptionProp({ props: rootProps, option, key: 'value', renderIndex, realIndex: i })
-        let attrs = getOptionProp({ props: rootProps, option, key: 'attrs', def: {}, renderIndex, realIndex: i });
-        let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = getOptionProp({ props: rootProps, option, key: 'checked', def: defaultChecked, renderIndex, realIndex: i })
-        //object:option => do not remove mutability to use original value of option in for example tree row
-        let obj = {
-            object: option, show,
-            loading: rootProps.loading,
-            attrs, text, value: optionValue, disabled, draggable,
-            checkIcon: getOptionProp({ props: rootProps, option, key: 'checkIcon', renderIndex, realIndex: i }) || rootProps.checkIcon,
-            checked,
-            before: getOptionProp({ props: rootProps, option, key: 'before', renderIndex, realIndex: i }),
-            after: getOptionProp({ props: rootProps, option, key: 'after', renderIndex, realIndex: i }),
-            justify: getOptionProp({ props: rootProps, option, key: 'justify', renderIndex, realIndex: i }),
-            subtext: getOptionProp({ props: rootProps, option, key: 'subtext', renderIndex, realIndex: i }),
-            onClick: getOptionProp({ props: rootProps, option, key: 'onClick', preventFunction: true, renderIndex, realIndex: i }),
-            className: getOptionProp({ props: rootProps, option, key: 'className', renderIndex, realIndex: i }),
-            style: getOptionProp({ props: rootProps, option, key: 'style', renderIndex, realIndex: i }),
-            tagAttrs: getOptionProp({ props: rootProps, option, key: 'tagAttrs', renderIndex, realIndex: i }),
-            tagBefore: getOptionProp({ props: rootProps, option, key: 'tagBefore', renderIndex, realIndex: i }),
-            close: getOptionProp({ props: rootProps, option, key: 'close', def: rootProps.type !== 'multiselect', renderIndex, realIndex: i }),
-            tagAfter: getOptionProp({ props: rootProps, option, key: 'tagAfter', renderIndex, realIndex: i }),
-            renderIndex, realIndex: i
-        }
-        if (types.isMultiple) {
-            if (rootProps.value.indexOf(optionValue) !== -1) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
-        }
-        else {
-            if (optionValue === rootProps.value) { obj.attrs = addToAttrs(obj.attrs, { className: 'active' }) }
-        }
-        result.push(updateOptionByProperties(obj))
-        renderIndex++;
-    }
-    return result;
-}
-function getOptionProp(p: { props: AI, option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean, realIndex?: number, renderIndex?: number }) {
-    let { props, option, key, def, preventFunction, realIndex, renderIndex } = p;
-    let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key]({ ...option, realIndex, renderIndex }, props) : option[key]
-    if (optionResult !== undefined) { return optionResult }
-    let prop = (props.option || {})[key];
-    if (typeof prop === 'string') {
-        try {
-            let value;
-            eval('value = ' + prop);
-            return value;
-        }
-        catch { }
-    }
-    if (typeof prop === 'function' && !preventFunction) {
-        let res = prop({ ...option, realIndex, renderIndex }, props);
-        return res === undefined ? def : res;
-    }
-    return prop !== undefined ? prop : def;
 }

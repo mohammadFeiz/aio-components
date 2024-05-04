@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useState } from 'react';
-import AIOStorage from '../aio-storage/index.tsx';
+import {Storage} from '../aio-utils/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import RVD from '../react-virtual-dom/index.tsx';
@@ -62,7 +62,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   let {rootProps,getActions,popup} = props
   let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body,maxWidth} = rootProps;
   let [showSplash,setShowSplash] = useState<boolean>(!!splash);
-  let [storage] = useState<AIOStorage>(new AIOStorage('rsa-cache-' + id))
+  let [storage] = useState<Storage>(new Storage('rsa-cache-' + id))
   let navItems = typeof nav.items === 'function'?nav.items():nav.items;
   let [navId,SETNAVID] = useState<false | string>(false)
   useEffect(()=>{

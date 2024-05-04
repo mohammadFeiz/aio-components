@@ -83,7 +83,7 @@ export type AI = {
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
-    indent?:number,
+    indent?:number[],
     initialDisabled?:boolean,//form
     inputAttrs?: any,
     inputs?:any,//form
@@ -262,7 +262,6 @@ export type type_table_context = {
     setSorts: (newSorts: AI_table_sort[]) => void,
     sortRows: (rows: any[], sorts: AI_table_sort[]) => any[],
     excelColumns: AI_table_column[],
-    addToAttrs:AI_addToAttrs,
     getRowAttrs: (row: any, rowIndex: number) => any,
     getCellAttrs: type_table_getCellAttrs,
     getDynamics:any
@@ -286,7 +285,7 @@ export type I_Layout = {
     properties?: any,indent?:AI_indent,
     toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void}
 }
-export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent}
+export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent,height:number}
 export type I_DPContext = {
     translate: (text: string) => string,
     DATE:AIODate,

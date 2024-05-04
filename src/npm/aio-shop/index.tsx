@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import ACS from './../../npm/aio-content-slider/index.tsx';
-import {SplitNumber} from './../../npm/aio-utils/index.tsx';
+import {SplitNumber,Storage} from './../../npm/aio-utils/index.tsx';
 import { makeAutoObservable,toJS } from "mobx"
 import { observer } from "mobx-react-lite"
 import {Icon} from '@mdi/react';
@@ -27,7 +26,7 @@ import { AI } from '../aio-input/types.tsx';
 export default class AIOShop implements I_AIOShop{
     unit:string;
     popup:any;
-    storage:any;
+    storage:Storage;
     cart:I_cart;
     shopId:any;
     trans:I_trans;
@@ -75,7 +74,7 @@ export default class AIOShop implements I_AIOShop{
         for(let prop in props){this[prop] = props[prop]}
         this.setCheckout = (checkout:I_checkout)=>{this.checkout = checkout};
         this.popup = new AIOPopup();
-        let storage:AIOStorage = new AIOStorage(`ShopClass_${this.shopId}`);
+        let storage:Storage = new Storage(`ShopClass_${this.shopId}`);
         let cart:I_cart;
         if(props.cart === 'cache'){cart = storage.load('cart',[])}
         else if(Array.isArray(props.cart)){cart = props.cart}

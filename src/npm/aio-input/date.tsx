@@ -9,7 +9,7 @@ export default function Calendar(props: I_Calendar) {
     let { onClose } = props;
     let { unit = Def('date-unit'), jalali, value,disabled,size = Def('date-size'),theme = Def('theme'), translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
-    let [today, setToday] = useState(DATE.getToday(jalali))
+    let [today] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
     let [initValue] = useState(getInitValue())
     function getInitValue() {

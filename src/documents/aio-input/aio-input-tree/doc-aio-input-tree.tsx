@@ -45,6 +45,7 @@ function Basic(){
         onAdd:{name:'New Name',value:'a' + Math.round(Math.random())},
         onRemove:true,
         onChange:(value)=>setValue(value),
+        size:48,
         options:[
             {
                 text:'Preview',

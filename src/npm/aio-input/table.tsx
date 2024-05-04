@@ -1,8 +1,8 @@
 import React, { Fragment, createContext, createRef, useContext, useEffect, useState } from "react";
-import {AICTX,addToAttrs,I} from './utils'; 
+import {AICTX,I} from './utils'; 
 import { AI, AI_TableCellContent, AI_context, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_Drag, I_TableGap, type_table_context, type_table_temp } from "./types";
 import AIOInput from ".";
-import { ExportToExcel,DragClass } from "../aio-utils";
+import { ExportToExcel,DragClass,AddToAttrs } from "../aio-utils";
 import { mdiArrowDown, mdiArrowUp, mdiClose, mdiFileExcel, mdiMagnify, mdiPlusThick, mdiSort } from "@mdi/js";
 const AITableContext = createContext({} as any);
 export default function Table() {
@@ -159,13 +159,13 @@ export default function Table() {
         let attrs = getDynamics({ value: type === 'title'?titleAttrs:cellAttrs, column, def: {}, row, rowIndex });
         let justify = getDynamics({ value: column.justify, def: false });
         let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '')
-        attrs = addToAttrs(attrs, { className: cls, style: getCellStyle(column) });
+        attrs = AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
         if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
         return { ...attrs }
     }
     function getRowAttrs(row:any, rowIndex:number) {
         let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
-        let obj = addToAttrs(attrs, { className: 'aio-input-table-row' })
+        let obj = AddToAttrs(attrs, { className: 'aio-input-table-row' })
         if (DragRows !== false) { obj = { ...obj, ...DragRows.getAttrs(value,rowIndex) } }
         return obj;
     }
@@ -175,13 +175,13 @@ export default function Table() {
     }
     function getContext(ROWS:AI_table_rows) {
         let context: type_table_context = {
-            ROWS, addToAttrs, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
+            ROWS, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
             add, remove, search, exportToExcel,getDynamics
         }
         return context
     }
     let ROWS:AI_table_rows = getRows();
-    let attrs = addToAttrs(rootProps.attrs,{className:['aio-input aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
+    let attrs = AddToAttrs(rootProps.attrs,{className:['aio-input aio-input-table',className],style:rootProps.style,attrs:{ref:dom}})
     return (
         <AITableContext.Provider value={getContext(ROWS)}>
             <div {...attrs}>
@@ -294,7 +294,7 @@ function TableRows() {
 function TableToolbar() {
     let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
     let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value,addText } = rootProps;
-    toolbarAttrs = addToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
+    toolbarAttrs = AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
     if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
     function changeSort(sortId:string, changeObject:any) {
         let newSorts = sorts.map((sort) => {
@@ -381,7 +381,7 @@ function TableToolbar() {
 function TableHeader() {
     let { rootProps, columns }: type_table_context = useContext(AITableContext);
     let { headerAttrs, onRemove } = rootProps;
-    headerAttrs = addToAttrs(headerAttrs, { className: 'aio-input-table-header' })
+    headerAttrs = AddToAttrs(headerAttrs, { className: 'aio-input-table-header' })
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
     let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
     return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>

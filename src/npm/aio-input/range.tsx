@@ -1,7 +1,7 @@
 import React, { FC, createContext, createRef, useContext, useEffect, useRef, useState } from "react";
 import { AI_context, AI_scale, AI_scales, I_RangeArc, I_RangeContext, I_RangeItem, I_RangeItems, I_RangeRect, I_RangeValue, I_RangeValueContainer } from "./types";
-import {AICTX,Def,addToAttrs} from './utils';
-import { I_Swip_mousePosition, Swip, getEventAttrs, svgArc } from "../aio-utils";
+import {AICTX,Def} from './utils';
+import { I_Swip_mousePosition, Swip, getEventAttrs, svgArc,AddToAttrs } from "../aio-utils";
 import $ from 'jquery';
 const RangeContext = createContext({} as any)
 const Range:FC = () => {
@@ -175,7 +175,7 @@ const Range:FC = () => {
     function root_node():React.ReactNode{
         let {style,attrs = {}} = rootProps;
         let rootStyle = !round?{...style}:{...style,width:size,height:size};
-        let p = addToAttrs(attrs,{className:getRootClassName(),style:rootStyle,attrs:{ref:temp.dom}})
+        let p = AddToAttrs(attrs,{className:getRootClassName(),style:rootStyle,attrs:{ref:temp.dom}})
         return (
             <div {...p}>
                 {text !== undefined && <div className='aio-input-range-text'>{typeof text === 'function'?text():text}</div>}
@@ -326,7 +326,7 @@ const RangePoint:FC<I_RangeValue> = (props) => {
         containers.eq(index).css({zIndex:100})
     })
     let containerProps = {ref:temp.dom,className:'aio-input-range-point-container',style:round?{left:size / 2 + offset}:{[getOffset()]:offset},draggable:false}
-    let pointProps = addToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
+    let pointProps = AddToAttrs(attrs,{className:['aio-input-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
     return (<div {...containerProps}><div {...pointProps}>{html}</div></div>)
 }
 const RangeHandle:FC<I_RangeValue> = (props) => {
@@ -339,7 +339,7 @@ const RangeHandle:FC<I_RangeValue> = (props) => {
         return null
     }
     let {attrs = {}} = handle(value,{angle,disabled,value}) || {}
-    let PROPS = addToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
+    let PROPS = AddToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
     return (<div {...PROPS}></div>)
 }
 const RangeItems:FC<I_RangeItems> = (props) => {
@@ -446,7 +446,7 @@ const RangeItem:FC<I_RangeItem> = (props) => {
         let text = html;
         let containerStyle = getContainerStyle(distance);
         let containerProps = {className:`aio-input-range-${type}-container`,style:containerStyle,draggable:false,key:itemValue};
-        let textProps = addToAttrs(attrs,{className:[`aio-input-range-${type}`,className],style:getTextStyle(item,distance,type),attrs:{draggable:false}})
+        let textProps = AddToAttrs(attrs,{className:[`aio-input-range-${type}`,className],style:getTextStyle(item,distance,type),attrs:{draggable:false}})
         return {text,textProps,containerProps}
     }
     let {text,textProps,containerProps} = getDetails(setting,itemValue,type);

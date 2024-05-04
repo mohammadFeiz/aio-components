@@ -1,6 +1,6 @@
 import React,{Component, useState} from "react";
 import './App.css'
-import AIOStorage from './npm/aio-storage/index.tsx';
+import {Storage} from './npm/aio-utils/index.tsx';
 import { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
@@ -8,10 +8,8 @@ import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.js";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter.tsx';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading.js';
-import DOC_AIOTable from './documents/aio-table/doc-aio-table.js';
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider.tsx';
 import DOC_AIOGauge from './documents/aio-gauge/doc-aio-gauge.js';
-import DOC_AIOStorage from './documents/aio-storage/doc-aio-storage.tsx';
 import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip.tsx';
 import DOC_AIOChart from './documents/aio-chart/doc-aio-chart.tsx';
 import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater.js';
@@ -34,8 +32,8 @@ AIOInputSetStorage('mapApiKeys',{
   service:'service.09a2234e299a4ff585007b2894df9fca',
 })
 export default function AIOComponents(){
-  let [Storage] = useState<AIOStorage>(new AIOStorage('aio-componentspart'))
-  let [part,setPart] = useState(Storage.load('part','aio-input'))
+  let [storage] = useState<Storage>(new Storage('aio-componentspart'))
+  let [part,setPart] = useState(storage.load('part','aio-input'))
   let [parts] = useState<any>({
     'versions':Versions,
     'aio-input-inputs':DOC_AIOInput_Inputs,
@@ -47,10 +45,8 @@ export default function AIOComponents(){
     'aio-highlighter':DOC_AIOHighlighter,
     'aio-validation':DOC_AIOValidation,
     'aio-loading':DOC_AIOLoading,
-    'aio-table':DOC_AIOTable,
     'aio-content-slider':DOC_AIOContentSlider,
     'aio-gauge':DOC_AIOGauge,
-    'aio-storage':DOC_AIOStorage,
     'aio-swip':DOC_AIOSwip,
     'aio-chart':DOC_AIOChart,
     'aio-floater':DOC_AIOFloater,
@@ -66,7 +62,7 @@ export default function AIOComponents(){
     'test':Test
   })
   function changePart(part){
-    Storage.save('part',part)
+    storage.save('part',part)
     setPart(part)
   }
   function Part(){

@@ -1,13 +1,13 @@
 import React,{Component, useState} from "react";
-import AIOStorage from '../../npm/aio-storage/index.tsx';
+import {Storage} from '../../npm/aio-utils/index.tsx';
 import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
 import './index.css';
 type I_item = {id:string,name:string,age:number|string};
 export default function DOC_AIOStorage(props:any){
     let {goToHome} = props;
-    let [Storage] = useState<AIOStorage>(new AIOStorage('my storage'));
-    let [list,setList] = useState<I_item[]>(Storage.load('list',[]))
+    let [storage] = useState<Storage>(new Storage('my storage'));
+    let [list,setList] = useState<I_item[]>(storage.load('list',[]))
     let [name,setName] = useState<string>('')
     let [age,setAge] = useState<number|string>('')
     function item_layout(item:I_item){
@@ -30,19 +30,19 @@ export default function DOC_AIOStorage(props:any){
     function add(){
         let newItem:I_item = {name,age,id:'a' + Math.round(Math.random() * 1000000)}
         let newList:I_item[] = [newItem,...list];
-        Storage.save('list',newList);
+        storage.save('list',newList);
         setList(newList)
     }
     function remove(id:string){
         animate('removeV','#' + id,()=>{
             let newList:I_item[] = list.filter((o)=>o.id !== id);
-            Storage.save('list',newList);
+            storage.save('list',newList);
             setList(newList);
         })
     }
     function removeAll(){
-        Storage.remove('list')
-        setList(Storage.load('list',[]))
+        storage.remove('list')
+        setList(storage.load('list',[]))
     }
     return (
         <RVD
@@ -60,10 +60,10 @@ export default function DOC_AIOStorage(props:any){
                     {size:12},
                     {html:<button onClick={()=>add()}>Add</button>},
                     {html:<button onClick={()=>removeAll()}>Remove All</button>},
-                    {html:<button onClick={()=>Storage.export()}>Export</button>},
+                    {html:<button onClick={()=>storage.export()}>Export</button>},
                     {html:<AIOInput text='Import' type='file' onChange={(files)=>{
-                        Storage.import(files[0],()=>{
-                            setList(Storage.load('list',[]))
+                        storage.import(files[0],()=>{
+                            setList(storage.load('list',[]))
                             setName('');
                             setAge(undefined)
                         });

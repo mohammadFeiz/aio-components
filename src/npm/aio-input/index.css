@@ -1822,7 +1822,6 @@
 .aio-input-tree-option{
     padding:0;
     gap:6px;
-    height:36px;
     background:#fff;
     position: relative;
 }
@@ -1952,4 +1951,31 @@
 }
 .aio-input-indent-60 .aio-input-toggle{
     width:60px;
+}
+.aio-input-size-24{
+    height:24px;
+}
+.aio-input-size-36{
+    height:36px;
+}
+.aio-input-size-48{
+    height:48px;
+}
+.aio-input-size-60{
+    height:60px;
+}
+.aio-input-size-72{
+    height:72px;
+}
+.aio-input-size-84{
+    height:84px;
+}
+.aio-input-size-96{
+    height:96px;
+}
+.aio-input-size-108{
+    height:108px;
+}
+.aio-input-size-120{
+    height:120px;
 }

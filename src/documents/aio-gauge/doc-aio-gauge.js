@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import {Gauge} from './../../npm/aio-chart/aio-chart';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
+import {Storage} from './../../npm/aio-utils/index.tsx';
 import AIOJson from './../../npm/aio-json/aio-json';
 import { Icon } from '@mdi/react';
 import { mdiDelete, mdiPlusThick, mdiClose } from '@mdi/js';
@@ -18,11 +18,11 @@ export default class DOC_AIOGauge extends Component {
 class Input extends Component {
     constructor(props) {
         super(props);
-        let Storage = AIOStorage('gaugegenerator')
+        let storage = new Storage('gaugegenerator')
         this.state = {
             mode: 'preview',
-            Storage,
-            gauges: this.getGaugesFromStorage(Storage),
+            storage,
+            gauges: this.getGaugesFromStorage(storage),
             fileName: '',
             gauge: {
                 circles: [{ lineWidth: 1, stroke: '#555555', radius: 50, slice: true }],
@@ -41,8 +41,8 @@ class Input extends Component {
             }
         }
     }
-    getGaugesFromStorage(Storage) {
-        let model = Storage.getModel()
+    getGaugesFromStorage(storage) {
+        let model = storage.getModel()
         return Object.keys(model).map((key) => key)
     }
     addRange(e) {
@@ -378,7 +378,7 @@ class Input extends Component {
         }
     }
     activeGauge_layout() {
-        let { fileName, Storage, gauge } = this.state;
+        let { fileName, storage, gauge } = this.state;
         if (!fileName) { return false }
         gauge.start = gauge.start || 0;
         let inputs = {
@@ -400,7 +400,7 @@ class Input extends Component {
                     onChange={(gauge) => {
                         let { fileName } = this.state;
                         console.log(gauge.position)
-                        Storage.save({ value: gauge, name: fileName })
+                        storage.save({ value: gauge, name: fileName })
                         this.setState({ gauge })
                     }}
                     defaults={{
@@ -438,7 +438,7 @@ class Input extends Component {
         )
     }
     gauges_layout() {
-        let { gauges, fileName, Storage } = this.state;
+        let { gauges, fileName, storage } = this.state;
         return {
             size: 240,
             column: gauges.map((name) => {
@@ -452,7 +452,7 @@ class Input extends Component {
                             html: name,
                             attrs: {
                                 onClick: () => {
-                                    let res = Storage.load({ name });
+                                    let res = storage.load({ name });
                                     this.setState({ gauge: res, fileName: name })
                                 }
                             }
@@ -462,8 +462,8 @@ class Input extends Component {
                                 onClick: () => {
                                     let { fileName } = this.state;
                                     if (name === fileName) { fileName = false; }
-                                    Storage.remove({ name });
-                                    this.setState({ fileName, gauges: this.getGaugesFromStorage(Storage) })
+                                    storage.remove({ name });
+                                    this.setState({ fileName, gauges: this.getGaugesFromStorage(storage) })
                                 }
                             }
                         }
@@ -473,7 +473,7 @@ class Input extends Component {
         }
     }
     toolbar_layout() {
-        let { gauge, Storage, mode } = this.state;
+        let { gauge, storage, mode } = this.state;
         return {
             size: 48, className:'align-v gap-1',
             row: [
@@ -488,8 +488,8 @@ class Input extends Component {
                             onClick={() => {
                                 let name = window.prompt('inter gauge name')
                                 if (!name || name === null) { return }
-                                Storage.save({ value: gauge, name });
-                                this.setState({ gauges: this.getGaugesFromStorage(Storage) })
+                                storage.save({ value: gauge, name });
+                                this.setState({ gauges: this.getGaugesFromStorage(storage) })
                             }}
                         />
                     )

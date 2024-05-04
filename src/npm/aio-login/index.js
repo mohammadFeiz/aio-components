@@ -1,6 +1,6 @@
 import React, { Component, createRef } from 'react';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import AIOStorage from './../../npm/aio-storage/index.tsx';
+import {Storage} from './../../npm/aio-utils/index.tsx';
 import AIOInput,{getFormInputs} from './../../npm/aio-input/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiCellphone, mdiLock, mdiLoading, mdiAccount, mdiAccountBoxOutline, mdiEmail, mdiChevronRight } from '@mdi/js';
@@ -10,7 +10,7 @@ export default class AIOlogin {
     constructor(props) {
         let { id, onSubmit, modes, timer, checkToken, register, userId, attrs, forget, otpLength,renderApp,renderSplash,splashTime,renderLogin } = props;
         AIOLoginValidator(props);
-        let storage = AIOStorage(`-AIOLogin-${id}`);
+        let storage = new Storage(`-AIOLogin-${id}`);
         this.setStorage = (key, value) => { 
             if(typeof key === 'object'){for(let prop in key){storage.save({ name: prop, value:key[prop] });}}
             else {storage.save({ name: key, value }); }
@@ -163,7 +163,7 @@ class AIOLOGIN extends Component {
 class LoginForm extends Component {
     constructor(props) {
         super(props);
-        this.storage = AIOStorage(`-AIOLogin-${props.id}`);
+        this.storage = new Storage(`-AIOLogin-${props.id}`);
         let { timer = 30 } = props;
         this.state = { timer, recode: false, tab: 'login', model: this.getInitialModel(props.mode),error:!props.userId }
     }
@@ -454,12 +454,12 @@ class SubmitButton extends Component {
     }
     setLastTry() {
         let { mode } = this.props;
-        AIOStorage('aiologinlasttrypermode').save({ name: 'dic', value: { ...this.getLastTry(), [mode]: new Date().getTime() } })
+        new Storage('aiologinlasttrypermode').save({ name: 'dic', value: { ...this.getLastTry(), [mode]: new Date().getTime() } })
         let delta = this.getDelta();
         this.setState({ time: delta })
     }
     getLastTry() {
-        return AIOStorage('aiologinlasttrypermode').load({ name: 'dic', def: {} });
+        return new Storage('aiologinlasttrypermode').load({ name: 'dic', def: {} });
     }
     getDelta() {
         let { mode, timer } = this.props;

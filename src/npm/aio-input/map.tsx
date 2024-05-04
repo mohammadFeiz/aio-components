@@ -1,12 +1,11 @@
 import React, { createContext, createRef, useContext, useEffect, useState } from "react";
 import {AICTX,I} from './utils';
 import { AI, AI_context, I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys } from "./types";
-import AIOStorage from './../aio-storage/index';
 import Axios from "axios";
 import RVD from './../react-virtual-dom/index'; 
 import { I_RVD_node } from "../react-virtual-dom/types";
 import $ from 'jquery';
-import { JSXToHTML } from "../aio-utils";
+import { JSXToHTML,Storage } from "../aio-utils";
 import { mdiChevronRight, mdiClose, mdiCrosshairsGps, mdiLoading, mdiMagnify } from "@mdi/js";
 import AIOInput from ".";
 const MapContext = createContext({} as any);
@@ -33,7 +32,7 @@ export default function Map() {
     return <MapUnit {...p} />
 }
 function MapUnit(props:I_MapUnit) {
-    let [mapApiKeys] = useState<I_mapApiKeys>((new AIOStorage('aio-input-storage')).load('mapApiKeys',{ map: '', service: '' }));
+    let [mapApiKeys] = useState<I_mapApiKeys>((new Storage('aio-input-storage')).load('mapApiKeys',{ map: '', service: '' }));
     let {onClose,mapConfig = {},onChange = () => { },disabled, attrs = {},popupConfig} = props;
     let {area,zoom:Zoom = 14, traffic = false,markers = [], zoomControl = false, maptype = 'dreamy-gold', poi = true,draggable = true } = mapConfig;
     let [showPopup,setShowPopup] = useState<boolean>(false)
