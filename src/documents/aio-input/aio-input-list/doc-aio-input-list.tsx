@@ -17,7 +17,7 @@ export default function DOC_AIOInput_Table(props) {
     )
 }
 function Basic() {
-    let [model,setModel] = useState({size:36,width:120,decay:8,stop:3})
+    let [model,setModel] = useState({size:36,decay:8,stop:3})
     let [value,setValue] = useState<number>(12)
     let [options] = useState(getOptions())
     function getOptions(){
@@ -35,15 +35,13 @@ function Basic() {
             inputs:{
                 className:'gap-3',
                 row:[
-                    {input:{type:'slider',start:24,end:72,before:'size'},field:'value.size'},
-                    {input:{type:'slider',start:80,end:400,before:'width'},field:'value.width'},
-                    {input:{type:'slider',start:0,end:40,before:'decay'},field:'value.decay'},
-                    {input:{type:'slider',start:0,end:9,before:'stop'},field:'value.stop'}
+                    {input:{type:'range',start:24,end:72,before:'size'},field:'value.size'},
+                    {input:{type:'range',start:0,end:40,before:'decay'},field:'value.decay'},
+                    {input:{type:'range',start:0,end:9,before:'stop'},field:'value.stop'}
                 ]
             },
             onChange:(model)=>{
-                console.log('2',model)
-                setModel(model)
+                setModel({...model})
             }
         }
         return <AIOInput {...p}/>
@@ -55,7 +53,6 @@ function Basic() {
             value,
             options,
             size:model.size,
-            width:model.width,
             decay:model.decay,
             stop:model.stop,
             onChange:(newValue)=>setValue(newValue)

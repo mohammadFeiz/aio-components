@@ -4,7 +4,7 @@ export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | '
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
-    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
+    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' 
 )
 export type AI_formItem = {
     field?:string,
@@ -45,6 +45,7 @@ export type AI_table_column = {
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
+    actions?:({[key in keyof AI_option]?:any}[]) | ((row:any,parent:any)=>{[key in keyof AI_option]?:any}[]),
     addText?:React.ReactNode | ((value:any)=>React.ReactNode),
     after?: React.ReactNode | ((p?:any) => React.ReactNode),
     attrs?: any,
@@ -83,7 +84,7 @@ export type AI = {
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
-    indent?:number[],
+    indent?:number,
     initialDisabled?:boolean,//form
     inputAttrs?: any,
     inputs?:any,//form
@@ -115,7 +116,7 @@ export type AI = {
     onSearch?: true | ((searchValue: string) => void),
     open?: boolean,
     options?: any[] | ((p?:any)=>any[]),
-    option?:{[key in AI_optionKey]?:AI_optionProp},
+    option?:{[key in AI_optionKey]?:any},
     paging?: AI_table_paging,
     placeholder?: string,
     popover?: AP_modal,//notice get type from aio popup
@@ -155,7 +156,7 @@ export type AI = {
     unit?: AI_date_unit | AI_time_unit,
     value?: any,
     vertical?:boolean,
-    width?: number | string, //list
+    width?: number | string,
     
 }
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
@@ -209,8 +210,9 @@ export type AI_option = {
     tagAttrs:any,
     tagBefore:any,
     tagAfter:any,
-    onClick?:(o:any)=>void,
-    close?:boolean
+    onClick?:(o1:any,o2?:any)=>void,
+    close?:boolean,
+    level?:number,
 }
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
@@ -283,7 +285,7 @@ export type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:numbe
 export type I_Layout = {
     option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
     properties?: any,indent?:AI_indent,
-    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void}
+    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void},
 }
 export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent,height:number}
 export type I_DPContext = {

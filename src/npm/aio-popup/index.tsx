@@ -105,10 +105,8 @@ export default class AIOPopup {
   addModal: (p: AP_modal) => void;
   addAlert: (p: AP_alert) => void;
   removeModal: (arg?: string, animate?: boolean) => void;
-  _removeModal: (arg?: string, animate?: boolean) => void;
   addSnackebar: (p: AP_snackebar) => void;
   getModals: () => AP_modal[];
-  _getModals: () => AP_modal[];
   addConfirm: (p: AP_confirm) => void;
   addPrompt: (p: AP_prompt) => void;
   popupId?: string;
@@ -118,38 +116,23 @@ export default class AIOPopup {
     this.isRenderCalled = false;
     this.rtl = rtl;
     this.addModal = () => {alert('aio-popup error => missing call AIOPopup instance.render() in your project')};
-    this.removeModal = () => {alert('aio-popup error => missing call AIOPopup instance.render() in your project') };
+    this.removeModal = () => { };
     this.addSnackebar = () => { };
-    this._getModals = () => [];
+    this.getModals = () => [];
     this.render = () => {
       this.isRenderCalled = true;
       let popupsProps: AP_Popups = {
         rtl, id,
         getActions: ({ addModal, removeModal, getModals }) => {
           this.addModal = addModal;
-          this._removeModal = removeModal;
-          this._getModals = getModals;
+          this.removeModal = removeModal;
+          this.getModals = getModals;
         }
       }
-      let snackebarProps: AP_Snackebar = {
-        rtl,
-        getActions: ({ add }) => {
-          this.addSnackebar = add;
-        }
-      }
-      return (
-        <>
-          <Popups {...popupsProps} key={id} />
-          <Snackebar {...snackebarProps} />
-        </>
-      )
+      let snackebarProps: AP_Snackebar = {rtl,getActions: ({ add }) => this.addSnackebar = add}
+      return (<><Popups {...popupsProps} key={id} /><Snackebar {...snackebarProps} /></>)
     }
     this.addAlert = (obj) => Alert(obj);
-    this.removeModal = (arg, animate = true) => { if (this._removeModal) { this._removeModal(arg, animate) } };
-    this.getModals = () => {
-      let res = this._getModals()
-      return Array.isArray(res) ? res : []
-    }
     this.addConfirm = (obj: AP_confirm) => {
       let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, attrs = {} } = obj;
       let className = 'aio-popup-confirm';
@@ -193,11 +176,8 @@ export default class AIOPopup {
           render: ({ state, setState }) => {
             return (
               <textarea
-                placeholder={text}
-                value={state.temp}
-                onChange={(e) => {
-                  if (setState) { setState({ temp: e.target.value }) }
-                }} />
+                placeholder={text} value={state.temp}
+                onChange={(e) => {if (setState) { setState({ temp: e.target.value }) }}} />
             )
           }
         },
@@ -234,7 +214,10 @@ class Popups extends Component<AP_Popups, { modals: AP_modal[] }> {
     props.getActions({
       addModal: this.addModal.bind(this),
       removeModal: this.removeModal.bind(this),
-      getModals: () => this.state.modals
+      getModals: () => {
+        let res = this.state.modals;
+        return Array.isArray(res) ? res : []
+      }
     })
   }
   change(modals: AP_modal[]) {
@@ -310,23 +293,14 @@ type AP_Popup_temp = {
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
   let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,openRelatedTo, fixStyle = (o) => o, fitTo } = modal;
-  let [temp] = useState<AP_Popup_temp>({
-    dom: createRef(),
-    backdropDom: createRef(),
-    dui: undefined,
-    isDown: false,
-    isFirstMount: true
-
-  })
+  let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false,isFirstMount: true})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
   async function close() {
     onClose();
   }
   useEffect(() => {
-    return () => {
-      $(window).unbind('click', handleBackClick)
-    }
+    return () => {$(window).unbind('click', handleBackClick)}
   })
   function updatePopoverStyle() {
     if (position === 'popover') {
@@ -428,9 +402,9 @@ function Popup(props: AP_Popup) {
     className: getBackDropClassName(),
     onClick: backdrop === false ? undefined : (backdrop.close === false ? undefined : (e: any) => backClick(e)),
   }
-  let style: any = { ...popoverStyle, ...attrs.style, flex: 'none' }
+  let style: any = { ...popoverStyle, ...attrs.style }
   let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
-  let p = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style,display:'flex',flexDirection:'column'}}
+  let p = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style}}
   return (
     <div {...backdropProps} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
       <div {...p}>{header_node()} {body_node()} {footer_node()}</div> 
@@ -659,7 +633,7 @@ function SnackebarItem(props: AP_SnackebarItem) {
   function getOffsetStyle(index: number) {
     let els = $('.aio-popup-snackebar-item-container'), sum = { start: 12, end: 12 };
     for (let i = 0; i < index; i++) {
-      let dom = els.eq(i);
+      let dom = els.eq(i) as any;
       let height = dom.height() + 6;
       let va: 'start' | 'end' = dom.attr('data-vertical-align');
       sum[va] += height;
@@ -737,11 +711,12 @@ function Align(p: AP_align) {
       if (pageSelector && type !== 'page') {
         let page = $(pageSelector);
         try {
-          let { left: l, top: t } = page.offset()
+          let { left: l, top: t } = page.offset() || {left:0,top:0}
           left -= l;
           top -= t;
         }
         catch { }
+        
       }
       let width = dom.outerWidth();
       let height = dom.outerHeight();

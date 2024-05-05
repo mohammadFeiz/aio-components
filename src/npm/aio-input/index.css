@@ -1208,24 +1208,27 @@
     padding: 0 6px;
     position: relative;
     opacity:0.5;
-    font-size:75%;
+    transform:scale(0.8);
 }
 
 .aio-input-list-option.active {
     opacity: 1;
     transform: unset;
-    font-size:100%;
+    font-weight:bold;
 }
-
 .aio-input-time-popover {
     background: #fff;
     width: fit-content !important;
     padding: 12px !important;
     font-family: inherit;
+    display:flex;
+    flex-direction: column;
 }
 
 .aio-input-time-popover .aio-input-list {
     border: none;
+    width:72px;
+    font-size:16px;
 }
 
 .aio-input-time-popover .aio-input-list:after {
@@ -1271,9 +1274,12 @@
     flex-direction: column;
     align-items: center;
 }
+.aio-input-time-popover .aio-input-time-popover-item-title{
+    font-size:16px;
+    font-weight:bold;
+}
 .aio-input-time-popover .aio-input-time-popover-footer{
     display:flex;
-    padding:6px;
 }
 .aio-input-time-popover .aio-input-time-popover-footer button{
     background:dodgerblue;
@@ -1654,34 +1660,40 @@
     justify-content: center;
 }
 
+.aio-input-range-value{
+    width:100%;
+}
 
-
-.aio-input-range{
+.ai-range{
     display: flex;
     position: relative;
     user-select: none;
+    font-size:12px;
     
 }
-.aio-input-range-horizontal{
+.ai-range-horizontal{
     height:48px;
     align-items: center;
+    width:100%;
+    margin:0 12px;
 }
-.aio-input-range-vertical{
+.ai-range-vertical{
     width:48px;
     height:240px;
     justify-content: center;
+    margin:12px 0;
 }
-.aio-input-range-reverse{
+.ai-range-reverse{
     direction:rtl;
 }
-.aio-input-range-round{
+.ai-range-round{
     border-radius:100%;
     justify-content: center;
     align-items: center;
     margin:12px;
     height:unset; 
 }
-.aio-input-value-container{
+.ai-range-value-container{
     display:flex;
     align-items: center;
     width: 0;
@@ -1691,18 +1703,18 @@
     position:absolute;
     z-index:10;
 }
-.aio-input-range-round .aio-input-value-container{
+.ai-range-round .ai-range-value-container{
     justify-content: flex-end;
 }
 .aio-input-handle{
     position:absolute;
     left:0;
     height:4px;
-    background:orange;
+    background:dodgerblue;
     display: flex;
     align-items: center;
 }
-.aio-input-range-label-container{
+.ai-range-label-container{
     position:absolute;
     display:flex;
     align-items: center;
@@ -1710,17 +1722,20 @@
     width:0;
     height:0;
 }
-.aio-input-range-round .aio-input-range-label-container{
+.ai-range-round .ai-range-label-container{
     justify-content: flex-end;
 }
-.aio-input-range-label{
+.ai-range-label{
     position: absolute;
     display:flex;
     align-items: center;
     justify-content: center;
     font-size:12px;
 }
-.aio-input-range-point-container{
+.ai-range-value{
+    padding:0 16px;
+}
+.ai-range-point-container{
     position: absolute;
     display:flex;
     align-items: center;
@@ -1728,21 +1743,25 @@
     width:0;
     height:0;
 }
-.aio-input-range-point{
-    height:13px;
-    width:13px;
-    border-radius:100%;
-    background:orange;
+.ai-range-point{
+    min-height:12px;
+    min-width:12px;
+    height:20px;
+    width:20px;
+    border-radius:24px;
+    color:dodgerblue;
+    border:1px solid;
+    background:#fff;
     position: absolute;
     display:flex;
     align-items: center;
     justify-content: center;
 }
-.aio-input-range-range{
+.ai-range-range{
     position: absolute;
 }
 
-.aio-input-range-scale-container{
+.ai-range-scale-container{
     position:absolute;
     display:flex;
     align-items: center;
@@ -1750,11 +1769,11 @@
     width:0;
     height:0;
 }
-.aio-input-range-round .aio-input-range-scale-container{
+.ai-range-round .ai-range-scale-container{
     justify-content: flex-end;
 }
 
-.aio-input-range-scale{
+.ai-range-scale{
     position:absolute;
     display:flex;
     align-items: center;
@@ -1765,24 +1784,24 @@
     height:6px;
     
 }
-.aio-input-range-round .aio-input-range-scale{
+.ai-range-round .ai-range-scale{
     height:2px;
     width:6px;
     left:6px;
 }
-.aio-input-range-vertical .aio-input-range-scale{
+.ai-range-vertical .ai-range-scale{
     height:2px;
     width:6px;
 }
-.aio-input-range-fill {
+.ai-range-fill {
     background: dodgerblue;
     position: absolute;
     z-index:10;
 }
-.aio-input-range-horizontal .aio-input-range-fill {
+.ai-range-horizontal .ai-range-fill {
     height: 4px;
 }
-.aio-input-range-vertical .aio-input-range-fill {
+.ai-range-vertical .ai-range-fill {
     width: 4px;
 }
 .aio-input-form-item-column{
@@ -1818,7 +1837,7 @@
     text-align:left;
 }
 .aio-input-tree{
-    border:1px solid #ddd;
+    background-color:#fff;
     font-size:12px;
     display:flex;
     flex-direction: column;
@@ -1844,8 +1863,12 @@
 .aio-input-tree-option{
     padding:0;
     gap:6px;
-    background:#fff;
+    background:#f8f8f8;
     position: relative;
+}
+.aio-input-tree-options-button{
+    background:none;
+    margin:6px;
 }
 .aio-input-tree-body{
     position:relative;
