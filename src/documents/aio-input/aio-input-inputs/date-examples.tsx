@@ -113,9 +113,9 @@ export default function DateExamples(type){
             },
             code:
 `dateAttrs:({dateArray,isToday,isDisabled,isActive,isMatch})=>{
-    if(isToday){
+    if(isMatch(['w,6','w,4'])){
         return {
-            style:{background:'orange'}
+            style:{border:'1px solid orange'}
         }
     }
 }`

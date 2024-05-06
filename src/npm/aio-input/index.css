@@ -1389,10 +1389,13 @@
     flex: none;
     width: fit-content;
 }
-
+.aio-input-justify{
+    justify-content: center;
+}
 .aio-input-value-justify {
     flex: none;
     width: fit-content;
+    text-align:center;
 }
 
 @import url('https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.css');

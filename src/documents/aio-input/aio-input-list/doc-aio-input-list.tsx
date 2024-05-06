@@ -4,7 +4,7 @@ import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
 import AIOInput from '../../../npm/aio-input/index.tsx';
 import './doc-aio-input-list.css';
 import { AI } from '../../../npm/aio-input/types.tsx';
-export default function DOC_AIOInput_Table(props) {
+export default function DOC_AIOInput_Table(props:any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
@@ -87,7 +87,6 @@ return (
             value={value}
             options={options}
             size={${model.size}}
-            width={${model.width}}
             decay={${model.decay}}
             stop={${model.stop}}
             onChange={(newValue)=>setValue(newValue)}

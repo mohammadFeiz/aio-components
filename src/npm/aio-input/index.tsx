@@ -879,6 +879,7 @@ function Layout(props: I_Layout) {
         else {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
             if (types.isInput) { cls += ` aio-input-input` }
+            if(rootProps.justify){cls += ' aio-input-justify'}
             if (rtl) { cls += ' aio-input-rtl' }
         }
         if (indent) { cls += ` aio-input-indent-${indent.size}` }
@@ -906,7 +907,6 @@ function Layout(props: I_Layout) {
         if (text !== undefined) {
             let p = (type: 'value' | 'subtext') => {
                 return {
-                    style: { textAlign: justify ? 'center' : undefined },
                     className: `${cls(type)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
                 } as any
             }
@@ -965,7 +965,7 @@ function Layout(props: I_Layout) {
         return <div className={cls('loading')}>{elem}</div>
     }
     function getProps() {
-        let { justify, attrs, disabled, draggable, style } = properties;
+        let { attrs, disabled, draggable, style } = properties;
         let zIndex;
         if (open && !option && ['text', 'number', 'textarea'].indexOf(type) !== -1) {
             zIndex = 100000
@@ -984,11 +984,12 @@ function Layout(props: I_Layout) {
         }
         attrs = AddToAttrs(attrs, {
             className: getClassName(),
-            style: { ...style, justifyContent: justify ? 'center' : undefined, zIndex }
+            style: { ...style, zIndex }
         })
         let p = { ...attrs, onClick, ref: dom, disabled }
         let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
         if (draggable) { p = { ...p, ...DragOptions.getAttrs(options, realIndex || 0) } }
+        if(realIndex){p['data-index'] = realIndex}
         return p;
     }
     function getProperties() {
@@ -1004,10 +1005,11 @@ function Layout(props: I_Layout) {
         let { checkIcon = obj.checkIcon || {} } = p;
         let { loading = obj.loading } = p;
         let { attrs = obj.attrs || {} } = p;
-        let { style = obj.style || {} } = p;
+        let style = {...(obj.style || {}),...p.style}
         let { before = obj.before } = p;
         let { after = obj.after } = p;
-        let { className = obj.className } = p;
+        let classNames = [obj.className,p.className].filter((o)=>!!o)
+        let className = classNames.length?classNames.join(' '):undefined;
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className }
     }
     function getToggleIcon(state:0|1|2) {
@@ -1084,7 +1086,7 @@ function Layout(props: I_Layout) {
     )
 }
 function List() {
-    let { rootProps }: AI_context = useContext(AICTX);
+    let { rootProps,types }: AI_context = useContext(AICTX);
     let { attrs = {}, size = 36, count = 3, editable = true, stop = 3, decay = 8, onChange = () => { } } = rootProps;
     let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : rootProps.options || [];
     let [temp] = useState<I_list_temp>({
@@ -1099,16 +1101,6 @@ function List() {
     function getStyle() {
         var height = count * (size);
         return { height }
-    }
-    function getOptions() {
-        temp.activeIndex = 0;
-        return options.map((option: any, i: number) => {
-            let value = GetOptionProps({ props: rootProps, option, key: 'value' });
-            let text = GetOptionProps({ props: rootProps, option, key: 'text', def: '' });
-            let style = GetOptionProps({ props: rootProps, option, key: 'style', def: {} });
-            if (value === rootProps.value) { temp.activeIndex = i; }
-            return <div key={i} data-index={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
-        })
     }
     function getIndexByTop(top: number) { return Math.round(((count * size) - size - (2 * top)) / (2 * size)); }
     function getTopByIndex(index: number) { return (count - 2 * index - 1) * size / 2; }
@@ -1217,7 +1209,21 @@ function List() {
     useEffect(() => {
         setBoldStyle(temp.activeIndex);
     })
-    let fixedOptions = getOptions();
+    let fixedOptions = GetOptions({
+        rootProps,types,options
+    }).map((o,i)=>{
+        if (o.value === rootProps.value) { temp.activeIndex = i; }
+        return (
+            <Layout
+                option={o}
+                realIndex={i}
+                properties={{
+                    style:{height:size},
+                    justify:true
+                }}
+            />
+        )
+    });
     return (
         <div
             {...attrs} ref={temp.dom} tabIndex={0} onKeyDown={(e) => keyDown(e)}
@@ -1231,6 +1237,17 @@ function List() {
         </div>
     );
 }
+// function getOptions() {
+//     temp.activeIndex = 0;
+//     return options.map((option: any, i: number) => {
+//         let value = GetOptionProps({ props: rootProps, option, key: 'value' });
+//         let text = GetOptionProps({ props: rootProps, option, key: 'text', def: '' });
+//         let style = GetOptionProps({ props: rootProps, option, key: 'style', def: {} });
+//         if (value === rootProps.value) { temp.activeIndex = i; }
+//         return <div key={i} data-index={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
+//     })
+// }
+
 async function DownloadUrl(url: string, name: string) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
 type I_AcardionContext = { toggle: (id: string) => void, mountedDic: { [id: string]: boolean }, openDic: { [id: string]: boolean }, rootProps: AI }
 type I_Acardion = { options: AI_option[] }
@@ -1448,7 +1465,7 @@ const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
     return <TreeBody rows={childs} level={indent.level + 1} parent={row} parentId={id} parentIndent={indent} />
 }
 const DPContext = createContext({} as any);
-function Calendar(props: I_Calendar) {
+export function Calendar(props: I_Calendar) {
     let { rootProps,DATE}: AI_context = useContext(AICTX);
     let { onClose } = props;
     let { unit = Def('date-unit'), jalali, value,disabled,size = Def('date-size'),theme = Def('theme'), translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
@@ -1672,6 +1689,9 @@ function DPHeaderItem(props:{unit:'year'|'month'}){
     }
     return (<AIOInput {...p}/>)
 }
+function DPHeaderPopup(){
+    
+} 
 function DPYearsPopup(props:{onClose:()=>void}){
     let {onClose} = props;
     let { rootProps,translate,activeDate,changeActiveDate }: I_DPContext = useContext(DPContext);
