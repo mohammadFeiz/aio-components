@@ -5,7 +5,7 @@ import { AI } from "../../../npm/aio-input/types"
 import { mdiAccount } from "@mdi/js"
 import AIODoc from './../../../npm/aio-documentation/aio-documentation.js';
 import Icon from '@mdi/react';
-export default function DOC_Acardion(props) {
+export default function DOC_Acardion(props:any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
@@ -25,7 +25,7 @@ function Basic(){
         <div className='example'>
             <AIOInput 
                 type='acardion'
-                body={(value)=>{
+                body={(value:string)=>{
                     if(value === '0'){
                         return {
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia rem expedita aut, nam provident facere illo voluptatum iusto quibusdam quas obcaecati neque necessitatibus veniam, aperiam tempora nesciunt. Hic, temporibus assumenda!'
@@ -46,6 +46,7 @@ function Basic(){
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
                         }
                     }
+                    return {html:''}
                 }}
                 options={[
                     {text:'acardion1',value:'0'},
@@ -55,7 +56,7 @@ function Basic(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
                     subtext:()=>'this is my subtext'
                 }}
             />
@@ -123,7 +124,7 @@ function Vertical(){
             <AIOInput 
                 type='acardion'
                 vertical={false}
-                body={(value)=>{
+                body={(value:string)=>{
                     if(value === '0'){
                         return {
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia rem expedita aut, nam provident facere illo voluptatum iusto quibusdam quas obcaecati neque necessitatibus veniam, aperiam tempora nesciunt. Hic, temporibus assumenda!'
@@ -144,6 +145,7 @@ function Vertical(){
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
                         }
                     }
+                    return {html:''}
                 }}
                 options={[
                     {text:'acardion1',value:'0'},
@@ -153,7 +155,7 @@ function Vertical(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
                     subtext:()=>'this is my subtext',
                 }}
             />
@@ -208,7 +210,7 @@ function Multiple(){
             <AIOInput
                 type={'acardion'}
                 multiple={true}
-                body={(value)=>{
+                body={(value:string)=>{
                     if(value === '0'){
                         return {
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia rem expedita aut, nam provident facere illo voluptatum iusto quibusdam quas obcaecati neque necessitatibus veniam, aperiam tempora nesciunt. Hic, temporibus assumenda!'
@@ -229,6 +231,7 @@ function Multiple(){
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
                         }
                     }
+                    return {html:''}
                 }}
                 options={[
                     {text:'acardion1',value:'0'},
@@ -238,7 +241,7 @@ function Multiple(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
                     subtext:()=>'this is my subtext',
                 }}
             />
