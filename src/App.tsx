@@ -5,7 +5,7 @@ import { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map.tsx';
-import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.js";
+import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter.tsx';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading.js';
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider.tsx';

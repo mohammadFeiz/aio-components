@@ -3156,7 +3156,7 @@ export class AIOValidation {
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { lessResult = value.length < target }
             else { lessResult = false }
             let { result: equalResult } = this.equal(target, value, isDate)
-            return { result: equalResult && lessResult, targetName: target }
+            return { result: equalResult || lessResult, targetName: target }
         }
         this.greater = (target, value, isDate) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
@@ -3177,16 +3177,20 @@ export class AIOValidation {
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { greaterResult = value.length > target }
             else { greaterResult = false }
             let { result: equalResult } = this.equal(target, value, isDate)
-            return { result: equalResult && greaterResult, targetName: target }
+            return { result: equalResult || greaterResult, targetName: target }
         }
         this.translate = (operator) => {
             let dict = {
                 contain: { en: 'should be contain', fa: 'باید شامل' },
                 not_contain: { en: 'should not be contain', fa: 'نمی تواند شامل' },
-                less: { en: 'should be less than', fa: 'باید کمتر از' },
                 greater: { en: 'should be more than', fa: 'باید بیشتر از' },
                 not_greater: { en: 'could not be more than', fa: 'نباید بزرگ تر از' },
+                greater_equal: { en: 'should be more than or equal', fa: 'باید بزرگتر یا مساوی' },
+                not_greater_equal: { en: 'could not be more than or equal', fa: 'نباید بزرگتر یا مساوی' },
+                less: { en: 'should be less than', fa: 'باید کمتر از' },
                 not_less: { en: 'could not be less than', fa: 'نباید کوچک تر از' },
+                less_equal: { en: 'should be less than or equal', fa: 'باید کوچکتر یا مساوی' },
+                not_less_equal: { en: 'could not be less than or equal', fa: 'نباید کوچک تر یا مساوی' },
                 equal: { en: 'should be equal', fa: 'باید برابر' },
                 not_equal: { en: 'cannot be equal', fa: 'نمی تواند برابر' },
                 function: { en: '', fa: '' },
@@ -3197,7 +3201,9 @@ export class AIOValidation {
         this.getMessage = (operator, targetName, validation, unit) => {
             let { title = props.title, targetName: TargetName = targetName, message } = validation;
             if (message) { return message }
-            return `${title} ${this.translate(operator)} ${TargetName} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
+            let operatorName = this.translate(operator)
+            let res = `${title} ${operatorName} ${TargetName} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
+            return res
         }
         this.getResult = (p: { target: any, validation: AV_item, value: any, unit: string, operator: AV_operator }) => {
             let { target, validation, value, unit, operator } = p;
@@ -3208,12 +3214,12 @@ export class AIOValidation {
             let dateIndex = operator.indexOf('date_');
             if (dateIndex === 0) {
                 isDate = true;
-                operatorName = operatorName.slice(dateIndex, operatorName.length);
+                operatorName = operatorName.slice(4, operatorName.length);
             }
             let notIndex = operatorName.indexOf('not_');
             if (notIndex === 0) {
                 not = true;
-                operatorName = operator.slice(notIndex, operator.length);
+                operatorName = operator.slice(4, operator.length);
             }
 
 
@@ -3233,8 +3239,8 @@ export class AIOValidation {
         this.getValidation = () => {
             let { value, validations = [] } = props;
             let unit = '';
-            if (Array.isArray(value)) { unit = lang === 'fa' ? 'کاراکتر' : 'character(s)' }
-            else if (typeof value === 'string') { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
+            if (Array.isArray(value)) { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
+            else if (typeof value === 'string') {unit = lang === 'fa' ? 'کاراکتر' : 'character(s)'  }
             for (let i = 0; i < validations.length; i++) {
                 let { operator, target, title = props.title } = validations[i];
                 let result;

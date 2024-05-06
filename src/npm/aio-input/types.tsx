@@ -420,7 +420,14 @@ export type AI_FormContext = {
 }
 export type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column'}
 export type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
-export type AV_operator = 'contain' | 'not_contain' | 'function' | 'required'
+export type AV_operator = 
+    'contain' | 'not_contain' | 
+    'function' | 'required' | 
+    'equal' | 'not_equal' | 
+    'greater' | 'not_greater' | 
+    'greater_equal' | 'not_greater_equal' | 
+    'less' | 'not_less' | 
+    'less_equal' | 'not_less_equal'
 export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
 export type AV_item = {title?:string,targetName?:string,message?:string,operator:AV_operator,target:any}
 
