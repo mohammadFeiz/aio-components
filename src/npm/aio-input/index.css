@@ -973,11 +973,7 @@
     font-size: 110%;
 }
 
-.aio-input-date-container button {
-    width: unset !important;
-    border: none !important;
-    background: none !important;
-}
+
 
 .aio-input-date-cell:not(.aio-input-date-weekday):not(.aio-input-date-space):not(.aio-input-date-disabled):hover {
     position: relative;
@@ -1646,21 +1642,29 @@
 
 
 
-.aio-input-date-years{
+.aio-input-date-popup{
     display:flex;
     flex-direction:column;
+    height:100%;
 }
-.aio-input-date-years-header{
+.aio-input-date-popup-header{
     display:flex;
 }
-.aio-input-date-years-body{
+.aio-input-date-popup-body{
     display:grid;
+    flex:1;
 }
-.aio-input-date-years-label{
+.aio-input-date-popup-label{
     flex:1;
     display:flex;
     align-items:center;
     justify-content: center;
+}
+.aio-input-date-popup-footer button{
+    border:none;
+    padding:3px 12px;
+    border-radius:4px;
+    background:none;
 }
 
 .aio-input-range-value{

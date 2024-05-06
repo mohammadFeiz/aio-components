@@ -3,7 +3,7 @@ import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple
 import {Icon} from "@mdi/react"
 
 export default function RangeExamples({round,reverse,vertical}){
-    let index = 20;
+    let index;
     return [
         {
             title:'start step end',

@@ -1487,7 +1487,7 @@ export function Calendar(props: I_Calendar) {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
         }
-        let obj:any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال' }
+        let obj:any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری','Select Year':'انتخاب سال','Close':'بستن' }
         let res;
         if (jalali && obj[text]) { res = obj[text] }
         return translate(text)
@@ -1643,13 +1643,12 @@ function DPCell(props:I_DPCell) {
     }
     let isActive = !value ? false : DATE.isEqual(dateArray, value);
     let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
-    let isDateDisabled = !Array.isArray(disabled) ? false : DATE.isMatch(dateArray, disabled);
-    let isDisabled = disabled === true || isDateDisabled;
     let Attrs:any = {}
     if (dateAttrs) { 
-        Attrs = dateAttrs({ dateArray, isToday, isDisabled, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
+        Attrs = dateAttrs({ dateArray, isToday, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
         Attrs = Attrs || {} 
     }
+    let isDisabled = disabled === true || Attrs.disabled === true;
     let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
     let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }) };
     let style:any = {}
@@ -1675,92 +1674,59 @@ function DPHeaderItem(props:{unit:'year'|'month'}){
     let {theme = Def('theme')} = rootProps;
     if(!activeDate || !activeDate[unit]){return null}
     let text = unit === 'year'?activeDate.year:months[(activeDate[unit] as number) - 1]
-    let POPUP = unit === 'year'?DPYearsPopup:DPMonthsPopup;
     let p:AI = {
         type:'button',text,justify:true,caret:false,
         attrs: { className: 'aio-input-date-dropdown' },
         popover:{
-            fitTo:'.aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0',
+            fitTo:'.aio-input-date-calendar',
             attrs:{style:{background: theme[1], color: theme[0]}},
-            body:{
-                render:({close})=><POPUP onClose={close}/>
-            }
+            body:{render:({close})=><DPHeaderPopup onClose={close} unit={unit}/>}
         }
     }
     return (<AIOInput {...p}/>)
 }
-function DPHeaderPopup(){
-    
-} 
-function DPYearsPopup(props:{onClose:()=>void}){
-    let {onClose} = props;
-    let { rootProps,translate,activeDate,changeActiveDate }: I_DPContext = useContext(DPContext);
+const DPHeaderPopup:FC<{onClose:()=>void,unit:'year'|'month'}> = (props) => {
+    let {onClose,unit} = props;
+    let { rootProps,DATE,translate,activeDate,changeActiveDate }: I_DPContext = useContext(DPContext);
     let { jalali,size = Def('date-size'),theme = Def('theme') } = rootProps;
+    let [months] = useState<string[]>(DATE.getMonths(jalali));
     let [start, setStart] = useState<number>(Math.floor((activeDate.year as number) / 10) * 10);
-    let [value,setValue] = useState<number>(activeDate.year as number);
-    useEffect(()=>{setValue(activeDate.year as number)},[activeDate.year])
+    let [year,setYear] = useState<number>(activeDate.year as number);
+    let [month,setMonth] = useState<number>(activeDate.month as number);
+    useEffect(()=>{
+        setYear(activeDate.year as number)
+        setMonth(activeDate.month as number)
+    },[activeDate.year,activeDate.month])
+    function changeValue(v:number){
+        if(unit === 'year'){setYear(v); changeActiveDate({year:v});}
+        else {setMonth(v); changeActiveDate({month:v});} 
+        onClose()
+    }
     function changePage(dir:1 | -1) {
         let newStart = start + (dir * 10)
         setStart(newStart);
     }
-    function changeValue(v:number){
-        setValue(v);
-        changeActiveDate({year:v});
-        onClose();
-    }
-    function getCells(start:number) {
-        let cells = [];
-        for (let i = start; i < start + 10; i++) {
-            let active = i === value;
-            let className = 'aio-input-date-cell'
-            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
-            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
-            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
-            cells.push(<div {...p} key={i}>{i}</div>)
-        }
-        return cells
-    }
-    function getBodyStyle() {
-        var columnCount = 3;
-        var rowCount = 4;
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = size / 6;
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
-    }
-    return (
-        <div className='aio-input-date-years'>
-            <div className='aio-input-date-years-header'>
-                <DPArrow type='minus' onClick={() => changePage(-1)} />
-                <div className='aio-input-date-years-label' style={{fontSize:size / 15}}>{translate('Select Year')}</div>
-                <DPArrow type='plus' onClick={() => changePage(1)} />
-            </div>
-            <div style={getBodyStyle()} className='aio-input-date-years-body'>{getCells(start)}</div>
-        </div>
-    )
-}
-function DPMonthsPopup(props:{onClose:()=>void}){
-    let {onClose} = props; 
-    let { rootProps,DATE,changeActiveDate,activeDate }: I_DPContext = useContext(DPContext);
-    let { jalali,size = Def('date-size'),theme = Def('theme') } = rootProps;
-    let [months] = useState<string[]>(DATE.getMonths(jalali));
-    let month = activeDate.month;
-    function changeValue(v:number){
-        changeActiveDate({month:v});
-        onClose()
-    }
     function getCells() {
         let cells = [];
-        for (let i = 1; i <= 12; i++) {
-            let active = i === month;
-            let className = 'aio-input-date-cell'
-            if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
-            else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
-            let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
-            cells.push(<div {...p} key={i}>{months[i - 1].slice(0,3)}</div>)
+        if(unit === 'year'){
+            for (let i = start; i < start + 10; i++) {
+                let active = i === year;
+                let className = 'aio-input-date-cell'
+                if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
+                else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
+                let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
+                cells.push(<div {...p} key={i}>{i}</div>)
+            }
+        }
+        else {
+            for (let i = 1; i <= 12; i++) {
+                let active = i === month;
+                let className = 'aio-input-date-cell'
+                if(active){className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'}
+                else {className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0'}
+                let p = {style:active?{background:theme[0],color:theme[1]}:{background:theme[1],color:theme[0]},className,onClick:() => changeValue(i)}
+                cells.push(<div {...p} key={i}>{months[i - 1].slice(0,3)}</div>)
+            }
         }
         return cells
     }
@@ -1775,12 +1741,26 @@ function DPMonthsPopup(props:{onClose:()=>void}){
         let direction:'ltr'|'rtl' = !jalali ? 'ltr' : 'rtl';
         return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
     }
-    return (
-        <div className='aio-input-date-months'>
-            <div style={getBodyStyle()} className='aio-input-date-years-body'>{getCells()}</div>
-        </div>
-    )
-}
+    function header_node(){
+        if(unit !== 'year'){return null}
+        return (
+            <div className='aio-input-date-popup-header'>
+                <DPArrow type='minus' onClick={() => changePage(-1)} />
+                <div className='aio-input-date-popup-label' style={{fontSize:size / 15}}>{translate('Select Year')}</div>
+                <DPArrow type='plus' onClick={() => changePage(1)} />
+            </div>
+        )
+    }
+    function body_node(){return <div style={getBodyStyle()} className='aio-input-date-popup-body'>{getCells()}</div>}
+    function footer_node(){
+        return (
+            <div style={getBodyStyle()} className='aio-input-date-popup-footer'>
+                <button onClick={()=>onClose()}>{translate('Close')}</button>
+            </div>
+        )
+    }
+    return (<div className='aio-input-date-popup'>{header_node()}{body_node()}{footer_node()}</div>)
+} 
 function DPHeader() {
     let { rootProps,activeDate, changeActiveDate,DATE }: I_DPContext = useContext(DPContext);
     let { size = Def('date-size'), unit = Def('date-unit') } = rootProps;
@@ -1824,11 +1804,14 @@ function DPArrow(props: I_DPArrow) {
         let date = [activeDate.year as number, activeDate.month as number, activeDate.day as number]
         if (unit === 'month') { changeActiveDate({ year: (activeDate.year as number) + offset }) }
         if (unit === 'day') { 
-            let next = DATE.getNextTime(date,offset * 24 * 60 * 60 * 1000,jalali);
-            changeActiveDate({ year: next[0], month: next[1] }) 
+            let newDate = [];
+            if(date[1] === 1 && offset === -1){newDate = [date[0] - 1,12];}
+            else if(date[1] === 12 && offset === 1){newDate = [date[0] + 1,1];}
+            else {newDate = [date[0],date[1] + offset]}
+            changeActiveDate({ year: newDate[0], month: newDate[1] }) 
         }
         if (unit === 'hour') { 
-            let next = DATE.getNextTime(date,offset * 60 * 60 * 1000,jalali);
+            let next = DATE.getNextTime(date,offset * 24 * 60 * 60 * 1000,jalali);
             changeActiveDate({ year: next[0], month: next[1], day: next[2] }) 
         }
     }

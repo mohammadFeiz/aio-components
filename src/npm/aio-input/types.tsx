@@ -61,7 +61,7 @@ export type AI = {
     columns?: AI_table_column[] | ((p?:any)=>AI_table_column[]),
     count?: number,//list
     data?:any,
-    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isDisabled:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
+    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,//date
     decay?: number,//list
     delay?: number,
     deSelect?:any,

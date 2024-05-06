@@ -695,7 +695,7 @@ function Align(p: AP_align) {
   let $$ = {
     getDomLimit(dom: any, type: 'popover' | 'page' | 'target') {
       if (fitTo && type === 'popover') {
-        let parent = target.parents(fitTo);//notice be jaye target dom
+        let parent = dom.parents(fitTo);//notice be jaye target dom
         if (parent.length) {
           let { left, top } = parent.offset()
           let width = parent.width();

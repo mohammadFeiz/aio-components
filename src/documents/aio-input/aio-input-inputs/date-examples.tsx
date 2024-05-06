@@ -103,7 +103,8 @@ export default function DateExamples(type){
         {
             property:'dateAttrs',title:'dateAttrs (function) (isMatch)',
             props:{
-                dateAttrs:({dateArray,isToday,isDisabled,isActive,isMatch})=>{
+                dateAttrs:(p)=>{
+                    let {dateArray,isToday,isActive,isMatch} = p;
                     if(isMatch(['w,6','w,4'])){
                         return {
                             style:{border:'1px solid orange'}
@@ -139,7 +140,11 @@ function DateDisabled(){
             {title:'Description',value:'row.des'},
             {
                 width:120,template:({row})=>{
-                    return <AIOInput type='date' value={ref.current} onChange={(value)=>setValue(value)} disabled={JSON.parse(row.op)}/>
+                    return <AIOInput type='date' value={ref.current} onChange={(value)=>setValue(value)} dateAttrs={({isMatch})=>{
+                        let attrs:any = {}
+                        if(isMatch(JSON.parse(row.op))){attrs.disabled = true}
+                        return attrs
+                    }}/>
                 }
             }
             
