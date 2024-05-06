@@ -1039,14 +1039,14 @@ function Layout(props: I_Layout) {
         let x0 = size / 2,x1 = size,y0 = 0,y1 = height / 2,y2 = height,pathes = [];
         if(order === level - 1){
             //horizontal line
-            pathes.push(<path d={`M${x0} ${y1} L${x1} ${y1} Z`}></path>)
+            pathes.push(<path key={'hl' + order} d={`M${x0} ${y1} L${x1} ${y1} Z`}></path>)
             //vertical direct line
-            pathes.push(<path d={`M${x0} ${y0} L${x0} ${isLastChild ? y1 : y2} Z`}></path>)
+            pathes.push(<path key={'vdl' + order} d={`M${x0} ${y0} L${x0} ${isLastChild ? y1 : y2} Z`}></path>)
         }
         else {
             //vertical connet line
             if(!parentIndent || !parentIndent.isLastChild){
-                pathes.push(<path d={`M${x0} ${y0} L${x0} ${y2} Z`}></path>)    
+                pathes.push(<path key={'vl' + order} d={`M${x0} ${y0} L${x0} ${y2} Z`}></path>)    
             }
         }
         return (<svg className='aio-input-indent-line'>{pathes}</svg>)
@@ -1058,7 +1058,7 @@ function Layout(props: I_Layout) {
             <div className="aio-input-indents">
                 {new Array(level).fill(0).map((o, i) => {
                     return (
-                        <div className={`aio-input-indent`}>{indentIcon(indent,i)}</div>
+                        <div key={i} className={`aio-input-indent`}>{indentIcon(indent,i)}</div>
                     )
                 })}
                 {!!toggle && Toggle(indent)}
@@ -1321,7 +1321,8 @@ type I_TreeContext = {
     remove: any,
     indent: number,
     size:number,
-    change:(row:any,newRow:any)=>void
+    change:(row:any,newRow:any)=>void,
+    getChilds:(row:any)=>any[]
 }
 //should implement
 //inlineEdit
@@ -1337,7 +1338,6 @@ const Tree: FC = () => {
     let [openDic, setOpenDic] = useState<any>({})
     let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
     let [indent] = useState<number>(getIndent)
-    console.log(openDic, mountedDic)
     function SetMounted(id: string) { setMountedDic({ ...mountedDic, [id]: !mountedDic[id] }) }
     function SetOpen(id: string) { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
     function getIndent() {
@@ -1357,12 +1357,31 @@ const Tree: FC = () => {
         for(let prop in newRow){row[prop] = newRow[prop];}
         if(rootProps.onChange){rootProps.onChange(rootProps.value)}
     }
+    function getChilds(obj:any){
+        let childs = []
+        try{
+            if(rootProps.getChilds){childs = rootProps.getChilds(obj);}
+            else {childs = obj.childs || []}
+        }
+        catch{childs = []}
+        return childs
+    }
+    function setChilds(obj:any,childs:any[]){
+        try{
+            if(rootProps.setChilds){rootProps.setChilds(obj,childs)}
+            else {obj.childs = childs}
+        }
+        catch{}
+    }
     async function add(parent?: any) {
         let newRow: any;
         if (typeof onAdd === 'function') { newRow = await onAdd({ parent }) }
         else { newRow = onAdd }
         if (!newRow) { return }
-        if (parent) { parent.childs = parent.childs || []; parent.childs.push(newRow); }
+        if (parent) { 
+            let parentChilds = getChilds(parent);
+            setChilds(parent,parentChilds.concat(newRow));
+        }
         else { value.push(newRow) }
         if(onChange){onChange(value);}
     }
@@ -1379,15 +1398,17 @@ const Tree: FC = () => {
             })
         }
         else {
-            parent.childs = parent.childs.filter((o: any) => {
+            let parentChilds = getChilds(parent);
+            let newChilds:any[] = parentChilds.filter((o: any) => {
                 let rowValue = GetOptionProps({ option: row, key: 'value', props: rootProps })
                 let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps })
                 return rowValue !== oValue
             });
+            setChilds(parent,newChilds)
         }
         if(onChange){onChange(value)}
     }
-    function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent,size,change} }
+    function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent,size,change,getChilds} }
     return (
         <TreeContext.Provider value={getContext()}>
             <div className="aio-input-tree"><TreeHeader /><TreeBody rows={value} level={0} /></div>
@@ -1423,7 +1444,7 @@ const TreeActions: FC<I_TreeActions> = (props) => {
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string,parentIndent?:AI_indent }
 const TreeBody: FC<I_TreeBody> = (props) => {
-    let { rootProps, types, openDic, mountedDic, indent,size,change }: I_TreeContext = useContext(TreeContext);
+    let { rootProps, types, openDic, mountedDic, indent,size,change,getChilds }: I_TreeContext = useContext(TreeContext);
     let { rows, level, parent, parentId,parentIndent } = props;
     let options = GetOptions({
         rootProps, types, options: rows,level, 
@@ -1439,28 +1460,29 @@ const TreeBody: FC<I_TreeBody> = (props) => {
             {options.map((option: any, index: number) => {
                 let row = rows[index];
                 let id = option.value;
-                let {childs = []} = row;
+                let childs = getChilds(row);
                 let open = !!openDic[id];
                 let item: I_treeItem = { 
                     row,option, parent, parentId, id, parentOpen,open,
                     indent: { height:size,level,childsLength:childs.length, size: indent,index,isLastChild:index === options.length - 1,isFirstChild:index === 0,parentIndent } 
                 }
                 let p = { className: `aio-input-tree-row` }
-                return <div {...p}><TreeRow item={item} /><TreeChilds item={item} /></div>;
+                return <div {...p} key={id}><TreeRow item={item} /><TreeChilds item={item} /></div>;
             })}
         </div>
     )
 }
 const TreeRow: FC<{ item: I_treeItem }> = (props) => {
-    let { toggle, openDic }: I_TreeContext = useContext(TreeContext);
+    let { toggle, openDic,getChilds }: I_TreeContext = useContext(TreeContext);
     let {item} = props;
-    let { childs = [] } = item.row;
+    let childs = getChilds(item.row);
     let toggleState: (0 | 1 | 2) = !childs.length ? 2 : (!!openDic[item.id] ? 1 : 0);
     let p: I_Layout = { indent:item.indent, option:item.option, toggle: { state: toggleState, onClick: () => toggle(item.id) } };
     return <Layout {...p} />;
 }
 const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
-    let { row, id, open,indent } = props.item, { childs = [] } = row;
+    let {getChilds}:I_TreeContext = useContext(TreeContext);
+    let { row, id, open,indent } = props.item, childs = getChilds(row);
     if (!open || !childs || !childs.length) { return null }
     return <TreeBody rows={childs} level={indent.level + 1} parent={row} parentId={id} parentIndent={indent} />
 }

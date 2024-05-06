@@ -78,6 +78,7 @@ export type AI = {
         onSubmit?:()=>void,onClose?:()=>void,reset?:boolean,attrs?:any,submitText?:string,closeText?:string,resetText?:string,
         before?:React.ReactNode,after?:React.ReactNode
     },//form
+    getChilds?:(row:any)=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
     handle?:((value:number,p:any)=>{attrs?:any}) | false,//range
@@ -138,6 +139,7 @@ export type AI = {
     scale?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//range
     scales?:AI_scales,//range
     search?: string,
+    setChilds?:(row:any,childs:any[])=>void,//tree
     size?: number,//list,date
     spin?: boolean,
     start?:number,//range
