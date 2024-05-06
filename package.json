@@ -23,6 +23,7 @@
     "typescript": "^5.4.4",
     "web-vitals": "^2.1.4"
   },
+  "homepage":".",
   "scripts": {
     "start": "set PORT=3001 && react-scripts start",
     "build": "react-scripts build",
