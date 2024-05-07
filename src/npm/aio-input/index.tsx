@@ -2427,13 +2427,10 @@ const Range:FC = () => {
     }
     function getChangedValue(obj:{dx:number,dy:number,deltaCenterAngle:number,centerAngle:number}):number[]{
         let {dx,dy,deltaCenterAngle,centerAngle} = obj;
-        //vertical condition
-        let delta = vertical?dy:dx;
         let startValue = [...temp.start];
         let index = temp.index;
         //agar faghat yek point darim har koja mousedown shod farz kon rooye oon point mousedown karde im
         if(startValue.length === 1 && index === false){index = 0}
-        let range = end - start;
         let res;
         if(index === false){
             let deltaValue;
@@ -2442,7 +2439,7 @@ const Range:FC = () => {
                 v = Math.round(v / step) * step;
                 deltaValue = v;
             }
-            else {deltaValue = Math.round(getValueByXP(getXPByX(delta)) / step) * step;}
+            else {deltaValue = Math.round(getValueByXP(getXPByX(vertical?dy:dx)) / step) * step;}
             let newValue = moveAll(startValue,deltaValue,true);
             res = !isValueValid(newValue)?valueRef.current:newValue;
         }
@@ -2451,16 +2448,14 @@ const Range:FC = () => {
             let {before,after} = getIndexLimit(index)
             let newUnitValue:number;
             if(round){
-                newUnitValue = Math.round(getValueByAngle(centerAngle) / step) * step;
-                if(newUnitValue > after){newUnitValue = after}
-                if(newUnitValue < before){newUnitValue = before}
+                newUnitValue = Math.round(getValueByAngle(centerAngle) / step) * step;    
             }
             else {
-                let deltaValue = Math.round(getValueByXP(getXPByX(delta)) / step) * step;
+                let deltaValue = Math.round(getValueByXP(getXPByX(vertical?dy:dx)) / step) * step;
                 newUnitValue = startValue[index] + deltaValue;
-                if(newUnitValue > after){newUnitValue = after}
-                if(newUnitValue < before){newUnitValue = before}
             }
+            if(newUnitValue > after){newUnitValue = after}
+            if(newUnitValue < before){newUnitValue = before}
             if(isValueDisabled(newUnitValue)){res = [...valueRef.current]}
             else {startValue[index] = newUnitValue;}
             res = startValue;
@@ -2499,25 +2494,40 @@ const Range:FC = () => {
             </div>
         )
     }
+    function fixValueInEmpty(value:number){
+        round = round || 1;
+        let fill = round;
+        let empty = 1 - fill;
+        let emptyValue = empty * (end - start) / fill;
+        if(value > end + emptyValue / 2){
+            value = start - emptyValue + value - end
+        }
+        return value;
+    }
     function getValueByAngle(angle:number){
-        let fillAngle = 360 * (round as number);
+        let fillAngle = 360 * (round || 1);
         let emptyAngle = 360 - fillAngle;
         if(reverse){angle = 180 - angle}
-        angle -= rotate; angle -= emptyAngle / 2; angle -= 90; 
+        angle -= rotate; 
+        angle -= emptyAngle / 2; 
+        angle -= 90; 
         angle = fixAngle(angle);
-        return angle * (end - start) / fillAngle;
+        let res = angle * (end - start) / fillAngle;
+        res = fixValueInEmpty(res);
+        return res
     }
     function getAngleByValue(value:number,ang?:number){
         let fillAngle = 360 * (round as number);
         let emptyAngle = 360 - fillAngle;
         let res = value * fillAngle / (end - start);
-        res += 90; res += emptyAngle / 2; res += rotate; res += (ang || 0)
+        res += 90; res += emptyAngle / 2; 
+        res += rotate; 
+        res += (ang || 0)
         return reverse?res = 180 - res:res;
     }
     function fixAngle(angle:number):number{angle = angle % 360; return angle < 0?angle = 360 + angle:angle}
     function getXPByValue(value:number):number {return 100 * (value - start) / (end - start);}
     function getValueByXP(xp:number):number{return xp * (end - start) / 100;}
-    //vertical condition
     function getXPByX(x:number):number{return x * 100 / ($(temp.dom.current)[vertical?'height':'width']() as number);}
     function getContext(){
         let context:I_RangeContext = {
@@ -2617,8 +2627,9 @@ const RangeRect:FC<I_RangeRect> = ({thickness,color,from,to,className,style})=>{
 const RangeArc:FC<I_RangeArc> = ({rootProps,thickness,color,from,to,radius,rotate})=>{
     let {fixAngle,getAngleByValue}:I_RangeContext = useContext(RangeContext);
     let {size = Def('range-size'),reverse} = rootProps;
-    let startAngle = fixAngle(getAngleByValue(from,rotate));
-    let endAngle = fixAngle(getAngleByValue(to,rotate));
+    let startAngle = fixAngle(getAngleByValue(from) + rotate);
+    let endAngle = fixAngle(getAngleByValue(to) + rotate);
+    console.log(startAngle,endAngle)
     if(endAngle === 0){endAngle = 360}
     let x = size / 2,y = size / 2,a = startAngle, b = endAngle;
     if(reverse){b = startAngle; a = endAngle}
