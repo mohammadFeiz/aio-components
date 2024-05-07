@@ -1584,6 +1584,7 @@
     flex-shrink: 0;
     padding:12px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 .aio-input-acardion-vertical{
     flex-direction: column;

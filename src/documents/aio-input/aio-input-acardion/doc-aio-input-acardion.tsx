@@ -125,23 +125,28 @@ function Vertical(){
                 type='acardion'
                 vertical={false}
                 body={(value:string)=>{
+                    let attrs = {style:{width:200}}
                     if(value === '0'){
                         return {
+                            attrs,
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia rem expedita aut, nam provident facere illo voluptatum iusto quibusdam quas obcaecati neque necessitatibus veniam, aperiam tempora nesciunt. Hic, temporibus assumenda!'
                         }
                     }
                     if(value === '1'){
                         return {
+                            attrs,
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum excepturi ea sunt, officiis fugiat ut qui quis quisquam! Molestias, laborum deserunt aliquam nemo recusandae laboriosam. Magnam unde officia neque magni animi quaerat pariatur accusamus sed laborum vero error, nemo molestiae.'
                         }
                     }
                     if(value === '2'){
                         return {
+                            attrs,
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt unde, molestiae magnam, eaque ducimus vitae quidem accusamus veritatis adipisci est laborum corrupti cumque ab explicabo, maxime odit atque blanditiis modi mollitia! Deserunt laudantium quo minima dolores sequi magni neque nostrum dolore asperiores qui assumenda fugiat labore, quae natus voluptatem facere.'
                         }
                     }
                     if(value === '3'){
                         return {
+                            attrs,
                             html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
                         }
                     }
@@ -165,27 +170,32 @@ function Vertical(){
     type='acardion'
     vertical={false}
     body={(value)=>{
+        let attrs = {style:{width:200}}
         if(value === '0'){
             return {
+                attrs,
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia rem expedita aut, nam provident facere illo voluptatum iusto quibusdam quas obcaecati neque necessitatibus veniam, aperiam tempora nesciunt. Hic, temporibus assumenda!'
             }
         }
         if(value === '1'){
             return {
+                attrs,
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum excepturi ea sunt, officiis fugiat ut qui quis quisquam! Molestias, laborum deserunt aliquam nemo recusandae laboriosam. Magnam unde officia neque magni animi quaerat pariatur accusamus sed laborum vero error, nemo molestiae.'
             }
         }
         if(value === '2'){
             return {
+                attrs,
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt unde, molestiae magnam, eaque ducimus vitae quidem accusamus veritatis adipisci est laborum corrupti cumque ab explicabo, maxime odit atque blanditiis modi mollitia! Deserunt laudantium quo minima dolores sequi magni neque nostrum dolore asperiores qui assumenda fugiat labore, quae natus voluptatem facere.'
             }
         }
         if(value === '3'){
             return {
+                attrs,
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
             }
         }
-        
+        return {html:''}
     }}
     options={[
         {text:'acardion1',value:'0'},
@@ -271,6 +281,7 @@ function Multiple(){
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
             }
         }
+        return {html:''}
     }}
     options={[
         {text:'acardion1',value:'0'},

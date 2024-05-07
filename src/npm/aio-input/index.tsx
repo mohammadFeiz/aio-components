@@ -1288,28 +1288,20 @@ export const Acardion: FC<I_Acardion> = (props) => {
 }
 type I_AcardionItem = { option: AI_option }
 const AcardionItem: FC<I_AcardionItem> = (props) => {
-    const { openDic, mountedDic, toggle }: I_AcardionContext = useContext(AcardionContext);
+    const { rootProps,openDic, mountedDic, toggle }: I_AcardionContext = useContext(AcardionContext);
+    let {body} = rootProps;
     let { option } = props;
     let { value } = option;
     let open = !!openDic[value]
     let mounted = !!mountedDic[value];
+    let { html,attrs } = (typeof body === 'function' ? body(value) : body) || {html:''}
+    let Attrs = AddToAttrs(attrs,{className:`aio-input-acardion-item${open ? ' open' : ''}${!mounted ? ' not-mounted' : ''}`})
     return (
-        <div className={`aio-input-acardion-item${open ? ' open' : ''}${!mounted ? ' not-mounted' : ''}`}>
+        <div {...Attrs}>
             <Layout option={option} properties={{ onClick: () => toggle(value) }} />
-            <AcardionBody option={option} />
+            {!!open && <div className={`aio-input-acardion-body`}>{html}</div>}
         </div>
     )
-}
-type I_AcardionBody = { option: AI_option }
-const AcardionBody: FC<I_AcardionBody> = (props) => {
-    let { openDic, rootProps }: I_AcardionContext = useContext(AcardionContext);
-    let { option } = props;
-    let { text, value } = option;
-    let open = !!openDic[value]
-    let { body } = rootProps;
-    if (!open) { return null }
-    let { html } = (typeof body === 'function' ? body(value) : body) || {html:''}
-    return (<div className={`aio-input-acardion-body`}>{html}</div>)
 }
 type I_TreeContext = {
     toggle: (id: string) => void,
