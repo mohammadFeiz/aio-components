@@ -16,12 +16,12 @@ import {
     I_Multiselect, I_Tag, I_Tags, I_TimePopver, I_list_temp, type_time_value,
     AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
     AI_TableCellContent, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_TableGap, type_table_context, type_table_temp,
-    AI_scale, AI_scales, I_RangeArc, I_RangeContext, I_RangeItem, I_RangeItems, I_RangeRect, I_RangeValue, I_RangeValueContainer,
+    AI_scale, AI_scales, I_RangeArc, I_RangeItem, I_RangeItems, I_RangeRect, I_RangeValue, I_RangeValueContainer,
     I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
-import { Get2Digit,AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter,AddToAttrs,Storage,ExportToExcel,I_Swip_mousePosition, getEventAttrs, svgArc,JSXToHTML } from './../aio-utils';
+import { Get2Digit,AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter,AddToAttrs,Storage,ExportToExcel,I_Swip_mousePosition, getEventAttrs, svgArc,JSXToHTML, HasClass } from './../aio-utils';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 /////////////style//////////////////
 import './index.css';
@@ -110,11 +110,17 @@ export default function AIOInput(props: AI) {
         }
         return context
     }
+    function getRangeClassName(){
+        let {round,vertical} = props;
+        if(round){return 'aio-input-range-round'}
+        if(vertical){return 'aio-input-range-vertical'}
+        return 'aio-input-range-horizontal'
+    }
     let render: { [key in AI_type]: () => React.ReactNode } = {
         acardion: () => <Acardion options={GetOptions({ rootProps: props, types })} />,
         tree: () => <Tree />,
         list: () => <List />,
-        range: () => <Layout properties={{text:<Range />}}/>,
+        range: () => <Layout properties={{text:<Range/>,className:getRangeClassName()}}/>,
         file: () => <File />,
         select: () => <Layout properties={{ text: props.text || getSelectText() }} />,
         button: () => <Layout />,
@@ -222,7 +228,7 @@ class Popover {
     }
     getFn = () => {
         if (!this.isActive) { return }
-        let { getRootProps, toggle, id } = this.props, rootProps = getRootProps()
+        let { getRootProps, toggle, id,types } = this.props, rootProps = getRootProps()
         return (dom: any) => {
             let popover: AP_modal = { ...(rootProps.popover || {}) }
             let { rtl, type } = rootProps;
@@ -249,7 +255,7 @@ class Popover {
                 },
                 pageSelector: '.aio-input-backdrop.' + id,
                 getTarget: () => target,
-                attrs: AddToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}` })
+                attrs: AddToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}${types.isDropdown?' aio-input-dropdown':''}` })
             }
             return config;
         }
@@ -754,7 +760,7 @@ const Form: FC = () => {
 const FormItem: FC<AI_FormItem> = (props) => {
     let { setError }: AI_FormContext = useContext(Formcontext)
     let { formItem, parentType } = props;
-    let { html, row, column, input, field, flex, size, show } = formItem;
+    let { html, row, column, input, field, flex, size, show,className,style } = formItem;
     if (show === false) { return null }
     function getInner(): React.ReactNode {
         if (input) { return <FormInput formItem={formItem} setError={(v: string | undefined) => setError(field as string, v)} /> }
@@ -762,19 +768,17 @@ const FormItem: FC<AI_FormItem> = (props) => {
         if (row) { return row.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='row' />) }
         if (column) { return column.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='column' />) }
     }
-    let className = 'aio-input-form-item'
-    if (row) { className += ' aio-input-form-item-row' }
-    else if (column) { className += ' aio-input-form-item-column' }
-    let style: { [key: string]: number | string } = {};
-    if (flex) { style.flex = flex }
+    let cls = 'aio-input-form-item'
+    if(className){cls += ' ' + className}
+    if (row) { cls += ' aio-input-form-item-row' }
+    else if (column) { cls += ' aio-input-form-item-column' }
+    let Style: { [key: string]: number | string } = {};
+    if (flex) { Style.flex = flex }
     else if (size) {
-        if (parentType === 'row') { style.width = size }
-        else if (parentType === 'column') { style.height = size }
+        if (parentType === 'row') { Style.width = size }
+        else if (parentType === 'column') { Style.height = size }
     }
-    else {
-        style.flex = 1;
-    }
-    return (<section className={className} style={style}>{getInner()}</section>)
+    return (<section className={cls} style={{...Style,...style}}>{getInner()}</section>)
 }
 const FormInput: FC<AI_FormInput> = (props) => {
     let { rootProps, getError, getValueByField, setValue }: AI_FormContext = useContext(Formcontext)
@@ -890,7 +894,7 @@ function Layout(props: I_Layout) {
             if(size > 120){size = 120}
             cls += ` aio-input-size-${size}` 
         }
-        if (properties.disabled) { cls += ' disabled' }
+        if (properties.disabled === true) { cls += ' disabled' }
         if (properties.className) { cls += ' ' + properties.className }
         cls += ' ' + datauniqid;
         return cls;
@@ -2297,14 +2301,24 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
     let keys = searchValue.split(' ');
     return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
+export type I_RangeContext = {
+    getXPByValue:(value:number)=>number,
+    fixAngle:(angle:number)=>number,
+    getAngleByValue:(value:number,extra?:number)=>number,
+    isValueDisabled:(value:number)=>boolean,
+    getSide:()=>'left'|'right'|'top'|'bottom',
+    getOffset:()=>'top'|'left',
+    rootProps:AI,dom:any,value:number[],
+    getDefaultOffset:(type:'point' | 'label' | 'scale')=>number
+}
 const RangeContext = createContext({} as any)
 const Range:FC = () => {
     let {rootProps}:AI_context = useContext(AICTX);
     let {
-        start = 0,end = 360,min = start,max = end,step = 1,ranges,circles = [],reverse,round,vertical,
+        start = 0,end = 360,min = start,max = end,step = 1,reverse,round,vertical,
         multiple,text,onChange,size = Def('range-size'),disabled,className,fill,rotate = 0
     } = rootProps;
-    let [temp] = useState<any>({dom:createRef(),start:0,index:false})
+    let [temp] = useState<any>({dom:createRef(),start:0,index:false,lastChange:undefined})
     function getValidValue(value:number[]):number[] {
         if (!Array.isArray(value)) {value = [value || 0]}
         for (let i = 0; i < value.length; i++) {
@@ -2338,7 +2352,7 @@ const Range:FC = () => {
             dom:()=>$(temp.dom.current),
             start:({event})=>{
                 let target = $(event.target);
-                if(target.hasClass('ai-range-point')){
+                if(HasClass(target,'ai-range-point')){
                     let index:string = target.attr('data-index') || '0';
                     temp.index = +index;
                 }
@@ -2354,6 +2368,11 @@ const Range:FC = () => {
             onClick:function (p){click(p.mousePosition)}
         })
     },[])
+    function getDefaultOffset(type:'point' | 'label' | 'scale',){
+        if(type === 'point'){return round?-11:0}
+        if(type === 'label'){return round?-13:0}
+        return 0
+    }
     function changeValue(newValue:number[]){
         if(!onChange){return}
         newValue = getValidValue(newValue)
@@ -2404,7 +2423,6 @@ const Range:FC = () => {
         if(res[0] < start || res[res.length - 1] > end){
             return ifFailedReturnOriginalValue?valueRef.current:newValue
         }
-        console.log(res)
         return res;
     }
     function getChangedValue(obj:{dx:number,dy:number,deltaCenterAngle:number,centerAngle:number}):number[]{
@@ -2413,7 +2431,10 @@ const Range:FC = () => {
         let delta = vertical?dy:dx;
         let startValue = [...temp.start];
         let index = temp.index;
+        //agar faghat yek point darim har koja mousedown shod farz kon rooye oon point mousedown karde im
+        if(startValue.length === 1 && index === false){index = 0}
         let range = end - start;
+        let res;
         if(index === false){
             let deltaValue;
             if(round){
@@ -2423,32 +2444,29 @@ const Range:FC = () => {
             }
             else {deltaValue = Math.round(getValueByXP(getXPByX(delta)) / step) * step;}
             let newValue = moveAll(startValue,deltaValue,true);
-            return !isValueValid(newValue)?valueRef.current:newValue;
+            res = !isValueValid(newValue)?valueRef.current:newValue;
         }
+        
         else {
             let {before,after} = getIndexLimit(index)
-            let newUnit:number;
+            let newUnitValue:number;
             if(round){
-                newUnit = getValueByAngle(centerAngle);
-                if(newUnit > after || newUnit < before){
-                    let deltaAfter = newUnit - after;
-                    if(deltaAfter < 0){deltaAfter += range;}
-                    let deltaBefore = before - newUnit;
-                    if(deltaBefore < 0){deltaBefore += range;}
-                    if(deltaAfter < deltaBefore){newUnit = after}
-                    else {newUnit = before}
-                }
+                newUnitValue = Math.round(getValueByAngle(centerAngle) / step) * step;
+                if(newUnitValue > after){newUnitValue = after}
+                if(newUnitValue < before){newUnitValue = before}
             }
             else {
                 let deltaValue = Math.round(getValueByXP(getXPByX(delta)) / step) * step;
-                newUnit = startValue[index] + deltaValue;
-                if(newUnit > after){newUnit = after}
-                if(newUnit < before){newUnit = before}
+                newUnitValue = startValue[index] + deltaValue;
+                if(newUnitValue > after){newUnitValue = after}
+                if(newUnitValue < before){newUnitValue = before}
             }
-            if(isValueDisabled(newUnit)){return valueRef.current}
-            startValue[index] = newUnit;
-            return startValue;
+            if(isValueDisabled(newUnitValue)){res = [...valueRef.current]}
+            else {startValue[index] = newUnitValue;}
+            res = startValue;
         }
+        temp.lastChange = [...res]
+        return res
     }
     function getSide(){
         if(vertical){return reverse?'bottom':'top'}
@@ -2472,12 +2490,12 @@ const Range:FC = () => {
         let p = AddToAttrs(attrs,{className:getRootClassName(),style:rootStyle,attrs:{ref:temp.dom}})
         return (
             <div {...p}>
-                {text !== undefined && <div className='ai-range-text'>{typeof text === 'function'?text():text}</div>}
-                {!round && <><RangeRanges/><RangeFills/></>} 
+                {text !== undefined && <div className='ai-range-text' key='rangetext'>{typeof text === 'function'?text():text}</div>}
+                {!round && <Fragment key='rangefill'><RangeRanges/><RangeFills/></Fragment>} 
                 <RangeSvg/> 
                 <RangeItems key='scale' type='scale'/>
                 <RangeItems key='label' type='label'/>
-                {value.map((itemValue,i)=><RangeValueContainer index={i} itemValue={itemValue}/>)}
+                {value.map((itemValue,i)=><RangeValueContainer index={i} itemValue={itemValue} key={'rangecontainervalue' + i}/>)}
             </div>
         )
     }
@@ -2485,7 +2503,8 @@ const Range:FC = () => {
         let fillAngle = 360 * (round as number);
         let emptyAngle = 360 - fillAngle;
         if(reverse){angle = 180 - angle}
-        angle -= rotate; angle -= emptyAngle / 2; angle -= 90; angle = fixAngle(angle);
+        angle -= rotate; angle -= emptyAngle / 2; angle -= 90; 
+        angle = fixAngle(angle);
         return angle * (end - start) / fillAngle;
     }
     function getAngleByValue(value:number,ang?:number){
@@ -2503,7 +2522,7 @@ const Range:FC = () => {
     function getContext(){
         let context:I_RangeContext = {
             getXPByValue,rootProps,fixAngle,getAngleByValue,dom:temp.dom,
-            isValueDisabled,value:valueRef.current,getSide,getOffset
+            isValueDisabled,value:valueRef.current,getSide,getOffset,getDefaultOffset
         }
         return context;
     }
@@ -2512,13 +2531,14 @@ const Range:FC = () => {
 const RangeSvg:FC = () => {
     let {rootProps}:I_RangeContext = useContext(RangeContext);
     let {round,ranges,circles = [],size = Def('range-size')} = rootProps;
-    if(!round || (!(ranges || []).length && !circles.length)){return null}
+    if(!round || (!(ranges || [0]).length && !circles.length)){return null}
     let pathes = [<RangeCircles/>,<RangeRanges/>]
     return (<svg style={{position:'absolute',left:0,top:0}} width={size} height={size}>{pathes}</svg>)
 }
 const RangeCircles:FC = () => {
     let {rootProps}:AI_context = useContext(AICTX);
-    let {start = 0,end = 360,circles = [],size = Def('range-size')} = rootProps;
+    let {start = 0,end = 360,circles,size = Def('range-size')} = rootProps;
+    if(circles === undefined){circles = [`${size/2} 2 #ccc`]}
     if(!circles.length){return null}
     let pathes = []
     for(let i = 0; i < circles.length; i++){
@@ -2551,7 +2571,6 @@ const RangeFills:FC = () => {
 const RangeRanges:FC = () => {
     let {rootProps,value}:I_RangeContext = useContext(RangeContext);
     let {start = 0,end = 360,ranges,round,multiple,size = Def('range-size')} = rootProps; 
-    ranges = ranges || [`${end} 2 #ddd`]
     let res = [],from = start,list = (typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges) || [];
     for(let i = 0; i < list.length; i++){
         let [stringValue,stringThickness,color] = list[i].split(' ');
@@ -2587,7 +2606,7 @@ const RangeValueContainer:FC<I_RangeValueContainer> = (props) => {
         rootProps,value:itemValue,index,disabled:isValueDisabled(itemValue),
         angle,parentDom:dom
     }
-    return (<div {...containerProps()} key={index}><RangeHandle {...PROPS}/> <RangePoint {...PROPS} /></div>)
+    return (<div {...containerProps()}><RangeHandle {...PROPS} key='handle'/> <RangePoint {...PROPS} key='point'/></div>)
 }
 const RangeRect:FC<I_RangeRect> = ({thickness,color,from,to,className,style})=>{
     let {getXPByValue,rootProps,getSide}:I_RangeContext = useContext(RangeContext);
@@ -2606,24 +2625,24 @@ const RangeArc:FC<I_RangeArc> = ({rootProps,thickness,color,from,to,radius,rotat
     return <path key={`from${from}to${to}`} d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
 }
 const RangePoint:FC<I_RangeValue> = (props) => {
-    let {getOffset}:I_RangeContext = useContext(RangeContext);
+    let {getOffset,getDefaultOffset}:I_RangeContext = useContext(RangeContext);
     let [temp] = useState<any>({dom:createRef()})
     let {rootProps,value,disabled,angle,index,parentDom} = props;
     if(rootProps.point === false){return null}
     let {round,size = 72} = rootProps;
     let point = (rootProps.point || (()=>{}))(value,{disabled,angle,value,index}) || {}
-    let {attrs = {},className,style,html = '',offset = 0} = point;
+    let {attrs = {},className,style,html = value,offset = getDefaultOffset('point')} = point;
     let zIndexAttrs = getEventAttrs('onMouseDown',()=>{
         let containers = $(parentDom.current).find('ai-range-value-container');
         containers.css({zIndex:10});
         containers.eq(index).css({zIndex:100})
     })
-    let containerProps = {ref:temp.dom,className:'ai-range-point-container',style:round?{left:size / 2 + offset}:{[getOffset()]:offset},draggable:false}
+    let containerProps = {ref:temp.dom,className:'ai-range-point-container',style:round?{left:size / 2 + offset,transform:`rotate(${-angle}deg)`}:{[getOffset()]:offset},draggable:false}
     let pointProps = AddToAttrs(attrs,{className:['ai-range-point',className],style,attrs:{draggable:false,'data-index':index,...zIndexAttrs}})
-    return (<div {...containerProps}><div {...pointProps}>{html}</div></div>)
+    return (<div {...containerProps} key={'rangepoint' + index}><div {...pointProps}>{html}</div></div>)
 }
 const RangeHandle:FC<I_RangeValue> = (props) => {
-    let {rootProps,value,angle,disabled} = props;
+    let {rootProps,value,angle,disabled,index} = props;
     let {handle = (()=>{}),size = 72,round} = rootProps;
     if(handle === false || !round){return null}
     if(handle && typeof handle !== 'function'){
@@ -2633,7 +2652,7 @@ const RangeHandle:FC<I_RangeValue> = (props) => {
     }
     let {attrs = {}} = handle(value,{angle,disabled,value}) || {}
     let PROPS = AddToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
-    return (<div {...PROPS}></div>)
+    return (<div {...PROPS} key={'rangehandle' + index}></div>)
 }
 const RangeItems:FC<I_RangeItems> = (props) => {
     let {dom,rootProps}:I_RangeContext = useContext(RangeContext)
@@ -2703,7 +2722,7 @@ const RangeItems:FC<I_RangeItems> = (props) => {
     return <>{RENDER(false)}</>
 }
 const RangeItem:FC<I_RangeItem> = (props) => {
-    let {value,rootProps,isValueDisabled,fixAngle,getAngleByValue,getXPByValue,getSide,getOffset}:I_RangeContext = useContext(RangeContext);
+    let {value,rootProps,isValueDisabled,fixAngle,getAngleByValue,getXPByValue,getSide,getOffset,getDefaultOffset}:I_RangeContext = useContext(RangeContext);
     let {setting,itemValue,type} = props;
     let {round,size = Def('range-size')} = rootProps;
     let angle:number;
@@ -2723,8 +2742,6 @@ const RangeItem:FC<I_RangeItem> = (props) => {
         return {...attrs.style,...style}
     }
     function getDistanceByOffset(offset:any){
-        let def:{[key:string]:number} = {'round-point':-8,'round-label':8,'round-scale':4,'point':0}
-        if(offset === undefined){offset = def[`${round?'round-':''}${type}`] || 0;}
         if(!round){
             let sign = offset < 0?'-':'+';
             let distance = offset?`calc(50% ${sign} ${Math.abs(offset)}px)`:undefined;
@@ -2734,16 +2751,16 @@ const RangeItem:FC<I_RangeItem> = (props) => {
     }
     function getDetails(setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'){
         let item:AI_scale = setting(itemValue,{disabled,angle,value});
-        let {offset = !round && type === 'label'?16:0,html = type === 'label'?itemValue:undefined,className,attrs} = item;
+        let {offset = getDefaultOffset(type),html = type === 'label'?itemValue:undefined,className,attrs} = item;
         let distance = getDistanceByOffset(offset)
         let text = html;
         let containerStyle = getContainerStyle(distance);
-        let containerProps = {className:`ai-range-${type}-container`,style:containerStyle,draggable:false,key:itemValue};
+        let containerProps = {className:`ai-range-${type}-container`,style:containerStyle,draggable:false};
         let textProps = AddToAttrs(attrs,{className:[`ai-range-${type}`,className],style:getTextStyle(item,distance,type),attrs:{draggable:false}})
         return {text,textProps,containerProps}
     }
     let {text,textProps,containerProps} = getDetails(setting,itemValue,type);
-    return (<div {...containerProps} key={containerProps.key}><div {...textProps}>{text}</div></div>)
+    return (<div {...containerProps} key={type + itemValue}><div {...textProps}>{text}</div></div>)
 }
 const MapContext = createContext({} as any);
 function Map() {

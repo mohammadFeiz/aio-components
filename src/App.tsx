@@ -3,6 +3,7 @@ import './App.css'
 import {Storage} from './npm/aio-utils/index.tsx';
 import { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput_Inputs from './documents/aio-input/aio-input-inputs/doc-aio-input-inputs.tsx';
+import DOC_AIOInput from './documents/aio-input/doc-aio-input.tsx';
 import DOC_AIOInput_Table from "./documents/aio-input/aio-input-table/doc-aio-input-table.tsx";
 import DOC_AIOInput_Map from './documents/aio-input/aio-input-map/doc-aio-input-map.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
@@ -23,6 +24,7 @@ import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1.tsx";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import DOC_Acardion from './documents/aio-input/aio-input-acardion/doc-aio-input-acardion.tsx';
+import DOC_AIOInputRange from './documents/aio-input/range-examples.tsx';
 import Test from './test.tsx';
 import T1 from './documents/t1/t1.js';
 import Versions from './versions.js';
@@ -36,12 +38,14 @@ export default function AIOComponents(){
   let [part,setPart] = useState(storage.load('part','aio-input'))
   let [parts] = useState<any>({
     'versions':Versions,
+    'aio-input':DOC_AIOInput,
     'aio-input-inputs':DOC_AIOInput_Inputs,
     'aio-input-table':DOC_AIOInput_Table,
     'aio-input-list':DOC_AIOInput_List,
     'aio-input-map':DOC_AIOInput_Map,
     'aio-input-acardion':DOC_Acardion,
     'aio-input-tree':DOC_Tree,
+    'aio-input-range':DOC_AIOInputRange,
     'aio-highlighter':DOC_AIOHighlighter,
     'aio-validation':DOC_AIOValidation,
     'aio-loading':DOC_AIOLoading,
@@ -61,7 +65,7 @@ export default function AIOComponents(){
     't1':T1,
     'test':Test
   })
-  function changePart(part){
+  function changePart(part:any){
     storage.save('part',part)
     setPart(part)
   }

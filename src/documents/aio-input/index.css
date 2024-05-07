@@ -1,0 +1,21 @@
+.scale-round-small{
+    width:4px !important; 
+    height:1px !important;
+}
+.scale-round-medium{
+    width:8px !important; 
+    height:2px !important;
+}
+.scale-round-large{
+    width:12px !important; 
+    height:3px !important;
+}
+
+.scale-red{
+    background:red;
+}
+
+
+
+
+

@@ -7,7 +7,6 @@ import {Icon} from '@mdi/react';
 import { mdiHumanMale,mdiHumanFemale, mdiAbTesting, mdiFile, mdiAccount, mdiChevronDoubleDown, mdiCheck, mdiCheckboxBlank, mdiCheckboxBlankOutline, mdiCheckOutline, mdiCheckboxMarked, mdiClose, mdiAccessPointPlus, mdiAccountSupervisorOutline, mdiAccountBoxMultiple, mdiAccountChild, mdiAccountBadge, mdiAccountCancel, mdiAccountClock, mdiArrowRight, mdiArrowRightBold, mdiAccountArrowDown} from '@mdi/js';
 import { AI,AI_table_column } from '../../../npm/aio-input/types.tsx';
 import { transform } from 'typescript';
-import RangeExamples from './range-examples.tsx';
 import DateExamples from './date-examples.tsx';
 const types = ['text','number','textarea','password','select','multiselect','tabs','radio','color','checkbox','date','time','buttons','image','range']
 export default function DOC_AIOInput_Table(props) {
@@ -216,7 +215,6 @@ function Input({type}){
                 initialValue:'https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg',
                 code:`value='https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg'`
             },
-            ...RangeExamples(setting),
             {
                 property:'width',title:'width',props:{width:120},
                 code:`width={120}`

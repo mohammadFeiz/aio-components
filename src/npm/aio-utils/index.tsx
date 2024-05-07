@@ -43,7 +43,9 @@ export type I_dline = [number, number, number]//x,y,dip
 export type I_dip = number
 export type I_arc = { x: number, y: number, r: number, slice?: [number, number] }
 export type I_rect = [I_point,I_point]
-
+export function HasClass(target:any,className:string){
+    return target.hasClass(className) || !!target.parents(`.${className}`).length
+}
 export async function DownloadUrl(url: string, name: string) {
     fetch(url, {
         mode: 'no-cors',
@@ -195,13 +197,14 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
     }
     return res
 }
-export function EventHandler(selector, event, action, type = 'bind') {
+export function EventHandler(selector:string, event:'mousedown'|'mousemove'|'mouseup', action:any, type?:'bind' | 'unbind') {
+    type = type || 'bind';
     var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
     let touch = 'ontouchstart' in document.documentElement
-    event = touch ? me[event] : event;
-    var element = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-    element.unbind(event, action);
-    if (type === 'bind') { element.bind(event, action) }
+    let fixedEvent = touch ? me[event] : event;
+    var element:any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
+    element.unbind(fixedEvent, action);
+    if (type === 'bind') { element.bind(fixedEvent, action) }
 }
 export function getValueByStep({ value, start, step, end }) {
     let res = Math.round((value - start) / step) * step + start;
@@ -1392,7 +1395,6 @@ export function svgArc(x, y, radius, startAngle, endAngle) {
 
     let largeArcFlag;
     if(endAngle - startAngle < -180){
-        console.log(0)
         largeArcFlag = '0'
     }
     else if(endAngle - startAngle < 0){

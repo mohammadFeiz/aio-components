@@ -16,7 +16,8 @@ export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]
 export type AP_modal = {
     getTarget?:()=>any,
     pageSelector?:string,
-    openRelatedTo?:string
+    openRelatedTo?:string,
+    maxHeight?:number | 'string',
     fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,
     fitTo?:string,
     rtl?:boolean,
@@ -224,10 +225,6 @@ class Popups extends Component<AP_Popups, { modals: AP_modal[] }> {
     let { id } = this.props;
     let oldModals = [...this.state.modals]
     let newModals: AP_modal[] = [...modals]
-    if (id === 'main') {
-      console.log('old modals', oldModals)
-      console.log('new modals', newModals)
-    }
     this.setState({ modals: newModals })
   }
 
@@ -273,10 +270,6 @@ class Popups extends Component<AP_Popups, { modals: AP_modal[] }> {
   }
   render() {
     let { modals } = this.state;
-    let { id } = this.props;
-    if (id === 'main') {
-      console.log('render', modals.length);
-    }
     if (!modals.length) { return null }
     let renderModals = this.getModals();
     return <>{renderModals}</>
@@ -292,7 +285,7 @@ type AP_Popup_temp = {
 }
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
-  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,openRelatedTo, fixStyle = (o) => o, fitTo } = modal;
+  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,maxHeight,openRelatedTo, fixStyle = (o) => o, fitTo } = modal;
   let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false,isFirstMount: true})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
@@ -312,9 +305,12 @@ function Popup(props: AP_Popup) {
   }
   useEffect(() => {
     temp.isFirstMount = false
+    //be khatere 300 mili sanie transitioni ke popup dare bayad inja bish az oon 300 milisanie vaghfe bedim ta dorost update beshe andaze ha 
     setTimeout(() => {
-      setPopoverStyle(position === 'popover' ? getPopoverStyle() : {})
-    }, 0)
+      let newStyle:any = position === 'popover' ? getPopoverStyle() : {}
+      console.log('updatedStyle.top',newStyle.top)
+      setPopoverStyle(newStyle)
+    }, 400)
     if (getTarget) {
       temp.dui = 'a' + (Math.round(Math.random() * 10000000));
       let target = getTarget();
@@ -363,13 +359,15 @@ function Popup(props: AP_Popup) {
     if (!target.hasClass('aio-popup-backdrop')) { return }
     close()
   }
-  function getPopoverStyle() {
+  function getPopoverStyle():{[key:string]:any} {
     if (!getTarget) { return {} }
     let target = getTarget();
     if (!target || !target.length) { return {} }
     let popup = $(temp.dom.current);
     let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector,openRelatedTo, fitTo, attrs, rtl })
-    return { ...style, position: 'absolute' }
+    let res = { ...style, position: 'absolute' }
+    if(maxHeight){res.maxHeight = maxHeight}
+    return res
   }
   function keyDown(e: any) {
     if (!isLast) { return }

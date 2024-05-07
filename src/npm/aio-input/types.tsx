@@ -399,15 +399,6 @@ export type I_Map_context = {
     onChange:(value:I_Map_value)=>void
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
-export type I_RangeContext = {
-    getXPByValue:(value:number)=>number,
-    fixAngle:(angle:number)=>number,
-    getAngleByValue:(value:number,extra?:number)=>number,
-    isValueDisabled:(value:number)=>boolean,
-    getSide:()=>'left'|'right'|'top'|'bottom',
-    getOffset:()=>'top'|'left',
-    rootProps:AI,dom:any,value:number[],
-}
 export type I_RangeValueContainer = {itemValue:number,index:number}
 export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}
 export type I_RangeArc = {rootProps:AI,thickness:number,color:string,from:number,to:number,radius:number,rotate:number}
