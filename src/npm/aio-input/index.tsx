@@ -2318,7 +2318,7 @@ const Range:FC = () => {
         start = 0,end = 360,min = start,max = end,step = 1,reverse,round,vertical,
         multiple,text,onChange,size = Def('range-size'),disabled,className,fill,rotate = 0
     } = rootProps;
-    let [temp] = useState<any>({dom:createRef(),start:0,index:false,lastChange:undefined})
+    let [temp] = useState<any>({dom:createRef(),start:0,index:false})
     function getValidValue(value:number[]):number[] {
         if (!Array.isArray(value)) {value = [value || 0]}
         for (let i = 0; i < value.length; i++) {
@@ -2370,7 +2370,7 @@ const Range:FC = () => {
     },[])
     function getDefaultOffset(type:'point' | 'label' | 'scale',){
         if(type === 'point'){return round?-11:0}
-        if(type === 'label'){return round?-13:0}
+        if(type === 'label'){return round?4:0}
         return 0
     }
     function changeValue(newValue:number[]){
@@ -2456,11 +2456,12 @@ const Range:FC = () => {
             }
             if(newUnitValue > after){newUnitValue = after}
             if(newUnitValue < before){newUnitValue = before}
-            if(isValueDisabled(newUnitValue)){res = [...valueRef.current]}
-            else {startValue[index] = newUnitValue;}
+            if(isValueDisabled(newUnitValue)){
+                newUnitValue = valueRef.current[index]
+            }
+            startValue[index] = newUnitValue;
             res = startValue;
         }
-        temp.lastChange = [...res]
         return res
     }
     function getSide(){
@@ -2629,7 +2630,6 @@ const RangeArc:FC<I_RangeArc> = ({rootProps,thickness,color,from,to,radius,rotat
     let {size = Def('range-size'),reverse} = rootProps;
     let startAngle = fixAngle(getAngleByValue(from) + rotate);
     let endAngle = fixAngle(getAngleByValue(to) + rotate);
-    console.log(startAngle,endAngle)
     if(endAngle === 0){endAngle = 360}
     let x = size / 2,y = size / 2,a = startAngle, b = endAngle;
     if(reverse){b = startAngle; a = endAngle}
