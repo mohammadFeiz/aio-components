@@ -17,17 +17,43 @@ import {
     AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
     AI_TableCellContent, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_TableGap, type_table_context, type_table_temp,
     AI_scale, AI_scales, I_RangeArc, I_RangeItem, I_RangeItems, I_RangeRect, I_RangeValue, I_RangeValueContainer,
-    I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys
+    I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys,
+    AI_optionProp
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
-import { Get2Digit,AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter,AddToAttrs,Storage,ExportToExcel,I_Swip_mousePosition, getEventAttrs, svgArc,JSXToHTML, HasClass } from './../aio-utils';
+import { Get2Digit,AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter,AddToAttrs,Storage,ExportToExcel,I_Swip_mousePosition, getEventAttrs, svgArc,JSXToHTML, HasClass, FilePreview, DownloadFile } from './../aio-utils';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
 const AICTX = createContext({} as any);
-export default function AIOInput(props: AI) {
+const AIOInput:FC<AI> = (props)=>{
+    let type = props.type,
+        multiple = props.multiple,
+        round = props.round;
+    if(type as any === 'checklist'){
+        type = 'radio';
+        multiple = true
+    }
+    else if(type as any === 'spinner'){
+        type = 'range';
+        if(!round || typeof round !== 'number'){
+            round = 1;
+        }
+    }
+    else if(type === 'slider'){
+        type = 'range';
+        round = 0;
+    }
+    else if(type === 'range'){
+        return null;
+    }
+    let rootProps:AI = {...props,type,multiple,round}
+    return <AIOINPUT {...rootProps}/>
+}
+export default AIOInput
+function AIOINPUT(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
     let [DATE] = useState<AIODate>(new AIODate())
     props = getDefaultProps(props, types)
@@ -86,6 +112,7 @@ export default function AIOInput(props: AI) {
         else if (onChange) {
             if (types.isInput) { /*do nothing*/ }
             else if(type === 'tree'){/*do nothing*/}
+            else if(type === 'file'){/*do nothing*/}
             else if (types.isMultiple) {
                 let { maxLength } = props, newValue;
                 if (value.indexOf(option.value) === -1) { newValue = value.concat(option.value) }
@@ -117,6 +144,9 @@ export default function AIOInput(props: AI) {
         return 'aio-input-range-horizontal'
     }
     let render: { [key in AI_type]: () => React.ReactNode } = {
+        checklist:()=>null,
+        spinner:()=>null,
+        slider:()=>null,
         acardion: () => <Acardion options={GetOptions({ rootProps: props, types })} />,
         tree: () => <Tree />,
         list: () => <List />,
@@ -157,7 +187,7 @@ function Time() {
         let today = DATE.getToday(jalali);
         return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] }
     }
-    function getValue() {
+    function getValue(justToday?:boolean) {
         let newValue: any = {};
         let u: AI_timeUnits;
         unit = unit as AI_time_unit
@@ -169,17 +199,20 @@ function Time() {
                 if (v !== undefined && typeof v !== 'number' || v < min || v > max) {
                     alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`)
                 }
-                let res: number = v === undefined ? today[u] : v;
+                let res: number = v === undefined || justToday ? today[u] : v;
                 newValue[u] = res;
             }
         }
         return newValue;
     }
     function getTimeText(obj: any) {
-        if (rootProps.text) {
-            let res = value ? DATE.getDateByPattern(value, rootProps.text as string) : ''
-            return res
+        if(!value){
+            if(typeof rootProps.placeholder === 'string'){return rootProps.placeholder}
+            if(typeof rootProps.text === 'string'){return rootProps.text}
+            return ''
         }
+        if (rootProps.pattern) {return DATE.getDateByPattern(value, rootProps.pattern as string)}
+        if (rootProps.text !== undefined) {return rootProps.text as string}
         let text = [], dateArray = [];
         if (obj.year !== undefined) { dateArray.push(Get2Digit(obj.year)) }
         if (obj.month !== undefined) { dateArray.push(Get2Digit(obj.month)) }
@@ -206,7 +239,7 @@ function Time() {
         return <AIOInput {...p} />
     }
     function renderPopover(close: () => void) {
-        let p: I_TimePopver = { value: valueRef.current, onChange, onClose: close }
+        let p: I_TimePopver = { value: valueRef.current, onChange, onClose: close,getValue }
         return <TimePopover {...p} />
     }
     return renderButton()
@@ -264,15 +297,15 @@ class Popover {
 function TimePopover(props: I_TimePopver) {
     let { DATE,rootProps }: AI_context = useContext(AICTX)
     let {jalali} = rootProps;
-    let { lang = 'fa', onChange, onClose } = props;
+    let { lang = 'fa', onChange, onClose,getValue } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
     let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
     let [value, setValue] = useState<type_time_value>({ ...props.value })
     function change(obj: { [key in AI_timeUnits]?: number }) {
         setValue({ ...value, ...obj })
     }
-    function translate(key: AI_timeUnits | 'Submit') {
-        return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت' }[key] : key
+    function translate(key: AI_timeUnits | 'Submit' | 'Now') {
+        return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت','Now':'اکنون' }[key] : key
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         let { year, month, day } = value;
@@ -300,13 +333,17 @@ function TimePopover(props: I_TimePopver) {
         if (onChange) { onChange(value); }
         onClose();
     }
+    function now() {
+        setValue(getValue(true))
+    }
     return (
         <div className='aio-input-time-popover-content'>
             <div className="aio-input-time-popover-body">
                 {layout('year')} {layout('month')} {layout('day')} {layout('hour')} {layout('minute')} {layout('second')}
             </div>
             <div className="aio-input-time-popover-footer">
-                <button onClick={submit}>{translate('Submit')}</button>
+                <button className='aio-input-primary-button' onClick={submit}>{translate('Submit')}</button>
+                <button className='aio-input-secondary-button' onClick={now}>{translate('Now')}</button>
             </div>
         </div>
     )
@@ -396,7 +433,7 @@ function Image() {
 function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
 function InputFile() {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { value = [], onChange = () => { }, disabled } = rootProps;
+    let { value = [], onChange = () => { }, disabled,maxLength,inputAttrs } = rootProps;
     function change(e: any) {
         let Files = e.target.files;
         let result;
@@ -408,11 +445,14 @@ function InputFile() {
                 if (names.indexOf(file.name) !== -1) { continue }
                 result.push({ name: file.name, size: file.size, file })
             }
+            while (maxLength && result.length > maxLength) {
+                result = result.slice(1, result.length)
+            }
         }
         else { result = Files.length ? Files[0] : undefined }
         onChange(result)
     }
-    let props = { disabled: disabled === true, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e: any) => change(e) }
+    let props = { disabled: disabled === true,type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e: any) => change(e),...inputAttrs }
     return <input {...props} />
 }
 function FileItems() {
@@ -427,7 +467,7 @@ function FileItems() {
     return (<div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{Files}</div>)
 }
 function FileItem(props: I_FileItem) {
-    let { rootProps }: AI_context = useContext(AICTX);
+    let { rootProps,types }: AI_context = useContext(AICTX);
     let { onChange = () => { }, value = [] } = rootProps;
     let { file, index } = props;
     function getFile(file: any): { minName: string, sizeString: string | false } {
@@ -462,27 +502,31 @@ function FileItem(props: I_FileItem) {
         }
         onChange(newValue);
     }
-    function renderString(minName: string, sizeString: string | false) {
-        let size;
-        if (sizeString === false) { size = '' }
-        else { size = ` ( ${sizeString})` }
-        return `${minName}${size}`
+    function download(){
+        DownloadFile(file) 
+    }
+    function getIcon(){
+        let filePreview;
+        if(rootProps.preview){filePreview = FilePreview(file,{style:{height:'100%'},height:'100%',onClick:()=>download()})}
+        if(filePreview && filePreview !== null){
+            return filePreview;
+        }
+        return (<div className='aio-input-file-item-icon' onClick={()=>download()}>{I(mdiAttachment, .8)}</div>)
     }
     let { minName, sizeString } = getFile(file);
-    let { url, name } = file;
-    return (
-        <div className='aio-input-file' style={{ cursor: url ? 'pointer' : 'default' }}>
-            <div className='aio-input-file-icon'>
-                {I(url ? mdiDownloadOutline : mdiAttachment, .8)}
-            </div>
-            <div className='aio-input-file-name' onClick={() => {
-                if (url) { DownloadUrl(url, name) }
-            }}>
-                {renderString(minName, sizeString)}
-            </div>
-            <div className='aio-input-file-icon' onClick={() => remove(index)}>{I(mdiClose, .7)}</div>
-        </div>
-    )
+    let { url } = file;
+
+    let option:AI_option = GetOptions({
+        rootProps,types,
+        options:[{url,minName,sizeString,index}],
+        defaultOptionProps:{
+            subtext:()=>sizeString,
+            text:()=>minName,
+            before:()=>getIcon(),
+            after:()=><div className='aio-input-file-item-icon' onClick={(e) => {e.stopPropagation(); e.preventDefault(); remove(index)}}>{I(mdiClose, .7)}</div>
+        }
+    })[0]
+    return <Layout option={option}/>
 }
 function Multiselect(props: I_Multiselect) {
     let { options = [] } = props;
@@ -981,6 +1025,7 @@ function Layout(props: I_Layout) {
             else {
                 onClick = (e: any) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     if ((props.properties || {}).onClick) { props.properties.onClick() }
                     else { optionClick(option) }
                 }
@@ -1252,7 +1297,6 @@ function List() {
 //     })
 // }
 
-async function DownloadUrl(url: string, name: string) { fetch(url, { mode: 'no-cors', }).then(resp => resp.blob()).then(blob => { let url = window.URL.createObjectURL(blob); let a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = name; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); }).catch(() => alert('oh no!')); }
 type I_AcardionContext = { toggle: (id: string) => void, mountedDic: { [id: string]: boolean }, openDic: { [id: string]: boolean }, rootProps: AI }
 type I_Acardion = { options: AI_option[] }
 const AcardionContext = createContext({} as any);
@@ -1486,7 +1530,7 @@ const DPContext = createContext({} as any);
 export function Calendar(props: I_Calendar) {
     let { rootProps,DATE}: AI_context = useContext(AICTX);
     let { onClose } = props;
-    let { unit = Def('date-unit'), jalali, value,disabled,size = Def('date-size'),theme = Def('theme'), translate = (text) => text,onChange = () => { }, changeClose } = rootProps;
+    let { unit = Def('date-unit'), jalali, value,disabled,size = Def('date-size'),theme = Def('theme'), translate = (text) => text,onChange = () => { }, option = {} } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
     let [today] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
@@ -1554,7 +1598,10 @@ export function Calendar(props: I_Calendar) {
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
                 onChange(dateString, props);
-                if (changeClose && onClose) { onClose() }
+                if(onClose){
+                    if (typeof option.close === 'function') { if(option.close()){onClose() }}
+                    else if(option.close === true){onClose()}
+                }
             }
         }
         return context
@@ -2370,7 +2417,7 @@ const Range:FC = () => {
     },[])
     function getDefaultOffset(type:'point' | 'label' | 'scale',){
         if(type === 'point'){return round?-11:0}
-        if(type === 'label'){return round?4:0}
+        if(type === 'label'){return round?4:14}
         return 0
     }
     function changeValue(newValue:number[]){
@@ -2548,16 +2595,12 @@ const RangeSvg:FC = () => {
 }
 const RangeCircles:FC = () => {
     let {rootProps}:AI_context = useContext(AICTX);
-    let {start = 0,end = 360,circles,size = Def('range-size')} = rootProps;
-    if(circles === undefined){circles = [`${size/2} 2 #ccc`]}
-    if(!circles.length){return null}
+    let {start = 0,end = 360,circles = [],size = Def('range-size')} = rootProps;
     let pathes = []
     for(let i = 0; i < circles.length; i++){
-        let [stringRadius,stringThickness,color] = circles[i].split(' ');
-        let from = start,to = end,radius = +stringRadius,thickness = +stringThickness;
-        if(radius > size / 2 - thickness / 2){radius = size / 2 - thickness / 2} 
-        radius = Math.round(radius)
-        let p:I_RangeArc = {thickness,color,from,to,radius,rotate:90,rootProps};
+        let [stringThickness,color,offset,roundCap,full] = circles[i].split(' ');
+        let from = start,to = end,thickness = +stringThickness;
+        let p:I_RangeArc = {thickness,color,from,to,offset:+offset,rotate:90,full:full === '1',roundCap:roundCap === '1'};
         pathes.push(<RangeArc {...p}/>);
     }
     return <>{pathes}</>;
@@ -2582,15 +2625,16 @@ const RangeFills:FC = () => {
 const RangeRanges:FC = () => {
     let {rootProps,value}:I_RangeContext = useContext(RangeContext);
     let {start = 0,end = 360,ranges,round,multiple,size = Def('range-size')} = rootProps; 
+    if(!ranges){ranges = [[end,`1 #ddd 0`]]}
     let res = [],from = start,list = (typeof ranges === 'function'?ranges(multiple?value:value[0]):ranges) || [];
     for(let i = 0; i < list.length; i++){
-        let [stringValue,stringThickness,color] = list[i].split(' ');
-        let to = +stringValue
+        let [value,config] = list[i];
+        let [stringThickness,color,offset = 0,roundCap] = config.split(' ');
+        let to = value
         let thickness = +stringThickness;
-        let radius = (size / 2) - (thickness / 2);
         let rangeItem:React.ReactNode
         if(round){
-            let p:I_RangeArc = {thickness,color,from,to,radius,rotate:90,rootProps}
+            let p:I_RangeArc = {thickness,color,from,to,offset:+offset,rotate:90,roundCap:roundCap === '1'}
             rangeItem = <RangeArc {...p}/>
         }
         else {
@@ -2625,15 +2669,22 @@ const RangeRect:FC<I_RangeRect> = ({thickness,color,from,to,className,style})=>{
     let Style:any = {[vertical?'width':'height']:thickness,[getSide()]:startSide + '%',[vertical?'height':'width']:(endSide - startSide) + '%',background:color,...style}
     return <div className={className} style={Style}/>
 }
-const RangeArc:FC<I_RangeArc> = ({rootProps,thickness,color,from,to,radius,rotate})=>{
-    let {fixAngle,getAngleByValue}:I_RangeContext = useContext(RangeContext);
+const RangeArc:FC<I_RangeArc> = ({thickness,color,from,to,offset,rotate,full,roundCap})=>{
+    let {fixAngle,getAngleByValue,rootProps}:I_RangeContext = useContext(RangeContext);
     let {size = Def('range-size'),reverse} = rootProps;
-    let startAngle = fixAngle(getAngleByValue(from) + rotate);
-    let endAngle = fixAngle(getAngleByValue(to) + rotate);
-    if(endAngle === 0){endAngle = 360}
-    let x = size / 2,y = size / 2,a = startAngle, b = endAngle;
-    if(reverse){b = startAngle; a = endAngle}
-    return <path key={`from${from}to${to}`} d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent'/>
+    let a,b;
+    let x = size / 2,y = size / 2;
+    let radius = (size / 2) - (thickness / 2) + offset;
+    if(full){a = 0; b = 360;}
+    else {
+        let startAngle = fixAngle(getAngleByValue(from) + rotate);
+        let endAngle = fixAngle(getAngleByValue(to) + rotate);
+        if(endAngle === 0){endAngle = 360}
+        a = startAngle;
+        b = endAngle;
+        if(reverse){b = startAngle; a = endAngle}
+    }
+    return <path key={`from${from}to${to}`} d={svgArc(x,y,radius,a,b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap?'round':undefined}/>
 }
 const RangePoint:FC<I_RangeValue> = (props) => {
     let {getOffset,getDefaultOffset}:I_RangeContext = useContext(RangeContext);
@@ -2654,15 +2705,20 @@ const RangePoint:FC<I_RangeValue> = (props) => {
 }
 const RangeHandle:FC<I_RangeValue> = (props) => {
     let {rootProps,value,angle,disabled,index} = props;
-    let {handle = (()=>{}),size = 72,round} = rootProps;
+    let {handle = (()=>{}),size = Def('range-size'),round} = rootProps;
     if(handle === false || !round){return null}
     if(handle && typeof handle !== 'function'){
         alert(`aio-input error => in type round, handle props should be a function,
         handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`)
         return null
     }
-    let {attrs = {}} = handle(value,{angle,disabled,value}) || {}
-    let PROPS = AddToAttrs(attrs,{className:'aio-input-handle',style:{width:size / 2,...attrs.style},attrs:{draggable:false}})
+    let {width = 4,height = size / 2.5,color = '#000',offset = 0} = handle(value,{angle,disabled,value}) || {}
+    let PROPS = AddToAttrs({},{className:'aio-input-handle',style:{
+        [height < 0?'borderRight':'borderLeft']:`${Math.abs(height)}px solid ${color}`,
+        borderTop:`${width / 2}px solid transparent`,
+        borderBottom:`${width / 2}px solid transparent`,
+        left:offset
+    },attrs:{draggable:false}})
     return (<div {...PROPS} key={'rangehandle' + index}></div>)
 }
 const RangeItems:FC<I_RangeItems> = (props) => {
@@ -3337,8 +3393,9 @@ function getTypes(props: AI) {
     }
 }
 function getDateText(rootProps: AI) {
-    let { value, unit = Def('date-unit'), text, jalali, placeholder } = rootProps;
+    let { value, unit = Def('date-unit'), text,pattern:PT, jalali, placeholder } = rootProps;
     if (value) {
+        text = PT !== undefined?PT:text;
         let DATE = new AIODate();
         let list = DATE.convertToArray(value);
         let [year, month = 1, day = 1, hour = 0] = list;
@@ -3387,8 +3444,8 @@ function Def(prop:string){
 function I(path:any,size:number,p?:any){
     return <Icon path={path} size={size} {...p}/>
 }
-function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any,level?:number,change?:(row:any,newRow:any)=>void }): AI_option[] {
-    let { rootProps, types, properties = {},level,change } = p;
+function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any,level?:number,change?:(row:any,newRow:any)=>void,defaultOptionProps?:AI_optionProp }): AI_option[] {
+    let { rootProps, types, properties = {},level,change,defaultOptionProps } = p;
     let { deSelect } = rootProps;
     let options = p.options || rootProps.options || [];
     if (typeof options === 'function') { options = options() }
@@ -3409,7 +3466,7 @@ function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], proper
     }
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        let details:any = {renderIndex,realIndex:i,level,change:change?(newRow:any)=>{change(option,newRow)}:undefined};
+        let details:any = {defaultOptionProps,renderIndex,realIndex:i,level,change:change?(newRow:any)=>{change(option,newRow)}:undefined};
         let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ props: rootProps, option, key: 'disabled', ...details });
         let show = GetOptionProps({ props: rootProps, option, key: 'show',...details })
         if (show === false) { continue }
@@ -3451,12 +3508,13 @@ function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], proper
     }
     return result;
 }
-function GetOptionProps(p: { props: AI, option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean, realIndex?: number, renderIndex?: number,level?:number,change?:(v:any)=>any }) {
-    let { props, option, key, def, preventFunction, realIndex, renderIndex,level,change } = p;
-    let details:any = {realIndex,renderIndex,level,change};
+function GetOptionProps(p: { defaultOptionProps?:AI_optionProp,props: AI, option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean, realIndex?: number, renderIndex?: number,level?:number,change?:(v:any)=>any }) {
+    let { props, option, key, def, preventFunction, realIndex, renderIndex,level,change,defaultOptionProps = {} } = p;
+    let details:any = {realIndex,renderIndex,level,change,value:props.value};
     let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option,details ) : option[key]
     if (optionResult !== undefined) { return optionResult }
     let prop = (props.option || {})[key];
+    prop = prop === undefined?defaultOptionProps[key]:prop
     if (typeof prop === 'string') {
         try {
             let value;

@@ -5,8 +5,9 @@ import AIOInput from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
+import { AI_type } from "../../npm/aio-input/types";
 
-const RangeExamples:FC = () => {
+const RangeExamples:FC<{type:AI_type}> = ({type}) => {
     let [examples] = useState<any>([
         ['start step end',StartStepEnd],
         ['label (step)',LabelStep],
@@ -21,7 +22,7 @@ const RangeExamples:FC = () => {
         ['scale (offset)',ScaleOffset],
         ['scale (list)',ScaleList],
         ['scale (html)',ScaleHtml],
-        ['handle (attrs)',HandleAttrs],
+        ['handle (width,height,color,offset)',Handle],
         ['handle (false)',HandleFalse],
         ['point (attrs)',PointAttrs],
         ['point (html)',PointHtml],
@@ -36,14 +37,14 @@ const RangeExamples:FC = () => {
         ['multiple',Multiple]
     ])
     let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
-    let [setting,SetSetting] = useState<any>(new Storage('rangeexamplessetting').load('setting',{
-        round:1,
+    let [setting,SetSetting] = useState<any>(new Storage(`${type}examplessetting`).load('setting',{
+        round:type === 'spinner'?1:0,
         reverse:false,
         vertical:false,
         show:-1
     }))
     function setSetting(setting:any){
-        new Storage('rangeexamplessetting').save('setting',setting)
+        new Storage(`${type}examplessetting`).save('setting',setting)
         SetSetting(setting)
     }
     function changeShow(dir: 1 | -1 ){
@@ -64,9 +65,9 @@ const RangeExamples:FC = () => {
                     inputs={{
                         row:[
                             {html:'round',className:'align-v w-48 flex-0'},
-                            {input:{type:'radio',options:[0,0.25,0.75,1],option:{text:'option',value:'option'}},field:'value.round'},
+                            {show:type === 'spinner',input:{type:'radio',options:[0.25,0.75,1],option:{text:'option',value:'option'}},field:'value.round'},
                             {input:{type:'checkbox',text:'reverse',min:0,max:1},field:'value.reverse'},
-                            {input:{type:'checkbox',text:'vertical',min:0,max:1},field:'value.vertical'},
+                            {show:type === 'range',input:{type:'checkbox',text:'vertical',min:0,max:1},field:'value.vertical'},
                             {flex:1},
                             {
                                 input:{
@@ -100,7 +101,7 @@ const RangeExamples:FC = () => {
                     html:(
                         <div className='w-100'>
                             <h3>{`${i} - ${title}`}</h3>
-                            <COMP setting={setting}/>
+                            <COMP setting={setting} type={type}/>
                         </div>
                     )
                 }
@@ -120,23 +121,19 @@ ${`    reverse={${reverse?'true':'false'}}`}
 ${`    vartical={${vertical?'true':'false'}}`}`
     )
 }
-type I_RS = {setting:{round?:number,reverse:boolean,vertical:boolean}}
-const StartStepEnd:FC<I_RS> = ({setting})=> {
+type I_RS = {setting:{round?:number,reverse:boolean,vertical:boolean},type:'slider' | 'spinner'}
+const StartStepEnd:FC<I_RS> = ({setting,type})=> {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
-                labels={{step:10}}
-                label={()=>{return {offset:3}}}
-                scales={{step:10}}
-                scale={()=>{return {offset:0}}}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     ${sc(setting)}
 />
@@ -144,19 +141,19 @@ const StartStepEnd:FC<I_RS> = ({setting})=> {
         </div> 
     )
 }
-const LabelStep:FC<I_RS> = ({setting}) => {
+const LabelStep:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={8} step={1}
+                type={type} value={value} start={0} end={8} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 labels={{step:2}}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type={type} value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{step:2}}
     ${sc(setting)}
@@ -165,12 +162,12 @@ const LabelStep:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const LabelAttrs:FC<I_RS> = ({setting}) => {
+const LabelAttrs:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 labels={{step:10}}
                 label={(value)=>{
@@ -184,7 +181,9 @@ const LabelAttrs:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} 
+    start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{step:10}}
     label={(value)=>{
@@ -200,12 +199,12 @@ const LabelAttrs:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const LabelHtml:FC<I_RS> = ({setting}) => {
+const LabelHtml:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={8} step={1}
+                type={type} value={value} start={0} end={8} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 labels={{step:1}}
                 label={(value)=>{
@@ -217,7 +216,8 @@ const LabelHtml:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{step:1}}
     label={(value)=>{
@@ -231,13 +231,13 @@ const LabelHtml:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const LabelOffset:FC<I_RS> = ({setting}) => {
+const LabelOffset:FC<I_RS> = ({setting,type}) => {
     let {round,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 labels={{step:10}}
                 label={()=>{
@@ -247,7 +247,8 @@ const LabelOffset:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{step:1}}
     label={()=>{
@@ -259,12 +260,12 @@ const LabelOffset:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const LabelList:FC<I_RS> = ({setting}) => {
+const LabelList:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 labels={{
                     list:[10,20,50]
@@ -273,7 +274,8 @@ const LabelList:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{
         list:[10,20,50]
@@ -284,12 +286,12 @@ const LabelList:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleStep:FC<I_RS> = ({setting}) => {
+const ScaleStep:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{
                     step:5
@@ -298,7 +300,8 @@ const ScaleStep:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{
         step:5
@@ -309,13 +312,13 @@ const ScaleStep:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleAttrs:FC<I_RS> = ({setting}) => {
+const ScaleAttrs:FC<I_RS> = ({setting,type}) => {
     let {round,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{step:1}}
                 scale={(value)=>{
@@ -337,7 +340,8 @@ const ScaleAttrs:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{step:1}}
     scale={(value)=>{
@@ -361,13 +365,13 @@ const ScaleAttrs:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleStyleObject:FC<I_RS> = ({setting}) => {
+const ScaleStyleObject:FC<I_RS> = ({setting,type}) => {
     let {round,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{step:1}}
                 scale={(value)=>{
@@ -387,7 +391,8 @@ const ScaleStyleObject:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{step:1}}
     scale={(value)=>{
@@ -409,13 +414,13 @@ const ScaleStyleObject:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleClassName:FC<I_RS> = ({setting}) => {
+const ScaleClassName:FC<I_RS> = ({setting,type}) => {
     let {round,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{step:1}}
                 scale={(value)=>{
@@ -432,7 +437,8 @@ const ScaleClassName:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{step:1}}
     scale={(value)=>{
@@ -451,12 +457,12 @@ const ScaleClassName:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleOffset:FC<I_RS> = ({setting}) => {
+const ScaleOffset:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{step:5}}
                 scale={()=>{
@@ -466,7 +472,8 @@ const ScaleOffset:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{step:5}}
     scale={()=>{
@@ -478,12 +485,12 @@ const ScaleOffset:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleList:FC<I_RS> = ({setting}) => {
+const ScaleList:FC<I_RS> = ({setting,type}) => {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{
                     list:[20,40,60,80]
@@ -492,7 +499,8 @@ const ScaleList:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{
         list:[20,40,60,80]
@@ -503,13 +511,13 @@ const ScaleList:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const ScaleHtml:FC<I_RS> = ({setting}) => {
+const ScaleHtml:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={8} step={1}
+                type={type} value={value} start={0} end={8} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 scales={{step:1}}
                 scale={(value:number,p:{angle:number})=>{
@@ -535,7 +543,8 @@ const ScaleHtml:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     scales={{step:1}}
     scale={(value:number,p:{angle:number})=>{
@@ -563,38 +572,36 @@ const ScaleHtml:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const HandleAttrs:FC<I_RS> = ({setting}) => {
+const Handle:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
+    if(!round){return null}
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 handle={()=>{
                     return {
-                        attrs:{
-                            style:{
-                                background:'orange',
-                                height:2
-                            }
-                        }
+                        width:6,
+                        color:'orange',
+                        height:30,
+                        offset:5
                     }
                 }}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     handle={()=>{
         return {
-            attrs:{
-                style:{
-                    background:'orange',
-                    height:2
-                }
-            }
+            width:6,
+            color:'orange',
+            height:30,
+            offset:5
         }
     }}
     ${sc(setting)}
@@ -603,20 +610,22 @@ const HandleAttrs:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const HandleFalse:FC<I_RS> = ({setting}) => {
+const HandleFalse:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
+    if(!round){return null}
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 handle={false}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     handle={false}
     ${sc(setting)}
@@ -625,13 +634,13 @@ const HandleFalse:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const PointAttrs:FC<I_RS> = ({setting}) => {
+const PointAttrs:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 point={(value,{angle})=>{
                     return {
@@ -649,7 +658,8 @@ const PointAttrs:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     point={(value,{angle})=>{
         return {
@@ -669,13 +679,13 @@ const PointAttrs:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const PointHtml:FC<I_RS> = ({setting}) => {
+const PointHtml:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 point={(value,{angle})=>{
                     return {
@@ -686,7 +696,8 @@ const PointHtml:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     point={(value,{angle})=>{
         return {
@@ -699,13 +710,13 @@ const PointHtml:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const PointOffset:FC<I_RS> = ({setting}) => {
+const PointOffset:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 point={(value,{angle})=>{
                     return {
@@ -717,7 +728,8 @@ const PointOffset:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     point={(value,{angle})=>{
         return {
@@ -742,20 +754,21 @@ const PointOffset:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const PointFalse:FC<I_RS> = ({setting}) => {
+const PointFalse:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 point={false}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     point={false}
     ${sc(setting)}
@@ -764,13 +777,13 @@ const PointFalse:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const Disabled:FC<I_RS> = ({setting}) => {
+const Disabled:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={12} step={1}
+                type={type} value={value} start={0} end={12} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 disabled={[4,6,7,10,11]}
                 scales={{step:1}}
@@ -799,7 +812,6 @@ const Disabled:FC<I_RS> = ({setting}) => {
                         fontFamily:'arial',
                     }
                     return {
-                        offset:-4,
                         style,
                         html:`${val}:00`
                     }
@@ -808,7 +820,8 @@ const Disabled:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     disabled={[4,6,7,10,11]}
     scales={{step:1}}
@@ -848,14 +861,14 @@ const Disabled:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const Circles:FC<I_RS> = ({setting}) => {
+const Circles:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 circles={[
                     '4 6 #333',
@@ -865,7 +878,8 @@ const Circles:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     circles={[
         '4 6 #333',
@@ -877,14 +891,14 @@ const Circles:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const Rotate_180:FC<I_RS> = ({setting}) => {
+const Rotate_180:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 rotate={-180}
                 labels={{step:10}}
@@ -895,7 +909,8 @@ const Rotate_180:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     rotate={-180}
     labels={{step:10}}
@@ -908,14 +923,14 @@ const Rotate_180:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const Rotate_90:FC<I_RS> = ({setting}) => {
+const Rotate_90:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 rotate={-90}
                 labels={{step:10}}
@@ -926,7 +941,8 @@ const Rotate_90:FC<I_RS> = ({setting}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     rotate={-90}
     labels={{step:10}}
@@ -939,25 +955,26 @@ const Rotate_90:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const RangesArray:FC<I_RS> = ({setting}) => {
+const RangesArray:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 ranges={[
-                    '40 6 red',
-                    '60 6 orange',
-                    '80 6 yellow',
-                    '100 6 green' 
+                    [40,'6 red'],
+                    [60,'6 orange'],
+                    [80,'6 yellow'],
+                    [100,'6 green'] 
                 ]}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     ranges={[
         '40 6 red',
@@ -971,26 +988,26 @@ const RangesArray:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const RangesFunction:FC<I_RS> = ({setting}) => {
+const RangesFunction:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<number>(0)
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 ranges={(value)=>{
-                    let res = [
-                        `${value} 4 dodgerblue`,
-                        '100 5 #f8f8f8'
+                    return [
+                        [value as number,'4 dodgerblue'],
+                        [100,'5 #f8f8f8']
                     ]
-                    return res
                 }}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     ranges={(value)=>{
         return [
@@ -1004,20 +1021,21 @@ const RangesFunction:FC<I_RS> = ({setting}) => {
         </div> 
     )
 }
-const Multiple:FC<I_RS> = ({setting}) => {
+const Multiple:FC<I_RS> = ({setting,type}) => {
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number[]>([10,30])
     return (
         <div className='example'>
             <AIOInput
-                type='range' value={value} start={0} end={100} step={1}
+                type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 multiple={true}
                 {...setting}
             />
         {AIODoc().Code(`
 <AIOInput
-    type='range' value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     multiple={true}
     ${sc(setting)}

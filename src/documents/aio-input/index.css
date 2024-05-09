@@ -15,7 +15,47 @@
     background:red;
 }
 
+.badge{
+    background:dodgerblue;
+    color:#fff;
+    height:16px;
+    line-height:16px;
+    font-size:12px;
+    padding:0 3px;
+    min-width:12px;
+    text-align: center;
+    border-radius:4px;
+}
 
-
-
-
+.custom-row{
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid #ddd;
+    background:dodgerblue;
+    color:#fff;
+    border-radius:12px;
+    margin: 6px;
+}
+.custom-rows{
+    display:flex;
+    flex-wrap: wrap;
+}
+.my-list{
+    font-size:12px;
+}
+.gauge-html{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.gauge-text{
+    font-size:24px;
+    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+.gauge-subtext{
+    font-size:12px;
+    font-weight: bold;
+}

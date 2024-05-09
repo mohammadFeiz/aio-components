@@ -1,31 +1,92 @@
-import React, { useState } from "react"
-import DOC from "../../../resuse-components/doc"
-import AIOInput from "../../../npm/aio-input"
-import { AI } from "../../../npm/aio-input/types"
-import AIODoc from './../../../npm/aio-documentation/aio-documentation.js';
-import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiCheckboxMarkedOutline, mdiEye, mdiFolder } from "@mdi/js"
+import React, { FC, useState } from "react"
+import AIOInput from "../../npm/aio-input"
+import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
+import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiEye, mdiFolder, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-export default function DOC_Tree(props:any) {
-    return (
-        <DOC
-            name={props.name} goToHome={props.goToHome}
-            nav={{
-                items:()=>[
-                    { text: 'Basic', id: 'basic', render: () => <Basic /> },
-                    { text: 'before', id: 'before', render: () => <Before /> },
-                    { text: 'subtext', id: 'subtext', render: () => <Subtext /> },
-                    { text: 'check', id: 'check', render: () => <Check /> },
-                    { text: 'onAdd,onRemove,onChange', id: 'addremove', render: () => <AddRemove /> },
-                    { text: 'size', id: 'size', render: () => <Size /> },
-                    { text: 'indent', id: 'indent', render: () => <Indent /> },
-                    { text: 'actions', id: 'actions', render: () => <Actions /> },
-                    { text: 'Complete features', id: 'complete', render: () => <Complete /> },
-                    { text: 'input', id: 'input', render: () => <Input /> },
-                ]
-            }}
-        />
-    )
+const TreeExamples:FC = ()=>{
+    let [examples] = useState<any>([
+        ['Basic',Basic],
+        ['before',Before],
+        ['subtext',Subtext],
+        ['check',Check],
+        ['onAdd,onRemove,onChange',AddRemove],
+        ['size',Size],
+        ['indent',Indent],
+        ['actions',Actions],
+        ['Complete features',Complete],
+        ['input',Input]
+    ])
+    let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
+    let [setting,SetSetting] = useState<any>(new Storage(`treeexamplessetting`).load('setting',{
+        show:-1
+    }))
+    function setSetting(setting:any){
+        new Storage('treeexamplessetting').save('setting',setting)
+        SetSetting(setting)
+    }
+    function changeShow(dir: 1 | -1 ){
+        let newShow:number = setting.show + dir;
+        if(newShow < -1){newShow = examples.length - 1 }
+        if(newShow > examples.length - 1){newShow = -1}
+        setSetting({...setting,show:newShow})
+    }
+    function setting_node(){
+        let btnstyle = {background:'none',border:'none'}
+        return {
+            className:'p-12',
+            html:(
+                <AIOInput
+                    type='form'
+                    value={{...setting}}
+                    onChange={(newSetting)=>setSetting({...newSetting})}
+                    inputs={{
+                        row:[
+                            {flex:1},
+                            {
+                                input:{
+                                    type:'select',options:numbers,before:'Show:',
+                                    option:{
+                                        text:(option:any)=>option === -1?"all":examples[option][0],
+                                        value:'option'
+                                    },
+                                    popover:{
+                                        maxHeight:'100vh'
+                                    }
+                                },
+                                field:'value.show'
+                            },
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>},
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>}
+                        ]
+                    }}
+                />
+            )
+        }
+    }
+    function render_node(){
+        return {
+            key:JSON.stringify(setting),
+            className:'ofy-auto flex-1 p-12',
+            column:examples.map((o:any,i:number)=>{
+                let [title,COMP,cond] = o;
+                if(cond === false){return {}}
+                if(setting.show !== -1 && setting.show !== i){return {}}
+                return {
+                    html:(
+                        <div className='w-100'>
+                            <h3>{`${i} - ${title}`}</h3>
+                            <COMP/>
+                        </div>
+                    )
+                }
+            })
+        }
+    }
+    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
 }
+export default TreeExamples
 function getValue(){
     return [
         {

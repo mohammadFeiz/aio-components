@@ -52,12 +52,10 @@
 }
 
 .aio-input-content>.aio-input-value {
-    height: 16px;
     overflow: visible;
 }
 
 .aio-input-content>.aio-input-subtext {
-    height: 12px;
     overflow: visible;
 }
 
@@ -164,13 +162,18 @@
     background-color: #a8bbbf;
 }
 
-.aio-input-select-options {
-    flex: 1;
-    overflow-y: auto;
+.aio-input-tabs-options,
+.aio-input-buttons-options {
     display: flex;
-    flex-direction: column;
-    outline: none;
-    border-radius: 4px;
+    flex-wrap: nowrap;
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.aio-input-buttons-options {
+    gap: 6px;
 }
 
 .aio-input-text-options {
@@ -182,10 +185,17 @@
     border-radius: 4px;
 }
 
+.aio-input-list-options {
+    position: absolute;
+    width: 100%;
+    left: 0;
+}
+
+.aio-input-select-options,
 .aio-input-multiselect-options {
+    display: flex;
     flex: 1;
     overflow-y: auto;
-    display: flex;
     flex-direction: column;
     outline: none;
     border-radius: 4px;
@@ -210,17 +220,136 @@
     gap: 6px;
     user-select: none;
 }
-
-.aio-input-select-option {
-    height: 36px;
+.aio-input-file-option{
+    max-height:60px;
+    min-height:36px;
 }
-
-.aio-input-multiselect-option {
-    height: 36px;
+.aio-input-file-option-before{
+    max-width:60px;
+    overflow:hidden;
+    height:100%;
 }
-
+.aio-input-multiselect-option,
+.aio-input-select-option,
 .aio-input-radio-option {
     height: 36px;
+}
+
+.aio-input-tabs-option {
+    justify-content: center;
+    overflow: hidden;
+    margin: 0 6px;
+    padding: 6px;
+    height: 100%;
+    background: none;
+    position: relative;
+}
+
+.aio-input-tabs-option-bar {
+    content: '';
+    position: absolute;
+    top: calc(100% - 2px);
+    width: 0%;
+    height: 0;
+    border-bottom: 2px solid;
+}
+
+.aio-input-tabs-option.active {
+    color: dodgerblue;
+}
+
+.aio-input-buttons-option {
+    border: 1px solid #ddd;
+    color: #666;
+    border-radius: 4px;
+}
+
+.aio-input-buttons-option.active {
+    background: dodgerblue;
+    color: #fff;
+}
+
+.aio-input-tabs-option.active .aio-input-tabs-option-bar {
+    width: 100%;
+    transition: 0.3s;
+}
+
+.aio-input-list-option {
+    justify-content: center;
+    align-items: center;
+    padding: 0 6px;
+    position: relative;
+    opacity: 0.5;
+    transform: scale(0.8);
+}
+
+.aio-input-list-option.active {
+    opacity: 1;
+    transform: unset;
+    font-weight: bold;
+}
+
+.aio-input-time-popover .aio-input-list-option:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.3);
+    width: 100%;
+    height: 1px;
+    pointer-events: none;
+}
+
+.aio-input-time-popover .aio-input-list-option:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: rgba(255, 255, 255, 0.3);
+    width: 100%;
+    height: 1px;
+    pointer-events: none;
+}
+
+.aio-input.disabled .aio-input-option {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.aio-input-option.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.aio-input-acardion-option {
+    align-items: center;
+    background: rgb(35, 106, 177);
+    border-radius: 6px 6px 0 0;
+    min-height: 30px;
+    color: #fff;
+    padding: 12px;
+    height: 60px;
+    box-sizing: border-box;
+    transition: border-radius 0.2s;
+    box-shadow: 2px 2px 5px 0px rgb(0 0 0 / 24%);
+    position: relative;
+}
+
+.aio-input-acardion-item.not-mounted .aio-input-acardion-option {
+    border-radius: 6px 6px 6px 6px;
+    transition: border-radius 0.2s;
+}
+
+.aio-input-tree-option {
+    padding: 0;
+    gap: 6px;
+    background: #f8f8f8;
+    position: relative;
+}
+
+.aio-input-tree-options-button {
+    background: none;
+    margin: 6px;
 }
 
 .aio-input-dropdown-option {
@@ -273,34 +402,33 @@
 
 .aio-input-file-container {
     width: 100%;
+    display:flex;
+    flex-direction: column;
+    gap:3px;
 }
 
 .aio-input-files {
     border: 1px solid #ddd;
     box-sizing: border-box;
     border-radius: 4px;
+    font-size:12px;
 }
 
-.aio-input-file {
+.aio-input-file-item {
     display: flex;
     padding: 0 6px;
+    height:36px;
     box-sizing: border-box;
     align-items: center;
     border-bottom: 1px solid #ddd;
 }
 
-.aio-input-file:last-child {
-    border-bottom: none;
-}
-
-
-
-.aio-input-file-name {
+.aio-input-file-item-name {
     flex: 1;
     font-size: 90%;
 }
 
-.aio-input-file-icon {
+.aio-input-file-item-icon {
     width: 24px;
     height: 24px;
     display: flex;
@@ -454,105 +582,13 @@
     overflow: hidden;
 }
 
-.aio-input-tabs-options,
-.aio-input-buttons-options {
-    display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
-.aio-input-tabs-option {
-    justify-content: center;
-    overflow: hidden;
-    margin: 0 6px;
-    padding: 6px;
-    height: 100%;
-    background: none;
-    position: relative;
-}
-
-.aio-input-tabs-option-bar {
-    content: '';
-    position: absolute;
-    top: calc(100% - 2px);
-    width: 0%;
-    height: 0;
-    border-bottom: 2px solid;
-}
-
-.aio-input-tabs-option.active {
-    color: dodgerblue;
-}
-
 .aio-input-buttons {
     width: 100%;
-}
-
-.aio-input-buttons-options {
-    gap: 6px;
-}
-
-.aio-input-buttons-option {
-    border: 1px solid #ddd;
-    color: #666;
-    border-radius: 4px;
-}
-
-.aio-input-buttons-option.active {
-    background: dodgerblue;
-    color: #fff;
-}
-
-.aio-input-tabs-option.active .aio-input-tabs-option-bar {
-    width: 100%;
-    transition: 0.3s;
 }
 
 .aio-input-tabs.aio-input-touch ::-webkit-scrollbar {
     width: 0px !important;
     height: 0px !important;
-}
-
-.aio-input-text input {
-    border: none;
-    width: 100%;
-    background: none;
-    outline: none;
-    height: 100%;
-    color: inherit;
-}
-
-.aio-input-number input {
-    border: none;
-    width: 100%;
-    background: none;
-    outline: none;
-    height: 100%;
-    color: inherit;
-}
-
-.aio-input-password input {
-    border: none;
-    width: 100%;
-    background: none;
-    outline: none;
-    width: 100%;
-    color: inherit;
-}
-
-.aio-input-password {
-    height: 36px;
-}
-
-.aio-input-password input {
-    text-align: center;
-}
-
-.aio-input-text {
-    width: 100%;
 }
 
 .aio-input-color {
@@ -563,26 +599,65 @@
     min-width: 24px;
 }
 
-
-.aio-input-textarea {
-    min-height: 60px;
-    height: fit-content;
-}
-
 .aio-input-radio {
     height: unset;
 }
 
+.aio-input-text,
+.aio-input-password,
+.aio-input-number,
+.aio-input-multiselect,
+.aio-input-select,
+.aio-input-date,
+.aio-input-time,
+.aio-input-file {
+    padding: 0 6px;
+    width: 100%;
+    border: 1px solid #ddd;
+    height: 36px;
+}
+.aio-input-textarea {
+    min-height: 72px;
+    padding: 6px;
+    border: 1px solid #ddd;
+}
+
 .aio-input-textarea textarea {
+    font-family: inherit;
     border: none;
     width: 100%;
     background: none;
     outline: none;
     width: 100%;
-    height: 100%;
-    padding: 6px 0;
     color: inherit;
     box-sizing: border-box;
+}
+
+.aio-input-textarea-value {
+    height: 100%;
+}
+
+.aio-input-text-value,
+.aio-input-number-value {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.aio-input-text input,
+.aio-input-number input,
+.aio-input-password input {
+    border: none;
+    width: 100%;
+    background: none;
+    outline: none;
+    height: 100%;
+    color: inherit;
+}
+
+.aio-input-password input {
+    text-align: center;
 }
 
 .aio-input-text-subtext,
@@ -592,18 +667,13 @@
     top: 100%;
 }
 
-.aio-input-text,
-.aio-input-password,
-.aio-input-number,
-.aio-input-textarea {
-    padding: 0 6px;
+.aio-input-checkbox {
+    border: 1px solid #ddd;
 }
 
-.aio-input-text-value {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+
+.aio-input-table .aio-input-text {
+    height: 100%;
 }
 
 .aio-input-color input {
@@ -621,10 +691,7 @@
     display: none;
 }
 
-.aio-input-text-value,
-.aio-input-number-value {
-    height: 100%;
-}
+
 
 .aio-input-color input::-webkit-color-swatch {
     border: none;
@@ -632,10 +699,7 @@
 }
 
 
-.aio-input-textarea textarea {
-    font-family: inherit !important;
-    padding: 6px;
-}
+
 
 
 .aio-input-table {
@@ -716,9 +780,7 @@
     height: 100%;
 }
 
-.aio-input-table .aio-input-text {
-    height: 100%;
-}
+
 
 .aio-input-table-cell .aio-input input {
     padding: 0;
@@ -882,6 +944,7 @@
     display: flex;
     flex-direction: column;
     stroke: #333;
+    background:#fff;
 }
 
 .aio-input-date-header {
@@ -1218,32 +1281,11 @@
     font-size: 26px;
 }
 
-.aio-input-list-options {
-    position: absolute;
-    width: 100%;
-    left: 0;
-}
 
-.aio-input-list-option {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 6px;
-    position: relative;
-    opacity: 0.5;
-    transform: scale(0.8);
-}
-
-.aio-input-list-option.active {
-    opacity: 1;
-    transform: unset;
-    font-weight: bold;
-}
 
 .aio-input-time-popover {
     background: #fff;
     width: fit-content !important;
-    padding: 12px !important;
     font-family: inherit;
     display: flex;
     flex-direction: column;
@@ -1266,27 +1308,6 @@
     pointer-events: none;
 }
 
-.aio-input-time-popover .aio-input-list-option:after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.3);
-    width: 100%;
-    height: 1px;
-    pointer-events: none;
-}
-
-.aio-input-time-popover .aio-input-list-option:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: rgba(255, 255, 255, 0.3);
-    width: 100%;
-    height: 1px;
-    pointer-events: none;
-}
 
 .aio-input-time-popover .aio-input-time-popover-content {
     direction: ltr;
@@ -1294,6 +1315,7 @@
 
 .aio-input-time-popover .aio-input-time-popover-body {
     display: flex;
+    padding:12px;
 }
 
 .aio-input-time-popover .aio-input-time-popover-item {
@@ -1309,27 +1331,31 @@
 
 .aio-input-time-popover .aio-input-time-popover-footer {
     display: flex;
+    padding:12px;
+    justify-content: space-around;
 }
 
-.aio-input-time-popover .aio-input-time-popover-footer button {
+.aio-input-primary-button {
     background: dodgerblue;
     color: #fff;
     border-radius: 4px;
     border: none;
     font-size: 14px;
     font-family: inherit;
-    padding: 6px 24px;
+    padding: 4px 24px;
+    border:2px solid dodgerblue;
+}
+.aio-input-secondary-button {
+    color: dodgerblue;
+    border-radius: 4px;
+    background:#fff;
+    border: none;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 4px 24px;
+    border:2px solid dodgerblue;
 }
 
-.aio-input.disabled .aio-input-option {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.aio-input-option.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
 
 .aio-input.disabled {
     cursor: not-allowed;
@@ -1360,6 +1386,7 @@
     padding: 0;
     overflow: hidden;
     max-width: 100%;
+    border: 1px solid #ddd;
 }
 
 .aio-input-image img {
@@ -1608,9 +1635,7 @@
     justify-content: center;
 }
 
-.aio-input-textarea-value {
-    height: 100%;
-}
+
 
 .aio-input-acardion {
     gap: 12px;
@@ -1636,29 +1661,11 @@
     overflow-x: auto;
 }
 
-.aio-input-acardion-option {
-    display: flex;
-    align-items: center;
-    background: rgb(35, 106, 177);
-    border-radius: 6px 6px 0 0;
-    min-height: 30px;
-    color: #fff;
-    padding: 12px;
-    height: 60px;
-    box-sizing: border-box;
-    transition: border-radius 0.2s;
-    box-shadow: 2px 2px 5px 0px rgb(0 0 0 / 24%);
-    position: relative;
-}
 
 .aio-input-acardion-name {
     flex: 1;
 }
 
-.aio-input-acardion-item.not-mounted .aio-input-acardion-option {
-    border-radius: 6px 6px 6px 6px;
-    transition: border-radius 0.2s;
-}
 
 .aio-input-acardion-toggle {
     width: 36px;
@@ -1786,11 +1793,8 @@
 
 .aio-input-handle {
     position: absolute;
-    left: 0;
-    height: 4px;
-    background: dodgerblue;
-    display: flex;
-    align-items: center;
+    width: 0;
+    height: 0;
 }
 
 .ai-range-label-container {
@@ -1895,9 +1899,11 @@
 .ai-range-vertical .ai-range-fill {
     width: 4px;
 }
-.aio-input-form{
-    width:100%;
+
+.aio-input-form {
+    width: 100%;
 }
+
 .aio-input-form-item-column {
     display: flex;
     flex-direction: column;
@@ -1964,17 +1970,6 @@
     color: #fff;
 }
 
-.aio-input-tree-option {
-    padding: 0;
-    gap: 6px;
-    background: #f8f8f8;
-    position: relative;
-}
-
-.aio-input-tree-options-button {
-    background: none;
-    margin: 6px;
-}
 
 .aio-input-tree-body {
     position: relative;

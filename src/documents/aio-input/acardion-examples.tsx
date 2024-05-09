@@ -1,24 +1,95 @@
-import React from "react"
-import DOC from "../../../resuse-components/doc"
-import AIOInput from "../../../npm/aio-input"
-import { AI } from "../../../npm/aio-input/types"
-import { mdiAccount } from "@mdi/js"
-import AIODoc from './../../../npm/aio-documentation/aio-documentation.js';
+import React, { Component,FC, useEffect, useState } from "react"
+import AIOInput from "../../npm/aio-input"
+import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
+import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-export default function DOC_Acardion(props:any) {
-    return (
-        <DOC
-            name={props.name} goToHome={props.goToHome}
-            nav={{
-                items:()=>[
-                    { text: 'Basic', id: 'basic', render: () => <Basic /> },
-                    { text: 'vertical', id: 'vertical', render: () => <Vertical /> },
-                    { text: 'multiple', id: 'multiple', render: () => <Multiple /> },
-                ]
-            }}
-        />
-    )
+const AcardionExamples:FC = ()=>{
+    let [examples] = useState<any>([
+        ['Basic',Basic],
+        ['vertical',Vertical],
+        ['multiple',Multiple]
+    ])
+    let [numbers] = useState<number[]>(new Array(examples.length).fill(0).map((o,i)=>i))
+    let [setting,SetSetting] = useState<any>(new Storage(`treeexamplessetting`).load('setting',{
+        show:0
+    }))
+    function setSetting(setting:any){
+        new Storage('treeexamplessetting').save('setting',setting)
+        SetSetting(setting)
+    }
+    function changeShow(dir: 1 | -1 ){
+        let newShow:number = setting.show + dir;
+        if(newShow < -1){newShow = examples.length - 1 }
+        if(newShow > examples.length - 1){newShow = -1}
+        setSetting({...setting,show:newShow})
+    }
+    function setting_node(){
+        let btnstyle = {background:'none',border:'none'}
+        return {
+            className:'p-12',
+            html:(
+                <AIOInput
+                    type='form'
+                    value={{...setting}}
+                    onChange={(newSetting)=>setSetting({...newSetting})}
+                    inputs={{
+                        row:[
+                            {flex:1},
+                            {
+                                input:{
+                                    type:'select',options:numbers,before:'Show:',
+                                    option:{
+                                        text:(option:any)=>option === -1?"all":examples[option][0],
+                                        value:'option'
+                                    },
+                                    popover:{
+                                        maxHeight:'100vh'
+                                    }
+                                },
+                                field:'value.show'
+                            },
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>},
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>}
+                        ]
+                    }}
+                />
+            )
+        }
+    }
+    function render_node(){
+        let rows = [
+            {name:'mohammad',family:'feiz',age:38,id:0},
+            {name:'john',family:'doe',age:30,id:1},
+        ]
+        let rowsCode = `
+let [rows,setRows] = useState([
+    {name:'mohammad',family:'feiz',age:38,id:0},
+    {name:'john',family:'doe',age:30,id:1},
+])
+        `
+        return {
+            key:JSON.stringify(setting),
+            className:'ofy-auto flex-1 p-12',
+            column:examples.map((o:any,i:number)=>{
+                let [title,COMP,cond] = o;
+                if(cond === false){return {}}
+                if(setting.show !== -1 && setting.show !== i){return {}}
+                return {
+                    html:(
+                        <div className='w-100'>
+                            <h3>{`${i} - ${title}`}</h3>
+                            <COMP rows={rows} rowsCode={rowsCode}/>
+                        </div>
+                    )
+                }
+            })
+        }
+    }
+    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
 }
+export default AcardionExamples
 
 function Basic(){
     return (

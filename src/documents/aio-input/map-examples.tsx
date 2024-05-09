@@ -1,36 +1,106 @@
-import React, { Component,createRef, useState } from 'react';
-import DOC,{I_DOC} from '../../../resuse-components/doc.tsx';
-import AIODoc from '../../../npm/aio-documentation/aio-documentation.js';
-import RVD from '../../../npm/react-virtual-dom/index.tsx';
-import AIOInput from '../../../npm/aio-input/index.tsx';
-import {AI,I_Map_area,I_Map_marker} from '../../../npm/aio-input/types.tsx';
-import './doc-aio-input-map.css';
-import {Icon} from '@mdi/react';
-import { mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift, mdiAccount } from '@mdi/js';
-import { I_RVD_node } from '../../../npm/react-virtual-dom/types.tsx';
-export default function DOC_AIOInput_map(props) {
-    let {goToHome,name} = props;
-    let p:I_DOC = {
-        name,goToHome,
-        nav:{
-            items:()=>[
-                { text: 'apiKeys', id: 'apiKeys', render: () => <APIKeys /> },
-                { text: 'draggable', id: 'draggable', render: () => <Draggable /> },
-                { text: 'traffic', id: 'traffic', render: () => <Traffic /> },
-                { text: 'onClick', id: 'onClick', render: () => <OnClick /> },
-                { text: 'title', id: 'title', render: () => <Title /> },
-                { text: 'marker', id: 'showMarker', render: () => <Marker /> },
-                { text: 'value zoom', id: 'valuezoom', render: () => <ValueZoom /> },
-                { text: 'onChange', id: 'onChange', render: () => <OnChange /> },
-                { text: 'area', id: 'area', render: () => <Area /> },
-                { text: 'markers', id: 'markers', render: () => <Markers /> },
-                { text: 'search', id: 'search', render: () => <Search /> },
-                { text: 'popupConfig', id: 'popupConfig', render: () => <PopupConfig /> },
-            ]
+import React, { Component,FC, useEffect, useState } from "react"
+import AIOInput from "../../npm/aio-input"
+import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import RVD from './../../npm/react-virtual-dom/index.tsx';
+import {mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { Storage } from "../../npm/aio-utils/index.tsx";
+import Icon from '@mdi/react';
+import { I_Map_area,I_Map_marker,AI } from "../../npm/aio-input/types.tsx";
+import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
+const MapExamples:FC = ()=>{
+    let [examples] = useState<any>([
+        ['apiKeys',APIKeys],
+        ['draggable',Draggable],
+        ['traffic',Traffic],
+        ['onClick',OnClick],
+        ['title',Title],
+        ['marker',Marker],
+        ['value zoom',ValueZoom],
+        ['onChange',OnChange],
+        ['area',Area],
+        ['markers',Markers],
+        ['search',Search],
+        ['popupConfig',PopupConfig]
+    ])
+    let [numbers] = useState<number[]>(new Array(examples.length).fill(0).map((o,i)=>i))
+    let [setting,SetSetting] = useState<any>(new Storage(`treeexamplessetting`).load('setting',{
+        show:0
+    }))
+    function setSetting(setting:any){
+        new Storage('treeexamplessetting').save('setting',setting)
+        SetSetting(setting)
+    }
+    function changeShow(dir: 1 | -1 ){
+        let newShow:number = setting.show + dir;
+        if(newShow < -1){newShow = examples.length - 1 }
+        if(newShow > examples.length - 1){newShow = -1}
+        setSetting({...setting,show:newShow})
+    }
+    function setting_node(){
+        let btnstyle = {background:'none',border:'none'}
+        return {
+            className:'p-12',
+            html:(
+                <AIOInput
+                    type='form'
+                    value={{...setting}}
+                    onChange={(newSetting)=>setSetting({...newSetting})}
+                    inputs={{
+                        row:[
+                            {flex:1},
+                            {
+                                input:{
+                                    type:'select',options:numbers,before:'Show:',
+                                    option:{
+                                        text:(option:any)=>option === -1?"all":examples[option][0],
+                                        value:'option'
+                                    },
+                                    popover:{
+                                        maxHeight:'100vh'
+                                    }
+                                },
+                                field:'value.show'
+                            },
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>},
+                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>}
+                        ]
+                    }}
+                />
+            )
         }
     }
-    return <DOC {...p}/>
+    function render_node(){
+        let rows = [
+            {name:'mohammad',family:'feiz',age:38,id:0},
+            {name:'john',family:'doe',age:30,id:1},
+        ]
+        let rowsCode = `
+let [rows,setRows] = useState([
+    {name:'mohammad',family:'feiz',age:38,id:0},
+    {name:'john',family:'doe',age:30,id:1},
+])
+        `
+        return {
+            key:JSON.stringify(setting),
+            className:'ofy-auto flex-1 p-12',
+            column:examples.map((o:any,i:number)=>{
+                let [title,COMP,cond] = o;
+                if(cond === false){return {}}
+                if(setting.show !== -1 && setting.show !== i){return {}}
+                return {
+                    html:(
+                        <div className='w-100'>
+                            <h3>{`${i} - ${title}`}</h3>
+                            <COMP rows={rows} rowsCode={rowsCode}/>
+                        </div>
+                    )
+                }
+            })
+        }
+    }
+    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
 }
+export default MapExamples
 class APIKeys extends Component {
     render() {
         return (
@@ -48,83 +118,73 @@ AIOInput.defaults.mapApiKeys = {
         )
     }
 }
-class Draggable extends Component {
-    constructor(props){
-        super(props);
-    }
-    render() {
-        let p1:AI = {type:'map'}
-        let p2:AI = {type:'map',mapConfig:{draggable:false}}
-        return (
-            <div className='example'>
-                <AIOInput key='p1' {...p1}/>
-                {
-                    AIODoc().Code(`
+const Draggable:FC = ()=> {
+    let p1:AI = {type:'map'}
+    let p2:AI = {type:'map',mapConfig:{draggable:false}}
+    return (
+        <div className='example'>
+            <AIOInput key='p1' {...p1}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map'/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <AIOInput key='p2' {...p2}/>
-                {
-                    AIODoc().Code(`
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <AIOInput key='p2' {...p2}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map' mapConfig={{draggable:false}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
+    
 }
-class Traffic extends Component {
-    render() {
-        let p:AI = {type:'map',mapConfig:{traffic:true}}
-        return (
-            <div className='example'>
-                <AIOInput {...p}/>
-                {
-                    AIODoc().Code(`
+const Traffic:FC = ()=> {
+    let p:AI = {type:'map',mapConfig:{traffic:true}}
+    return (
+        <div className='example'>
+            <AIOInput {...p}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map' mapConfig={{traffic:true}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
 }
-class OnClick extends Component {
-    render() {
-        let p:AI = {type:'map',attrs:{onClick:()=>alert('you clicked map')}}
-        return (
-            <div className='example'>
-                <AIOInput {...p}/>
-                {
-                    AIODoc().Code(`
+const OnClick:FC = ()=> {
+    let p:AI = {type:'map',attrs:{onClick:()=>alert('you clicked map')}}
+    return (
+        <div className='example'>
+            <AIOInput {...p}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map' attrs={{onClick:()=>alert('you clicked map')}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
 }
-class Title extends Component {
-    render() {
-        let p:AI = {type:'map',mapConfig:{title:'نمایش موقعیت'}}
-        return (
-            <div className='example'>
-                <AIOInput {...p}/>
-                {
-                    AIODoc().Code(`
+const Title:FC = ()=> {
+    let p:AI = {type:'map',mapConfig:{title:'نمایش موقعیت'}}
+    return (
+        <div className='example'>
+            <AIOInput {...p}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map' mapConfig={{title:'نمایش موقعیت'}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
 }
-class Marker extends Component {
-    getMarker(){
+const Marker:FC = ()=> {
+    function getMarker(){
         return (
             <div className='flex fd-column align-h w-24'>
                 <div className='w-10 h-10 br-100' style={{background:'#4AA45D'}}></div>
@@ -132,41 +192,40 @@ class Marker extends Component {
             </div>
         )
     }
-    render() {
-        let p1:AI = {type:'map'}
-        let p2:AI = {type:'map',mapConfig:{marker:false}}
-        let p3:AI = {type:'map',mapConfig:{marker:{size:16,color:'transparent',html:this.getMarker()}}}
-        return (
-            <div className='example'>
-                {this.getMarker()}
-                <AIOInput {...p1}/>
-                {
-                    AIODoc().Code(`
+    let p1:AI = {type:'map'}
+    let p2:AI = {type:'map',mapConfig:{marker:false}}
+    let p3:AI = {type:'map',mapConfig:{marker:{size:16,color:'transparent',html:getMarker()}}}
+    return (
+        <div className='example'>
+            {getMarker()}
+            <AIOInput {...p1}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map'/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <AIOInput {...p2}/>
-                {
-                    AIODoc().Code(`
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <AIOInput {...p2}/>
+            {
+                AIODoc().Code(`
 <AIOInput type='map' mapConfig={{marker:false}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-                <AIOInput {...p3}/>
-                {
-                    AIODoc().Code(`
-<AIOInput type='map' mapConfig={{marker:{size:16,color:'transparent',html:this.getMarker()}}}/>
-                    `)
-                }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            </div>
-        )
-    }
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <AIOInput {...p3}/>
+            {
+                AIODoc().Code(`
+<AIOInput type='map' mapConfig={{marker:{size:16,color:'transparent',html:getMarker()}}}/>
+                `)
+            }
+            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+        </div>
+    )
 }
 function ValueZoom() {
-    let [value,setValue] = useState({lat:35.694739,lng:51.394097,zoom:14})
-    function ctrl_node({field,step,toFixed}){
+    let [value,setValue] = useState<{lat:number,lng:number,zoom:number}>({lat:35.694739,lng:51.394097,zoom:14})
+    function ctrl_node(p:{field:'lat'|'lng'|'zoom',step:number,toFixed:number}){
+        let {field,step,toFixed} = p;
         let props:I_CTRL = {onChange:(v)=>setValue({...value,[field]:v}),toFixed,field,value:value[field],step}
         return {html:<CTRL {...props}/>}
     }
@@ -213,8 +272,8 @@ function OnChange() {
         </div>
     )
 }
-type I_CTRL = {field:string,value:number,step:number,toFixed:number,onChange:(obj:any)=>void}
-function CTRL(props){
+type I_CTRL = {field:string,value:any,step:number,toFixed:number,onChange:(obj:any)=>void}
+function CTRL(props:{field:any,step:number,toFixed:number,onChange:any,value:any}){
     let {field,step,toFixed,onChange,value} = props;
     function change(dir:1 | -1){
         let result = value + (dir * step);
@@ -243,14 +302,14 @@ function CTRL(props){
 }
 function Area() {
     let [area,setArea] = useState<I_Map_area>({lat:35.698739,lng:51.345097,radius:2000,color:'orange',opacity:0.2})
-    function ctrl_node(p:{field:string,step:number,toFixed:number}):I_RVD_node{
+    function ctrl_node(p:{field:keyof I_Map_area,step:number,toFixed:number}):I_RVD_node{
         let {field,step,toFixed} = p;
         let props:I_CTRL = {field,value:area[field],step,toFixed,onChange:(v)=>setArea({...area,[field]:v})}
         return {html:<CTRL {...props}/>}
     }
     function opacity_node():I_RVD_node{
         let p:AI = {
-            type:'slider',pointLabel:()=>{return {show:'inline'}},attrs:{style:{width:'100%'}},value:[area.opacity],step:0.1,start:0,end:1,
+            type:'range',attrs:{style:{width:'100%'}},value:[area.opacity],step:0.1,start:0,end:1,
             onChange:(opacity)=>{
                 setArea({...area,opacity})
             }
@@ -334,7 +393,7 @@ function Markers() {
             popup:({lat,lng})=>lat
         }
     ])
-    function ctrl_node(p:{field:string,index:number,toFixed:number,step:number}){
+    function ctrl_node(p:{field:keyof I_Map_marker,index:number,toFixed:number,step:number}){
         let {field,index,toFixed,step} = p;
         let value = markers[index][field];
         let props:I_CTRL = {field,value,step,toFixed,onChange:(v)=>setMarkers(markers.map((o:I_Map_marker,i:number)=>index === i?{...markers[i],[field]:v}:o))}
@@ -440,7 +499,6 @@ function PopupConfig() {
         </div>
     )
 }
-
 
 
 

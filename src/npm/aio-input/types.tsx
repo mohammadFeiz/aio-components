@@ -1,7 +1,7 @@
 import { AP_modal } from "../aio-popup"
 import { AIODate } from "./../aio-utils"
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' | 'tree'|
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' | 'tree'|'spinner' |'slider'|
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion' | 'checklist'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' 
@@ -53,7 +53,6 @@ export type AI = {
     before?: React.ReactNode | ((p?:any) => React.ReactNode),
     body?:{attrs?:any,html?:React.ReactNode} | ((value?:any)=>{attrs?:any,html?:React.ReactNode}),//form
     caret?: boolean | React.ReactNode,
-    changeClose?:boolean,//date
     checkIcon?: AI_checkIcon,
     circles?:string[],
     className?:string,
@@ -81,7 +80,7 @@ export type AI = {
     getChilds?:(row:any)=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
-    handle?:((value:number,p:any)=>{attrs?:any}) | false,//range
+    handle?:((value:number,p:any)=>{width?:number,height?:number,color?:string,offset?:number}) | false,//range
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
@@ -92,7 +91,7 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
-    label?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//range
+    label?:AI_range_item,//range
     labels?:AI_scales,//range
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
@@ -117,14 +116,15 @@ export type AI = {
     onSearch?: true | ((searchValue: string) => void),
     open?: boolean,
     options?: any[] | ((p?:any)=>any[]),
-    option?:{[key in AI_optionKey]?:any},
+    option?:AI_optionProp,
     paging?: AI_table_paging,
+    pattern?:string,
     placeholder?: string,
     popover?: AP_modal,//notice get type from aio popup
     point?:false | AI_point,//range
     popupConfig?:I_Map_config
     preview?:boolean,
-    ranges?:string[] | ((value:number | number[])=>string[]),
+    ranges?:[number,string][] | ((value:number | number[])=>[number,string][]),
     removeText?:string,
     reverse?:boolean,
     rotate?:number,
@@ -136,7 +136,7 @@ export type AI = {
     rowsTemplate?: (rows: any[]) => React.ReactNode,
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
     rtl?: boolean,
-    scale?:(value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale,//range
+    scale?:AI_range_item,//range
     scales?:AI_scales,//range
     search?: string,
     setChilds?:(row:any,childs:any[])=>void,//tree
@@ -161,6 +161,7 @@ export type AI = {
     width?: number | string,
     
 }
+export type AI_optionProp = {[key in AI_optionKey]?:any}
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 
@@ -176,6 +177,7 @@ export type AI_scales = {
     step?:number,
     dynamic?:boolean
 }
+export type AI_range_item = (value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale
 export type AI_scale = {
     offset?:number,
     fixAngle?:boolean,
@@ -191,7 +193,6 @@ export type AI_fill = {thickness?:number,color?:string,className?:string,style?:
 //create list document 
 //define popover type by aio popup
 export type AI_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
-export type AI_optionProp = string | ((option: any,p?:any) => any)
 export type AI_option = {
     object:any,
     show:any,
@@ -274,7 +275,7 @@ export type AI_Popover_props = {
     getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types
 }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange?: (value: type_time_value) => void, onClose: () => void }
+export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange?: (value: type_time_value) => void, onClose: () => void,getValue:(justToday?:boolean)=>any }
 export type I_FileItem = {file:any,index:number}
 export type I_Multiselect = {options:AI_option[]}
 export type I_Tags = {options:AI_option[]}
@@ -401,7 +402,7 @@ export type I_Map_context = {
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
 export type I_RangeValueContainer = {itemValue:number,index:number}
 export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}
-export type I_RangeArc = {rootProps:AI,thickness:number,color:string,from:number,to:number,radius:number,rotate:number}
+export type I_RangeArc = {thickness:number,color:string,from:number,to:number,offset:number,rotate:number,full?:boolean,roundCap?:boolean}
 export type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,index:number,parentDom:any}
 export type I_RangeItems = {type:'scale'|'label'}
 export type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'}

@@ -1,39 +1,39 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
-export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number,centerAngle:number };
+export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number };
 export type I_Swip_change = {
-    x:number,y:number,
-    dx:number,dy:number,
-    dist:number,
-    angle:number,
-    deltaCenterAngle:number,
+    x: number, y: number,
+    dx: number, dy: number,
+    dist: number,
+    angle: number,
+    deltaCenterAngle: number,
 }
 export type I_Swip_parameter = {
-    change?:I_Swip_change,mousePosition:I_Swip_mousePosition,domLimit:I_Swip_domLimit,parentLimit:I_Swip_domLimit,event:any
+    change?: I_Swip_change, mousePosition: I_Swip_mousePosition, domLimit: I_Swip_domLimit, parentLimit: I_Swip_domLimit, event: any
 }
 export type I_Swip = {
-    dom: ()=>any, 
-    parent?:()=>any,
-    onClick?:(p:I_Swip_parameter)=>void,
-    page?:()=>any,
-    start: (p:I_Swip_parameter) => number[],
+    dom: () => any,
+    parent?: () => any,
+    onClick?: (p: I_Swip_parameter) => void,
+    page?: () => any,
+    start: (p: I_Swip_parameter) => number[],
     move: (p: I_Swip_parameter) => void,
     end?: (p: I_Swip_parameter) => void,
-    speedX?: number, 
-    speedY?: number, 
-    stepX?: number | boolean, 
-    stepY?: number | boolean, 
-    reverseY?: boolean, 
-    reverseX?: boolean, 
-    minY?: number, 
-    maxY?: number, 
-    minX?: number, 
+    speedX?: number,
+    speedY?: number,
+    stepX?: number | boolean,
+    stepY?: number | boolean,
+    reverseY?: boolean,
+    reverseX?: boolean,
+    minY?: number,
+    maxY?: number,
+    minX?: number,
     maxX?: number,
-    insideX?:boolean,
-    insideY?:boolean
+    insideX?: boolean,
+    insideY?: boolean
 }
 export type I_Swip_domLimit = {
-    width:number,height:number,left:number,top:number,centerX:number,centerY:number,right:number,bottom:number
+    width: number, height: number, left: number, top: number, centerX: number, centerY: number, right: number, bottom: number
 }
 
 export type I_Date = string | number | Date | { year?: number, month?: number, day?: number, hour?: number, minute?: number } | number[];
@@ -42,17 +42,19 @@ export type I_line = [I_point, I_point]
 export type I_dline = [number, number, number]//x,y,dip
 export type I_dip = number
 export type I_arc = { x: number, y: number, r: number, slice?: [number, number] }
-export type I_rect = [I_point,I_point]
-export function HasClass(target:any,className:string){
+export type I_rect = [I_point, I_point]
+export function HasClass(target: any, className: string) {
     return target.hasClass(className) || !!target.parents(`.${className}`).length
 }
-export async function DownloadUrl(url: string, name: string) {
+export async function DownloadFile(file:any) {
+    let name = file.name;
+    let url = GetFileUrl(file)
     fetch(url, {
         mode: 'no-cors',
     })
         .then(resp => resp.blob())
         .then(blob => {
-            let url = window.URL.createObjectURL(blob);
+            let url = GetFileUrl(blob);
             let a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
@@ -62,6 +64,9 @@ export async function DownloadUrl(url: string, name: string) {
             window.URL.revokeObjectURL(url);
         })
         .catch(() => alert('oh no!'));
+}
+export function GetFileUrl(file:any){
+    return window.URL.createObjectURL(file)
 }
 export async function Stall(stallTime: number = 3000) {
     await new Promise(resolve => setTimeout(resolve, stallTime));
@@ -81,29 +86,29 @@ export function HandleBackButton(callback: () => void = () => { }) {
 }
 export class DragClass {
     dragIndex: number;
-    onChange:(list:any[],from:any,to:any)=>void;
-    start:(e:any)=>void;
-    over:(e:any)=>void;
-    drop:(e:any,list:any[])=>void;
-    swap:(arr:any[],from:any,to:any)=>any[];
-    className:string;
-    getAttrs:(list:any[],index:number)=>void;
-    constructor(p:{onChange:(list:any[],from:any,to:any)=>void,className:string}) {
+    onChange: (list: any[], from: any, to: any) => void;
+    start: (e: any) => void;
+    over: (e: any) => void;
+    drop: (e: any, list: any[]) => void;
+    swap: (arr: any[], from: any, to: any) => any[];
+    className: string;
+    getAttrs: (list: any[], index: number) => void;
+    constructor(p: { onChange: (list: any[], from: any, to: any) => void, className: string }) {
         this.dragIndex = 0;
         this.className = p.className;
         this.onChange = p.onChange;
         this.start = (e) => { this.dragIndex = parseInt($(e.target).attr('data-index') as any); }
         this.over = (e) => { e.preventDefault(); }
-        this.drop = (e,list) => {
+        this.drop = (e, list) => {
             e.stopPropagation();
             let from = this.dragIndex, dom = $(e.target);
             if (!dom.hasClass(this.className)) { dom = dom.parents(`.${this.className}`); };
             if (!dom.hasClass(this.className)) { return };
             let to = parseInt(dom.attr('data-index') as any);
             if (from === to) { return }
-            if (typeof this.onChange === 'function') { 
+            if (typeof this.onChange === 'function') {
                 let newList = this.swap(list, from, to);
-                this.onChange(newList, list[from], list[to]) 
+                this.onChange(newList, list[from], list[to])
             }
         }
         this.swap = (arr, from, to) => {
@@ -113,13 +118,13 @@ export class DragClass {
             Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
             return Arr.filter((o) => o._testswapindex !== fromIndex)
         }
-        this.getAttrs = (list,index)=>{
+        this.getAttrs = (list, index) => {
             return {
-                ['data-index']:index,
-                onDragStart:this.start,
-                onDragOver:this.over,
-                onDrop:(e:any)=>this.drop(e,list),
-                draggable:true
+                ['data-index']: index,
+                onDragStart: this.start,
+                onDragOver: this.over,
+                onDrop: (e: any) => this.drop(e, list),
+                draggable: true
             }
         }
     }
@@ -128,18 +133,18 @@ export function GetClient(e: any): { x: number, y: number } { return 'ontouchsta
 export function ExportToExcel(rows: any[], config: any = {}) {
     let { promptText = 'Inter Excel File Name' } = config;
     let o = {
-        fixPersianAndArabicNumbers(str:string):string {
+        fixPersianAndArabicNumbers(str: string): string {
             if (typeof str !== 'string') { return str }
             let persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
                 arabicNumbers = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
-            let i:number;
+            let i: number;
             for (i = 0; i < 10; i++) { str = str.replace(persianNumbers[i], i.toString()).replace(arabicNumbers[i], i.toString()); }
             return str;
         },
-        getJSON(rows:any[]) {
+        getJSON(rows: any[]) {
             let result = [];
             for (let i = 0; i < rows.length; i++) {
-                let json = rows[i], fixedJson:any = {};
+                let json = rows[i], fixedJson: any = {};
                 for (let prop in json) { fixedJson[prop] = this.fixPersianAndArabicNumbers(json[prop]) }
                 result.push(fixedJson);
             }
@@ -197,12 +202,12 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
     }
     return res
 }
-export function EventHandler(selector:string, event:'mousedown'|'mousemove'|'mouseup', action:any, type?:'bind' | 'unbind') {
+export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup', action: any, type?: 'bind' | 'unbind') {
     type = type || 'bind';
     var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
     let touch = 'ontouchstart' in document.documentElement
     let fixedEvent = touch ? me[event] : event;
-    var element:any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
+    var element: any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
     element.unbind(fixedEvent, action);
     if (type === 'bind') { element.bind(fixedEvent, action) }
 }
@@ -215,6 +220,35 @@ export function getValueByStep({ value, start, step, end }) {
 export function URLToJSON(url: string): { [key: string]: any } {
     try { return JSON.parse(`{"${decodeURI(url.split('?')[1]).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"')}"}`) }
     catch { return {} }
+}
+export function FileSize(number: number) {
+    if (number < 1024) {
+        return `${number} bytes`;
+    } else if (number >= 1024 && number < 1048576) {
+        return `${(number / 1024).toFixed(1)} KB`;
+    } else if (number >= 1048576) {
+        return `${(number / 1048576).toFixed(1)} MB`;
+    }
+}
+function IsFileTypeValid(file:any):boolean {
+    const fileTypes = [
+        "image/apng",
+        "image/bmp",
+        "image/gif",
+        "image/jpeg",
+        "image/pjpeg",
+        "image/png",
+        "image/svg+xml",
+        "image/tiff",
+        "image/webp",
+        "image/x-icon",
+    ];
+    return fileTypes.includes(file.type);
+}
+export function FilePreview(file:any,attrs?:any):React.ReactNode {
+    if(!IsFileTypeValid(file)){return null}
+    let url:string = GetFileUrl(file);
+    return <img src={url} alt={file.name} title={file.name} objectFit='cover' {...attrs}/>
 }
 export function JSXToHTML(jsx: any): string {
     return ReactDOMServer.renderToStaticMarkup(jsx)
@@ -276,25 +310,25 @@ export function CalculateDistance(lat1, lon1, lat2, lon2) {
     const distance = R * c;
     return distance;
 }
-export function getEventAttrs(eventType:'onMouseDown'|'onMouseMove'|'onMouseUp',callback){
+export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback) {
     let touch = IsTouch()
-    let fixedEvent:string;
-    if(touch){fixedEvent = {'onMouseDown':'onTouchStart','onMouseMove':'onTouchMove','onMouseUp':'onTouchEnd'}[eventType];}
-    else {fixedEvent = eventType}
-    return {[fixedEvent]:callback}
+    let fixedEvent: string;
+    if (touch) { fixedEvent = { 'onMouseDown': 'onTouchStart', 'onMouseMove': 'onTouchMove', 'onMouseUp': 'onTouchEnd' }[eventType]; }
+    else { fixedEvent = eventType }
+    return { [fixedEvent]: callback }
 }
 function toRadians(degrees) {
     return degrees * (Math.PI / 180);
 }
-export function  AddToAttrs(attrs:any, p:any){
+export function AddToAttrs(attrs: any, p: any) {
     attrs = attrs || {};
     let { style } = p;
-    let attrClassName = attrs.className?attrs.className.split(' '):[];
-    let className = p.className?(Array.isArray(p.className)?p.className:p.className.split(' ')):[];
-    let classNames = [...attrClassName,...className.filter((o)=>!!o)];
+    let attrClassName = attrs.className ? attrs.className.split(' ') : [];
+    let className = p.className ? (Array.isArray(p.className) ? p.className : p.className.split(' ')) : [];
+    let classNames = [...attrClassName, ...className.filter((o) => !!o)];
     let newClassName = classNames.length ? classNames.join(' ') : undefined
     let newStyle = { ...attrs.style, ...style };
-    return { ...attrs, className: newClassName, style: newStyle,...p.attrs }
+    return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
 }
 export function JsonValidator(json, schema) {
     let $$ = {
@@ -381,8 +415,8 @@ export class Swip {
     getDOMLimit: (type: 'dom' | 'parent') => I_Swip_domLimit;
     change: I_Swip_change;
     getPage: () => any;
-    isMoving:boolean;
-    centerAngle:number;
+    isMoving: boolean;
+    centerAngle: number;
     constructor(p: I_Swip) {
         this.p = p;
         this.geo = new Geo();
@@ -405,8 +439,8 @@ export class Swip {
             else {
                 clearTimeout(this.timeout);
                 EventHandler(this.getDom(), 'mousedown', $.proxy(this.mouseDown, this));
-                if(p.onClick){
-                    EventHandler(this.getDom(), 'click', $.proxy(this.click, this));    
+                if (p.onClick) {
+                    EventHandler(this.getDom(), 'click', $.proxy(this.click, this));
                 }
             }
         }
@@ -426,7 +460,7 @@ export class Swip {
                 [this.domLimit.centerX, this.domLimit.centerY],
                 [client.x, client.y]
             ])
-            let res:I_Swip_mousePosition = { xp, yp, clientX: client.x, clientY: client.y, x, y,centerAngle }
+            let res: I_Swip_mousePosition = { xp, yp, clientX: client.x, clientY: client.y, x, y, centerAngle }
             return res;
         }
         this.getDOMLimit = (type): I_Swip_domLimit => {
@@ -448,13 +482,13 @@ export class Swip {
                 bottom: DOM.top + DOM.height
             }
         }
-        this.click = (e)=>{
+        this.click = (e) => {
             //jeloye click bad az drag ro bayad begirim choon click call mishe 
-            if(this.isMoving){return}
+            if (this.isMoving) { return }
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
             let mousePosition = this.getMousePosition(e)
-            let clickParams:I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            let clickParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
             p.onClick(clickParams)
         }
         this.mouseDown = (e) => {
@@ -468,7 +502,7 @@ export class Swip {
             this.so = {
                 client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            let startParams:I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
             let res = (p.start || (() => [0, 0]))(startParams);
             if (!Array.isArray(res)) { return; }
             let x = res[0], y = res[1];
@@ -529,7 +563,7 @@ export class Swip {
                 }
             }
 
-            this.change = { x, y, dx, dy, dist: this.dist, angle,deltaCenterAngle }
+            this.change = { x, y, dx, dy, dist: this.dist, angle, deltaCenterAngle }
 
             let p: I_Swip_parameter = {
                 change: this.change,
@@ -538,14 +572,14 @@ export class Swip {
                 parentLimit: this.parentLimit,
                 event: e
             }
-            if (this.p.move) {this.p.move(p);}
+            if (this.p.move) { this.p.move(p); }
         }
         this.mouseUp = (e: any) => {
             EventHandler('window', 'mousemove', this.mouseMove, 'unbind');
             EventHandler('window', 'mouseup', this.mouseUp, 'unbind');
             //chon click bad az mouseUp call mishe mouseUp isMoving ro zoodtar false mikone (pas nemitoone jeloye click bad az harekat ro begire), pas bayad in amal ba yek vaghfe anjam beshe
             //jeloye clicke bad az harekat ro migirim ta bad az drag kardan function click call nashe
-            setTimeout(()=>this.isMoving = false,10);
+            setTimeout(() => this.isMoving = false, 10);
             let mousePosition = this.getMousePosition(e);
             let p: I_Swip_parameter = {
                 change: this.change,
@@ -1385,31 +1419,31 @@ function svgArcRange(centerX, centerY, radius, angleInDegrees) {
     };
 }
 export function svgArc(x, y, radius, startAngle, endAngle) {
-    if(startAngle === endAngle || endAngle - startAngle === 360){
+    if (startAngle === endAngle || endAngle - startAngle === 360) {
         startAngle = 0; endAngle = 360;
     }
-    if(startAngle === 360){startAngle = 359.99}
-    if(endAngle === 360){endAngle = 359.99}
+    if (startAngle === 360) { startAngle = 359.99 }
+    if (endAngle === 360) { endAngle = 359.99 }
     let start = svgArcRange(x, y, radius, endAngle);
     let end = svgArcRange(x, y, radius, startAngle);
 
     let largeArcFlag;
-    if(endAngle - startAngle < -180){
+    if (endAngle - startAngle < -180) {
         largeArcFlag = '0'
     }
-    else if(endAngle - startAngle < 0){
+    else if (endAngle - startAngle < 0) {
         //console.log(1)
         largeArcFlag = '1'
     }
-    else if(endAngle - startAngle <= 180){
+    else if (endAngle - startAngle <= 180) {
         //console.log(2)
         largeArcFlag = '0'
     }
-    else if(endAngle - startAngle <= 360){
+    else if (endAngle - startAngle <= 360) {
         //console.log(3)
         largeArcFlag = '1'
     }
-    else{
+    else {
         //console.log(4)
         largeArcFlag = '0'
     }
@@ -1432,20 +1466,20 @@ export class Storage {
     removeValueByField: (field: string) => I_storage_model
     setValueByField: (field: string, value: any) => I_storage_model
     getValueByField: (field: string) => any
-    save:(field:string,value:any)=>I_storage_model
-    remove:(field:string,callback?:()=>void)=>I_storage_model
-    load:(field:string, def?:any, time?:number) =>any
-    clear:()=>void
-    download:(file:any, name:string) => void
-    export:()=>void;
-    read:(file:any,callback:(model:I_storage_model)=>void)=>void
-    import:(file:any,callback:()=>void)=>void
-    getModel:()=>I_storage_model
+    save: (field: string, value: any) => I_storage_model
+    remove: (field: string, callback?: () => void) => I_storage_model
+    load: (field: string, def?: any, time?: number) => any
+    clear: () => void
+    download: (file: any, name: string) => void
+    export: () => void;
+    read: (file: any, callback: (model: I_storage_model) => void) => void
+    import: (file: any, callback: () => void) => void
+    getModel: () => I_storage_model
     constructor(id: string) {
         this.init = () => {
             let storage: string = localStorage.getItem('storageClass' + id);
             let timeStorage = localStorage.getItem('storageClassTime' + id);
-            let model:I_storage_model, time:I_storage_time;
+            let model: I_storage_model, time: I_storage_time;
             if (storage === undefined || storage === null) { model = {} }
             else { model = JSON.parse(storage) }
             if (timeStorage === undefined || timeStorage === null) { time = {} }
@@ -1500,20 +1534,20 @@ export class Storage {
             }
             return parent[fields[fields.length - 1]]
         }
-        this.save = (field,value) => {
+        this.save = (field, value) => {
             try { value = JSON.parse(JSON.stringify(value)) } catch { value = value; }
             if (!field || field === null) { return }
             let res = this.setValueByField(field, value)
             this.time[field] = new Date().getTime();
-            this.saveStorage(this.model,this.time);
+            this.saveStorage(this.model, this.time);
             return res;
         }
-        this.remove = (field,callback = ()=>{}) => {
+        this.remove = (field, callback = () => { }) => {
             let res = this.removeValueByField(field);
             let newTime = {};
             for (let prop in this.time) { if (prop !== field) { newTime[prop] = this.time[prop] } }
             this.time = newTime;
-            this.saveStorage(this.model,this.time);
+            this.saveStorage(this.model, this.time);
             callback();
             return res;
         }
@@ -1527,14 +1561,14 @@ export class Storage {
             }
             if (value === undefined && def !== undefined) {
                 value = typeof def === 'function' ? def() : def;
-                this.save(field,def);
+                this.save(field, def);
             }
             return value;
         }
         this.clear = () => {
             this.model = {};
             this.time = {};
-            this.saveStorage(this.model,this.time)
+            this.saveStorage(this.model, this.time)
         }
         this.download = (file, name) => {
             if (!name || name === null) { return }
@@ -1559,13 +1593,13 @@ export class Storage {
         }
         this.import = (file, callback = () => { }) => {
             this.read(
-                file, 
+                file,
                 (obj) => {
                     if (obj === undefined) { return; }
                     let { model, time } = obj;
                     this.model = model;
                     this.time = time;
-                    this.saveStorage(this.model,this.time);
+                    this.saveStorage(this.model, this.time);
                     callback()
                 }
             )
