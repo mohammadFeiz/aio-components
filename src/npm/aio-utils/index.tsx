@@ -41,7 +41,7 @@ export type I_point = number[]
 export type I_line = [I_point, I_point]
 export type I_dline = [number, number, number]//x,y,dip
 export type I_dip = number
-export type I_arc = { x: number, y: number, r: number, slice?: [number, number] }
+export type I_arc = { x: number, y: number, r: number, slice?: number[] }
 export type I_rect = [I_point, I_point]
 export function HasClass(target: any, className: string) {
     return target.hasClass(className) || !!target.parents(`.${className}`).length
@@ -71,7 +71,7 @@ export function GetFileUrl(file:any){
 export async function Stall(stallTime: number = 3000) {
     await new Promise(resolve => setTimeout(resolve, stallTime));
 }
-export function FileToBase64(file: any, callback?: (result: any) => void) {
+export function FileToBase64(file: any, callback: (result: any) => void) {
     const fileReader = new FileReader();
     fileReader.onload = () => callback(fileReader.result);
     fileReader.readAsDataURL(file);
@@ -202,16 +202,17 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
     }
     return res
 }
-export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup', action: any, type?: 'bind' | 'unbind') {
+export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup' | 'click', action: any, type?: 'bind' | 'unbind') {
     type = type || 'bind';
-    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };
+    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend",click:'click' };
     let touch = 'ontouchstart' in document.documentElement
     let fixedEvent = touch ? me[event] : event;
     var element: any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
     element.unbind(fixedEvent, action);
     if (type === 'bind') { element.bind(fixedEvent, action) }
 }
-export function getValueByStep({ value, start, step, end }) {
+export function getValueByStep(p:{ value:number, start:number, step:number, end:number }) {
+    let { value, start, step, end } = p;
     let res = Math.round((value - start) / step) * step + start;
     if (res < start) { res = start }
     if (res > end) { res = end }
@@ -263,13 +264,13 @@ export async function Paste() {
     try {
         return window.navigator.clipboard.read();
     }
-    catch (err) {
+    catch (err:any) {
         console.log(err.message)
     }
 }
 export function Search(items: any[], searchValue: string, getValue: (item: any, index: number) => any = (o) => o): any[] {
     if (!searchValue) { return items }
-    function isMatch(keys, value) {
+    function isMatch(keys:string[], value:string) {
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
             if (value.indexOf(key) === -1) { return false }
@@ -279,14 +280,15 @@ export function Search(items: any[], searchValue: string, getValue: (item: any, 
     let keys = searchValue.split(' ');
     return items.filter((o, i) => isMatch(keys, getValue(o, i)))
 }
-export function GenerateComponsition({ level: maxLevel = 4, length = 4, childsField = 'childs', fields = {} }) {
+export function GenerateComponsition(p:{ level?:number, length?:number, childsField?:string, fields:any }) {
+    let { level: maxLevel = 4, length = 4, childsField = 'childs', fields = {} } = p;
     let $$ = {
         generate(level = 0, index = '') {
             if (level >= maxLevel) { return [] }
             let res = []
             for (let i = 0; i < length; i++) {
                 let newIndex = index + '-' + i;
-                let newItem = {
+                let newItem:any = {
                     id: 'aa' + Math.round(Math.random() * 10000),
                     [childsField]: $$.generate(level + 1, newIndex)
                 }
@@ -298,7 +300,7 @@ export function GenerateComponsition({ level: maxLevel = 4, length = 4, childsFi
     }
     return $$.generate()
 }
-export function CalculateDistance(lat1, lon1, lat2, lon2) {
+export function CalculateDistance(lat1:number, lon1:number, lat2:number, lon2:number) {
     const R = 6371; // Radius of the Earth in kilometers
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
@@ -310,86 +312,86 @@ export function CalculateDistance(lat1, lon1, lat2, lon2) {
     const distance = R * c;
     return distance;
 }
-export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback) {
+export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback:(e:any)=>void) {
     let touch = IsTouch()
     let fixedEvent: string;
     if (touch) { fixedEvent = { 'onMouseDown': 'onTouchStart', 'onMouseMove': 'onTouchMove', 'onMouseUp': 'onTouchEnd' }[eventType]; }
     else { fixedEvent = eventType }
     return { [fixedEvent]: callback }
 }
-function toRadians(degrees) {
-    return degrees * (Math.PI / 180);
+function toRadians(degree:number) {
+    return degree * (Math.PI / 180);
 }
 export function AddToAttrs(attrs: any, p: any) {
     attrs = attrs || {};
     let { style } = p;
     let attrClassName = attrs.className ? attrs.className.split(' ') : [];
     let className = p.className ? (Array.isArray(p.className) ? p.className : p.className.split(' ')) : [];
-    let classNames = [...attrClassName, ...className.filter((o) => !!o)];
+    let classNames = [...attrClassName, ...className.filter((o:any) => !!o)];
     let newClassName = classNames.length ? classNames.join(' ') : undefined
     let newStyle = { ...attrs.style, ...style };
     return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
 }
-export function JsonValidator(json, schema) {
-    let $$ = {
-        getType(v) {
-            if (['string', 'number', 'boolean', 'array', 'object', 'null', 'undefined'].indexOf(v) !== -1) { return v }
-            if (Array.isArray(v)) { return 'array' }
-            return typeof v
-        },
-        getSchemaTypes(s) {
-            if (typeof s === 'string' && s.indexOf('|') !== -1) { return s.split('|') }
-            return [s]
-        },
-        compaire(data, schema, propName) {
-            const schemaTypes = this.getSchemaTypes(schema);
-            let type = this.getType(data);
-            let isMatch = false;
-            for (let i = 0; i < schemaTypes.length; i++) {
-                let st = schemaTypes[i];
-                if (['string', 'number', 'boolean', 'array', 'object', 'null', 'undefined'].indexOf(st) !== -1) {
-                    if (type === st) { isMatch = true }
-                }
-                else if (typeof st === 'object') {
-                    if (type === this.getType(st)) { isMatch = true }
-                }
-                else {
-                    if (data === st) { isMatch = true }
-                }
-            }
-            if (!isMatch) { return `${propName} must be ${schemaTypes.join(' or ')}` }
-        },
-        validate(data, schema, propName = 'data') {
-            let compaireResult = this.compaire(data, schema, propName)
-            if (compaireResult) { return compaireResult }
-            if (typeof schema === 'object') {
-                if (Array.isArray(data)) {
-                    for (let i = 0; i < data.length; i++) {
-                        let d = data[i];
-                        let s = schema[i] || schema[0];
-                        let res = this.validate(d, s, `${propName}[${i}]`);
-                        if (res) { return res }
-                    }
-                }
-                else {
-                    for (let prop in data) {
-                        let d = data[prop];
-                        let s = schema[prop];
-                        let res = this.validate(d, s, `${propName}.${prop}`);
-                        if (res) { return res }
-                    }
-                    for (let prop in schema) {
-                        let d = data[prop];
-                        let s = schema[prop];
-                        let res = this.validate(d, s, `${propName}.${prop}`);
-                        if (res) { return res }
-                    }
-                }
-            }
-        }
-    }
-    return $$.validate(json, schema)
-}
+// export function JsonValidator(json:any, schema:any) {
+//     let $$ = {
+//         getType(v) {
+//             if (['string', 'number', 'boolean', 'array', 'object', 'null', 'undefined'].indexOf(v) !== -1) { return v }
+//             if (Array.isArray(v)) { return 'array' }
+//             return typeof v
+//         },
+//         getSchemaTypes(s) {
+//             if (typeof s === 'string' && s.indexOf('|') !== -1) { return s.split('|') }
+//             return [s]
+//         },
+//         compaire(data, schema, propName) {
+//             const schemaTypes = this.getSchemaTypes(schema);
+//             let type = this.getType(data);
+//             let isMatch = false;
+//             for (let i = 0; i < schemaTypes.length; i++) {
+//                 let st = schemaTypes[i];
+//                 if (['string', 'number', 'boolean', 'array', 'object', 'null', 'undefined'].indexOf(st) !== -1) {
+//                     if (type === st) { isMatch = true }
+//                 }
+//                 else if (typeof st === 'object') {
+//                     if (type === this.getType(st)) { isMatch = true }
+//                 }
+//                 else {
+//                     if (data === st) { isMatch = true }
+//                 }
+//             }
+//             if (!isMatch) { return `${propName} must be ${schemaTypes.join(' or ')}` }
+//         },
+//         validate(data, schema, propName = 'data') {
+//             let compaireResult = this.compaire(data, schema, propName)
+//             if (compaireResult) { return compaireResult }
+//             if (typeof schema === 'object') {
+//                 if (Array.isArray(data)) {
+//                     for (let i = 0; i < data.length; i++) {
+//                         let d = data[i];
+//                         let s = schema[i] || schema[0];
+//                         let res = this.validate(d, s, `${propName}[${i}]`);
+//                         if (res) { return res }
+//                     }
+//                 }
+//                 else {
+//                     for (let prop in data) {
+//                         let d = data[prop];
+//                         let s = schema[prop];
+//                         let res = this.validate(d, s, `${propName}.${prop}`);
+//                         if (res) { return res }
+//                     }
+//                     for (let prop in schema) {
+//                         let d = data[prop];
+//                         let s = schema[prop];
+//                         let res = this.validate(d, s, `${propName}.${prop}`);
+//                         if (res) { return res }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return $$.validate(json, schema)
+// }
 export class Swip {
     p: I_Swip;
     geo: Geo;
@@ -417,13 +419,19 @@ export class Swip {
     getPage: () => any;
     isMoving: boolean;
     centerAngle: number;
+    defaultLimit:I_Swip_domLimit
     constructor(p: I_Swip) {
+        this.defaultLimit = {width:0,height:0,left:0,top:0,right:0,bottom:0,centerX:0,centerY:0}
+        this.domLimit = this.defaultLimit;
+        this.parentLimit = this.defaultLimit;
+        this.change = {x:0,y:0,dx:0,dy:0,dist:0,angle:0,deltaCenterAngle:0}
+        this.so = {}
         this.p = p;
         this.geo = new Geo();
         this.timeout = undefined;
         this.count = 0;
         this.getDom = () => p.dom();
-        this.getParent = () => p.parent();
+        this.getParent = () => p.parent?p.parent():undefined;
         this.dx = 0;
         this.dy = 0;
         this.cx = 0;
@@ -486,15 +494,15 @@ export class Swip {
             //jeloye click bad az drag ro bayad begirim choon click call mishe 
             if (this.isMoving) { return }
             this.domLimit = this.getDOMLimit('dom');
-            this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
+            this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;
             let mousePosition = this.getMousePosition(e)
             let clickParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
-            p.onClick(clickParams)
+            if(p.onClick){p.onClick(clickParams)}
         }
         this.mouseDown = (e) => {
             this.isMoving = false;
             this.domLimit = this.getDOMLimit('dom');
-            this.parentLimit = p.parent ? this.getDOMLimit('parent') : undefined;
+            this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;
             let mousePosition = this.getMousePosition(e)
             this.centerAngle = mousePosition.centerAngle;
             this.cx = mousePosition.clientX;
@@ -529,7 +537,7 @@ export class Swip {
             this.dx = dx; this.dy = dy;
             this.dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
             let angle = this.geo.getAngle([[this.cx, this.cy], [client.x, client.y]])
-            let x, y;
+            let x:number = 0, y:number = 0;
             if (this.so.x !== undefined && this.so.y !== undefined) {
                 x = this.so.x + dx; y = this.so.y + dy;
                 let { minX, minY, maxX, maxY } = this.p;
@@ -616,8 +624,8 @@ export class AIODate {
     getYearDaysLength: (date: I_Date) => number;
     getDaysOfWeek: (date: I_Date, pattern?: string) => any[];
     getDatesBetween: (date: I_Date, otherDate: any, step?: number) => any[];
-    getDelta: (date: I_Date, otherDate?: I_Date, unit?: 'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond') => { day: number, hour: number, minute: number, second: number, tenthsecond: number, miliseconds: number, type: 'ramaining' | 'passed' };
-    convertMiliseconds: (miliseconds: number, unit?: 'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond') => { day: number, hour: number, minute: number, second: number, tenthsecond: number, miliseconds: number, type: 'ramaining' | 'passed' };
+    getDelta: (date: I_Date, otherDate?: I_Date, unit?: 'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond') => { day: number, hour: number, minute: number, second: number, tenthsecond: number, miliseconds: number, type: 'remaining' | 'passed' | 'now' };
+    convertMiliseconds: (miliseconds: number, unit?: 'day' | 'hour' | 'minute' | 'second' | 'tenthsecond' | 'milisecond') => { day: number, hour: number, minute: number, second: number, tenthsecond: number, miliseconds: number, type: 'remaining' | 'passed' | 'now' };
     getDaysOfMonth: (date: I_Date, pattern?: string) => any[];
     getLastDayOfMonth: (date: I_Date) => any[];
     getDateByPattern: (date: I_Date, pattern: string) => string;
@@ -731,7 +739,7 @@ export class AIODate {
                     list = [year, month, day, hour, minute, second, tenthsecond]
                 }
             }
-            else { return false }
+            else { return [] }
             if (jalali) {
                 let [year, month, day] = this.toJalali([list[0], list[1], list[2]]);
                 list[0] = year; list[1] = month; list[2] = day;
@@ -812,10 +820,10 @@ export class AIODate {
             }
             return pattern
         }
-        this.get2Digit = (n) => {
-            let ns;
+        this.get2Digit = (n:number) => {
+            let ns:string;
             try { ns = n.toString() }
-            catch { return n }
+            catch { return n.toString() }
             if (ns.length === 1) { ns = '0' + n }
             return ns
         }
@@ -848,7 +856,7 @@ export class AIODate {
             return splitter;
         }
         this.getTime = (date, jalali = this.isJalali(date)) => {
-            if (!date) { return }
+            if (!date) { return 0 }
             if (typeof date === 'number') { return date }
             date = this.convertToArray(date);
             let [year, month = 1, day = 1, hour = 0, minute = 0, second = 0, tenthsecond = 0] = date;
@@ -904,7 +912,7 @@ export class AIODate {
             let length = delta.miliseconds / step;
             if (isNaN(length) || length > 1000) {
                 console.error('AIODate().getDatesBetween() => too many dates');
-                return;
+                return [];
             }
             let nextDate = this.getNextTime(date, step);
             let res = [];
@@ -915,11 +923,11 @@ export class AIODate {
             return res
         }
         this.getDelta = (date, otherDate, unit) => {
-            let dif = this.getTime(date) - this.getTime(otherDate);
+            let dif = this.getTime(date) - this.getTime(otherDate || this.getToday());
             return this.convertMiliseconds(-dif, unit)
         }
         this.convertMiliseconds = (miliseconds = 0, unit = 'day') => {
-            let type;
+            let type:'remaining' | 'passed' | 'now';
             if (miliseconds < 0) { type = 'passed'; miliseconds = -miliseconds }
             else if (miliseconds > 0) { type = 'remaining' }
             else { type = 'now' }
@@ -961,9 +969,9 @@ export class AIODate {
             return result;
         }
         this.getLastDayOfMonth = (date) => {
-            let dateArray = this.convertToArray(date);
+            let dateArray:number[] = this.convertToArray(date);
             let length = this.getMonthDaysLength(dateArray);
-            let lastDay = [date[0], date[1], length];
+            let lastDay = [dateArray[0], dateArray[1], length];
             return lastDay
         }
         this.getDateByPattern = (date, pattern) => this.pattern(date, pattern)
@@ -996,6 +1004,7 @@ export class AIODate {
                 res += date[1];
                 return res - 1
             }
+            return 0
         }
     }
 }
@@ -1091,7 +1100,7 @@ export class Geo {
             else if (points.length === 2) {
                 let avg = this.getAvg([p1, p2]);
                 let dline = this.getDLineByLine([p1, p2])
-                let pm = this.getPrepFromLine(dline, avg, height);
+                let pm = this.getPrepFromLine(dline, avg, height || 0);
                 if (height) { changeObject = this.getArcBy3Points(p1, pm, p2); }
                 else { changeObject = { r: this.getLength([p1, p2]) / 2, x: avg[0], y: avg[1] } }
             }
@@ -1202,7 +1211,7 @@ export class Geo {
             return points;
         }
         this.setLineByLength = (line, length, side = 'end') => {
-            let p1: I_point, p2: I_point, angle = this.getAngle(line);
+            let p1: I_point = [0,0], p2: I_point = [0,0], angle = this.getAngle(line);
             if (side === 'center') {
                 let center = this.getAvg(line);
                 let line1 = this.getLineBySLA(center, length / 2, angle + 180);
@@ -1411,14 +1420,14 @@ export function GetCities() {
     }
 }
 export function Get2Digit(n: number) { let ns: string = n.toString(); return ns.length === 1 ? '0' + ns : ns }
-function svgArcRange(centerX, centerY, radius, angleInDegrees) {
+function svgArcRange(centerX:number, centerY:number, radius:number, angleInDegrees:number) {
     let angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
     return {
         x: centerX + (radius * Math.cos(angleInRadians)),
         y: centerY + (radius * Math.sin(angleInRadians))
     };
 }
-export function svgArc(x, y, radius, startAngle, endAngle) {
+export function svgArc(x:number, y:number, radius:number, startAngle:number, endAngle:number) {
     if (startAngle === endAngle || endAngle - startAngle === 360) {
         startAngle = 0; endAngle = 360;
     }
@@ -1462,7 +1471,7 @@ export class Storage {
     time: I_storage_time;
     init: () => void;
     saveStorage: (model: I_storage_model, time: I_storage_time) => void;
-    getParent: (field: string) => I_storage_model;
+    getParent: (field: string) => I_storage_model | undefined;
     removeValueByField: (field: string) => I_storage_model
     setValueByField: (field: string, value: any) => I_storage_model
     getValueByField: (field: string) => any
@@ -1476,8 +1485,10 @@ export class Storage {
     import: (file: any, callback: () => void) => void
     getModel: () => I_storage_model
     constructor(id: string) {
+        this.model = {}
+        this.time = {}
         this.init = () => {
-            let storage: string = localStorage.getItem('storageClass' + id);
+            let storage: any = localStorage.getItem('storageClass' + id);
             let timeStorage = localStorage.getItem('storageClassTime' + id);
             let model: I_storage_model, time: I_storage_time;
             if (storage === undefined || storage === null) { model = {} }
@@ -1503,7 +1514,7 @@ export class Storage {
         }
         this.removeValueByField = (field: string) => {
             let fields = field.split('.')
-            let parent: I_storage_model = this.getParent(field)
+            let parent: I_storage_model | undefined = this.getParent(field)
             let lastField: string = fields[fields.length - 1]
             let newParent: I_storage_model = {};
             for (let prop in parent) {
@@ -1536,7 +1547,7 @@ export class Storage {
         }
         this.save = (field, value) => {
             try { value = JSON.parse(JSON.stringify(value)) } catch { value = value; }
-            if (!field || field === null) { return }
+            if (!field || field === null) { return {} }
             let res = this.setValueByField(field, value)
             this.time[field] = new Date().getTime();
             this.saveStorage(this.model, this.time);
@@ -1544,7 +1555,7 @@ export class Storage {
         }
         this.remove = (field, callback = () => { }) => {
             let res = this.removeValueByField(field);
-            let newTime = {};
+            let newTime:any = {};
             for (let prop in this.time) { if (prop !== field) { newTime[prop] = this.time[prop] } }
             this.time = newTime;
             this.saveStorage(this.model, this.time);
