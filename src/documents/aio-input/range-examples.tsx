@@ -153,7 +153,11 @@ const LabelStep:FC<I_RS> = ({setting,type}) => {
             />
         {AIODoc().Code(`
 <AIOInput
-    type={type} value={value} start={0} end={100} step={1}
+    type='${type}' 
+    value={value} 
+    start={0} 
+    end={100} 
+    step={1}
     onChange={(newValue)=>setValue(newValue)}
     labels={{step:2}}
     ${sc(setting)}

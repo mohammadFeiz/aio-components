@@ -41,6 +41,7 @@ const optionCode =
 }}`
 const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
     let [examples] = useState<any>([
+        ['test',()=><Test type={type}/>],
         ['before',()=><Before type={type}/>],
         ['after',()=><After type={type}/>],
         ['subtext',()=><Subtext type={type}/>],
@@ -340,6 +341,50 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
     return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
 }
 export default SelectExamples
+const Test:FC<{type:I_exampleTypes}> = ({type})=> {
+    const [value,setValue] = useState<number>()
+    return (
+        <div className='example'>
+            <AIOInput
+                type='checklist' 
+                options={textOptions}
+                option={{
+                    text:(option:any)=>option.name,
+                    value:(option:any)=>option.id,
+                    before:(option:any)=><Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>,
+                    subtext:(option:any)=>option.gender,
+                    attrs:(option:any)=>{
+                        return {
+                            title:option.name
+                        }
+                    },
+                    checkIcon:()=>[
+                        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
+                        <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
+                    ],
+                    style:()=>{
+                        return { width:'100%'}
+                    },
+                    className:(option:any)=>`my-option my-option-${option.gender}`,
+                    disabled:(option:any)=>option.gender === 'female'
+                }}
+            value={value}
+            onChange={(newValue)=>setValue(newValue)}
+            popover={{fitHorizontal:true}}
+        />
+        {AIODoc().Code(`
+<AIOInput
+    type='${type}'
+    options={${optionsCode}} 
+    option={${optionCode}}
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
+    before={<Icon path={mdiAccount} size={0.8}/>}
+/>
+        `)}
+        </div> 
+    )
+}
 const Before:FC<{type:I_exampleTypes}> = ({type})=> {
     const [value,setValue] = useState<number>()
     return (
