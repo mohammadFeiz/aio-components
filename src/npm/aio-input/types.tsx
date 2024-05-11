@@ -1,7 +1,7 @@
 import { AP_modal } from "../aio-popup"
 import { AIODate } from "./../aio-utils"
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'multiselect' | 'map' | 'tree'|'spinner' |'slider'|
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion' | 'checklist'
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'map' | 'tree'|'spinner' |'slider'|
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' 
@@ -104,7 +104,7 @@ export type AI = {
     maxLength?: number,
     min?: number,//slider,number
     move?: any,//list
-    multiple?: boolean,
+    multiple?: boolean | number,
     onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void>),
     onChange?: (newValue: any, p?: any) => void,
     onChangePaging?: (newPaging: AI_table_paging) => void,
@@ -219,6 +219,8 @@ export type AI_option = {
     close?:boolean,
     level?:number,
 }
+export type AI_optionDic = {[key:string]:AI_option}
+export type AI_options = {optionsList:AI_option[],optionsDic:AI_optionDic}
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any,attrs?:any }) => any
@@ -234,7 +236,7 @@ export type AI_context = {
     optionClick: (option: AI_option) => void,
     types: AI_types,
     DATE:AIODate,
-
+    options:AI_options
 }
 export type AI_types = {
     isMultiple: boolean,
@@ -279,8 +281,6 @@ export type AI_Popover_props = {
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
 export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange?: (value: type_time_value) => void, onClose: () => void,getValue:(justToday?:boolean)=>any }
 export type I_FileItem = {file:any,index:number}
-export type I_Multiselect = {options:AI_option[]}
-export type I_Tags = {options:AI_option[]}
 export type I_Tag = { option:AI_option, value:any }
 export type AI_Options = {options?:any[]}
 export type I_TableGap = { dir: 'h' | 'v' }

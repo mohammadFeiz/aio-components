@@ -13,12 +13,14 @@ import Axios from "axios";
 import {
     AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_Options, AI_Popover_props, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
     AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar, I_Drag, I_FileItem, I_Layout,
-    I_Multiselect, I_Tag, I_Tags, I_TimePopver, I_list_temp, type_time_value,
+    I_Tag, I_TimePopver, I_list_temp, type_time_value,
     AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
     AI_TableCellContent, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_TableGap, type_table_context, type_table_temp,
     I_RangeArc, I_RangeRect, I_RangeValue, I_RangeValueContainer,AI_label,AI_labelItem,
     I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys,
-    AI_optionProp
+    AI_optionProp,
+    AI_optionDic,
+    AI_options
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
@@ -30,13 +32,8 @@ import './index.css';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
     let type = props.type,
-        multiple = props.multiple,
         round = props.round;
-    if (type as any === 'checklist') {
-        type = 'radio';
-        multiple = true
-    }
-    else if (type as any === 'spinner') {
+    if (type as any === 'spinner') {
         type = 'range';
         if (!round || typeof round !== 'number') {
             round = 1;
@@ -49,7 +46,7 @@ const AIOInput: FC<AI> = (props) => {
     else if (type === 'range') {
         return null;
     }
-    let rootProps: AI = { ...props, type, multiple, round }
+    let rootProps: AI = { ...props, type, round }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
@@ -82,13 +79,6 @@ function AIOINPUT(props: AI) {
             onChange: (newOptions, from, to) => { if (typeof props.onSwap === 'function') { props.onSwap(newOptions, from, to) } }
         })
     )
-    function getSelectText() {
-        let { options = [] } = props;
-        options = typeof options === 'function' ? options() : options
-        let option = options.find((option) => value === undefined ? false : GetOptionProps({ props, option, key: 'value' }) === value);
-        if (option === undefined) { return }
-        return GetOptionProps({ props: props, option, key: 'text' })
-    }
     function toggle(popover: any) {
         let open = !!popup.getModals().length
         if (!!popover === !!open) { return }
@@ -114,10 +104,10 @@ function AIOINPUT(props: AI) {
             else if (type === 'tree') {/*do nothing*/ }
             else if (type === 'file') {/*do nothing*/ }
             else if (types.isMultiple) {
-                let { maxLength } = props, newValue;
+                let { multiple } = props, newValue;
                 if (value.indexOf(option.value) === -1) { newValue = value.concat(option.value) }
                 else { newValue = value.filter((o: any) => o !== option.value) }
-                while (maxLength && newValue.length > maxLength) {
+                while (typeof multiple === 'number' && newValue.length > multiple) {
                     newValue = newValue.slice(1, newValue.length)
                 }
                 onChange(newValue)
@@ -132,6 +122,7 @@ function AIOINPUT(props: AI) {
     }
     function getContext(): AI_context {
         let context: AI_context = {
+            options:GetOptions({rootProps:props,types}),
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
             DragOptions, open, click, optionClick, types, showPassword, setShowPassword, DATE
         }
@@ -144,17 +135,15 @@ function AIOINPUT(props: AI) {
         return 'aio-input-range-horizontal'
     }
     let render: { [key in AI_type]: () => React.ReactNode } = {
-        checklist: () => null,
         spinner: () => null,
         slider: () => null,
-        acardion: () => <Acardion options={GetOptions({ rootProps: props, types })} />,
+        acardion: () => <Acardion/>,
         tree: () => <Tree />,
         list: () => <List />,
         range: () => <Layout properties={{ text: <Range />, className: getRangeClassName() }} />,
         file: () => <File />,
-        select: () => <Layout properties={{ text: props.text || getSelectText() }} />,
+        select: () => <Select/>,
         button: () => <Layout />,
-        multiselect: () => <Multiselect options={GetOptions({ rootProps: props, types })} />,
         radio: () => <Layout properties={{ text: <Options /> }} />,
         tabs: () => <Layout properties={{ text: <Options /> }} />,
         buttons: () => <Layout properties={{ text: <Options /> }} />,
@@ -254,7 +243,7 @@ class Popover {
     getIsActive = () => {
         let { getRootProps } = this.props;
         let { popover, type, options } = getRootProps();
-        if (type === 'date' || type === 'select' || type === 'multiselect') { return true }
+        if (type === 'date' || type === 'select') { return true }
         if (type === 'button') { return !!popover }
         if (type === 'text' || type === 'number' || type === 'textarea') { return !!options }
         return false
@@ -264,7 +253,7 @@ class Popover {
         let { getRootProps, toggle, id, types } = this.props, rootProps = getRootProps()
         return (dom: any) => {
             let popover: AP_modal = { ...(rootProps.popover || {}) }
-            let { rtl, type } = rootProps;
+            let { rtl, type,multiple } = rootProps;
             let { body = {} } = popover;
             let backdrop = !popover.backdrop ? {} : popover.backdrop;
             backdrop = { ...backdrop, attrs: AddToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
@@ -272,7 +261,7 @@ class Popover {
             let config: AP_modal = {
                 //props that have default but can change by user
                 position: 'popover',
-                fitHorizontal: ['multiselect', 'text', 'number', 'textarea'].indexOf(type) !== -1,
+                fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
                 //props that havent default but can define by user(header,footer,fitTo,fixStyle)
                 ...popover,
                 //props that cannot change by user
@@ -433,7 +422,7 @@ function Image() {
 function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
 function InputFile() {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { value = [], onChange = () => { }, disabled, maxLength, inputAttrs } = rootProps;
+    let { value = [], onChange = () => { }, disabled, multiple, inputAttrs } = rootProps;
     function change(e: any) {
         let Files = e.target.files;
         let result;
@@ -445,8 +434,10 @@ function InputFile() {
                 if (names.indexOf(file.name) !== -1) { continue }
                 result.push({ name: file.name, size: file.size, file })
             }
-            while (maxLength && result.length > maxLength) {
-                result = result.slice(1, result.length)
+            if(typeof multiple === 'number'){
+                while (result.length > multiple) {
+                    result = result.slice(1, result.length)
+                }
             }
         }
         else { result = Files.length ? Files[0] : undefined }
@@ -516,7 +507,7 @@ function FileItem(props: I_FileItem) {
     let { minName, sizeString } = getFile(file);
     let { url } = file;
 
-    let option: AI_option = GetOptions({
+    let {optionsList} = GetOptions({
         rootProps, types,
         options: [{ url, minName, sizeString, index }],
         defaultOptionProps: {
@@ -525,25 +516,40 @@ function FileItem(props: I_FileItem) {
             before: () => getIcon(),
             after: () => <div className='aio-input-file-item-icon' onClick={(e) => { e.stopPropagation(); e.preventDefault(); remove(index) }}>{I(mdiClose, .7)}</div>
         }
-    })[0]
+    })
+    let option = optionsList[0]
     return <Layout option={option} />
 }
-function Multiselect(props: I_Multiselect) {
-    let { options = [] } = props;
-    let { rootProps }: AI_context = useContext(AICTX);
-    let { style = {} } = rootProps.attrs || {};
-    return (<div className={'aio-input-multiselect-container'} style={{ width: style.width }}><Layout /><Tags options={options} /></div>)
+function Select() {
+    let { rootProps,types,options }: AI_context = useContext(AICTX);
+    let {value,hideTags} = rootProps;
+    
+    let values:any[] = Array.isArray(value)?[...value]:(value !== undefined?[value]:[])
+    function getSelectText() {
+        if (!values.length) { return }
+        let option:AI_option = options.optionsDic['a' + values[0]]
+        if (!option) { return }
+        return option.text
+    }
+    if(types.isMultiple){
+        return (
+            <div className={'aio-input-multiselect-container'}>
+                <Layout />
+                {!hideTags && !!values.length && <Tags />}
+            </div>
+        )
+    }
+    else {return <Layout properties={{ text: rootProps.text || getSelectText() }} />}
 }
-function Tags(props: I_Tags) {
-    let { options = [] } = props;
-    let { rootProps }: AI_context = useContext(AICTX);
-    let { value = [], rtl, hideTags, disabled } = rootProps;
-    if (!value.length || hideTags) { return null }
-    let tags = value.map((o: AI_option, i: number) => {
-        let option = options.find((option: AI_option) => o === option.value)
+function Tags() {
+    let { rootProps,options }: AI_context = useContext(AICTX);
+    let { value = [], rtl, disabled } = rootProps;
+    let tags = value.map((o: any, i: number) => {
+        let option:AI_option = options.optionsDic['a' + o];
         if (option === undefined) { return null }
         return <Tag key={i} value={o} option={option} />
     })
+    console.log(tags)
     return !tags.length ? null : <div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
 function Tag(props: I_Tag) {
@@ -562,10 +568,10 @@ function Tag(props: I_Tag) {
     )
 }
 function Input() {
-    let { rootProps, types, showPassword }: AI_context = useContext(AICTX)
+    let { rootProps, types, showPassword,options }: AI_context = useContext(AICTX)
     let { type } = rootProps;
     let {
-        min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], delay = 400, disabled, options, placeholder,
+        min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], disabled, placeholder,
         inputAttrs, spin = true, justify
     } = rootProps;
     let [dom] = useState<any>(createRef())
@@ -703,11 +709,10 @@ function Input() {
     let attrs = getInputAttrs()
     if (!attrs.onChange) { return value }
     else if (type === 'color') {
-        let options: AI_option[] = GetOptions({ rootProps, types })
         return (
             <label style={{ width: '100%', height: '100%', background: value }}>
                 <input {...attrs} style={{ opacity: 0 }} opacity rgba cmyk hsla />
-                {!!options.length && <datalist id={datauniqid}>{options.map((o: AI_option) => <option value={o.value} />)}</datalist>}
+                {!!options.optionsList.length && <datalist id={datauniqid}>{options.optionsList.map((o: AI_option) => <option value={o.value} />)}</datalist>}
             </label>
         )
     }
@@ -859,8 +864,7 @@ const FormInput: FC<AI_FormInput> = (props) => {
         return props;
     }
     function getDefaultValue(p: AI) {
-        if (p.multiple) { return [] }
-        if (p.type === 'multiselect') { return [] }
+        if (!!p.multiple) { return [] }
     }
     let value = getValueByField({ field, def: input ? getDefaultValue(input) : undefined, formItem });
     let error = getError(formItem, value)
@@ -874,10 +878,10 @@ const FormInput: FC<AI_FormInput> = (props) => {
         </section>
     )
 }
-function Options(props: AI_Options) {
-    let { rootProps, types }: AI_context = useContext(AICTX);
+function Options() {
+    let { rootProps, types,options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
-    function renderSearchBox(options: any[]) {
+    function renderSearchBox(options: AI_option[]) {
         if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
         return (
@@ -889,32 +893,31 @@ function Options(props: AI_Options) {
             </div>
         )
     }
-    function getRenderOptions(options: any[]) {
+    function getRenderOptions(options: AI_option[]) {
         let renderIndex = 0;
-        return options.map((option, i) => {
+        return options.map((option:AI_option, i) => {
             if (searchValue) {
-                if (option.text === undefined || option.text === '') { return null }
-                if (option.text.indexOf(searchValue) === -1) { return null }
+                if (option.text === undefined || option.text === '' || option.text === null) { return null }
+                if ((option.text as string).indexOf(searchValue) === -1) { return null }
             }
             let p = { key: i, option, renderIndex, realIndex: i, searchValue }
             return <Layout {...p} />
         });
     }
-    let options = props.options || GetOptions({ rootProps, types });
-    if (!options.length) { return null }
-    let renderOptions = getRenderOptions(options);
+    if (!options.optionsList.length) { return null }
+    let renderOptions = getRenderOptions(options.optionsList);
     let className = `aio-input-options aio-input-${rootProps.type}-options`
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <>
-            {renderSearchBox(options)}
+            {renderSearchBox(options.optionsList)}
             <div className={className}>{renderOptions}</div>
         </>
     )
 }
 function Layout(props: I_Layout) {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword }: AI_context = useContext(AICTX)
-    let { option, realIndex, renderIndex, toggle, indent } = props;
+    let { option, realIndex, toggle, indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     function getClassName() {
@@ -1135,9 +1138,9 @@ function Layout(props: I_Layout) {
     )
 }
 function List() {
-    let { rootProps, types }: AI_context = useContext(AICTX);
+    let { rootProps,options }: AI_context = useContext(AICTX);
     let { attrs = {}, size = 36, count = 3, editable = true, stop = 3, decay = 8, onChange = () => { } } = rootProps;
-    let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : rootProps.options || [];
+    let optionsLength:number = options.optionsList.length
     let [temp] = useState<I_list_temp>({
         dom: createRef(),
         activeIndex: 0,
@@ -1155,7 +1158,7 @@ function List() {
     function getTopByIndex(index: number) { return (count - 2 * index - 1) * size / 2; }
     function getContainerStyle() { return { top: getTopByIndex(temp.activeIndex) }; }
     function moveDown() {
-        if (temp.activeIndex >= options.length - 1) { return }
+        if (temp.activeIndex >= optionsLength - 1) { return }
         temp.activeIndex++;
         let newTop = getTopByIndex(temp.activeIndex);
         setStyle({ top: newTop });
@@ -1177,11 +1180,11 @@ function List() {
         if (e.keyCode === 38) { moveUp(); }
         else if (e.keyCode === 40) { moveDown(); }
     }
-    function getLimit() { return { top: getTopByIndex(-1), bottom: getTopByIndex(options.length) } }
+    function getLimit() { return { top: getTopByIndex(-1), bottom: getTopByIndex(optionsLength) } }
     function getTrueTop(top: number) {
         let index = getIndexByTop(top);
         if (index < 0) { index = 0 }
-        if (index > options.length - 1) { index = options.length - 1 }
+        if (index > optionsLength - 1) { index = optionsLength - 1 }
         return getTopByIndex(index);
     }
     function mouseDown(e: any) {
@@ -1197,7 +1200,7 @@ function List() {
         var index = getIndexByTop(top);
         setBoldStyle(index);
         setStyle({ top, transition: 'unset' });
-        onChange(options[index].value, index)
+        onChange(options.optionsList[index].value, index)
         temp.so = { y, top, limit: getLimit() };
     }
     function getTop() {
@@ -1241,13 +1244,13 @@ function List() {
             startTop += deltaY;
             let index = getIndexByTop(startTop);
             setBoldStyle(index);
-            if (Math.abs(deltaY) < stop || index < 0 || index > options.length - 1) {
+            if (Math.abs(deltaY) < stop || index < 0 || index > optionsLength - 1) {
                 clearInterval(temp.interval);
                 if (index < 0) { index = 0 }
-                if (index > options.length - 1) { index = options.length - 1 }
+                if (index > optionsLength - 1) { index = optionsLength - 1 }
                 let top = getTopByIndex(index);
                 setStyle({ top, transition: '0.3s' });
-                onChange(options[index].value, index)
+                onChange(options.optionsList[index].value, index)
                 return;
             }
             deltaY /= decay;
@@ -1258,9 +1261,7 @@ function List() {
     useEffect(() => {
         setBoldStyle(temp.activeIndex);
     })
-    let fixedOptions = GetOptions({
-        rootProps, types, options
-    }).map((o, i) => {
+    let fixedOptions = options.optionsList.map((o:AI_option, i:number) => {
         if (o.value === rootProps.value) { temp.activeIndex = i; }
         return (
             <Layout
@@ -1298,12 +1299,10 @@ function List() {
 // }
 
 type I_AcardionContext = { toggle: (id: string) => void, mountedDic: { [id: string]: boolean }, openDic: { [id: string]: boolean }, rootProps: AI }
-type I_Acardion = { options: AI_option[] }
 const AcardionContext = createContext({} as any);
-export const Acardion: FC<I_Acardion> = (props) => {
-    const { rootProps }: AI_context = useContext(AICTX);
+export const Acardion: FC = () => {
+    const { rootProps,options }: AI_context = useContext(AICTX);
     const { multiple, vertical = true } = rootProps;
-    let { options } = props;
     let [openDic, setOpenDic] = useState<any>({})
     let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
     function SetMounted(newOpen: boolean, id: string) {
@@ -1329,7 +1328,7 @@ export const Acardion: FC<I_Acardion> = (props) => {
     return (
         <AcardionContext.Provider value={getContext()}>
             <div className={`aio-input-acardion${vertical ? ' aio-input-acardion-vertical' : ' aio-input-acardion-horizontal'}`}>
-                {options.map((option: AI_option) => <AcardionItem option={option} />)}
+                {options.optionsList.map((option: AI_option) => <AcardionItem option={option} />)}
             </div>
         </AcardionContext.Provider>
     )
@@ -1486,7 +1485,7 @@ type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string,
 const TreeBody: FC<I_TreeBody> = (props) => {
     let { rootProps, types, openDic, mountedDic, indent, size, change, getChilds }: I_TreeContext = useContext(TreeContext);
     let { rows, level, parent, parentId, parentIndent } = props;
-    let options = GetOptions({
+    let {optionsList} = GetOptions({
         rootProps, types, options: rows, level,
         change: (row: any, newRow: any) => change(row, newRow),
         properties: {
@@ -1497,14 +1496,14 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     let mounted = parentId == undefined ? true : mountedDic[parentId];
     return (
         <div className={`aio-input-tree-body${!parent ? ' aio-input-tree-root' : ''}${parentOpen ? ' open' : ''}${!mounted ? ' not-mounted' : ' mounted'}`}>
-            {options.map((option: any, index: number) => {
+            {optionsList.map((option: any, index: number) => {
                 let row = rows[index];
                 let id = option.value;
                 let childs = getChilds(row);
                 let open = !!openDic[id];
                 let item: I_treeItem = {
                     row, option, parent, parentId, id, parentOpen, open,
-                    indent: { height: size, level, childsLength: childs.length, size: indent, index, isLastChild: index === options.length - 1, isFirstChild: index === 0, parentIndent }
+                    indent: { height: size, level, childsLength: childs.length, size: indent, index, isLastChild: index === optionsList.length - 1, isFirstChild: index === 0, parentIndent }
                 }
                 let p = { className: `aio-input-tree-row` }
                 return <div {...p} key={id}><TreeRow item={item} /><TreeChilds item={item} /></div>;
@@ -2429,7 +2428,7 @@ const Range: FC = () => {
     function changeValue(newValue: number[]) {
         if (!onChange) { return }
         newValue = getValidValue(newValue)
-        onChange(multiple ? newValue : newValue[0])
+        onChange(!!multiple ? newValue : newValue[0])
     }
     function click(mousePosition: I_Swip_mousePosition) {
         if (disabled === true || temp.index !== false) { return }
@@ -3447,25 +3446,25 @@ export function AIOInputSetStorage(name: string, value: any) {
 }
 function getTypes(props: AI) {
     function isDropdown() {
-        if (['select', 'multiselect', 'date', 'time'].indexOf(type) !== -1) { return true }
+        if (['select', 'date', 'time'].indexOf(type) !== -1) { return true }
         if (['text', 'number', 'textarea'].indexOf(type) !== -1 && props.options) { return true }
         if (type === 'button' && props.popover) { return true }
         return false
     }
     let { type, multiple } = props;
     let isMultiple;
-    if (type === 'multiselect' || type === 'table') { isMultiple = true }
-    else if (type === 'radio' || type === 'range' || type === 'file' || type === 'buttons') { isMultiple = !!multiple }
+    if (type === 'table') { isMultiple = true }
+    else if (['radio','range','file','buttons','select'].indexOf(type) !== -1) { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
         isMultiple,
         isInput: ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1,
         isDropdown: isDropdown(),
-        hasOption: ['text', 'number', 'textarea', 'color', 'select', 'multiselect', 'radio', 'tabs', 'list', 'buttons'].indexOf(type) !== -1,
+        hasOption: ['text', 'number', 'textarea', 'color', 'select', 'radio', 'tabs', 'list', 'buttons'].indexOf(type) !== -1,
         hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(type) !== -1,
         hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(type) !== -1,
-        hasText: ['multiselect', 'checkbox', 'button', 'select'].indexOf(type) !== -1,
-        hasSearch: ['multiselect', 'table', 'select'].indexOf(type) !== -1
+        hasText: ['checkbox', 'button', 'select'].indexOf(type) !== -1,
+        hasSearch: ['table', 'select'].indexOf(type) !== -1
     }
 }
 function getDateText(rootProps: AI) {
@@ -3489,7 +3488,7 @@ function getDateText(rootProps: AI) {
 function getDefaultProps(props: AI, types: AI_types) {
     let valueType = Array.isArray(props.value) ? 'array' : typeof props.value;
     props = { ...props }
-    if (props.type === 'multiselect') {
+    if (props.type === 'select' && !!props.multiple) {
         if (!props.text) { props.text = 'Select Items' }
     }
     else if (props.type === 'time') {
@@ -3520,16 +3519,17 @@ function Def(prop: string) {
 function I(path: any, size: number, p?: any) {
     return <Icon path={path} size={size} {...p} />
 }
-function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any, level?: number, change?: (row: any, newRow: any) => void, defaultOptionProps?: AI_optionProp }): AI_option[] {
+function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any, level?: number, change?: (row: any, newRow: any) => void, defaultOptionProps?: AI_optionProp }): AI_options {
     let { rootProps, types, properties = {}, level, change, defaultOptionProps } = p;
     let { deSelect } = rootProps;
     let options = p.options || rootProps.options || [];
     if (typeof options === 'function') { options = options() }
     let result = [];
+    let dic:AI_optionDic = {}
     let renderIndex = 0;
     let draggable: boolean = types.isDropdown && types.hasOption && !!rootProps.onSwap;
     function getDefaultOptionChecked(v: any) {
-        if (rootProps.type === 'multiselect') { return rootProps.value.indexOf(v) !== -1 }
+        if (rootProps.type === 'select' && types.isMultiple) { return rootProps.value.indexOf(v) !== -1 }
         if (rootProps.type === 'radio') { return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v }
     }
     if (deSelect && typeof deSelect !== 'function' && deSelect !== true) { options = [deSelect, ...options] }
@@ -3569,7 +3569,7 @@ function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], proper
             style: GetOptionProps({ props: rootProps, option, key: 'style', ...details }),
             tagAttrs: GetOptionProps({ props: rootProps, option, key: 'tagAttrs', ...details }),
             tagBefore: GetOptionProps({ props: rootProps, option, key: 'tagBefore', ...details }),
-            close: GetOptionProps({ props: rootProps, option, key: 'close', def: rootProps.type !== 'multiselect', ...details }),
+            close: GetOptionProps({ props: rootProps, option, key: 'close', def: !types.isMultiple, ...details }),
             tagAfter: GetOptionProps({ props: rootProps, option, key: 'tagAfter', ...details }),
             renderIndex, realIndex: i
         }
@@ -3579,10 +3579,12 @@ function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], proper
         else {
             if (optionValue === rootProps.value) { obj.attrs = AddToAttrs(obj.attrs, { className: 'active' }) }
         }
-        result.push(updateOptionByProperties(obj))
+        let OBJ:any = updateOptionByProperties(obj);
+        result.push(OBJ)
+        dic['a' + OBJ.value] = OBJ;
         renderIndex++;
     }
-    return result;
+    return {optionsList:result,optionsDic:dic};
 }
 function GetOptionProps(p: { defaultOptionProps?: AI_optionProp, props: AI, option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean, realIndex?: number, renderIndex?: number, level?: number, change?: (v: any) => any }) {
     let { props, option, key, def, preventFunction, realIndex, renderIndex, level, change, defaultOptionProps = {} } = p;

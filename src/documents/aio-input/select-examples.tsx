@@ -5,7 +5,7 @@ import AIOInput from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
-type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons' | 'checklist'
+type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons'
 const textOptions = [
     {name:'john',id:'1',gender:'male',color:'#ff0000'},
     {name:'stephan',id:'2',gender:'male',color:'#ffa500'},
@@ -41,17 +41,16 @@ const optionCode =
 }}`
 const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
     let [examples] = useState<any>([
-        ['test',()=><Test type={type}/>],
         ['before',()=><Before type={type}/>],
         ['after',()=><After type={type}/>],
         ['subtext',()=><Subtext type={type}/>],
         ['disabled',()=><Disabled type={type}/>],
         ['loading',()=><Loading type={type}/>],
         ['text',()=><Text type={type}/>,['select'].indexOf(type) !== -1],
-        ['multiple',()=><Multiple type={type}/>,['radio','buttons'].indexOf(type) !== -1],
-        ['maxLength',()=><MaxLength type={type}/>,['radio','buttons','checklist'].indexOf(type) !== -1],
-        ['checkIcon (array)',()=><CheckIconArray type={type}/>],
-        ['checkIcon (css object)',()=><CheckIconObject type={type}/>],
+        ['multiple',()=><Multiple type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
+        ['maxLength',()=><MaxLength type={type}/>,['radio','buttons','checklist','select'].indexOf(type) !== -1],
+        ['checkIcon (array)',()=><CheckIconArray type={type}/>,['radio','select'].indexOf(type) !== -1],
+        ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio','select'].indexOf(type) !== -1],
         [
             'option.before',
             ()=>(
@@ -267,9 +266,93 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                 />
             ),
             ['select'].indexOf(type) !== -1
-        ]        
+        ],
+        [
+            'option.tagAttrs',
+            ()=>(
+                <Options 
+                    type={type}
+                    props={{
+                        multiple:true
+                    }}
+                    propsCode={
+            `multiple={true}`
+                    }
+                    option={{
+                        tagAttrs:(option:any)=>{
+                            return {
+                                style:{
+                                    background:option.gender === 'male'?'dodgerblue':'pink'
+                                }
+                            }
+                        }
+                    }}
+                    optionCode={
+        `tagAttrs:(option:any)=>{
+            return {
+                style:{
+                    background:option.gender === 'male'?'dodgerblue':'pink'
+                }
+            }
+        }`
+                    }
+                />
+            )
+        ],
+        [
+            'option.tagBefore',
+            ()=>(
+                <Options 
+                    type={type}
+                    props={{
+                        multiple:true
+                    }}
+                    propsCode={
+            `multiple={true}`
+                    }
+                    
+                    option={{
+                        tagBefore:(option:any)=>{
+                            return <Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>
+                        }
+                    }}
+                    optionCode={
+        `tagBefore:(option:any)=>{
+            return <Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>
+        }`
+                    }
+                />
+            )
+        ],
+        [
+            'option.tagAfter',
+            ()=>(
+                <Options 
+                    type={type}
+                    props={{
+                        multiple:true
+                    }}
+                    propsCode={
+            `multiple={true}`
+                    }
+                    
+                    option={{
+                        tagAfter:(option:any)=>{
+                            return option.gender
+                        }
+                    }}
+                    optionCode={
+        `tagAfter:(option:any)=>{
+            return option.gender
+        }`
+                    }
+                />
+            )
+        ],
+        ['hideTags',()=><HideTags/>],
+          
     ])
-
+    
 
 
     let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
@@ -341,51 +424,6 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
     return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
 }
 export default SelectExamples
-const Test:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type='buttons' 
-                options={textOptions.slice(0,5)}
-                option={{
-                    text:(option:any)=>option.name,
-                    value:(option:any)=>option.id,
-                    // before:(option:any)=><Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>,
-                    // subtext:(option:any)=>option.gender,
-                    attrs:(option:any)=>{
-                        return {
-                            title:option.name
-                        }
-                    },
-                    // checkIcon:()=>[
-                    //     <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-                    //     <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-                    // ],
-                    // style:()=>{
-                    //     return { width:'100%'}
-                    // },
-                    className:(option:any)=>`my-option my-option-${option.gender}`,
-                    disabled:(option:any)=>option.gender === 'female'
-                }}
-            value={value} multiple={true}
-            onChange={(newValue)=>setValue(newValue)}
-            popover={{fitHorizontal:true}}
-        />
-        <div style={{height:500}}></div>
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}'
-    options={${optionsCode}} 
-    option={${optionCode}}
-    value={value}
-    onChange={(newValue)=>setValue(newValue)}
-    before={<Icon path={mdiAccount} size={0.8}/>}
-/>
-        `)}
-        </div> 
-    )
-}
 const Before:FC<{type:I_exampleTypes}> = ({type})=> {
     const [value,setValue] = useState<number>()
     return (
@@ -619,6 +657,7 @@ const CheckIconArray:FC<{type:I_exampleTypes}> = ({type})=> {
         <div className='example'>
             <AIOInput
                 type={type}
+                multiple={type === 'select'}
                 options={textOptions}
                 option={{
                     text:'option.name',
@@ -653,6 +692,7 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
         <div className='example'>
             <AIOInput
                 type={type} 
+                multiple={type === 'select'}
                 options={textOptions}
                 option={{
                     text:'option.name',
@@ -712,3 +752,33 @@ const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:any,
     )
 }
  
+const HideTags:FC = ()=> {
+    const [value,setValue] = useState<number[]>([])
+    return (
+        <div className='example'>
+            <AIOInput
+                type='select'
+                multiple={true} 
+                options={textOptions}
+                option={{
+                    text:'option.name',
+                    value:'option.id'
+                }}
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
+                hideTags={true}
+            />
+        {AIODoc().Code(`
+<AIOInput
+    type='select'
+    multiple={true} 
+    options={${optionsCode}} 
+    option={${optionCode}}
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
+    hideTags={true}
+/>
+        `)}
+        </div> 
+    )
+}
