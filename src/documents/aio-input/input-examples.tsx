@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react"
+import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
@@ -40,52 +40,54 @@ const textOptionsCode = `[
     {name:'lucas',id:'11',gender:'male',color:'#000000'},
     {name:'maria',id:'12',gender:'female',color:'#ffc0cb'}
 ]`
-const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
+type I_setting = {show:number,showCode:boolean}
+type I_CTX = {setting:I_setting,type:I_exampleType,code:(code:string)=>React.ReactNode}
+const CTX = createContext({} as any);
+const InputExamples:FC<{type:I_exampleType}> = ({type}) => {
     let [examples] = useState<any>([
-        ['placeholder',()=><Placeholder type={type}/>],
-        ['before',()=><Before type={type}/>],
-        ['after',()=><After type={type}/>],
-        ['subtext',()=><Subtext type={type}/>],
-        ['disabled',()=><Disabled type={type}/>],
-        ['loading',()=><Loading type={type}/>],
-        ['justify',()=><Justify type={type}/>],
-        ['inputAttrs',()=><InputAttrs type={type}/>,['text','number','textarea','password','file'].indexOf(type) !== -1],
-        ['justNumber (boolean)',()=><JustNumber type={type}/>,['text','textarea','password'].indexOf(type) !== -1],
-        ['justNumber (array)',()=><JustNumberArray type={type}/>,['text','textarea','password'].indexOf(type) !== -1],
-        ['filter',()=><Filter type={type}/>,['text','textarea','password'].indexOf(type) !== -1],
-        ['maxLength',()=><MaxLength type={type}/>,['text','number','textarea','password','file'].indexOf(type) !== -1],
-        ['min',()=><Min type={type}/>,['number'].indexOf(type) !== -1],
-        ['max',()=><Max type={type}/>,['number'].indexOf(type) !== -1],
-        ['swip',()=><Swip type={type}/>,['number'].indexOf(type) !== -1],
-        ['spin',()=><Spin type={type}/>,['number'].indexOf(type) !== -1],
-        ['unit (month)',()=><Unit type={type} props={{unit:'month'}} propsCode={`unit='month'`}/>,['date'].indexOf(type) !== -1],
-        ['unit (hour)',()=><Unit type={type} props={{unit:'hour'}} propsCode={`unit='hour'`}/>,['date'].indexOf(type) !== -1],
-        ['unit (year month day)',()=><Unit type={type} props={{unit:{year:true,month:true,day:true}}} propsCode={`unit={{year:true,month:true,day:true}}`}/>,['date','time'].indexOf(type) !== -1],
-        ['unit (hour minute second)',()=><Unit type={type} props={{unit:{hour:true,minute:true,second:true}}} propsCode={`unit={{hour:true,minute:true,second:true}}`}/>,['date','time'].indexOf(type) !== -1],
-        ['size',()=><Size type={type}/>,['date'].indexOf(type) !== -1],
-        ['theme',()=><Theme type={type}/>,['date'].indexOf(type) !== -1],
-        ['caret (false)',()=><CaretFalse type={type}/>,['date','time'].indexOf(type) !== -1],
-        ['caret (html)',()=><CaretHtml type={type}/>,['date','time'].indexOf(type) !== -1],
+        ['placeholder',()=><Placeholder/>],
+        ['before',()=><Before/>],
+        ['after',()=><After/>],
+        ['subtext',()=><Subtext/>],
+        ['disabled',()=><Disabled/>],
+        ['loading',()=><Loading/>],
+        ['justify',()=><Justify/>],
+        ['inputAttrs',()=><InputAttrs/>,['text','number','textarea','password','file'].indexOf(type) !== -1],
+        ['justNumber (boolean)',()=><JustNumber/>,['text','textarea','password'].indexOf(type) !== -1],
+        ['justNumber (array)',()=><JustNumberArray/>,['text','textarea','password'].indexOf(type) !== -1],
+        ['filter',()=><Filter/>,['text','textarea','password'].indexOf(type) !== -1],
+        ['maxLength',()=><MaxLength/>,['text','number','textarea','password','file'].indexOf(type) !== -1],
+        ['min',()=><Min/>,['number'].indexOf(type) !== -1],
+        ['max',()=><Max/>,['number'].indexOf(type) !== -1],
+        ['swip',()=><Swip/>,['number'].indexOf(type) !== -1],
+        ['spin',()=><Spin/>,['number'].indexOf(type) !== -1],
+        ['unit (month)',()=><Unit props={{unit:'month'}} propsCode={`unit='month'`}/>,['date'].indexOf(type) !== -1],
+        ['unit (hour)',()=><Unit props={{unit:'hour'}} propsCode={`unit='hour'`}/>,['date'].indexOf(type) !== -1],
+        ['unit (year month day)',()=><Unit props={{unit:{year:true,month:true,day:true}}} propsCode={`unit={{year:true,month:true,day:true}}`}/>,['date','time'].indexOf(type) !== -1],
+        ['unit (hour minute second)',()=><Unit props={{unit:{hour:true,minute:true,second:true}}} propsCode={`unit={{hour:true,minute:true,second:true}}`}/>,['date','time'].indexOf(type) !== -1],
+        ['size',()=><Size/>,['date'].indexOf(type) !== -1],
+        ['theme',()=><Theme/>,['date'].indexOf(type) !== -1],
+        ['caret (false)',()=><CaretFalse/>,['date','time'].indexOf(type) !== -1],
+        ['caret (html)',()=><CaretHtml/>,['date','time'].indexOf(type) !== -1],
         ...getDateAttrsExamples(type),
-        ['jalali',()=><Jalali type={type}/>,['date','time'].indexOf(type) !== -1],
-        ['option.close',()=><DateOptionClose type={type}/>,['date'].indexOf(type) !== -1],
-        ['image value',()=><Image type={type}/>,['image'].indexOf(type) !== -1],
-        ['width',()=><Width type={type}/>,['image'].indexOf(type) !== -1],
-        ['height',()=><Height type={type}/>,['image'].indexOf(type) !== -1],
-        ['width and height',()=><WidthHeight type={type}/>,['image'].indexOf(type) !== -1],
-        ['deSelect (true)',()=><DeSelectTrue type={type}/>,['date','image'].indexOf(type) !== -1],
-        ['deSelect (function)',()=><DeSelectFunction type={type}/>,['date','image'].indexOf(type) !== -1],
-        ['preview',()=><Preview type={type}/>,['password','image','file'].indexOf(type) !== -1],
-        ['text',()=><Text type={type}/>,['checkbox','date','time','file'].indexOf(type) !== -1],
-        ['pattern',()=><Pattern type={type}/>,['date','time'].indexOf(type) !== -1],
-        ['checkIcon (array)',()=><CheckIconArray type={type}/>,['checkbox'].indexOf(type) !== -1],
-        ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['checkbox'].indexOf(type) !== -1],
-        ['options',()=><Options type={type}/>,['text','number'].indexOf(type) !== -1],
+        ['jalali',()=><Jalali/>,['date','time'].indexOf(type) !== -1],
+        ['option.close',()=><DateOptionClose/>,['date'].indexOf(type) !== -1],
+        ['image value',()=><Image/>,['image'].indexOf(type) !== -1],
+        ['width',()=><Width/>,['image'].indexOf(type) !== -1],
+        ['height',()=><Height/>,['image'].indexOf(type) !== -1],
+        ['width and height',()=><WidthHeight/>,['image'].indexOf(type) !== -1],
+        ['deSelect (true)',()=><DeSelectTrue/>,['date','image'].indexOf(type) !== -1],
+        ['deSelect (function)',()=><DeSelectFunction/>,['date','image'].indexOf(type) !== -1],
+        ['preview',()=><Preview/>,['password','image','file'].indexOf(type) !== -1],
+        ['text',()=><Text/>,['checkbox','date','time','file'].indexOf(type) !== -1],
+        ['pattern',()=><Pattern/>,['date','time'].indexOf(type) !== -1],
+        ['checkIcon (array)',()=><CheckIconArray/>,['checkbox'].indexOf(type) !== -1],
+        ['checkIcon (css object)',()=><CheckIconObject/>,['checkbox'].indexOf(type) !== -1],
+        ['options',()=><Options/>,['text','number'].indexOf(type) !== -1],
         [
             'caret (false)',
             ()=>(
                 <Options 
-                    type={type} 
                     props={{caret:false}}
                     propsCode={
     `caret={false}`
@@ -98,7 +100,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'caret (html)',
             ()=>(
                 <Options 
-                    type={type} 
                     props={{caret:<Icon path={mdiChevronDoubleDown} size={.7}/>}}
                     propsCode={
     `caret={<Icon path={mdiChevronDoubleDown} size={.7}/>}`
@@ -111,7 +112,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.before',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         before:()=><Icon path={mdiAccount} size={0.8}/>
                     }}
@@ -126,7 +126,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.after',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         after:()=><div className='badge'>12</div>
                     }}
@@ -141,7 +140,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.subtext',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         subtext:()=>'this is my subtext'
                     }}
@@ -156,7 +154,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.close',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         close:()=>false
                     }}
@@ -171,7 +168,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.attrs',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         attrs:()=>{
                             return {
@@ -194,7 +190,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.className',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         className:()=>'my-option'
                     }}
@@ -209,7 +204,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.style',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         style:()=>{
                             return {
@@ -232,7 +226,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.show',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         show:(option:any)=>option.gender !== 'male'
                     }}
@@ -247,7 +240,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.show',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         show:(option:any)=>option !== '3453463453'
                     }}
@@ -262,7 +254,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.checked',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         checked:(option:any,details:any)=>(type === 'text'?option.name:+option) === details.value,
                         checkIcon:()=>[
@@ -285,7 +276,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.disabled',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         disabled:(option:any)=>type === 'text'?option.gender === 'male':+option < 100000000
                     }}
@@ -300,7 +290,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'option.onClick',
             ()=>(
                 <Options 
-                    type={type} 
                     option={{
                         onClick:(option:any)=>alert(JSON.stringify(option))
                     }}
@@ -315,7 +304,6 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             'popover',
             ()=>(
                 <Options 
-                    type={type} 
                     props={{
                         popover:{
                             position:'center',
@@ -358,14 +346,11 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
         ],
         [
             'popover',
-            ()=>(<DateAndTimePopover type={type}/>),
+            ()=>(<DateAndTimePopover/>),
             ['date','time'].indexOf(type) !== -1
         ],
         
     ])
-
-
-
     let [titles] = useState<string[]>(getTitles)
     function getTitles(){
         let res = ['all'];
@@ -376,7 +361,7 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
         return res
     }
     let [setting,SetSetting] = useState<any>(new Storage(`${type}examplessetting`).load('setting',{
-        show:-1
+        show:'all',showCode:true
     }))
     function setSetting(setting:any){
         new Storage(`${type}examplessetting`).save('setting',setting)
@@ -402,6 +387,12 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
                             {flex:1},
                             {
                                 input:{
+                                    type:'checkbox',text:'Show Code'
+                                },
+                                field:'value.showCode'
+                            },
+                            {
+                                input:{
                                     type:'select',options:titles,before:'Show:',
                                     option:{
                                         text:'option',
@@ -421,6 +412,10 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             )
         }
     }
+    function code(code:string){
+        if(setting.showCode === false){return null}
+        return AIODoc().Code(code)
+    }
     function render_node(){
         return {
             key:JSON.stringify(setting),
@@ -431,7 +426,7 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
                 if(setting.show !== 'all' && setting.show !== title){return {}}
                 return {
                     html:(
-                        <div className='w-100'>
+                        <div className='w-100' style={{fontFamily:'Arial'}}>
                             <h3>{`${i} - ${title}`}</h3>
                             {description && <h5>{description}</h5>}
                             {COMP()}
@@ -441,10 +436,19 @@ const TextExamples:FC<{type:I_exampleType}> = ({type}) => {
             })
         }
     }
-    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
+    function getContext(){
+        let context:I_CTX = {setting,type,code}
+        return context;
+    }
+    return (
+        <CTX.Provider value={getContext()}>
+            <RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>
+        </CTX.Provider>
+    )   
 }
-export default TextExamples
-const Placeholder:FC<{type:I_exampleType}> = ({type})=> {
+export default InputExamples
+const Placeholder:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -454,7 +458,7 @@ const Placeholder:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 placeholder='my placeholder'
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -465,7 +469,8 @@ const Placeholder:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Before:FC<{type:I_exampleType}> = ({type})=> {
+const Before:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -475,7 +480,7 @@ const Before:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 before={<Icon path={mdiAccount} size={0.8}/>}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -486,7 +491,8 @@ const Before:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const After:FC<{type:I_exampleType}> = ({type})=> {
+const After:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -496,7 +502,7 @@ const After:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 after={<div className='badge'>{12}</div>}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -507,7 +513,8 @@ const After:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Subtext:FC<{type:I_exampleType}> = ({type})=> {
+const Subtext:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -518,7 +525,7 @@ const Subtext:FC<{type:I_exampleType}> = ({type})=> {
                 style={type === 'textarea'?undefined:{height:60}}
                 subtext='My subtext'
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -530,7 +537,8 @@ const Subtext:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Disabled:FC<{type:I_exampleType}> = ({type})=> {
+const Disabled:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -539,7 +547,7 @@ const Disabled:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 disabled={true} 
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -550,7 +558,8 @@ const Disabled:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Loading:FC<{type:I_exampleType}> = ({type})=> {
+const Loading:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -559,7 +568,7 @@ const Loading:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 loading={true}  
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -570,7 +579,8 @@ const Loading:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Justify:FC<{type:I_exampleType}> = ({type})=> {
+const Justify:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -579,7 +589,7 @@ const Justify:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 justify={true}  
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -590,7 +600,8 @@ const Justify:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const InputAttrs:FC<{type:I_exampleType}> = ({type})=> {
+const InputAttrs:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -611,7 +622,7 @@ const InputAttrs:FC<{type:I_exampleType}> = ({type})=> {
                     type === 'file'?{accept:'.jpg'}:{style:{letterSpacing:16}}   
                 }
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -622,7 +633,8 @@ const InputAttrs:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const JustNumber:FC<{type:I_exampleType}> = ({type})=> {
+const JustNumber:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -631,7 +643,7 @@ const JustNumber:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 justNumber={true}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -642,7 +654,8 @@ const JustNumber:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const JustNumberArray:FC<{type:I_exampleType}> = ({type})=> {
+const JustNumberArray:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -651,7 +664,7 @@ const JustNumberArray:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 justNumber={['-']}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -662,7 +675,8 @@ const JustNumberArray:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Filter:FC<{type:I_exampleType}> = ({type})=> {
+const Filter:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -671,7 +685,7 @@ const Filter:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 filter={['a','b','c']}   
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -682,7 +696,8 @@ const Filter:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const MaxLength:FC<{type:I_exampleType}> = ({type})=> {
+const MaxLength:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -692,7 +707,7 @@ const MaxLength:FC<{type:I_exampleType}> = ({type})=> {
                 multiple={type === 'file'}
                 maxLength={6}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -704,7 +719,8 @@ const MaxLength:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Min:FC<{type:I_exampleType}> = ({type})=> {
+const Min:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -713,7 +729,7 @@ const Min:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 min={8}      
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -724,7 +740,8 @@ const Min:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Max:FC<{type:I_exampleType}> = ({type})=> {
+const Max:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -733,7 +750,7 @@ const Max:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 max={12}      
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -744,7 +761,8 @@ const Max:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Swip:FC<{type:I_exampleType}> = ({type})=> {
+const Swip:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -753,7 +771,7 @@ const Swip:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 swip={1}     
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -764,7 +782,8 @@ const Swip:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Spin:FC<{type:I_exampleType}> = ({type})=> {
+const Spin:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -773,7 +792,7 @@ const Spin:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 spin={false}     
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -784,7 +803,8 @@ const Spin:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Unit:FC<{type:I_exampleType,props:any,propsCode:string}> = ({type,props,propsCode})=> {
+const Unit:FC<{props:any,propsCode:string}> = ({props,propsCode})=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -793,7 +813,7 @@ const Unit:FC<{type:I_exampleType,props:any,propsCode:string}> = ({type,props,pr
                 onChange={(newValue)=>setValue(newValue)}
                 {...props}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -804,7 +824,8 @@ const Unit:FC<{type:I_exampleType,props:any,propsCode:string}> = ({type,props,pr
         </div> 
     )
 }
-const Jalali:FC<{type:I_exampleType}> = ({type})=> {
+const Jalali:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -814,7 +835,7 @@ const Jalali:FC<{type:I_exampleType}> = ({type})=> {
                 unit={type === 'date'?'day':{year:true,month:true,day:true}}
                 jalali={true}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -826,7 +847,8 @@ const Jalali:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const DateOptionClose:FC<{type:I_exampleType}> = ({type})=> {
+const DateOptionClose:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -835,7 +857,7 @@ const DateOptionClose:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 option={{close:()=>true}}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -847,7 +869,8 @@ const DateOptionClose:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Image:FC<{type:I_exampleType}> = ({type})=> {
+const Image:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<string>('https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg')
     return (
         <div className='example'>
@@ -855,7 +878,7 @@ const Image:FC<{type:I_exampleType}> = ({type})=> {
                 type={type} value={value}
                 onChange={(newValue)=>setValue(newValue)}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -865,7 +888,8 @@ const Image:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Width:FC<{type:I_exampleType}> = ({type})=> {
+const Width:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -874,7 +898,7 @@ const Width:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 width={120}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -885,7 +909,8 @@ const Width:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Height:FC<{type:I_exampleType}> = ({type})=> {
+const Height:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -894,7 +919,7 @@ const Height:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 height={200}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -905,7 +930,8 @@ const Height:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const WidthHeight:FC<{type:I_exampleType}> = ({type})=> {
+const WidthHeight:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -915,7 +941,7 @@ const WidthHeight:FC<{type:I_exampleType}> = ({type})=> {
                 width={200}
                 height={200}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -927,7 +953,8 @@ const WidthHeight:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const DeSelectTrue:FC<{type:I_exampleType}> = ({type})=> {
+const DeSelectTrue:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -936,7 +963,7 @@ const DeSelectTrue:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 deSelect={true}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -948,7 +975,8 @@ const DeSelectTrue:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const DeSelectFunction:FC<{type:I_exampleType}> = ({type})=> {
+const DeSelectFunction:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -957,7 +985,7 @@ const DeSelectFunction:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 deSelect={()=>setValue(undefined)}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -968,7 +996,8 @@ const DeSelectFunction:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Size:FC<{type:I_exampleType}> = ({type})=> {
+const Size:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -977,7 +1006,7 @@ const Size:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 size={120}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -988,7 +1017,8 @@ const Size:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Theme:FC<{type:I_exampleType}> = ({type})=> {
+const Theme:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -997,7 +1027,7 @@ const Theme:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 theme={['lightblue','#666']}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1008,7 +1038,8 @@ const Theme:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const CaretFalse:FC<{type:I_exampleType}> = ({type})=> {
+const CaretFalse:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1017,7 +1048,7 @@ const CaretFalse:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 caret={false}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1028,7 +1059,8 @@ const CaretFalse:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const CaretHtml:FC<{type:I_exampleType}> = ({type})=> {
+const CaretHtml:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1037,7 +1069,7 @@ const CaretHtml:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 caret={<Icon path={mdiChevronDoubleDown} size={.7}/>}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1048,7 +1080,8 @@ const CaretHtml:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Preview:FC<{type:I_exampleType}> = ({type})=> {
+const Preview:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1057,7 +1090,7 @@ const Preview:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 preview={true}   
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1068,7 +1101,8 @@ const Preview:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Text:FC<{type:I_exampleType}> = ({type})=> {
+const Text:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1077,7 +1111,7 @@ const Text:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 text='My Text'
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1088,7 +1122,8 @@ const Text:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Pattern:FC<{type:I_exampleType}> = ({type})=> {
+const Pattern:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1097,7 +1132,7 @@ const Pattern:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 pattern='{weekDay} {day} {monthString} {year}'
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1108,7 +1143,8 @@ const Pattern:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const CheckIconArray:FC<{type:I_exampleType}> = ({type})=> {
+const CheckIconArray:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1120,7 +1156,7 @@ const CheckIconArray:FC<{type:I_exampleType}> = ({type})=> {
                     <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
                 ]}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1134,7 +1170,8 @@ const CheckIconArray:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const CheckIconObject:FC<{type:I_exampleType}> = ({type})=> {
+const CheckIconObject:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1143,7 +1180,7 @@ const CheckIconObject:FC<{type:I_exampleType}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1154,12 +1191,14 @@ const CheckIconObject:FC<{type:I_exampleType}> = ({type})=> {
         </div> 
     )
 }
-const Options:FC<{type:I_exampleType,option?:any,optionCode?:string,props?:any,propsCode?:string}> = ({type,option = {},optionCode,props = {},propsCode})=>{
+const Options:FC<{option?:any,optionCode?:string,props?:any,propsCode?:string}> = ({option = {},optionCode,props = {},propsCode})=>{
+    const {type}:I_CTX = useContext(CTX);
     if(type === 'text'){return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode}/>}
     if(type === 'number'){return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode}/>}
     return null
 }
 const OptionsText:FC<{option?:any,optionCode?:string,props?:any,propsCode?:string}> = ({option = {},optionCode,props,propsCode})=> {
+    const {code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1176,7 +1215,7 @@ const OptionsText:FC<{option?:any,optionCode?:string,props?:any,propsCode?:strin
                 {...props}
 
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='text' 
     value='${value}'
@@ -1196,6 +1235,7 @@ const OptionsText:FC<{option?:any,optionCode?:string,props?:any,propsCode?:strin
 }
  
 const OptionsNumber:FC<{option?:any,optionCode?:string,props?:any,propsCode?:string}> = ({option = {},optionCode,props,propsCode})=> {
+    const {code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1211,7 +1251,7 @@ const OptionsNumber:FC<{option?:any,optionCode?:string,props?:any,propsCode?:str
                 }}
                 {...props}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='number' 
     value='${value}'
@@ -1229,7 +1269,8 @@ const OptionsNumber:FC<{option?:any,optionCode?:string,props?:any,propsCode?:str
         </div> 
     )
 }
-const DateAndTimePopover:FC<{type:I_exampleType}> = ({type})=> {
+const DateAndTimePopover:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1253,7 +1294,7 @@ const DateAndTimePopover:FC<{type:I_exampleType}> = ({type})=> {
                     }
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
@@ -1315,6 +1356,7 @@ function getDateAttrsExamples(type:I_exampleType){
 }
 
 const DateAttrs:FC<{selector:string}> = ({selector})=>{
+    const {code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1327,7 +1369,7 @@ const DateAttrs:FC<{selector:string}> = ({selector})=>{
                     }
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='date' 
     value='${value}'
@@ -1343,6 +1385,7 @@ const DateAttrs:FC<{selector:string}> = ({selector})=>{
     )
 }
 const DateAttrsIsToday:FC = ()=>{
+    const {code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1357,7 +1400,7 @@ const DateAttrsIsToday:FC = ()=>{
                     }
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='date' 
     value='${value}'
@@ -1375,6 +1418,7 @@ const DateAttrsIsToday:FC = ()=>{
     )
 }
 const DateAttrsIsActive:FC = ()=>{
+    const {code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1389,7 +1433,7 @@ const DateAttrsIsActive:FC = ()=>{
                     }
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='date' 
     value='${value}'

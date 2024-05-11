@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react"
+import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
@@ -6,52 +6,57 @@ import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
 import { AI_type } from "../../npm/aio-input/types";
-
-const RangeExamples:FC<{type:AI_type}> = ({type}) => {
-    let [examples] = useState<any>([
+type I_exampleType = 'slider' | 'spinner'
+type I_setting = {show:number,showCode:boolean,round:number,reverse:boolean,vertical:boolean}
+type I_CTX = {setting:I_setting,type:I_exampleType,code:(coe:string)=>React.ReactNode}
+const CTX = createContext({} as any)
+const RangeExamples:FC<{type:I_exampleType}> = ({type}) => {
+    let [examples] = useState<any[]>([
+        ['test',Test],
         ['start step end',StartStepEnd],
-        ['label (step)',LabelStep],
-        ['label (attrs)',LabelAttrs],
-        ['label (html)',LabelHtml],
-        ['label (offset)',LabelOffset],
+        ['label',Label],
         ['label (list)',LabelList],
-        ['scale (step)',ScaleStep],
-        ['scale (attrs)',ScaleAttrs],
-        ['scale (style object)',ScaleStyleObject],
-        ['scale (className)',ScaleClassName],
-        ['scale (offset)',ScaleOffset],
+        ['scale',Scale],
         ['scale (list)',ScaleList],
-        ['scale (html)',ScaleHtml],
-        ['handle (width,height,color,offset)',Handle],
-        ['handle (false)',HandleFalse],
+        ['handle (thickness,size,color,offset)',Handle,type === 'spinner'],
+        ['handle (false)',HandleFalse,type === 'spinner'],
         ['point (attrs)',PointAttrs],
         ['point (html)',PointHtml],
         ['point (offset)',PointOffset],
         ['point (false)',PointFalse],
         ['disabled',Disabled],
-        ['circles',Circles],
-        ['rotate (-180 deg)',Rotate_180],
-        ['rotate (-90 deg)',Rotate_90],
-        ['ranges (array)',RangesArray],
-        ['ranges (function)',RangesFunction],
+        ['circles',Circles,type === 'spinner'],
+        ['rotate (-180 deg)',Rotate_180,type === 'spinner'],
+        ['rotate (-90 deg)',Rotate_90,type === 'spinner'],
+        ['ranges (static)',RangesStatic],
+        ['ranges (dynamic)',RangesDynamic],
         ['multiple',Multiple]
     ])
-    let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
+    let [titles] = useState<string[]>(getTitles)
+    function getTitles(){
+        let res = ['all'];
+        for(let i = 0; i < examples.length; i++){
+            let ex = examples[i];
+            if(ex[2] !== false){res.push(ex[0])}
+        }
+        return res
+    }
     let [setting,SetSetting] = useState<any>(new Storage(`${type}examplessetting`).load('setting',{
         round:type === 'spinner'?1:0,
         reverse:false,
         vertical:false,
-        show:-1
+        showCode:true,
+        show:'all'
     }))
     function setSetting(setting:any){
         new Storage(`${type}examplessetting`).save('setting',setting)
         SetSetting(setting)
     }
     function changeShow(dir: 1 | -1 ){
-        let newShow:number = setting.show + dir;
-        if(newShow < -1){newShow = examples.length - 1 }
-        if(newShow > examples.length - 1){newShow = -1}
-        setSetting({...setting,show:newShow})
+        let index = titles.indexOf(setting.show) + dir
+        if(index < 0){index = titles.length - 1 }
+        if(index > titles.length - 1){index = 0}
+        setSetting({...setting,show:titles[index]})
     }
     function setting_node(){
         let btnstyle = {background:'none',border:'none'}
@@ -67,13 +72,13 @@ const RangeExamples:FC<{type:AI_type}> = ({type}) => {
                             {html:'round',className:'align-v w-48 flex-0'},
                             {show:type === 'spinner',input:{type:'radio',options:[0.25,0.75,1],option:{text:'option',value:'option'}},field:'value.round'},
                             {input:{type:'checkbox',text:'reverse',min:0,max:1},field:'value.reverse'},
-                            {show:type === 'range',input:{type:'checkbox',text:'vertical',min:0,max:1},field:'value.vertical'},
+                            {show:type === 'slider',input:{type:'checkbox',text:'vertical',min:0,max:1},field:'value.vertical'},
                             {flex:1},
                             {
                                 input:{
-                                    type:'select',options:numbers,before:'Show:',
+                                    type:'select',options:titles,before:'Show:',
                                     option:{
-                                        text:(option:any)=>option === -1?"all":examples[option][0],
+                                        text:'option',
                                         value:'option'
                                     },
                                     popover:{
@@ -94,21 +99,34 @@ const RangeExamples:FC<{type:AI_type}> = ({type}) => {
         return {
             key:JSON.stringify(setting),
             className:'ofy-auto flex-1 p-12',
+            style:{fontFamily:'Arial'},
             column:examples.map((o:any,i:number)=>{
                 let [title,COMP] = o;
-                if(setting.show !== -1 && setting.show !== i){return {}}
+                if(setting.show !== 'all' && setting.show !== title){return {}}
                 return {
                     html:(
                         <div className='w-100'>
                             <h3>{`${i} - ${title}`}</h3>
-                            <COMP setting={setting} type={type}/>
+                            <COMP/>
                         </div>
                     )
                 }
             })
         }
     }
-    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
+    function code(code:string){
+        //return <div style={{height:500}}></div>
+        return AIODoc().Code(code)
+    }
+    function getContext(){
+        let context:I_CTX = {setting,type,code}
+        return context
+    }
+    return (
+        <CTX.Provider value={getContext()}>
+            <RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>
+        </CTX.Provider>
+    )   
 }
 export default RangeExamples
 
@@ -121,8 +139,92 @@ ${`    reverse={${reverse?'true':'false'}}`}
 ${`    vartical={${vertical?'true':'false'}}`}`
     )
 }
-type I_RS = {setting:{round?:number,reverse:boolean,vertical:boolean},type:'slider' | 'spinner'}
-const StartStepEnd:FC<I_RS> = ({setting,type})=> {
+
+
+const Test:FC = ()=> {
+    const {type,code,setting}:I_CTX = useContext(CTX);
+    const [value,setValue] = useState<number>()
+    return (
+        <div className='example'>
+            <AIOInput
+                type='spinner'
+                value={value}
+                start={0}
+                end={100}
+                size={100}
+                onChange={setValue}
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            let style = value === 50?{color:'orange'}:{}
+                            let content = value === 50 ? <Icon path={mdiAccount} size={0.6}/> : value; 
+                            return {
+                                html: <div style={style}>{content}</div>,
+                                color:'#333',
+                                offset:20,
+                                fixAngle:true
+                            };
+                        }
+                    },
+                    {
+                        step:2,
+                        setting:(value)=>{
+                            let offset,height,width,background;
+                            if(value % 10 === 0){
+                                offset = -5;
+                                height = 5;
+                                width = 5;
+                                background = '#333'
+                            }
+                            else {
+                                offset = -4;
+                                height = 2;
+                                width = 2;
+                                background = '#888';
+                            }
+                            let style = {height,width,background}
+                            return {
+                                html:<div style={style}></div>,
+                                offset
+                            }
+                        }
+                    }
+                ]}
+                point={()=>{
+                    return {
+                        offset:20,
+                        attrs:{
+                            style:{
+                                boxShadow:'0 0 8px 0 rgba(0,0,0,0.4)'
+                            }
+                        }
+                    }
+                }}
+                handle={(value) => {
+                    return {
+                        thickness: 12,
+                        size: 80,
+                        offset: 5,
+                        color: '#333',
+                        sharp:true
+                    }
+                }}
+                disabled={[0, 25, 75]} // Array of values to disable partially
+                circles={[
+                    '10 3 #333'
+                ]}
+                ranges={[
+                  [20, '5 10 #ff0000'], // Range from 0 to 20
+                  [70, '5 10 orange'], // Range from 20 to 100
+                  [100, '5 10 green'] // Range from 20 to 100
+                ]}
+            />
+        </div> 
+    )
+}
+const StartStepEnd:FC = ()=> {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
@@ -131,7 +233,7 @@ const StartStepEnd:FC<I_RS> = ({setting,type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
@@ -141,442 +243,227 @@ const StartStepEnd:FC<I_RS> = ({setting,type})=> {
         </div> 
     )
 }
-const LabelStep:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={8} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                labels={{step:2}}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} 
-    start={0} 
-    end={100} 
-    step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    labels={{step:2}}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const LabelAttrs:FC<I_RS> = ({setting,type}) => {
+const Label:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
-                labels={{step:10}}
-                label={(value)=>{
-                    return {
-                        attrs:{
-                            style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+                size={72}
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                offset:16,
+                                html:(
+                                    <div style={{fontSize:14,fontWeight:'bold',color:value === 30?'red':'#000'}}>
+                                        {value === 50?<Icon path={mdiAccount} size={0.6}/>:value}
+                                    </div>
+                                ),
+                                fixAngle:!!setting.round
+                            }
                         }
                     }
-                }}
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} 
     start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    labels={{step:10}}
-    label={(value)=>{
-        return {
-            attrs:{
-                style:{fontSize:14,fontWeight:'bold',color:value === 5?'red':'#000'}
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    offset:${setting.round?'60':'75'},
+                    html:(
+                        <div style={{fontSize:14,fontWeight:'bold',color:value === 30?'red':'#000'}}>
+                            {value === 50?<Icon path={mdiAccount} size={0.6}/>:value}
+                        </div>
+                    ),
+                    ${!!setting.round?'fixAngle:true':''}
+                }
             }
         }
-    }}
+    ]}
     ${sc(setting)}
 />
         `)}
         </div> 
     )
 }
-const LabelHtml:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={8} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                labels={{step:1}}
-                label={(value)=>{
-                    return {
-                        html:value === 5?<Icon path={mdiAccount} size={0.6}/>:value
-                    }
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    labels={{step:1}}
-    label={(value)=>{
-        return {
-            html:value === 5?<Icon path={mdiAccount} size={0.6}/>:value
-        }
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const LabelOffset:FC<I_RS> = ({setting,type}) => {
-    let {round,vertical} = setting
+const LabelList:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
-                labels={{step:10}}
-                label={()=>{
-                    return {offset:round?10:-20}
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    labels={{step:1}}
-    label={()=>{
-        return {offset:${round?10:-20}}
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const LabelList:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                labels={{
-                    list:[10,20,50]
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    labels={{
-        list:[10,20,50]
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleStep:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{
-                    step:5
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    scales={{
-        step:5
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleAttrs:FC<I_RS> = ({setting,type}) => {
-    let {round,vertical} = setting
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{step:1}}
-                scale={(value)=>{
-                    let a,b;
-                    if(value % 10 === 0){a = 12; b = 3}
-                    else if(value % 5 === 0){a = 8; b = 2}
-                    else {a = 4; b = 1}
-                    let background = value >= 40?'red':'#333'   
-                    let width,height;
-                    if(round || vertical){width = a; height = b}
-                    else {width = b; height = a}
-                    return {
-                        attrs:{
-                            style:{width,height,background}
+                labels={[
+                    {
+                        list:[10,20,50],
+                        setting:(value)=>{
+                            return {
+                                offset:16,
+                                html:value,
+                                fixAngle:!!setting.round
+                            }
                         }
-                    }  
-                }}
+                    }
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    scales={{step:1}}
-    scale={(value)=>{
-        let a,b;
-        if(value % 10 === 0){a = 12; b = 3}
-        else if(value % 5 === 0){a = 8; b = 2}
-        else {a = 4; b = 1}
-        let background = value >= 40?'red':'#333'   
-        let width,height;
-        if(round || vertical){width = a; height = b}
-        else {width = b; height = a}
-        return {
-            attrs:{
-                style:{width,height,background}
+    labels={[
+        {
+            list:[10,20,50],
+            setting:(value)=>{
+                return {
+                    offset:${setting.round?'60':'75'},
+                    html:value,
+                    ${!!setting.round?'fixAngle:true':''}
+                }
             }
-        }  
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleStyleObject:FC<I_RS> = ({setting,type}) => {
-    let {round,vertical} = setting
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{step:1}}
-                scale={(value)=>{
-                    let a,b;
-                    if(value % 10 === 0){a = 12; b = 3}
-                    else if(value % 5 === 0){a = 8; b = 2}
-                    else {a = 4; b = 1}
-                    let background = value >= 40?'red':'#333'   
-                    let width,height;
-                    if(round || vertical){width = a; height = b}
-                    else {width = b; height = a}
-                    return {
-                        style:{width,height,background}
-                    }
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    scales={{step:1}}
-    scale={(value)=>{
-        let a,b;
-        if(value % 10 === 0){a = 12; b = 3}
-        else if(value % 5 === 0){a = 8; b = 2}
-        else {a = 4; b = 1}
-        let background = value >= 40?'red':'#333'   
-        let width,height;
-        if(round || vertical){width = a; height = b}
-        else {width = b; height = a}
-        return {
-            style:{width,height,background}
         }
-    }}
+    ]}
     ${sc(setting)}
 />
         `)}
         </div> 
     )
 }
-const ScaleClassName:FC<I_RS> = ({setting,type}) => {
-    let {round,vertical} = setting
+const Scale:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
+    let thicknessStr = 'width',sizeStr = 'height';
+    if(setting.round || setting.vertical){thicknessStr = 'height'; sizeStr = 'width'}
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
+                size={120}
                 onChange={(newValue)=>setValue(newValue)}
-                scales={{step:1}}
-                scale={(value)=>{
-                    let className = 'scale'
-                    if(round){className += '-round'}
-                    if(vertical){className += '-vertical'}
-                    if(value % 10 === 0){className += '-large'}
-                    else if(value % 5 === 0){className += '-medium'}
-                    else {className += '-small'}
-                    className += value >= 40?' scale-red':''
-                    return {className}
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    scales={{step:1}}
-    scale={(value)=>{
-        let className = 'scale'
-        if(round){className += '-round'}
-        if(vertical){className += '-vertical'}
-        if(value % 10 === 0){className += '-large'}
-        else if(value % 5 === 0){className += '-medium'}
-        else {className += '-small'}
-        className += value >= 40?'-red':''
-        return {className}
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleOffset:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{step:5}}
-                scale={()=>{
-                    return {offset:-10}
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    scales={{step:5}}
-    scale={()=>{
-        return {offset:-10}
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleList:FC<I_RS> = ({setting,type}) => {
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{
-                    list:[20,40,60,80]
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    scales={{
-        list:[20,40,60,80]
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const ScaleHtml:FC<I_RS> = ({setting,type}) => {
-    let {round,reverse,vertical} = setting
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={8} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                scales={{step:1}}
-                scale={(value:number,p:{angle:number})=>{
-                    let {angle} = p
-                    let style:any = {
-                        width:24,height:24,background:'none',
-                        transform:round?`rotate(${-angle}deg)`:undefined
+                labels={[
+                    {
+                        step:1,
+                        setting:(value)=>{
+                            let size,thickness;
+                            if(value % 10 === 0){size = 12; thickness = 3}
+                            else if(value % 5 === 0){size = 8; thickness = 2}
+                            else {size = 4; thickness = 1}
+                            let style:any = {background:value >= 40?'red':'#333'};
+                            if(setting.round || setting.vertical){
+                                style = {...style,width:size,height:thickness}
+                            }
+                            else {
+                                style = {...style,width:thickness,height:size}
+                            }
+                            return {
+                                html:(
+                                    <div style={style}></div>
+                                )
+                            }  
+                        }
                     }
-                    let path = [
-                        mdiAccount,
-                        mdiAccountClock,
-                        mdiAccountCancel,
-                        mdiHumanMale,
-                        mdiAccountBadge,
-                        mdiAccountSupervisorOutline,
-                        mdiAccountBoxMultiple,
-                        mdiAccountChild,
-                        mdiAccountArrowDown
-                    ][value]
-                    return {style,html:<Icon path={path} size={0.7}/>}
-                }}
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    scales={{step:1}}
-    scale={(value:number,p:{angle:number})=>{
-        let {angle} = p
-        let style:any = {
-            width:24,height:24,background:'none',
-            transform:round?${'`rotate(${-angle}deg)`'}:undefined
+    labels={[
+        {
+            step:1,
+            setting:(value)=>{
+                let ${sizeStr},${thicknessStr};
+                if(value % 10 === 0){${sizeStr} = 12; ${thicknessStr} = 3}
+                else if(value % 5 === 0){${sizeStr} = 8; ${thicknessStr} = 2}
+                else {${sizeStr} = 4; ${thicknessStr} = 1}
+                let style:any = {background:value >= 40?'red':'#333',width,height};
+                return {
+                    offset:50,
+                    html:(
+                        <div style={style}></div>
+                    )
+                }  
+            }
         }
-        let path = [
-            mdiAccount,
-            mdiAccountClock,
-            mdiAccountCancel,
-            mdiHumanMale,
-            mdiAccountBadge,
-            mdiAccountSupervisorOutline,
-            mdiAccountBoxMultiple,
-            mdiAccountChild,
-            mdiAccountArrowDown
-        ][value]
-        return {style,html:<Icon path={path} size={0.7}/>}
-    }}
+    ]}
     ${sc(setting)}
 />
         `)}
         </div> 
     )
 }
-const Handle:FC<I_RS> = ({setting,type}) => {
+const ScaleList:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
+    const [value,setValue] = useState<number>()
+    let thicknessStr = 'width',sizeStr = 'height';
+    if(setting.round || setting.vertical){thicknessStr = 'height'; sizeStr = 'width'}
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} value={value} start={0} end={100} step={1}
+                onChange={(newValue)=>setValue(newValue)}
+                labels={[
+                    {
+                        list:[20,30,40,60,80],
+                        setting:()=>{
+                            let size = 12,thickness = 3;
+                            let style:any = {background:'#333'};
+                            if(setting.round || setting.vertical){
+                                style = {...style,width:size,height:thickness}
+                            }
+                            else {
+                                style = {...style,width:thickness,height:size}
+                            }
+                            return {
+                                html:(
+                                    <div style={style}></div>
+                                )
+                            }  
+                        }
+                    }
+                ]}
+                {...setting}
+            />
+        {code(`
+<AIOInput
+    type='${type}' 
+    value={value} start={0} end={100} step={1}
+    onChange={(newValue)=>setValue(newValue)}
+    labels={[
+        {
+            list:[20,30,40,60,80],
+            setting:()=>{
+                return {
+                    offset:50,
+                    html:<div style={{background:'#333',${sizeStr}:12,${thicknessStr}:3}}></div>
+                }  
+            }
+        }
+    ]}
+    ${sc(setting)}
+/>
+        `)}
+        </div> 
+    )
+}
+const Handle:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
@@ -587,15 +474,16 @@ const Handle:FC<I_RS> = ({setting,type}) => {
                 onChange={(newValue)=>setValue(newValue)}
                 handle={()=>{
                     return {
-                        width:6,
+                        thickness:16,
+                        size:70,
                         color:'orange',
-                        height:30,
-                        offset:5
+                        offset:5,
+                        sharp:false
                     }
                 }}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -614,7 +502,8 @@ const Handle:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const HandleFalse:FC<I_RS> = ({setting,type}) => {
+const HandleFalse:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
@@ -626,7 +515,7 @@ const HandleFalse:FC<I_RS> = ({setting,type}) => {
                 handle={false}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -638,7 +527,8 @@ const HandleFalse:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const PointAttrs:FC<I_RS> = ({setting,type}) => {
+const PointAttrs:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
@@ -660,7 +550,7 @@ const PointAttrs:FC<I_RS> = ({setting,type}) => {
                 }}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -683,7 +573,8 @@ const PointAttrs:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const PointHtml:FC<I_RS> = ({setting,type}) => {
+const PointHtml:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
@@ -698,7 +589,7 @@ const PointHtml:FC<I_RS> = ({setting,type}) => {
                 }}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -714,7 +605,8 @@ const PointHtml:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const PointOffset:FC<I_RS> = ({setting,type}) => {
+const PointOffset:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
@@ -725,31 +617,19 @@ const PointOffset:FC<I_RS> = ({setting,type}) => {
                 point={(value,{angle})=>{
                     return {
                         html:value,
-                        offset:-16
+                        offset:-25
                     }
                 }}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
+    type={type} value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     point={(value,{angle})=>{
         return {
             html:value,
-            attrs:{
-                style:{
-                    transform:'rotate(' + (-angle) + 'deg)',
-                    height:24,
-                    width:24,
-                    left:24,
-                    fontSize:10,
-                    background:'dodgerblue',
-                    color:'#fff'
-                }
-            },
-            offset:-16
+            offset:-25
         }
     }}
     ${sc(setting)}
@@ -758,7 +638,8 @@ const PointOffset:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const PointFalse:FC<I_RS> = ({setting,type}) => {
+const PointFalse:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     return (
@@ -769,7 +650,7 @@ const PointFalse:FC<I_RS> = ({setting,type}) => {
                 point={false}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -781,91 +662,153 @@ const PointFalse:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const Disabled:FC<I_RS> = ({setting,type}) => {
+const Disabled:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<number>(0)
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={12} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 disabled={[4,6,7,10,11]}
-                scales={{step:1}}
-                scale={(value,{disabled})=>{
-                    return {
-                        style:{width:6,height:6,background:disabled?'red':'#000'}
+                point={false}
+                fill={false}
+                labels={[
+                    {
+                        step:1,
+                        dynamic:true,
+                        setting:(val,{disabled,angle})=>{
+                            let active = val === value
+                            let color,background;
+                            if(disabled){color = 'red'}
+                            else if(active){color = '#fff'; background = 'dodgerblue'}
+                            else {color = '#00ff00'}
+                            let style:any = {color,background,padding:3}
+                            if(round){
+                                let rotate;
+                                if(angle < 90){rotate = 0}
+                                else if(angle === 90){rotate = -90}
+                                else if(angle < 270){rotate = 180}
+                                else if(angle === 270){rotate = 90}
+                                else {rotate = 0}
+                                style.transform = `rotate(${rotate}deg)`
+                            }
+                            return {
+                                html:<div style={style}>{`${val}:00`}</div>,
+                                offset:20
+                            }
+                        }
+                    },
+                    {
+                        step:1,
+                        setting:(val,{disabled})=>{
+                            let background;
+                            if(disabled){background = 'red'}
+                            else {background = '#00ff00'}
+                            let style = {width:6,height:6,background}
+                            return {
+                                html:<div style={style}></div>
+                            }
+                        }
                     }
-                }}
-                labels={{
-                    step:1,
-                    dynamic:true
-                }}
-                label={(val,{disabled,value})=>{
-                    let active = val === value
-                    let color;
-                    if(disabled){color = 'red'}
-                    else if(active){color = '#fff'}
-                    else {color = '#00ff00'}
-                    let style:any = {
-                        width:40,
-                        padding:active?'2px 6px':0,
-                        fontSize:10,
-                        fontWeight:active?'bold':undefined,
-                        background:active?'dodgerblue':undefined,
-                        color,
-                        fontFamily:'arial',
-                    }
-                    return {
-                        style,
-                        html:`${val}:00`
-                    }
-                }}
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {!round?'':code(`
 <AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
+    type={${type}} value={value} start={0} end={12} step={1}
     onChange={(newValue)=>setValue(newValue)}
     disabled={[4,6,7,10,11]}
-    scales={{step:1}}
-    scale={(value,{disabled})=>{
-        return {
-            style:{width:6,height:6,background:disabled?'red':'#000'}
+    point={false}
+    fill={false}
+    labels={[
+        {
+            step:1,
+            dynamic:true,
+            setting:(val,{disabled,angle})=>{
+                let active = val === value
+                let color,background;
+                if(disabled){color = 'red'}
+                else if(active){color = '#fff'; background = 'dodgerblue'}
+                else {color = '#00ff00'}
+                let style:any = {color,background,padding:3}
+                if(round){
+                    let rotate;
+                    if(angle < 90){rotate = 0}
+                    else if(angle === 90){rotate = -90}
+                    else if(angle < 270){rotate = 180}
+                    else if(angle === 270){rotate = 90}
+                    else {rotate = 0}
+                    style.transform = ${'`rotate(${rotate}deg)`'}
+                }
+                return {
+                    html:<div style={style}>{${'`${val}:00`'}}</div>,
+                    offset:20
+                }
+            }
+        },
+        {
+            step:1,
+            setting:(val,{disabled})=>{
+                let background;
+                if(disabled){background = 'red'}
+                else {background = '#00ff00'}
+                let style = {width:6,height:6,background}
+                return {
+                    html:<div style={style}></div>
+                }
+            }
         }
-    }}
-    labels={{
-        step:1,
-        dynamic:true
-    }}
-    label={(val,{disabled,value})=>{
-        let active = val === value
-        let color;
-        if(disabled){color = 'red'}
-        else if(active){color = '#fff'}
-        else {color = '#00ff00'}
-        let style:any = {
-            width:40,
-            padding:active?'2px 6px':0,
-            fontSize:10,
-            fontWeight:active?'bold':undefined,
-            background:active?'dodgerblue':undefined,
-            color,
-            fontFamily:'arial',
+    ]}
+    {...setting}
+/>
+        `)}
+        {round?'':code(`
+<AIOInput
+    type={${type}} value={value} start={0} end={12} step={1}
+    onChange={(newValue)=>setValue(newValue)}
+    disabled={[4,6,7,10,11]}
+    point={false}
+    fill={false}
+    labels={[
+        {
+            step:1,
+            dynamic:true,
+            setting:(val,{disabled})=>{
+                let active = val === value
+                let color,background;
+                if(disabled){color = 'red'}
+                else if(active){color = '#fff'; background = 'dodgerblue'}
+                else {color = '#00ff00'}
+                let style:any = {color,background,padding:3}
+                return {
+                    html:<div style={style}>{${'`${val}:00`'}}</div>,
+                    offset:20
+                }
+            }
+        },
+        {
+            step:1,
+            setting:(val,{disabled})=>{
+                let background;
+                if(disabled){background = 'red'}
+                else {background = '#00ff00'}
+                let style = {width:6,height:6,background}
+                return {
+                    html:<div style={style}></div>
+                }
+            }
         }
-        return {
-            offset:-4,
-            style,
-            html:${'`${value}:00`'}
-        }
-    }}
-    ${sc(setting)}
+    ]}
+    {...setting}
 />
         `)}
         </div> 
     )
 }
-const Circles:FC<I_RS> = ({setting,type}) => {
+const Circles:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
@@ -875,12 +818,12 @@ const Circles:FC<I_RS> = ({setting,type}) => {
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 circles={[
-                    '4 6 #333',
-                    '32 4 #0054fa'
+                    '2 30 #0054fa',
+                    '8 4 #000'
                 ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
@@ -895,7 +838,8 @@ const Circles:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const Rotate_180:FC<I_RS> = ({setting,type}) => {
+const Rotate_180:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
@@ -905,29 +849,49 @@ const Rotate_180:FC<I_RS> = ({setting,type}) => {
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 rotate={-180}
-                labels={{step:10}}
-                label={()=>{
-                    return {offset:0}
-                }}
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                html:value,
+                                fixAngle:true,
+                                offset:20
+                            }
+                        }
+                    }
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
+    type={${type}} 
+    value={value} 
+    start={0} 
+    end={100} 
+    step={1}
     onChange={(newValue)=>setValue(newValue)}
     rotate={-180}
-    labels={{step:10}}
-    label={()=>{
-        return {offset:0}
-    }}
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    html:value,
+                    offset:20,
+                    ${!round?'':'fixAngle:true'}
+                }
+            }
+        }
+    ]}
     ${sc(setting)}
 />
         `)}
         </div> 
     )
 }
-const Rotate_90:FC<I_RS> = ({setting,type}) => {
+const Rotate_90:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number>()
     if(!round){return null}
@@ -937,54 +901,36 @@ const Rotate_90:FC<I_RS> = ({setting,type}) => {
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
                 rotate={-90}
-                labels={{step:10}}
-                label={()=>{
-                    return {offset:0}
-                }}
-                {...setting}
-            />
-        {AIODoc().Code(`
-<AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
-    onChange={(newValue)=>setValue(newValue)}
-    rotate={-90}
-    labels={{step:10}}
-    label={()=>{
-        return {offset:0}
-    }}
-    ${sc(setting)}
-/>
-        `)}
-        </div> 
-    )
-}
-const RangesArray:FC<I_RS> = ({setting,type}) => {
-    let {round,reverse,vertical} = setting
-    const [value,setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value} start={0} end={100} step={1}
-                onChange={(newValue)=>setValue(newValue)}
-                ranges={[
-                    [40,'6 red'],
-                    [60,'6 orange'],
-                    [80,'6 yellow'],
-                    [100,'6 green'] 
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                html:value,
+                                offset:20,
+                                fixAngle:true
+                            }
+                        }
+                    }
                 ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
-    type='${type}' 
-    value={value} start={0} end={100} step={1}
+    type={${type}} value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    ranges={[
-        '40 6 red',
-        '60 10 orange',
-        '80 14 yellow',
-        '100 18 green' 
+    rotate={-90}
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    html:value,
+                    offset:20,
+                    ${!round?'':'fixAngle:true'}
+                }
+            }
+        }
     ]}
     ${sc(setting)}
 />
@@ -992,40 +938,93 @@ const RangesArray:FC<I_RS> = ({setting,type}) => {
         </div> 
     )
 }
-const RangesFunction:FC<I_RS> = ({setting,type}) => {
+const RangesStatic:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
-    const [value,setValue] = useState<number>(0)
+    const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue)=>setValue(newValue)}
-                ranges={(value)=>{
-                    return [
-                        [value as number,'4 dodgerblue'],
-                        [100,'5 #f8f8f8']
-                    ]
-                }}
+                fill={false}
+                ranges={[
+                    [40,'6 0 red'],
+                    [60,'6 0 orange'],
+                    [80,'6 0 yellow'],
+                    [100,'6 0 green'] 
+                ]}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    ranges={(value)=>{
-        return [
-            value + ' 4 dodgerblue',
-            '100 5 #f8f8f8'
-        ]
-    }}
+    ranges={[
+        [40,'6 0 red'],
+        [60,'6 0 orange'],
+        [80,'6 0 yellow'],
+        [100,'6 0 green'] 
+    ]}
     ${sc(setting)}
 />
         `)}
         </div> 
     )
 }
-const Multiple:FC<I_RS> = ({setting,type}) => {
+const RangesDynamic:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
+    const [value,setValue] = useState<number>(0)
+    function getRanges():any[]{
+        let color;
+        if(value < 25){color = 'red'}
+        else if(value < 50){color = 'orange'}
+        else if(value < 75){color = 'yellow'}
+        else {color = 'green'}
+        return [
+            [value as number,`4 0 ${color}`],
+            [100,'5 0 #eee']
+        ]
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} value={value} start={0} end={100} step={1}
+                onChange={(newValue)=>setValue(newValue)}
+                fill={false}
+                ranges={getRanges()}
+                {...setting}
+            />
+        {code(`
+function getRanges(value):any[]{
+    let color;
+    if(value < 25){color = 'red'}
+    else if(value < 50){color = 'orange'}
+    else if(value < 75){color = 'yellow'}
+    else {color = 'green'}
+    return [
+        [value as number,${'`4 0 ${color}`'}],
+        [100,'5 0 #eee']
+    ]
+}
+<AIOInput
+    type={${type}} 
+    value={value} 
+    start={0} 
+    end={100} 
+    step={1}
+    onChange={(newValue)=>setValue(newValue)}
+    fill={false}
+    ranges={getRanges(value)}
+    {...setting}
+/>
+        `)}
+        </div> 
+    )
+}
+const Multiple:FC = () => {
+    const {type,code,setting}:I_CTX = useContext(CTX);
     let {round,reverse,vertical} = setting
     const [value,setValue] = useState<number[]>([10,30])
     return (
@@ -1036,7 +1035,7 @@ const Multiple:FC<I_RS> = ({setting,type}) => {
                 multiple={true}
                 {...setting}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='${type}' 
     value={value} start={0} end={100} step={1}

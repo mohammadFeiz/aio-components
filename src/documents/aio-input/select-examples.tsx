@@ -346,32 +346,33 @@ const Test:FC<{type:I_exampleTypes}> = ({type})=> {
     return (
         <div className='example'>
             <AIOInput
-                type='checklist' 
-                options={textOptions}
+                type='buttons' 
+                options={textOptions.slice(0,5)}
                 option={{
                     text:(option:any)=>option.name,
                     value:(option:any)=>option.id,
-                    before:(option:any)=><Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>,
-                    subtext:(option:any)=>option.gender,
+                    // before:(option:any)=><Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>,
+                    // subtext:(option:any)=>option.gender,
                     attrs:(option:any)=>{
                         return {
                             title:option.name
                         }
                     },
-                    checkIcon:()=>[
-                        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-                        <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-                    ],
-                    style:()=>{
-                        return { width:'100%'}
-                    },
+                    // checkIcon:()=>[
+                    //     <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
+                    //     <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
+                    // ],
+                    // style:()=>{
+                    //     return { width:'100%'}
+                    // },
                     className:(option:any)=>`my-option my-option-${option.gender}`,
                     disabled:(option:any)=>option.gender === 'female'
                 }}
-            value={value}
+            value={value} multiple={true}
             onChange={(newValue)=>setValue(newValue)}
             popover={{fitHorizontal:true}}
         />
+        <div style={{height:500}}></div>
         {AIODoc().Code(`
 <AIOInput
     type='${type}'

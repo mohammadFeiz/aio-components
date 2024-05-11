@@ -1,11 +1,11 @@
-import React, { FC, useState } from "react"
+import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
-
+const CTX = createContext({} as any)
 const GaugeExamples:FC = () => {
     let [examples] = useState<any>([
         ['example1',Example1],
@@ -14,22 +14,31 @@ const GaugeExamples:FC = () => {
         ['example4',Example4],
         ['example5',Example5],
     ])
-    let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
+    let [titles] = useState<string[]>(getTitles)
+    function getTitles(){
+        let res = ['all'];
+        for(let i = 0; i < examples.length; i++){
+            let ex = examples[i];
+            if(ex[2] !== false){res.push(ex[0])}
+        }
+        return res
+    }
     let [setting,SetSetting] = useState<any>(new Storage('rangeexamplessetting').load('setting',{
-        round:1,
-        reverse:false,
-        vertical:false,
-        show:-1
+        show:'all',showCode:false
     }))
     function setSetting(setting:any){
         new Storage('rangeexamplessetting').save('setting',setting)
         SetSetting(setting)
     }
     function changeShow(dir: 1 | -1 ){
-        let newShow:number = setting.show + dir;
-        if(newShow < -1){newShow = examples.length - 1 }
-        if(newShow > examples.length - 1){newShow = -1}
-        setSetting({...setting,show:newShow})
+        let index = titles.indexOf(setting.show) + dir
+        if(index < 0){index = titles.length - 1 }
+        if(index > titles.length - 1){index = 0}
+        setSetting({...setting,show:titles[index]})
+    }
+    function code(code:string){
+        if(!setting.showCode){return null}
+        return AIODoc().Code(code)
     }
     function setting_node(){
         let btnstyle = {background:'none',border:'none'}
@@ -45,14 +54,15 @@ const GaugeExamples:FC = () => {
                             {flex:1},
                             {
                                 input:{
-                                    type:'select',options:numbers,before:'Show:',
-                                    option:{
-                                        text:(option:any)=>option === -1?"all":examples[option][0],
-                                        value:'option'
-                                    },
-                                    popover:{
-                                        maxHeight:'100vh'
-                                    }
+                                    type:'checkbox',text:'Show Code'
+                                },
+                                field:'value.showCode'
+                            },
+                            {
+                                input:{
+                                    type:'select',options:titles,before:'Show:',
+                                    option:{text:'option',value:'option'},
+                                    popover:{maxHeight:'100vh'}
                                 },
                                 field:'value.show'
                             },
@@ -70,7 +80,7 @@ const GaugeExamples:FC = () => {
             className:'ofy-auto flex-1 p-12',
             column:examples.map((o:any,i:number)=>{
                 let [title,COMP] = o;
-                if(setting.show !== -1 && setting.show !== i){return {}}
+                if(setting.show !== 'all' && setting.show !== title){return {}}
                 return {
                     html:(
                         <div className='w-100'>
@@ -82,20 +92,17 @@ const GaugeExamples:FC = () => {
             })
         }
     }
-    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
+    return (
+        <CTX.Provider value={{code}}>
+            <RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>
+        </CTX.Provider>
+    )   
 }
 export default GaugeExamples
 
 
-function sc(setting:{round?:number,reverse:boolean,vertical:boolean}){
-    let {round,reverse,vertical} = setting
-    return (
-`${round?`round={${round}}`:''}
-${`    reverse={${reverse?'true':'false'}}`}
-${`    vartical={${vertical?'true':'false'}}`}`
-    )
-}
 const Example1:FC = ()=> {
+    const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(25)
     return (
         <div className='example'>
@@ -108,23 +115,34 @@ const Example1:FC = ()=> {
                 onChange={(newValue)=>setValue(newValue)}
                 handle={false}
                 point={false}
-                ranges={[
-                    [value,`20 rgb(140,198,64)`],
-                    [100,`20 #eee`]
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                offset:16,fixAngle:true,
+                                html:(
+                                    <div style={{fontSize:10,color:'#999'}}>{value}</div>
+                                )
+                            }
+                        }
+                    },
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                offset:5,
+                                html:(
+                                    <div style={{height:1,width:4,background:'#ccc'}}></div>
+                                )
+                            }
+                        }
+                    }
                 ]}
-                labels={{step:10,dynamic:true}}
-                label={()=>{
-                    return {
-                        style:{fontSize:10,color:'#999'},
-                        offset:8
-                    }
-                }}
-                scales={{step:10,dynamic:true}}
-                scale={()=>{
-                    return {
-                        style:{height:1,width:4}
-                    }
-                }}
+                ranges={[
+                    [value,`20 0 rgb(140,198,64)`],
+                    [100,`20 0 #eee`]
+                ]}
                 text={()=>{
                     return (
                         <div className='gauge-html'>
@@ -134,7 +152,7 @@ const Example1:FC = ()=> {
                     )
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='spinner' 
     size={120}
@@ -144,23 +162,34 @@ const Example1:FC = ()=> {
     onChange={(newValue)=>setValue(newValue)}
     handle={false}
     point={false}
-    ranges={[
-        [value,${'`20 rgb(140,198,64)`'}],
-        [100,${'`20 #eee`'}]
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    offset:16,fixAngle:true,
+                    html:(
+                        <div style={{fontSize:10,color:'#999'}}>{value}</div>
+                    )
+                }
+            }
+        },
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    offset:5,
+                    html:(
+                        <div style={{height:1,width:4,background:'#ccc'}}></div>
+                    )
+                }
+            }
+        }
     ]}
-    labels={{step:10,dynamic:true}}
-    label={()=>{
-        return {
-            style:{fontSize:10,color:'#999'},
-            offset:8
-        }
-    }}
-    scales={{step:10,dynamic:true}}
-    scale={()=>{
-        return {
-            style:{height:1,width:4}
-        }
-    }}
+    ranges={[
+        [value,'20 0 rgb(140,198,64)'],
+        [100,'20 0 #eee']
+    ]}
     text={()=>{
         return (
             <div className='gauge-html'>
@@ -175,6 +204,7 @@ const Example1:FC = ()=> {
     )
 }
 const Example2:FC = ()=> {
+    const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
         <div className='example'>
@@ -188,22 +218,34 @@ const Example2:FC = ()=> {
                 handle={false}
                 point={false}
                 ranges={[
-                    [value,`20 #EE5723`],
-                    [100,`20 #eee`]
+                    [value,'20 0 #EE5723'],
+                    [100,'20 0 #eee']
                 ]}
-                labels={{step:10,dynamic:true}}
-                label={()=>{
-                    return {
-                        style:{fontSize:10,color:'#999'},
-                        offset:8
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                offset:16,
+                                fixAngle:true,
+                                html:(
+                                    <div style={{fontSize:10,color:'#999'}}>{value}</div>
+                                )
+                            }
+                        }
+                    },
+                    {
+                        step:5,
+                        setting:(value)=>{
+                            return {
+                                offset:5,
+                                html:(
+                                    <div style={{height:1,width:4,background:'#ccc'}}></div>
+                                )
+                            }
+                        }
                     }
-                }}
-                scales={{step:10,dynamic:true}}
-                scale={()=>{
-                    return {
-                        style:{height:1,width:4}
-                    }
-                }}
+                ]}
                 text={()=>{
                     return (
                         <div className='gauge-html'>
@@ -213,7 +255,7 @@ const Example2:FC = ()=> {
                     )
                 }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='spinner' 
     size={120}
@@ -224,22 +266,34 @@ const Example2:FC = ()=> {
     handle={false}
     point={false}
     ranges={[
-        [value,${'`20 #EE5723`'}],
-        [100,${'`20 #eee`'}]
+        [value,'20 0 #EE5723'],
+        [100,'20 0 #eee']
     ]}
-    labels={{step:10,dynamic:true}}
-    label={()=>{
-        return {
-            style:{fontSize:10,color:'#999'},
-            offset:8
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    offset:16,
+                    fixAngle:true,
+                    html:(
+                        <div style={{fontSize:10,color:'#999'}}>{value}</div>
+                    )
+                }
+            }
+        },
+        {
+            step:5,
+            setting:(value)=>{
+                return {
+                    offset:5,
+                    html:(
+                        <div style={{height:1,width:4,background:'#ccc'}}></div>
+                    )
+                }
+            }
         }
-    }}
-    scales={{step:10,dynamic:true}}
-    scale={()=>{
-        return {
-            style:{height:1,width:4}
-        }
-    }}
+    ]}
     text={()=>{
         return (
             <div className='gauge-html'>
@@ -255,6 +309,7 @@ const Example2:FC = ()=> {
 }
 
 const Example3:FC = ()=> {
+    const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
         <div className='example'>
@@ -271,34 +326,41 @@ const Example3:FC = ()=> {
                         width:6,
                         height:52,
                         color:'red',
-                        offset:5
+                        offset:5,
+                        sharp:true
                     }
                 }}
                 ranges={[
-                    [150,`10 green -4`],
-                    [200,`10 orange -4`]
+                    [150,`10 8 green`],
+                    [200,`10 8 orange`]
                 ]}
                 circles={[
-                    '2 #ccc 0',
-                    '3 red -74 0 1'
+                    '1 100 #ccc',
+                    '3 5 red 0 1'
                 ]}
-                labels={{step:25,dynamic:true}}
-                label={()=>{
-                    return {
-                        style:{fontSize:10,color:'#999'},
-                        offset:8
+                labels={[
+                    {
+                        step:25,
+                        setting:(value)=>{
+                            return {
+                                offset:16,
+                                fixAngle:true,
+                                html:<div style={{fontSize:10,color:'#999'}}>{value}</div>
+                            }
+                        }
+                    },
+                    {
+                        step:25,
+                        setting:(value)=>{
+                            return {
+                                offset:-5,
+                                html:<div style={{width:4,height:1,background:'#aaa'}}></div>
+                            }
+                        }
                     }
-                }}
-                scales={{step:25,dynamic:true}}
-                scale={()=>{
-                    return {
-                        style:{height:1,width:4},
-                        offset:0
-                    }
-                }}
-                
+                ]}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='spinner' 
     size={160}
@@ -312,43 +374,52 @@ const Example3:FC = ()=> {
             width:6,
             height:52,
             color:'red',
-            offset:5
+            offset:5,
+            sharp:true
         }
     }}
     ranges={[
-        [150,${'`10 green -4`'}],
-        [200,${'`10 orange -4`'}]
+        [150,'10 8 green'],
+        [200,'10 8 orange']
     ]}
     circles={[
-        '2 #ccc 0',
-        '3 red -74 0 1'
+        '1 100 #ccc',
+        '3 5 red 0 1'
     ]}
-    labels={{step:25,dynamic:true}}
-    label={()=>{
-        return {
-            style:{fontSize:10,color:'#999'},
-            offset:8
+    labels={[
+        {
+            step:25,
+            setting:(value)=>{
+                return {
+                    offset:16,
+                    fixAngle:true,
+                    html:<div style={{fontSize:10,color:'#999'}}>{value}</div>
+                }
+            }
+        },
+        {
+            step:25,
+            setting:(value)=>{
+                return {
+                    offset:-5,
+                    html:<div style={{width:4,height:1,background:'#aaa'}}></div>
+                }
+            }
         }
-    }}
-    scales={{step:25,dynamic:true}}
-    scale={()=>{
-        return {
-            style:{height:1,width:4},
-            offset:0
-        }
-    }}
+    ]}
 />
         `)}
         </div> 
     )
 }
 const Example4:FC = ()=> {
+    const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(126)
     return (
         <div className='example'>
             <AIOInput
                 type='spinner' 
-                size={200}
+                size={160}
                 value={value} 
                 start={0} end={140} step={1}
                 round={1}
@@ -356,42 +427,50 @@ const Example4:FC = ()=> {
                 point={false}
                 handle={false}
                 ranges={[
-                    [value,'10 #1367bb -4 1']
+                    [value,'8 0 #1367bb 1']
                 ]}
                 circles={[
-                    '10 #ddd -4 0 1',
+                    '8 80 #ddd 0 1',
                 ]}
                 rotate={180}
                 reverse={true}
-                labels={{step:20,dynamic:true}}
-                label={()=>{
-                    return {
-                        style:{fontSize:12,color:'#666',fontFamily:'Arial'},
-                        offset:-50
+                labels={[
+                    {
+                        step:20,
+                        setting:(value)=>{
+                            return {
+                                html:<div style={{fontSize:12,color:'#666',fontFamily:'Arial'}}>{value}</div>,
+                                offset:-28,
+                                fixAngle:true
+                            }
+                        }
+                    },
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            let width,offset;
+                            if(value % 20 === 0){
+                                width = 10;
+                                offset = -12;
+                            }
+                            else {
+                                width = 6;
+                                offset = -10
+                            }
+                            let style = {height:1,width,background:'#444'};
+                            return {
+                                html:<div style={style}></div>,
+                                offset
+                            }
+                        }
                     }
-                }}
+                ]}
                 text={()=><div style={{fontSize:10,color:'#000',fontWeight:'bold'}}>Temperature</div>}
-                scales={{step:2,dynamic:true}}
-                scale={(scaleValue)=>{
-                    let width,offset;
-                    if(scaleValue % 20 === 0){
-                        width = 10;
-                        offset = -28;
-                    }
-                    else {
-                        width = 6;
-                        offset = -24
-                    }
-                    return {
-                        style:{height:1,width,background:'#444'},
-                        offset
-                    }
-                }}
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='spinner' 
-    size={200}
+    size={160}
     value={value} 
     start={0} end={140} step={1}
     round={1}
@@ -399,75 +478,94 @@ const Example4:FC = ()=> {
     point={false}
     handle={false}
     ranges={[
-        [value,'10 #1367bb -4 1']
+        [value,'8 0 #1367bb 1']
     ]}
     circles={[
-        '10 #ddd -4 0 1',
+        '8 80 #ddd 0 1',
     ]}
     rotate={180}
     reverse={true}
-    labels={{step:20,dynamic:true}}
-    label={()=>{
-        return {
-            style:{fontSize:12,color:'#666',fontFamily:'Arial'},
-            offset:-50
+    labels={[
+        {
+            step:20,
+            setting:(value)=>{
+                return {
+                    html:<div style={{fontSize:12,color:'#666',fontFamily:'Arial'}}>{value}</div>,
+                    offset:-28,
+                    fixAngle:true
+                }
+            }
+        },
+        {
+            step:10,
+            setting:(value)=>{
+                let width,offset;
+                if(value % 20 === 0){
+                    width = 10;
+                    offset = -12;
+                }
+                else {
+                    width = 6;
+                    offset = -10
+                }
+                let style = {height:1,width,background:'#444'};
+                return {
+                    html:<div style={style}></div>,
+                    offset
+                }
+            }
         }
-    }}
+    ]}
     text={()=><div style={{fontSize:10,color:'#000',fontWeight:'bold'}}>Temperature</div>}
-    scales={{step:2,dynamic:true}}
-    scale={(scaleValue)=>{
-        let width,offset;
-        if(scaleValue % 20 === 0){
-            width = 10;
-            offset = -28;
-        }
-        else {
-            width = 6;
-            offset = -24
-        }
-        return {
-            style:{height:1,width,background:'#444'},
-            offset
-        }
-    }}
 />
         `)}
         </div> 
     )
 }
 const Example5:FC = ()=> {
+    const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
         <div className='example'>
             <AIOInput
                 type='spinner' 
+                style={{border:'none'}}
                 size={120}
                 value={value} 
                 start={0} end={100} step={1}
                 round={0.75}
                 onChange={(newValue)=>setValue(newValue)}
+                circles={['1 60 #ccc']}
                 handle={()=>{
                     return {
-                        width:10,
-                        height:-8,
+                        thickness:10,
+                        size:-8,
                         color:'dodgerblue',
                         offset:60
                     }
                 }}
                 point={false}
-                labels={{step:10,dynamic:true}}
-                label={()=>{
-                    return {
-                        style:{fontSize:10,color:'#999'},
-                        offset:8
+                labels={[
+                    {
+                        step:10,
+                        setting:(value)=>{
+                            return {
+                                fixAngle:true,
+                                offset:16,
+                                html:<div style={{fontSize:10,color:'#999'}}>{value}</div>
+                            }
+                        }
+                    },
+                    {
+                        step:10,
+                        setting:()=>{
+                            return {
+                                offset:6,
+                                html:<div style={{height:1,width:4,background:'#333'}}></div>
+                            }
+                        }
                     }
-                }}
-                scales={{step:10,dynamic:true}}
-                scale={()=>{
-                    return {
-                        style:{height:1,width:4}
-                    }
-                }}
+                ]}
                 text={()=>{
                     return (
                         <div className='gauge-html'>
@@ -476,38 +574,47 @@ const Example5:FC = ()=> {
                         </div>
                     )
                 }}
-
             />
-        {AIODoc().Code(`
+        {code(`
 <AIOInput
     type='spinner' 
+    style={{border:'none'}}
     size={120}
     value={value} 
     start={0} end={100} step={1}
     round={0.75}
     onChange={(newValue)=>setValue(newValue)}
+    circles={['1 60 #ccc']}
     handle={()=>{
         return {
-            width:10,
-            height:-8,
+            thickness:10,
+            size:-8,
             color:'dodgerblue',
             offset:60
         }
     }}
     point={false}
-    labels={{step:10,dynamic:true}}
-    label={()=>{
-        return {
-            style:{fontSize:10,color:'#999'},
-            offset:8
+    labels={[
+        {
+            step:10,
+            setting:(value)=>{
+                return {
+                    fixAngle:true,
+                    offset:16,
+                    html:<div style={{fontSize:10,color:'#999'}}>{value}</div>
+                }
+            }
+        },
+        {
+            step:10,
+            setting:()=>{
+                return {
+                    offset:6,
+                    html:<div style={{height:1,width:4,background:'#333'}}></div>
+                }
+            }
         }
-    }}
-    scales={{step:10,dynamic:true}}
-    scale={()=>{
-        return {
-            style:{height:1,width:4}
-        }
-    }}
+    ]}
     text={()=>{
         return (
             <div className='gauge-html'>

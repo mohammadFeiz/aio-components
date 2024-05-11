@@ -80,7 +80,7 @@ export type AI = {
     getChilds?:(row:any)=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
-    handle?:((value:number,p:any)=>{width?:number,height?:number,color?:string,offset?:number}) | false,//range
+    handle?:AI_range_handle,//range
     headerAttrs?: any,
     height?: number | string,
     hideTags?: boolean,
@@ -91,8 +91,7 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
-    label?:AI_range_item,//range
-    labels?:AI_scales,//range
+    labels?:AI_labels,//range
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
     line?:(index:number,active:boolean)=>{
@@ -124,7 +123,7 @@ export type AI = {
     point?:false | AI_point,//range
     popupConfig?:I_Map_config
     preview?:boolean,
-    ranges?:[number,string][] | ((value:number | number[])=>[number,string][]),
+    ranges?:[number,string][],
     removeText?:string,
     reverse?:boolean,
     rotate?:number,
@@ -136,8 +135,6 @@ export type AI = {
     rowsTemplate?: (rows: any[]) => React.ReactNode,
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
     rtl?: boolean,
-    scale?:AI_range_item,//range
-    scales?:AI_scales,//range
     search?: string,
     setChilds?:(row:any,childs:any[])=>void,//tree
     size?: number,//list,date
@@ -166,26 +163,31 @@ export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 
 export type AI_point = (index:number,p:any)=>{
-    attrs?:any,
-    className?:string,
-    style?:any,
-    html?:React.ReactNode,
     offset?:number,
+    html?:React.ReactNode,
+    attrs?:any
 }
-export type AI_scales = {
+export type AI_labels = AI_label[]
+export type AI_label = {
     list?:number[],
     step?:number,
-    dynamic?:boolean
+    dynamic?:boolean,
+    autoHide?:boolean,
+    zIndex?:number,
+    setting:(value:number,p:{angle:number,disabled:boolean})=>AI_labelItem
 }
-export type AI_range_item = (value:number,p:{angle:number,disabled:boolean,value:number})=>AI_scale
-export type AI_scale = {
+export type AI_labelItem = {
     offset?:number,
     fixAngle?:boolean,
-    attrs?:any,
-    style?:{[key:string]:string | number},
-    className?:string,
-    html?:React.ReactNode,
-    rotate?:number
+    html?:React.ReactNode
+}
+export type AI_range_handle = ((value:number,p:any)=>AI_range_handle_config) | false
+export type AI_range_handle_config = {
+    thickness?:number,
+    size?:number,
+    color?:string,
+    offset?:number,
+    sharp?:boolean
 }
 export type AI_fill = {thickness?:number,color?:string,className?:string,style?:any}
 //notice
@@ -401,11 +403,10 @@ export type I_Map_context = {
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
 export type I_RangeValueContainer = {itemValue:number,index:number}
-export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any}
-export type I_RangeArc = {thickness:number,color:string,from:number,to:number,offset:number,rotate:number,full?:boolean,roundCap?:boolean}
-export type I_RangeValue = {rootProps:AI,value:number,disabled:boolean,angle:number,index:number,parentDom:any}
-export type I_RangeItems = {type:'scale'|'label'}
-export type I_RangeItem = {setting:(value:number,p:any)=>AI_scale,itemValue:number,type:'scale' | 'label'}
+export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any,offset?:number,roundCap?:boolean}
+export type I_RangeArc = {thickness:number,color:string,from:number,to:number,radius:number,full?:boolean,roundCap?:boolean}
+export type I_RangeValue = {value:number,disabled:boolean,angle:number,index:number,parentDom:any}
+
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 export type AI_FormContext = {
     rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
