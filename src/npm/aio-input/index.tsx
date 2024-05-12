@@ -193,35 +193,26 @@ function AIOINPUT(props: AI) {
 }
 function Time() {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { attrs: Attrs, unit = { year: true, month: true, day: true } } = rootProps;
+    let { attrs: Attrs, unit = { year: true, month: true, day: true },onChange, style, popover = {}, className } = rootProps;
     if (typeof unit !== 'object') { unit = { year: true, month: true, day: true } }
-    let [value, setValue] = useState(getTimeByUnit(rootProps))
-    useEffect(() => { setValue(getTimeByUnit(rootProps)) }, [JSON.stringify(rootProps.value)])
-    let valueRef = useRef(value);
-    valueRef.current = value;
-    function renderButton() {
-        let { onChange, style, popover = {}, className } = rootProps;
-        let attrs = AddToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
-        let text: string = getTimeText(rootProps,value)
-        let p: AI = {
-            ...rootProps, text, attrs, type: 'button',
-            popover: !onChange ? undefined : {
-                position: 'center', ...popover, attrs: AddToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
-                body: { render: ({ close }) => <TimePopover value={valueRef.current} onClose={close}/> }
-            }
+    let attrs = AddToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
+    let text: string = getTimeText(rootProps)
+    let p: AI = {
+        ...rootProps, text, attrs, type: 'button',
+        popover: !onChange ? undefined : {
+            position: 'center', ...popover, attrs: AddToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
+            body: { render: ({ close }) => <TimePopover onClose={close}/> }
         }
-        return <AIOInput {...p} />
     }
-    return renderButton()
+    return <AIOInput {...p} />
 }
-export type I_TimePopver = { value: type_time_value, onClose: () => void }
-function TimePopover(props: I_TimePopver) {
+function TimePopover(props: { onClose: () => void }) {
     let { DATE, rootProps }: AI_context = useContext(AICTX)
     let { jalali,onChange } = rootProps;
     let { onClose } = props;
-    let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
-    let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
-    let [value, setValue] = useState<type_time_value>({ ...props.value })
+    let [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
+    let [startYear] = useState(value.year ? value.year - 10 : undefined);
+    let [endYear] = useState(value.year ? value.year + 10 : undefined);
     function change(obj: { [key in AI_timeUnits]?: number }) {
         setValue({ ...value, ...obj })
     }
@@ -3558,7 +3549,8 @@ function getTimeByUnit(rootProps:AI,justToday?: boolean) {
     }
     return newValue;
 }
-function getTimeText(rootProps:AI,value: any) {
+function getTimeText(rootProps:AI) {
+    let value = getTimeByUnit(rootProps);
     if (!value) {
         if (typeof rootProps.placeholder === 'string') { return rootProps.placeholder }
         if (typeof rootProps.text === 'string') { return rootProps.text }
