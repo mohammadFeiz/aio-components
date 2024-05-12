@@ -16,7 +16,7 @@ export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]
 export type AP_modal = {
     getTarget?:()=>any,
     pageSelector?:string,
-    openRelatedTo?:string,
+    limitTo?:string,
     maxHeight?:number | 'string',
     fixStyle?:(o:any,p:{targetLimit:any,pageLimit:any})=>any,
     fitTo?:string,
@@ -285,7 +285,7 @@ type AP_Popup_temp = {
 }
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
-  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,maxHeight,openRelatedTo, fixStyle = (o) => o, fitTo } = modal;
+  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,maxHeight,limitTo, fixStyle = (o) => o, fitTo } = modal;
   let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false,isFirstMount: true})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
@@ -364,7 +364,7 @@ function Popup(props: AP_Popup) {
     let target = getTarget();
     if (!target || !target.length) { return {} }
     let popup = $(temp.dom.current);
-    let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector,openRelatedTo, fitTo, attrs, rtl })
+    let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector,limitTo, fitTo, attrs, rtl })
     let res = { ...style, position: 'absolute' }
     if(maxHeight){res.maxHeight = maxHeight}
     return res
@@ -684,12 +684,12 @@ type AP_align = {
   fixStyle?: (o: any, p: { targetLimit: any, pageLimit: any }) => any,
   attrs?: any,
   pageSelector?: string,
-  openRelatedTo?:string,
+  limitTo?:string,
   rtl?: boolean,
   fitTo?: string
 }
 function Align(p: AP_align) {
-  let { dom, target, fitHorizontal, fixStyle = (o) => o, attrs = {}, fitTo, pageSelector, rtl,openRelatedTo } = p;
+  let { dom, target, fitHorizontal, fixStyle = (o) => o, attrs = {}, fitTo, pageSelector, rtl,limitTo } = p;
   let $$ = {
     getDomLimit(dom: any, type: 'popover' | 'page' | 'target') {
       if (fitTo && type === 'popover') {
@@ -735,8 +735,8 @@ function Align(p: AP_align) {
       return pageLimit;
     },
     getRelatedToLmit(){
-      if(!openRelatedTo){return}
-      let elem = dom.parents(openRelatedTo);
+      if(!limitTo){return}
+      let elem = dom.parents(limitTo);
       if(!elem.length){return}
       let offset = elem.offset();
       let left = offset.left - window.pageXOffset;

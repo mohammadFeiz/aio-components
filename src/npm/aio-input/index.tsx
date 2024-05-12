@@ -2,7 +2,7 @@
 import React, { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment } from 'react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
-    mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDownloadOutline, mdiDotsHorizontal,
+    mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDotsHorizontal,
     mdiChevronRight, mdiChevronLeft, mdiArrowDown, mdiArrowUp, mdiFileExcel, mdiSort,
     mdiDelete, mdiCrosshairsGps, mdiCircleSmall
 } from "@mdi/js";
@@ -11,7 +11,7 @@ import $ from 'jquery';
 import Axios from "axios";
 ////////////types//////////////////////
 import {
-    AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_Options, AI_Popover_props, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
+    AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
     AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar, I_Drag, I_FileItem, I_Layout,
     I_Tag, I_list_temp, type_time_value,
     AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
@@ -20,7 +20,8 @@ import {
     I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys,
     AI_optionProp,
     AI_optionDic,
-    AI_options
+    AI_options,
+    AI_popover
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
@@ -31,21 +32,13 @@ import './index.css';
 ////////////////////////////////////
 const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
-    let type = props.type,
-        round = props.round;
+    let type = props.type,round = props.round;
     if (type as any === 'spinner') {
         type = 'range';
-        if (!round || typeof round !== 'number') {
-            round = 1;
-        }
+        if (!round || typeof round !== 'number') {round = 1;}
     }
-    else if (type === 'slider') {
-        type = 'range';
-        round = 0;
-    }
-    else if (type === 'range') {
-        return null;
-    }
+    else if (type === 'slider') {type = 'range'; round = 0;}
+    else if (type === 'range') {return null;}
     let rootProps: AI = { ...props, type, round }
     return <AIOINPUT {...rootProps} />
 }
@@ -63,28 +56,33 @@ function AIOINPUT(props: AI) {
         let className = 'aio-input-popover';
         className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
         if(types.hasOption){className += ' aio-input-dropdown'}
+        if(type === 'time'){className += ' aio-input-time-popover'}
         return (dom: any) => {
-            let popover: AP_modal = { ...(props.popover || {}) }
+            let popover: AI_popover = { ...(props.popover || {}) }
             let { type,multiple } = props;
-            let { body = {} } = popover;
-            let backdrop = !popover.backdrop ? {} : popover.backdrop;
-            backdrop = { ...backdrop, attrs: AddToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
+            let { body,backAttrs = {},backClose = true,limitTo,header } = popover;
+            let backdrop = { 
+                attrs: AddToAttrs(backAttrs, { className: 'aio-input-backdrop ' + datauniqid }),
+                close:backClose
+            }
+            let headerConfig = header?{...header,onClose:header.close}:undefined;
             let target: React.ReactNode = $(dom.current)
             let config: AP_modal = {
                 //props that have default but can change by user
                 position: 'popover',
                 fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
                 //props that havent default but can define by user(header,footer,fitTo,fixStyle)
-                ...popover,
+                limitTo,
+                header:headerConfig,
                 //props that cannot change by user
                 backdrop,
                 onClose: () => toggle(false),
                 body: {
-                    ...body,
                     render: ({ close }) => {
-                        if (type === 'button') { return (body.render || (() => ''))({ close }) }
+                        if (type === 'button') { return (body || (() => ''))({ close }) }
                         else if (type === 'date') { return <Calendar onClose={close} /> }
-                        else { return body.render ? body.render({ close }) : <Options /> }
+                        else if (type === 'time') { return <TimePopover onClose={close} /> }
+                        else { return <Options /> }
                     }
                 },
                 pageSelector: '.aio-input-backdrop.' + datauniqid,
@@ -168,43 +166,28 @@ function AIOINPUT(props: AI) {
         acardion: () => <Acardion/>,
         tree: () => <Tree />,
         list: () => <List />,
-        range: () => <Layout properties={{ text: <Range />, className: getRangeClassName() }} />,
         file: () => <File />,
         select: () => <Select/>,
+        table: () => <Table />,
+        form: () => <Form />,
+        checkbox: () => <Layout />,
         button: () => <Layout />,
+        range: () => <Layout properties={{ text: <Range />, className: getRangeClassName() }} />,
         radio: () => <Layout properties={{ text: <Options /> }} />,
         tabs: () => <Layout properties={{ text: <Options /> }} />,
         buttons: () => <Layout properties={{ text: <Options /> }} />,
-        checkbox: () => <Layout />,
-        date: () => <Layout properties={{ text: getDateText(props) }} />,
+        date: () => <DateInput />,
+        time: () => <Layout properties={{ text: getTimeText(props) }} />,
         image: () => <Layout properties={{ text: <Image /> }} />,
         map: () => <Layout properties={{ text: <Map /> }} />,
-        table: () => <Table />,
         text: () => <Layout properties={{ text: <Input /> }} />,
         password: () => <Layout properties={{ text: <Input /> }} />,
         textarea: () => <Layout properties={{ text: <Input /> }} />,
         number: () => <Layout properties={{ text: <Input /> }} />,
-        color: () => <Layout properties={{ text: <Input /> }} />,
-        form: () => <Form />,
-        time: () => <Time />
+        color: () => <Layout properties={{ text: <Input /> }} />
     }
     if (!type || !render[type]) { return null }
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
-}
-function Time() {
-    let { rootProps }: AI_context = useContext(AICTX);
-    let { attrs: Attrs, unit = { year: true, month: true, day: true },onChange, style, popover = {}, className } = rootProps;
-    if (typeof unit !== 'object') { unit = { year: true, month: true, day: true } }
-    let attrs = AddToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
-    let text: string = getTimeText(rootProps)
-    let p: AI = {
-        ...rootProps, text, attrs, type: 'button',
-        popover: !onChange ? undefined : {
-            position: 'center', ...popover, attrs: AddToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
-            body: { render: ({ close }) => <TimePopover onClose={close}/> }
-        }
-    }
-    return <AIOInput {...p} />
 }
 function TimePopover(props: { onClose: () => void }) {
     let { DATE, rootProps }: AI_context = useContext(AICTX)
@@ -458,6 +441,39 @@ function Select() {
         )
     }
     else {return <Layout properties={{ text: rootProps.text || getSelectText() }} />}
+}
+function DateInput() {
+    let { rootProps,types }: AI_context = useContext(AICTX);
+    let {value,hideTags} = rootProps;
+    
+    let values:any[] = Array.isArray(value)?[...value]:(value !== undefined?[value]:[])
+    function getDateText() {
+        let { value, unit = Def('date-unit'), text, pattern: PT, jalali, placeholder } = rootProps;
+        if (value) {
+            text = PT !== undefined ? PT : text;
+            let DATE = new AIODate();
+            let list = DATE.convertToArray(value);
+            let [year, month = 1, day = 1, hour = 0] = list;
+            list = [year, month, day, hour];
+            let pattern: string = '{}';
+            let splitter = DATE.getSplitter(value)
+            if (text && (typeof text === 'string' || typeof text === 'number')) { pattern = text.toString() }
+            else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
+            else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
+            else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
+            return <div style={{ direction: 'ltr' }}>{DATE.getDateByPattern(list, pattern)}</div>
+        }
+        return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
+    }
+    if(types.isMultiple){
+        return (
+            <div className={'aio-input-multiselect-container'}>
+                <Layout properties={{ text: rootProps.text || 'Select Dates' }} />
+                {!hideTags && !!values.length && <Tags />}
+            </div>
+        )
+    }
+    else {return <Layout properties={{ text: getDateText() }} />}
 }
 function Tags() {
     let { rootProps,options }: AI_context = useContext(AICTX);
@@ -1205,17 +1221,6 @@ function List() {
         </div>
     );
 }
-// function getOptions() {
-//     temp.activeIndex = 0;
-//     return options.map((option: any, i: number) => {
-//         let value = GetOptionProps({ props: rootProps, option, key: 'value' });
-//         let text = GetOptionProps({ props: rootProps, option, key: 'text', def: '' });
-//         let style = GetOptionProps({ props: rootProps, option, key: 'style', def: {} });
-//         if (value === rootProps.value) { temp.activeIndex = i; }
-//         return <div key={i} data-index={i} className='aio-input-list-option' style={{ height: size, ...style }}>{text}</div>
-//     })
-// }
-
 type I_AcardionContext = { toggle: (id: string) => void, mountedDic: { [id: string]: boolean }, openDic: { [id: string]: boolean }, rootProps: AI }
 const AcardionContext = createContext({} as any);
 export const Acardion: FC = () => {
@@ -1281,9 +1286,6 @@ type I_TreeContext = {
     change: (row: any, newRow: any) => void,
     getChilds: (row: any) => any[]
 }
-//should implement
-//inlineEdit
-//toggleIcon
 type I_treeItem = {
     option: AI_option, row: any, parent?: any, parentId?: string,
     id: string, open: boolean, indent: AI_indent, parentOpen: boolean,
@@ -1396,7 +1398,7 @@ const TreeActions: FC<I_TreeActions> = (props) => {
     }
     let Options = getOptions();
     if (!Options.length) { return null }
-    let p: AI = { type: 'select', caret: false, popover: { openRelatedTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
+    let p: AI = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
     return <AIOInput {...p} />;
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string, parentIndent?: AI_indent }
@@ -1447,18 +1449,24 @@ const DPContext = createContext({} as any);
 export function Calendar(props: I_Calendar) {
     let { rootProps, DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
-    let { unit = Def('date-unit'), jalali, value, disabled, size = Def('date-size'), theme = Def('theme'), translate = (text) => text, onChange = () => { }, option = {} } = rootProps;
+    let { multiple,unit = Def('date-unit'), jalali, value, disabled, size = Def('date-size'), theme = Def('theme'), translate = (text) => text, onChange = () => { }, option = {} } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
     let [today] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
-    let [initValue] = useState(getInitValue())
-    function getInitValue() {
-        let date = !value || value === null ? today : value;
+    let [thisMonthString] = useState(months[today[1] - 1])
+    let [activeDate, setActiveDate] = useState<I_DP_activeDate>(getActiveDate);
+    function getDate(){
+        let date;
+        if(multiple){date = value.length?value[value.length - 1]:undefined}
+        else {date = value}
+        return date
+    }
+    function getActiveDate() {
+        let date = getDate();
+        date = !date || date === null ? today : date;
         let [year, month, day] = DATE.convertToArray(date)
         return { year, month, day }
     }
-    let [thisMonthString] = useState(months[today[1] - 1])
-    let [activeDate, setActiveDate] = useState<I_DP_activeDate>({ ...initValue });
     let adRef = useRef(activeDate);
     adRef.current = activeDate
     function trans(text: string) {
@@ -1486,6 +1494,10 @@ export function Calendar(props: I_Calendar) {
             cursor: disabled === true ? 'not-allowed' : undefined,
         };
     }
+    function getSplitter(){
+        let date = getDate();
+        return typeof date === 'string' ? DATE.getSplitter(date) : '/';
+    }
     function getContext() {
         let context: I_DPContext = {
             changeActiveDate, DATE,
@@ -1502,8 +1514,8 @@ export function Calendar(props: I_Calendar) {
                     let vn: string = v.toString();
                     return vn.length === 1 ? `0${vn}` : vn
                 }
-                let dateString;
-                let splitter = typeof value === 'string' ? DATE.getSplitter(value) : '/';
+                let dateString:string = '';
+                let splitter = getSplitter();
                 if (unit === 'month') { dateString = `${year}${splitter}${get2digit(month)}` }
                 else if (unit === 'day') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}` }
                 else if (unit === 'hour') { dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}${splitter}${get2digit(hour)}` }
@@ -1514,7 +1526,20 @@ export function Calendar(props: I_Calendar) {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
-                onChange(dateString, props);
+                let newValue;
+                if(multiple){
+                    let current:string[] = [];
+                    if(value){
+                        if(!Array.isArray(value)){current = [value]}
+                        else {current = [...value]}
+                    }
+                    else {current = []}
+                    let index = current.indexOf(dateString);
+                    if(index === -1){newValue = [...current,dateString]}
+                    else{newValue  = current.filter((o:string)=>o !== dateString)}
+                }
+                else {newValue = dateString}
+                onChange(newValue, props);
                 if (onClose) {
                     if (typeof option.close === 'function') { if (option.close()) { onClose() } }
                     else if (option.close === true) { onClose() }
@@ -1556,12 +1581,12 @@ function DPToday() {
 }
 function DPFooter() {
     let { rootProps, changeActiveDate, translate }: I_DPContext = useContext(DPContext);
-    let { disabled, onChange = () => { }, size = Def('date-size'), deSelect } = rootProps;
+    let { disabled, onChange = () => { }, size = Def('date-size'), deSelect,multiple } = rootProps;
     if (disabled) { return null }
     let buttonStyle = { padding: `${size / 20}px 0`, fontFamily: 'inherit' };
     return (
         <div className='aio-input-date-footer' style={{ fontSize: size / 13 }}>
-            {!!deSelect && <button style={buttonStyle} onClick={() => typeof deSelect === 'function' ? deSelect() : onChange(undefined)}>{translate('Clear')}</button>}
+            {!!deSelect && <button style={buttonStyle} onClick={() => typeof deSelect === 'function' ? deSelect() : onChange(multiple?[]:undefined)}>{translate('Clear')}</button>}
             <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
         </div>
     )
@@ -1613,8 +1638,12 @@ function DPCellWeekday(props: I_DPCellWeekday) {
 }
 function DPCell(props: I_DPCell) {
     let { rootProps, translate, onChange, DATE }: I_DPContext = useContext(DPContext);
-    let { disabled, dateAttrs, theme = Def('theme'), value, jalali, unit = Def('date-unit') } = rootProps;
+    let { disabled, dateAttrs, theme = Def('theme'), value, jalali, unit = Def('date-unit'),multiple } = rootProps;
     let { dateArray } = props;
+    function IsActive(){
+        if(multiple){return !value.length?false:!!value.find((o:string)=>DATE.isEqual(dateArray, o))}
+        else {return !value ? false : DATE.isEqual(dateArray, value);}
+    }
     function getClassName(isActive: boolean, isToday: boolean, isDisabled: boolean, className?: string) {
         var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
@@ -1623,7 +1652,7 @@ function DPCell(props: I_DPCell) {
         if (className) { str += ' className'; }
         return str;
     }
-    let isActive = !value ? false : DATE.isEqual(dateArray, value);
+    let isActive = IsActive();
     let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
     let Attrs: any = {}
     if (dateAttrs) {
@@ -1662,7 +1691,7 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
         popover: {
             fitTo: '.aio-input-date-calendar',
             attrs: { style: { background: theme[1], color: theme[0] } },
-            body: { render: ({ close }) => <DPHeaderPopup onClose={close} unit={unit} /> }
+            body: (close) => <DPHeaderPopup onClose={close} unit={unit} />
         }
     }
     return (<AIOInput {...p} />)
@@ -2123,7 +2152,7 @@ function TableToolbar() {
                 header: {
                     attrs: { className: 'aio-input-table-toolbar-popover-header' },
                     title: 'Sort',
-                    onClose: false
+                    close: false
                 },
                 pageSelector: '.aio-input-table'
             },
@@ -3372,7 +3401,7 @@ function getTypes(props: AI) {
     let { type, multiple } = props;
     let isMultiple;
     if (type === 'table') { isMultiple = true }
-    else if (['radio','range','file','buttons','select'].indexOf(type) !== -1) { isMultiple = !!multiple }
+    else if (['radio','range','file','buttons','select','date'].indexOf(type) !== -1) { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
         isMultiple,
@@ -3385,24 +3414,7 @@ function getTypes(props: AI) {
         hasSearch: ['table', 'select'].indexOf(type) !== -1
     }
 }
-function getDateText(rootProps: AI) {
-    let { value, unit = Def('date-unit'), text, pattern: PT, jalali, placeholder } = rootProps;
-    if (value) {
-        text = PT !== undefined ? PT : text;
-        let DATE = new AIODate();
-        let list = DATE.convertToArray(value);
-        let [year, month = 1, day = 1, hour = 0] = list;
-        list = [year, month, day, hour];
-        let pattern: string = '{}';
-        let splitter = DATE.getSplitter(value)
-        if (text && (typeof text === 'string' || typeof text === 'number')) { pattern = text.toString() }
-        else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
-        else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
-        else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
-        return <div style={{ direction: 'ltr' }}>{DATE.getDateByPattern(list, pattern)}</div>
-    }
-    return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
-}
+
 function getDefaultProps(props: AI, types: AI_types) {
     let valueType = Array.isArray(props.value) ? 'array' : typeof props.value;
     props = { ...props }
@@ -3412,8 +3424,12 @@ function getDefaultProps(props: AI, types: AI_types) {
     else if (props.type === 'time') {
         if (!props.value) { props.value = {} }
     }
+    else if (props.type === 'date') {
+        if (props.multiple) { props.option = {...props.option,text:'option',value:'option'} }
+    }
     if (props.loading === true) { props.disabled = true }
     if (types.isMultiple) {
+
         if (!props.value) { props.value = [] }
         else if (valueType !== 'array') { props.value = [props.value] }
     }
@@ -3439,9 +3455,16 @@ function I(path: any, size: number, p?: any) {
 }
 function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any, level?: number, change?: (row: any, newRow: any) => void, defaultOptionProps?: AI_optionProp }): AI_options {
     let { rootProps, types, properties = {}, level, change, defaultOptionProps } = p;
-    let { deSelect } = rootProps;
-    let options = p.options || rootProps.options || [];
-    if (typeof options === 'function') { options = options() }
+    let { deSelect,type,multiple } = rootProps;
+    let options:any[] = []
+    if(type === 'date'){
+        if(!multiple){return {optionsList:[],optionsDic:{}}}
+        options = [...rootProps.value]
+    }
+    else if(p.options){options = p.options}
+    else if(typeof rootProps.options === 'function'){options = rootProps.options()}
+    else if(rootProps.options){options = rootProps.options}
+    else {options = [];}
     let result = [];
     let dic:AI_optionDic = {}
     let renderIndex = 0;

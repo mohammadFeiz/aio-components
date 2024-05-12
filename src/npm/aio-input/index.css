@@ -1281,7 +1281,9 @@
     font-size: 26px;
 }
 
-
+.aio-input-time{
+    direction:ltr;
+}
 
 .aio-input-time-popover {
     background: #fff;

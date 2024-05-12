@@ -1,4 +1,4 @@
-import { AP_modal } from "../aio-popup"
+import { AP_modal, AP_position } from "../aio-popup"
 import { AIODate } from "./../aio-utils"
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'map' | 'tree'|'spinner' |'slider'|
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
@@ -119,7 +119,7 @@ export type AI = {
     paging?: AI_table_paging,
     pattern?:string,
     placeholder?: string,
-    popover?: AP_modal,//notice get type from aio popup
+    popover?: AI_popover,//notice get type from aio popup
     point?:false | AI_point,//range
     popupConfig?:I_Map_config
     preview?:boolean,
@@ -157,6 +157,22 @@ export type AI = {
     vertical?:boolean,
     width?: number | string,
     
+}
+export type AI_popover = {
+    position?:AP_position,
+    backClose?:boolean,
+    backAttrs?:any,
+    fitHorizontal?:boolean,
+    attrs?:any,
+    body?:(close:any)=>React.ReactNode,
+    limitTo?:string,
+    fitTo?:string,
+    header?:{
+        attrs?:any,
+        title?:string,
+        close?:boolean
+    },
+    pageSelector?:string
 }
 export type AI_optionProp = {[key in AI_optionKey]?:any}
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}

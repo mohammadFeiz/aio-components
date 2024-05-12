@@ -81,6 +81,7 @@ const InputExamples:FC<{type:I_exampleType}> = ({type}) => {
         ['preview',()=><Preview/>,['password','image','file'].indexOf(type) !== -1],
         ['text',()=><Text/>,['checkbox','date','time','file'].indexOf(type) !== -1],
         ['pattern',()=><Pattern/>,['date','time'].indexOf(type) !== -1],
+        ['multiple',()=><Multiple/>,['date','file'].indexOf(type) !== -1],
         ['checkIcon (array)',()=><CheckIconArray/>,['checkbox'].indexOf(type) !== -1],
         ['checkIcon (css object)',()=><CheckIconObject/>,['checkbox'].indexOf(type) !== -1],
         ['options',()=><Options/>,['text','number'].indexOf(type) !== -1],
@@ -828,7 +829,7 @@ const Jalali:FC = ()=> {
     const {type,code}:I_CTX = useContext(CTX);
     const [value,setValue] = useState<number>()
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'IRANSans-Light'}}>
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue)=>setValue(newValue)}
@@ -842,6 +843,28 @@ const Jalali:FC = ()=> {
     onChange={(newValue)=>setValue(newValue)}
     unit={${type === 'date'?'"day"':'{year:true,month:true,day:true}'}}
     jalali={true}
+/>
+        `)}
+        </div> 
+    )
+}
+const Multiple:FC = ()=> {
+    const {type,code}:I_CTX = useContext(CTX);
+    const [value,setValue] = useState<any[]>()
+    return (
+        <div className='example'>
+            <AIOInput
+                key={type}
+                type={type} value={value}
+                onChange={(newValue)=>setValue(newValue)}
+                multiple={true}
+            />
+        {code(`
+<AIOInput
+    type='${type}' 
+    value='${value}'
+    onChange={(newValue)=>setValue(newValue)}
+    multiple={true}
 />
         `)}
         </div> 
@@ -1285,11 +1308,9 @@ const DateAndTimePopover:FC = ()=> {
                             minWidth:240
                         }
                     },
-                    backdrop:{
-                        attrs:{
-                            style:{
-                                background:'rgba(0,0,0,0.8)'
-                            }
+                    backAttrs:{
+                        style:{
+                            background:'rgba(0,0,0,0.8)'
                         }
                     }
                 }}
