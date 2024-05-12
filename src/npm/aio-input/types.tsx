@@ -279,7 +279,6 @@ export type AI_Popover_props = {
     getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types
 }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type I_TimePopver = { lang?: 'en' | 'fa', value: type_time_value, onChange?: (value: type_time_value) => void, onClose: () => void,getValue:(justToday?:boolean)=>any }
 export type I_FileItem = {file:any,index:number}
 export type I_Tag = { option:AI_option, value:any }
 export type AI_Options = {options?:any[]}

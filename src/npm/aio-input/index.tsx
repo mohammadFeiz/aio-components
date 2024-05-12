@@ -13,7 +13,7 @@ import Axios from "axios";
 import {
     AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_Options, AI_Popover_props, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
     AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar, I_Drag, I_FileItem, I_Layout,
-    I_Tag, I_TimePopver, I_list_temp, type_time_value,
+    I_Tag, I_list_temp, type_time_value,
     AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
     AI_TableCellContent, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_TableGap, type_table_context, type_table_temp,
     I_RangeArc, I_RangeRect, I_RangeValue, I_RangeValueContainer,AI_label,AI_labelItem,
@@ -54,17 +54,45 @@ function AIOINPUT(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
     let [DATE] = useState<AIODate>(new AIODate())
     props = getDefaultProps(props, types)
-    let { type, value, onChange, attrs = {} } = props;
+    let { type, value, onChange, attrs = {} ,rtl} = props;
     let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
-    let [temp] = useState<any>({
-        getPopover: initGetPopover()
-    });
-
-    function initGetPopover() {
-        let p: AI_Popover_props = { getRootProps: () => props, id: datauniqid, toggle, types }
-        let res = new Popover(p).getFn()
-        return res;
+    let [openPopover] = useState<any>(getOpenPopover);
+    function getOpenPopover(){
+        if(!types.isDropdown){return false}
+        let className = 'aio-input-popover';
+        className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
+        if(types.hasOption){className += ' aio-input-dropdown'}
+        return (dom: any) => {
+            let popover: AP_modal = { ...(props.popover || {}) }
+            let { type,multiple } = props;
+            let { body = {} } = popover;
+            let backdrop = !popover.backdrop ? {} : popover.backdrop;
+            backdrop = { ...backdrop, attrs: AddToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
+            let target: React.ReactNode = $(dom.current)
+            let config: AP_modal = {
+                //props that have default but can change by user
+                position: 'popover',
+                fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
+                //props that havent default but can define by user(header,footer,fitTo,fixStyle)
+                ...popover,
+                //props that cannot change by user
+                backdrop,
+                onClose: () => toggle(false),
+                body: {
+                    ...body,
+                    render: ({ close }) => {
+                        if (type === 'button') { return (body.render || (() => ''))({ close }) }
+                        else if (type === 'date') { return <Calendar onClose={close} /> }
+                        else { return body.render ? body.render({ close }) : <Options /> }
+                    }
+                },
+                pageSelector: '.aio-input-backdrop.' + datauniqid,
+                getTarget: () => target,
+                attrs: AddToAttrs(popover.attrs, { className })
+            }
+            return config;
+        }
     }
     let [popup] = useState(getPopup(AIOPopup))
     function getPopup(ctor: { new(p?: { rtl?: boolean }): AIOPopup }): AIOPopup {
@@ -91,7 +119,7 @@ function AIOINPUT(props: AI) {
     }
     function click(e: any, dom: any) {
         if (type === 'checkbox') { if (onChange) { onChange(!value) } }
-        else if (temp.getPopover) { toggle(temp.getPopover(dom, props.options)) }
+        else if (openPopover !== false) { toggle(openPopover(dom)) }
         else if (typeof props.onClick === 'function') { props.onClick() }
         else if (attrs.onClick) { attrs.onClick(); }
     }
@@ -164,129 +192,33 @@ function AIOINPUT(props: AI) {
     return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
 }
 function Time() {
-    let { rootProps, DATE }: AI_context = useContext(AICTX);
-    let { value: Value = {}, attrs: Attrs, jalali, onChange, unit = { year: true, month: true, day: true } } = rootProps;
+    let { rootProps }: AI_context = useContext(AICTX);
+    let { attrs: Attrs, unit = { year: true, month: true, day: true } } = rootProps;
     if (typeof unit !== 'object') { unit = { year: true, month: true, day: true } }
-    let [today] = useState(getToday())
-    let [value, setValue] = useState(getValue())
-    useEffect(() => { setValue(getValue()) }, [JSON.stringify(rootProps.value)])
+    let [value, setValue] = useState(getTimeByUnit(rootProps))
+    useEffect(() => { setValue(getTimeByUnit(rootProps)) }, [JSON.stringify(rootProps.value)])
     let valueRef = useRef(value);
     valueRef.current = value;
-    function getToday() {
-        let today = DATE.getToday(jalali);
-        return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] }
-    }
-    function getValue(justToday?: boolean) {
-        let newValue: any = {};
-        let u: AI_timeUnits;
-        unit = unit as AI_time_unit
-        for (u in unit) {
-            if (unit[u] === true) {
-                let v = Value[u];
-                let min: number = { year: 1000, month: 1, day: 1, hour: 0, minute: 0, second: 0 }[u] as number
-                let max: number = { year: 3000, month: 12, day: 31, hour: 23, minute: 59, second: 59 }[u] as number
-                if (v !== undefined && typeof v !== 'number' || v < min || v > max) {
-                    alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`)
-                }
-                let res: number = v === undefined || justToday ? today[u] : v;
-                newValue[u] = res;
-            }
-        }
-        return newValue;
-    }
-    function getTimeText(obj: any) {
-        if (!value) {
-            if (typeof rootProps.placeholder === 'string') { return rootProps.placeholder }
-            if (typeof rootProps.text === 'string') { return rootProps.text }
-            return ''
-        }
-        if (rootProps.pattern) { return DATE.getDateByPattern(value, rootProps.pattern as string) }
-        if (rootProps.text !== undefined) { return rootProps.text as string }
-        let text = [], dateArray = [];
-        if (obj.year !== undefined) { dateArray.push(Get2Digit(obj.year)) }
-        if (obj.month !== undefined) { dateArray.push(Get2Digit(obj.month)) }
-        if (obj.day !== undefined) { dateArray.push(Get2Digit(obj.day)) }
-        if (dateArray.length) { text.push(dateArray.join('/')) }
-        let timeArray = []
-        if (obj.hour !== undefined) { timeArray.push(Get2Digit(obj.hour)) }
-        if (obj.minute !== undefined) { timeArray.push(Get2Digit(obj.minute)) }
-        if (obj.second !== undefined) { timeArray.push(Get2Digit(obj.second)) }
-        if (timeArray.length) { text.push(timeArray.join(':')) }
-        return text.join(' ');
-    }
     function renderButton() {
         let { onChange, style, popover = {}, className } = rootProps;
         let attrs = AddToAttrs(Attrs, { className: ['aio-input-time', className], style: { ...style, direction: 'ltr' } })
-        let text: string = getTimeText(value)
+        let text: string = getTimeText(rootProps,value)
         let p: AI = {
             ...rootProps, text, attrs, type: 'button',
             popover: !onChange ? undefined : {
                 position: 'center', ...popover, attrs: AddToAttrs(popover.attrs, { className: 'aio-input-time-popover' }),
-                body: { render: ({ close }) => renderPopover(close) }
+                body: { render: ({ close }) => <TimePopover value={valueRef.current} onClose={close}/> }
             }
         }
         return <AIOInput {...p} />
     }
-    function renderPopover(close: () => void) {
-        let p: I_TimePopver = { value: valueRef.current, onChange, onClose: close, getValue }
-        return <TimePopover {...p} />
-    }
     return renderButton()
 }
-class Popover {
-    props: AI_Popover_props;
-    isActive: boolean;
-    constructor(props: AI_Popover_props) {
-        this.props = props;
-        this.isActive = this.getIsActive();
-    }
-    getIsActive = () => {
-        let { getRootProps } = this.props;
-        let { popover, type, options } = getRootProps();
-        if (type === 'date' || type === 'select') { return true }
-        if (type === 'button') { return !!popover }
-        if (type === 'text' || type === 'number' || type === 'textarea') { return !!options }
-        return false
-    }
-    getFn = () => {
-        if (!this.isActive) { return }
-        let { getRootProps, toggle, id, types } = this.props, rootProps = getRootProps()
-        return (dom: any) => {
-            let popover: AP_modal = { ...(rootProps.popover || {}) }
-            let { rtl, type,multiple } = rootProps;
-            let { body = {} } = popover;
-            let backdrop = !popover.backdrop ? {} : popover.backdrop;
-            backdrop = { ...backdrop, attrs: AddToAttrs(backdrop.attrs, { className: 'aio-input-backdrop ' + id }) }
-            let target: React.ReactNode = $(dom.current)
-            let config: AP_modal = {
-                //props that have default but can change by user
-                position: 'popover',
-                fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
-                //props that havent default but can define by user(header,footer,fitTo,fixStyle)
-                ...popover,
-                //props that cannot change by user
-                backdrop,
-                onClose: () => toggle(false),
-                body: {
-                    ...body,
-                    render: ({ close }) => {
-                        if (rootProps.type === 'button') { return (body.render || (() => ''))({ close }) }
-                        else if (rootProps.type === 'date') { let p: I_Calendar = { onClose: close }; return <Calendar {...p} /> }
-                        else { return body.render ? body.render({ close }) : <Options /> }
-                    }
-                },
-                pageSelector: '.aio-input-backdrop.' + id,
-                getTarget: () => target,
-                attrs: AddToAttrs(popover.attrs, { className: `aio-input-popover aio-input-popover-${rtl ? 'rtl' : 'ltr'}${types.isDropdown ? ' aio-input-dropdown' : ''}` })
-            }
-            return config;
-        }
-    }
-}
+export type I_TimePopver = { value: type_time_value, onClose: () => void }
 function TimePopover(props: I_TimePopver) {
     let { DATE, rootProps }: AI_context = useContext(AICTX)
-    let { jalali } = rootProps;
-    let { lang = 'fa', onChange, onClose, getValue } = props;
+    let { jalali,onChange } = rootProps;
+    let { onClose } = props;
     let [startYear] = useState(props.value.year ? props.value.year - 10 : undefined);
     let [endYear] = useState(props.value.year ? props.value.year + 10 : undefined);
     let [value, setValue] = useState<type_time_value>({ ...props.value })
@@ -318,13 +250,8 @@ function TimePopover(props: I_TimePopver) {
             </div>
         )
     }
-    function submit() {
-        if (onChange) { onChange(value); }
-        onClose();
-    }
-    function now() {
-        setValue(getValue(true))
-    }
+    function submit() {if (onChange) { onChange(value); }onClose();}
+    function now() {setValue(getTimeByUnit(rootProps,true))}
     return (
         <div className='aio-input-time-popover-content'>
             <div className="aio-input-time-popover-body">
@@ -3607,4 +3534,47 @@ function GetOptionProps(p: { defaultOptionProps?: AI_optionProp, props: AI, opti
     }
     return prop !== undefined ? prop : def;
 }
-
+function getTimeByUnit(rootProps:AI,justToday?: boolean) {
+    let { value = {}, jalali, unit = { year: true, month: true, day: true } } = rootProps;
+    function getToday() {
+        let today = new AIODate().getToday(jalali);
+        return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] }
+    }
+    let today = getToday();
+    let newValue: any = {};
+    let u: AI_timeUnits;
+    unit = unit as AI_time_unit
+    for (u in unit) {
+        if (unit[u] === true) {
+            let v = value[u];
+            let min: number = { year: 1000, month: 1, day: 1, hour: 0, minute: 0, second: 0 }[u] as number
+            let max: number = { year: 3000, month: 12, day: 31, hour: 23, minute: 59, second: 59 }[u] as number
+            if (v !== undefined && typeof v !== 'number' || v < min || v > max) {
+                alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`)
+            }
+            let res: number = v === undefined || justToday ? today[u] : v;
+            newValue[u] = res;
+        }
+    }
+    return newValue;
+}
+function getTimeText(rootProps:AI,value: any) {
+    if (!value) {
+        if (typeof rootProps.placeholder === 'string') { return rootProps.placeholder }
+        if (typeof rootProps.text === 'string') { return rootProps.text }
+        return ''
+    }
+    if (rootProps.pattern) { return new AIODate().getDateByPattern(value, rootProps.pattern as string) }
+    if (rootProps.text !== undefined) { return rootProps.text as string }
+    let text = [], dateArray = [];
+    if (value.year !== undefined) { dateArray.push(Get2Digit(value.year)) }
+    if (value.month !== undefined) { dateArray.push(Get2Digit(value.month)) }
+    if (value.day !== undefined) { dateArray.push(Get2Digit(value.day)) }
+    if (dateArray.length) { text.push(dateArray.join('/')) }
+    let timeArray = []
+    if (value.hour !== undefined) { timeArray.push(Get2Digit(value.hour)) }
+    if (value.minute !== undefined) { timeArray.push(Get2Digit(value.minute)) }
+    if (value.second !== undefined) { timeArray.push(Get2Digit(value.second)) }
+    if (timeArray.length) { text.push(timeArray.join(':')) }
+    return text.join(' ');
+}
