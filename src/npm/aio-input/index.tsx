@@ -1682,9 +1682,9 @@ function DPCell(props: I_DPCell) {
 function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let { unit } = props;
     let { rootProps, activeDate, months }: I_DPContext = useContext(DPContext);
-    let { theme = Def('theme') } = rootProps;
+    let { theme = Def('theme'),jalali } = rootProps;
     if (!activeDate || !activeDate[unit]) { return null }
-    let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1]
+    let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0,jalali?10:3)
     let p: AI = {
         type: 'button', text, justify: true, caret: false,
         attrs: { className: 'aio-input-date-dropdown' },
@@ -1785,7 +1785,7 @@ function DPHeader() {
     return (
         <div className='aio-input-date-header' style={{ height: size / 4 }}>
             <DPArrow type='minus' />
-            <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 12) }}>
+            <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 13) }}>
                 <DPHeaderItem unit='year' />
                 {unit !== 'month' ? <DPHeaderItem unit='month' /> : null}
                 {unit === 'hour' ? getDays() : null}
