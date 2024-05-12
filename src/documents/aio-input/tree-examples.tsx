@@ -1,36 +1,47 @@
-import React, { FC, useState } from "react"
+import React, { FC, createContext, useContext, useState } from "react"
 import AIOInput from "../../npm/aio-input"
 import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiEye, mdiFolder, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
+type I_setting = { show: string, showCode: boolean }
+type I_CTX = { setting: I_setting, code: (code: string) => React.ReactNode }
+const CTX = createContext({} as any);
 const TreeExamples:FC = ()=>{
     let [examples] = useState<any>([
-        ['Basic',Basic],
-        ['before',Before],
-        ['subtext',Subtext],
-        ['check',Check],
-        ['onAdd,onRemove,onChange',AddRemove],
-        ['size',Size],
-        ['indent',Indent],
-        ['actions',Actions],
-        ['Complete features',Complete],
-        ['input',Input]
+        ['Basic',()=><Basic/>],
+        ['before',()=><Before/>],
+        ['subtext',()=><Subtext/>],
+        ['check',()=><Check/>],
+        ['onAdd,onRemove,onChange',()=><AddRemove/>],
+        ['size',()=><Size/>],
+        ['indent',()=><Indent/>],
+        ['actions',()=><Actions/>],
+        ['Complete features',()=><Complete/>],
+        ['input',()=><Input/>]
     ])
-    let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
-    let [setting,SetSetting] = useState<any>(new Storage(`treeexamplessetting`).load('setting',{
-        show:-1
+    let [titles] = useState<string[]>(getTitles)
+    function getTitles() {
+        let res = ['all'];
+        for (let i = 0; i < examples.length; i++) {
+            let ex = examples[i];
+            if (ex[2] !== false) { res.push(ex[0]) }
+        }
+        return res
+    }
+    let [setting,SetSetting] = useState<I_setting>(new Storage(`treeexamplessetting`).load('setting',{
+        show:'all',showCode:false
     }))
     function setSetting(setting:any){
         new Storage('treeexamplessetting').save('setting',setting)
         SetSetting(setting)
     }
-    function changeShow(dir: 1 | -1 ){
-        let newShow:number = setting.show + dir;
-        if(newShow < -1){newShow = examples.length - 1 }
-        if(newShow > examples.length - 1){newShow = -1}
-        setSetting({...setting,show:newShow})
+    function changeShow(dir: 1 | -1) {
+        let index = titles.indexOf(setting.show) + dir
+        if (index < 0) { index = titles.length - 1 }
+        if (index > titles.length - 1) { index = 0 }
+        setSetting({ ...setting, show: titles[index] })
     }
     function setting_node(){
         let btnstyle = {background:'none',border:'none'}
@@ -45,17 +56,23 @@ const TreeExamples:FC = ()=>{
                         row:[
                             {flex:1},
                             {
-                                input:{
-                                    type:'select',options:numbers,before:'Show:',
-                                    option:{
-                                        text:(option:any)=>option === -1?"all":examples[option][0],
-                                        value:'option'
+                                input: {
+                                    type: 'checkbox', text: 'Show Code'
+                                },
+                                field: 'value.showCode'
+                            },
+                            {
+                                input: {
+                                    type: 'select', options: titles, before: 'Show:',
+                                    option: {
+                                        text: 'option',
+                                        value: 'option'
                                     },
-                                    popover:{
-                                        maxHeight:'100vh'
+                                    popover: {
+                                        maxHeight: '100vh'
                                     }
                                 },
-                                field:'value.show'
+                                field: 'value.show'
                             },
                             {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>},
                             {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>}
@@ -65,26 +82,39 @@ const TreeExamples:FC = ()=>{
             )
         }
     }
+    function code(code: string) {
+        if (setting.showCode === false) { return null }
+        return AIODoc().Code(code)
+    }
     function render_node(){
         return {
             key:JSON.stringify(setting),
             className:'ofy-auto flex-1 p-12',
             column:examples.map((o:any,i:number)=>{
-                let [title,COMP,cond] = o;
+                let [title, COMP, cond, description] = o;
                 if(cond === false){return {}}
-                if(setting.show !== -1 && setting.show !== i){return {}}
+                if (setting.show !== 'all' && setting.show !== title) { return {} }
                 return {
                     html:(
-                        <div className='w-100'>
+                        <div className='w-100' style={{ fontFamily: 'Arial' }}>
                             <h3>{`${i} - ${title}`}</h3>
-                            <COMP/>
+                            {description && <h5>{description}</h5>}
+                            {COMP()}
                         </div>
                     )
                 }
             })
         }
     }
-    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
+    function getContext() {
+        let context: I_CTX = { setting, code }
+        return context;
+    }
+    return (
+        <CTX.Provider value={getContext()}>
+            <RVD rootNode={{ className: 'h-100', column: [setting_node(), render_node()] }} />
+        </CTX.Provider>
+    ) 
 }
 export default TreeExamples
 function getValue(){
@@ -110,7 +140,8 @@ function getValue(){
         {name:'row-3',id:'row-3'}
     ]
 }
-function ModelCode(){
+function ModelCode(setting:I_setting){
+    if(!setting.showCode){return null}
     return (
         AIODoc().Code(
 
@@ -141,6 +172,7 @@ function ModelCode(){
 }
 
 function Basic(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -153,7 +185,7 @@ function Basic(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -165,11 +197,12 @@ function Basic(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Before(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -186,7 +219,7 @@ function Before(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -202,11 +235,12 @@ function Before(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Subtext(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -220,7 +254,7 @@ function Subtext(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -233,11 +267,12 @@ function Subtext(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Check(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -254,7 +289,7 @@ function Check(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -287,7 +322,7 @@ function Check(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -327,7 +362,7 @@ function Check(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -349,11 +384,12 @@ function Check(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function AddRemove(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -370,7 +406,7 @@ function AddRemove(){
                 onChange={(value)=>setValue(value)}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -385,11 +421,12 @@ function AddRemove(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Size(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -404,7 +441,7 @@ function Size(){
                 size={60}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -428,7 +465,7 @@ function Size(){
                 size={24}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -441,11 +478,12 @@ function Size(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Indent(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -460,7 +498,7 @@ function Indent(){
                 indent={48}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -484,7 +522,7 @@ function Indent(){
                 indent={24}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -497,11 +535,12 @@ function Indent(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Actions(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -524,7 +563,7 @@ function Actions(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type={'tree'}
@@ -546,11 +585,12 @@ function Actions(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 function Complete(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
@@ -588,7 +628,7 @@ function Complete(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type={'tree'}
@@ -626,12 +666,13 @@ function Complete(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }
 
 function Input(){
+    let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
     console.log(value)
     return (
@@ -658,7 +699,7 @@ function Input(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -704,7 +745,7 @@ function Input(){
                 }}
             />
             {
-                AIODoc().Code(
+                code(
 
 `<AIOInput 
     type='tree'
@@ -728,7 +769,7 @@ function Input(){
 />`
                 )
             }
-            {ModelCode()}
+            {ModelCode(setting)}
         </div>
     )
 }

@@ -10,6 +10,7 @@ import ListExamples from "./list-examples";
 import MapExamples from "./map-examples";
 import SelectExamples from "./select-examples";
 import GaugeExamples from "./gauge-examples";
+import FormExamples from "./form-examples";
 export default function DOC_Tree(props:any) {
     return (
         <DOC
@@ -37,6 +38,7 @@ export default function DOC_Tree(props:any) {
                     { text: '19 - gauge', id: 'gauge', render: () => <GaugeExamples/> },
                     { text: '20 - image', id: 'image', render: () => <InputExamples type='image' key='image'/> },
                     { text: '21 - file', id: 'file', render: () => <InputExamples type='file' key='file'/> },
+                    { text: '22 - form', id: 'form', render: () => <FormExamples/> },
                     
                 ]
             }}

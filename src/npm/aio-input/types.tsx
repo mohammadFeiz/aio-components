@@ -72,11 +72,7 @@ export type AI = {
     excel?: string,
     fill?:false | AI_fill | ((index:number)=>AI_fill),
     filter?: string[],
-    footer?:{
-        layout?:(p:{disabled:boolean,errors:string[],reset:()=>void})=>React.ReactNode,
-        onSubmit?:()=>void,onClose?:()=>void,reset?:boolean,attrs?:any,submitText?:string,closeText?:string,resetText?:string,
-        before?:React.ReactNode,after?:React.ReactNode
-    },//form
+    footer?:React.ReactNode,//form
     getChilds?:(row:any)=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
@@ -295,61 +291,8 @@ export type AI_Popover_props = {
     getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types
 }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type I_FileItem = {file:any,index:number}
-export type I_Tag = { option:AI_option, value:any }
-export type AI_Options = {options?:any[]}
-export type I_TableGap = { dir: 'h' | 'v' }
 
-export type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:number,onChange?:(newValue:any)=>void}
-
-export type I_Layout = {
-    option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
-    properties?: any,indent?:AI_indent,
-    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void},
-}
 export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent,height:number}
-export type I_DPContext = {
-    translate: (text: string) => string,
-    DATE:AIODate,
-    rootProps: AI,
-    activeDate: I_DP_activeDate,
-    changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
-    onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
-    today: any, todayWeekDay: any, thisMonthString: any,months:string[],
-
-}
-export type I_Calendar = { onClose?: () => void }
-export type I_DP_activeDate = { year?: number, month?: number, day?: number }
-
-export type I_DPCellWeekday = {weekDay:string}
-
-export type I_DPCell = {dateArray:number[]}
-
-export type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
-
-export type I_DPArrow = { type: 'minus' | 'plus', onClick?: () => void }
-
-export type I_Slider_statics = {getDiff:(x:number,y:number,client:{x:number,y:number})=>number,oriention:'h' | 'v',flexDirection?:'column' | 'column-reverse'}
-export type I_Slider_context = {
-    direction:'left'|'right'|'top'|'bottom',
-    start:number,end:number,step:number,
-    touch:boolean,value:number[],
-    statics:I_Slider_statics,
-    rootProps:AI,isDown:boolean,
-    mouseDown:(e:any,index:number,type:'point' | 'fill')=>void,
-    fix:(v:number)=>number,
-    getStartByStep:(start:number,step:number)=>number,
-    getPercentByValue:(value:number,start:number,end:number)=>number,
-    isActive:(index:number)=>boolean
-}
-
-export type I_SliderFill = {percent:number,index:number}
-
-export type I_SliderPoint = {percent:number,index:number}
-
-export type I_SliderLabel = {value:number}
-
-export type I_SliderScale = {value:number}
 
 export type I_list_temp = {
     dom:any,
@@ -417,19 +360,8 @@ export type I_Map_context = {
     onChange:(value:I_Map_value)=>void
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
-export type I_RangeValueContainer = {itemValue:number,index:number}
-export type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any,offset?:number,roundCap?:boolean}
-export type I_RangeArc = {thickness:number,color:string,from:number,to:number,radius:number,full?:boolean,roundCap?:boolean}
-export type I_RangeValue = {value:number,disabled:boolean,angle:number,index:number,parentDom:any}
 
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
-export type AI_FormContext = {
-    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
-    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
-    setValue:(itemValue:any, formItem:AI_formItem)=>void
-}
-export type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column'}
-export type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
 export type AV_operator = 
     'contain' | 'not_contain' | 
     'function' | 'required' | 

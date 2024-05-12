@@ -11,12 +11,12 @@ import $ from 'jquery';
 import Axios from "axios";
 ////////////types//////////////////////
 import {
-    AI, AI_FormContext, AI_FormInput, AI_FormItem, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
-    AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Calendar, I_Drag, I_FileItem, I_Layout,
-    I_Tag, I_list_temp, type_time_value,
-    AI_date_unit, I_DPArrow, I_DPCell, I_DPCellWeekday, I_DPContext, I_DPHeaderDropdown, I_DP_activeDate,
-    AI_TableCellContent, AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, I_TableGap, type_table_context, type_table_temp,
-    I_RangeArc, I_RangeRect, I_RangeValue, I_RangeValueContainer,AI_label,AI_labelItem,
+    AI, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
+    AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Drag,
+    I_list_temp, type_time_value,
+    AI_date_unit,
+    AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, type_table_context, type_table_temp,
+    AI_label,AI_labelItem,
     I_MapUnit, I_Map_config, I_Map_context, I_Map_coords, I_Map_marker, I_Map_temp, I_mapApiKeys,
     AI_optionProp,
     AI_optionDic,
@@ -355,10 +355,11 @@ function FileItems() {
     else if (value) { files = [value] }
     else { return null }
     if (!files.length) { return null }
-    let Files = files.map((file, i) => { let p: I_FileItem = { file, index: i }; return <FileItem key={i} {...p} /> })
+    let Files = files.map((file, i) => { return <FileItem key={i} file={file} index={i}/> })
     return (<div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{Files}</div>)
 }
-function FileItem(props: I_FileItem) {
+type AI_FileItem = {file:any,index:number}
+const FileItem:FC<AI_FileItem> = (props) => {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { onChange = () => { }, value = [] } = rootProps;
     let { file, index } = props;
@@ -486,7 +487,8 @@ function Tags() {
     console.log(tags)
     return !tags.length ? null : <div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
-function Tag(props: I_Tag) {
+type AI_Tag = { option:AI_option, value:any }
+const Tag:FC<AI_Tag> = (props) => {
     let { rootProps }: AI_context = useContext(AICTX);
     let { onChange = () => { } } = rootProps;
     let { option, value } = props;
@@ -653,10 +655,15 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
+type AI_FormContext = {
+    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
+    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
+    setValue:(itemValue:any, formItem:AI_formItem)=>void
+}
 const Formcontext = createContext({} as any);
 const Form: FC = () => {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { inputs, lang, onChange, attrs, style, className } = rootProps;
+    let { inputs, lang, onChange, attrs, style, className,footer } = rootProps;
     let [errors] = useState<{ [key: string]: string | undefined }>({})
     function getErrorList() { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o])] }
     function getError(formItem: AI_formItem, value: any) {
@@ -735,21 +742,28 @@ const Form: FC = () => {
     return (
         <Formcontext.Provider value={getContext()}>
             <form {...p}>
-                <FormItem formItem={inputs} />
+                <FormItem formItem={inputs} isRoot={true} />
+                {!!footer && <article className='aio-input-form-footer'>{footer}</article>}
             </form>
         </Formcontext.Provider>
     )
 }
+type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column',isRoot?:boolean}
 const FormItem: FC<AI_FormItem> = (props) => {
     let { setError }: AI_FormContext = useContext(Formcontext)
-    let { formItem, parentType } = props;
+    let { formItem, parentType,isRoot } = props;
     let { html, row, column, input, field, flex, size, show, className, style } = formItem;
     if (show === false) { return null }
     function getInner(): React.ReactNode {
-        if (input) { return <FormInput formItem={formItem} setError={(v: string | undefined) => setError(field as string, v)} /> }
-        if (html) { return html; }
-        if (row) { return row.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='row' />) }
-        if (column) { return column.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='column' />) }
+        let content
+        if (input) { content = <FormInput formItem={formItem} setError={(v: string | undefined) => setError(field as string, v)} /> }
+        if (html) { content = html; }
+        if (row) { content = row.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='row' />) }
+        if (column) { content = column.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='column' />) }
+        let p:any = {className:cls,style:{ ...Style, ...style }}
+        if(isRoot){return <section {...p}>{content}</section>}
+        if(row || column){return <fieldset {...p}>{content}</fieldset>}
+        return <article {...p}>{content}</article>
     }
     let cls = 'aio-input-form-item'
     if (className) { cls += ' ' + className }
@@ -761,8 +775,10 @@ const FormItem: FC<AI_FormItem> = (props) => {
         if (parentType === 'row') { Style.width = size }
         else if (parentType === 'column') { Style.height = size }
     }
-    return (<section className={cls} style={{ ...Style, ...style }}>{getInner()}</section>)
+    
+    return <>{getInner()}</>
 }
+type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
 const FormInput: FC<AI_FormInput> = (props) => {
     let { rootProps, getError, getValueByField, setValue }: AI_FormContext = useContext(Formcontext)
     let { rtl, disabled } = rootProps;
@@ -849,7 +865,12 @@ function Options() {
         </>
     )
 }
-function Layout(props: I_Layout) {
+export type AI_Layout = {
+    option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
+    properties?: any,indent?:AI_indent,
+    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void},
+}
+const Layout:FC<AI_Layout> = (props) => {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword }: AI_context = useContext(AICTX)
     let { option, realIndex, toggle, indent } = props;
     let { type, rtl } = rootProps;
@@ -1436,7 +1457,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
     let { item } = props;
     let childs = getChilds(item.row);
     let toggleState: (0 | 1 | 2) = !childs.length ? 2 : (!!openDic[item.id] ? 1 : 0);
-    let p: I_Layout = { indent: item.indent, option: item.option, toggle: { state: toggleState, onClick: () => toggle(item.id) } };
+    let p: AI_Layout = { indent: item.indent, option: item.option, toggle: { state: toggleState, onClick: () => toggle(item.id) } };
     return <Layout {...p} />;
 }
 const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
@@ -1445,8 +1466,18 @@ const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
     if (!open || !childs || !childs.length) { return null }
     return <TreeBody rows={childs} level={indent.level + 1} parent={row} parentId={id} parentIndent={indent} />
 }
+type I_DPContext = {
+    translate: (text: string) => string,
+    DATE:AIODate,
+    rootProps: AI,
+    activeDate: I_DP_activeDate,
+    changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
+    onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
+    today: any, todayWeekDay: any, thisMonthString: any,months:string[],
+}
+type I_DP_activeDate = { year?: number, month?: number, day?: number }
 const DPContext = createContext({} as any);
-export function Calendar(props: I_Calendar) {
+export function Calendar(props: { onClose?: () => void }) {
     let { rootProps, DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
     let { multiple,unit = Def('date-unit'), jalali, value, disabled, size = Def('date-size'), theme = Def('theme'), translate = (text) => text, onChange = () => { }, option = {} } = rootProps;
@@ -1626,7 +1657,7 @@ function DPBodyDay() {
         {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
     </>)
 }
-function DPCellWeekday(props: I_DPCellWeekday) {
+const DPCellWeekday:FC<{weekDay:string}> = (props) => {
     let { rootProps, translate }: I_DPContext = useContext(DPContext);
     let { theme = Def('theme'), jalali } = rootProps;
     let { weekDay } = props;
@@ -1636,7 +1667,7 @@ function DPCellWeekday(props: I_DPCellWeekday) {
         </div>
     )
 }
-function DPCell(props: I_DPCell) {
+function DPCell(props: {dateArray:number[]}) {
     let { rootProps, translate, onChange, DATE }: I_DPContext = useContext(DPContext);
     let { disabled, dateAttrs, theme = Def('theme'), value, jalali, unit = Def('date-unit'),multiple } = rootProps;
     let { dateArray } = props;
@@ -1794,6 +1825,7 @@ function DPHeader() {
         </div>
     )
 }
+type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[], onChange: (value: any) => void }
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
     let { value, options, onChange } = props;
@@ -1805,7 +1837,7 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     }
     return (<AIOInput {...p} />)
 }
-function DPArrow(props: I_DPArrow) {
+function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
     let { rootProps, changeActiveDate, activeDate, DATE }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
     let { jalali, unit = Def('date-unit'), size = Def('date-size'), theme = Def('theme') } = rootProps;
@@ -2017,7 +2049,7 @@ function Table() {
         </AITableContext.Provider>
     )
 }
-function TableGap(props: I_TableGap) {
+function TableGap(props: { dir: 'h' | 'v' }) {
     let { rootProps }: type_table_context = useContext(AITableContext)
     let { rowGap, columnGap } = rootProps;
     let { dir } = props;
@@ -2263,6 +2295,7 @@ const TableCell = (p: { row: any, rowIndex: number, column: AI_table_column, isL
         </Fragment>
     )
 }
+type AI_TableCellContent = {row:any,column:AI_table_column,rowIndex:number,onChange?:(newValue:any)=>void}
 function TableCellContent(props: AI_TableCellContent) {
     let { row, column, rowIndex, onChange } = props;
     let { getDynamics }: type_table_context = useContext(AITableContext);
@@ -2609,6 +2642,7 @@ const RangeGroove:FC = ()=>{
     }
     
 }
+type I_RangeValue = {value:number,disabled:boolean,angle:number,index:number,parentDom:any}
 const RangeSvg: FC = () => {
     let { rootProps,value }: I_RangeContext = useContext(RangeContext);
     let { round, ranges = [], circles = [], size = Def('range-size'),end = 360 } = rootProps;
@@ -2668,6 +2702,7 @@ const RangeRanges: FC = () => {
     }
     return <>{res}</>
 }
+type I_RangeValueContainer = {itemValue:number,index:number}
 const RangeValueContainer: FC<I_RangeValueContainer> = (props) => {
     let { rootProps, isValueDisabled, fixAngle, getAngleByValue, getXPByValue, dom, getSide }: I_RangeContext = useContext(RangeContext);
     let { itemValue, index } = props;
@@ -2685,6 +2720,7 @@ const RangeValueContainer: FC<I_RangeValueContainer> = (props) => {
     }
     return (<div {...containerProps()}><RangeHandle {...PROPS} key='handle' /> <RangePoint {...PROPS} key='point' /></div>)
 }
+type I_RangeRect = {thickness?:number,color?:string,from:number,to:number,className?:string,style?:any,offset?:number,roundCap?:boolean}
 const RangeRect: FC<I_RangeRect> = ({ thickness, color, from, to, className, style, offset, roundCap }) => {
     let { getXPByValue, rootProps, getSide }: I_RangeContext = useContext(RangeContext);
     let { vertical } = rootProps, startSide = getXPByValue(from), endSide = getXPByValue(to);
@@ -2697,6 +2733,7 @@ const RangeRect: FC<I_RangeRect> = ({ thickness, color, from, to, className, sty
     let Style: any = { ...bigSizeStyle, ...smallSizeStyle, ...mainSideStyle, ...otherSideStyle, ...borderRadiusStyle, ...colorStyle, ...style }
     return <div className={className} style={Style} />
 }
+type I_RangeArc = {thickness:number,color:string,from:number,to:number,radius:number,full?:boolean,roundCap?:boolean}
 const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, roundCap }) => {
     let { fixAngle, getAngleByValue, rootProps }: I_RangeContext = useContext(RangeContext);
     let { size = Def('range-size'), reverse } = rootProps;

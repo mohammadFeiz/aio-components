@@ -347,9 +347,10 @@
     position: relative;
 }
 
-.aio-input-tree-options-button {
+.aio-input-select.aio-input-tree-options-button {
     background: none;
     margin: 6px;
+    border:none;
 }
 
 .aio-input-dropdown-option {
@@ -1929,7 +1930,9 @@
 .aio-input-form {
     width: 100%;
 }
-
+.aio-input-form-item{
+    border:none;
+}
 .aio-input-form-item-column {
     display: flex;
     flex-direction: column;
@@ -1963,7 +1966,9 @@
     display: flex;
     margin: 3px;
 }
-
+.aio-input-form-footer{
+    padding:12px;
+}
 .aio-input-select-value {
     display: flex;
     justify-content: flex-start;
