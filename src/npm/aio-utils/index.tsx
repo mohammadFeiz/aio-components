@@ -84,6 +84,15 @@ export function HandleBackButton(callback: () => void = () => { }) {
         callback()
     };
 }
+export function ParseString(str:string):any{
+    // Check if the string starts and ends with a quote character
+    try{
+        if (str.startsWith("{") || str.startsWith('[')){return JSON.parse(str);}
+        else if ((str.startsWith("'") && str.endsWith("'")) || (str.startsWith('"') && str.endsWith('"'))){return str.slice(1, -1);} 
+        else {let res = parseFloat(str); return isNaN(res)?str:res}
+    }
+    catch{return str}
+}
 export class DragClass {
     dragIndex: number;
     onChange: (list: any[], from: any, to: any) => void;

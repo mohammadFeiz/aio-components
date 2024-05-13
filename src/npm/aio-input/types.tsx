@@ -361,15 +361,3 @@ export type I_Map_context = {
 }
 export type I_Drag = { getAttrs:(list:any[],index:number)=>any }
 
-export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
-export type AV_operator = 
-    'contain' | 'not_contain' | 
-    'function' | 'required' | 
-    'equal' | 'not_equal' | 
-    'greater' | 'not_greater' | 
-    'greater_equal' | 'not_greater_equal' | 
-    'less' | 'not_less' | 
-    'less_equal' | 'not_less_equal'
-export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
-export type AV_item = {title?:string,targetName?:string,message?:string,operator:AV_operator,target:any}
-

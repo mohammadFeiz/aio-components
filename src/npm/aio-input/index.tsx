@@ -12,7 +12,7 @@ import Axios from "axios";
 ////////////types//////////////////////
 import {
     AI, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
-    AI_timeUnits, AI_time_unit, AI_type, AI_types, AV_item, AV_operator, AV_props, I_Drag,
+    AI_time_unit, AI_type, AI_types, I_Drag,
     I_list_temp, type_time_value,
     AI_date_unit,
     AI_table_column, AI_table_paging, AI_table_param, AI_table_rows, AI_table_sort, type_table_context, type_table_temp,
@@ -25,7 +25,7 @@ import {
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
-import { Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile } from './../aio-utils';
+import { Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString } from './../aio-utils';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 /////////////style//////////////////
 import './index.css';
@@ -3258,160 +3258,151 @@ function GetDistance(p1: I_Map_coords, p2: I_Map_coords) {
     let radius = 6371; //earth radius in kilometers
     return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
 }
+export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
+export type AV_operator = 'contain' | '!contain' | 'required' | '=' | '!=' | '>' | '!>' | '>=' | '!>=' | '<' | '!<' | '<=' | '!<='
+export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[],isDate?:boolean}
+export type AV_item = string
 export class AIOValidation {
-    contain: (target: any, value: any) => { result: boolean, targetName: string };
-    equal: (target: any, value: any, isDate: boolean) => { result: boolean, targetName: string };
-    less: (target: any, value: any, isDate: boolean) => { result: boolean, targetName: string };
-    less_equal: (target: any, value: any, isDate: boolean) => { result: boolean, targetName: string };
-    greater: (target: any, value: any, isDate: boolean) => { result: boolean, targetName: string };
-    greater_equal: (target: any, value: any, isDate: boolean) => { result: boolean, targetName: string };
-    getMessage: (operator: AV_operator, targetName: string, validation: AV_item, unit: string) => string;
+    contain: (target: any, value: any) => boolean;
+    equal: (target: any, value: any,equal?:boolean) => boolean;
+    less: (target: any, value: any,equal?:boolean) => boolean;
+    greater: (target: any, value: any,equal?:boolean) => boolean;
+    between: (targets:any[], value:any,equal?:boolean)=>boolean;
+    getMessage: (p:{operator: AV_operator, target: string, message?: string,title?:string,unit: string}) => string;
     translate: (operator: AV_operator) => string
-    getResult: (p: { target: any, validation: AV_item, value: any, unit: string, operator: AV_operator }) => string | undefined
+    getResult: (p: { target: any, title: string,message?:string, value: any, unit: string, operator: AV_operator }) => string | undefined
     getValidation: () => string | undefined;
-    validate: () => string | undefined
+    validate: () => string | undefined;
+    fnMapper:(operatorName:any)=>string;
     constructor(props: AV_props) {
-        let { lang = 'en' } = props;
+        let { lang = 'en',isDate } = props;
         let DATE = new AIODate();
         this.contain = (target, value) => {
-            let result, targetName;
+            let result
             if (Array.isArray(value)) { result = value.indexOf(target) !== -1 }
-            else if (target === 'number') { result = /\d/.test(value); targetName = 'number'; }
-            else if (target === 'letter') { result = /[a-zA-Z]/.test(value); targetName = 'letter'; }
-            else if (target === 'uppercase') { result = /[A-Z]/.test(value); targetName = 'uppercase' }
-            else if (target === 'lowercase') { result = /[a-z]/.test(value); targetName = 'lowercase' }
-            else if (target === 'symbol') { result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value); targetName = 'symbol' }
-            else if (typeof target.test === 'function') { result = target.test(value); targetName = target.toString() }
-            else { result = value.indexOf(target) !== -1; targetName = target }
-            return { result, targetName }
+            else if (target === 'number') { result = /\d/.test(value);}
+            else if (target === 'letter') { result = /[a-zA-Z]/.test(value);}
+            else if (target === 'uppercase') { result = /[A-Z]/.test(value);}
+            else if (target === 'lowercase') { result = /[a-z]/.test(value);}
+            else if (target === 'symbol') { result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value);}
+            else if (typeof target.test === 'function') { result = target.test(value);}
+            else { result = value.indexOf(target) !== -1;}
+            return result
         }
-        this.equal = (target, value, isDate) => {
+        this.equal = (target, value) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(value) ? 'array' : typeof target;
+            let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
             if (isDate) { result = DATE.isEqual(value, target) }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target }
             else { result = JSON.stringify(value) === JSON.stringify(target) }
-            return { result, targetName: target }
+            return result
         }
-        this.less = (target, value, isDate) => {
+        this.less = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(value) ? 'array' : typeof target;
+            let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
             if (isDate) { result = DATE.isLess(value, target) }
             else if (targetType === 'number' && valueType === 'number') { result = value < target }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target }
             else { result = false }
-            return { result, targetName: target }
+            return equal?result || this.equal(target,value):result;
         }
-        this.less_equal = (target, value, isDate) => {
+        this.greater = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(value) ? 'array' : typeof target;
-            let lessResult;
-            if (isDate) { lessResult = DATE.isLess(value, target) }
-            else if (targetType === 'number' && valueType === 'number') { lessResult = value < target }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { lessResult = value.length < target }
-            else { lessResult = false }
-            let { result: equalResult } = this.equal(target, value, isDate)
-            return { result: equalResult || lessResult, targetName: target }
-        }
-        this.greater = (target, value, isDate) => {
-            let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(value) ? 'array' : typeof target;
+            let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
             if (isDate) { result = DATE.isGreater(value, target) }
             else if (targetType === 'number' && valueType === 'number') { result = value > target }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target }
             else { result = false }
-            return { result, targetName: target }
+            return equal?result || this.equal(target,value):result;
         }
-        this.greater_equal = (target, value, isDate) => {
-            let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(value) ? 'array' : typeof target;
-            let greaterResult;
-            if (isDate) { greaterResult = DATE.isGreater(value, target) }
-            else if (targetType === 'number' && valueType === 'number') { greaterResult = value > target }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { greaterResult = value.length > target }
-            else { greaterResult = false }
-            let { result: equalResult } = this.equal(target, value, isDate)
-            return { result: equalResult || greaterResult, targetName: target }
+        this.between = (targets, value,equal) => {
+            let res1 = this.greater(targets[0],value)
+            let res2 = this.less(targets[1],value)
+            let result = !!res1 && !!res2
+            return equal?(result || this.equal(targets[0],value) ||this.equal(targets[1],value)):result
         }
         this.translate = (operator) => {
             let dict = {
-                contain: { en: 'should be contain', fa: 'باید شامل' },
-                not_contain: { en: 'should not be contain', fa: 'نمی تواند شامل' },
-                greater: { en: 'should be more than', fa: 'باید بیشتر از' },
-                not_greater: { en: 'could not be more than', fa: 'نباید بزرگ تر از' },
-                greater_equal: { en: 'should be more than or equal', fa: 'باید بزرگتر یا مساوی' },
-                not_greater_equal: { en: 'could not be more than or equal', fa: 'نباید بزرگتر یا مساوی' },
-                less: { en: 'should be less than', fa: 'باید کمتر از' },
-                not_less: { en: 'could not be less than', fa: 'نباید کوچک تر از' },
-                less_equal: { en: 'should be less than or equal', fa: 'باید کوچکتر یا مساوی' },
-                not_less_equal: { en: 'could not be less than or equal', fa: 'نباید کوچک تر یا مساوی' },
-                equal: { en: 'should be equal', fa: 'باید برابر' },
-                not_equal: { en: 'cannot be equal', fa: 'نمی تواند برابر' },
-                function: { en: '', fa: '' },
-                required: { en: '', fa: '' }
+                'contain': { en: 'should be contain', fa: 'باید شامل' },
+                '!contain': { en: 'should not be contain', fa: 'نمی تواند شامل' },
+                '>': { en: 'should be more than', fa: 'باید بیشتر از' },
+                '!>': { en: 'could not be more than', fa: 'نباید بزرگ تر از' },
+                '>=': { en: 'should be more than or equal', fa: 'باید بزرگتر یا مساوی' },
+                '!>=': { en: 'could not be more than or equal', fa: 'نباید بزرگتر یا مساوی' },
+                '<': { en: 'should be less than', fa: 'باید کمتر از' },
+                '!<': { en: 'could not be less than', fa: 'نباید کوچک تر از' },
+                '<=': { en: 'should be less than or equal', fa: 'باید کوچکتر یا مساوی' },
+                '!<=': { en: 'could not be less than or equal', fa: 'نباید کوچک تر یا مساوی' },
+                '=': { en: 'should be equal', fa: 'باید برابر' },
+                '!=': { en: 'cannot be equal', fa: 'نمی تواند برابر' },
+                'required': { en: '', fa: '' }
             }
             return dict[operator][lang]
         }
-        this.getMessage = (operator, targetName, validation, unit) => {
-            let { title = props.title, targetName: TargetName = targetName, message } = validation;
+        this.fnMapper = (operatorName:any)=>{
+            let dict:any = {
+                'contain': 'contain',
+                '=': 'equal',
+                '<': 'less',
+                '<=': 'less_equal',
+                '>': 'greater',
+                '>=': 'greater_equal'
+            }
+            return dict[operatorName]
+        }
+        this.getMessage = (p) => {
+            let {operator, target, unit,title,message} = p;
             if (message) { return message }
             let operatorName = this.translate(operator)
-            let res = `${title} ${operatorName} ${TargetName} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
+            let res = `${title} ${operatorName} ${target} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
             return res
         }
-        this.getResult = (p: { target: any, validation: AV_item, value: any, unit: string, operator: AV_operator }) => {
-            let { target, validation, value, unit, operator } = p;
+        this.getResult = (p) => {
+            let { target, message,title, value, unit, operator } = p;
             target = Array.isArray(target) ? target : [target];
-            let targetNames = [];
-            let error = true;
-            let operatorName: string = operator, not = false, isDate = false;
-            let dateIndex = operator.indexOf('date_');
-            if (dateIndex === 0) {
-                isDate = true;
-                operatorName = operatorName.slice(4, operatorName.length);
-            }
-            let notIndex = operatorName.indexOf('not_');
+            let operatorName: string = operator, not = false,equal = operator.indexOf('=') !== -1;
+            let notIndex = operatorName.indexOf('!');
             if (notIndex === 0) {
                 not = true;
-                operatorName = operator.slice(4, operator.length);
+                operatorName = operator.slice(1, operator.length);
             }
-
-
-            for (let i = 0; i < target.length; i++) {
-                let fn: any = (this as any)[operatorName];
-                let { result, targetName } = fn(target[i], value, isDate)
-                if ((not && result) || (!not && !result)) {
-                    targetNames.push(targetName);
-                }
-                else {
-                    error = false;
-                    break
-                }
-            }
-            if (error) { return this.getMessage(operator, targetNames.join(' or '), validation, unit) }
+            let fn: any = (this as any)[this.fnMapper(operatorName)];
+            let result = fn(target, value,equal)
+            if ((not && result) || (!not && !result)) { return this.getMessage({operator, target, message,title, unit}) }
         }
+        
         this.getValidation = () => {
             let { value, validations = [] } = props;
             let unit = '';
             if (Array.isArray(value)) { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
             else if (typeof value === 'string') { unit = lang === 'fa' ? 'کاراکتر' : 'character(s)' }
             for (let i = 0; i < validations.length; i++) {
-                let { operator, target, title = props.title } = validations[i];
-                let result;
-                if (operator === 'function') {
-                    result = target(value);
+                let [operator, target, text ] = validations[i].split(',');
+                let otherTarget;
+                let title:string = props.title,message:string = '';
+                if(text){
+                    if(text[0] === 'title(' && text[text.length - 1] === ')'){title = text.slice(6,text.length - 1)}
+                    else if(text[0] === 'message(' && text[text.length - 1] === ')'){message = text.slice(8,text.length - 1)}
+                    else {otherTarget = ParseString(text)}
                 }
-                else if (operator === 'required') {
+                let result;
+                if (operator === 'required') {
                     if (value === undefined || value === null || value === '' || value === false || value.length === 0) {
                         if (lang === 'en') { return `${title} is required` }
                         if (lang === 'fa') { return `وارد کردن ${title} ضروری است` }
                     }
-                }
+                }    
                 else {
-                    result = this.getResult({ operator, target, validation: validations[i], value, unit })
+                    if(operator === '=' || operator === '!='){unit = ''}
+                    let isBetween = operator.indexOf('<') !== -1 && operator.indexOf('>') !== -1
+                    target = ParseString(target);
+                    let Target;
+                    if(isBetween){Target = [target,otherTarget]}
+                    else {Target = target}
+                    result = this.getResult({ operator:operator as AV_operator, target, title,message, value, unit })
                 }
                 if (result) { return result }
             }

@@ -47,6 +47,7 @@ const FormExamples: FC = () => {
     let [examples] = useState<any>([
         ['Example 1', () => <Example1 />],
         ['Example 2', () => <Example2 />],
+        ['validations', () => <Validations />],
     ])
     let [titles] = useState<string[]>(getTitles)
     function getTitles() {
@@ -392,6 +393,143 @@ const Example2: FC = () => {
                                     field: 'value.date'
                                 }
                             ]
+                        }
+                    ]
+                }}
+            />
+        </div>
+    )
+}
+`
+            )}
+
+        </div>
+    )
+}
+
+const Validations: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                inputs={{
+                    column: [
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'checkbox',
+                                text: 'Is Active'
+                            },
+                            label: 'Is Active',
+                            field: 'value.active'
+                        },
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'text'
+                            },
+                            label: 'First Name',
+                            field: 'value.firstname',
+                            validations:[
+                                'required',
+                                '>,10'
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'textarea'
+                            },
+                            label: 'Description',
+                            field: 'value.description',
+                            validations:[
+                                'required',
+                                '>,40',
+                                '<,160'
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'date'
+                            },
+                            label: 'Date',
+                            field: 'value.date',
+                            validations:[
+                                'required',
+                                '>,2022',
+                                '<,160'
+                            ]
+                        }
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+            {code(
+`const Example1: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log,setLog] = useState<any>()
+    function submit(){
+        setLog(JSON.stringify(setting,null,3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                inputs={{
+                    column: [
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'checkbox',
+                                text: 'Is Active'
+                            },
+                            label: 'Is Active',
+                            field: 'value.active'
+                        },
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'text'
+                            },
+                            label: 'First Name',
+                            field: 'value.firstname'
+                        },
+                        {
+                            input: {
+                                type: 'textarea'
+                            },
+                            label: 'Description',
+                            field: 'value.description'
+                        },
+                        {
+                            input: {
+                                type: 'date'
+                            },
+                            label: 'Date',
+                            field: 'value.date'
                         }
                     ]
                 }}

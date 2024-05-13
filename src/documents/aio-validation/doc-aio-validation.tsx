@@ -2,7 +2,8 @@ import React, { Component, FC, useState } from 'react';
 import AIOInput, { AIOValidation } from '../../npm/aio-input/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
 import RVD from '../../npm/react-virtual-dom/index.tsx';
-import { AV_operator } from '../../npm/aio-input/types.tsx';
+import { AV_operator } from '../../npm/aio-input';
+import { ParseString } from '../../npm/aio-utils/index.tsx';
 export default function DOC_AIOValidation(props: any) {
     return (
         <DOC
@@ -16,568 +17,405 @@ export default function DOC_AIOValidation(props: any) {
         />
     )
 }
-const testCases = [
+type I_textCase = { config: { title: string, lang: 'en' | 'fa', value: any, validations: string[] }, result: string } 
+const testCases: I_textCase[] = [
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "less",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": ["<,12"]
         },
-        result:'firstname should be less than 12 character(s)'
+        result: 'firstname should be less than 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "less",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": ["<,12"]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": ["<=,12"]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shag",
-    "validations": [
-        {
-            "operator": "less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shag",
+            "validations": ["<=,12"]
         },
-        result:'firstname should be less than or equal 12 character(s)'
+        result: 'firstname should be less than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    "<=,12"
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "not_less",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": [
+                    "!<,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shahg",
-    "validations": [
-        {
-            "operator": "not_less",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shahg",
+            "validations": [
+                    "!<,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "not_less",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    "!<,12",
+            ]
         },
-        result:'firstname could not be less than 12 character(s)'
+        result: 'firstname could not be less than 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shar",
-    "validations": [
-        {
-            "operator": "not_less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shar",
+            "validations": [
+                    "!<=,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "not_less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": [
+                    "!<=,12",
+            ]
         },
-        result:'firstname could not be less than or equal 12 character(s)'
+        result: 'firstname could not be less than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "not_less_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    "!<=,12",
+            ]
         },
-        result:'firstname could not be less than or equal 12 character(s)'
+        result: 'firstname could not be less than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    ">,12",
+            ]
         },
-        result:'firstname should be more than 12 character(s)'
+        result: 'firstname should be more than 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": [
+                    ">,12",
+            ]
         },
-        result:'firstname should be more than 12 character(s)'
+        result: 'firstname should be more than 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shad",
-    "validations": [
-        {
-            "operator": "greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shad",
+            "validations": [
+                    ">,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    ">=,12",
+            ]
         },
-        result:'firstname should be more than or equal 12 character(s)'
+        result: 'firstname should be more than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": [
+                    ">=,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shaf",
-    "validations": [
-        {
-            "operator": "greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shaf",
+            "validations": [
+                    ">=,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "not_greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    "!>,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shg",
-    "validations": [
-        {
-            "operator": "not_greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shg",
+            "validations": [
+                    "!>,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shgh",
-    "validations": [
-        {
-            "operator": "not_greater",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shgh",
+            "validations": [
+                    "!>,12",
+            ]
         },
-        result:'firstname could not be more than 12 character(s)'
+        result: 'firstname could not be more than 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sh",
-    "validations": [
-        {
-            "operator": "not_greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sh",
+            "validations": [
+                    "!>=,12",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad sha",
-    "validations": [
-        {
-            "operator": "not_greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad sha",
+            "validations": [
+                    "!>=,12",
+            ]
         },
-        result:'firstname could not be more than or equal 12 character(s)'
+        result: 'firstname could not be more than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "mohammad shar",
-    "validations": [
-        {
-            "operator": "not_greater_equal",
-            "target": 12
-        }
-    ]
+            "lang": "en",
+            "value": "mohammad shar",
+            "validations": [
+                    "!>=,12",
+            ]
         },
-        result:'firstname could not be more than or equal 12 character(s)'
+        result: 'firstname could not be more than or equal 12 character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "42342342",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "letter"
-        }
-    ]
+            "lang": "en",
+            "value": "42342342",
+            "validations": [
+                    "contain,'letter'"
+            ]
         },
-        result:'firstname should be contain letter character(s)'
+        result: 'firstname should be contain letter character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "42342342f",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "letter"
-        }
-    ]
+            "lang": "en",
+            "value": "42342342f",
+            "validations": [
+                    "contain,'letter'",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "number"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd",
+            "validations": [
+                    "contain,'number'",
+            ]
         },
-        result:'firstname should be contain number character(s)'
+        result: 'firstname should be contain number character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "number"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4",
+            "validations": [
+                    "contain,'number'",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4#",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "symbol"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4#",
+            "validations": [
+                    "contain,'symbol'",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "symbol"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4",
+            "validations": [
+                    "contain,'symbol'",
+            ]
         },
-        result:'firstname should be contain symbol character(s)'
+        result: 'firstname should be contain symbol character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4R",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "uppercase"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4R",
+            "validations": [
+                    "contain,'uppercase'",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "uppercase"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4",
+            "validations": [
+                    "contain,'uppercase'",
+            ]
         },
-        result:'firstname should be contain uppercase character(s)'
+        result: 'firstname should be contain uppercase character(s)'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "fsdfsdfsd4",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "lowercase"
-        }
-    ]
+            "lang": "en",
+            "value": "fsdfsdfsd4",
+            "validations": [
+                    "contain,'lowercase'",
+            ]
         },
-        result:'value is match by operator and target'
+        result: 'value is match by operator and target'
     },
     {
-        config:{
+        config: {
             "title": "firstname",
-    "lang": "en",
-    "value": "RWEFSD",
-    "validations": [
-        {
-            "operator": "contain",
-            "target": "lowercase"
-        }
-    ]
+            "lang": "en",
+            "value": "RWEFSD",
+            "validations": [
+                    "contain,'lowercase'",
+            ]
         },
-        result:'firstname should be contain lowercase character(s)'
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
-    },
-    {
-        config:{
-            
-        },
-        result:''
+        result: 'firstname should be contain lowercase character(s)'
     },
 
+
 ]
+
 const TryIt: FC = () => {
     let [model, setModel] = useState<any>({
-        title: 'firstname',
+        title: 'list',
         lang: 'en',
-        value: 'mohammad sh',
-        operator: 'equal',
-        target: 'mohammad sh',
-        targetType: 'string'
+        value: '[1,2,3]',
+        operator: '=',
+        target: 3,
     })
     let [ops] = useState<AV_operator[]>([
-        'required', 'function', 'contain', 'not_contain', 'equal', 'not_equal', 'less', 'not_less', 'greater', 'not_greater', 'less_equal', 'not_less_equal', 'greater_equal', 'not_greater_equal'
+        'required', 'contain', '!contain', '=', '!=', '<', '!<', '>', '!>', '<=', '!<=', '>=', '!>='
     ])
-    let result;
-    let code;
-    let targetStr = '';
-    try{targetStr = JSON.parse(model.target)} catch{}
-    console.log('target',model.target,targetStr)
-    try {
-        let config = {
-            title: model.title,
-            lang: model.lang,            
-            value:model.value,
-            validations: [{ operator: model.operator, target: model.targetType === 'number' ? +model.target : JSON.parse(model.target) }]
+    let testMode = false;
+    if (testMode) {
+        let allResult = true
+        for (let i = 0; i < testCases.length; i++) {
+            let {config,result} = testCases[i];
+            let { title, lang, value, validations } = config;
+            let [operator,target] = validations[0].split(',');
+            if(target !== undefined){
+                if(i === 23){debugger}
+                target = ParseString(target);
+                console.log(target)
+            }
+            let { message,success } = getResult({ title, lang, value, operator:operator as AV_operator,target })
+            if(!success){
+                allResult = false;
+                alert(`testCase[${i}] was not success to execute`)
+                return <button type='button' onClick={()=>window.location.reload()}>Try Again</button>
+            }
+            if(message !== result){
+                allResult = false;
+                alert(`testCase[${i}] was success but is not match`)
+                return <button type='button' onClick={()=>window.location.reload()}>Try Again</button>
+            }
         }
-        code = JSON.stringify(config, null, 4)
-        result = new AIOValidation(config).validate()
+        if(allResult){alert('Good Job!!! all test cases was success and was match')}
     }
-    catch {
-        result = '';
-        code = '';
-    }
+    let { message, code, success,result } = getResult(model)
     return (
         <div className="example">
             <AIOInput
@@ -592,16 +430,12 @@ const TryIt: FC = () => {
                                 { input: { type: 'radio', popover: { fitHorizontal: true }, options: ['en', 'fa'], option: { text: 'option', value: 'option' } }, label: 'lang', field: 'value.lang' },
                             ]
                         },
-                        {
-                            row:[
-                                { input: { type: 'radio', options: ['string', 'number'], option: { text: 'option', value: 'option' } }, label: 'target type', field: 'value.targetType' },
-                                { input: { type: 'text' }, label: 'target', field: 'value.target' }
-                            ]
-                        },
+                        
                         {
                             row: [
                                 { input: { type: 'text' }, label: 'value', field: 'value.value' },
                                 { input: { type: 'select', options: ops, option: { text: 'option', value: 'option' } }, label: 'operator', field: 'value.operator' },
+                                { input: { type: 'text' }, label: 'target', field: 'value.target' },
                             ]
                         }
                     ]
@@ -622,8 +456,7 @@ const TryIt: FC = () => {
                             className: 'p-24 brd-c-20 m-12',
                             column: [
                                 { html: 'Result Message' },
-                                { show: !!result, html: result, style: { color: 'red', direction: model.lang === 'fa' ? 'rtl' : 'ltr' } },
-                                { show: !result, html: 'value is match by operator and target', style: { color: 'green' } }
+                                { html: message, style: { color: result ? 'green' : 'red', direction: model.lang === 'fa' ? 'rtl' : 'ltr' } }
                             ]
                         }
                     ]
@@ -631,4 +464,37 @@ const TryIt: FC = () => {
             />
         </div>
     )
-} 
+}
+function getResult(p: { target: any, title: string, lang: 'en' | 'fa', value: any, operator: AV_operator }) {
+    let { target, title, lang, value, operator } = p;
+    let parsedValue = ParseString(value)
+    let message;
+    let result;
+    let code;
+    let success = false;
+    try {
+        success = true;
+        let config = {
+            title: title,
+            lang: lang,
+            value:parsedValue,
+            validations: [`${operator},${target}`]
+        }
+        code = JSON.stringify(config, null, 4)
+        let inst = new AIOValidation(config)
+        message = inst.validate()
+        if (!message) { 
+            message = 'value is match by operator and target' 
+            result = true
+        }
+        else {
+            result = false
+        }
+    }
+    catch {
+        message = '';
+        code = '';
+        success = false
+    }
+    return { message, code, success ,result}
+}
