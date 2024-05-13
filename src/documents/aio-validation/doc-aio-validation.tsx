@@ -273,13 +273,13 @@ const testCases: I_textCase[] = [
                     "contain,'letter'"
             ]
         },
-        result: 'firstname should be contain letter character(s)'
+        result: 'firstname should be contain letter'
     },
     {
         config: {
             "title": "firstname",
             "lang": "en",
-            "value": "42342342f",
+            "value": "'42342342f'",
             "validations": [
                     "contain,'letter'",
             ]
@@ -295,7 +295,7 @@ const testCases: I_textCase[] = [
                     "contain,'number'",
             ]
         },
-        result: 'firstname should be contain number character(s)'
+        result: 'firstname should be contain number'
     },
     {
         config: {
@@ -328,7 +328,7 @@ const testCases: I_textCase[] = [
                     "contain,'symbol'",
             ]
         },
-        result: 'firstname should be contain symbol character(s)'
+        result: 'firstname should be contain symbol'
     },
     {
         config: {
@@ -350,7 +350,7 @@ const testCases: I_textCase[] = [
                     "contain,'uppercase'",
             ]
         },
-        result: 'firstname should be contain uppercase character(s)'
+        result: 'firstname should be contain uppercase'
     },
     {
         config: {
@@ -372,7 +372,36 @@ const testCases: I_textCase[] = [
                     "contain,'lowercase'",
             ]
         },
-        result: 'firstname should be contain lowercase character(s)'
+        result: 'firstname should be contain lowercase'
+    },
+    {
+        config: {
+            "title": "list",
+            "lang": "en",
+            "value": [
+                1,
+                2
+            ],
+            "validations": [
+                "<,3"
+            ]
+        },
+        result: 'value is match by operator and target'
+    },
+    {
+        config: {
+            "title": "list",
+            "lang": "en",
+            "value": [
+                1,
+                2,
+                3
+            ],
+            "validations": [
+                "<,3"
+            ]
+        },
+        result: 'list should be less than 3 items(s)'
     },
 
 
@@ -397,7 +426,6 @@ const TryIt: FC = () => {
             let { title, lang, value, validations } = config;
             let [operator,target] = validations[0].split(',');
             if(target !== undefined){
-                if(i === 23){debugger}
                 target = ParseString(target);
                 console.log(target)
             }

@@ -410,6 +410,7 @@ const Example2: FC = () => {
 const Validations: FC = () => {
     const { code }: I_CTX = useContext(CTX);
     const [setting, setSetting] = useState<any>()
+    const [errors,setErrors] = useState<string[]>([''])
     const [log, setLog] = useState<any>()
     function submit() {
         setLog(JSON.stringify(setting, null, 3))
@@ -419,9 +420,12 @@ const Validations: FC = () => {
             <AIOInput
                 type='form'
                 value={{ ...setting }}
-                onChange={(newFormData) => setSetting({ ...newFormData })}
+                onChange={(newFormData,errors) => {
+                    setSetting({ ...newFormData })
+                    setErrors(errors)
+                }}
                 footer={(
-                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                    <button type='button' disabled={!!errors.length} className='submit-button' onClick={submit}>Submit</button>
                 )}
                 inputs={{
                     column: [
@@ -443,7 +447,6 @@ const Validations: FC = () => {
                             field: 'value.firstname',
                             validations:[
                                 'required',
-                                '>,10'
                             ]
                         },
                         {
@@ -454,8 +457,8 @@ const Validations: FC = () => {
                             field: 'value.description',
                             validations:[
                                 'required',
-                                '>,40',
-                                '<,160'
+                                '>,10',
+                                '<,30'
                             ]
                         },
                         {
@@ -466,8 +469,8 @@ const Validations: FC = () => {
                             field: 'value.date',
                             validations:[
                                 'required',
-                                '>,2022',
-                                '<,160'
+                                '<,2024',
+                                '>,2022'
                             ]
                         }
                     ]

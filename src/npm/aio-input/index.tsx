@@ -669,10 +669,12 @@ const Form: FC = () => {
     function getError(formItem: AI_formItem, value: any) {
         let { validations = [], input } = formItem;
         if (!validations.length || !input) { return '' }
+        let isDate = input.type === 'date' || input.type === 'time';
         //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
         if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
-        let a: AV_props = { value, title: formItem.label || '', lang, validations }
-        return new AIOValidation(a).validate();
+        let a: AV_props = { value, title: formItem.label || '', lang, validations,isDate }
+        let inst = new AIOValidation(a);
+        return inst.validate();
     }
     function setError(key: string, value: string | undefined) {
         let newErrors = errors = { ...errors, [key]: value }
@@ -3274,8 +3276,12 @@ export class AIOValidation {
     getValidation: () => string | undefined;
     validate: () => string | undefined;
     fnMapper:(operatorName:any)=>string;
+    boolKey:(key:'more' | 'less')=>string;
+    boolDic:any;
     constructor(props: AV_props) {
         let { lang = 'en',isDate } = props;
+        this.boolDic = isDate?{more:{en:'after',fa:'بعد از'},less:{en:'before',fa:'قبل از'}}:{more:{en:'more',fa:'بیشتر'},less:{en:'less',fa:'کمتر'}}
+        this.boolKey = (key)=>this.boolDic[key][lang]
         let DATE = new AIODate();
         this.contain = (target, value) => {
             let result
@@ -3293,7 +3299,7 @@ export class AIOValidation {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
-            if (isDate) { result = DATE.isEqual(value, target) }
+            if (isDate) { result = DATE.isEqual(value, typeof target === 'number'?target.toString():target) }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target }
             else { result = JSON.stringify(value) === JSON.stringify(target) }
             return result
@@ -3302,7 +3308,7 @@ export class AIOValidation {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
-            if (isDate) { result = DATE.isLess(value, target) }
+            if (isDate) { result = DATE.isLess(value, typeof target === 'number'?target.toString():target) }
             else if (targetType === 'number' && valueType === 'number') { result = value < target }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target }
             else { result = false }
@@ -3312,7 +3318,7 @@ export class AIOValidation {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = Array.isArray(target) ? 'array' : typeof target;
             let result;
-            if (isDate) { result = DATE.isGreater(value, target) }
+            if (isDate) { result = DATE.isGreater(value, typeof target === 'number'?target.toString():target) }
             else if (targetType === 'number' && valueType === 'number') { result = value > target }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target }
             else { result = false }
@@ -3324,32 +3330,32 @@ export class AIOValidation {
             let result = !!res1 && !!res2
             return equal?(result || this.equal(targets[0],value) ||this.equal(targets[1],value)):result
         }
-        this.translate = (operator) => {
+        this.translate = (operator):string => {
+            
             let dict = {
-                'contain': { en: 'should be contain', fa: 'باید شامل' },
-                '!contain': { en: 'should not be contain', fa: 'نمی تواند شامل' },
-                '>': { en: 'should be more than', fa: 'باید بیشتر از' },
-                '!>': { en: 'could not be more than', fa: 'نباید بزرگ تر از' },
-                '>=': { en: 'should be more than or equal', fa: 'باید بزرگتر یا مساوی' },
-                '!>=': { en: 'could not be more than or equal', fa: 'نباید بزرگتر یا مساوی' },
-                '<': { en: 'should be less than', fa: 'باید کمتر از' },
-                '!<': { en: 'could not be less than', fa: 'نباید کوچک تر از' },
-                '<=': { en: 'should be less than or equal', fa: 'باید کوچکتر یا مساوی' },
-                '!<=': { en: 'could not be less than or equal', fa: 'نباید کوچک تر یا مساوی' },
-                '=': { en: 'should be equal', fa: 'باید برابر' },
-                '!=': { en: 'cannot be equal', fa: 'نمی تواند برابر' },
+                'contain': { en: `should be contain`, fa: `باید شامل` },
+                '!contain': { en: `should not be contain`, fa: `نمی تواند شامل` },
+                '>': { en: `should be ${this.boolKey('more')} than`, fa: `باید ${this.boolKey('more')} از` },
+                '!>': { en: `could not be ${this.boolKey('more')} than`, fa: `نباید ${this.boolKey('more')} از` },
+                '>=': { en: `should be ${this.boolKey('more')} than or equal`, fa: `باید ${this.boolKey('more')} یا مساوی` },
+                '!>=': { en: `could not be ${this.boolKey('more')} than or equal`, fa: `نباید ${this.boolKey('more')} یا مساوی` },
+                '<': { en: `should be ${this.boolKey('less')} than`, fa: `باید ${this.boolKey('less')} از` },
+                '!<': { en: `could not be ${this.boolKey('less')} than`, fa: `نباید ${this.boolKey('less')} از` },
+                '<=': { en: `should be ${this.boolKey('less')} than or equal`, fa: `باید ${this.boolKey('less')} یا مساوی` },
+                '!<=': { en: `could not be ${this.boolKey('less')} than or equal`, fa: `نباید ${this.boolKey('less')} یا مساوی` },
+                '=': { en: `should be equal`, fa: `باید برابر` },
+                '!=': { en: `cannot be equal`, fa: `نمی تواند برابر` },
                 'required': { en: '', fa: '' }
             }
             return dict[operator][lang]
         }
         this.fnMapper = (operatorName:any)=>{
             let dict:any = {
-                'contain': 'contain',
-                '=': 'equal',
-                '<': 'less',
-                '<=': 'less_equal',
-                '>': 'greater',
-                '>=': 'greater_equal'
+                'contain': 'contain','!contain': 'contain',
+                '!=': 'equal','=': 'equal',
+                '<': 'less','<=': 'less','!<': 'less','!<=': 'less',
+                '>': 'greater','>=': 'greater','!>': 'greater','!>=': 'greater',
+                '<>': 'between','<=>':'between','!<>': 'between','!<=>':'between'
             }
             return dict[operatorName]
         }
@@ -3358,11 +3364,10 @@ export class AIOValidation {
             if (message) { return message }
             let operatorName = this.translate(operator)
             let res = `${title} ${operatorName} ${target} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
-            return res
+            return res.trim()
         }
         this.getResult = (p) => {
             let { target, message,title, value, unit, operator } = p;
-            target = Array.isArray(target) ? target : [target];
             let operatorName: string = operator, not = false,equal = operator.indexOf('=') !== -1;
             let notIndex = operatorName.indexOf('!');
             if (notIndex === 0) {
@@ -3373,7 +3378,6 @@ export class AIOValidation {
             let result = fn(target, value,equal)
             if ((not && result) || (!not && !result)) { return this.getMessage({operator, target, message,title, unit}) }
         }
-        
         this.getValidation = () => {
             let { value, validations = [] } = props;
             let unit = '';
@@ -3396,13 +3400,13 @@ export class AIOValidation {
                     }
                 }    
                 else {
-                    if(operator === '=' || operator === '!='){unit = ''}
+                    if(['=','!=','contain','!contain'].indexOf(operator) !== -1 || isDate){unit = ''}
                     let isBetween = operator.indexOf('<') !== -1 && operator.indexOf('>') !== -1
                     target = ParseString(target);
                     let Target;
                     if(isBetween){Target = [target,otherTarget]}
                     else {Target = target}
-                    result = this.getResult({ operator:operator as AV_operator, target, title,message, value, unit })
+                    result = this.getResult({ operator:operator as AV_operator, target:Target, title,message, value, unit })
                 }
                 if (result) { return result }
             }
