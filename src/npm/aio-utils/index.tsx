@@ -1,40 +1,6 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
-export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number };
-export type I_Swip_change = {
-    x: number, y: number,
-    dx: number, dy: number,
-    dist: number,
-    angle: number,
-    deltaCenterAngle: number,
-}
-export type I_Swip_parameter = {
-    change?: I_Swip_change, mousePosition: I_Swip_mousePosition, domLimit: I_Swip_domLimit, parentLimit: I_Swip_domLimit, event: any
-}
-export type I_Swip = {
-    dom: () => any,
-    parent?: () => any,
-    onClick?: (p: I_Swip_parameter) => void,
-    page?: () => any,
-    start: (p: I_Swip_parameter) => number[],
-    move: (p: I_Swip_parameter) => void,
-    end?: (p: I_Swip_parameter) => void,
-    speedX?: number,
-    speedY?: number,
-    stepX?: number | boolean,
-    stepY?: number | boolean,
-    reverseY?: boolean,
-    reverseX?: boolean,
-    minY?: number,
-    maxY?: number,
-    minX?: number,
-    maxX?: number,
-    insideX?: boolean,
-    insideY?: boolean
-}
-export type I_Swip_domLimit = {
-    width: number, height: number, left: number, top: number, centerX: number, centerY: number, right: number, bottom: number
-}
+
 
 export type I_Date = string | number | Date | { year?: number, month?: number, day?: number, hour?: number, minute?: number } | number[];
 export type I_point = number[]
@@ -401,6 +367,48 @@ export function AddToAttrs(attrs: any, p: any) {
 //     }
 //     return $$.validate(json, schema)
 // }
+export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number };
+export type I_Swip_change = {
+    x: number, y: number,
+    dx: number, dy: number,
+    dist: number,
+    angle: number,
+    deltaCenterAngle: number,
+}
+export type I_Swip_parameter = {
+    change: I_Swip_change, mousePosition: I_Swip_mousePosition, domLimit: I_Swip_domLimit, parentLimit: I_Swip_domLimit, event: any,selectRect?:I_Swip_selectRect,
+    isInSelectRect?:I_Swip_isInSelectRect
+}
+type I_Swip_selectRect_config = {color?:string,enable:()=>boolean}
+export type I_Swip = {
+    dom: () => any,
+    parent?: () => any,
+    onClick?: (p: I_Swip_parameter) => void,
+    page?: () => any,
+    start?: (p: I_Swip_parameter) => number[],
+    move?: (p: I_Swip_parameter) => void,
+    end?: (p: I_Swip_parameter) => void,
+    selectRect?:I_Swip_selectRect_config,
+    speedX?: number,
+    speedY?: number,
+    stepX?: number | boolean,
+    stepY?: number | boolean,
+    reverseY?: boolean,
+    reverseX?: boolean,
+    minY?: number,
+    maxY?: number,
+    minX?: number,
+    maxX?: number,
+    insideX?: boolean,
+    insideY?: boolean
+}
+export type I_Swip_domLimit = {
+    width: number, height: number, left: number, top: number, centerX: number, centerY: number, right: number, bottom: number
+}
+type I_Swip_isInSelectRect = (x:number,y:number)=>boolean
+type I_Swip_getIsInSelectrect = (selectRect:I_Swip_selectRect)=>I_Swip_isInSelectRect
+export type I_Swip_selectRect = {left:number,top:number,width:number,height:number};
+export type I_Swip_tempSelectRect = {left:number,top:number};
 export class Swip {
     p: I_Swip;
     geo: Geo;
@@ -416,7 +424,7 @@ export class Swip {
     cx: number;
     cy: number;
     dist: number;
-    so: { client?: { x: number, y: number }, x?: number, y?: number };
+    so: { client?: { x: number, y: number }, x?: number, y?: number,sr?:I_Swip_selectRect,tsr?:I_Swip_tempSelectRect };
     getPercentByValue: (value: number, start: number, end: number) => number;
     getMousePosition: (e: any) => I_Swip_mousePosition
     click: (e: any) => void;
@@ -428,12 +436,27 @@ export class Swip {
     getPage: () => any;
     isMoving: boolean;
     centerAngle: number;
-    defaultLimit:I_Swip_domLimit
+    defaultLimit:I_Swip_domLimit;
+    addSelectRect:(x:number,y:number)=>void;
+    setSelectRect:(width:number,height:number)=>void;
+    removeSelectRect:()=>void;
+    selectRect?:I_Swip_selectRect_config;
+    getIsInSelectRect:I_Swip_getIsInSelectrect;
+    defaultChange:I_Swip_change;
     constructor(p: I_Swip) {
+        let {selectRect} = p;
+        if(selectRect){
+            let {color = '#96a9bc'} = selectRect;
+            this.selectRect = {...selectRect,color}; 
+        }
+        this.defaultChange = {x: 0, y: 0,dx: 0, dy: 0,dist: 0,angle: 0,deltaCenterAngle: 0}
         this.defaultLimit = {width:0,height:0,left:0,top:0,right:0,bottom:0,centerX:0,centerY:0}
         this.domLimit = this.defaultLimit;
         this.parentLimit = this.defaultLimit;
         this.change = {x:0,y:0,dx:0,dy:0,dist:0,angle:0,deltaCenterAngle:0}
+        this.addSelectRect= ()=>{}
+        this.setSelectRect= ()=>{}
+        this.removeSelectRect= ()=>{}
         this.so = {}
         this.p = p;
         this.geo = new Geo();
@@ -505,10 +528,45 @@ export class Swip {
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;
             let mousePosition = this.getMousePosition(e)
-            let clickParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            let clickParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e,
+                change:this.defaultChange }
             if(p.onClick){p.onClick(clickParams)}
         }
+        this.addSelectRect = (left:number,top:number)=>{
+            if(!this.selectRect || !this.selectRect.enable()){return}
+            let {color} = this.selectRect;
+            let dom = this.getDom();
+            this.so.tsr = {left,top};
+            this.removeSelectRect();
+            dom.append(`<div class="swip-select-rect" style="border:1px dashed ${color};background:${color + '30'};left:${left}px;top:${top}px;position:absolute;width:0;height:0"></div>`)
+        }
+        this.setSelectRect = (width:number,height:number)=>{
+            if(!this.selectRect || !this.selectRect.enable()){return}
+            let dom = this.getDom();
+            let SR = dom.find('.swip-select-rect');
+            let {tsr = {left:0,top:0}} = this.so || {};
+            let left = tsr.left;
+            let top = tsr.top;
+            if(width < 0){
+                left = left + width;
+                width = Math.abs(width)
+            }
+            if(height < 0){
+                top = top + height;
+                height = Math.abs(height)
+            }
+            let newSelectRect:I_Swip_selectRect = {left,top,width,height}
+            this.so.sr = newSelectRect;
+            SR.css(newSelectRect)
+        }
+        this.removeSelectRect = ()=>{
+            if(!this.selectRect || !this.selectRect.enable()){return}
+            let dom = this.getDom();
+            let selectRect = dom.find('.swip-select-rect');
+            selectRect.remove();
+        }
         this.mouseDown = (e) => {
+            e.stopPropagation();
             this.isMoving = false;
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;
@@ -519,7 +577,8 @@ export class Swip {
             this.so = {
                 client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e }
+            this.addSelectRect(mousePosition.x,mousePosition.y);
+            let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e,change:this.defaultChange }
             let res = (p.start || (() => [0, 0]))(startParams);
             if (!Array.isArray(res)) { return; }
             let x = res[0], y = res[1];
@@ -528,6 +587,7 @@ export class Swip {
             EventHandler('window', 'mouseup', $.proxy(this.mouseUp, this))
         }
         this.mouseMove = (e: any) => {
+            e.stopPropagation();
             let { speedX = 1, speedY = 1, stepX = 1, stepY = 1, reverseX, reverseY, insideX, insideY } = this.p;
             let mousePosition = this.getMousePosition(e), client = GetClient(e);
             let dx = client.x - this.cx, dy = client.y - this.cy;
@@ -546,6 +606,7 @@ export class Swip {
             this.dx = dx; this.dy = dy;
             this.dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
             let angle = this.geo.getAngle([[this.cx, this.cy], [client.x, client.y]])
+            this.setSelectRect(dx,dy);
             let x:number = 0, y:number = 0;
             if (this.so.x !== undefined && this.so.y !== undefined) {
                 x = this.so.x + dx; y = this.so.y + dy;
@@ -587,23 +648,40 @@ export class Swip {
                 mousePosition,
                 domLimit: this.domLimit,
                 parentLimit: this.parentLimit,
-                event: e
+                event: e,
+                selectRect:this.so.sr,
+                isInSelectRect:this.getIsInSelectRect(this.so.sr || {left:0,top:0,width:0,height:0})
+
             }
             if (this.p.move) { this.p.move(p); }
         }
+        this.getIsInSelectRect = (selectRect:I_Swip_selectRect)=>{
+            let {left,top,width,height} = selectRect;
+            return (x:number,y:number)=>{            
+                if(x < left){return false}
+                if(y < top){return false}
+                if(x > left + width){return false}
+                if(y > top + height){return false}
+                return true 
+            }
+        }
         this.mouseUp = (e: any) => {
+            e.stopPropagation();
             EventHandler('window', 'mousemove', this.mouseMove, 'unbind');
             EventHandler('window', 'mouseup', this.mouseUp, 'unbind');
             //chon click bad az mouseUp call mishe mouseUp isMoving ro zoodtar false mikone (pas nemitoone jeloye click bad az harekat ro begire), pas bayad in amal ba yek vaghfe anjam beshe
             //jeloye clicke bad az harekat ro migirim ta bad az drag kardan function click call nashe
             setTimeout(() => this.isMoving = false, 10);
             let mousePosition = this.getMousePosition(e);
+            this.removeSelectRect();
             let p: I_Swip_parameter = {
                 change: this.change,
                 event: e,
                 domLimit: this.domLimit,
                 parentLimit: this.parentLimit,
                 mousePosition,
+                selectRect:this.so.sr,
+                isInSelectRect:this.getIsInSelectRect(this.so.sr || {left:0,top:0,width:0,height:0})
             }
             if (this.p.end) { this.p.end(p) }
         }

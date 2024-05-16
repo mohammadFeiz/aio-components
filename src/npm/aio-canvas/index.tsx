@@ -1,4 +1,4 @@
-import React, { createRef, useEffect, useRef, useState } from "react";
+import React, { FC, createRef, useEffect, useRef, useState } from "react";
 import { Geo, EventHandler, GetClient } from '../aio-utils/index'
 import $ from "jquery";
 import { I_Canvas_temp, I_canvas_canvasToClient, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_items, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
@@ -35,7 +35,7 @@ export default class Canvas {
     }
   }
 }
-function CANVAS(props: I_canvas_props) {
+const CANVAS:FC<I_canvas_props> = (props) => {
   let { listenToMousePosition, attrs = {}, getSize, grid, zoom = 1, onMount = () => { }, getActions, rotateDirection = 'clockwise' } = props;
   let [temp] = useState<I_Canvas_temp>({
     PI: Math.PI / 180,
@@ -78,8 +78,8 @@ function CANVAS(props: I_canvas_props) {
   function update() {
     if(!temp.ctx){return}
     var dom = $(temp.dom.current);
-    temp.width = dom.width();
-    temp.height = dom.height();
+    temp.width = dom.width() || 0;
+    temp.height = dom.height() || 0;
     if (dom[0] === undefined || dom[0] === null) { return; }
     dom[0].width = temp.width;
     dom[0].height = temp.height;
@@ -91,21 +91,20 @@ function CANVAS(props: I_canvas_props) {
     if (grid) { drawAxes() }
     draw();
   }
-  function getValueByRange(value, start, end) {
+  function getValueByRange(value:number | string | (()=>number | string), start:number, end:number) {
     var Value = typeof value === 'function' ? value() : value;
     var type = typeof Value;
     if (type === undefined) { return start; }
     if (type === "number") { return Value; }
-    return start + (parseFloat(Value) * (end - start)) / 100;
+    return start + (parseFloat(Value as string) * (end - start)) / 100;
   }
 
   function setScreen() {
-    let screenPosition = temp.getScreenPosition();
+    let screenPosition:[number,number] = temp.getScreenPosition?temp.getScreenPosition():[0,0];
     let canvas = temp.dom.current;
-    temp.screen = [
-      -getValueByRange(screenPosition[0], 0, temp.width / zoom) * zoom,
-      getValueByRange(screenPosition[1], 0, temp.height / zoom) * zoom
-    ]
+    let x:number = -getValueByRange(screenPosition[0], 0, temp.width / zoom) * zoom;
+    let y:number = +getValueByRange(screenPosition[1], 0, temp.height / zoom) * zoom;
+    temp.screen = [x,y]
     temp.translate = [
       (temp.screen[0] + temp.axisPosition[0]),
       (temp.screen[1] + temp.axisPosition[1])
@@ -125,21 +124,21 @@ function CANVAS(props: I_canvas_props) {
       if (item.show === false) { continue; }
       ctx.save();
       ctx.beginPath();
-      rotate(item.rotate, [item.x, item.y]);
+      rotate(item.rotate, [item.x || 0, item.y || 0]);
       ctx.globalAlpha = item.opacity;
       ctx.lineCap = item.lineCap;
       ctx.lineJoin = item.lineJoin;
       shadow(item);
       item.dash && ctx.setLineDash(item.dash);
-      ctx.lineWidth = item.lineWidth * zoom;
+      ctx.lineWidth = (item.lineWidth || 1) * zoom;
       ctx.strokeStyle =
         item.stroke === "random"
           ? getRandomColor().color
-          : getColor(item.stroke, item.pivotedCoords);
+          : getColor(item.stroke || '#000', item.pivotedCoords);
       ctx.fillStyle =
         item.fill === "random"
           ? getRandomColor().color
-          : getColor(item.fill, item.pivotedCoords);
+          : getColor(item.fill || '#000', item.pivotedCoords);
       var Index = index.concat(i);
       if (item.type === 'Line') { drawLine(item); }
       else if (item.type === 'Arc') { drawArc(item); }
@@ -150,11 +149,7 @@ function CANVAS(props: I_canvas_props) {
         var str = "items[" + Index.join("].items[") + "]";
         console.error("r-canvas => receive invalid item in " + str + ' :' + JSON.stringify(item));
       }
-
-      if (item.showPivot) {
-        showPivot(item.x, item.y);
-      }
-        
+      if (item.showPivot) {showPivot(item.x || 0, item.y || 0);}
       if (temp.eventMode && (item.events || {})[temp.eventMode]) {
         let X = temp.mousePosition.x * zoom + temp.axisPosition[0] + temp.screen[0];
         let Y = -temp.mousePosition.y * zoom + temp.axisPosition[1] + temp.screen[1];// in isPointInPath and isPointInStroke value of under axis is positive 
@@ -163,8 +158,7 @@ function CANVAS(props: I_canvas_props) {
         }
         else if (item.stroke && ctx.isPointInStroke(X, Y)) { temp.item = item }
       }
-      ctx.closePath();
-      ctx.restore();
+      ctx.closePath(); ctx.restore();
     }
   }
   function clear() {
@@ -174,10 +168,10 @@ function CANVAS(props: I_canvas_props) {
     temp.ctx.restore();
   }
   function getBackground() {
-    var [x, y, color = "rgba(70,70,70,0.3)"] = grid;
+    var [x, y, color = "rgba(70,70,70,0.3)"] = grid || [10,10,'#000'];
     var a = 100 * zoom;
-    var b = x ? getValueByRange(x, 0, temp.width) * zoom + "px" : "100%";
-    var c = y ? getValueByRange(y, 0, temp.height) * zoom + "px" : "100%";
+    var b = x ? +getValueByRange(x, 0, temp.width) * zoom + "px" : "100%";
+    var c = y ? +getValueByRange(y, 0, temp.height) * zoom + "px" : "100%";
     var h1 = `linear-gradient(${color} 0px,transparent 0px)`;
     var v1 = `linear-gradient(90deg,${color} 0px, transparent 0px)`;
     var h2 = `linear-gradient(${color} 1px, transparent 1px)`;
@@ -193,8 +187,8 @@ function CANVAS(props: I_canvas_props) {
       return res
     }
     let [x, y] = pos;
-    x = getValueByRange(x, 0, temp.width); // if x have % calc base on percent
-    y = getValueByRange(y, 0, temp.height); // if y have % calc base on percent
+    x = +getValueByRange(x, 0, temp.width); // if x have % calc base on percent
+    y = +getValueByRange(y, 0, temp.height); // if y have % calc base on percent
     let res: [number, number, number, number] = [
       Math.round(temp.screen[0] + temp.axisPosition[0] + x * zoom),
       Math.round(temp.screen[1] + temp.axisPosition[1] - y * zoom),
@@ -202,9 +196,9 @@ function CANVAS(props: I_canvas_props) {
     ];
     return res
   }
-  function clientToCanvas(pos, calcParentOffset = true) {
-    let offset = calcParentOffset ? $(temp.dom.current).offset() : { left: 0, top: 0 };
-    let client = [pos[0] - offset.left + window.pageXOffset, pos[1] - offset.top + window.pageYOffset];
+  function clientToCanvas(pos:[number,number], calcParentOffset = true) {
+    let offset:{left:number,top:number} = calcParentOffset ? $(temp.dom.current).offset() ||{ left: 0, top: 0 }  : { left: 0, top: 0 };
+    let client:[number,number] = [pos[0] - offset.left + window.pageXOffset, pos[1] - offset.top + window.pageYOffset];
     let res: [number, number] = [
       Math.floor((client[0] - temp.axisPosition[0] - temp.screen[0]) / zoom),
       -Math.floor((client[1] - temp.axisPosition[1] - temp.screen[1]) / zoom)
@@ -214,27 +208,28 @@ function CANVAS(props: I_canvas_props) {
   useEffect(() => { update() })
   useEffect(() => {
     if (typeof props.onPan === 'function') {
-      temp.getScreenPosition = () => props.screenPosition?[getValueByRange(props.screenPosition[0],0,temp.width),getValueByRange(props.screenPosition[1],0,temp.height)]:[0, 0]
+      temp.getScreenPosition = () => props.screenPosition?[+getValueByRange(props.screenPosition[0],0,temp.width),+getValueByRange(props.screenPosition[1],0,temp.height)]:[0, 0]
       temp.setScreenPosition = (screenPosition) => {
         if (typeof props.onPan === 'function') { props.onPan(screenPosition) }
       }
     }
     else if(props.onPan === true){
-      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
+      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0],0,temp.width),+getValueByRange(spRef.current[1],0,temp.height)]
       temp.setScreenPosition = (sp) => SetScreenPosition(sp)
     } 
     else {
-      temp.getScreenPosition = () => [getValueByRange(spRef.current[0],0,temp.width),getValueByRange(spRef.current[1],0,temp.height)]
+      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0],0,temp.width),+getValueByRange(spRef.current[1],0,temp.height)]
     }
     $(window).on("resize", resize);
     temp.ctx = temp.ctx || temp.dom.current.getContext("2d");
     update();
     onMount();
-    getActions({ canvasToClient, clientToCanvas })
+    if(getActions){getActions({ canvasToClient, clientToCanvas })}
   }, [])
   function getRandomColor(range?: number) {
-    range = range || 60;
+    range = (range || 60) as number;
     function getRGB() {
+      range = (range) as number;
       return [
         range + Math.round(Math.random() * (255 - range)),
         range + Math.round(Math.random() * (255 - range)),
@@ -250,29 +245,26 @@ function CANVAS(props: I_canvas_props) {
       b: color[2]
     };
   }
-  function getCoordsByPivot(item) {
-    var { pivot, x, y } = item;
-    if (!pivot) {
-      return [x, y];
-    }
-    var [px = 0, py = 0] = typeof pivot === "function" ? pivot(item) : pivot;
-    return [
-      x - getValueByRange(px, 0, temp.width),
-      y - (-getValueByRange(py, 0, temp.height))
-    ];
+  function getCoordsByPivot(item:I_canvas_item):[number,number] {
+    let { pivot, x = 0, y = 0 } = item;
+    if (!pivot) {return [x, y];}
+    let [px = 0, py = 0] = pivot;
+    return [x - +getValueByRange(px, 0, temp.width),y - (-getValueByRange(py, 0, temp.height))];
   }
   //notice index and length use in eval and seems not used but used
-  function getCorner(corner, index) {
+  function getCorner(corner:number | number[], index:number) {
     if (!Array.isArray(corner)) { return corner }
     return corner[index] || 0
   }
   function getItem(ITEM: I_canvas_item | (() => I_canvas_item), parent: I_canvas_item,index:number) {
     let item: I_canvas_item = typeof ITEM === "function" ? ITEM() : ITEM
-    let { x: parentx = 0, y: parenty = 0, opacity: parentOpacity = 1, fill: parentFill, stroke: parentStroke, sequence } = parent || { x: 0, y: 0, sequence: [], opacity: 1 };
+    let { x: parentx = 0, y: parenty = 0, opacity: parentOpacity = 1, fill: parentFill, stroke: parentStroke, sequence = [] } = parent || { x: 0, y: 0, sequence: [], opacity: 1 };
     let sequenceProps: I_canvas_item = { type: item.type, fill: parentFill, stroke: parentStroke, rotate: 0, x: 0, y: 0, slice: undefined, opacity: 1, lineWidth: props.lineWidth || 1, r: undefined };
     try {
       for (let i = 0; i < sequence.length; i++) {
-        let [prop, statement] = sequence[i].split(':');
+        let seq:string = sequence[i];
+        let seqArray:string[] = seq.split(':')
+        let [prop, statement] = seqArray;
         eval(`sequenceProps.${prop} = ${statement}`)
       }
     }
@@ -296,10 +288,10 @@ function CANVAS(props: I_canvas_props) {
     let updatedItem: I_canvas_item = { ...item, fill, stroke, rotate, slice, opacity, lineWidth, r, x, y, showPivot, lineJoin: lineJoin as any, lineCap, rect: false };
     if (type !== 'Group' && !updatedItem.stroke && !updatedItem.fill) { updatedItem.stroke = "#000"; }
     //set related props
-    updatedItem.rotate = getValueByRange(updatedItem.rotate, 0, 360);
-    updatedItem.x = getValueByRange(updatedItem.x, 0, temp.width) + parentx;
-    updatedItem.y = -getValueByRange(updatedItem.y, 0, temp.height) + parenty;
-    updatedItem.opacity *= parentOpacity;
+    updatedItem.rotate = +getValueByRange(updatedItem.rotate || 0, 0, 360);
+    updatedItem.x = +getValueByRange(updatedItem.x || 0, 0, temp.width) + parentx;
+    updatedItem.y = -getValueByRange(updatedItem.y || 0, 0, temp.height) + parenty;
+    updatedItem.opacity = updatedItem.opacity || 1 * parentOpacity;
     updatedItem.pivotedCoords = getCoordsByPivot(updatedItem);
     //converts
     if (type === 'Arc' && updatedItem.arcPoints) {
@@ -313,8 +305,8 @@ function CANVAS(props: I_canvas_props) {
     else if (type === 'Rectangle') {
       updatedItem.type = 'Line';
       let { width = 20, height = 20, corner = 0 } = updatedItem;
-      width = getValueByRange(width, 0, temp.width);
-      height = getValueByRange(height, 0, temp.height);
+      width = +getValueByRange(width, 0, temp.width);
+      height = +getValueByRange(height, 0, temp.height);
       updatedItem.rect = true;
       let [x, y] = updatedItem.pivotedCoords;
       updatedItem.points = [
@@ -345,25 +337,27 @@ function CANVAS(props: I_canvas_props) {
       ];
       console.log(updatedItem.points)
     }
-    var result = { ...originalItem, ...updatedItem };
+    let result = { ...originalItem, ...updatedItem };
     result.events = parent.events || result.events
     return result;
   }
 
   function drawGroup(item: I_canvas_item, index: number[]) {
-    var [X, Y] = item.pivotedCoords;
-    let items: I_canvas_items = [];
+    let [X, Y] = item.pivotedCoords || [];
+    let items: any = [];
     let { repeat = 0 } = item;
-    if (repeat) {
+    if (repeat && Array.isArray(item.items)) {
       for (let i = 0; i < item.items.length; i++) {
-        let itm = item.items[i];
+        let tmp = item.items[i];
+        let itm:I_canvas_item = typeof tmp === 'function'?tmp():tmp;
         let { showPivot } = itm;
         for (let j = 0; j < repeat; j++) {
-          items.push({ ...itm, isRepeat: j > 0, showPivot: j === 0 ? showPivot : false })
+          let newItem:I_canvas_item = { ...itm, isRepeat: j > 0, showPivot: j === 0 ? showPivot : false }
+          items.push(newItem)
         }
       }
     }
-    else { items = item.items; }
+    else { items = typeof item.items === 'function'?item.items():item.items; }
     draw(items, { ...item, x: X, y: Y}, index);
   }
   function drawText(p: I_canvas_item) {
@@ -378,10 +372,10 @@ function CANVAS(props: I_canvas_props) {
     fill && temp.ctx.fillText(text, X * zoom, Y * zoom);
   }
   function drawImage(p: I_canvas_item) {
-    let { pivotedCoords = [], width, height, image } = p;
+    let { pivotedCoords = [], width = 0, height = 0, image } = p;
     var [X, Y] = pivotedCoords;
     var fr = new FileReader();
-    var img;
+    var img:any;
     fr.onload = () => {
       img = new Image();
       img.onload = () => temp.ctx.drawImage(img, X * zoom, Y * zoom, width * zoom, height * zoom);
@@ -392,10 +386,10 @@ function CANVAS(props: I_canvas_props) {
   function drawLine(p: I_canvas_item) {
     let { points = [], close, stroke, fill, pivotedCoords, rect } = p;
     if (points.length < 1) { return false; }
-    let Coords = rect ? [0, 0] : pivotedCoords;
+    let Coords = rect ? [0, 0] : pivotedCoords || [0,0];
     let [X, Y] = Coords;
     let start = [
-      getValueByRange(points[0][0], 0, temp.width) + X,
+      +getValueByRange(points[0][0], 0, temp.width) + X,
       -getValueByRange(points[0][1], 0, temp.height) + Y
     ];
     temp.ctx.moveTo(start[0] * zoom, start[1] * zoom);
@@ -404,13 +398,13 @@ function CANVAS(props: I_canvas_props) {
       let [x, y, r] = points[i];
       beforePoint = [x, y];
       let point = [
-        getValueByRange(x, 0, temp.width) + X,
+        +getValueByRange(x, 0, temp.width) + X,
         -getValueByRange(y, 0, temp.height) + Y
       ];
       if (r) {
         let [x, y] = points[i + 1] ? points[i + 1] : points[0];
         let nextPoint = [
-          getValueByRange(x, 0, temp.width) + X,
+          +getValueByRange(x, 0, temp.width) + X,
           -getValueByRange(y, 0, temp.height) + Y
         ];
         temp.ctx.arcTo(point[0] * zoom, point[1] * zoom, nextPoint[0] * zoom, nextPoint[1] * zoom, r * zoom);
@@ -424,13 +418,13 @@ function CANVAS(props: I_canvas_props) {
     fill && temp.ctx.fill();
   }
   function drawArc(p: I_canvas_item) {
-    let { pivotedCoords = [], r, slice = [0, 360], fill, stroke } = p;
+    let { pivotedCoords = [], r = 0, slice = [0, 360], fill, stroke } = p;
     let [X, Y] = pivotedCoords;
-    r = getValueByRange(r, temp.width, temp.height);
+    r = +getValueByRange(r, temp.width, temp.height);
     r = r < 0 ? 0 : r;
     slice = [
-      getValueByRange(slice[0], 0, 360),
-      getValueByRange(slice[1], 0, 360)
+      +getValueByRange(slice[0], 0, 360),
+      +getValueByRange(slice[1], 0, 360)
     ];
     if (rotateDirection === "clockwise") {
       let a = slice[0], b = slice[1];
@@ -440,7 +434,7 @@ function CANVAS(props: I_canvas_props) {
     stroke && temp.ctx.stroke();
     fill && temp.ctx.fill();
   }
-  function showPivot(x, y) {
+  function showPivot(x:number, y:number) {
     temp.ctx.beginPath();
     temp.ctx.arc(x, y, 10, 0, (360 * Math.PI) / 180);
     temp.ctx.moveTo(x - 15, y);
@@ -484,10 +478,10 @@ function CANVAS(props: I_canvas_props) {
     var ctx = temp.ctx;
     ctx.shadowOffsetX = shadow[0]; ctx.shadowOffsetY = shadow[1]; ctx.shadowBlur = shadow[2]; ctx.shadowColor = shadow[3];
   }
-  function panmousedown(e) {
+  function panmousedown(e:Event) {
     EventHandler("window", "mousemove", panmousemove);
     EventHandler("window", "mouseup", panmouseup);
-    let screenPosition = temp.getScreenPosition();
+    let screenPosition:number[] = temp.getScreenPosition?temp.getScreenPosition():[0,0];
     let client = GetClient(e);
     temp.startOffset = { x: client.x, y: client.y, endX: screenPosition[0], endY: screenPosition[1] };
   }
@@ -495,10 +489,10 @@ function CANVAS(props: I_canvas_props) {
     EventHandler("window", "mousemove", panmousemove, "unbind");
     EventHandler("window", "mouseup", panmouseup, "unbind");
   }
-  function panmousemove(e) {
+  function panmousemove(e:Event) {
     let so = temp.startOffset, coords = GetClient(e);
     let x = (so.x - coords.x) / zoom + so.endX, y = (coords.y - so.y) / zoom + so.endY;
-    temp.setScreenPosition([x, y]);
+    if(temp.setScreenPosition)temp.setScreenPosition([x, y]);
   }
   function onMouseDown(e: any) {
     temp.mousePosition = getMousePosition(e);
@@ -517,7 +511,7 @@ function CANVAS(props: I_canvas_props) {
     else if (attrs.onMouseUp) { attrs.onMouseUp(e, temp.mousePosition) }
     temp.item = undefined; temp.eventMode = false;
   }
-  function onClick(e) {
+  function onClick(e:Event) {
     temp.mousePosition = getMousePosition(e);//in onClick calc with no touch
     temp.eventMode = "onClick";
     update();
@@ -528,10 +522,10 @@ function CANVAS(props: I_canvas_props) {
   function onMouseMove(e: any) {
     temp.mousePosition = getMousePosition(e);
     if (attrs.onMouseMove) { attrs.onMouseMove({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
-    listenToMousePosition(temp.mousePosition)
+    listenToMousePosition?.(temp.mousePosition)
   }
 
-  function getMousePosition(e) {
+  function getMousePosition(e:Event) {
     let client = GetClient(e);
     let [x, y] = clientToCanvas([client.x, client.y]);
     let [cx, cy] = canvasToClient([x, y])

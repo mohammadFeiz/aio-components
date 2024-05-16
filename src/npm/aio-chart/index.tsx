@@ -9,8 +9,8 @@ import { AI_point } from '../aio-input/types.tsx';
 type I_chart_details = {
     min?: number,
     max?: number,
-    axisToD?: { x: 'key' | 'value', y: 'key' | 'value' },
-    dToAxis?: { key: 'x' | 'y', value: 'x' | 'y' }
+    axisToD?: { x: I_d, y: I_d },
+    dToAxis?: { key: I_axis, value: I_axis }
     range?: { x: I_chart_filter, y: I_chart_filter },
     keysDictionary?: { [key: string]: number },
     barCount?: number,
@@ -41,6 +41,7 @@ type I_chart_temp = {
     axisSize:[number,number]
 }
 type I_axis = 'x' | 'y'
+type I_d = 'key' | 'value'
 type I_chart_data = {
     points: any[],
     title?: string,
@@ -154,33 +155,37 @@ export default function RChart(props: I_Chart) {
             })
         }
     }, [])
-    function getGap(length) { return Math.max(0.5, Math.round(length / 10)) }
+    function getGap(length:number) { return Math.max(0.5, Math.round(length / 10)) }
 
-    function normal_getArea(points, color, areaColor) {
+    function normal_getArea(points:any[], color:string, areaColor:string) {
         let area;
         area = { type: 'Line', points: points.slice(), fill: [0, 0, 0, -getCanvasSize(temp.details.dToAxis.value), ['0 ' + areaColor, '1 ' + color]] };
         area.points.splice(0, 0, [points[0][0], 0]);
         area.points.push([points[points.length - 1][0], 0]);
         return area;
     }
-    function reverse_getArea(points, color, areaColor) {
-        let area = { type: 'Line', points: points.slice(), fill: [0, 0, getCanvasSize(temp.details.dToAxis.value), 0, ['0 ' + 'rgba(255,255,255,0)', '1 ' + color]] };
+    function reverse_getArea(points:any[], color:string, areaColor:string = 'rgba(255,255,255,0)') {
+        let area = { type: 'Line', points: points.slice(), fill: [0, 0, getCanvasSize(temp.details.dToAxis.value), 0, ['0 ' + areaColor, '1 ' + color]] };
         area.points.splice(0, 0, [0, points[0][1]]);
         area.points.push([0, points[points.length - 1][1]]);
         return area;
     }
-    function getArea(points, color, areaColor = 'rgba(255,255,255,0)') {
+    function getArea(points:any[], color:string, areaColor:string = 'rgba(255,255,255,0)') {
         return reverse ? reverse_getArea(points, color, areaColor) : normal_getArea(points, color, areaColor)
     }
-    function value_getPercentByValue(axis, point:any = {}) {
-        var { start, end } = temp.details.range[axis];
+    function value_getPercentByValue(axis:I_axis, point:any = {}) {
+        let {details = {}} = temp
+        let {range = {x:{start:0,end:0},y:{start:0,end:0}}} = details;
+        var { start = 0, end = 0 } = range[axis];
         return 100 * (point._value - start) / (end - start)
     }
-    function key_getPercentByValue(axis, point:any = {}) {
-        let { start, end } = temp.details.range[axis];
+    function key_getPercentByValue(axis:I_axis, point:any = {}) {
+        let {details = {}} = temp
+        let {range = {x:{start:0,end:0},y:{start:0,end:0}}} = details;
+        let { start = 0, end = 0 } = range[axis];
         return 100 * (point._keyIndex - start) / (end - start)
     }
-    function getPercentByValue(axis, point) {
+    function getPercentByValue(axis:I_axis, point:any) {
         return temp.details.axisToD[axis] === 'key' ? key_getPercentByValue(axis, point) : value_getPercentByValue(axis, point)
     }
     function getLimitTypeNumber(data) {
@@ -235,7 +240,7 @@ export default function RChart(props: I_Chart) {
         temp.keyDictionary[dataIndex][point._key] = { ...point };
 
     }
-    function getText(data, point) {
+    function getText(data:I_chart_data, point:any) {
         let { pointText, pointTextStyle } = data;
         let text = getValueByField(point, pointText)
         if (text) {
@@ -248,7 +253,7 @@ export default function RChart(props: I_Chart) {
         }
         return false
     }
-    function getPoint(data, dataIndex, point, pointIndex) {
+    function getPoint(data:I_chart_data, dataIndex:number, point:any, pointIndex:number) {
         let { color = '#000', lineWidth = 1, pointRadius, pointStroke, pointFill, pointStrokeWidth, pointDash, lineDash, pointSlice } = data;
         let radius = getValueByField(point, pointRadius);
         if (!radius) { return false; }
@@ -273,11 +278,13 @@ export default function RChart(props: I_Chart) {
         };
         return res
     }
-    function getGridLines(axis) {
-        let Axis = (temp.details.axisToD[axis] === 'key' ? keyAxis : valueAxis) as I_chart_axis;
+    function getGridLines(axis:I_axis) {
+        let {details = {}} = temp;
+        let {axisToD = {x:'key',y:'value'},range:Range} = details;
+        let Axis = (axisToD[axis] === 'key' ? keyAxis : valueAxis) as I_chart_axis;
         var color = Axis.gridColor;
         if (!color) { return [] }
-        var range = temp.details.range[axis];
+        var range = Range[axis];
         if (!range) { return [] }
         var { start, step, end } = range;
         var value = Math.round((start - step) / step) * step, gridLines = [];

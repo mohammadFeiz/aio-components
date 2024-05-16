@@ -450,17 +450,20 @@ const TryIt: FC = () => {
                 type='form'
                 value={{ ...model }}
                 onChange={(newValue) => setModel({ ...newValue })}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
-                            row: [
+                            dir:'h',
+                            childs: [
                                 { input: { type: 'text' }, label: 'title', field: 'value.title' },
                                 { input: { type: 'radio', popover: { fitHorizontal: true }, options: ['en', 'fa'], option: { text: 'option', value: 'option' } }, label: 'lang', field: 'value.lang' },
                             ]
                         },
                         
                         {
-                            row: [
+                            dir:'h',
+                            childs: [
                                 { input: { type: 'text' }, label: 'value', field: 'value.value' },
                                 { input: { type: 'select', options: ops, option: { text: 'option', value: 'option' } }, label: 'operator', field: 'value.operator' },
                                 { input: { type: 'text' }, label: 'target', field: 'value.target' },

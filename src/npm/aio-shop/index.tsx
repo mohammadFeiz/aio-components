@@ -32,8 +32,6 @@ export default class AIOShop implements I_AIOShop{
     trans:I_trans;
     checkout:I_checkout;
     setCheckout:I_setCheckout;
-    getCheckoutItems:I_getCheckoutItems;
-    checkDiscountCode:I_checkDiscountCode;
     getContext:()=>I_AIOShop_context;
     renderProductCard:I_renderProductCard;
     renderProductPage:I_renderProductPage;
@@ -43,7 +41,6 @@ export default class AIOShop implements I_AIOShop{
     renderRates:I_renderRates;
     renderCartButton:I_renderCartButton;
     renderPopup:()=>React.ReactNode;
-    getVariantIcon:I_getVariantIcon;
     getCartInfo:I_getCartInfo;
     changeCart:I_changeCart;
     setCart:(newCart:I_cart)=>void;
@@ -61,6 +58,9 @@ export default class AIOShop implements I_AIOShop{
     getVariantByOptionValues:I_getVariantByOptionValues;
     openModal:I_openModal;
     closeModal:I_closeModal;
+    getCheckoutItems:I_getCheckoutItems;
+    checkDiscountCode:I_checkDiscountCode;
+    getVariantIcon:I_getVariantIcon;
     productPageImageContent:I_productPageImageContent;
     productCardImageContent:I_productCardImageContent;
     cartContent:I_cart_content;
@@ -71,7 +71,10 @@ export default class AIOShop implements I_AIOShop{
     productPageContent:I_ProductPage_content;
     onPayment:I_onPayment;
     constructor(props:I_AIOShop_props){
-        for(let prop in props){this[prop] = props[prop]}
+        this.trans = {addToCart:'Add To Cart',notExist:'Not Exist'}
+        this.unit = '$';
+        let prop:keyof I_AIOShop_props;
+        for(prop in props){this[prop] = props[prop] as any}
         this.setCheckout = (checkout:I_checkout)=>{this.checkout = checkout};
         this.popup = new AIOPopup();
         let storage:Storage = new Storage(`ShopClass_${this.shopId}`);
@@ -129,23 +132,24 @@ export default class AIOShop implements I_AIOShop{
         }
         this.getCartInfo = (product:I_pr,variantId?:any) => {
             if(!product.hasVariant){return product.cartInfo}
-            let {defaultVariantId = product.variants[0].id} = product
+            let {variants = []} = product;
+            let {defaultVariantId = variants[0].id} = product
             if(variantId === undefined){variantId = defaultVariantId}
-            let variant:I_v = product.variants.find((o:I_v)=>o.id === variantId);
-            return variant.cartInfo
+            let variant:I_v | undefined = variants.find((o:I_v)=>o.id === variantId);
+            if(variant){return variant.cartInfo}
         }
         this.getDiscountPercent = (discountPercent:I_discountPercent[])=>{
             let dp = 0;
             for(let i = 0; i < discountPercent.length; i++){dp += discountPercent[i].value;}
             return dp;
         }
-        this.getFinalPrice = (cartInfo:I_cartInfo)=>cartInfo.price - (cartInfo.price * this.getDiscountPercent(cartInfo.discountPercent) / 100)
+        this.getFinalPrice = (cartInfo:I_cartInfo)=>cartInfo.price - (cartInfo.price * this.getDiscountPercent(cartInfo.discountPercent || []) / 100)
         this.getCartCount = (product:I_pr,variantId?:any)=>{
             if(product.hasVariant){
                 if(!variantId){alert('aio-shop error : in calling getCartCount missing variantId parameter for product by hasVariant=true'); return 0}
                 let cartVariants:I_cart_variant[] = this.getCartVariants(product.id);
                 if(!cartVariants.length){return 0}
-                let cartVariant:I_cart_variant = cartVariants.find((o:I_cart_variant)=>o.id === variantId)
+                let cartVariant:I_cart_variant | undefined = cartVariants.find((o:I_cart_variant)=>o.id === variantId)
                 return !cartVariant?0:cartVariant.count
             }
             else {
@@ -178,12 +182,13 @@ export default class AIOShop implements I_AIOShop{
             return res;
         }
         this.getVariantByOptionValues = (product:I_pr,optionValues:I_v_ov[])=>{
-            let dic = {}
+            let dic:any = {}
             for(let i = 0; i < optionValues.length; i++){
                 let {typeId,valueId} = optionValues[i];
                 dic[typeId.toString()] = valueId;
             }
-            let variant:I_v = product.variants.find((variant:I_v)=>{
+            let {variants = []} = product;
+            let variant:I_v | undefined = variants.find((variant:I_v)=>{
                 let {optionValues} = variant;
                 for(let i = 0; i < optionValues.length; i++){
                     let {typeId,valueId} = optionValues[i];
@@ -196,7 +201,9 @@ export default class AIOShop implements I_AIOShop{
         this.setCart = (newCart:I_cart)=>this.cart = newCart;
         this.getNewCartVariant = (p)=>{
             let {product,variantId,count} = p;
-            let variant = product.variants.find((v:I_v)=>v.id === variantId);
+            let {variants = []} = product;
+            let variant:I_v | undefined = variants.find((v:I_v)=>v.id === variantId);
+            if(!variant){return}
             let {id} = variant;
             let cartVariant:I_cart_variant = {id,count};
             return cartVariant; 
@@ -206,7 +213,7 @@ export default class AIOShop implements I_AIOShop{
             let newCartProduct:I_cart_product;
             if(p.product.hasVariant){
                 let {product,count,variantId} = p;
-                let newCartVariant:I_cart_variant = this.getNewCartVariant({product,count,variantId});
+                let newCartVariant = this.getNewCartVariant({product,count,variantId});
                 newCartProduct = {product,variants:[newCartVariant]} as I_cart_product_hasVariant
             }
             else {
@@ -219,9 +226,9 @@ export default class AIOShop implements I_AIOShop{
         this.addVariantToCart = (p)=>{
             let cart = toJS(this.cart);
             let {product} = p;
-            let newCart:I_cart = cart.map((o:I_cart_product_hasVariant)=>{
+            let newCart:I_cart = cart.map((o:any)=>{
                 if(o.product.id !== product.id){return o}
-                let newCartVariant:I_cart_variant = this.getNewCartVariant(p);
+                let newCartVariant = this.getNewCartVariant(p) as I_cart_variant;
                 let newCartProduct:I_cart_product_hasVariant = {...o,variants:[...o.variants,newCartVariant]}
                 return newCartProduct;
             })
@@ -250,7 +257,7 @@ export default class AIOShop implements I_AIOShop{
                 let {id:variantId} = cartVariant;
                 let newCartVariants:I_cart_variant[] = cvs.map((o:I_cart_variant)=>{
                     if(o.id !== variantId){return o}
-                    return this.getNewCartVariant({product,variantId,count})
+                    return this.getNewCartVariant({product,variantId,count}) as I_cart_variant
                 });
                 newCartProduct = {...cartProduct,variants:newCartVariants} as I_cart_product_hasVariant;
             }
@@ -267,10 +274,10 @@ export default class AIOShop implements I_AIOShop{
                 newCart = hasVariant ? this.removeVariantFromCart(p) : cart.filter((o:I_cart_product)=>o.product.id !== product.id)
             }
             else {
-                let cartProduct:I_cart_product = cart.find((o:I_cart_product)=>o.product.id === product.id);
+                let cartProduct = cart.find((o:I_cart_product)=>o.product.id === product.id);
                 if(!cartProduct){newCart = this.addProductToCart({product,variantId,count});}
                 else if(hasVariant){
-                    let cartVariant:I_cart_variant = (cartProduct as I_cart_product_hasVariant).variants.find((o:I_cart_variant)=>o.id === variantId);
+                    let cartVariant = (cartProduct as I_cart_product_hasVariant).variants.find((o:I_cart_variant)=>o.id === variantId);
                     newCart = !cartVariant ? this.addVariantToCart({product,variantId,count}) : this.changeCartCount({cartProduct,cartVariant,count});
                 }
                 else {newCart = this.changeCartCount({cartProduct,count})}
@@ -294,7 +301,7 @@ export default class AIOShop implements I_AIOShop{
     }
 }
 const Checkout = observer((props: I_Checkout) => {
-    let {getContext} = props,context = getContext();
+    let { getContext } = props,context:I_AIOShop_context = (getContext as ()=>I_AIOShop_context)();
     let {cart,getCheckoutItems = ()=>[],checkout,setCheckout,checkoutContent = ()=> false} = context;
     let checkoutItems:I_checkout_item[] = getCheckoutItems(context);
     let [content,setContent] = useState<React.ReactNode>();
@@ -337,6 +344,7 @@ const Checkout = observer((props: I_Checkout) => {
                 if (show(context) === false) { return {} }
                 if (type === 'html') { return itemHtml_layout(checkoutItem as I_checkout_html) }
                 else if(type === 'radio'){return itemRadio_layout(checkoutItem as I_checkout_radio)}
+                else {return {}}
             })
         }
     }
@@ -413,7 +421,7 @@ const Checkout = observer((props: I_Checkout) => {
     )
 })
 const Cart = observer((props:I_Cart) => {
-    let { getContext } = props,context = getContext();
+    let { getContext } = props,context:I_AIOShop_context = (getContext as ()=>I_AIOShop_context)();
     let {cart} = context;    
     console.log(toJS(cart))
     let [content,setContent] = useState<React.ReactNode>();
@@ -444,7 +452,7 @@ const Cart = observer((props:I_Cart) => {
     return (<RVD rootNode={{className: 'aio-shop-cart',column: [body_layout(),footer_layout()]}}/>)
 })
 const Factor = observer((props:I_Factor) => {
-    let {renderIn,getContext,mode} = props,context = getContext();
+    let { renderIn,mode,getContext } = props,context:I_AIOShop_context = (getContext as ()=>I_AIOShop_context)();
     let {cart,checkout,unit,checkDiscountCode,onPayment} = context;
     let [details,setDetails] = useState<I_Factor_details>({total:0,totalDiscount:0,payment:0,productsDiscount:0,discounts:[],extras:[]})
     let [discountCodeTemp, setDiscountCodeTemp] = useState<string>('');
@@ -466,7 +474,8 @@ const Factor = observer((props:I_Factor) => {
                 let {variants}:I_cart_product_hasVariant = cart[i] as I_cart_product_hasVariant;
                 for(let j = 0; j < variants.length; j++){
                     let cv:I_cart_variant = variants[j];
-                    let variant:I_v = product.variants.find((o:I_v)=>o.id === cv.id);
+                    let {variants:productVariants = []} = product;
+                    let variant:I_v = productVariants.find((o:I_v)=>o.id === cv.id) as I_v;
                     let finalPrice = context.getFinalPrice(variant.cartInfo);
                     total += variant.cartInfo.price * cv.count; payment += finalPrice * cv.count;
                 }
@@ -474,15 +483,16 @@ const Factor = observer((props:I_Factor) => {
             else {
                 let cartItem = toJS(cart[i]) as I_cart_product_hasNotVariant
                 let {count}:I_cart_product_hasNotVariant = cartItem;
-                let finalPrice = context.getFinalPrice(product.cartInfo);
-                total += product.cartInfo.price * count; payment += finalPrice * count;
+                let cartInfo = product.cartInfo as I_cartInfo;
+                let finalPrice = context.getFinalPrice(cartInfo);
+                total += cartInfo.price * count; payment += finalPrice * count;
             }
             
         }
         productsDiscount = total - payment;
         totalDiscount += productsDiscount;
         let discounts = Discounts.map((discount:I_discount)=>{
-            let {discountPercent,maxDiscount = Infinity} = discount;
+            let {discountPercent = 0,maxDiscount = Infinity} = discount;
             let amount = Math.min(maxDiscount,Math.round(payment * discountPercent / 100));
             totalDiscount += amount;
             payment -= amount;
@@ -526,7 +536,7 @@ const Factor = observer((props:I_Factor) => {
                                 <input
                                     className={inputClassName}
                                     disabled={!!fetchedDiscountCode} placeholder='کد تخفیف را وارد کنید' type='text' value={discountCodeTemp}
-                                    onChange={(e) => { setDiscountCodeTemp(e.target.value); setFetchedDiscountCode(undefined) }}
+                                    onChange={(e) => { setDiscountCodeTemp(e.target.value); setFetchedDiscountCode(undefined as any) }}
                                 />
                             )
                         },
@@ -565,11 +575,12 @@ const Factor = observer((props:I_Factor) => {
             else{html = `کد تخفیف ${discountPercent} درصدی`}
             return {className: 'aio-shop-factor-discount-code-success',html} 
         }
+        return {}
     }
     function total_layout(total:number):I_RVD_node{
         return {className:`aio-shop-factor-total aio-shop-factor-row`,align:'v',row:[icon_layout(mdiCash),key_layout('جمع سبد خرید'),amount_layout(total)]}
     }
-    function products_discount_layout(amount):I_RVD_node{
+    function products_discount_layout(amount:number):I_RVD_node{
         return {
             className:`aio-shop-factor-products-discount aio-shop-factor-row`,align:'v',
             row:[icon_layout(mdiMinus),key_layout('تخفیف کالا ها'),amount_layout(amount)]
@@ -585,7 +596,7 @@ const Factor = observer((props:I_Factor) => {
                         {
                             column:[
                                 {className:'gap-3 align-v',row:[icon_layout(mdiMinus),key_layout(discount.title),dp_layout(discount)]},
-                                {className:'aio-shop-factor-max-discount',show:!!discount.maxDiscount && discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount)} ${unit}`}
+                                {className:'aio-shop-factor-max-discount',show:!!discount.maxDiscount && discount.maxDiscount !== Infinity,html:()=>`تا سقف ${SplitNumber(discount.maxDiscount || 0)} ${unit}`}
                             ]
                         },
                         {flex:1},
@@ -656,7 +667,7 @@ const Factor = observer((props:I_Factor) => {
     return (<RVD rootNode={{className:'aio-shop-factor aio-shop-factor-payment',row:[button_layout(),payment_layout()]}}/>)
 })
 function ProductSlider(props:I_ProductSlider){
-    let {title = '',action,before = () => false,after = () => false,products,getContext,icon} = props,context = getContext();
+    let {title = '',action,before = () => false,after = () => false,products,getContext,icon} = props,context = (getContext as ()=>I_AIOShop_context)();
     function header_layout():I_RVD_node{
         if(!title && !action){return {}}
         let row:I_RVD_node[] = [
@@ -692,7 +703,7 @@ function ProductSlider(props:I_ProductSlider){
     return (<RVD rootNode={{className:'aio-shop-product-slider',column:[header_layout(),body_layout()]}}/>)
 }
 const ProductPage = observer((props:I_ProductPage) => {
-    let {product,variantIds = !product.hasVariant?[]:product.variants.map((o:I_v)=>o.id),getContext} = props,context = getContext();
+    let {product,variantIds = !product.hasVariant?[]:(product.variants || []).map((o:I_v)=>o.id),getContext} = props,context:I_AIOShop_context = (getContext as ()=>I_AIOShop_context)();
     let {images,details = [],description,rates = [],hasVariant} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
@@ -710,7 +721,8 @@ const ProductPage = observer((props:I_ProductPage) => {
     let [variants] = useState<I_v[]>(getVariants);
     function getVariants(){
         if(!hasVariant){return []}
-        return product.variants.filter((o:I_v)=>variantIds.indexOf(o.id) !== -1 && !!o.cartInfo.inStock)
+        let {variants = []} = product;
+        return variants.filter((o:I_v)=>variantIds.indexOf(o.id) !== -1 && !!o.cartInfo.inStock)
     }
     let [selectedOptionValues,setSelectedOptionValues] = useState<I_v_ov[]>(getInitialOptionValues(variants));
     let [optionTypes] = useState<I_pr_optionType[]>(hasVariant?context.getOptionTypes(variants):[]);
@@ -724,7 +736,8 @@ const ProductPage = observer((props:I_ProductPage) => {
     }
     function getInitialOptionValues(variants:I_v[]){
         if(!hasVariant){return []}
-        let {defaultVariantId = product.variants[0].id} = product;
+        let {variants:productVariants = []} = product;
+        let {defaultVariantId = productVariants[0].id} = product;
         let variantId = props.variantId || defaultVariantId;
         let variant = variants.find((o:I_v)=>o.id === variantId) || variants[0];
         return JSON.parse(JSON.stringify(variant.optionValues))
@@ -749,7 +762,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     
     function optionType_layout(optionType:I_pr_optionType):I_RVD_node{
         let {id:optionTypeId,name:optionTypeName,values} = optionType;
-        let selectedOptionValue:I_v_ov = selectedOptionValues.find((o:I_v_ov)=>o.typeId === optionTypeId)
+        let selectedOptionValue:I_v_ov = selectedOptionValues.find((o:I_v_ov)=>o.typeId === optionTypeId) as I_v_ov
         return {
             className:'aio-shop-product-page-option-type',
             column:[
@@ -765,7 +778,7 @@ const ProductPage = observer((props:I_ProductPage) => {
         let button = <button className={className} onClick={()=>changeVariant(optionType,value)}>{optionValueName}</button>
         return {html:button}
     }
-    function label_layout(label:string,field?:string):I_RVD_node{
+    function label_layout(label:string,field?:any):I_RVD_node{
         return {
             align:'v',className:'aio-show-product-page-label-row',
             row:[
@@ -821,7 +834,7 @@ const ProductPage = observer((props:I_ProductPage) => {
     return (<RVD rootNode={{className:'aio-shop-product-page',column:[body_layout(),footer_layout()]}}/>)
 })
 function Rates(props:I_Rates){
-    let {getContext,rates} = props,context = getContext();
+    let {rates} = props;
     function item_layout(rate:I_pr_rate):I_RVD_node{
         let [key,value] = rate;
         let sliderProps:AI = {reverse:true,className:'aio-shop-rate-item-slider',type:'range',start:0,end:5,step:0.1,value}
@@ -835,7 +848,7 @@ function Rates(props:I_Rates){
 const CartButton = observer((props:I_CartButton) => {
     let {product,variantId,readonly,getContext} = props;
     let {hasVariant} = product;
-    let {trans,changeCart,getCartCount} = getContext();
+    let {trans,changeCart,getCartCount} = (getContext as ()=>I_AIOShop_context)();
     let count:number = getCartCount(product,variantId);
     function notExist_layout():I_RVD_node{return {className:`aio-shop-cart-button`,html:<span className='aio-shop-cart-button-not-exist'>{trans.notExist}</span>}}
     function icon_layout():I_RVD_node{return {html:<Icon path={mdiCart} size={0.5}/>,className:'aio-shop-cart-button-icon'}}
@@ -875,7 +888,8 @@ const CartButton = observer((props:I_CartButton) => {
         }
     }
     function getCartInfo(){
-        let cartInfo:I_cartInfo = hasVariant?product.variants.find((o:I_v)=>o.id === variantId).cartInfo:product.cartInfo;
+        let {variants = []} = product;
+        let cartInfo = (hasVariant?(variants.find((o:I_v)=>o.id === variantId) as I_v).cartInfo:product.cartInfo) as I_cartInfo;
         let {min = 0,max = Infinity,step = 1,inStock} = cartInfo
         if(inStock === true){inStock = Infinity}
         else if(inStock === false){inStock = 0;}
@@ -891,7 +905,7 @@ const CartButton = observer((props:I_CartButton) => {
     return (<RVD rootNode={{className:`aio-shop-cart-button`,column:[body_layout(),footer_layout()]}}/>)
 })
 const ProductCard = observer((props:I_ProductCard) => {
-    let {product,type,title,variantId,getContext,cartButton = false} = props,context = getContext(),{unit} = context;
+    let {product,type,title,variantId,getContext,cartButton = false} = props,context = (getContext as ()=>I_AIOShop_context)(),{unit} = context;
     let {name,images,hasVariant} = product;
     let [imageContent,setImageContent] = useState<React.ReactNode>()
     let [content,setContent] = useState<React.ReactNode>()
@@ -944,7 +958,8 @@ const ProductCard = observer((props:I_ProductCard) => {
         let props:I_VariantLabels = {type:'h',product,variantId:cv.id,getContext};
         let fpProps:I_FinalPrice = {getContext,product,variantId:cv.id}
         let dpProps:I_DiscountPercent = {getContext,product,variantId:cv.id,showPrice:false}
-        let variant = product.variants.find((o:I_v)=>o.id === cv.id);
+        let {variants = []} = product;
+        let variant = variants.find((o:I_v)=>o.id === cv.id) as I_v;
         let finalPrice = context.getFinalPrice(variant.cartInfo);
         return {
             flex:1,
@@ -992,9 +1007,10 @@ const ProductCard = observer((props:I_ProductCard) => {
         if(type === 'v'){return {className:'gap-6 align-v',column:[{flex:1,column:[d,f]},c]}}
         if(type === 'h'){return {align:'v',row:[c,{flex:1,column:[d,f]}]}}
         if(type === 'hs'){return {className:'gap-6',row:[c,f,{flex:1},d]}}
+        return {}
     }
     function h_layout():I_RVD_node{
-        let body;
+        let body:any;
         if(type === 'h'){body = body_layout_h()}
         else if(type === 'hs'){body = body_layout_hs()}
         return {
@@ -1008,8 +1024,8 @@ const ProductCard = observer((props:I_ProductCard) => {
     return (<RVD rootNode={type === 'v'?v_layout():h_layout()}/>)
 })
 function DiscountPercent(props:I_DiscountPercent){
-    let {product,getContext,showPrice} = props,context = getContext(),{getCartInfo} = context;
-    function percents_layout():I_RVD_node{return {align:'v',row:items.map((item)=>percent_layout(item)),className:'aio-shop-discount-percents'}}
+    let {product,getContext,showPrice} = props,context = (getContext as ()=>I_AIOShop_context)(),{getCartInfo} = context;
+    function percents_layout():I_RVD_node{return {align:'v',row:items.map((item:I_discountPercent)=>percent_layout(item)),className:'aio-shop-discount-percents'}}
     function percent_layout(item:I_discountPercent):I_RVD_node{
         return {html:`${item.value}%`,className:'aio-shop-discount-percent',attrs:item.attrs,onClick:(e)=>{
             e.stopPropagation();
@@ -1021,7 +1037,7 @@ function DiscountPercent(props:I_DiscountPercent){
         }}
     }
     function price_layout(price:number):I_RVD_node{return showPrice === false?{}:{className:'aio-shop-price',html:SplitNumber(price)}}
-    let {discountPercent = [],price} = getCartInfo(product,props.variantId);
+    let {discountPercent = [],price} = getCartInfo(product,props.variantId) as I_cartInfo;
     let items = discountPercent.filter((o:I_discountPercent)=>!!o.value);
     return !items.length?null:<RVD rootNode={{align:'v',className:'aio-shop-discount-row',row:[{flex:1},price_layout(price),percents_layout()]}}/>
 }
@@ -1041,10 +1057,10 @@ function DiscountPercentModal(props:I_DiscountPercentModal){
     )
 }
 function FinalPrice(props:I_FinalPrice){
-    let {getContext,product} = props,context = getContext();
+    let {getContext,product} = props,context = (getContext as ()=>I_AIOShop_context)();
     let {unit,getCartInfo} = context
     function price_layout():I_RVD_node{
-        let cartInfo:I_cartInfo = getCartInfo(product,props.variantId);
+        let cartInfo:I_cartInfo = getCartInfo(product,props.variantId) as I_cartInfo;
         let {price,discountPercent:dps = []} = cartInfo;
         let dp = 0;
         for(let i = 0; i < dps.length; i++){dp += dps[i].value}
@@ -1055,18 +1071,19 @@ function FinalPrice(props:I_FinalPrice){
     return (<RVD rootNode={{className:'gap-3',align:'v',row:[price_layout(),unit_layout()]}}/>)
 }
 function VariantLabels(props:I_VariantLabels){
-    let {product,variantId,getContext,type} = props,context = getContext();
+    let {product,variantId,getContext,type} = props,context = (getContext as ()=>I_AIOShop_context)();
     let {getVariantIcon = ()=>false,getOptionTypes} = context;
     let [items] = useState<I_v_label[]>(getItems())
     function getItems(){
-        let variant = product.variants.find((o:I_v)=>o.id === variantId);
+        let {variants = []} = product;
+        let variant = variants.find((o:I_v)=>o.id === variantId) as I_v;
         let res:I_v_label[] = [];
-        let optionTypes = getOptionTypes(product.variants);
+        let optionTypes = getOptionTypes(variants);
         let {optionValues} = variant;
         for(let i = 0; i < optionValues.length; i++){
             let {typeId,valueId}:I_v_ov = optionValues[i];
-            let {name:optionTypeName,values}:I_pr_optionType = optionTypes.find((o:I_pr_optionType)=>o.id === typeId);
-            let {name:optionValueName} = values.find((o)=>o.id === valueId)
+            let {name:optionTypeName,values}:I_pr_optionType = optionTypes.find((o:I_pr_optionType)=>o.id === typeId) as I_pr_optionType;
+            let {name:optionValueName} = values.find((o)=>o.id === valueId) as {name:string,id:any}
             let item:I_v_label = [optionTypeName,optionValueName]
             res.push(item)
         }

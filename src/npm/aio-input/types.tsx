@@ -6,7 +6,7 @@ export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' 
 )
-export type AI_formItem = {
+export type AI_formNode = {
     field?:string,
     label?:string,
     addressField?:string,
@@ -15,8 +15,8 @@ export type AI_formItem = {
     labelAttrs?:any,
     errorAttrs?:any,
     validations?:any[],
-    row?:AI_formItem[],
-    column?:AI_formItem[],
+    childs?:AI_formNode[],
+    dir?:'h' | 'v',//if there is property row or column,
     html?:React.ReactNode,
     className?:string,
     style?:any,
@@ -51,7 +51,7 @@ export type AI = {
     attrs?: any,
     blurChange?: boolean,
     before?: React.ReactNode | ((p?:any) => React.ReactNode),
-    body?:{attrs?:any,html?:React.ReactNode} | ((value?:any)=>{attrs?:any,html?:React.ReactNode}),//form
+    body?:(value?:any)=>{attrs?:any,html?:React.ReactNode},//form,acardion
     caret?: boolean | React.ReactNode,
     checkIcon?: AI_checkIcon,
     circles?:string[],
@@ -83,7 +83,7 @@ export type AI = {
     indent?:number,
     initialDisabled?:boolean,//form
     inputAttrs?: any,
-    inputs?:any,//form
+    node?:AI_formNode,//form
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
@@ -133,6 +133,7 @@ export type AI = {
     rtl?: boolean,
     search?: string,
     setChilds?:(row:any,childs:any[])=>void,//tree
+    showErrors?:boolean | string,
     size?: number,//list,date
     spin?: boolean,
     start?:number,//range
@@ -168,6 +169,7 @@ export type AI_popover = {
         title?:string,
         close?:boolean
     },
+    maxHeight?:number | string,
     pageSelector?:string
 }
 export type AI_optionProp = {[key in AI_optionKey]?:any}

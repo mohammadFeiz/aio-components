@@ -65,8 +65,9 @@ const TableExamples:FC = ()=>{
                     type='form'
                     value={{...setting}}
                     onChange={(newSetting)=>setSetting({...newSetting})}
-                    inputs={{
-                        row:[
+                    node={{
+                        dir:'h',
+                        childs:[
                             {flex:1},
                             {
                                 input:{

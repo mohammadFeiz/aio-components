@@ -1,20 +1,19 @@
-import React, { Component,createRef, useState } from 'react';
+import React, { Component, createRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
-import AIOPopup from '../../npm/aio-popup/index.tsx';
+import AIOPopup, { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
-import {Icon} from '@mdi/react';
+import { Icon } from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
-import { AP_modal, AP_snackebar } from '../../npm/aio-popup/types.tsx';
-export default function DOC_AIOForm(props) {
+export default function DOC_AIOForm(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
             nav={{
-                items:()=>[
+                items: () => [
                     { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
                     { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
                     { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
@@ -27,8 +26,8 @@ export default function DOC_AIOForm(props) {
     )
 }
 class Instance extends Component {
-    popup:any;
-    constructor(props){
+    popup: any;
+    constructor(props: any) {
         super(props);
         this.popup = new AIOPopup()
     }
@@ -41,10 +40,10 @@ class Instance extends Component {
 let instance = new AIOPopup()
                     `)
                 }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
                 <h3>instance.render()</h3>
                 <h5>use instance.render() for rendering aio-popup in render method of parent component</h5>
-                
+
                 {
                     AIODoc().Code(`
 function MyCompoennt(){
@@ -58,10 +57,10 @@ function MyCompoennt(){
 }
 `)
                 }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
                 <h3>instance.addModal()</h3>
                 <h5>
-                    user instance.addModal() to show modal in your page. you can add more than one modal and dont need to handle any state of that 
+                    user instance.addModal() to show modal in your page. you can add more than one modal and dont need to handle any state of that
                 </h5>
                 {
                     AIODoc().Code(`
@@ -115,7 +114,7 @@ instance.addModal({
                 <h5>header properties</h5>
                 <table className='aio-component-table'>
                     <thead>
-                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
                     </thead>
                     <tbody>
                         <tr>
@@ -170,7 +169,7 @@ instance.addModal({
                 <h5>body properties</h5>
                 <table className='aio-component-table'>
                     <thead>
-                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
                     </thead>
                     <tbody>
                         <tr>
@@ -189,7 +188,7 @@ instance.addModal({
                         </tr>
                     </tbody>
                 </table>
-                
+
                 <h5>footer</h5>
                 <table className='aio-component-table'>
                     <thead>
@@ -206,7 +205,7 @@ instance.addModal({
                 <h5>footer properties</h5>
                 <table className='aio-component-table'>
                     <thead>
-                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
                     </thead>
                     <tbody>
                         <tr><td>attrs</td><td>object</td><td>---</td><td>set modal footer attributes</td></tr>
@@ -224,7 +223,7 @@ instance.addModal({
                 <h5>backdrop properties</h5>
                 <table className='aio-component-table'>
                     <thead>
-                    <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
+                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
                     </thead>
                     <tbody>
                         <tr>
@@ -252,7 +251,7 @@ instance.addModal({
                             <td>---</td>
                             <td>
                                 use for handle prevent open a uniq popup more than one time.
-                                if a popup with a specific id is open and you request to open a popup with the same id, 
+                                if a popup with a specific id is open and you request to open a popup with the same id,
                                 the popup will be closed first and then it will be opened again on the top of list of popups.
                             </td>
                         </tr>
@@ -284,10 +283,10 @@ instance.addModal({
                         </tr>
                     </tbody>
                 </table>
-                <h5>popover properties</h5> 
+                <h5>popover properties</h5>
                 <table className='aio-component-table'>
                     <thead>
-                    <th>property</th><th>Type</th><th>Default</th><th>Description</th>
+                        <th>property</th><th>Type</th><th>Default</th><th>Description</th>
                     </thead>
                     <tbody>
                         <tr>
@@ -310,7 +309,7 @@ instance.addModal({
                         </tr>
                     </tbody>
                 </table>
-                
+
                 <h5>attrs</h5>
                 <table className='aio-component-table'>
                     <thead>
@@ -337,37 +336,37 @@ instance.addModal({
                         </tr>
                     </tbody>
                 </table>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
                 <h3>instance.addAlert()</h3>
                 <h5>
-                    user instance.addAlert() to show alert box in your page. you can add more than one alert and dont need to handle any state of that 
+                    user instance.addAlert() to show alert box in your page. you can add more than one alert and dont need to handle any state of that
                 </h5>
                 {
                     AIODoc().Code(`
 instance.addAlert(props)
 `)
                 }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
                 <h3>instance.addSnackebar()</h3>
                 <h5>
-                    user instance.addSnackebar() to show snackebar box in your page. you can add more than one snackebar and dont need to handle any state of that 
+                    user instance.addSnackebar() to show snackebar box in your page. you can add more than one snackebar and dont need to handle any state of that
                 </h5>
                 {
                     AIODoc().Code(`
 instance.addSnackebar(props)
 `)
                 }
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
                 {this.popup.render()}
             </div>
         )
     }
-    render() {return this.preview()}
+    render() { return this.preview() }
 }
 function AddModal() {
     let [popup] = useState(new AIOPopup())
-    function example(p:{title:string,code:string,props:AP_modal | (AP_modal[])}){
-        let {title,code,props} = p;
+    function example(p: { title: string, code: string, props: AP_modal | (AP_modal[]) }) {
+        let { title, code, props } = p;
         return (
             <>
                 <h3>{title}</h3>
@@ -375,12 +374,12 @@ function AddModal() {
                     AIODoc().Code(code)
                 }
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
-                    if(!Array.isArray(props)){props = [props]}
-                    for(let i = 0; i < props.length; i++){
+                    if (!Array.isArray(props)) { props = [props] }
+                    for (let i = 0; i < props.length; i++) {
                         popup.addModal(props[i])
                     }
                 }}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             </>
         )
     }
@@ -388,20 +387,20 @@ function AddModal() {
         <div className='example'>
             {
                 example({
-                    title:'Basic Modal',
+                    title: 'Basic Modal',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header:{title:'my modal'},
     body:{render:()=>content}
-})`,                
-                    props:{header:{title:'my modal'},body:{render:()=>content}}
+})`,
+                    props: { header: { title: 'my modal' }, body: { render: () => content } }
                 })
             }
             {
                 example({
-                    title:'Modal header',
+                    title: 'Modal header',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header:{
         title:'my modal',
         subtitle:'my modal subtitle',
@@ -417,28 +416,28 @@ function AddModal() {
     }
 })`
                     ,
-                    props:{
-                        header:{
-                            title:'my modal',
-                            subtitle:'my modal subtitle',
-                            buttons:[
-                                [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-                                [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
+                    props: {
+                        header: {
+                            title: 'my modal',
+                            subtitle: 'my modal subtitle',
+                            buttons: [
+                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
+                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
                                 ['My Button']
                             ],
-                            attrs:{style:{background:'lightblue'}}
+                            attrs: { style: { background: 'lightblue' } }
                         },
-                        body:{
-                            render:()=>content
+                        body: {
+                            render: () => content
                         }
                     }
                 })
             }
             {
                 example({
-                    title:'Modal header (onClose:false)',
+                    title: 'Modal header (onClose:false)',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header:{
         title:'my modal',
         subtitle:'my modal subtitle',
@@ -455,31 +454,31 @@ function AddModal() {
     }
 })`
                     ,
-                    props:{
-                        header:{
-                            title:'my modal',
-                            subtitle:'my modal subtitle',
-                            buttons:[
-                                [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-                                [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
+                    props: {
+                        header: {
+                            title: 'my modal',
+                            subtitle: 'my modal subtitle',
+                            buttons: [
+                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
+                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
                                 ['My Button']
                             ],
-                            attrs:{style:{background:'lightblue'}},
-                            onClose:false
+                            attrs: { style: { background: 'lightblue' } },
+                            onClose: false
                         },
-                        body:{
-                            render:()=>content
+                        body: {
+                            render: () => content
                         }
                     }
                 })
             }
-            
+
 
             {
                 example({
-                    title:'Modal header (onClose:custom function)',
+                    title: 'Modal header (onClose:custom function)',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header:{
         title:'my modal',
         subtitle:'my modal subtitle',
@@ -499,32 +498,32 @@ function AddModal() {
     }
 })`
                     ,
-                    props:{
-                        header:{
-                            title:'my modal',
-                            subtitle:'my modal subtitle',
-                            buttons:[
-                                [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-                                [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
+                    props: {
+                        header: {
+                            title: 'my modal',
+                            subtitle: 'my modal subtitle',
+                            buttons: [
+                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
+                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
                                 ['My Button']
                             ],
-                            attrs:{style:{background:'lightblue'}},
-                            onClose:()=>{
+                            attrs: { style: { background: 'lightblue' } },
+                            onClose: () => {
                                 alert('close popup');
                                 popup.removeModal()
                             }
                         },
-                        body:{
-                            render:()=>content
+                        body: {
+                            render: () => content
                         }
                     }
                 })
             }
             {
                 example({
-                    title:'Modal backdrop.close',
+                    title: 'Modal backdrop.close',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position:'top',
     backdrop:{
         close:false
@@ -534,17 +533,17 @@ function AddModal() {
     }
 })`
                     ,
-                    props:{
-                        position:'top',backdrop:{close:false},
-                        body:{
-                            render:({close})=>(
+                    props: {
+                        position: 'top', backdrop: { close: false },
+                        body: {
+                            render: ({ close }) => (
                                 <RVD
                                     rootNode={{
-                                        row:[
-                                            {style:{maxHeight:400},html:'my sample text in modal',className:'align-v flex-1 ofy-auto'},
+                                        row: [
+                                            { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
                                             {
-                                                gap:{size:6},
-                                                column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]   
+                                                gap: { size: 6 },
+                                                column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
                                             }
                                         ]
                                     }}
@@ -556,9 +555,9 @@ function AddModal() {
             }
             {
                 example({
-                    title:'open many modal',
+                    title: 'open many modal',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position:'top',
     id:'one',
     body:{
@@ -573,17 +572,17 @@ instance.addModal({
     }
 })`
                     ,
-                    props:[
-                        {position:'top',id:'one',body:{render:({close})=><Popup1 close={close}/>}},
-                        {position:'bottom',id:'two',body:{render:({close})=><Popup1/>}}
+                    props: [
+                        { position: 'top', id: 'one', body: { render: ({ close }) => <Popup1 close={close} /> } },
+                        { position: 'bottom', id: 'two', body: { render: ({ close }) => <Popup1 /> } }
                     ]
                 })
             }
             {
                 example({
-                    title:'use as confirm',
+                    title: 'use as confirm',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position:'center',
     header:{title:'my confirm title'},
     body:{
@@ -598,27 +597,29 @@ instance.addModal({
     }
 })`
                     ,
-                    props:{
-                        position:'center',
-                        header:{title:'my confirm title'},
-                        body:{
-                            render:()=>'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text ',
-                            attrs:{style:{padding:12,width:300}}
+                    props: {
+                        position: 'center',
+                        header: { title: 'my confirm title' },
+                        body: {
+                            render: () => 'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text ',
+                            attrs: { style: { padding: 12, width: 300 } }
                         },
-                        footer:{
-                            buttons:[
-                                ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
-                                ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
-                            ]
+                        footer: ({ close }) => {
+                            return (
+                                <>
+                                    <button onClick={() => { console.log('yes'); close() }}>Yes</button>
+                                    <button onClick={() => { console.log('no'); close() }} style={{ background: '#999' }}>Yes</button>
+                                </>
+                            )
                         }
                     }
                 })
             }
             {
                 example({
-                    title:'use as prompt',
+                    title: 'use as prompt',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position:'center',
     header:{title:'my prompt title'},
     state:{temp:''},
@@ -655,25 +656,28 @@ instance.addModal({
     },
 })`
                     ,
-                    props:{
-                        position:'center',
-                        header:{title:'my prompt title'},
-                        state:{temp:''},
-                        body:{
-                            render:({state,setState})=>{
+                    props: {
+                        position: 'center',
+                        header: { title: 'my prompt title' },
+                        state: { temp: '' },
+                        body: {
+                            render: ({ state, setState }: any) => {
                                 return (
                                     <textarea
-                                        value={state.temp} onChange={(e)=>setState({...state,temp:e.target.value})}
-                                        style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
+                                        value={state.temp} onChange={(e) => setState({ ...state, temp: e.target.value })}
+                                        style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
                                     />
                                 )
-                            }},
-                        footer:{
-                            buttons:[
-                                ['yes',{onClick:({close,state,setState})=>{console.log(state.temp); close();}}],
-                                ['no',{onClick:({close,state,setState})=>{close()},style:{background:'#999'}}]
-                            ]
+                            }
                         },
+                        footer:({close,state})=>{
+                            return (
+                                <>
+                                    <button onClick={()=>{console.log(state.temp); close()}}>Yes</button>
+                                    <button onClick={()=>{close()}} style={{background:'#999'}}>Yes</button>
+                                </>
+                            )
+                        }
                     }
                 })
             }
@@ -681,23 +685,23 @@ instance.addModal({
         </div>
     )
 }
-function Popup1(props:any){
-    let {close} = props || {};
+function Popup1(props: any) {
+    let { close } = props || {};
     return (
         <RVD
             rootNode={{
-                row:[
+                row: [
                     {
-                        style:{maxHeight:400,overflowY:'auto'},
-                        html:'my sample text in modal',
-                        className:'align-v flex-1'
+                        style: { maxHeight: 400, overflowY: 'auto' },
+                        html: 'my sample text in modal',
+                        className: 'align-v flex-1'
                     },
                     {
-                        gap:{size:6},
-                        column:[
-                            {html:(<button className='btn-123'>Approve</button>)},
-                            {html:(<button className='btn-123' onClick={close}>Close</button>)}
-                        ]   
+                        gap: { size: 6 },
+                        column: [
+                            { html: (<button className='btn-123'>Approve</button>) },
+                            { html: (<button className='btn-123' onClick={close}>Close</button>) }
+                        ]
                     }
                 ]
             }}
@@ -706,88 +710,88 @@ function Popup1(props:any){
 }
 function ModalPosition() {
     let [popup] = useState(new AIOPopup())
-    function v_layout(close){
+    function v_layout(close) {
         return (
             <RVD
                 rootNode={{
-                    row:[
-                        {style:{maxHeight:400,overflowY:'auto'},html:'my sample text in modal',className:'align-v flex-1'},
-                        {gap:{size:6},column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
+                    row: [
+                        { style: { maxHeight: 400, overflowY: 'auto' }, html: 'my sample text in modal', className: 'align-v flex-1' },
+                        { gap: { size: 6 }, column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }] }
                     ]
                 }}
             />
         )
     }
-    function h_layout(close){
+    function h_layout(close) {
         return (
             <RVD
                 rootNode={{
-                    style:{height:'100%'},
-                    column:[
+                    style: { height: '100%' },
+                    column: [
                         {
-                            flex:1,className:'ofy-auto',
-                            html:'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet?'
+                            flex: 1, className: 'ofy-auto',
+                            html: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet?'
                         },
                         {
-                            gap:{size:6},
-                            row:[
-                                {html:(<button className='btn-123 w-100'>Approve</button>),className:'align-vh flex-1'},
-                                {html:(<button className='btn-123 w-100' onClick={close}>Close</button>),className:'align-vh flex-1'}
-                            ]   
+                            gap: { size: 6 },
+                            row: [
+                                { html: (<button className='btn-123 w-100'>Approve</button>), className: 'align-vh flex-1' },
+                                { html: (<button className='btn-123 w-100' onClick={close}>Close</button>), className: 'align-vh flex-1' }
+                            ]
                         }
                     ]
                 }}
             />
         )
     }
-    function openModal(position){
-        let body,attrs:any = {},header;
-        if(position === 'top' || position === 'bottom'){body = {render:({close})=>v_layout(close)}}
-        else if(position === 'left' || position === 'right'){body = {render:({close})=>h_layout(close)}; attrs.style = {width:360}}
-        else if(position === 'center'){body = {render:()=>content}; attrs.style = {maxHeight:'90vh'}; header = {title:'My Modal'}}
-        else if(position === 'fullscreen'){body = {render:()=>content}; header = {title:'My Modal'}}
-        popup.addModal({position,body,attrs,header})
+    function openModal(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
+        let body, attrs: any = {}, header;
+        if (position === 'top' || position === 'bottom') { body = { render: ({ close }) => v_layout(close) } }
+        else if (position === 'left' || position === 'right') { body = { render: ({ close }) => h_layout(close) }; attrs.style = { width: 360 } }
+        else if (position === 'center') { body = { render: () => content }; attrs.style = { maxHeight: '90vh' }; header = { title: 'My Modal' } }
+        else if (position === 'fullscreen') { body = { render: () => content }; header = { title: 'My Modal' } }
+        popup.addModal({ position, body, attrs, header })
     }
-    function getCode(position){
+    function getCode(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
         let body;
-        if(position === 'top' || position === 'bottom'){
-            body = 
-    `body:{
+        if (position === 'top' || position === 'bottom') {
+            body =
+                `body:{
         render:({close})=><MyComponent onClose={close}/>
     }`
         }
-        else if(position === 'left' || position === 'right'){
-            body = 
-    `body:{
+        else if (position === 'left' || position === 'right') {
+            body =
+                `body:{
         render:({close})=><MyComponent onClose={close}/>
     }`
         }
-        else if(position === 'center'){
+        else if (position === 'center') {
             body = `
     title:'My Modal',
     body:{render:({close})=><MyComponent onClose={close}/>}
-`            
+`
         }
-        else if(position === 'fullscreen'){
+        else if (position === 'fullscreen') {
             body = `
     title:'My Modal',
     body:{render:({close})=><MyComponent onClose={close}/>} 
-`            
+`
         }
-return AIODoc().Code(`
+        return AIODoc().Code(`
 instance.addModal({
     position:'${position}',
     ${body}
 })
 `)
     }
-    function getItem(position){
+    function getItem(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
         return (
             <>
                 <h3>{`Modal position ${position}`}</h3>
                 {getCode(position)}
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => openModal(position)}>Open Modal</button>
-                <div style={{marginTop:24}} className='aio-component-splitter'></div>
+                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             </>
         )
     }
@@ -806,12 +810,12 @@ instance.addModal({
 
 function Alert() {
     let [popup] = useState(new AIOPopup())
-    function addAlert(obj){
+    function addAlert(obj:any) {
         popup.addAlert({
-            text:'my alert text',
-            time:10,
-            subtext:'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit',
-            closeText:'بستن',
+            text: 'my alert text',
+            time: 10,
+            subtext: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit',
+            closeText: 'بستن',
             ...obj
         })
     }
@@ -829,8 +833,8 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>position:'top'</h3>
             {
                 AIODoc().Code(`
@@ -844,8 +848,8 @@ position:'top'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error',position:'top'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error', position: 'top' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>position:'bottom'</h3>
             {
                 AIODoc().Code(`
@@ -859,8 +863,8 @@ position:'bottom'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error',position:'bottom'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error', position: 'bottom' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type error</h3>
             {
                 AIODoc().Code(`
@@ -873,9 +877,9 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
+
             <h3>alert type error</h3>
             {
                 AIODoc().Code(`
@@ -888,8 +892,8 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'error'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type warning</h3>
             {
                 AIODoc().Code(`
@@ -902,8 +906,8 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'warning'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'warning' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type success</h3>
             {
                 AIODoc().Code(`
@@ -916,8 +920,8 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'success'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'success' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type info</h3>
             {
                 AIODoc().Code(`
@@ -930,19 +934,19 @@ closeText:'بستن'
 })
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({type:'info'})}>Open Alert</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'info' })}>Open Alert</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             {popup.render()}
         </div>
     )
 }
 function Snackebar() {
     let [popup] = useState(new AIOPopup())
-    let [rtlPopup] = useState(new AIOPopup({rtl:true}))
-    function addSnackebar(obj?:{[key in keyof AP_snackebar]?:any},rtl?:boolean){
+    let [rtlPopup] = useState(new AIOPopup({ rtl: true }))
+    function addSnackebar(obj?: { [key in keyof AP_snackebar]?: any }, rtl?: boolean) {
         let {
             text = 'my snackebar title',
-            subtext ='my subtext of my snackebar . please click on action',
+            subtext = 'my subtext of my snackebar . please click on action',
             time,
             type = 'error',
             verticalAlign = 'end',
@@ -950,13 +954,13 @@ function Snackebar() {
             icon,
             attrs
         } = obj || {}
-        if(rtl){
-            rtlPopup.addSnackebar({text,subtext,time,type,verticalAlign,horizontalAlign,icon,attrs})
+        if (rtl) {
+            rtlPopup.addSnackebar({ text, subtext, time, type, verticalAlign, horizontalAlign, icon, attrs })
         }
         else {
-            popup.addSnackebar({text,subtext,time,type,verticalAlign,horizontalAlign,icon,attrs})
+            popup.addSnackebar({ text, subtext, time, type, verticalAlign, horizontalAlign, icon, attrs })
         }
-        
+
     }
     return (
         <div className='example'>
@@ -1021,7 +1025,7 @@ const example = () => {
                 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar()}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>rtl</h3>
             {
                 AIODoc().Code(`
@@ -1044,8 +1048,8 @@ const example = () => {
 }
                 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({},true)}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({}, true)}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>time</h3>
             {
                 AIODoc().Code(`
@@ -1069,8 +1073,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({time:3})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ time: 3 })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
 
             <h3>type info</h3>
             {
@@ -1094,8 +1098,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'info'})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ type: 'info' })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type error</h3>
             {
                 AIODoc().Code(`
@@ -1118,8 +1122,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'error'})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ type: 'error' })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type warning</h3>
             {
                 AIODoc().Code(`
@@ -1142,8 +1146,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'warning'})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ type: 'warning' })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type success</h3>
             {
                 AIODoc().Code(`
@@ -1166,8 +1170,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({type:'success'})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ type: 'success' })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
 
             <h3>verticalAlign</h3>
             {
@@ -1192,8 +1196,8 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({verticalAlign:'start'})}>Add Snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ verticalAlign: 'start' })}>Add Snackebar</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>icon</h3>
             {
                 AIODoc().Code(`
@@ -1231,22 +1235,22 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign:'start',type:'success',
-                icon:(
+                verticalAlign: 'start', type: 'success',
+                icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                        <circle cx="20" cy="20" r="20" fill="#36CB8C" />
                         <g clip-path="url(#clip0_1364_21722)">
-                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white" />
                         </g>
                         <defs>
-                        <clipPath id="clip0_1364_21722">
-                            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-                        </clipPath>
+                            <clipPath id="clip0_1364_21722">
+                                <rect width="22" height="22" fill="white" transform="translate(9 9)" />
+                            </clipPath>
                         </defs>
                     </svg>
                 )
             })}>Open snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>attrs</h3>
             {
                 AIODoc().Code(`
@@ -1287,25 +1291,25 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign:'start',type:'success',
-                icon:(
+                verticalAlign: 'start', type: 'success',
+                icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                        <circle cx="20" cy="20" r="20" fill="#36CB8C" />
                         <g clip-path="url(#clip0_1364_21722)">
-                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white" />
                         </g>
                         <defs>
-                        <clipPath id="clip0_1364_21722">
-                            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-                        </clipPath>
+                            <clipPath id="clip0_1364_21722">
+                                <rect width="22" height="22" fill="white" transform="translate(9 9)" />
+                            </clipPath>
                         </defs>
                     </svg>
                 ),
-                attrs:{
-                    className:'my-snackebar'
+                attrs: {
+                    className: 'my-snackebar'
                 }
             })}>Open snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>horizontalAlign</h3>
             {
                 AIODoc().Code(`
@@ -1347,26 +1351,26 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign:'start',type:'success',
-                horizontalAlign:'end',
-                icon:(
+                verticalAlign: 'start', type: 'success',
+                horizontalAlign: 'end',
+                icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
+                        <circle cx="20" cy="20" r="20" fill="#36CB8C" />
                         <g clip-path="url(#clip0_1364_21722)">
-                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white"/>
+                            <path d="M20.0007 10.834C14.9462 10.834 10.834 14.9462 10.834 20.0007C10.834 25.0552 14.9462 29.1673 20.0007 29.1673C25.0552 29.1673 29.1673 25.0552 29.1673 20.0007C29.1673 14.9462 25.0552 10.834 20.0007 10.834ZM23.9244 18.4244L19.3411 23.0078C19.2068 23.1421 19.0308 23.209 18.8548 23.209C18.6788 23.209 18.5028 23.1421 18.3685 23.0078L16.0769 20.7161C15.8083 20.4475 15.8083 20.0126 16.0769 19.744C16.3454 19.4754 16.7804 19.4754 17.049 19.744L18.8544 21.5494L22.9514 17.4523C23.22 17.1837 23.6549 17.1837 23.9235 17.4523C24.1921 17.7209 24.1926 18.1559 23.9244 18.4244Z" fill="white" />
                         </g>
                         <defs>
-                        <clipPath id="clip0_1364_21722">
-                            <rect width="22" height="22" fill="white" transform="translate(9 9)"/>
-                        </clipPath>
+                            <clipPath id="clip0_1364_21722">
+                                <rect width="22" height="22" fill="white" transform="translate(9 9)" />
+                            </clipPath>
                         </defs>
                     </svg>
                 ),
-                attrs:{
-                    className:'my-snackebar'
+                attrs: {
+                    className: 'my-snackebar'
                 }
             })}>Open snackebar</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
 
             {popup.render()}
             {rtlPopup.render()}
@@ -1375,77 +1379,77 @@ const example = () => {
 }
 function Popover() {
     let [temp] = useState({
-        dom1:createRef(),
-        dom2:createRef(),
-        dom3:createRef(),
-        dom4:createRef(),
-        dom5:createRef()
+        dom1: createRef(),
+        dom2: createRef(),
+        dom3: createRef(),
+        dom4: createRef(),
+        dom5: createRef()
     })
     let [popup] = useState(new AIOPopup())
-    function v_layout(close?:any){
+    function v_layout(close?: any) {
         return (
             <RVD
                 rootNode={{
-                    className:'p-6',
-                    row:[
-                        {style:{maxHeight:400,overflowY:'auto'},html:'my sample text in modal',className:'align-v flex-1'},
-                        {size:12},
-                        {gap:{size:6},column:[{html:(<button className='btn-123'>Approve</button>)},{html:(<button className='btn-123' onClick={close}>Close</button>)}]}
+                    className: 'p-6',
+                    row: [
+                        { style: { maxHeight: 400, overflowY: 'auto' }, html: 'my sample text in modal', className: 'align-v flex-1' },
+                        { size: 12 },
+                        { gap: { size: 6 }, column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }] }
                     ]
                 }}
             />
         )
     }
-    function addPopover(){
+    function addPopover() {
         popup.addModal({
-            position:'popover',
-            getTarget:()=>$(temp.dom1.current),
-            body:{render:({close})=>v_layout(close)}
+            position: 'popover',
+            getTarget: () => $(temp.dom1.current as any),
+            body: { render: ({ close }) => v_layout(close) }
 
         })
     }
-    function fixStyle(){
+    function fixStyle() {
         popup.addModal({
-            position:'popover',
-            getTarget:()=>$(temp.dom2.current),
-            fixStyle:(a,b)=>{return {...a,top:a.top + 36}},
-            body:{render:()=>v_layout()},
+            position: 'popover',
+            getTarget: () => $(temp.dom2.current as any),
+            fixStyle: (a, b) => { return { ...a, top: a.top + 36 } },
+            body: { render: () => v_layout() },
         })
     }
-    function fitHorizontal(){
+    function fitHorizontal() {
         popup.addModal({
-            position:'popover',
-            getTarget:()=>$(temp.dom3.current),
-            fitHorizontal:true,
-            body:{render:()=>v_layout()},
+            position: 'popover',
+            getTarget: () => $(temp.dom3.current as any),
+            fitHorizontal: true,
+            body: { render: () => v_layout() },
         })
     }
-    function styling(){
+    function styling() {
         popup.addModal({
-            position:'popover',
-            getTarget:()=>$(temp.dom4.current),
-            body:{render:()=>content},
-            attrs:{
-                style:{
-                    height:360,
-                    width:400
+            position: 'popover',
+            getTarget: () => $(temp.dom4.current as any),
+            body: { render: () => content },
+            attrs: {
+                style: {
+                    height: 360,
+                    width: 400
                 }
             }
         })
     }
-    function without_backdrop(){
+    function without_backdrop() {
         popup.addModal({
-            backdrop:false,
-            getTarget:()=>$(temp.dom5.current),
-            fitHorizontal:true,
-            position:'popover',
-            body:{render:()=>content},
-            attrs:{
-                onClick:()=>{
+            backdrop: false,
+            getTarget: () => $(temp.dom5.current as any),
+            fitHorizontal: true,
+            position: 'popover',
+            body: { render: () => content },
+            attrs: {
+                onClick: () => {
                     popup.removeModal()
                 },
-                style:{
-                    height:360
+                style: {
+                    height: 360
                 }
             }
         })
@@ -1464,8 +1468,8 @@ instance.addModal({
 })
                 `)
             }
-            <button ref={temp.dom1 as any} style={{ height: 36, padding: '0 24px' }} onClick={() =>addPopover()}>Open Popover</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button ref={temp.dom1 as any} style={{ height: 36, padding: '0 24px' }} onClick={() => addPopover()}>Open Popover</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>popover fixStyle</h3>
             {
                 AIODoc().Code(`
@@ -1482,7 +1486,7 @@ body:{render:()=>v_layout()},
                 `)
             }
             <button ref={temp.dom2 as any} style={{ height: 36, padding: '0 24px' }} onClick={() => fixStyle()}>Open Popover</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>fitHorizontal</h3>
             {
                 AIODoc().Code(`
@@ -1497,8 +1501,8 @@ body:{render:()=>v_layout()},
 })
                 `)
             }
-            <button ref={temp.dom3 as any} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => fitHorizontal()}>Open Popover</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button ref={temp.dom3 as any} style={{ height: 36, padding: '0 24px', width: '100%' }} onClick={() => fitHorizontal()}>Open Popover</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>styling popover</h3>
             {
                 AIODoc().Code(`
@@ -1518,8 +1522,8 @@ attrs:{
 })
                 `)
             }
-            <button ref={temp.dom4 as any} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => styling()}>test long</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button ref={temp.dom4 as any} style={{ height: 36, padding: '0 24px', width: '100%' }} onClick={() => styling()}>test long</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>popover without backdrop</h3>
             {
                 AIODoc().Code(`
@@ -1542,8 +1546,8 @@ attrs:{
 })
                 `)
             }
-            <button ref={temp.dom5 as any} style={{ height: 36, padding: '0 24px',width:'100%' }} onClick={() => without_backdrop()}>test long</button>
-            <div style={{marginTop:24}} className='aio-component-splitter'></div>
+            <button ref={temp.dom5 as any} style={{ height: 36, padding: '0 24px', width: '100%' }} onClick={() => without_backdrop()}>test long</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             {popup.render()}
         </div>
     )

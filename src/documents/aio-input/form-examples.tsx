@@ -48,6 +48,11 @@ const FormExamples: FC = () => {
         ['Example 1', () => <Example1 />],
         ['Example 2', () => <Example2 />],
         ['validations', () => <Validations />],
+        ['showErrors', () => <ShowErrors />],
+        ['test1', () => <Exampletest1 />],
+        ['test2', () => <Exampletest2 />],
+        ['test3', () => <Exampletest3 />],
+        ['test4', () => <Exampletest4 />],
     ])
     let [titles] = useState<string[]>(getTitles)
     function getTitles() {
@@ -80,8 +85,9 @@ const FormExamples: FC = () => {
                     type='form'
                     value={{ ...setting }}
                     onChange={(newSetting) => setSetting({ ...newSetting })}
-                    inputs={{
-                        row: [
+                    node={{
+                        dir:'h',
+                        childs: [
                             { flex: 1 },
                             {
                                 input: {
@@ -162,8 +168,9 @@ const Example1: FC = () => {
                 footer={(
                     <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
                             flex: 1,
                             input: {
@@ -223,8 +230,9 @@ const Example1: FC = () => {
                 footer={(
                     <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
                             flex: 1,
                             input: {
@@ -284,10 +292,12 @@ const Example2: FC = () => {
                 footer={(
                     <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
-                            row: [
+                            dir:'h',
+                            childs: [
                                 {
                                     flex: 1,
                                     input: {
@@ -308,7 +318,8 @@ const Example2: FC = () => {
                             ]
                         },
                         {
-                            column: [
+                            dir:'v',
+                            childs: [
                                 {
                                     input: {
                                         type: 'textarea'
@@ -354,9 +365,11 @@ const Example2: FC = () => {
                     <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
                 inputs={{
-                    column: [
+                    dir:'v',
+                    childs: [
                         {
-                            row: [
+                            dir:'h',
+                            childs: [
                                 {
                                     flex:1,
                                     input: {
@@ -377,7 +390,8 @@ const Example2: FC = () => {
                             ]
                         },
                         {
-                            column: [
+                            dir:'v',
+                            childs: [
                                 {
                                     input: {
                                         type: 'textarea'
@@ -406,11 +420,9 @@ const Example2: FC = () => {
         </div>
     )
 }
-
 const Validations: FC = () => {
     const { code }: I_CTX = useContext(CTX);
     const [setting, setSetting] = useState<any>()
-    const [errors,setErrors] = useState<string[]>([''])
     const [log, setLog] = useState<any>()
     function submit() {
         setLog(JSON.stringify(setting, null, 3))
@@ -422,13 +434,13 @@ const Validations: FC = () => {
                 value={{ ...setting }}
                 onChange={(newFormData,errors) => {
                     setSetting({ ...newFormData })
-                    setErrors(errors)
                 }}
                 footer={(
-                    <button type='button' disabled={!!errors.length} className='submit-button' onClick={submit}>Submit</button>
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
                             flex: 1,
                             input: {
@@ -497,12 +509,15 @@ const Validations: FC = () => {
             <AIOInput
                 type='form'
                 value={{ ...setting }}
-                onChange={(newFormData) => setSetting({ ...newFormData })}
+                onChange={(newFormData,errors) => {
+                    setSetting({ ...newFormData })
+                }}
                 footer={(
                     <button type='button' className='submit-button' onClick={submit}>Submit</button>
                 )}
-                inputs={{
-                    column: [
+                node={{
+                    dir:'v',
+                    childs: [
                         {
                             flex: 1,
                             input: {
@@ -518,21 +533,34 @@ const Validations: FC = () => {
                                 type: 'text'
                             },
                             label: 'First Name',
-                            field: 'value.firstname'
+                            field: 'value.firstname',
+                            validations:[
+                                'required',
+                            ]
                         },
                         {
                             input: {
                                 type: 'textarea'
                             },
                             label: 'Description',
-                            field: 'value.description'
+                            field: 'value.description',
+                            validations:[
+                                'required',
+                                '>,10',
+                                '<,30'
+                            ]
                         },
                         {
                             input: {
                                 type: 'date'
                             },
                             label: 'Date',
-                            field: 'value.date'
+                            field: 'value.date',
+                            validations:[
+                                'required',
+                                '<,2024',
+                                '>,2022'
+                            ]
                         }
                     ]
                 }}
@@ -546,3 +574,385 @@ const Validations: FC = () => {
         </div>
     )
 }
+const ShowErrors: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData,errors) => {
+                    setSetting({ ...newFormData })
+                }}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                showErrors={'.my-form-errors'}
+                node={{
+                    dir:'v',
+                    childs: [
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'checkbox',
+                                text: 'Is Active'
+                            },
+                            label: 'Is Active',
+                            field: 'value.active'
+                        },
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'text'
+                            },
+                            label: 'First Name',
+                            field: 'value.firstname',
+                            validations:[
+                                'required',
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'textarea'
+                            },
+                            label: 'Description',
+                            field: 'value.description',
+                            validations:[
+                                'required',
+                                '>,10',
+                                '<,30'
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'date'
+                            },
+                            label: 'Date',
+                            field: 'value.date',
+                            validations:[
+                                'required',
+                                '<,2024',
+                                '>,2022'
+                            ]
+                        },
+                        {html:<div className='my-form-errors'></div>}
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+            {code(
+`const Example1: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log,setLog] = useState<any>()
+    function submit(){
+        setLog(JSON.stringify(setting,null,3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData,errors) => {
+                    setSetting({ ...newFormData })
+                }}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                showErrors={'.my-form-errors'}
+                node={{
+                    dir:'v',
+                    childs: [
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'checkbox',
+                                text: 'Is Active'
+                            },
+                            label: 'Is Active',
+                            field: 'value.active'
+                        },
+                        {
+                            flex: 1,
+                            input: {
+                                type: 'text'
+                            },
+                            label: 'First Name',
+                            field: 'value.firstname',
+                            validations:[
+                                'required',
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'textarea'
+                            },
+                            label: 'Description',
+                            field: 'value.description',
+                            validations:[
+                                'required',
+                                '>,10',
+                                '<,30'
+                            ]
+                        },
+                        {
+                            input: {
+                                type: 'date'
+                            },
+                            label: 'Date',
+                            field: 'value.date',
+                            validations:[
+                                'required',
+                                '<,2024',
+                                '>,2022'
+                            ]
+                        },
+                        {html:<div className='my-form-errors'></div>}
+                    ]
+                }}
+            />
+        </div>
+    )
+}
+`
+            )}
+
+        </div>
+    )
+}
+
+
+
+const Exampletest1: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                node={{
+                    dir:'v',
+                    childs:[
+                        {
+                            input:{type:'text'},label:'Name',field:'value.name',flex:1
+                        },
+                        {
+                            input:{type:'number'},label:'Age',field:'value.age',flex:1
+                        },
+                        {
+                            input:{type:'text'},label:'Email',field:'value.email',flex:1
+                        },
+                        {
+                            input:{type:'checkbox'},label:'IsActive?',field:'value.active',flex:1
+                        },
+                        {
+                            input:{type:'date'},label:'Date?',field:'value.date',flex:1
+                        },
+
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+        </div>
+    )
+}
+const Exampletest2: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                node={{
+                    dir:'v',
+                    childs:[
+                        {
+                            dir:'h',
+                            childs:[
+                                {
+                                    input:{type:'text'},label:'Name',field:'value.name',flex:1
+                                },
+                                {
+                                    input:{type:'number'},label:'Age',field:'value.age',flex:1
+                                }
+                            ]
+                        },
+                        {
+                            dir:'h',
+                            childs:[
+                                {
+                                    input:{type:'text'},label:'Email',field:'value.email',flex:1
+                                },
+                                {
+                                    input:{type:'checkbox'},label:'IsActive?',field:'value.active',flex:1
+                                },
+                                {
+                                    input:{type:'date'},label:'Date?',field:'value.date',flex:1
+                                }
+                            ]
+                        }
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+        </div>
+    )
+}
+const Exampletest3: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                node={{
+                    dir:'v',
+                    childs:[
+                        {
+                            dir:'h',
+                            childs:[
+                                {
+                                    input:{type:'text'},label:'Name',field:'value.name',flex:1
+                                },
+                                {
+                                    input:{type:'number'},label:'Age',field:'value.age',flex:1
+                                }
+                            ]
+                        },
+                        {
+                            dir:'h',
+                            childs:[
+                                {
+                                    input:{type:'text'},label:'Email',field:'value.email',flex:1
+                                },
+                                {
+                                    input:{type:'checkbox'},label:'IsActive?',field:'value.active',flex:1
+                                }
+                            ]
+                        },
+                        {
+                            input:{type:'date'},label:'Date?',field:'value.date',flex:1
+                        }
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+        </div>
+    )
+}
+
+
+const Exampletest4: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>()
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => setSetting({ ...newFormData })}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                node={{
+                    dir:'v',
+                    childs:[
+                        {
+                            dir:'h',
+                            childs:[
+                                {
+                                    input:{type:'text'},label:'Name',field:'value.name',flex:1
+                                },
+                                {
+                                    input:{type:'number'},label:'Age',field:'value.age',flex:1
+                                },
+                                {
+                                    input:{type:'text'},label:'Email',field:'value.email',flex:1
+                                },
+                            ]
+                        },
+                        {
+                            input:{type:'checkbox'},label:'IsActive?',field:'value.active',flex:1
+                        },
+                        {
+                            input:{type:'date'},label:'Date?',field:'value.date',flex:1
+                        }
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+        </div>
+    )
+}
+

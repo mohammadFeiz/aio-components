@@ -71,3 +71,6 @@
     background: #999;
     opacity:0.5;
 }
+.my-form-errors{
+    color:red;
+}

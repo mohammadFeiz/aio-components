@@ -33,9 +33,10 @@ const ListExamples:FC = ()=>{
                     type='form'
                     value={{...setting}}
                     onChange={(newSetting)=>setSetting({...newSetting})}
-                    inputs={{
-                        row:[
-                            {flex:1},
+                    node={{
+                        dir:'h',
+                        childs:[
+                                {flex:1},
                             {
                                 input:{
                                     type:'select',options:numbers,before:'Show:',
@@ -105,9 +106,10 @@ function Basic() {
             type:'form',
             value:{...model},
             labelAttrs:{style:{marginRight:12}},
-            inputs:{
+            node:{
                 className:'gap-3',
-                row:[
+                dir:'h',
+                childs:[
                     {flex:1,input:{type:'range',start:24,end:72,before:'size'},field:'value.size'},
                     {flex:1,input:{type:'range',start:0,end:40,before:'decay'},field:'value.decay'},
                     {flex:1,input:{type:'range',start:0,end:9,before:'stop'},field:'value.stop'}

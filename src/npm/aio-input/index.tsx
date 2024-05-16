@@ -11,7 +11,7 @@ import $ from 'jquery';
 import Axios from "axios";
 ////////////types//////////////////////
 import {
-    AI, AI_context, AI_formItem, AI_indent, AI_option, AI_optionKey,
+    AI, AI_context, AI_indent, AI_option, AI_optionKey,
     AI_time_unit, AI_type, AI_types, I_Drag,
     I_list_temp, type_time_value,
     AI_date_unit,
@@ -21,7 +21,8 @@ import {
     AI_optionProp,
     AI_optionDic,
     AI_options,
-    AI_popover
+    AI_popover,
+    AI_formNode
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
@@ -655,24 +656,30 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
+type AI_form_setValue = (field:string,itemValue:any, validation?:AI_validation)=>void
 type AI_FormContext = {
-    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(formItem:AI_formItem, value:any)=>string | undefined,
-    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,formItem:AI_formItem,formItemValue?:any })=>any,
-    setValue:(itemValue:any, formItem:AI_formItem)=>void
+    rootProps:AI,setError:(key:string,value:string | undefined)=>void,getError:(value: any,validation:AI_validation)=>string | undefined,
+    getValueByField:(p:{ field:any, def?:any, functional?:boolean, value?:any,node:AI_formNode,formNodeValue?:any })=>any,
+    setValue:AI_form_setValue
 }
+type AI_validation = {validations:string[],label:string}
+
 const Formcontext = createContext({} as any);
 const Form: FC = () => {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { inputs, lang, onChange, attrs, style, className,footer } = rootProps;
+    let { node, lang, onChange, attrs, style, className,footer,body,showErrors = true } = rootProps;
     let [errors] = useState<{ [key: string]: string | undefined }>({})
-    function getErrorList() { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o])] }
-    function getError(formItem: AI_formItem, value: any) {
-        let { validations = [], input } = formItem;
-        if (!validations.length || !input) { return '' }
-        let isDate = input.type === 'date' || input.type === 'time';
+    let [dom] = useState<any>(getDom)
+    function getDom(){
+        return createRef()
+    }
+    function getErrorList():string[] { return [...Object.keys(errors).filter((o) => !!errors[o]).map((o) => errors[o] || '')] }
+    function getError(value: any,validation:AI_validation) {
+        let {validations,label} = validation;
+        if (!validations.length) { return '' }
         //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
-        if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
-        let a: AV_props = { value, title: formItem.label || '', lang, validations,isDate }
+        //if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
+        let a: AV_props = { value, title: label || '', lang, validations }
         let inst = new AIOValidation(a);
         return inst.validate();
     }
@@ -683,10 +690,10 @@ const Form: FC = () => {
         for (prop in newErrors) { if (newErrors[prop]) { fixedErrors[prop] = newErrors[prop] as string } }
         errors = fixedErrors;
     }
-    function getValueByField(p: { field: any, def?: any, functional?: boolean, value?: any, formItem: AI_formItem, formItemValue?: any }) {
-        let { field, def, functional, value = rootProps.value || {}, formItem, formItemValue } = p;
+    function getValueByField(p: { field: any, def?: any, functional?: boolean, value?: any, node: AI_formNode, formNodeValue?: any }) {
+        let { field, def, functional, value = rootProps.value || {}, node, formNodeValue } = p;
         let a;
-        if (functional && typeof field === 'function') { a = field({ model: value, formItem, value: formItemValue }); }
+        if (functional && typeof field === 'function') { a = field({ model: value, node, value: formNodeValue }); }
         else if (typeof field === 'string') {
             if (field.indexOf('value.') !== -1 || field.indexOf('data.') !== -1) {
                 let data = { ...rootProps.data };
@@ -719,17 +726,17 @@ const Form: FC = () => {
         node[fields[fields.length - 1]] = value;
         return obj;
     }
-    function setValue(itemValue: any, formItem: AI_formItem) {
+    const setValue:AI_form_setValue = (field,itemValue, validation) => {
         let { value = {} } = rootProps;
-        let field = formItem.field;
         if (!field) {
             alert('aio-input error => in type form there is an form item missing field property')
             return
         }
         let newValue = setValueByField(value, field, itemValue);
-        let error = getError(formItem, itemValue)
+        let error:string | undefined;
+        if(validation !== undefined){error = getError(itemValue,validation)}
         setError(field, error)
-        if (onChange) { onChange(newValue, { formItem, errors: getErrorList(), newFormItemValue: itemValue }) }
+        if (onChange) { onChange(newValue, { errors: getErrorList(), newformNodeValue: itemValue }) }
     }
 
     function getContext() {
@@ -741,36 +748,68 @@ const Form: FC = () => {
         return context;
     }
     let p = AddToAttrs(attrs, { className: ['aio-input-form', className], style })
+    function appendErrors(errors:string[]){
+        if(typeof showErrors === 'string'){
+            let errorContainer = $(showErrors as string) as any
+            if(errors.length){
+                let start = '<ul>'
+                let end = '</ul>'
+                let center = ''
+                for(let error of errors){center += `<li>${error}</li>`} 
+                errorContainer.html(start + center + end)
+            }
+            else {errorContainer.html('')}
+        }
+    }
+    useEffect(()=>{
+        let footer = $(dom.current).find('.aio-input-form-footer');
+        if(footer.length){
+            let button = footer.find('button');
+            if(button.length){
+                console.log('ok')
+                let errors:string[] = getErrorList() || [];
+                let hasError:boolean = !!errors.length || false;
+                if(hasError){
+                    button.attr({'disabled':'disabled'})
+                    appendErrors(errors)
+                }
+                else {
+                    button.removeAttr('disabled')
+                    appendErrors([])
+                }
+                
+            }
+        }
+    })
     return (
         <Formcontext.Provider value={getContext()}>
-            <form {...p}>
-                <FormItem formItem={inputs} isRoot={true} />
+            <form {...p} ref={dom}>
+                {!!node && <FormNode node={node} isRoot={true} />}
                 {!!footer && <article className='aio-input-form-footer'>{footer}</article>}
             </form>
         </Formcontext.Provider>
     )
 }
-type AI_FormItem = {formItem:AI_formItem,parentType?:'row'|'column',isRoot?:boolean}
-const FormItem: FC<AI_FormItem> = (props) => {
+type AI_FormNode = {node:AI_formNode,parentType?:'row'|'column',isRoot?:boolean}
+const FormNode: FC<AI_FormNode> = (props) => {
     let { setError }: AI_FormContext = useContext(Formcontext)
-    let { formItem, parentType,isRoot } = props;
-    let { html, row, column, input, field, flex, size, show, className, style } = formItem;
+    let { node, parentType,isRoot } = props;
+    let { html, childs,dir = 'v', input, field, flex, size, show, className, style } = node;
     if (show === false) { return null }
     function getInner(): React.ReactNode {
         let content
-        if (input) { content = <FormInput formItem={formItem} setError={(v: string | undefined) => setError(field as string, v)} /> }
+        if (input) { content = <FormInput node={node} setError={(v: string | undefined) => setError(field as string, v)} /> }
         if (html) { content = html; }
-        if (row) { content = row.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='row' />) }
-        if (column) { content = column.map((o: AI_formItem, i: number) => <FormItem key={i} formItem={o} parentType='column' />) }
+        if (childs) { content = childs.map((o: AI_formNode, i: number) => <FormNode key={i} node={o} parentType={dir === 'h'?'row':'column'} />) }
         let p:any = {className:cls,style:{ ...Style, ...style }}
         if(isRoot){return <section {...p}>{content}</section>}
-        if(row || column){return <fieldset {...p}>{content}</fieldset>}
+        if(childs){return <fieldset {...p}>{content}</fieldset>}
         return <article {...p}>{content}</article>
     }
     let cls = 'aio-input-form-item'
     if (className) { cls += ' ' + className }
-    if (row) { cls += ' aio-input-form-item-row' }
-    else if (column) { cls += ' aio-input-form-item-column' }
+    if (childs && dir === 'h') { cls += ' aio-input-form-item-row' }
+    else if (childs && dir === 'v') { cls += ' aio-input-form-item-column' }
     let Style: { [key: string]: number | string } = {};
     if (flex) { Style.flex = flex }
     else if (size) {
@@ -780,34 +819,35 @@ const FormItem: FC<AI_FormItem> = (props) => {
     
     return <>{getInner()}</>
 }
-type AI_FormInput = {formItem:AI_formItem,setError:(v:string | undefined)=>void}
+type AI_FormInput = {node:AI_formNode,setError:(v:string | undefined)=>void}
 const FormInput: FC<AI_FormInput> = (props) => {
     let { rootProps, getError, getValueByField, setValue }: AI_FormContext = useContext(Formcontext)
-    let { rtl, disabled } = rootProps;
-    let { formItem, setError } = props;
-    let { input, label, field } = formItem;
-    if (!input) { return null }
-    function getInputProps(input: AI, formItem: AI_formItem) {
+    let { rtl, disabled,showErrors = true } = rootProps;
+    let { node, setError } = props;
+    let { input, label = '', field = '',validations = [] } = node;
+    if (!input || !field) { return null }
+    let validation:AI_validation = {validations,label}
+    function getInputProps(input: AI, node: AI_formNode) {
         let props: AI = {
             rtl, value, type: input.type,
             onChange: (value) => {
-                setValue(value, formItem)
+                setValue(field,value, validation)
             },
             attrs: {}, inputAttrs: {}, disabled: false, point: (value) => { return { html: value } }
         };
         let prop: keyof AI;
         for (prop in input) {
             let functional = ['options', 'columns'].indexOf(prop) !== -1;
-            (props[prop] as any) = getValueByField({ field: input[prop], functional, formItem, formItemValue: value })
+            (props[prop] as any) = getValueByField({ field: input[prop], functional, node, formNodeValue: value })
         }
         props.value = value;
         let { attrs = {} } = input;
-        for (let prop in attrs) { props.attrs[prop] = getValueByField({ field: attrs[prop], formItem }) }
+        for (let prop in attrs) { props.attrs[prop] = getValueByField({ field: attrs[prop], node }) }
         if (disabled) { props.disabled = true; }
         if (['text', 'number', 'password', 'textarea'].indexOf(input.type) !== -1) {
             let { inputAttrs = {} } = input;
             props.inputAttrs = {};
-            for (let prop in inputAttrs) { props.inputAttrs[prop] = getValueByField({ field: inputAttrs[prop], formItem }) }
+            for (let prop in inputAttrs) { props.inputAttrs[prop] = getValueByField({ field: inputAttrs[prop], node }) }
         }
         let classes = [props.className]
         if (error) { classes.push('has-error') }
@@ -818,15 +858,15 @@ const FormInput: FC<AI_FormInput> = (props) => {
     function getDefaultValue(p: AI) {
         if (!!p.multiple) { return [] }
     }
-    let value = getValueByField({ field, def: input ? getDefaultValue(input) : undefined, formItem });
-    let error = getError(formItem, value)
+    let value = getValueByField({ field, def: input ? getDefaultValue(input) : undefined, node });
+    let error = getError(value,validation)
     setError(error)
-    let InputProps: AI = getInputProps(input, formItem);
+    let InputProps: AI = getInputProps(input, node);
     return (
         <section className='aio-input-form-input'>
             {label && <section className='aio-input-form-label'>{label}</section>}
             <AIOInput {...InputProps} />
-            {error && <section className='aio-input-form-error'>{error}</section>}
+            {error && showErrors === true && <div className='aio-input-form-error'>{error}</div>}
         </section>
     )
 }
@@ -3262,7 +3302,7 @@ function GetDistance(p1: I_Map_coords, p2: I_Map_coords) {
 }
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 export type AV_operator = 'contain' | '!contain' | 'required' | '=' | '!=' | '>' | '!>' | '>=' | '!>=' | '<' | '!<' | '<=' | '!<='
-export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[],isDate?:boolean}
+export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
 export type AV_item = string
 export class AIOValidation {
     contain: (target: any, value: any) => boolean;
@@ -3279,7 +3319,8 @@ export class AIOValidation {
     boolKey:(key:'more' | 'less')=>string;
     boolDic:any;
     constructor(props: AV_props) {
-        let { lang = 'en',isDate } = props;
+        let { lang = 'en',value } = props;
+        let isDate = typeof value === 'string' && value.indexOf('/') !== -1;
         this.boolDic = isDate?{more:{en:'after',fa:'بعد از'},less:{en:'before',fa:'قبل از'}}:{more:{en:'more',fa:'بیشتر'},less:{en:'less',fa:'کمتر'}}
         this.boolKey = (key)=>this.boolDic[key][lang]
         let DATE = new AIODate();
@@ -3297,7 +3338,7 @@ export class AIOValidation {
         }
         this.equal = (target, value) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(target) ? 'array' : typeof target;
+            let targetType = typeof target;
             let result;
             if (isDate) { result = DATE.isEqual(value, typeof target === 'number'?target.toString():target) }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target }
@@ -3306,7 +3347,7 @@ export class AIOValidation {
         }
         this.less = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(target) ? 'array' : typeof target;
+            let targetType = typeof target;
             let result;
             if (isDate) { result = DATE.isLess(value, typeof target === 'number'?target.toString():target) }
             else if (targetType === 'number' && valueType === 'number') { result = value < target }
@@ -3316,7 +3357,7 @@ export class AIOValidation {
         }
         this.greater = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = Array.isArray(target) ? 'array' : typeof target;
+            let targetType = typeof target;
             let result;
             if (isDate) { result = DATE.isGreater(value, typeof target === 'number'?target.toString():target) }
             else if (targetType === 'number' && valueType === 'number') { result = value > target }

@@ -383,8 +383,9 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
                     type='form'
                     value={{ ...setting }}
                     onChange={(newSetting) => setSetting({ ...newSetting })}
-                    inputs={{
-                        row: [
+                    node={{
+                        dir:'h',
+                        childs:[
                             { flex: 1 },
                             {
                                 input: {

@@ -45,9 +45,10 @@ const MapExamples:FC = ()=>{
                     type='form'
                     value={{...setting}}
                     onChange={(newSetting)=>setSetting({...newSetting})}
-                    inputs={{
-                        row:[
-                            {flex:1},
+                    node={{
+                        dir:'h',
+                        childs:[
+                                {flex:1},
                             {
                                 input:{
                                     type:'select',options:numbers,before:'Show:',

@@ -67,8 +67,9 @@ const RangeExamples:FC<{type:I_exampleType}> = ({type}) => {
                     type='form'
                     value={{...setting}}
                     onChange={(newSetting)=>setSetting({...newSetting})}
-                    inputs={{
-                        row:[
+                    node={{
+                        dir:'h',
+                        childs:[
                             {html:'round',className:'align-v w-48 flex-0'},
                             {show:type === 'spinner',input:{type:'radio',options:[0.25,0.75,1],option:{text:'option',value:'option'}},field:'value.round'},
                             {input:{type:'checkbox',text:'reverse',min:0,max:1},field:'value.reverse'},

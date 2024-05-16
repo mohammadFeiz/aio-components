@@ -4,7 +4,7 @@ import ACS from '../../npm/aio-content-slider/index.tsx';
 import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
 import AIOInput from './../../npm/aio-input/index.tsx';
 import { AI } from "../../npm/aio-input/types.tsx";
-export default function DOC_AIOContentSlider(props){
+export default function DOC_AIOContentSlider(props:any){
   return (
     <DOC
       name={props.name} goToHome={props.goToHome}
@@ -26,10 +26,11 @@ function Preview(){
         onChange:(setting)=>{
           setSetting(setting)
         },
-        inputs:{
+        node:{
           className:'gap-12',
-          row:[
-            {input:{type:'number',after:'between 1 and 99',swip:true,min:1,max:99},label:'speed',field:'value.speed'},
+          dir:'h',
+          childs:[
+            {input:{type:'number',after:'between 1 and 99',swip:0.5,min:1,max:99},label:'speed',field:'value.speed'},
             {input:{type:'number',after:'miliseconds',swip:8},label:'autoSlide',field:'value.autoSlide'},
           ]
         }

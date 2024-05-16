@@ -1932,6 +1932,7 @@
 }
 .aio-input-form-item{
     border:none;
+    padding:0;
 }
 .aio-input-form-item-column {
     display: flex;

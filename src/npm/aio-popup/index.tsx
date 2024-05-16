@@ -1,4 +1,4 @@
-import React, { Component, createRef, useEffect, useState, isValidElement } from 'react';
+import React, { Component, createRef, useEffect, useState, isValidElement, FC } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -11,7 +11,7 @@ export type AP_header = {
 }
 export type AP_backdrop = false | {attrs?:any,close?:boolean}
 export type AP_body = {render?:(p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode,attrs?:any}
-export type AP_footer = React.ReactNode | {attrs?:any,buttons?:AP_modal_button[]}
+export type AP_footer = (p:{state:any,setState:(v:any)=>void,close:()=>void})=>React.ReactNode
 
 export type AP_modal = {
     getTarget?:()=>any,
@@ -144,21 +144,17 @@ export default class AIOPopup {
         header: { title, subtitle },
         backdrop: { attrs: { className: 'rsa-backdrop' } },
         body: { render: () => text },
-        footer: {
-          buttons: [
-            [canselText, { onClick: () => { onCansel(); this.removeModal() } }],
-            [
-              submitText,
-              {
-                onClick: async () => {
-                  if (!onSubmit) { return }
-                  let res: boolean = await onSubmit();
-                  if (res !== false) { this.removeModal() }
-                },
-                className: 'active'
-              }
-            ]
-          ]
+        footer: ()=>{
+          return (
+            <>
+              <button type='button' onClick={()=>{onCansel(); this.removeModal()}}>{canselText}</button>
+              <button type='button' className='active' onClick={async ()=>{
+                if (!onSubmit) { return }
+                let res: boolean = await onSubmit();
+                if (res !== false) { this.removeModal() }
+              }}>{submitText}</button>
+            </>
+          )
         }
       }
       this.addModal(config)
@@ -182,26 +178,22 @@ export default class AIOPopup {
             )
           }
         },
-        footer: {
-          buttons: [
-            [canselText, { onClick: () => { onCansel(); this.removeModal() } }],
-            [
-              submitText,
-              (p: { state: any, setState: (v: any) => void }) => {
-                let { state, setState } = p || {};
-                return {
-                  onClick: async (p: { state: any, setState: (v: any) => void }) => {
-                    if (!onSubmit) { return }
-                    let { state } = p;
-                    let res = await onSubmit(state.temp);
-                    if (res !== false) { this.removeModal() }
-                    else { setState({ temp: '' }) }
-                  },
-                  disabled: !state.temp, className: 'active'
-                }
-              }
-            ]
-          ]
+        footer:({state,setState}:{ state: any, setState: (v: any) => void })=>{
+          return (
+            <>
+              <button type='button' onClick={()=>{onCansel(); this.removeModal()}}>{canselText}</button>
+              <button 
+                type='button' className='active' 
+                onClick={async ()=>{
+                  if (!onSubmit) { return }
+                  let res = await onSubmit(state.temp);
+                  if (res !== false) { this.removeModal() }
+                  else { setState({ temp: '' }) }
+                }}
+                disabled={!state.temp}
+              >{submitText}</button>
+            </>
+          )
         }
       }
       this.addModal(config)
@@ -337,9 +329,7 @@ function Popup(props: AP_Popup) {
     return <ModalBody {...p} />
   }
   function footer_node(): React.ReactNode {
-    let handleClose = close;
-    let props = { footer, handleClose, state, setState };
-    return <ModalFooter {...props} />
+    return !footer?null:<div className='aio-popup-footer'>{footer({state,setState,close})}</div>
   }
   function getBackDropClassName() {
     let className = 'aio-popup-backdrop';
@@ -479,27 +469,6 @@ function ModalBody(props: AP_ModalBody) {
     </div>
   )
 }
-type AP_ModalFooter = {
-  footer: AP_footer, handleClose: () => void, state: any, setState: (v: any) => void
-}
-function ModalFooter(props: AP_ModalFooter) {
-  let { footer, handleClose, state, setState } = props;
-  if (isValidElement(footer)) { return footer }
-  if (typeof footer !== 'object') { return null }
-  let { attrs = {}, buttons = [] } = footer as { attrs?: any, buttons?: AP_modal_button[] };
-  function buttons_node() { return !buttons.length ? null : buttons.map((o: AP_modal_button) => button_node(o)) }
-  function button_node(p: AP_modal_button) {
-    let [text, attrs = {}] = p;
-    let Attrs = typeof attrs === 'function' ? { ...attrs({ state, setState }) } : { ...attrs };
-    let { onClick = () => { }, className } = Attrs;
-    Attrs.className = 'aio-popup-footer-button' + (className ? ' ' + className : '');
-    Attrs.onClick = () => onClick({ close: handleClose, state, setState })
-    return <button key={text} {...Attrs}>{text}</button>
-  }
-  let p = { className: 'aio-popup-footer' + (attrs.className ? ' ' + attrs.className : ''), style: attrs.style }
-  return (<div {...p}>{buttons_node()}</div>)
-}
-
 function Alert(props: AP_alert) {
   let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center' } = props;
   let $$ = {

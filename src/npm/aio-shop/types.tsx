@@ -40,7 +40,7 @@ export type I_checkout_content = (context:I_AIOShop_context)=>Promise<React.Reac
 export type I_getDiscounts = (p:{renderIn:'cart' | 'checkout',checkout:any,cart:I_cart})=>Promise<I_discount[]>
 export type I_getExtras = (p:{renderIn:'cart' | 'checkout',checkout:any,cart:I_cart})=>Promise<I_extra[]>
 export type I_getFinalPrice = (cartInfo:I_cartInfo)=>number;
-export type I_getCartInfo = (product:I_pr,variantId?:any) => I_cartInfo;
+export type I_getCartInfo = (product:I_pr,variantId?:any) => I_cartInfo | undefined;
 export type I_trans = {addToCart:string,notExist:string};
 export type I_getOptionTypes = (variants:I_v[])=>I_pr_optionType[];
 export type I_onPayment = (p:{factor:I_Factor_details,checkout:I_checkout})=>Promise<boolean>
@@ -75,12 +75,12 @@ export type I_getVariantIcon = (p:[key:string,value:string])=>React.ReactNode;
 export type I_changeCart = (p:{product:I_pr,variantId?:any,count:number})=>void;
 export type I_addProductToCart = (p:{product:I_pr,variantId:any,count:number})=>I_cart;
 export type I_addVariantToCart = (p:{product:I_pr,variantId:any,count:number})=>I_cart;
-export type I_getNewCartVariant = (p:{product:I_pr,variantId:any,count:number})=>I_cart_variant;
+export type I_getNewCartVariant = (p:{product:I_pr,variantId:any,count:number})=>I_cart_variant | undefined;
 export type I_removeVariantFromCart = (p:{product:I_pr,variantId:any,count:number})=>I_cart;
 export type I_changeCartCount = (p:{cartProduct:I_cart_product,cartVariant?:I_cart_variant,count:number})=>I_cart;
 export type I_getCartCount = (product:I_pr,variantId?:any)=>number;
 export type I_getCartVariants = (productId:any)=>I_cart_variant[];
-export type I_getVariantByOptionValues = (product:I_pr,optionValues:I_v_ov[])=>I_v;
+export type I_getVariantByOptionValues = (product:I_pr,optionValues:I_v_ov[])=>I_v | undefined;
 export type I_openModal = (p:{
     position?:'fullscreen' | 'center' | 'left' | 'right' | 'top' | 'bottom',
     title?:string,backdrop?:any,
@@ -197,6 +197,6 @@ export type I_Checkout = {getContext?:()=>I_AIOShop_context}
 export type I_Factor = {renderIn:'cart' | 'checkout',getContext?:()=>I_AIOShop_context,mode:'details' | 'payment'}
 export type I_DiscountPercent = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context,showPrice?:boolean}
 export type I_FinalPrice = {product:I_pr,variantId?:any,getContext?:()=>I_AIOShop_context}
-export type I_VariantLabels = {product:I_pr,variantId,getContext?:()=>I_AIOShop_context,type:'h' | 'v'}
+export type I_VariantLabels = {product:I_pr,variantId:any,getContext?:()=>I_AIOShop_context,type:'h' | 'v'}
 export type I_Rates = {getContext?:()=>I_AIOShop_context,rates:I_pr_rate[]}
 ///////////////////////components/////////////////////////////
