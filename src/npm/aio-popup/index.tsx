@@ -1,18 +1,23 @@
-import React, { Component, createRef, useEffect, useState, isValidElement, FC } from 'react';
+import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
+import { AddToAttrs } from '../aio-utils';
 export type AP_props = {rtl?:boolean,id?:string}
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
-export type AP_header = {
-  title?:string,subtitle?:string,buttons?:AP_modal_button[],onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),backButton?:()=>void,attrs?:any
+export type AP_header = ((p:{close:()=>void,state:any,setState:any})=>React.ReactNode) | {
+  title?:string,
+  subtitle?:string,
+  before?:React.ReactNode,
+  after?:React.ReactNode,
+  onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),
+  attrs?:any
 }
-export type AP_backdrop = false | {attrs?:any,close?:boolean}
-export type AP_body = {render?:(p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode,attrs?:any}
+export type AP_body = (p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode
 export type AP_footer = (p:{state:any,setState:(v:any)=>void,close:()=>void})=>React.ReactNode
-
+type AP_setAttrs = (mode:'backdrop'|'modal'|'header'|'body'|'footer')=>any
 export type AP_modal = {
     getTarget?:()=>any,
     pageSelector?:string,
@@ -25,13 +30,13 @@ export type AP_modal = {
     onClose?:boolean | (()=>void),
     position?:AP_position,
     attrs?:any,
-    backdrop?:AP_backdrop,
     header?:AP_header,
     state?:any,
     footer?:AP_footer,
     body?:AP_body,
     animate?:boolean,
-    fitHorizontal?:boolean
+    fitHorizontal?:boolean,
+    setAttrs?:AP_setAttrs
 }
 export type AP_alert = { 
   icon?:false | React.ReactNode,
@@ -80,16 +85,7 @@ export type AP_Popup = {
   removeModal:(p?:string,animate?:boolean)=>void,
 }
 
-export type AP_ModalHeader = {
-  rtl:boolean,header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void
-}
 
-export type AP_ModalBody = {
-  body?:AP_body,
-  handleClose:()=>void,
-  updatePopoverStyle:()=>void,
-  state:any,setState:(state:any)=>void
-}
 
 export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
 
@@ -142,8 +138,7 @@ export default class AIOPopup {
         position: 'center',
         attrs: { ...attrs, className },
         header: { title, subtitle },
-        backdrop: { attrs: { className: 'rsa-backdrop' } },
-        body: { render: () => text },
+        body:()=>text,
         footer: ()=>{
           return (
             <>
@@ -168,15 +163,12 @@ export default class AIOPopup {
         attrs: { ...attrs, className },
         state: { temp: '' },
         header: { title, subtitle },
-        backdrop: { attrs: { className: 'rsa-backdrop' } },
-        body: {
-          render: ({ state, setState }) => {
-            return (
-              <textarea
-                placeholder={text} value={state.temp}
-                onChange={(e) => {if (setState) { setState({ temp: e.target.value }) }}} />
-            )
-          }
+        body:({state,setState})=>{
+          return (
+            <textarea
+              placeholder={text} value={state.temp}
+              onChange={(e) => {if (setState) { setState({ temp: e.target.value }) }}} />
+          )
         },
         footer:({state,setState}:{ state: any, setState: (v: any) => void })=>{
           return (
@@ -277,10 +269,12 @@ type AP_Popup_temp = {
 }
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
-  let { attrs = {}, id, backdrop = {}, footer, header, position = 'fullscreen', body, fitHorizontal, getTarget, pageSelector,maxHeight,limitTo, fixStyle = (o) => o, fitTo } = modal;
+  let { setAttrs = ()=>{return {}}, id, position = 'fullscreen', body, getTarget,maxHeight, fixStyle = (o) => o, fitTo } = modal;
   let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false,isFirstMount: true})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
+  let attrs = setAttrs('modal') || {}
+  let backdropAttrs = setAttrs('backdrop') || {}
   async function close() {
     onClose();
   }
@@ -321,31 +315,47 @@ function Popup(props: AP_Popup) {
     close();
   }
   function header_node(): React.ReactNode {
-    if (typeof header !== 'object') { return null }
-    return <ModalHeader rtl={rtl} header={header} handleClose={() => close()} state={state} setState={(value) => setState(value)} />
+    if(!modal.header){return null}
+    return <ModalHeader attrs={setAttrs('header')} header={modal.header} handleClose={() => close()} state={state} setState={(value) => setState(value)} />
   }
   function body_node(): React.ReactNode {
-    let p: AP_ModalBody = { body, handleClose: () => close(), state, setState: ((value) => setState(value)), updatePopoverStyle }
-    return <ModalBody {...p} />
+    let attrs:any = setAttrs('body')
+    return (
+      <ModalBody 
+        body={body} attrs={attrs}
+        handleClose={()=>close()}
+        state={state} setState={(value)=>setState(value)}
+        updatePopoverStyle={updatePopoverStyle}
+      />
+    )
   }
   function footer_node(): React.ReactNode {
-    return !footer?null:<div className='aio-popup-footer'>{footer({state,setState,close})}</div>
+    let attrs = setAttrs('footer')
+    let p = AddToAttrs(attrs,{className:'aio-popup-footer'})
+    return !modal.footer?null:<div {...p}>{modal.footer({state,setState,close})}</div>
   }
-  function getBackDropClassName() {
+  function getBackdropProps() {
     let className = 'aio-popup-backdrop';
     if (temp.isFirstMount) {
       className += ' not-mounted'
     }
-    if (backdrop && backdrop.attrs && backdrop.attrs.className) { className += ' ' + backdrop.attrs.className }
     className += ` aio-popup-position-${position}`
     className += rtl ? ' rtl' : ' ltr'
-    return className
+    return AddToAttrs(
+      backdropAttrs,
+      {
+        className,
+        attrs:{
+          ['data-id']: id,
+          onClick:backdropAttrs.onClick?backdropAttrs.onClick:backClick
+        }
+      }
+    )
   }
-  function backClick(e: any) {
+  function backClick(e: Event) {
     if (temp.isDown) { return }
     e.stopPropagation();
-    let target = $(e.target);
-    if (backdrop && backdrop.close === false) { return }
+    let target = $(e.target as any);
     if (!target.hasClass('aio-popup-backdrop')) { return }
     close()
   }
@@ -354,7 +364,8 @@ function Popup(props: AP_Popup) {
     let target = getTarget();
     if (!target || !target.length) { return {} }
     let popup = $(temp.dom.current);
-    let style = Align({ dom: popup, target, fitHorizontal, fixStyle, pageSelector,limitTo, fitTo, attrs, rtl })
+    let p = { dom: popup, target, fitHorizontal:modal.fitHorizontal, fixStyle, pageSelector:modal.pageSelector,limitTo:modal.limitTo, fitTo, attrs, rtl }
+    let style = Align(p)
     let res = { ...style, position: 'absolute' }
     if(maxHeight){res.maxHeight = maxHeight}
     return res
@@ -384,90 +395,66 @@ function Popup(props: AP_Popup) {
     if (attrs.className) { className += ' ' + attrs.className }
     return className
   }
-  let backdropAttrs = backdrop ? backdrop.attrs : {};
-  let backdropProps = {
-    ...backdropAttrs, ['data-id']: id,
-    className: getBackDropClassName(),
-    onClick: backdrop === false ? undefined : (backdrop.close === false ? undefined : (e: any) => backClick(e)),
-  }
   let style: any = { ...popoverStyle, ...attrs.style }
   let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
-  let p = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style}}
+  let p:AP_align = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style}}
   return (
-    <div {...backdropProps} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
+    <div {...getBackdropProps()} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
       <div {...p}>{header_node()} {body_node()} {footer_node()}</div> 
     </div>
   )
 }
-function ModalHeader(props: AP_ModalHeader) {
-  let { rtl, header, handleClose, state, setState } = props;
+type AP_ModalHeader = {
+  header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void,attrs:any
+}
+const ModalHeader:FC<AP_ModalHeader> = (props) => {
+  let { header, handleClose, state, setState,attrs = {} } = props;
+  if(typeof header === 'function'){return header({close:handleClose,state,setState}) as any}
   if (typeof header !== 'object') { return null }
-  let { title, subtitle, buttons = [], onClose, backButton, attrs = {} } = header;
+  let cls = 'aio-popup-header'
+  let { title, subtitle, onClose,before,after } = header;
   function close(e: any) {
     e.stopPropagation(); e.preventDefault();
     if (typeof onClose === 'function') { onClose({ state, setState }) } else { handleClose() }
   }
-  function backButton_node(): React.ReactNode {
-    if (!backButton || onClose === false) { return null }
-    let path, style;
-    if (rtl) { path = mdiChevronRight; style = { marginLeft: 12 } }
-    else { path = mdiChevronLeft; style = { marginRight: 12 } }
-    return (
-      <div 
-        style={{display:'flex',alignItems:'center',justifyContent:'center',...style}}
-        onClick={(e)=>close(e)}
-      ><Icon path={path} size={1} /></div>
-    )
-  }
   function title_node(): React.ReactNode {
-    if (!title) { return null }
-    if (!subtitle) {return <div className="aio-popup-title" style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
+    if (!subtitle) {return <div className={`${cls}-title`} style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
     else {
       return (
         <div style={{display:'flex',flexDirection:'column',justifyContent:'center',flex:1}}>
-          <div className="aio-popup-title">{title}</div>
-          <div className="aio-popup-subtitle">{subtitle}</div>
+          <div className={`${cls}-title`}>{title}</div>
+          <div className={`${cls}-subtitle`}>{subtitle}</div>
         </div>
       )
     }
   }
-  function buttons_node(): React.ReactNode {
-    if (!buttons.length) { return null }
-    return (
-      <div className="aio-popup-header-buttons">
-        {buttons.map((o:AP_modal_button) => button_node(o))}
-      </div>
-    )
-  }
-  function button_node(p:AP_modal_button):React.ReactNode{
-    let [text, attrs = {}] = p;
-    let { onClick = () => { }, className } = attrs;
-    let Attrs = { ...attrs };
-    Attrs.className = 'aio-popup-header-button' + (className ? ' ' + className : '');
-    Attrs.onClick = () => onClick({ close: handleClose, state, setState })
-    return (<button {...Attrs}>{text}</button>)
-  }
-  function close_node(): React.ReactNode {
-    if (backButton || onClose === false) { return null }
-    return (<div className="aio-popup-header-close-button" onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>)
-  }
-  let className = 'aio-popup-header' + (attrs.className ? ' ' + attrs.className : '')
-  let style = attrs.style;
-  let p = {...attrs,className,style}
-  return (<div {...p}>{backButton_node()} {title_node()} {buttons_node()} {close_node()}</div>)
-}
-function ModalBody(props: AP_ModalBody) {
-  let { handleClose, body, updatePopoverStyle, state = {}, setState } = props;
-  let { render, attrs = {} } = body || {};
-  let content = typeof render === 'function' ? render({ close: handleClose, state, setState }) : render;
-  useEffect(() => {
-    updatePopoverStyle()
-  }, [content])
+  function close_node(): React.ReactNode {return (<div className={`${cls}-close-button`} onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>)}
+  function before_node(): React.ReactNode {return (<div className={`${cls}-before`} onClick={(e) => close(e)}>{before}</div>)}
+  function after_node(): React.ReactNode {return (<div className={`${cls}-after`} onClick={(e) => close(e)}>{after}</div>)}
+  let p = AddToAttrs(attrs,{className:cls})
   return (
-    <div {...attrs} className={'aio-popup-body aio-popup-scroll' + (attrs.className ? ' ' + attrs.className : '')}>
-      {typeof render === 'function' && content}
+    <div {...p}>
+      {before !== undefined && before_node()}
+      {!!title && title_node()}
+      {after !== undefined && after_node()} 
+      {onClose !== false && close_node()}
     </div>
   )
+}
+export type AP_ModalBody = {
+  body?:AP_body,
+  handleClose:()=>void,
+  updatePopoverStyle:()=>void,
+  state:any,setState:(state:any)=>void,
+  attrs:any
+}
+const ModalBody:FC<AP_ModalBody> = (props) => {
+  let { handleClose, body = ()=>null, updatePopoverStyle, state = {}, setState,attrs = {} } = props;
+  let content:React.ReactNode = body({ close: handleClose, state, setState });
+  useEffect(() => {updatePopoverStyle()}, [content])
+  if(!content || content === null){return null}
+  let p = AddToAttrs(attrs,{className:'aio-popup-body aio-popup-scroll'})
+  return (<div {...p}>{content}</div>)
 }
 function Alert(props: AP_alert) {
   let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center' } = props;

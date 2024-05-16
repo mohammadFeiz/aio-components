@@ -370,9 +370,7 @@ function AddModal() {
         return (
             <>
                 <h3>{title}</h3>
-                {
-                    AIODoc().Code(code)
-                }
+                {AIODoc().Code(code)}
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
                     if (!Array.isArray(props)) { props = [props] }
                     for (let i = 0; i < props.length; i++) {
@@ -391,45 +389,53 @@ function AddModal() {
                     code:
                         `instance.addModal({
     header:{title:'my modal'},
-    body:{render:()=>content}
+    body:()=>content,
+    setAttrs:(key)=>{
+        if(key === 'body'){
+            return {
+                style:{padding:12}
+            }
+        }
+    }
 })`,
-                    props: { header: { title: 'my modal' }, body: { render: () => content } }
+                    props: { 
+                        header: { title: 'my modal' }, body: () => content,
+                        setAttrs:(key)=>{if(key === 'body'){return {style:{padding:12}}}} 
+                    }
                 })
             }
             {
                 example({
                     title: 'Modal header',
                     code:
-                        `instance.addModal({
-    header:{
-        title:'my modal',
-        subtitle:'my modal subtitle',
-        attrs:{style:{background:'lightblue'}},
-        buttons:[
-            [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-            [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
-            ['My Button']
-        ]
+`instance.addModal({
+    header: {
+        title: 'my modal',
+        subtitle: 'my modal subtitle',
+        after:(
+            <div className='modal-header-after'>
+                <button onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
+                <button onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
+                <button onClick={() => alert()}>My Button</button> 
+            </div>
+        )
     },
-    body:{
-        render:()=>content
-    }
+    body: () => content
 })`
                     ,
                     props: {
                         header: {
                             title: 'my modal',
                             subtitle: 'my modal subtitle',
-                            buttons: [
-                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
-                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
-                                ['My Button']
-                            ],
-                            attrs: { style: { background: 'lightblue' } }
+                            after:(
+                                <div className='modal-header-after'>
+                                    <button onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
+                                    <button onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
+                                    <button onClick={() => alert()}>My Button</button> 
+                                </div>
+                            )
                         },
-                        body: {
-                            render: () => content
-                        }
+                        body: () => content
                     }
                 })
             }
@@ -437,118 +443,99 @@ function AddModal() {
                 example({
                     title: 'Modal header (onClose:false)',
                     code:
-                        `instance.addModal({
-    header:{
-        title:'my modal',
-        subtitle:'my modal subtitle',
-        attrs:{style:{background:'lightblue'}},
-        buttons:[
-            [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-            [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
-            ['My Button']
-        ],
-        onClose:false
+`instance.addModal({
+    header: {
+        title: 'my modal',
+        onClose: false
     },
-    body:{
-        render:()=>content
-    }
+    body: ()=>content
 })`
                     ,
                     props: {
                         header: {
                             title: 'my modal',
-                            subtitle: 'my modal subtitle',
-                            buttons: [
-                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
-                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
-                                ['My Button']
-                            ],
-                            attrs: { style: { background: 'lightblue' } },
                             onClose: false
                         },
-                        body: {
-                            render: () => content
-                        }
+                        body: ()=>content
                     }
                 })
             }
-
-
             {
                 example({
                     title: 'Modal header (onClose:custom function)',
                     code:
-                        `instance.addModal({
-    header:{
-        title:'my modal',
-        subtitle:'my modal subtitle',
-        attrs:{style:{background:'lightblue'}},
-        buttons:[
-            [<Icon path={mdiContentSave} size={1}/>,{onClick:()=>alert()}],
-            [<Icon path={mdiAttachment} size={1}/>,{onClick:()=>alert()}],
-            ['My Button']
-        ],
-        onClose:()=>{
+`instance.addModal({
+    header: {
+        title: 'my modal',
+        onClose: () => {
             alert('close popup');
-            popupInstance.removeModal()
+            popup.removeModal()
         }
     },
-    body:{
-        render:()=>content
-    }
+    body: () => content
 })`
                     ,
                     props: {
                         header: {
                             title: 'my modal',
-                            subtitle: 'my modal subtitle',
-                            buttons: [
-                                [<Icon path={mdiContentSave} size={1} />, { onClick: () => alert() }],
-                                [<Icon path={mdiAttachment} size={1} />, { onClick: () => alert() }],
-                                ['My Button']
-                            ],
-                            attrs: { style: { background: 'lightblue' } },
                             onClose: () => {
                                 alert('close popup');
                                 popup.removeModal()
                             }
                         },
-                        body: {
-                            render: () => content
-                        }
+                        body: () => content
                     }
                 })
             }
             {
                 example({
-                    title: 'Modal backdrop.close',
+                    title: 'Modal prevent backdrop close',
                     code:
-                        `instance.addModal({
-    position:'top',
-    backdrop:{
-        close:false
-    },
-    body:{
-        render:({close})=><MyComponent onClose={close}/>
+`instance.addModal({
+    position: 'top',
+    body: ({ close }) => (
+        <RVD
+            rootNode={{
+                row: [
+                    { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
+                    {
+                        gap: { size: 6 },
+                        column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
+                    }
+                ]
+            }}
+        />
+    ),
+    setAttrs:(key)=>{
+        if(key === 'backdrop'){
+            return {
+                onClick:()=>false
+            }
+        }
     }
 })`
                     ,
                     props: {
-                        position: 'top', backdrop: { close: false },
-                        body: {
-                            render: ({ close }) => (
-                                <RVD
-                                    rootNode={{
-                                        row: [
-                                            { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
-                                            {
-                                                gap: { size: 6 },
-                                                column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
-                                            }
-                                        ]
-                                    }}
-                                />
-                            )
+                        position: 'top',
+                        body: ({ close }) => (
+                            <RVD
+                                rootNode={{
+                                    row: [
+                                        { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
+                                        {
+                                            gap: { size: 6 },
+                                            column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
+                                        }
+                                    ]
+                                }}
+                            />
+                        ),
+                        setAttrs:(key)=>{
+                            if(key === 'backdrop'){
+                                return {
+                                    onClick:()=>false
+                                }
+                            }
                         }
                     }
                 })
@@ -557,24 +544,20 @@ function AddModal() {
                 example({
                     title: 'open many modal',
                     code:
-                        `instance.addModal({
+`instance.addModal({
     position:'top',
     id:'one',
-    body:{
-        render:({close})=><MyComponent onClose={close}/>
-    }
+    body:({close})=><MyComponent onClose={close}/>
 })
 instance.addModal({
     position:'bottom',
     id:'two',
-    body:{
-        render:({close})=><MyComponent onClose={close}/>
-    }
+    body:({close})=><MyComponent onClose={close}/>
 })`
                     ,
                     props: [
-                        { position: 'top', id: 'one', body: { render: ({ close }) => <Popup1 close={close} /> } },
-                        { position: 'bottom', id: 'two', body: { render: ({ close }) => <Popup1 /> } }
+                        { position: 'top', id: 'one', body: ({ close }) => <Popup1 close={close} />  },
+                        { position: 'bottom', id: 'two', body: ({ close }) => <Popup1 />  }
                     ]
                 })
             }
@@ -582,33 +565,37 @@ instance.addModal({
                 example({
                     title: 'use as confirm',
                     code:
-                        `instance.addModal({
-    position:'center',
-    header:{title:'my confirm title'},
-    body:{
-        render:()=>'my confirm text',
-        attrs:{style:{padding:12,width:300}}
-    },
-    footer:{
-        buttons:[
-            ['yes',{onClick:({close})=>{console.log('yes'); close()}}],
-            ['no',{onClick:({close})=>{console.log('no'); close()},style:{background:'#999'}}]
-        ]
+`instance.addModal({
+    position: 'center',
+    header: { title: 'my confirm title' },
+    body: () => (
+        <div style={{ padding: 12, width: 300 }}>
+            my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text
+        </div>
+    ),
+    footer: ({ close }) => {
+        return (
+            <>
+                <button className='ex-button-1' onClick={() => { console.log('yes'); close() }}>No</button>
+                <button className='ex-button-2' onClick={() => { console.log('no'); close() }}>Yes</button>
+            </>
+        )
     }
 })`
                     ,
                     props: {
                         position: 'center',
                         header: { title: 'my confirm title' },
-                        body: {
-                            render: () => 'my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text ',
-                            attrs: { style: { padding: 12, width: 300 } }
-                        },
+                        body: () => (
+                            <div style={{ padding: 12, width: 300 }}>
+                                my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text
+                            </div>
+                        ),
                         footer: ({ close }) => {
                             return (
                                 <>
-                                    <button onClick={() => { console.log('yes'); close() }}>Yes</button>
-                                    <button onClick={() => { console.log('no'); close() }} style={{ background: '#999' }}>Yes</button>
+                                    <button className='ex-button-1' onClick={() => { console.log('yes'); close() }}>No</button>
+                                    <button className='ex-button-2' onClick={() => { console.log('no'); close() }}>Yes</button>
                                 </>
                             )
                         }
@@ -660,21 +647,19 @@ instance.addModal({
                         position: 'center',
                         header: { title: 'my prompt title' },
                         state: { temp: '' },
-                        body: {
-                            render: ({ state, setState }: any) => {
-                                return (
-                                    <textarea
-                                        value={state.temp} onChange={(e) => setState({ ...state, temp: e.target.value })}
-                                        style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
-                                    />
-                                )
-                            }
+                        body: ({ state, setState }: any) => {
+                            return (
+                                <textarea
+                                    value={state.temp} onChange={(e) => setState({ ...state, temp: e.target.value })}
+                                    style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
+                                />
+                            )
                         },
                         footer:({close,state})=>{
                             return (
                                 <>
-                                    <button onClick={()=>{console.log(state.temp); close()}}>Yes</button>
-                                    <button onClick={()=>{close()}} style={{background:'#999'}}>Yes</button>
+                                    <button className='ex-button-1' onClick={()=>{close()}}>No</button>
+                                    <button className='ex-button-2' onClick={()=>{console.log(state.temp); close()}}>Yes</button>
                                 </>
                             )
                         }
@@ -710,7 +695,7 @@ function Popup1(props: any) {
 }
 function ModalPosition() {
     let [popup] = useState(new AIOPopup())
-    function v_layout(close) {
+    function v_layout(close:()=>void) {
         return (
             <RVD
                 rootNode={{
@@ -722,7 +707,7 @@ function ModalPosition() {
             />
         )
     }
-    function h_layout(close) {
+    function h_layout(close:()=>void) {
         return (
             <RVD
                 rootNode={{
@@ -745,12 +730,18 @@ function ModalPosition() {
         )
     }
     function openModal(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
-        let body, attrs: any = {}, header;
-        if (position === 'top' || position === 'bottom') { body = { render: ({ close }) => v_layout(close) } }
-        else if (position === 'left' || position === 'right') { body = { render: ({ close }) => h_layout(close) }; attrs.style = { width: 360 } }
-        else if (position === 'center') { body = { render: () => content }; attrs.style = { maxHeight: '90vh' }; header = { title: 'My Modal' } }
-        else if (position === 'fullscreen') { body = { render: () => content }; header = { title: 'My Modal' } }
-        popup.addModal({ position, body, attrs, header })
+        let p:AP_modal = {
+            body:()=>null,
+            header:undefined,
+            attrs:{},
+            position
+        }
+        let body:any, attrs: any = {}, header;
+        if (position === 'top' || position === 'bottom') { p.body = ({ close }) => v_layout(close) }
+        else if (position === 'left' || position === 'right') { p.body = ({ close }) => h_layout(close); p.attrs.style = { width: 360 } }
+        else if (position === 'center') { p.body = () => content; p.attrs.style = { maxHeight: '90vh' }; p.header = { title: 'My Modal' } }
+        else if (position === 'fullscreen') { p.body = () => content; p.header = { title: 'My Modal' } }
+        popup.addModal(p)
     }
     function getCode(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
         let body;
@@ -1404,7 +1395,7 @@ function Popover() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom1.current as any),
-            body: { render: ({ close }) => v_layout(close) }
+            body: ({ close }) => v_layout(close)
 
         })
     }
@@ -1413,7 +1404,7 @@ function Popover() {
             position: 'popover',
             getTarget: () => $(temp.dom2.current as any),
             fixStyle: (a, b) => { return { ...a, top: a.top + 36 } },
-            body: { render: () => v_layout() },
+            body: () => v_layout()
         })
     }
     function fitHorizontal() {
@@ -1421,14 +1412,14 @@ function Popover() {
             position: 'popover',
             getTarget: () => $(temp.dom3.current as any),
             fitHorizontal: true,
-            body: { render: () => v_layout() },
+            body: () => v_layout()
         })
     }
     function styling() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom4.current as any),
-            body: { render: () => content },
+            body: () => content ,
             attrs: {
                 style: {
                     height: 360,
@@ -1439,17 +1430,23 @@ function Popover() {
     }
     function without_backdrop() {
         popup.addModal({
-            backdrop: false,
             getTarget: () => $(temp.dom5.current as any),
             fitHorizontal: true,
             position: 'popover',
-            body: { render: () => content },
+            body: () => content,
             attrs: {
                 onClick: () => {
                     popup.removeModal()
                 },
                 style: {
                     height: 360
+                }
+            },
+            setAttrs:(key)=>{
+                if(key === 'backdrop'){
+                    return {
+                        style:{pointerEvents:'none'}
+                    }
                 }
             }
         })

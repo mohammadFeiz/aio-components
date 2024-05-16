@@ -136,7 +136,7 @@
   min-height: 48px;
 }
 
-.aio-popup-subtitle {
+.aio-popup-header-subtitle {
   font-size: 85%;
   opacity: 0.5;
 }
@@ -146,6 +146,7 @@
   flex: 1;
   width: 100%;
   overflow-y: auto;
+  box-sizing:border-box;
 }
 .aio-popup-body *{
   box-sizing: border-box;
@@ -159,6 +160,7 @@
   display: flex;
   border-top: 1px solid #f2f4f7;
   justify-content: flex-end;
+  box-sizing: border-box;
 }
 .aio-popup-header-buttons{
   display:flex;
@@ -178,7 +180,11 @@
   justify-content: center;
   width: 36px;
 }
-
+.aio-popup-header-after{
+  display:flex;
+  align-items: center;
+  height:100%;
+}
 .aio-popup-footer-button {
   height: 30px;
   background: dodgerblue;

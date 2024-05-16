@@ -19,3 +19,28 @@
 .my-snackebar .aio-popup-snackebar-bar{
     background:#36CB8C;
 }
+.modal-header-after{
+    display:flex;
+    align-items: center;
+    gap:3px;
+}
+.modal-header-after button{
+    background:none;
+    border:none
+}
+.ex-button-1{
+    border:1px solid dodgerblue;
+    color:dodgerblue;
+    background:#fff;
+    border-radius:4px;
+    font-size:12px;
+    padding:6px 24px;
+}
+.ex-button-2{
+    border:1px solid dodgerblue;
+    background:dodgerblue;
+    color:#fff;
+    border-radius:4px;
+    font-size:12px;
+    padding:6px 24px;
+}
