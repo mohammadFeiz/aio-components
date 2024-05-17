@@ -5,6 +5,7 @@ import AIOInput from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
+import { AI } from "../../npm/aio-input/types";
 type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
@@ -89,7 +90,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             'caret (false)',
             () => (
                 <Options
-                    props={{ caret: false }}
+                    props={{ type,caret: false }}
                     propsCode={
                         `caret={false}`
                     }
@@ -101,7 +102,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             'caret (html)',
             () => (
                 <Options
-                    props={{ caret: <Icon path={mdiChevronDoubleDown} size={.7} /> }}
+                    props={{ type,caret: <Icon path={mdiChevronDoubleDown} size={.7} /> }}
                     propsCode={
                         `caret={<Icon path={mdiChevronDoubleDown} size={.7}/>}`
                     }
@@ -306,40 +307,53 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             () => (
                 <Options
                     props={{
+                        type,
                         popover: {
                             position: 'center',
-                            attrs: {
-                                style: {
-                                    background: '#f2f2f2',
-                                    minWidth: 240
+                            setAttrs:(key)=>{
+                                if(key === 'backdrop'){
+                                    return {
+                                        attrs: {
+                                            style: {
+                                                background: 'rgba(0,0,0,0.8)'
+                                            }
+                                        }
+                                    }
                                 }
-                            },
-                            backdrop: {
-                                attrs: {
-                                    style: {
-                                        background: 'rgba(0,0,0,0.8)'
+                                if(key === 'modal'){
+                                    return {
+                                        style: {
+                                            background: '#f2f2f2',
+                                            minWidth: 240
+                                        }
                                     }
                                 }
                             }
                         }
                     }}
                     propsCode={
-                        `popover={{
-                position:'center',
-                attrs:{
-                    style:{
-                        background:'#f2f2f2',
-                        minWidth:240
+            `popover: {
+                position: 'center',
+                setAttrs:(key)=>{
+                    if(key === 'backdrop'){
+                        return {
+                            attrs: {
+                                style: {
+                                    background: 'rgba(0,0,0,0.8)'
+                                }
+                            }
+                        }
                     }
-                },
-                backdrop:{
-                    attrs:{
-                        style:{
-                            background:'rgba(0,0,0,0.8)'
+                    if(key === 'modal'){
+                        return {
+                            style: {
+                                background: '#f2f2f2',
+                                minWidth: 240
+                            }
                         }
                     }
                 }
-            }}`
+            }`
                     }
                 />
             ),
@@ -1215,7 +1229,7 @@ const CheckIconObject: FC = () => {
         </div>
     )
 }
-const Options: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
+const Options: FC<{ option?: any, optionCode?: string, props?: AI, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
     const { type }: I_CTX = useContext(CTX);
     if (type === 'text') { return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'number') { return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
@@ -1303,15 +1317,19 @@ const DateAndTimePopover: FC = () => {
                 onChange={(newValue) => setValue(newValue)}
                 popover={{
                     position: 'center',
-                    attrs: {
-                        style: {
-                            background: '#f2f2f2',
-                            minWidth: 240
+                    setAttrs:(key)=> {
+                        if(key === 'backdrop'){
+                            return {
+                                style: {background: 'rgba(0,0,0,0.8)'}
+                            }
                         }
-                    },
-                    backAttrs: {
-                        style: {
-                            background: 'rgba(0,0,0,0.8)'
+                        if(key === 'modal'){
+                            return {
+                                style: {
+                                    background: '#f2f2f2',
+                                    minWidth: 240
+                                }
+                            }
                         }
                     }
                 }}
@@ -1322,17 +1340,19 @@ const DateAndTimePopover: FC = () => {
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
     popover={{
-        position:'center',
-        attrs:{
-            style:{
-                background:'#f2f2f2',
-                minWidth:240
+        position: 'center',
+        setAttrs:(key)=> {
+            if(key === 'backdrop'){
+                return {
+                    style: {background: 'rgba(0,0,0,0.8)'}
+                }
             }
-        },
-        backdrop:{
-            attrs:{
-                style:{
-                    background:'rgba(0,0,0,0.8)'
+            if(key === 'modal'){
+                return {
+                    style: {
+                        background: '#f2f2f2',
+                        minWidth: 240
+                    }
                 }
             }
         }

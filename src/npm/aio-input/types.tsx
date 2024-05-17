@@ -157,20 +157,18 @@ export type AI = {
 }
 export type AI_popover = {
     position?:AP_position,
-    backClose?:boolean,
-    backAttrs?:any,
     fitHorizontal?:boolean,
-    attrs?:any,
     body?:(close:any)=>React.ReactNode,
     limitTo?:string,
     fitTo?:string,
     header?:{
         attrs?:any,
         title?:string,
-        close?:boolean
+        onClose?:boolean
     },
     maxHeight?:number | string,
-    pageSelector?:string
+    pageSelector?:string,
+    setAttrs?:(key:'backdrop' | 'modal' | 'header' | 'body' | 'footer')=>any
 }
 export type AI_optionProp = {[key in AI_optionKey]?:any}
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}

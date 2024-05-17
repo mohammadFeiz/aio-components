@@ -1,4 +1,4 @@
-import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext, useContext, useRef } from 'react';
+import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -7,6 +7,7 @@ import './index.css';
 import { AddToAttrs } from '../aio-utils';
 export type AP_props = {rtl?:boolean,id?:string}
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
+export type AP_attrsKey = 'backdrop'|'modal'|'header'|'body'|'footer';
 export type AP_header = ((p:{close:()=>void,state:any,setState:any})=>React.ReactNode) | {
   title?:string,
   subtitle?:string,
@@ -17,7 +18,7 @@ export type AP_header = ((p:{close:()=>void,state:any,setState:any})=>React.Reac
 }
 export type AP_body = (p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode
 export type AP_footer = (p:{state:any,setState:(v:any)=>void,close:()=>void})=>React.ReactNode
-type AP_setAttrs = (mode:'backdrop'|'modal'|'header'|'body'|'footer')=>any
+type AP_setAttrs = (mode:AP_attrsKey)=>any
 export type AP_modal = {
     getTarget?:()=>any,
     pageSelector?:string,
@@ -29,7 +30,6 @@ export type AP_modal = {
     id?:string,
     onClose?:boolean | (()=>void),
     position?:AP_position,
-    attrs?:any,
     header?:AP_header,
     state?:any,
     footer?:AP_footer,
@@ -63,80 +63,63 @@ export type AP_snackebar = {
   onClose?:false
   attrs?:any
 }
-export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,attrs?:any}
-export type AP_prompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel?:()=>void,attrs?:any}
-export type AP_modal_button = [text:React.ReactNode,attrs?:any | ((p:{state:any,setState:(v:any)=>void})=>any)]
-export type AP_Popups = {
-  getActions:(p:{
-    removeModal:(p?:string,animate?:boolean)=>void,
-    addModal:(p:AP_modal)=>void,
-    getModals:()=>AP_modal[]
-  })=>void,
-  rtl:boolean,
-  id?:string
-}
-
-export type AP_Popup = {
-  modal:AP_modal,
-  rtl:boolean,
-  index:number,
-  isLast:boolean,
-  onClose:()=>void,
-  removeModal:(p?:string,animate?:boolean)=>void,
-}
-
-
-
+export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
+export type AP_prompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
 export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
-
 export type AP_SnackebarItem = {
   item:AP_snackebar,
   onRemove:(id:string)=>void,
   index:number,
   rtl:boolean
 }
-
 export default class AIOPopup {
   rtl?: boolean;
   render: () => React.ReactNode;
   addModal: (p: AP_modal) => void;
   addAlert: (p: AP_alert) => void;
-  removeModal: (arg?: string, animate?: boolean) => void;
+  removeModal: (arg?: string) => void;
   addSnackebar: (p: AP_snackebar) => void;
   getModals: () => AP_modal[];
   addConfirm: (p: AP_confirm) => void;
   addPrompt: (p: AP_prompt) => void;
   popupId?: string;
-  isRenderCalled:boolean;
+  popupsRef:React.RefObject<typeof Popups>;
   constructor(obj?: AP_props) {
-    let { rtl = false, id } = obj || {}
-    this.isRenderCalled = false;
+    let { rtl = false } = obj || {}
     this.rtl = rtl;
-    this.addModal = () => {alert('aio-popup error => missing call AIOPopup instance.render() in your project')};
-    this.removeModal = () => { };
     this.addSnackebar = () => { };
-    this.getModals = () => [];
+    this.popupsRef = createRef()
+    this.getModals = ()=>{
+      let comp:any = this.popupsRef.current
+      if(comp === null){return []}
+      return comp.getModals() || []
+    }
+    this.addModal = (modal:AP_modal)=>{
+      let comp:any = this.popupsRef.current
+      if(comp === null){return}
+      comp.addModal(modal)
+    }
+    this.removeModal = (arg)=>{
+      let comp:any = this.popupsRef.current
+      if(comp === null){return}
+      comp.removeModal(arg)
+    }
     this.render = () => {
-      this.isRenderCalled = true;
-      let popupsProps: AP_Popups = {
-        rtl, id,
-        getActions: ({ addModal, removeModal, getModals }) => {
-          this.addModal = addModal;
-          this.removeModal = removeModal;
-          this.getModals = getModals;
-        }
-      }
       let snackebarProps: AP_Snackebar = {rtl,getActions: ({ add }) => this.addSnackebar = add}
-      return (<><Popups {...popupsProps} key={id} /><Snackebar {...snackebarProps} /></>)
+      return (<><Popups rtl={rtl} ref={this.popupsRef} /><Snackebar {...snackebarProps} /></>)
     }
     this.addAlert = (obj) => Alert(obj);
     this.addConfirm = (obj: AP_confirm) => {
-      let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, attrs = {} } = obj;
-      let className = 'aio-popup-confirm';
-      if (attrs.className) { className += ' ' + attrs.className }
+      let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = ()=>{return {}} } = obj;
       let config: AP_modal = {
         position: 'center',
-        attrs: { ...attrs, className },
+        setAttrs:(key)=>{
+          let attrs = setAttrs(key)
+          if(key === 'modal'){
+            return AddToAttrs(attrs,{className:'aio-popup-confirm'})
+          }
+          return attrs
+        },
         header: { title, subtitle },
         body:()=>text,
         footer: ()=>{
@@ -155,12 +138,16 @@ export default class AIOPopup {
       this.addModal(config)
     }
     this.addPrompt = (obj: AP_prompt) => {
-      let { title, subtitle, text, submitText = 'تایید', canselText = 'بستن', onSubmit, onCansel = () => { }, attrs = {} } = obj;
-      let className = 'aio-popup-prompt';
-      if (attrs.className) { className += ' ' + attrs.className }
+      let { title, subtitle, text, submitText = 'تایید', canselText = 'بستن', onSubmit, onCansel = () => { }, setAttrs = ()=>{return {}} } = obj;
       let config: AP_modal = {
         position: 'center',
-        attrs: { ...attrs, className },
+        setAttrs:(key)=>{
+          let attrs = setAttrs(key)
+          if(key === 'modal'){
+            return AddToAttrs(attrs,{className:'aio-popup-prompt'})
+          }
+          return attrs
+        },
         state: { temp: '' },
         header: { title, subtitle },
         body:({state,setState})=>{
@@ -192,70 +179,67 @@ export default class AIOPopup {
     }
   }
 }
-const Popups:FC<AP_Popups> = (props)=> {
+type AP_Popups = {ref:any,rtl:boolean}
+const Popups:FC<AP_Popups> = forwardRef((props,ref)=> {
   let [modals,setModals] = useState<AP_modal[]>([])
   let modalsRef = useRef(modals)
   modalsRef.current = modals;
   let { rtl } = props;
-  useEffect(()=>{
-    props.getActions({addModal,removeModal,getModals:()=>[...modalsRef.current]})
-  },[])
+  useImperativeHandle(ref,()=>({
+    addModal,removeModal,getModals:()=>modalsRef.current
+  }))
+
   function addModal(o: AP_modal) {
     if (o.id === undefined) { o.id = 'popup' + Math.round(Math.random() * 1000000) }
-    let newModals: AP_modal[] = modalsRef.current.filter(({ id }) => id !== o.id);
     let newModal: AP_modal = o
-    newModals.push(newModal)
-    setModals([...newModals])
+    setModals(prevModals => {
+      let newModals: AP_modal[] = prevModals.filter(({ id }) => id !== o.id);
+      return [...newModals,newModal]
+    })
   }
-  async function removeModal(arg: string | undefined = 'last', animate = true) {
-    if (arg === 'all') {
-      setModals([]);
-      return
-    }
+  async function removeModal(arg: string | undefined = 'last') {
+    if (arg === 'all') {setModals([]); return}
     if (!modalsRef.current.length) { return }
     if (arg === 'last') { arg = modalsRef.current[modalsRef.current.length - 1].id }
     let modal: AP_modal | undefined = modalsRef.current.find((o: AP_modal) => o.id === arg);
     if (!modal) { return }
-    if (typeof modal.onClose === 'function') { modal.onClose() }
-    let newModals: AP_modal[] = modalsRef.current.filter((o) => o.id !== arg)
-    setModals([...newModals])
+    $(`[data-id=${arg}]`).addClass('not-mounted');
+    setTimeout(()=>{
+      if (typeof modal.onClose === 'function') { modal.onClose() }
+      setModals(prevModals => prevModals.filter((o) => o.id !== arg))
+    },300)
   }
   function getModals() {
     return modalsRef.current.map((modal: AP_modal, i) => {
-      let props: AP_Popup = {
-        modal, index: i, isLast: i === modalsRef.current.length - 1, rtl,
-        onClose: () => removeModal(modal.id),
-        removeModal,//use for remove lastModal by esc keyboard
-      }
-      return <Popup key={modal.id} {...props} />
+      return (
+        <Popup
+          key={modal.id} modal={modal} rtl={rtl}
+          isLast={i === modalsRef.current.length - 1}
+          onClose={() => removeModal(modal.id)}
+        />
+      )
     })
   }
-  let Modals = getModals();
-  if (!modals.length) { return null }
-  return <>{Modals}</>
-}
-type AP_Popup_temp = {
-  dom: any,
-  backdropDom: any,
-  dui?: string,
-  isDown: boolean,
-}
+  let Modals:React.ReactNode[] = getModals();
+  return !Modals.length?null:<>{Modals}</>
+})
+type AP_Popup_temp = {dom: any,backdropDom: any,dui?: string,isDown: boolean,}
 type I_CTX = {close:()=>void,state:any,setState:(v:any)=>void}
 const CTX = createContext({} as any)
+type AP_Popup = {modal:AP_modal,rtl:boolean,isLast:boolean,onClose:()=>void}
 function Popup(props: AP_Popup) {
-  let { modal, rtl, onClose, isLast, removeModal } = props;
+  let { modal, rtl, onClose, isLast } = props;
   let { setAttrs = ()=>{return {}}, id, position = 'fullscreen', body, getTarget,maxHeight, fixStyle = (o) => o, fitTo } = modal;
   let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
   let attrs = setAttrs('modal') || {}
   let backdropAttrs = setAttrs('backdrop') || {}
+  const firstMount = useRef(false);
   async function close() {
     onClose();
   }
-  useEffect(() => {
-    return () => {$(window).unbind('click', handleBackClick)}
-  })
+  useEffect(() => () => {$(window).unbind('click', handleBackClick)})
   useEffect(() => {
     //be khatere 300 mili sanie transitioni ke popup dare bayad inja bish az oon 300 milisanie vaghfe bedim ta dorost update beshe andaze ha 
       let newStyle:any = position === 'popover' ? getPopoverStyle() : {}
@@ -264,8 +248,14 @@ function Popup(props: AP_Popup) {
     if (getTarget) {
       temp.dui = 'a' + (Math.round(Math.random() * 10000000));
       let target = getTarget();
-      target.attr('data-uniq-id', temp.dui)
+      target.attr('data-id', temp.dui)
     }
+    setTimeout(()=>{
+      let popup = $(temp.dom.current)
+      popup.removeClass('not-mounted')
+      $(temp.backdropDom.current).removeClass('not-mounted')
+      popup.focus();
+    },0)
     $(window).unbind('click', handleBackClick)
     $(window).bind('click', handleBackClick)
   }, [])
@@ -273,9 +263,7 @@ function Popup(props: AP_Popup) {
     //در مود پاپاور اگر هر جایی غیر از اینپوت و پاپاور کلیک شد پاپاپ رو ببند
     if (!temp.dui) { return }
     let target = $(e.target)
-    if (position !== 'popover' || target.attr('data-uniq-id') === temp.dui || target.parents(`[data-uniq-id=${temp.dui}]`).length) {
-      return
-    }
+    if (position !== 'popover' || target.attr('data-id') === temp.dui || target.parents(`[data-id=${temp.dui}]`).length) {return}
     close();
   }
   
@@ -283,16 +271,22 @@ function Popup(props: AP_Popup) {
     let className = 'aio-popup-backdrop';
     className += ` aio-popup-position-${position}`
     className += rtl ? ' rtl' : ' ltr'
+    if(firstMount){className += ' not-mounted'}
     return AddToAttrs(
       backdropAttrs,
       {
         className,
         attrs:{
-          ['data-id']: id,
+          ref:temp.backdropDom,onKeyDown:keyDown,tabIndex:0,['data-id']: id,
           onClick:backdropAttrs.onClick?backdropAttrs.onClick:backClick
         }
       }
     )
+  }
+  function getModalProps():AP_align{
+    let style: any = { ...popoverStyle, ...attrs.style }
+    let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
+    return {...attrs,ref:temp.dom,"data-id":modal.id,tabIndex:0,onKeyDown:keyDown,[ev]:mouseDown,className:getClassName(),style:{...style}}
   }
   function backClick(e: Event) {
     if (temp.isDown) { return }
@@ -315,9 +309,7 @@ function Popup(props: AP_Popup) {
   function keyDown(e: any) {
     if (!isLast) { return }
     let code = e.keyCode;
-    if (code === 27) {
-      removeModal()
-    }
+    if (code === 27) {onClose()}
   }
   function mouseUp() {
     setTimeout(() => temp.isDown = false, 0);
@@ -330,22 +322,15 @@ function Popup(props: AP_Popup) {
   function getClassName() {
     let className = 'aio-popup';
     className += rtl ? ' rtl' : ' ltr'
+    if(firstMount){className += ' not-mounted'}
     if (attrs.className) { className += ' ' + attrs.className }
     return className
   }
-  let style: any = { ...popoverStyle, ...attrs.style }
-  let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
-  let p:AP_align = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style}}
-  function getContext(){
-    let context:I_CTX = {
-      close,state,setState
-    }
-    return context
-  }
+  function getContext():I_CTX{return {close,state,setState}}
   return (
     <CTX.Provider value={getContext()}>
-      <div {...getBackdropProps()} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
-        <div {...p}>
+      <div {...getBackdropProps()}>
+        <div {...getModalProps()}>
           {!!modal.header && <ModalHeader modal={modal}/>} 
           <ModalBody modal={modal}/>
           {!!modal.footer && <div {...AddToAttrs(setAttrs('footer'),{className:'aio-popup-footer'})}>{modal.footer({state,setState,close})}</div>}

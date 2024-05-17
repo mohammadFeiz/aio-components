@@ -61,12 +61,7 @@ function AIOINPUT(props: AI) {
         return (dom: any) => {
             let popover: AI_popover = { ...(props.popover || {}) }
             let { type,multiple } = props;
-            let { body,backAttrs = {},backClose = true,limitTo,header } = popover;
-            let backdrop = { 
-                attrs: AddToAttrs(backAttrs, { className: 'aio-input-backdrop ' + datauniqid }),
-                close:backClose
-            }
-            let headerConfig = header?{...header,onClose:header.close}:undefined;
+            let { body,limitTo,header,setAttrs = ()=>{return {}} } = popover;
             let target: React.ReactNode = $(dom.current)
             let config: AP_modal = {
                 //props that have default but can change by user
@@ -74,21 +69,26 @@ function AIOINPUT(props: AI) {
                 fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
                 //props that havent default but can define by user(header,footer,fitTo,fixStyle)
                 limitTo,
-                header:headerConfig,
+                header,
                 //props that cannot change by user
-                backdrop,
                 onClose: () => toggle(false),
-                body: {
-                    render: ({ close }) => {
-                        if (type === 'button') { return (body || (() => ''))({ close }) }
-                        else if (type === 'date') { return <Calendar onClose={close} /> }
-                        else if (type === 'time') { return <TimePopover onClose={close} /> }
-                        else { return <Options /> }
-                    }
+                body: ({ close }) => {
+                    if (type === 'button') { return (body || (() => ''))({ close }) }
+                    else if (type === 'date') { return <Calendar onClose={close} /> }
+                    else if (type === 'time') { return <TimePopover onClose={close} /> }
+                    else { return <Options /> }
                 },
                 pageSelector: '.aio-input-backdrop.' + datauniqid,
                 getTarget: () => target,
-                attrs: AddToAttrs(popover.attrs, { className })
+                setAttrs:(key:'backdrop' | 'modal' | 'header' | 'body' | 'footer')=>{
+                    let attrs = setAttrs(key);
+                    if(key === 'modal'){
+                        AddToAttrs(attrs, { className })
+                    }
+                    if(key === 'backdrop'){
+                        return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid })
+                    }
+                }
             }
             return config;
         }
@@ -275,14 +275,8 @@ function Image() {
     }
     function openPopup() {
         popup.addModal({
-            position: 'center',
-            header: { title: '', onClose: (e) => popup.removeModal() },
-            body: {
-                render: () => {
-                    let src = $(dom.current).attr('src')
-                    return (<div className='aio-input-image-preview-popup'><img src={src} alt={placeholder} /></div>)
-                }
-            }
+            position: 'center',header: { title: '', onClose: (e) => popup.removeModal() },
+            body: () => <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder} /></div>
         })
     }
     let IMG = url ? (
@@ -1763,7 +1757,7 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
         attrs: { className: 'aio-input-date-dropdown' },
         popover: {
             fitTo: '.aio-input-date-calendar',
-            attrs: { style: { background: theme[1], color: theme[0] } },
+            setAttrs:(key)=>{if(key === 'modal'){return { style: { background: theme[1], color: theme[0] } }}},
             body: (close) => <DPHeaderPopup onClose={close} unit={unit} />
         }
     }
@@ -2226,7 +2220,7 @@ function TableToolbar() {
                 header: {
                     attrs: { className: 'aio-input-table-toolbar-popover-header' },
                     title: 'Sort',
-                    close: false
+                    onClose: false
                 },
                 pageSelector: '.aio-input-table'
             },

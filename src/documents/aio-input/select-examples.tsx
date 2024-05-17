@@ -5,6 +5,7 @@ import AIOInput from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
+import { AI } from "../../npm/aio-input/types";
 type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons'
 const textOptions = [
     {name:'john',id:'1',gender:'male',color:'#ff0000'},
@@ -228,40 +229,49 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                 <Options 
                     type={type}
                     props={{
+                        type,
                         popover:{
                             fitHorizontal:true,
-                            attrs:{
-                                style:{
-                                    background:'#f2f2f2',
-                                    minWidth:240
+                            setAttrs:(key)=>{
+                                if(key === 'backdrop'){
+                                    return {
+                                        style:{
+                                            background:'rgba(0,0,0,0.8)'
+                                        }
+                                    }
                                 }
-                            },
-                            backdrop:{
-                                attrs:{
-                                    style:{
-                                        background:'rgba(0,0,0,0.8)'
+                                if(key === 'modal'){
+                                    return {
+                                        style:{
+                                            background:'#f2f2f2',
+                                            minWidth:240
+                                        }
                                     }
                                 }
                             }
                         }
                     }}
                     propsCode={
-            `popover={{
+            `popover:{
                 fitHorizontal:true,
-                attrs:{
-                    style:{
-                        background:'#f2f2f2',
-                        minWidth:240
+                setAttrs:(key)=>{
+                    if(key === 'backdrop'){
+                        return {
+                            style:{
+                                background:'rgba(0,0,0,0.8)'
+                            }
+                        }
                     }
-                },
-                backdrop:{
-                    attrs:{
-                        style:{
-                            background:'rgba(0,0,0,0.8)'
+                    if(key === 'modal'){
+                        return {
+                            style:{
+                                background:'#f2f2f2',
+                                minWidth:240
+                            }
                         }
                     }
                 }
-            }}`
+            }`
                     }
                 />
             ),
@@ -273,6 +283,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                 <Options 
                     type={type}
                     props={{
+                        type,
                         multiple:true
                     }}
                     propsCode={
@@ -305,6 +316,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                 <Options 
                     type={type}
                     props={{
+                        type,
                         multiple:true
                     }}
                     propsCode={
@@ -330,6 +342,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                 <Options 
                     type={type}
                     props={{
+                        type,
                         multiple:true
                     }}
                     propsCode={
@@ -390,7 +403,13 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                                         value:'option'
                                     },
                                     popover:{
-                                        maxHeight:'100vh'
+                                        setAttrs:(key)=>{
+                                            if(key === 'modal'){
+                                                return {
+                                                    style:{maxHeight:'100vh'}
+                                                }
+                                            }
+                                        }
                                     }
                                 },
                                 field:'value.show'
@@ -717,12 +736,11 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
     )
 }
 
-const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:any,propsCode?:string}> = ({type,option = {},optionCode,props={},propsCode})=> {
+const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:AI,propsCode?:string}> = ({type,option = {},optionCode,props={},propsCode})=> {
     const [value,setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
                 options={textOptions}   
@@ -732,7 +750,7 @@ const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:any,
                     ...option
                 }}
                 {...props}
-
+                type={type} 
             />
         {AIODoc().Code(`
 <AIOInput

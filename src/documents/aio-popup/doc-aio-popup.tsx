@@ -733,14 +733,32 @@ function ModalPosition() {
         let p:AP_modal = {
             body:()=>null,
             header:undefined,
-            attrs:{},
             position
         }
-        let body:any, attrs: any = {}, header;
-        if (position === 'top' || position === 'bottom') { p.body = ({ close }) => v_layout(close) }
-        else if (position === 'left' || position === 'right') { p.body = ({ close }) => h_layout(close); p.attrs.style = { width: 360 } }
-        else if (position === 'center') { p.body = () => content; p.attrs.style = { maxHeight: '90vh' }; p.header = { title: 'My Modal' } }
-        else if (position === 'fullscreen') { p.body = () => content; p.header = { title: 'My Modal' } }
+        if (position === 'top' || position === 'bottom') { 
+            p.body = ({ close }) => v_layout(close) 
+        }
+        else if (position === 'left' || position === 'right') { 
+            p.body = ({ close }) => h_layout(close); 
+            p.setAttrs = (key)=>{
+                if(key==='modal'){
+                    return {style:{ width: 360 }}
+                }
+            } 
+        }
+        else if (position === 'center') { 
+            p.body = () => content; 
+            p.setAttrs = (key)=>{
+                if(key === 'modal'){
+                    return {style:{ maxHeight: '90vh' }}
+                } 
+            }
+            p.header = { title: 'My Modal' } 
+        }
+        else if (position === 'fullscreen') { 
+            p.body = () => content; 
+            p.header = { title: 'My Modal' } 
+        }
         popup.addModal(p)
     }
     function getCode(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
@@ -1396,7 +1414,6 @@ function Popover() {
             position: 'popover',
             getTarget: () => $(temp.dom1.current as any),
             body: ({ close }) => v_layout(close)
-
         })
     }
     function fixStyle() {
@@ -1420,10 +1437,14 @@ function Popover() {
             position: 'popover',
             getTarget: () => $(temp.dom4.current as any),
             body: () => content ,
-            attrs: {
-                style: {
-                    height: 360,
-                    width: 400
+            setAttrs:(key)=>{
+                if(key === 'modal'){
+                    return {
+                        style: {
+                            height: 360,
+                            width: 400
+                        }
+                    }
                 }
             }
         })
@@ -1434,18 +1455,20 @@ function Popover() {
             fitHorizontal: true,
             position: 'popover',
             body: () => content,
-            attrs: {
-                onClick: () => {
-                    popup.removeModal()
-                },
-                style: {
-                    height: 360
-                }
-            },
             setAttrs:(key)=>{
                 if(key === 'backdrop'){
                     return {
                         style:{pointerEvents:'none'}
+                    }
+                }
+                if(key === 'modal'){
+                    return {
+                        onClick: () => {
+                            popup.removeModal()
+                        },
+                        style: {
+                            height: 360
+                        }
                     }
                 }
             }
@@ -1456,12 +1479,10 @@ function Popover() {
             <h3>popover</h3>
             {
                 AIODoc().Code(`
-instance.addModal({
-    position:'popover',
-    popover:{
-        getTarget:()=>$(dom1.current),
-    },
-    body:{render:({close})=>v_layout(close)}
+popupInstance.addModal({
+    position: 'popover',
+    getTarget: () => $(temp.dom1.current as any),
+    body: ({ close }) => v_layout(close)
 })
                 `)
             }
@@ -1470,15 +1491,11 @@ instance.addModal({
             <h3>popover fixStyle</h3>
             {
                 AIODoc().Code(`
-instance.addModal({
-position:'popover',
-popover:{
-    getTarget:()=>$(dom2.current),
-    fixStyle:(a,b)=>{
-        return {...a,top:a.top + 36}
-    }
-},
-body:{render:()=>v_layout()},
+popupInstance.addModal({
+    position: 'popover',
+    getTarget: () => $(temp.dom2.current as any),
+    fixStyle: (a, b) => { return { ...a, top: a.top + 36 } },
+    body: () => v_layout()
 })
                 `)
             }
@@ -1487,14 +1504,11 @@ body:{render:()=>v_layout()},
             <h3>fitHorizontal</h3>
             {
                 AIODoc().Code(`
-instance.addModal({
-popover:{
-    getTarget:()=>$(dom3.current),
-    fitHorizontal:true
-},
-position:'popover',
-body:{render:()=>v_layout()},
-
+popupInstance.addModal({
+    position: 'popover',
+    getTarget: () => $(temp.dom3.current as any),
+    fitHorizontal: true,
+    body: () => v_layout()
 })
                 `)
             }
@@ -1503,19 +1517,20 @@ body:{render:()=>v_layout()},
             <h3>styling popover</h3>
             {
                 AIODoc().Code(`
-instance.addModal({
-position:'popover',
-popover:{
-    getTarget:()=>$(dom4.current),
-    fitHorizontal:true,
-},
-body:{render:()=>content},
-attrs:{
-    style:{
-        height:360,
-        width:400
+popupInstance.addModal({
+    position: 'popover',
+    getTarget: () => $(temp.dom4.current as any),
+    body: () => content ,
+    setAttrs:(key)=>{
+        if(key === 'modal'){
+            return {
+                style: {
+                    height: 360,
+                    width: 400
+                }
+            }
+        }
     }
-}
 })
                 `)
             }
@@ -1524,22 +1539,28 @@ attrs:{
             <h3>popover without backdrop</h3>
             {
                 AIODoc().Code(`
-instance.addModal({
-backdrop:false,
-popover:{
-    getTarget:()=>$(dom5.current),
-    fitHorizontal:true,
-},
-position:'popover',
-body:{render:()=>content},
-attrs:{
-    onClick:()=>{
-        instance.removeModal()
-    },
-    style:{
-        height:360
+popupInstance.addModal({
+    getTarget: () => $(temp.dom5.current as any),
+    fitHorizontal: true,
+    position: 'popover',
+    body: () => content,
+    setAttrs:(key)=>{
+        if(key === 'backdrop'){
+            return {
+                style:{pointerEvents:'none'}
+            }
+        }
+        if(key === 'modal'){
+            return {
+                onClick: () => {
+                    popup.removeModal()
+                },
+                style: {
+                    height: 360
+                }
+            }
+        }
     }
-}
 })
                 `)
             }
