@@ -9,13 +9,10 @@
   justify-content: center;
   z-index: 10000;
   background: rgba(0, 0, 0, 0.1);
-  transition: 0.3s;
   pointer-events: all;
 }
 
-.aio-popup.not-mounted {
-  transition: 0.3s;
-}
+
 
 .aio-popup-position-fullscreen>.aio-popup.not-mounted {
   transform: scale(0);
@@ -78,10 +75,6 @@
   opacity: 1;
 }
 
-.aio-popup-backdrop.not-mounted {
-  background: none !important;
-  transition: 0.3s;
-}
 
 .aio-popup-position-right {
   justify-content: right;
@@ -113,7 +106,6 @@
 .aio-popup {
   border-radius: 4px;
   font-size: 14px;
-  transition: 0.3s;
   max-width: 100vw;
   max-height: 100vh;
   pointer-events: auto;
@@ -528,4 +520,22 @@
 
 .aio-popup-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #6f7888;
+}
+
+.aio-input-modal-trans-enter {
+  opacity: 0;
+}
+
+.aio-input-modal-trans-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.aio-input-modal-trans-exit {
+  opacity: 1;
+}
+
+.aio-input-modal-trans-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
 }

@@ -1,4 +1,4 @@
-import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext } from 'react';
+import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext, useContext, useRef } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
@@ -192,85 +192,60 @@ export default class AIOPopup {
     }
   }
 }
-class Popups extends Component<AP_Popups, { modals: AP_modal[] }> {
-  constructor(props: AP_Popups) {
-    super(props);
-    this.state = { modals: [] }
-    props.getActions({
-      addModal: this.addModal.bind(this),
-      removeModal: this.removeModal.bind(this),
-      getModals: () => {
-        let res = this.state.modals;
-        return Array.isArray(res) ? res : []
-      }
-    })
-  }
-  change(modals: AP_modal[]) {
-    let { id } = this.props;
-    let oldModals = [...this.state.modals]
-    let newModals: AP_modal[] = [...modals]
-    this.setState({ modals: newModals })
-  }
-
-  addModal(o: AP_modal) {
-    let { modals } = this.state;
+const Popups:FC<AP_Popups> = (props)=> {
+  let [modals,setModals] = useState<AP_modal[]>([])
+  let modalsRef = useRef(modals)
+  modalsRef.current = modals;
+  let { rtl } = props;
+  useEffect(()=>{
+    props.getActions({addModal,removeModal,getModals:()=>[...modalsRef.current]})
+  },[])
+  function addModal(o: AP_modal) {
     if (o.id === undefined) { o.id = 'popup' + Math.round(Math.random() * 1000000) }
-    let newModals: AP_modal[] = modals.filter(({ id }) => id !== o.id);
+    let newModals: AP_modal[] = modalsRef.current.filter(({ id }) => id !== o.id);
     let newModal: AP_modal = o
     newModals.push(newModal)
-    this.change(newModals)
+    setModals([...newModals])
   }
-  async removeModal(arg: string | undefined = 'last', animate = true) {
+  async function removeModal(arg: string | undefined = 'last', animate = true) {
     if (arg === 'all') {
-      this.setState({ modals: [] });
+      setModals([]);
       return
     }
-    let { modals } = this.state;
-    if (!modals.length) { return }
-    if (arg === 'last') { arg = modals[modals.length - 1].id }
-    let parentDom = $(`.aio-popup-backdrop[data-id=${arg}]`);
-    let dom = parentDom.find('.aio-popup');
-    parentDom.addClass('not-mounted');
-    dom.addClass('not-mounted');
-    setTimeout(() => {
-      let modal: AP_modal | undefined = modals.find((o: AP_modal) => o.id === arg);
-      if (!modal) { return }
-      if (typeof modal.onClose === 'function') { modal.onClose() }
-      let newModals: AP_modal[] = modals.filter((o) => o.id !== arg)
-      this.change(newModals)
-    }, animate ? 300 : 0)
+    if (!modalsRef.current.length) { return }
+    if (arg === 'last') { arg = modalsRef.current[modalsRef.current.length - 1].id }
+    let modal: AP_modal | undefined = modalsRef.current.find((o: AP_modal) => o.id === arg);
+    if (!modal) { return }
+    if (typeof modal.onClose === 'function') { modal.onClose() }
+    let newModals: AP_modal[] = modalsRef.current.filter((o) => o.id !== arg)
+    setModals([...newModals])
   }
-  getModals() {
-    let { modals } = this.state;
-    let { rtl } = this.props;
-    return modals.map((modal: AP_modal, i) => {
+  function getModals() {
+    return modalsRef.current.map((modal: AP_modal, i) => {
       let props: AP_Popup = {
-        modal, index: i, isLast: i === modals.length - 1, rtl,
-        onClose: () => this.removeModal(modal.id),
-        removeModal: this.removeModal.bind(this),//use for remove lastModal by esc keyboard
+        modal, index: i, isLast: i === modalsRef.current.length - 1, rtl,
+        onClose: () => removeModal(modal.id),
+        removeModal,//use for remove lastModal by esc keyboard
       }
       return <Popup key={modal.id} {...props} />
     })
   }
-  render() {
-    let { modals } = this.state;
-    if (!modals.length) { return null }
-    let renderModals = this.getModals();
-    return <>{renderModals}</>
-  }
-
+  let Modals = getModals();
+  if (!modals.length) { return null }
+  return <>{Modals}</>
 }
 type AP_Popup_temp = {
   dom: any,
   backdropDom: any,
   dui?: string,
   isDown: boolean,
-  isFirstMount: boolean
 }
+type I_CTX = {close:()=>void,state:any,setState:(v:any)=>void}
+const CTX = createContext({} as any)
 function Popup(props: AP_Popup) {
   let { modal, rtl, onClose, isLast, removeModal } = props;
   let { setAttrs = ()=>{return {}}, id, position = 'fullscreen', body, getTarget,maxHeight, fixStyle = (o) => o, fitTo } = modal;
-  let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false,isFirstMount: true})
+  let [temp] = useState<AP_Popup_temp>({dom: createRef(),backdropDom: createRef(),dui: undefined,isDown: false})
   let [popoverStyle, setPopoverStyle] = useState({})
   let [state, setState] = useState(modal.state)
   let attrs = setAttrs('modal') || {}
@@ -281,22 +256,11 @@ function Popup(props: AP_Popup) {
   useEffect(() => {
     return () => {$(window).unbind('click', handleBackClick)}
   })
-  function updatePopoverStyle() {
-    if (position === 'popover') {
-      let ps = getPopoverStyle();
-      if (JSON.stringify(ps) !== JSON.stringify(popoverStyle)) {
-        setPopoverStyle(ps)
-      }
-    }
-  }
   useEffect(() => {
-    temp.isFirstMount = false
     //be khatere 300 mili sanie transitioni ke popup dare bayad inja bish az oon 300 milisanie vaghfe bedim ta dorost update beshe andaze ha 
-    setTimeout(() => {
       let newStyle:any = position === 'popover' ? getPopoverStyle() : {}
       console.log('updatedStyle.top',newStyle.top)
       setPopoverStyle(newStyle)
-    }, 400)
     if (getTarget) {
       temp.dui = 'a' + (Math.round(Math.random() * 10000000));
       let target = getTarget();
@@ -314,31 +278,9 @@ function Popup(props: AP_Popup) {
     }
     close();
   }
-  function header_node(): React.ReactNode {
-    if(!modal.header){return null}
-    return <ModalHeader attrs={setAttrs('header')} header={modal.header} handleClose={() => close()} state={state} setState={(value) => setState(value)} />
-  }
-  function body_node(): React.ReactNode {
-    let attrs:any = setAttrs('body')
-    return (
-      <ModalBody 
-        body={body} attrs={attrs}
-        handleClose={()=>close()}
-        state={state} setState={(value)=>setState(value)}
-        updatePopoverStyle={updatePopoverStyle}
-      />
-    )
-  }
-  function footer_node(): React.ReactNode {
-    let attrs = setAttrs('footer')
-    let p = AddToAttrs(attrs,{className:'aio-popup-footer'})
-    return !modal.footer?null:<div {...p}>{modal.footer({state,setState,close})}</div>
-  }
+  
   function getBackdropProps() {
     let className = 'aio-popup-backdrop';
-    if (temp.isFirstMount) {
-      className += ' not-mounted'
-    }
     className += ` aio-popup-position-${position}`
     className += rtl ? ' rtl' : ' ltr'
     return AddToAttrs(
@@ -387,10 +329,6 @@ function Popup(props: AP_Popup) {
   }
   function getClassName() {
     let className = 'aio-popup';
-    if (temp.isFirstMount) {
-      className += ' not-mounted'
-      temp.isFirstMount = false
-    }
     className += rtl ? ' rtl' : ' ltr'
     if (attrs.className) { className += ' ' + attrs.className }
     return className
@@ -398,24 +336,37 @@ function Popup(props: AP_Popup) {
   let style: any = { ...popoverStyle, ...attrs.style }
   let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
   let p:AP_align = {...attrs,ref:temp.dom,"data-uniq-id":temp.dui,[ev]:mouseDown,className:getClassName(),style:{...style}}
+  function getContext(){
+    let context:I_CTX = {
+      close,state,setState
+    }
+    return context
+  }
   return (
-    <div {...getBackdropProps()} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
-      <div {...p}>{header_node()} {body_node()} {footer_node()}</div> 
-    </div>
+    <CTX.Provider value={getContext()}>
+      <div {...getBackdropProps()} ref={temp.backdropDom} onKeyDown={keyDown} tabIndex={0}>
+        <div {...p}>
+          {!!modal.header && <ModalHeader modal={modal}/>} 
+          <ModalBody modal={modal}/>
+          {!!modal.footer && <div {...AddToAttrs(setAttrs('footer'),{className:'aio-popup-footer'})}>{modal.footer({state,setState,close})}</div>}
+        </div> 
+      </div>
+    </CTX.Provider>
   )
 }
-type AP_ModalHeader = {
-  header:AP_header,handleClose:()=>void,state:any,setState:(state:any)=>void,attrs:any
-}
-const ModalHeader:FC<AP_ModalHeader> = (props) => {
-  let { header, handleClose, state, setState,attrs = {} } = props;
-  if(typeof header === 'function'){return header({close:handleClose,state,setState}) as any}
-  if (typeof header !== 'object') { return null }
+const ModalHeader:FC<{modal:AP_modal}> = (props) => {
+  let context:I_CTX = useContext(CTX);
+  let { modal } = props;
+  let { state, setState } = context;
+  let {setAttrs = ()=>{return {}}} = modal;
+  let attrs = setAttrs('modal') || {};
+  if(typeof modal.header === 'function'){return modal.header({close:context.close,state,setState}) as any}
+  if (typeof modal.header !== 'object') { return null }
   let cls = 'aio-popup-header'
-  let { title, subtitle, onClose,before,after } = header;
+  let { title, subtitle, onClose,before,after } = modal.header;
   function close(e: any) {
     e.stopPropagation(); e.preventDefault();
-    if (typeof onClose === 'function') { onClose({ state, setState }) } else { handleClose() }
+    if (typeof onClose === 'function') { onClose({ state, setState }) } else { context.close() }
   }
   function title_node(): React.ReactNode {
     if (!subtitle) {return <div className={`${cls}-title`} style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
@@ -428,33 +379,23 @@ const ModalHeader:FC<AP_ModalHeader> = (props) => {
       )
     }
   }
-  function close_node(): React.ReactNode {return (<div className={`${cls}-close-button`} onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>)}
-  function before_node(): React.ReactNode {return (<div className={`${cls}-before`} onClick={(e) => close(e)}>{before}</div>)}
-  function after_node(): React.ReactNode {return (<div className={`${cls}-after`} onClick={(e) => close(e)}>{after}</div>)}
-  let p = AddToAttrs(attrs,{className:cls})
   return (
-    <div {...p}>
-      {before !== undefined && before_node()}
+    <div {...AddToAttrs(attrs,{className:cls})}>
+      {before !== undefined && <div className={`${cls}-before`} onClick={(e) => close(e)}>{before}</div>}
       {!!title && title_node()}
-      {after !== undefined && after_node()} 
-      {onClose !== false && close_node()}
+      {after !== undefined && <div className={`${cls}-after`} onClick={(e) => close(e)}>{after}</div>} 
+      {onClose !== false && <div className={`${cls}-close-button`} onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>}
     </div>
   )
 }
-export type AP_ModalBody = {
-  body?:AP_body,
-  handleClose:()=>void,
-  updatePopoverStyle:()=>void,
-  state:any,setState:(state:any)=>void,
-  attrs:any
-}
-const ModalBody:FC<AP_ModalBody> = (props) => {
-  let { handleClose, body = ()=>null, updatePopoverStyle, state = {}, setState,attrs = {} } = props;
-  let content:React.ReactNode = body({ close: handleClose, state, setState });
-  useEffect(() => {updatePopoverStyle()}, [content])
+const ModalBody:FC<{modal:AP_modal}> = (props) => {
+  let {state,setState,close}:I_CTX = useContext(CTX);
+  let {modal} = props;
+  let {body = ()=>null,setAttrs = ()=>{return {}}} = modal;
+  let attrs = setAttrs('body') || {}
+  let content:React.ReactNode = body({ close, state, setState });
   if(!content || content === null){return null}
-  let p = AddToAttrs(attrs,{className:'aio-popup-body aio-popup-scroll'})
-  return (<div {...p}>{content}</div>)
+  return (<div {...AddToAttrs(attrs,{className:'aio-popup-body aio-popup-scroll'})}>{content}</div>)
 }
 function Alert(props: AP_alert) {
   let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center' } = props;
