@@ -11,7 +11,6 @@ import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip.tsx';
 import DOC_AIOChart from './documents/aio-chart/doc-aio-chart.tsx';
 import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater.js';
 import Puzzle from './documents/puzzle/index';
-import DOC_AIOService from './documents/aio-service/doc-aio-service.js';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup.tsx';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas.tsx';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login.js';
@@ -19,8 +18,6 @@ import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1.tsx";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import Test from './test.tsx';
-import T1 from './documents/t1/t1.js';
-import Versions from './versions.js';
 AIOInputSetStorage('mapApiKeys',{
   map:'web.0a2aa5f83d314a8c9916473aa0e01438',
   service:'service.09a2234e299a4ff585007b2894df9fca',
@@ -29,7 +26,6 @@ export default function AIOComponents(){
   let [storage] = useState<Storage>(new Storage('aio-componentspart'))
   let [part,setPart] = useState(storage.load('part','aio-input'))
   let [parts] = useState<any>({
-    'versions':Versions,
     'aio-input':DOC_AIOInput,
     'aio-highlighter':DOC_AIOHighlighter,
     'aio-validation':DOC_AIOValidation,
@@ -39,14 +35,12 @@ export default function AIOComponents(){
     'aio-chart':DOC_AIOChart,
     'aio-floater':DOC_AIOFloater,
     'puzzle':Puzzle,
-    'aio-service':DOC_AIOService,
     'aio-popup':DOC_AIOPopup,
     'aio-canvas':DOC_AIOCanvas,
     'aio-login':DOC_AIOLogin,
     'aio-shop':DOC_AIOShop,
     'react-virtual-dom':DOC_ReactVirtualDom,
     'msfloading1':DOC_MSFLoading1,
-    't1':T1,
     'test':Test
   })
   function changePart(part:any){

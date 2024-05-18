@@ -1,13 +1,66 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import $ from 'jquery';
 import "./index.css";
-import { I_RVDAttrs, I_RVDNode, I_RVD_context, I_RVD_node, I_RVD_props, I_RVD_temp } from "./types";
+export type I_RVD_node = {
+    align?: 'v' | 'h' | 'vh',
+    gap?: I_RVD_node | ((p:{node:I_RVD_node,parent:I_RVD_node,index:number,level:number})=>I_RVD_node),
+    data?:any,
+    reOrder?: (newData:any[],fromDragIndex: number, toDragIndex: number) => void,
+    longTouch?:()=>void,
+    size?: number,
+    flex?: number,
+    html?: React.ReactNode | ((obj:any) => React.ReactNode),
+    row?: I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
+    column?: I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
+    grid?: I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
+    gridCols?:number,
+    gridRow?:I_RVD_node[] | ((obj:any)=>I_RVD_node[]),
+    nodeClass?:string,
+    wrap?:boolean,
+    nodeClasses?:string[],
+    attrs?: any,
+    className?: string | ((string | false)[]),
+    style?: any,
+    onClick?: (e: any) => void,
+    show?: boolean | (() => boolean),
+    loading?: boolean,
+    key?:string | number,
+    id?:string | number,
+    onDrag?:(e:any)=>void,
+    onDrop?:(e:any)=>void,
+    onResize?:(newSize:number)=>void,
+    mountAfter?:number,
+    hide_xs?:boolean,
+    hide_sm?:boolean,
+    hide_md?:boolean,
+    hide_lg?:boolean,
+    show_xs?:boolean,
+    show_sm?:boolean,
+    show_md?:boolean,
+    show_lg?:boolean,
+
+}
+export type I_RVD_editNode = (node: I_RVD_node, parent?: I_RVD_node) => I_RVD_node;
+export type I_RVD_classes = {[key:string]:string|((node:I_RVD_node,parent:I_RVD_node)=>string)}
+export type I_RVD_props = {rootNode: I_RVD_node,dragHandleClassName?: string,classes?:I_RVD_classes,rtl?: boolean,state?:any,editNode?: I_RVD_editNode}
+export type I_RVD_getTemp = (key:string)=>any;
+export type I_RVD_setTemp = (key:string,value:any)=>void;
+export type I_RVD_state = any;
+export type I_RVD_setState = (key:any,value?:any)=>void
+export type I_RVD_temp = { dragIndex?:false | number, lt?: string, time?: number, timeOut?: any }
+export type I_RVD_context = {getTemp:I_RVD_getTemp,setTemp:I_RVD_setTemp,rootProps:I_RVD_props,state:I_RVD_state,setState:I_RVD_setState}
+type I_RVD_tempKey = 'dragIndex' | 'lt' | 'time' | 'timeOut'
+export type I_RVDNode = {node: I_RVD_node, index: number, parent?: I_RVD_node, level: number}
+
+export type I_RVDAttrs = {
+    node:I_RVD_node,parent?:I_RVD_node,level:number,index:number,context:I_RVD_context,mounted?:boolean
+}
 const RVDContext = createContext({} as I_RVD_context);
 export default function ReactVirtualDom(props: I_RVD_props) {
     let {rootNode} = props;
     let [temp] = useState<I_RVD_temp>({});
-    function getTemp(key){return temp[key];}
-    function setTemp(key,value){temp[key] = value;}
+    function getTemp(key:string){return (temp as any)[key] as any;}
+    function setTemp(key:string,value:any){(temp as any)[key] = value;}
     let [state,changeState] = useState<any>(props.state)
     let setState = (key:any,value:any)=>changeState(typeof key === 'string'?{...state,[key]:value}:key)
     let rootNodeProps:I_RVDNode = {node:rootNode,index:0,level:0};
@@ -21,7 +74,7 @@ function RVDNode(props:I_RVDNode){
     let [mounted,setMounted] = useState(false);
     function getHtml(node:I_RVD_node) {
         let { html = '', loading } = node;
-        html = typeof html === 'function' ? html({state,setState}) : html;
+        html = (typeof html === 'function' ? html({state,setState}) : html) || '';
         let res:React.ReactNode;
         if (loading && html) { res = (<><div style={{ opacity: 0 }}>{html}</div><div className='rvd-loading'></div></>) }
         else{res = html}
@@ -44,13 +97,13 @@ function RVDNode(props:I_RVDNode){
         }
         return childs;
     }
-    function getNodeClasses(node:I_RVD_node,parent:I_RVD_node){
+    function getNodeClasses(node:I_RVD_node,parent?:I_RVD_node){
         let res:string[] = [];
         if(parent && parent.nodeClasses){res = [...parent.nodeClasses]}
         if(node.nodeClass){res = [...res,node.nodeClass]}
         return res; 
     }
-    function isLoading(node: I_RVD_node, parent: I_RVD_node): boolean {
+    function isLoading(node: I_RVD_node, parent?: I_RVD_node): boolean {
         if (typeof node.loading === 'boolean') { return node.loading }
         return parent ? !!parent.loading : false;
     }
@@ -94,13 +147,13 @@ function RVDNode(props:I_RVDNode){
 }
 class RVDAttrs{
     node:I_RVD_node;
-    parent:I_RVD_node;
+    parent?:I_RVD_node;
     level:number;
     index:number;
     context:I_RVD_context;
     mounted:boolean;
     constructor(props:I_RVDAttrs){
-        let {node,parent,level,index,context,mounted} = props;
+        let {node,parent,level,index,context,mounted = false} = props;
         this.node = node;
         this.mounted = mounted;
         this.parent = parent;
@@ -132,19 +185,19 @@ class RVDAttrs{
         let {dragHandleClassName} = rootProps;
         let res: any = {};
         res.draggable = true;
-        res.onDragStart = (e) => {
+        res.onDragStart = (e:any) => {
             if (dragHandleClassName) {
                 if (!$(e.target).hasClass(dragHandleClassName) && $(e.target).parents('.' + dragHandleClassName).length === 0) { return; }
             }
             if(isReorder){setTemp('dragIndex',this.index);}
             else if(this.node.onDrag){this.node.onDrag(e)}
         }
-        res.onDragOver = (e) => e.preventDefault();
-        res.onDrop = (e) => {
+        res.onDragOver = (e:any) => e.preventDefault();
+        res.onDrop = (e:any) => {
             if(isReorder){
                 let dragIndex = getTemp('dragIndex');
                 if (dragIndex === false || dragIndex === this.index) { return; }
-                this.parent.reOrder(ReOrder({data:this.parent.data,fromIndex:dragIndex, toIndex:this.index}),dragIndex, this.index);
+                (this.parent as any).reOrder(ReOrder({data:(this.parent as any).data,fromIndex:dragIndex, toIndex:this.index}),dragIndex, this.index);
                 setTemp('dragIndex',false)
             }
             else if(this.node.onDrop) {this.node.onDrop(e)}
@@ -160,14 +213,14 @@ class RVDAttrs{
             let className:string;
             if(Array.isArray(this.node.className)){className = this.node.className.filter((cls)=>!!cls && typeof cls === 'string').join(' ')}
             else{className = this.node.className}
-            let dcls = classes[className];
+            let dcls:any = classes[className];
             if(typeof dcls === 'function'){className = dcls(this.node,this.parent)}
             else if(typeof dcls === 'string'){className = dcls;}
             if(className && typeof className === 'string'){res += ' ' + className;}  
         }
         if(attrs.className){res += ' ' + attrs.className}
         if(wrap){res += ' wrap'}
-        if(nodeClass){res += ' ' + nodeClasses.join('-')}
+        if(nodeClass){res += ' ' + (nodeClasses as any).join('-')}
         if (!!attrs.onClick) { res += ' pointer'; }
         if(this.node.align){res += ` align-${this.node.align}`}
         if (row) { res += ' rvd-row' }
@@ -178,12 +231,12 @@ class RVDAttrs{
         if(!this.mounted && typeof mountAfter === 'number'){res += ' not-mounted'}
         return res;
     }
-    getLongTouchAttrs = (dataId) => {
+    getLongTouchAttrs = (dataId:string) => {
         let { longTouch } = this.node;
         let {setTemp} = this.context;
         if (typeof longTouch !== 'function') { return {} }
-        let res = {};
-        res['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
+        let res:any = {};
+        res['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e:any) => {
             setTemp('lt',dataId);
             setTemp(dataId + 'callback',longTouch);
             this.timer()
@@ -225,7 +278,7 @@ class RVDAttrs{
     }
     
 }
-export function animate(type, selector,callback) {
+export function animate(type:any, selector:any,callback:any) {
     if(Array.isArray(type)){
         for (var i = 0; i < type.length; i++) {
             var [style,time] = type[i];
@@ -251,16 +304,16 @@ export function animate(type, selector,callback) {
     }
     
 }
-function eventHandler(event, action, type = 'bind') {
-    event = 'ontouchstart' in document.documentElement ? { mousemove: "touchmove", mouseup: "touchend" }[event] : event;
+function eventHandler(event:any, action:any, type = 'bind') {
+    event = 'ontouchstart' in document.documentElement ? ({ mousemove: "touchmove", mouseup: "touchend" } as any)[event] : event;
     $(window).unbind(event, action);
     if (type === 'bind') { $(window).bind(event, action) }
 }
-function getGap(p: { node: I_RVD_node, parent: I_RVD_node, dataId: string, rtl: boolean, index: number,level:number,context:I_RVD_context}) {
+function getGap(p: { node: I_RVD_node, parent?: I_RVD_node, dataId: string, rtl?: boolean, index: number,level:number,context:I_RVD_context}) {
     let { node, parent = {}, dataId, rtl, index,level,context } = p;
-    let $$ = {
-        getClient(e) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
-        mouseMove(e) {
+    let $$:any = {
+        getClient(e:any) { return 'ontouchstart' in document.documentElement ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } },
+        mouseMove(e:any) {
             var { pos, size } = this.so;
             var client = this.getClient(e);
             let axis = parent.row?'x':'y';
@@ -268,13 +321,13 @@ function getGap(p: { node: I_RVD_node, parent: I_RVD_node, dataId: string, rtl: 
             //if (offset % 24 !== 0) { return }
             this.so.newSize = offset + size;
             var panel = $('[data-id="' + dataId + '"]');
-            panel.css({ [{ 'x': 'width', 'y': 'height' }[axis]]: this.so.newSize })
+            panel.css({ [({ 'x': 'width', 'y': 'height' } as any)[axis]]: this.so.newSize })
         },
         mouseUp() {
             eventHandler('mousemove', this.mouseMove, 'unbind');
             eventHandler('mouseup', this.mouseUp, 'unbind');
             let { newSize } = this.so;
-            node.onResize(newSize);
+            (node as any).onResize(newSize);
         },
         getGap() {
             let { gap } = parent;
@@ -282,12 +335,12 @@ function getGap(p: { node: I_RVD_node, parent: I_RVD_node, dataId: string, rtl: 
             if (!gap || !parent) { return null }
             let gapAttrs = {
                 draggable:false,
-                onDragStart: (e) => { e.preventDefault(); return false }
+                onDragStart: (e:any) => { e.preventDefault(); return false }
             }
             let className = 'rvd-gap';
             if (node.size && node.onResize) {
-                className += parent.row?' col-resize':' row-resize'
-                gapAttrs['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e) => {
+                className += (parent as any).row?' col-resize':' row-resize';
+                (gapAttrs as any)['ontouchstart' in document.documentElement ? 'onTouchStart' : 'onMouseDown'] = (e:any) => {
                     this.so = { pos: this.getClient(e), size: node.size };
                     eventHandler('mousemove', $.proxy(this.mouseMove, this));
                     eventHandler('mouseup', $.proxy(this.mouseUp, this));
@@ -304,8 +357,8 @@ function getGap(p: { node: I_RVD_node, parent: I_RVD_node, dataId: string, rtl: 
     }
     return $$.getGap()
 }
-function getHideClassName(node) {
-    let hide_xs, hide_sm, hide_md, hide_lg, className;
+function getHideClassName(node:I_RVD_node) {
+    let hide_xs, hide_sm, hide_md, hide_lg, className = '';
     if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
     if (node.hide_xs) { hide_xs = true; }
     if (node.show_sm) { hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true; }
@@ -325,78 +378,7 @@ function Cls(key:string, CLASSNAME?:string) {
     if (CLASSNAME) { className += ' ' + CLASSNAME }
     return className;
 }
-export function renderCards(p: { items: any[], gap?: number, attrs: any }) {
-    let { items = [], gap, attrs = {} } = p;
-    return (
-        <ReactVirtualDom
-            rootNode={{
-                className: Cls('cards-container', attrs.className),
-                column: [
-                    {
-                        className: Cls('cards'), style: { gap },
-                        column: items.map((o) => {
-                            return {
-                                style: { gap }, row: o.map((card) => { return { className: 'of-visible', flex: 1, html: renderCard(card) } })
-                            }
-                        })
-                    }
-                ]
-            }}
-        />
-    )
-}
-export function renderCardsRow(rows = [], gap) {
-    return (
-        <ReactVirtualDom
-            rootNode={{
-                className: Cls('cards-row-container'),
-                column: [
-                    {
-                        className: Cls('cards-row', 'of-visible'), style: { gap },
-                        row: rows.map((card) => { return { className: 'of-visible', html: renderCard(card) } })
-                    }
-                ]
-            }}
-        />
-    )
-}
-export function renderCard(p:{ text?:React.ReactNode, subtext?:React.ReactNode, uptext?:React.ReactNode, attrs?:any, before?:React.ReactNode, after?:React.ReactNode, header?:React.ReactNode, footer?:React.ReactNode, justify?:boolean, classes?:any }) {
-    let { text, subtext, uptext, attrs = {}, before, after, header, footer, justify, classes = {} } = p;
-    return (
-        <ReactVirtualDom
-            rootNode={{
-                attrs, onClick: attrs.onClick, className: Cls('card', attrs.className) + (justify ? ' justify' : ''), style: attrs.style,
-                column: [
-                    { show: !!header && !Array.isArray(header), html: header, className: Cls('card-header', classes.header) },
-                    {
-                        show: !!Array.isArray(header), className: Cls('card-header', classes.header),
-                        row: () => [{ html: header[0] }, { flex: 1 }, { html: header[1] }]
-                    },
-                    {
-                        className: Cls('card-body', classes.body),
-                        row: [
-                            { show: !!before, html: () => before, align: 'vh', className: Cls('card-before', classes.before) },
-                            {
-                                flex: 1, align: 'v',
-                                column: [
-                                    { show: !!uptext, html: uptext, className: Cls('card-uptext', classes.uptext) },
-                                    { html: text, className: Cls('card-text', classes.text) },
-                                    { show: !!subtext, html: () => subtext, className: Cls('card-subtext', classes.subtext) }
-                                ]
-                            },
-                            { show: !!after, html: () => after, align: 'vh', className: Cls('card-after', classes.after) }
-                        ]
-                    },
-                    { show: !!footer && !Array.isArray(footer), html: footer, className: Cls('card-footer', classes.footer) },
-                    {
-                        show: !!Array.isArray(footer), className: Cls('card-footer', classes.footer),
-                        row: () => [{ html: footer[0] }, { flex: 1 }, { html: footer[1] }]
-                    }
-                ]
-            }}
-        />
-    )
-}
+
 function ReOrder(p:{data:any[],fromIndex:number,toIndex:number}){
     let {data,fromIndex,toIndex} = p;
     let from = data[fromIndex];

@@ -1,4 +1,4 @@
-import React, { FC, createContext, useContext, useRef, useState } from "react"
+import React, { FC, createContext, createRef, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
@@ -6,6 +6,7 @@ import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
 import { AI } from "../../npm/aio-input/types";
+import $ from 'jquery';
 type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
@@ -511,6 +512,7 @@ const Before: FC = () => {
 }
 const Mask: FC = () => {
     const { type, code }: I_CTX = useContext(CTX);
+    const [dom] = useState(createRef())
     let pattern = [
         ['number',4],
         '-',
@@ -531,17 +533,10 @@ const Mask: FC = () => {
         let temp = value
         for (let o of pattern) {
             if(Array.isArray(o)){
-                let type = o[0];
-                if(type === 'text' || type === 'number'){
-                    let length:number = +o[1];
-                    values.push(temp.slice(0,length));
-                    temp = temp.slice(length,temp.length)
-                }
-                else if(type === 'select'){
-                    let length:number = +o[1];
-                    values.push(temp.slice(0,length));
-                    temp = temp.slice(length,temp.length)
-                }
+                let length:number = +o[1];
+                let value = temp.slice(0,length)
+                values.push(value);
+                temp = temp.slice(length,temp.length)
             }
             else {
                 let length = o.length;
@@ -551,19 +546,32 @@ const Mask: FC = () => {
         return values
 
     }
-    function SetValue(values:any){
+    function SetValue(values:any,inputIndex:number,patternIndex:number){
         let temp = ''
-        let inputIndex = 0;
-        for (let o of pattern) {
+        for (let i = 0; i < pattern.length; i++) {
+            let o = pattern[i];
             if(Array.isArray(o)){
                 let length:number = +o[1];
                 let res = values[inputIndex]
                 let delta = length - res.length;
-                for (let i = 0; i < delta; i++){
-                    res = '0' + res
+                if(delta){
+                    for (let j = 0; j < delta; j++){
+                        res = '0' + res
+                    }
+                }
+                else if(patternIndex === i) {
+                    const inputs = $(dom.current as any).find('.aio-input');
+                    let length = inputs.length;
+                    inputIndex++;
+                    if(inputIndex > length){inputIndex = 0;}
+                    let input = inputs.eq(inputIndex).find('input');
+                    console.log(input)
+                    if(input.length){
+                        input.focus().select();
+                    }
+                    
                 }
                 temp += res;
-                inputIndex++
             }
             else {
                 temp += o
@@ -571,17 +579,17 @@ const Mask: FC = () => {
         }
         setValue(temp)
     }
-    function changeValue(value:any,index:number){
-        let newValues = valuesRef.current.map((o,j)=>index === j?value:o);
+    function changeValue(value:any,inputIndex:number,patternIndex:number){
+        let newValues = valuesRef.current.map((o,j)=>inputIndex === j?value:o);
         setValues(newValues);
-        SetValue(newValues)
+        SetValue(newValues,inputIndex,patternIndex)
 
     }
     function getList(){
-        let inputIndex = 0;
-        return pattern.map((o:any,i)=>{
+        let temp = 0;
+        return pattern.map((o:any,patternIndex)=>{
             let type = o[0];
-            let index = inputIndex;
+            let inputIndex = temp;
             if(type === 'text' || type === 'number'){
                 let length = +o[1];
                 let p:AI = {
@@ -590,10 +598,10 @@ const Mask: FC = () => {
                     maxLength:length,
                     type:'text',
                     justNumber:type === 'number',
-                    value:valuesRef.current[index],
-                    onChange:(v:string)=>changeValue(v,index)   
+                    value:valuesRef.current[inputIndex],
+                    onChange:(v:string)=>changeValue(v,inputIndex,patternIndex)   
                 }
-                inputIndex++;
+                temp++;
                 return <AIOInput {...p}/>
             }
             else if(type === 'select'){
@@ -602,14 +610,11 @@ const Mask: FC = () => {
                     type:'select',
                     style:{width:'fit-content'},
                     options,
-                    option:{
-                        text:'option',
-                        value:'option'
-                    },
-                    value:valuesRef.current[index],
-                    onChange:(v:string)=>changeValue(v,index)    
+                    option:{text:'option',value:'option'},
+                    value:valuesRef.current[inputIndex],
+                    onChange:(v:string)=>changeValue(v,inputIndex,patternIndex)    
                 }
-                inputIndex++;
+                temp++;
                 return <AIOInput {...p}/>
             }
             else {
@@ -619,7 +624,7 @@ const Mask: FC = () => {
     }
     return (
         <div className='example'>
-            <div className='aio-input-mask'>
+            <div className='aio-input-mask' ref={dom as any}>
                 {getList()}
             </div>
         </div>
