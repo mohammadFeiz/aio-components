@@ -106,7 +106,7 @@ const Example1:FC = ()=> {
     const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(25)
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'Arial'}}>
             <AIOInput
                 type='spinner' 
                 size={120}
@@ -208,7 +208,7 @@ const Example2:FC = ()=> {
     const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'Arial'}}>
             <AIOInput
                 type='spinner' 
                 size={120}
@@ -313,7 +313,7 @@ const Example3:FC = ()=> {
     const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'Arial'}}>
             <AIOInput
                 type='spinner' 
                 size={160}
@@ -417,7 +417,7 @@ const Example4:FC = ()=> {
     const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(126)
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'Arial'}}>
             <AIOInput
                 type='spinner' 
                 size={160}
@@ -527,7 +527,7 @@ const Example5:FC = ()=> {
     const {code}:any = useContext(CTX);
     const [value,setValue] = useState<number>(75)
     return (
-        <div className='example'>
+        <div className='example' style={{fontFamily:'Arial'}}>
             <AIOInput
                 type='spinner' 
                 style={{border:'none'}}

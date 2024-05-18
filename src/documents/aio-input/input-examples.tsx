@@ -58,7 +58,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['justNumber (boolean)', () => <JustNumber />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
         ['justNumber (array)', () => <JustNumberArray />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
         ['filter', () => <Filter />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
-        ['maxLength', () => <MaxLength />, ['text', 'number', 'textarea', 'password', 'file'].indexOf(type) !== -1],
+        ['maxLength', () => <MaxLength />, ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1],
         ['min', () => <Min />, ['number'].indexOf(type) !== -1],
         ['max', () => <Max />, ['number'].indexOf(type) !== -1],
         ['swip', () => <Swip />, ['number'].indexOf(type) !== -1],
@@ -84,6 +84,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['text', () => <Text />, ['checkbox', 'date', 'time', 'file'].indexOf(type) !== -1],
         ['pattern', () => <Pattern />, ['date', 'time'].indexOf(type) !== -1],
         ['multiple', () => <Multiple />, ['date', 'file'].indexOf(type) !== -1],
+        ['multiple (number)', () => <MultipleNumber />, ['date', 'file'].indexOf(type) !== -1],
         ['checkIcon (array)', () => <CheckIconArray />, ['checkbox'].indexOf(type) !== -1],
         ['checkIcon (css object)', () => <CheckIconObject />, ['checkbox'].indexOf(type) !== -1],
         ['options', () => <Options />, ['text', 'number'].indexOf(type) !== -1],
@@ -997,6 +998,28 @@ const Multiple: FC = () => {
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
     multiple={true}
+/>
+        `)}
+        </div>
+    )
+}
+const MultipleNumber: FC = () => {
+    const { type, code }: I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any[]>()
+    return (
+        <div className='example'>
+            <AIOInput
+                key={type}
+                type={type} value={value}
+                onChange={(newValue) => setValue(newValue)}
+                multiple={4}
+            />
+            {code(`
+<AIOInput
+    type='${type}' 
+    value='${value}'
+    onChange={(newValue)=>setValue(newValue)}
+    multiple={4}
 />
         `)}
         </div>

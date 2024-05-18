@@ -49,7 +49,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         ['loading',()=><Loading type={type}/>],
         ['text',()=><Text type={type}/>,['select'].indexOf(type) !== -1],
         ['multiple',()=><Multiple type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
-        ['maxLength',()=><MaxLength type={type}/>,['radio','buttons','checklist','select'].indexOf(type) !== -1],
+        ['multiple (number)',()=><MultipleNumber type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
         ['checkIcon (array)',()=><CheckIconArray type={type}/>,['radio','select'].indexOf(type) !== -1],
         ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio','select'].indexOf(type) !== -1],
         [
@@ -640,7 +640,7 @@ const Multiple:FC<{type:I_exampleTypes}> = ({type})=> {
         </div> 
     )
 }
-const MaxLength:FC<{type:I_exampleTypes}> = ({type})=> {
+const MultipleNumber:FC<{type:I_exampleTypes}> = ({type})=> {
     const [value,setValue] = useState<number[]>([])
     return (
         <div className='example'>
@@ -653,8 +653,7 @@ const MaxLength:FC<{type:I_exampleTypes}> = ({type})=> {
                 }}
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
-                multiple={true}
-                maxLength={6}
+                multiple={6}
             />
         {AIODoc().Code(`
 <AIOInput

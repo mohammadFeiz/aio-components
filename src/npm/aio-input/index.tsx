@@ -1609,7 +1609,12 @@ export function Calendar(props: { onClose?: () => void }) {
                     else {current = []}
                     let index = current.indexOf(dateString);
                     if(index === -1){newValue = [...current,dateString]}
-                    else{newValue  = current.filter((o:string)=>o !== dateString)}
+                    else{newValue = current.filter((o:string)=>o !== dateString)}
+                    if(typeof multiple === 'number'){
+                        while (newValue.length > multiple) {
+                            newValue = newValue.slice(1, newValue.length)
+                        }
+                    }
                 }
                 else {newValue = dateString}
                 onChange(newValue, props);
