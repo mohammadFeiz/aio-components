@@ -601,6 +601,12 @@ function Input() {
                 if ((type === 'text' || type === 'textarea' || type === 'password') && value.toString().length > maxLength) {
                     value = value.toString().slice(0, maxLength);
                 }
+                try{
+                    if (type === 'number' && value.toString().length > maxLength) {
+                        value = +value.toString().slice(0, maxLength);
+                    }
+                }
+                catch{}
             }
         }
         if (rootProps.type === 'number') { if (value && !isNaN(+value)) { value = +value; } }

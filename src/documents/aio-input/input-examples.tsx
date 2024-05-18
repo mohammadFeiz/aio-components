@@ -1,4 +1,4 @@
-import React, { FC, createContext, useContext, useState } from "react"
+import React, { FC, createContext, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
@@ -47,6 +47,7 @@ const CTX = createContext({} as any);
 const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     let [examples] = useState<any>([
         ['placeholder', () => <Placeholder />],
+        ['msk', () => <Mask />],
         ['before', () => <Before />],
         ['after', () => <After />],
         ['subtext', () => <Subtext />],
@@ -504,6 +505,122 @@ const Before: FC = () => {
     before={<Icon path={mdiAccount} size={0.8}/>}
 />
         `)}
+        </div>
+    )
+}
+const Mask: FC = () => {
+    const { type, code }: I_CTX = useContext(CTX);
+    let pattern = [
+        ['number',4],
+        '-',
+        ['number',4],
+        '-',
+        ['number',4],
+        '-',
+        ['number',4],
+        '-',
+        ['select',1,['a','b','c','d','e','f']]
+    ]
+    const [value,setValue] = useState<string>('6219-8610-3353-8751-d')
+    const [values, setValues] = useState<string[]>(getValues)
+    const valuesRef = useRef(values)
+    valuesRef.current = values
+    function getValues(){
+        let values = [];
+        let temp = value
+        for (let o of pattern) {
+            if(Array.isArray(o)){
+                let type = o[0];
+                if(type === 'text' || type === 'number'){
+                    let length:number = +o[1];
+                    values.push(temp.slice(0,length));
+                    temp = temp.slice(length,temp.length)
+                }
+                else if(type === 'select'){
+                    let length:number = +o[1];
+                    values.push(temp.slice(0,length));
+                    temp = temp.slice(length,temp.length)
+                }
+            }
+            else {
+                let length = o.length;
+                temp = temp.slice(length,temp.length)
+            }
+        }
+        return values
+
+    }
+    function SetValue(values:any){
+        let temp = ''
+        let inputIndex = 0;
+        for (let o of pattern) {
+            if(Array.isArray(o)){
+                let length:number = +o[1];
+                let res = values[inputIndex]
+                let delta = length - res.length;
+                for (let i = 0; i < delta; i++){
+                    res = '0' + res
+                }
+                temp += res;
+                inputIndex++
+            }
+            else {
+                temp += o
+            }
+        }
+        setValue(temp)
+    }
+    function changeValue(value:any,index:number){
+        let newValues = valuesRef.current.map((o,j)=>index === j?value:o);
+        setValues(newValues);
+        SetValue(newValues)
+
+    }
+    function getList(){
+        let inputIndex = 0;
+        return pattern.map((o:any,i)=>{
+            let type = o[0];
+            let index = inputIndex;
+            if(type === 'text' || type === 'number'){
+                let length = +o[1];
+                let p:AI = {
+                    style:{width:length * 10},
+                    placeholder:new Array(length).fill('x').join(''),
+                    maxLength:length,
+                    type:'text',
+                    justNumber:type === 'number',
+                    value:valuesRef.current[index],
+                    onChange:(v:string)=>changeValue(v,index)   
+                }
+                inputIndex++;
+                return <AIOInput {...p}/>
+            }
+            else if(type === 'select'){
+                let options = o[2] as any[];
+                let p:AI = {
+                    type:'select',
+                    style:{width:'fit-content'},
+                    options,
+                    option:{
+                        text:'option',
+                        value:'option'
+                    },
+                    value:valuesRef.current[index],
+                    onChange:(v:string)=>changeValue(v,index)    
+                }
+                inputIndex++;
+                return <AIOInput {...p}/>
+            }
+            else {
+                return <div className='aio-input-mask-gap'>{o}</div>
+            }
+        })
+    }
+    return (
+        <div className='example'>
+            <div className='aio-input-mask'>
+                {getList()}
+            </div>
         </div>
     )
 }

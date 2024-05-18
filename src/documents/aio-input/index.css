@@ -74,3 +74,28 @@
 .my-form-errors{
     color:red;
 }
+.aio-input-mask{
+    display:flex;
+    border:1px solid #ddd;
+    width:fit-content;
+    padding:0 12px;
+}
+.aio-input-mask .aio-input{
+    border:none;
+    padding:0;
+}
+.aio-input-mask input{
+    padding:0;
+    letter-spacing: 3px;;
+    padding:0;
+    border:none;
+    border-bottom:1px solid #aaa;
+    
+}
+.aio-input-mask-gap{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding:3px;
+    color:#aaa;
+}
