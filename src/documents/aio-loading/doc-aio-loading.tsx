@@ -1,9 +1,8 @@
 import React,{Component, useState} from 'react';
 import AIOLoading from './../../npm/aio-loading/aio-loading';
-import AIOInput from './../../npm/aio-input/index.tsx';
+import AIOInput,{ AI, AI_formNode } from './../../npm/aio-input/index.tsx';
 import RVD, { I_RVD_node } from './../../npm/react-virtual-dom/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
-import { AI, AI_formNode } from '../../npm/aio-input/types.tsx';
 export default function DOC_AIOForm(props:any){
     return (
         <DOC

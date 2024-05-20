@@ -75,7 +75,7 @@ export class DragClass {
     drop: (e: any, list: any[]) => void;
     swap: (arr: any[], from: any, to: any) => any[];
     className: string;
-    getAttrs: (list: any[], index: number) => void;
+    getAttrs: (list: any[], index: number) => any;
     constructor(p: { onChange: (list: any[], from: any, to: any) => void, className: string }) {
         this.dragIndex = 0;
         this.className = p.className;
