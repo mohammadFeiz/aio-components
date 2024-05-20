@@ -1,11 +1,10 @@
 import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
-import AIOInput from "../../npm/aio-input";
+import AIOInput,{ AI_type } from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
-import { AI_type } from "../../npm/aio-input/types";
 type I_exampleType = 'slider' | 'spinner'
 type I_setting = {show:number,showCode:boolean,round:number,reverse:boolean,vertical:boolean}
 type I_CTX = {setting:I_setting,type:I_exampleType,code:(coe:string)=>React.ReactNode}

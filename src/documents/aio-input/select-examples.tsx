@@ -1,11 +1,10 @@
 import React, { FC, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import {Icon} from "@mdi/react"
-import AIOInput from "../../npm/aio-input";
+import AIOInput,{ AI } from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
-import { AI } from "../../npm/aio-input/types";
 type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons'
 const textOptions = [
     {name:'john',id:'1',gender:'male',color:'#ff0000'},
@@ -52,6 +51,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         ['multiple (number)',()=><MultipleNumber type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
         ['checkIcon (array)',()=><CheckIconArray type={type}/>,['radio','select'].indexOf(type) !== -1],
         ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio','select'].indexOf(type) !== -1],
+        ['checkIcon (0)',()=><CheckIcon0 type={type}/>,['radio','select'].indexOf(type) !== -1],
         [
             'option.before',
             ()=>(
@@ -232,7 +232,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                         type,
                         popover:{
                             fitHorizontal:true,
-                            setAttrs:(key)=>{
+                            setAttrs:(key:string)=>{
                                 if(key === 'backdrop'){
                                     return {
                                         style:{
@@ -720,6 +720,36 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
                 checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
+            />
+        {AIODoc().Code(`
+<AIOInput
+    type='${type}'
+    options={${optionsCode}} 
+    option={${optionCode}}
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
+    checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
+/>
+        `)}
+        </div> 
+    )
+}
+
+const CheckIcon0:FC<{type:I_exampleTypes}> = ({type})=> {
+    const [value,setValue] = useState<number[]>([])
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} 
+                multiple={type === 'select'}
+                options={textOptions}
+                option={{
+                    text:'option.name',
+                    value:'option.id'
+                }}
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
+                checkIcon={0}
             />
         {AIODoc().Code(`
 <AIOInput

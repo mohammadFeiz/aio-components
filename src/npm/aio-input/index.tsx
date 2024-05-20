@@ -975,8 +975,15 @@ const Layout:FC<AI_Layout> = (props) => {
     }
     function CheckIcon() {
         let { checkIcon, checked } = properties;
-        if (checked === undefined || (!!checkIcon && typeof checkIcon !== 'object')) { return null }
+        if (checked === undefined) { return null }
         if (Array.isArray(checkIcon)) { return checkIcon[checked ? 1 : 0] }
+        if(checkIcon === 0){
+            return (
+                <div className={'aio-input-check-0' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
+                    {checked && <div></div>}
+                </div>
+            );    
+        }
         return (
             <div className={'aio-input-check-out' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
                 {checked && <div className={'aio-input-check-in'} style={{ background: checkIcon.background }}></div>}
@@ -1039,7 +1046,7 @@ const Layout:FC<AI_Layout> = (props) => {
         let { text = obj.text } = p;
         let { subtext = obj.subtext } = p;
         let { justify = obj.justify } = p;
-        let { checkIcon = obj.checkIcon || {} } = p;
+        let { checkIcon = obj.checkIcon === undefined?{}:obj.checkIcon } = p;
         let { loading = obj.loading } = p;
         let { attrs = obj.attrs || {} } = p;
         let style = { ...(obj.style || {}), ...p.style }
