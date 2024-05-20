@@ -42,6 +42,14 @@ export function FileToBase64(file: any, callback: (result: any) => void) {
     fileReader.onload = () => callback(fileReader.result);
     fileReader.readAsDataURL(file);
 }
+export function GetPrecisionCount(number:number) {
+    // Convert the number to a string
+    number = number || 0;
+    const numberString = number.toString();
+    const decimalIndex = numberString.indexOf('.');
+    if (decimalIndex === -1) {return 0;}
+    return numberString.length - decimalIndex - 1;
+}
 export function HandleBackButton(callback: () => void = () => { }) {
     window.history.pushState({}, '')
     window.history.pushState({}, '')

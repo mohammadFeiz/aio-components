@@ -53,6 +53,7 @@ const FormExamples: FC = () => {
         ['test2', () => <Exampletest2 />],
         ['test3', () => <Exampletest3 />],
         ['test4', () => <Exampletest4 />],
+        ['test5', () => <Exampletest5 />],
     ])
     let [titles] = useState<string[]>(getTitles)
     function getTitles() {
@@ -77,6 +78,7 @@ const FormExamples: FC = () => {
         setSetting({ ...setting, show: titles[index] })
     }
     function setting_node() {
+        return {}
         let btnstyle = { background: 'none', border: 'none' }
         return {
             className: 'p-12',
@@ -941,6 +943,53 @@ const Exampletest4: FC = () => {
                         {
                             input:{type:'date'},label:'Date?',field:'value.date',flex:1
                         }
+                    ]
+                }}
+            />
+            {
+                !!log &&
+                <pre>
+                    <code>
+                        {log}
+                    </code>
+                </pre>
+            }
+        </div>
+    )
+}
+
+const Exampletest5: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [setting, setSetting] = useState<any>({})
+    const [log, setLog] = useState<any>()
+    function submit() {
+        setLog(JSON.stringify(setting, null, 3))
+    }
+    function change(newSetting:any){
+        //console.log(newSetting)
+        setSetting({ ...newSetting })
+    }
+    console.log(setting)
+    return (
+        <div className='example'>
+            <AIOInput
+                type='form'
+                value={{ ...setting }}
+                onChange={(newFormData) => change(newFormData)}
+                footer={(
+                    <button type='button' className='submit-button' onClick={submit}>Submit</button>
+                )}
+                node={{
+                    dir:'v',
+                    childs:[
+                        
+                        {
+                            input:{type:'slider',multiple:false,start:0,end:30},label:'Age',field:'value.age',flex:1
+                        },
+                        {
+                            input:{type:'date'},label:'Date?',field:'value.date',flex:1
+                        }
+                        
                     ]
                 }}
             />

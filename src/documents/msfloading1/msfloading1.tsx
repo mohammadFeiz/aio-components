@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer, useRef, useState } from 'react';
 import RVD from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
@@ -28,7 +28,7 @@ export default function DOC_MSFLoading1(props:any) {
     let [popup] = useState(new AIOPopup())
     let [file,setFile] = useState();
     let [model, setModel] = useState<I_MSFL>({
-        count: 9,
+        count: 10,
         rtl: true,
         duration: 1,
         loop: false,
@@ -36,10 +36,10 @@ export default function DOC_MSFLoading1(props:any) {
         size: 36,
         loopDelay: 0.7,
         className: 'msfloading1',
-        sizes: [20, 36, 52, 68, 84, 100, 116, 132, 148],
+        sizes: [12, 24, 36, 48, 60, 72, 84, 96, 108,120],
         border: true,
         containerSize: 300,
-        width:148,
+        width:120,
         activeSize: false
     })
     function getCss() {
@@ -48,15 +48,16 @@ export default function DOC_MSFLoading1(props:any) {
         let start = 0;
         let delay = loopDelay / (duration + loopDelay) * 100
         let step = (100 - offset - delay) / count;
+        let unitSizes = 0;
         for (let i = 0; i < count; i++) {
-            let unitSize = sizes[i];
+            let unitSize = i === 0?sizes[i]:sizes[i] - sizes[i - 1];
             str += `
 .${className} .${className}item:nth-child(${i + 1}) {
     animation-name: ${className}${i + 1};
     animation-duration:${duration + loopDelay}s;
     height:${size}px;
     object-fit:cover;
-    object-position:top 0px ${model.rtl?'right':'left'} ${-unitSize}px;
+    object-position:top 0px ${model.rtl?'right':'left'} ${-unitSizes}px;
     ${loop ? 'animation-iteration-count:infinite;' : ''}
 }
 @keyframes ${className}${i + 1} {
@@ -79,6 +80,7 @@ export default function DOC_MSFLoading1(props:any) {
 }
       `
             start += step;
+            unitSizes += unitSize;
 
         }
         $('#msf-loading1-css').html(str)
@@ -136,13 +138,27 @@ export default function Loading(){
         }
     }
     function form_layout() {
+        let formValue = {...model}
+        console.log('form value',formValue.size)
+                        
         return {
             flex: 1, style: { direction: 'ltr' },
             html: (
                 <AIOInput
-                    type='form'
-                    onChange={(model) => setModel(model)}
-                    value={{ ...model }}
+                    type='form' key={model.count}
+                    onChange={(model) => {
+                        console.log('form onChange',model.size)
+                        let sizes = [...model.sizes]
+                        if(model.sizes.length !== model.count){
+                            let unit = Math.floor(model.width / model.count);
+                            sizes = new Array(model.count).fill(0).map((o,i)=>{
+                                return (i + 1) * unit
+                            })
+                        }
+                        let newModel = {...model,sizes}
+                        setModel(newModel)
+                    }}
+                    value={formValue}
                     node={{
                         dir:'v',
                         childs: [
@@ -175,38 +191,6 @@ export default function Loading(){
                                     { html: 'sizes', className:'align-v' },
                                     {
                                         flex:1,
-                                        dir:'h',
-                                        childs: [
-                                            {
-                                                flex:1,className:'ofx-auto',
-                                                dir:'h',
-                                                childs: new Array(model.count).fill(0).map((s, i) => {
-                                                    let active = model.activeSize === i;
-                                                    return {
-                                                        style: { border: '1px solid #ddd' },
-                                                        className: 'p-3 br-6',
-                                                        dir:'v',
-                                                        childs: [
-                                                            {
-                                                                style: { color: active ? 'dodgerblue' : '#ddd' },
-                                                                html: <Icon path={active ? mdiEye : mdiEyeOff} size={.8} />, className:'align-vh',
-                                                                onClick: () => setModel({ ...model, activeSize: model.activeSize === i ? false : i })
-                                                            },
-                                                            { input: { type: 'number', style: { width: 60 } }, field: `value.sizes[${i}]` }
-                                                        ]
-                                                    }
-                                                })
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                dir:'h',
-                                childs: [
-                                    { html: 'sizes', className:'align-v' },
-                                    {
-                                        flex:1,
                                         input:{
                                             type:'slider',
                                             reverse:!!model.rtl,
@@ -229,7 +213,6 @@ export default function Loading(){
         if (model.activeSize === index) { return `1px solid red` }
         if (model.border) { return `1px solid #dddddd` }
     }
-    console.log(model)
     return (
         <>
             <RVD
@@ -243,7 +226,9 @@ export default function Loading(){
                             html: (
                                 <div className={model.className} id='doc-msfloading1-container' style={{ width: model.containerSize }}>
                                     {new Array(model.count).fill(0).map((o, i) => {
-                                        let width = model.sizes[i]
+                                        let current = model.sizes[i];
+                                        let before = i === 0?0:model.sizes[i - 1]
+                                        let width = current - before;
                                         return (
                                             <img src={file} className={`${model.className}item`} style={{ width, border: getBorder(i) }} />
                                         )

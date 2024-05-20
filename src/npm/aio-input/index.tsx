@@ -26,7 +26,7 @@ import {
 } from './types.tsx';
 import { AP_modal } from '../aio-popup';
 /////////////my dependencies//////////
-import { Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString } from './../aio-utils';
+import { Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString, GetPrecisionCount } from './../aio-utils';
 import AIOPopup from './../../npm/aio-popup/index.tsx';
 /////////////style//////////////////
 import './index.css';
@@ -34,13 +34,15 @@ import './index.css';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
     let type = props.type,round = props.round;
+    let value = props.value
     if (type as any === 'spinner') {
         type = 'range';
         if (!round || typeof round !== 'number') {round = 1;}
     }
     else if (type === 'slider') {type = 'range'; round = 0;}
     else if (type === 'range') {return null;}
-    let rootProps: AI = { ...props, type, round }
+    if(type === 'form'){value = {...value}}
+    let rootProps: AI = { ...props, type, round,value }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
@@ -736,7 +738,7 @@ const Form: FC = () => {
         let error:string | undefined;
         if(validation !== undefined){error = getError(itemValue,validation)}
         setError(field, error)
-        if (onChange) { onChange(newValue, { errors: getErrorList(), newformNodeValue: itemValue }) }
+        if (onChange) { onChange({...newValue}, { errors: getErrorList(), newformNodeValue: itemValue }) }
     }
 
     function getContext() {
@@ -2402,6 +2404,7 @@ const Range: FC = () => {
         for (let i = 0; i < value.length; i++) {
             let point = value[i] || 0;
             point = Math.round((point - start) / step) * step + start;
+            point = +point.toFixed(GetPrecisionCount(step))
             if (point < min) { point = min; }
             if (point > max) { point = max; }
             value[i] = point;
@@ -2423,29 +2426,32 @@ const Range: FC = () => {
     }
     useEffect(() => { setDisabledDic(getDisabledDic()) }, [JSON.stringify(disabled)])
     useEffect(() => {
-        new Swip({
-            reverseX: !!reverse,
-            //vertical condition
-            reverseY: !!reverse && !!vertical,
-            dom: () => $(temp.dom.current),
-            start: ({ event }) => {
-                let target = $(event.target);
-                if (HasClass(target, 'ai-range-point')) {
-                    let index: string = target.attr('data-index') || '0';
-                    temp.index = +index;
-                }
-                else {
-                    temp.index = false
-                }
-                temp.start = [...valueRef.current];
-                return [0, 0];
-            },
-            move: ({ change, mousePosition }) => {
-                if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
-            },
-            onClick: function (p) { click(p.mousePosition) }
-        })
-    }, [])
+        clearTimeout(temp.timeOut)
+        temp.timeOut = setTimeout(()=>{
+            new Swip({
+                reverseX: !!reverse,
+                //vertical condition
+                reverseY: !!reverse && !!vertical,
+                dom: () => $(temp.dom.current),
+                start: ({ event }) => {
+                    let target = $(event.target);
+                    if (HasClass(target, 'ai-range-point')) {
+                        let index: string = target.attr('data-index') || '0';
+                        temp.index = +index;
+                    }
+                    else {
+                        temp.index = false
+                    }
+                    temp.start = [...valueRef.current];
+                    return [0, 0];
+                },
+                move: ({ change, mousePosition }) => {
+                    if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
+                },
+                onClick: function (p) { click(p.mousePosition) }
+            })
+        },100)
+    }, [changeHandle])
     function getDefaultOffset(type: 'point' | 'label' | 'scale',) {
         if (type === 'point') { return round ? 100 : 0 }
         if (type === 'label') { return round ? 116 : 14 }
