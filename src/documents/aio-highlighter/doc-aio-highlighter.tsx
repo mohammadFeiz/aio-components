@@ -1,11 +1,11 @@
 import React, { Component, useEffect, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIOHighlighter from '../../npm/aio-highlighter/index.tsx';
-import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
 import $ from 'jquery';
 import './index.css';
-export default function DOC_AIOForm(props) {
+export default function DOC_AIOForm(props:any) {
     return (
         <DOC
             name={props.name}
@@ -50,59 +50,59 @@ function Basic() {
                     html: 'this button is for exit to home page'
                 }
             }
-            setShow(false)
+            setShow(false);
+            return {dom:$('body'),html:''}
         }
     }))
     function showCode() {
         popup.addModal({
             id: 'code',
             header: { title: 'code' },
-            body: {
-                render: () => {
-                    return AIODoc().Code(
-`import AIOHighlighter from 'aio-highlighter';
-function Basic() {
-    let [show, setShow] = useState<boolean>(true)
-    let [ah] = useState<AIOHighlighter>(
-        new AIOHighlighter({
-            padding:12,
-            items:(index)=>{
-                if(index === 0){
-                    return {
-                        dom:$('.rsa-navigation-item').eq(0),
-                        html:'this tab show basic usage of aio-highlighter component'
-                    }
-                }
-                if(index === 1){
-                    return {
-                        dom:$('.rsa-navigation-item').eq(1),
-                        html:'this tab show usage of aio-highlighter mouseAccess Props'
-                    }
-                }
-                if(index === 2){
-                    return {
-                        dom:$('.rsa-header-title'),
-                        html:'this is title of page'
-                    }
-                }
-                if(index === 3){
-                    return {
-                        dom:$('#go-to-home'),
-                        html:'this button is for exit to home page'
-                    }
-                }
-                setShow(false)
-            }
-        })
-    )
-    return (
-        <div className='example'>
-            {show && ah.render()}
-        </div>
-    )
-}`
-                    )
-                }
+            body: () => {
+                return new AIODoc().Code(
+                    `import AIOHighlighter from 'aio-highlighter';
+                    function Basic() {
+                        let [show, setShow] = useState<boolean>(true)
+                        let [ah] = useState<AIOHighlighter>(
+                            new AIOHighlighter({
+                                padding:12,
+                                items:(index)=>{
+                                    if(index === 0){
+                                        return {
+                                            dom:$('.rsa-navigation-item').eq(0),
+                                            html:'this tab show basic usage of aio-highlighter component'
+                                        }
+                                    }
+                                    if(index === 1){
+                                        return {
+                                            dom:$('.rsa-navigation-item').eq(1),
+                                            html:'this tab show usage of aio-highlighter mouseAccess Props'
+                                        }
+                                    }
+                                    if(index === 2){
+                                        return {
+                                            dom:$('.rsa-header-title'),
+                                            html:'this is title of page'
+                                        }
+                                    }
+                                    if(index === 3){
+                                        return {
+                                            dom:$('#go-to-home'),
+                                            html:'this button is for exit to home page'
+                                        }
+                                    }
+                                    setShow(false)
+                                }
+                            })
+                        )
+                        return (
+                            <div className='example'>
+                                {show && ah.render()}
+                            </div>
+                        )
+                    }`
+                        )
+                
             }
         })
     }
@@ -137,7 +137,8 @@ function MouseAccess() {
                     html: <div style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}>click here to show preview</div>
                 }
             }
-            setShow(false)
+            setShow(false);
+            return {dom:$('body'),html:''}
         }
     }))
     useEffect(() => {
@@ -149,48 +150,46 @@ function MouseAccess() {
         popup.addModal({
             id: 'code',
             header: { title: 'code' },
-            body: {
-                render: () => {
-                    return AIODoc().Code(
-`import AIOHighlighter from 'aio-highlighter';
-function MouseAccess() {
-    let [show, setShow] = useState<boolean>(true)
-    let [ah] = useState<AIOHighlighter>(new AIOHighlighter({
-        mouseAccess: true,
-        items: (index) => {
-            if (index === 0) {
-                return {
-                    dom: $('.my-button-1'),
-                    html: 'click here to show code'
-                }
-            }
-            if (index === 1) {
-                return {
-                    dom: $('.my-button-2'),
-                    html: <div style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}>click here to show preview</div>
-                }
-            }
-            setShow(false)
-        }
-    }))
-    useEffect(() => {
-        $('.my-button').on('click', () => {
-            ah.update()
-        })
-    }, [])
-    return (
-        <div className='example'>
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => setShow(true)}>start</button>
-            <div style={{ display: 'flex', gap: 12, padding: 12 }}>
-                <button type='button' className='my-button my-button-1'>Button 1</button>
-                <button type='button' className='my-button my-button-2'>Button 2</button>
-            </div>
-            {show !== false && ah.render()}
-        </div>
-    )
-}`
-                    )
-                }
+            body: ()=>{
+                return new AIODoc().Code(
+                    `import AIOHighlighter from 'aio-highlighter';
+                    function MouseAccess() {
+                        let [show, setShow] = useState<boolean>(true)
+                        let [ah] = useState<AIOHighlighter>(new AIOHighlighter({
+                            mouseAccess: true,
+                            items: (index) => {
+                                if (index === 0) {
+                                    return {
+                                        dom: $('.my-button-1'),
+                                        html: 'click here to show code'
+                                    }
+                                }
+                                if (index === 1) {
+                                    return {
+                                        dom: $('.my-button-2'),
+                                        html: <div style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}>click here to show preview</div>
+                                    }
+                                }
+                                setShow(false)
+                            }
+                        }))
+                        useEffect(() => {
+                            $('.my-button').on('click', () => {
+                                ah.update()
+                            })
+                        }, [])
+                        return (
+                            <div className='example'>
+                                <button style={{ height: 36, padding: '0 24px' }} onClick={() => setShow(true)}>start</button>
+                                <div style={{ display: 'flex', gap: 12, padding: 12 }}>
+                                    <button type='button' className='my-button my-button-1'>Button 1</button>
+                                    <button type='button' className='my-button my-button-2'>Button 2</button>
+                                </div>
+                                {show !== false && ah.render()}
+                            </div>
+                        )
+                    }`
+                                        )
             }
         })
     }
@@ -227,6 +226,7 @@ function TestFocus() {
                 }
             }
             setShow(false)
+            return {dom:$('body'),html:''}
         }
     }))
     return (

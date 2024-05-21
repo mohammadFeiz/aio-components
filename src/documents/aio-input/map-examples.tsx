@@ -1,12 +1,10 @@
 import React, { Component,FC, useEffect, useState } from "react"
-import AIOInput from "../../npm/aio-input"
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
-import RVD from './../../npm/react-virtual-dom/index.tsx';
+import AIOInput,{ I_Map_area,I_Map_marker,AI } from "../../npm/aio-input"
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import RVD,{ I_RVD_node } from './../../npm/react-virtual-dom/index.tsx';
 import {mdiChevronLeft, mdiChevronRight,mdiOfficeBuilding,mdiGift, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-import { I_Map_area,I_Map_marker,AI } from "../../npm/aio-input/types.tsx";
-import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
 const MapExamples:FC = ()=>{
     let [examples] = useState<any>([
         ['apiKeys',APIKeys],
@@ -107,7 +105,7 @@ class APIKeys extends Component {
         return (
             <div className='example'>
                 {
-                    AIODoc().Code(`
+                    new AIODoc().Code(`
 AIOInput.defaults.mapApiKeys = {
     map:'web.0a2aa5f83d314a8c9916473aa0e01438',
     service:'service.09a2234e299a4ff585007b2894df9fca',
@@ -126,14 +124,14 @@ const Draggable:FC = ()=> {
         <div className='example'>
             <AIOInput key='p1' {...p1}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map'/>
                 `)
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <AIOInput key='p2' {...p2}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{draggable:false}}/>
                 `)
             }
@@ -148,7 +146,7 @@ const Traffic:FC = ()=> {
         <div className='example'>
             <AIOInput {...p}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{traffic:true}}/>
                 `)
             }
@@ -162,7 +160,7 @@ const OnClick:FC = ()=> {
         <div className='example'>
             <AIOInput {...p}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' attrs={{onClick:()=>alert('you clicked map')}}/>
                 `)
             }
@@ -176,7 +174,7 @@ const Title:FC = ()=> {
         <div className='example'>
             <AIOInput {...p}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{title:'نمایش موقعیت'}}/>
                 `)
             }
@@ -201,21 +199,21 @@ const Marker:FC = ()=> {
             {getMarker()}
             <AIOInput {...p1}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map'/>
                 `)
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <AIOInput {...p2}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{marker:false}}/>
                 `)
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <AIOInput {...p3}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{marker:{size:16,color:'transparent',html:getMarker()}}}/>
                 `)
             }
@@ -248,7 +246,7 @@ function ValueZoom() {
             />
             {renderMap()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{zoom:${value.zoom}}} value={{lat:${value.lat},lng:${value.lng}}}/>
                 `)
             }
@@ -265,7 +263,7 @@ function OnChange() {
             <span>{`longitude = ${value.lng}`}</span>
             <AIOInput {...p}/>
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput type='map' value={{lat,lng}} onChange={({lat,lng})=>this.setState({lat,lng})}/>
                 `)
             }
@@ -359,7 +357,7 @@ function Area() {
             />
             {renderMap()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ....
 let = area:{
 lat:${area.lat},
@@ -418,7 +416,7 @@ function Markers() {
             />
             {renderMap()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ler markers = [
     {
         lat:${markers[0].lat},
@@ -459,7 +457,7 @@ function Search () {
             <span>{`longitude = ${value.lng}`}</span>
             {renderMap()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 let [value,setValue] = useState({lat:35.694739,lng:51.394097})
 return (
     <AIOInput 
@@ -487,7 +485,7 @@ function PopupConfig() {
             <span>{`longitude = ${value.lng}`}</span>
             {renderMap()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput 
     type='map' 
     value={{lat,lng}} 

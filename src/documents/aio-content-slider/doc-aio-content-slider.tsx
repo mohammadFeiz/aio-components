@@ -1,9 +1,8 @@
 import React,{Component, useState} from "react";
 import DOC from '../../resuse-components/doc.tsx';
 import ACS from '../../npm/aio-content-slider/index.tsx';
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
-import AIOInput from './../../npm/aio-input/index.tsx';
-import { AI } from "../../npm/aio-input/types.tsx";
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import AIOInput,{ AI } from './../../npm/aio-input/index.tsx';
 export default function DOC_AIOContentSlider(props:any){
   return (
     <DOC
@@ -60,7 +59,7 @@ function Preview(){
         {setting_node()}
         {slide_node()}
       {
-        AIODoc().Code(
+        new AIODoc().Code(
 `return (
   <ACS
     items={[

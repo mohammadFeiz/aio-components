@@ -1,17 +1,15 @@
 import React, { Component, Fragment, createRef, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
-import RVD,{animate} from '../../npm/react-virtual-dom/index.tsx';
-import AIOInput from '../../npm/aio-input/index.tsx';
+import RVD,{animate,I_RVD_node } from '../../npm/react-virtual-dom/index.tsx';
+import AIOInput,{ AI, AI_labelItem, AI_range_handle_config } from '../../npm/aio-input/index.tsx';
 import {Swip,Geo,Storage} from './../../npm/aio-utils';
 import { Icon } from '@mdi/react';
 import { mdiAccount, mdiAccountGroup, mdiArchive, mdiBookEducation, mdiCamera, mdiCarSettings, mdiClose, mdiCloudUpload, mdiDotsHorizontal, mdiFileDocument, mdiListBox, mdiMicrophone, mdiMonitor, mdiShare, mdiStar } from '@mdi/js';
 import './index.css';
 import $ from 'jquery';
-import { I_RVD_node } from '../../npm/react-virtual-dom/types.tsx';
-import { AI } from '../../npm/aio-input/types.tsx';
-export default function DOC_AIOShop(props) {
+export default function DOC_AIOShop(props:any) {
     return (
         <DOC
             {...props}
@@ -43,7 +41,7 @@ export default function DOC_AIOShop(props) {
         />
     )
 }
-function Part(p) {
+function Part(p:any) {
     let { content, code,title } = p;
     if (!content) { return null }
     if(typeof content === 'function'){content = content()}
@@ -51,7 +49,7 @@ function Part(p) {
         <>
             {title && <h3>{title}</h3>}
             <div>{content}</div>
-            {AIODoc().Code(code)}
+            {new AIODoc().Code(code)}
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
         </>
     )
@@ -759,7 +757,7 @@ function Layout() {
         { path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ]
-    function CategoryCard(category){
+    function CategoryCard(category:any){
         return {
             style: {background:category.color,color:'#fff'},
             className: 'p-6 fs-12 br-8 w-84',
@@ -770,7 +768,7 @@ function Layout() {
             ],
         }
     }
-    function FileCard(file){
+    function FileCard(file:any){
         return {
             style: {background:'#fff',color:file.color},
             className: 'p-6 fs-12 br-8 w-84',
@@ -781,7 +779,7 @@ function Layout() {
             ],
         }
     }
-    function RecentFileCard(recentFile){
+    function RecentFileCard(recentFile:any){
         return {
             style:{background:'#fff'},className:'p-6 br-8 fs-12 gap-12 align-v',
             row:[
@@ -798,27 +796,27 @@ function Layout() {
             ]
         }
     }
-    function Categories(categories){
+    function Categories(categories:any){
         return {
             column:[
                 {html:'Categories',className:'bold fs-14',style:{color:'#174484'}},
-                {className: 'gap-12',row: categories.map((o) => CategoryCard(o))}
+                {className: 'gap-12',row: categories.map((o:any) => CategoryCard(o))}
             ],
         }
     }
-    function Files(files){
+    function Files(files:any){
         return {
             column:[
                 {html:'Files',className:'bold fs-14',style:{color:'#174484'}},
-                {className: 'gap-12',row: files.map((o) => FileCard(o))}
+                {className: 'gap-12',row: files.map((o:any) => FileCard(o))}
             ],
         }
     }
-    function RecentFiles(recentFiles){
+    function RecentFiles(recentFiles:any){
         return {
             column:[
                 {html:'Recent Files',className:'bold fs-14',style:{color:'#174484'}},
-                {className:'gap-6',column:recentFiles.map((o)=>RecentFileCard(o))}
+                {className:'gap-6',column:recentFiles.map((o:any)=>RecentFileCard(o))}
             ]
         }
     }
@@ -832,7 +830,7 @@ function Layout() {
             ]
         }
     }
-    function SideItem(sideItem){
+    function SideItem(sideItem:any){
         return {
             className: 'p-h-24 gap-12 fs-12 align-v', size: 36,
             row: [
@@ -841,12 +839,12 @@ function Layout() {
             ]
         }
     }
-    function Side(sideItems){
+    function Side(sideItems:any){
         return {
             style: { background: 'rgb(10, 38, 116)', color: '#fff', width: 200 },
             column: [
                 {size: 100, className: 'align-vh',html: <Icon path={mdiAccount} size={2} />},
-                {column: sideItems.map((sideItem) => SideItem(sideItem))}
+                {column: sideItems.map((sideItem:any) => SideItem(sideItem))}
             ]
         }
     }
@@ -972,7 +970,7 @@ let PageCode =
     return (
         <div className='example' style={{background:'#f8f8f8'}}>
             <h3>App Data</h3>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `let sideItems = [
     { path: mdiAccount, text: 'My Cloud' },
     { path: mdiAccountGroup, text: 'Shared Files' },
@@ -1002,61 +1000,61 @@ let recentFiles = [
             )}
             <h3>Render Category Card</h3>
             <RVD rootNode={CategoryCard(categories[0])}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${CategoryCardCode}
 return <RVD rootNode={CategoryCard(categories[0])}/>`
             )}
             <h3>Render Categories</h3>
             <RVD rootNode={Categories(categories)}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${CategoriesCode}
 return <RVD rootNode={Categories(categories)}/>`
             )}
             <h3>Render File Card</h3>
             <RVD rootNode={FileCard(files[0])}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${FileCardCode}
 return <RVD rootNode={FileCard(files[0])}/>`
             )}
             <h3>Render Files</h3>
             <RVD rootNode={Files(files)}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${FilesCode}
 return <RVD rootNode={Files(files)}/>`
             )}
             <h3>Render Recent File Card</h3>
             <RVD rootNode={RecentFileCard(recentFiles[0])}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${RecentFileCardCode}
 return <RVD rootNode={RecentFileCard(files[0])}/>`
             )}
             <h3>Render Recent Files</h3>
             <RVD rootNode={RecentFiles(recentFiles)}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${RecentFilesCode}
 return <RVD rootNode={RecentFiles(recentFiles)}/>`
             )}
             <h3>Render Side Item</h3>
             <RVD rootNode={SideItem(sideItems[0])}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${SideItemCode}
 return <RVD rootNode={SideItem(sideItems[0])}/>`
             )}
             <h3>Render App Side</h3>
             <RVD rootNode={Side(sideItems)}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${SideCode}
 return <RVD rootNode={Side(sideItems)}/>`
             )}
             <h3>Render App Body</h3>
             <RVD rootNode={Body()}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${BodyCode}
 return <RVD rootNode={Body()}/>`
             )}
             <h3>Render App Page</h3>
             <RVD rootNode={Page()}/>
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `${PageCode}
 return <RVD rootNode={Page()}/>`
             )}
@@ -1259,16 +1257,16 @@ function Layout(){
     )
 }
 function CssClasses() {
-    function rows_layout(rows){
+    function rows_layout(rows:any){
         return {
             column:[
                 {
                     html:'Css Classes',className:'bold'
                 },
                 {
-                    column:rows.map((v)=>{
+                    column:rows.map((v:any)=>{
                         if(v[0] === '.'){
-                            return {html:AIODoc().Code(v),flex:1}
+                            return {html:new AIODoc().Code(v),flex:1}
                         }
                         return {html:v,flex:1,className:'bold m-t-24'}
                     })
@@ -1530,7 +1528,7 @@ function ClassName() {
                     ]
                 }}
             />
-            {AIODoc().Code(
+            {new AIODoc().Code(
 `let [round,setRound] = useState(false);
 return (
     <RVD 
@@ -1578,7 +1576,7 @@ function MountAfter() {
                 }}
             />
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `<RVD 
     rootNode={{
         className:'gap-12',
@@ -1593,7 +1591,7 @@ function MountAfter() {
                 )
             }
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `.y-effect.not-mounted{
     transform:translateX(100vw);
     opacity:0;
@@ -1623,7 +1621,7 @@ function MountAfter() {
                 }}
             />
              {
-                AIODoc().Code(
+                new AIODoc().Code(
 `<RVD 
     rootNode={{
         className:'gap-12',
@@ -1638,7 +1636,7 @@ function MountAfter() {
                 )
             }
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `.x-effect.not-mounted{
     transform:rotateX(90deg);
     transition:1s;
@@ -1748,9 +1746,10 @@ function Animate() {
         { id:'2',path: mdiBookEducation, text: 'School', length: 65, color: '#e06c9f',outline:true },
         { id:'3',path: mdiArchive, text: 'Archive', length: 21, color: '#266fd5',outline:true },
     ])
-    function card_layout({ id,path, text, length, color }){
+    function card_layout(p:any){
+        let { id,path, text, length, color } = p
         return {
-            key:id,style: { background: color, color: '#fff' },className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',onClick:(e)=>removeH(e,id),
+            key:id,style: { background: color, color: '#fff' },className: 'p-6 fs-12 br-8 m-r-12 w-120 h-84 of-hidden',onClick:(e:Event)=>removeH(e,id),
             column: [
                 {html:<Icon path={path} size={0.6}/>,className:'align-vh bg-32 w-24 h-24 br-100 m-b-6',style:{color}},
                 {html: text,className:'bold'},
@@ -1758,7 +1757,7 @@ function Animate() {
             ]
         }
     }
-    function recentFile_node(o,p){
+    function recentFile_node(o:any,p:any){
         let {id,path,text,type,size,color} = o;
         return {
             key:id,className:'p-6 br-8 fs-12 gap-12 h-60 bg-32 m-b-12 align-v',
@@ -1773,15 +1772,15 @@ function Animate() {
             ...p
         }
     }
-    function removeV(e,id){animate('removeV',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
-    function removeL(e,id){animate('removeL',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
-    function removeH(e,id){animate('removeH',$(e.currentTarget),()=>{setFiles(files.filter((o,i)=>o.id !== id))})}
-    function removeR(e,id){animate('removeR',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
+    function removeV(e:any,id:any){animate('removeV',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
+    function removeL(e:any,id:any){animate('removeL',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
+    function removeH(e:any,id:any){animate('removeH',$(e.currentTarget),()=>{setFiles(files.filter((o,i)=>o.id !== id))})}
+    function removeR(e:any,id:any){animate('removeR',$(e.currentTarget),()=>{setRecentFiles(recentFiles.filter((o,i)=>o.id !== id))})}
     return (
         <div className='example' style={{background:'#eee'}}>
             <Part
                 title='removeV'
-                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeV(e,o.id)}))}}/>)}
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e:Event)=>removeV(e,o.id)}))}}/>)}
                 code={`
                 
 import RVD,{animate} from 'react-virtual-dom';
@@ -1831,7 +1830,7 @@ function App(){
             />
             <Part
                 title='removeL'
-                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeL(e,o.id)}))}}/>)}
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e:Event)=>removeL(e,o.id)}))}}/>)}
                 code={`
                 
 import RVD,{animate} from 'react-virtual-dom';
@@ -1856,7 +1855,7 @@ function App(){
             />
             <Part
                 title='removeL'
-                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e)=>removeR(e,o.id)}))}}/>)}
+                content={(<RVD rootNode={{column:recentFiles.map((o,i)=>recentFile_node(o,{onClick:(e:Event)=>removeR(e,o.id)}))}}/>)}
                 code={`
                 
 import RVD,{animate} from 'react-virtual-dom';
@@ -1886,7 +1885,7 @@ function App(){
                         rootNode={{
                             column:recentFiles.map((o,i)=>{
                                 return recentFile_node(o,{
-                                    onClick:(e)=>{
+                                    onClick:(e:Event)=>{
                                         animate(
                                             [[{ height: 100,padding:12 }, 260],[{ height: 0,padding:0,margin:0 }, 260]],
                                             $(e.currentTarget),
@@ -2067,7 +2066,7 @@ function ReOrder() {
         { id:'2',path: mdiMonitor, text: 'freestyle beat', type: 'MP3',size:'50 MB', color: '#e06c9f' },
         { id:'3',path: mdiListBox, text: 'Work proposal', type: 'DOCx',size:'30 KB', color: '#266fd5' },
     ])
-    function card_node(o):I_RVD_node{
+    function card_node(o:any):I_RVD_node{
         let {id,path,text,type,size,color} = o;
         return {
             key:id,
@@ -2211,15 +2210,19 @@ function App(){
     )
 }
 //linear-gradient(180deg, #000, #666);
-
+type I_grd = {
+    light:string,width:number,height:number,borderColor:string,color:string,active:boolean,className:string,
+    borderWidth:number,contrast:number,borderRadius:number,bold:boolean,fontSize:number,
+    containerBG:string,p:number,angle:number,bsx:number,bsy:number,bsc:string,bsb:number,bss:number,pointer:boolean
+}
 function StyleGenerator(){
     let storage:Storage = new Storage('grdgenerator')
     let [popup] = useState(new AIOPopup())
     let [isDown,setIsDown] = useState(false)
-    function to_array(c){
+    function to_array(c:any){
         if(Array.isArray(c)){return c}
         if(c.indexOf('rgb(') === 0){
-          return c.slice(c.indexOf('(') + 1,c.indexOf(')')).split(',').map((o)=>+o);
+          return c.slice(c.indexOf('(') + 1,c.indexOf(')')).split(',').map((o:any)=>+o);
         }
         c = c.substr(1);
         let values = c.split(''),r,g,b;
@@ -2235,14 +2238,14 @@ function StyleGenerator(){
         } 
         return [r,g,b];
       }
-    function to_dark(c,percent){
+    function to_dark(c:any,percent:number){
         let [r,g,b] = to_array(c);
         r = Math.round(r - (r * (percent / 100)))
         g = Math.round(g - (g * (percent / 100)))
         b = Math.round(b - (b * (percent / 100)))
         return `rgb(${r},${g},${b})`
     }
-    function between(c1,c2,count){
+    function between(c1:any,c2:any,count:number){
         var [r1,g1,b1] = to_array(c1);
         var [r2,g2,b2] = to_array(c2);
         var rDelta = (r2 - r1) / (count - 1);
@@ -2255,29 +2258,29 @@ function StyleGenerator(){
         }
         return colors;
     }
-    function change(key,value){
+    function change(key:string,value:any){
         let grd = grdRef.current;
         let newGrd = {...grd,[key]:value}
         setGrd(newGrd)
     }
-    function changeSelected(newSelected){
+    function changeSelected(newSelected:any){
         setSelected(newSelected)
         storage.save('selected',newSelected)
     }
     function addSelected(){
         changeSelected([...selected,{style:{...getStyle()},containerBG:grd.containerBG,grd:{...grd}}])
     }
-    function removeSelected(i){
-        changeSelected(selected.filter((o,index)=>index !== i))
+    function removeSelected(i:number){
+        changeSelected(selected.filter((o:any,index:number)=>index !== i))
     }
-    let [grd,setGrd] = useState({
+    let [grd,setGrd] = useState<I_grd>({
         light:'#999999',width:120,height:60,borderColor:'#999999',color:'#fff',active:false,className:'my-class',
         borderWidth:1,contrast:50,borderRadius:6,bold:true,fontSize:14,
         containerBG:'#fff',p:50,angle:180,bsx:0,bsy:0,bsc:'#000000',bsb:0,bss:0,pointer:false
     })
     let grdRef = useRef(grd);
     grdRef.current = grd;
-    let [selected,setSelected] = useState(storage.load('selected',[]))
+    let [selected,setSelected] = useState<{style:any,containerBG:string,grd:I_grd}[]>(storage.load('selected',[]))
     let dark = to_dark(grd.light,grd.contrast);
     let medium = between(grd.light,dark,3)[1];
     
@@ -2293,51 +2296,56 @@ function StyleGenerator(){
     
         }
     }
-    function color_node(key):I_RVD_node{
+    function color_node(key:keyof I_grd):I_RVD_node{
         return {
             size:36,className:'w-240',html:<AIOInput type='color' value={grd[key]} onChange={(v)=>change(key,v)} className='w-36 h-36 brd-c-12'/>
         }
     }
-    function slider_node(key,start,end,size = 180):I_RVD_node{
+    function slider_node(key:keyof I_grd,start:number,end:number,size = 180):I_RVD_node{
         let p:AI = {type:'range',point:(value)=>{return {html:value}},value:grd[key],onChange:(v)=>change(key,v),start,end}
         return {size,html:<AIOInput {...p}/>}
     }
-    function number_node(key,start,end):I_RVD_node{
+    function number_node(key:keyof I_grd,start:number,end:number):I_RVD_node{
         return {
             size:82,html:<AIOInput key={key} type='number' style={{border:'1px solid #ddd',width:80}} min={start} max={end} after={'px'} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
-    function text_node(key):I_RVD_node{
+    function text_node(key:keyof I_grd):I_RVD_node{
         return {
             size:200,html:<AIOInput key={key} type='text' style={{border:'1px solid #ddd'}} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
-    function checkbox_node(key):I_RVD_node{
+    function checkbox_node(key:keyof I_grd):I_RVD_node{
         return {
             align:'v',
             flex:1,
             html:<AIOInput type='checkbox' text={key} value={grd[key]} onChange={(v)=>change(key,v)}/>
         }
     }
-    function range_node(key,start,end):I_RVD_node{
+    function range_node(key:keyof I_grd,start:number,end:number):I_RVD_node{
         let p:AI = {
             type:'range',
             attrs:{
                 style:{border:'2px solid dodgerblue'}
             },
             handle:()=>{
-                return {
-                    attrs:{
-                        style:{height:2,background:'dodgerblue'}
-                    }
+                let res:AI_range_handle_config = {
+                    sharp:false,
+                    thickness:2,
+                    color:'dodgerblue'
                 }
+                return res 
             },
-            scales:{step:45},
-            scale:()=>{
-                return {
-                    attrs:()=>{return {style:{left:22,width:4,height:3,background:'dodgerblue'}}}
+            labels:[
+                {
+                    step:45,
+                    setting:(value)=>({
+                        offset:0,
+                        fixAngle:true,
+                        html:value
+                    })
                 }
-            },
+            ],
             rotate:-90,size:36,round:1,start,end,value:grd[key],onChange:(v)=>change(key,v),
             point:(v,angle)=>{
                 console.log(angle)
@@ -2360,10 +2368,10 @@ function StyleGenerator(){
     function getBoxShadow(){
         return `${grd.bsx}px ${grd.bsy}px ${grd.bsb}px ${grd.bss}px ${grd.bsc}`
     }
-    function label_node(text){
+    function label_node(text:string){
         return {html:text,size:100}
     }
-    function log(i){
+    function log(i:number){
         let grd = selected[i].grd;
         let style = `
 .${grd.className}{
@@ -2386,10 +2394,8 @@ function StyleGenerator(){
         popup.addModal({
             position:'center',
             header:{title:'generated style'},
-            body:{
-                render:()=>{
-                    return AIODoc().Code(style)
-                }
+            body:()=>{
+                return new AIODoc().Code(style)
             }
         })
     }

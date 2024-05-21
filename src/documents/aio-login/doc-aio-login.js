@@ -1,6 +1,6 @@
 import React, { Component,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import AIOLogin from './../../npm/aio-login/index.js';
 import {Icon} from '@mdi/react';
@@ -27,7 +27,7 @@ export default class DOC_AIOLogin extends Component {
 }
 function Types(){
     return (
-        AIODoc().Code(`
+        new AIODoc().Code(`
 let inst:TSInst = new AIOLogin(params:TSParams)
 type TSParams = {
     // uniq id for aio-login instance
@@ -142,7 +142,7 @@ function Basic({type}) {
                     </ul>
                 }
                 {
-                    AIODoc().Code(`
+                    new AIODoc().Code(`
 function LoginPage() {
     let [loginInstance] = useState(
         new AIOLogin({
@@ -281,7 +281,7 @@ function Register({type}) {
                     </ul>
                 }
                 {
-                    AIODoc().Code(`
+                    new AIODoc().Code(`
 function LoginPage() {
     let [loginInstance] = useState(
         new AIOLogin({
@@ -412,7 +412,7 @@ function Forget({type}) {
                     </ul>
                 }
                 {
-                    AIODoc().Code(`
+                    new AIODoc().Code(`
 function LoginPage() {
     let [loginInstance] = useState(
         new AIOLogin({
@@ -503,7 +503,7 @@ class Example extends Component {
             flex: 1,
             html: (
                 <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', overflow: 'auto' }}>
-                    <pre style={{ padding: 12 }}>{AIODoc().Code(code())}</pre>
+                    <pre style={{ padding: 12 }}>{new AIODoc().Code(code())}</pre>
                 </div>
             )
         }

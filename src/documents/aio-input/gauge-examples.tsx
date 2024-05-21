@@ -2,7 +2,7 @@ import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
+import AIODoc from '../../npm/aio-doc/aio-doc';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
 const CTX = createContext({} as any)
@@ -38,7 +38,7 @@ const GaugeExamples:FC = () => {
     }
     function code(code:string){
         if(!setting.showCode){return null}
-        return AIODoc().Code(code)
+        return new AIODoc().Code(code)
     }
     function setting_node(){
         let btnstyle = {background:'none',border:'none'}

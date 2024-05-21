@@ -1,13 +1,13 @@
 import React, { Component,Fragment,useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-documentation/aio-documentation.js';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import products from './products.tsx';
 import AIOShop from '../../npm/aio-shop/index.tsx';
 import './index.css';
-import { I_AIOShop, I_AIOShop_props, I_discount, I_pr, I_v } from '../../npm/aio-shop/types.js';
+import { I_AIOShop, I_AIOShop_props, I_cartInfo, I_discount, I_pr, I_v } from '../../npm/aio-shop/types.js';
 import {Icon} from '@mdi/react';
 import { mdiArrowLeftBoldCircle, mdiCircleMedium, mdiGift } from '@mdi/js';
-export default function DOC_AIOShop(props){
+export default function DOC_AIOShop(props:any){
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
@@ -103,12 +103,12 @@ function Part(p:{content?:any,code?:string}){
     return (
         <>
             <div style={{maxWidth:400}}>{content}</div>
-            {AIODoc().Code(code)}
+            {!!code && new AIODoc().Code(code)}
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </>
     )
 }
-function Product({v}){
+function Product({v}:{v:boolean}){
     let product = products[v?0:1]
     return (
         <div className='example' style={{direction:'rtl',background:'#aaa'}}>
@@ -122,7 +122,7 @@ ${JSON.stringify(product,null,4)}
     )
 }
 const a = {typeId:'color',valueId:'grey',typeName:'رنگ',valueName:'خاکستری'}
-function RenderProductCard({v}){
+function RenderProductCard({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -204,7 +204,7 @@ function RenderProductCard({v}){
         </div>
     )
 }
-function RenderProductPage({v}){
+function RenderProductPage({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -227,7 +227,7 @@ Shop.renderProductPage({product})
         </div>
     )
 }
-function ProductPageContent({v}){
+function ProductPageContent({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -266,23 +266,24 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductPageImageContent({v}){
+function ProductPageImageContent({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
         productPageImageContent:async (product,variantId)=>{
             let cartInfo;
-            if(product.hasVariant){
-                let variant = product.variants.find((o)=>o.id === variantId)
+            if(product.hasVariant && product.variants){
+                let variant = product.variants.find((o)=>o.id === variantId) as I_v
                 cartInfo = variant.cartInfo;
             }
             else{
                 cartInfo = product.cartInfo
             }
             let dp = 0;
-            for(let i = 0; i < cartInfo.discountPercent.length; i++){
-                let {value} = cartInfo.discountPercent[i];
+            let {discountPercent = []} = cartInfo || {};
+            for(let i = 0; i < discountPercent.length; i++){
+                let {value} = discountPercent[i];
                 dp += value;
             }
             return (
@@ -338,7 +339,7 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductCardContent({v}){
+function ProductCardContent({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -377,19 +378,21 @@ let Shop = new AIOShop({
         </div>
     )
 }
-function ProductCardImageContent({v}){
+function ProductCardImageContent({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
         trans:{addToCart:'سفارش',notExist:'ناموجود'},
         productCardImageContent:async (product,variantId)=>{
-            let cartInfo;
+            let {variants = []} = product;
+            let cartInfo = variants[0].cartInfo as I_cartInfo;
+            let {discountPercent = []} = cartInfo;
             return (
                 <div className='p-6 absolute r-0 t-0'>
                     <div 
                         style={{background:'orange',color:'#fff'}} 
                         className='br-4 p-h-3'
-                    >{product.variants[0].cartInfo.discountPercent[0].value + '%'}</div>
+                    >{discountPercent[0].value + '%'}</div>
                 </div>
             )
         },
@@ -434,12 +437,13 @@ function DiscountPercent(){
     }
     let [Shop] = useState<I_AIOShop>(new AIOShop(props))
     let product1 = products[0]
+    let {variants = []} = product1;
     let product2 = {
         ...product1,
         variants:[{
-            ...product1.variants[0],
+            ...variants[0],
             cartInfo:{
-                ...product1.variants[0].cartInfo,
+                ...variants[0].cartInfo,
                 discountPercent: [{text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}}]
             }, 
         }]
@@ -447,9 +451,9 @@ function DiscountPercent(){
     let product3 = {
         ...product1,
         variants:[{
-            ...product1.variants[0],
+            ...variants[0],
             cartInfo:{
-                ...product1.variants[0].cartInfo,
+                ...variants[0].cartInfo,
                 discountPercent: [
                     {text:'تخفیف شب یلدا',value:12,attrs:{style:{background:'green'}}},
                     {text:'تخفیف مشتری خوش حساب',value:10,attrs:{style:{background:'orange'}}}
@@ -599,7 +603,7 @@ Shop.renderProductCard({product,type:'h',cartButton:false})`
                 }
             />
             <Part
-                content={Shop.renderProductCard({product:product2,type:'h',cartButton:false})}
+                content={Shop.renderProductCard({product:product2 as any,type:'h',cartButton:false})}
                 code={
 `let product = {
     ...
@@ -653,7 +657,7 @@ Shop.renderProductCard({product,type:'h',cartButton:false})`
         </div>
     )
 }
-function RenderProductSlider({v}){
+function RenderProductSlider({v}:{v:boolean}){
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
         unit: 'تومان',
@@ -717,7 +721,7 @@ Shop.renderProductSlider({
     )
 }
 
-function RenderCart({v}){
+function RenderCart({v}:{v:boolean}){
     let product:I_pr = products[v?0:1];
     let props:I_AIOShop_props = {
         shopId: 'mytestrenderproductcard',
@@ -735,12 +739,12 @@ function RenderCart({v}){
             {Shop.renderCart()}
             {Shop.renderPopup()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 const product = ${JSON.stringify(productToCode,null,4)}
                 `)
             }
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 function RenderCart({product}){
     let props:I_AIOShop_props = {
         shopId: 'test-render-cart',
@@ -765,7 +769,7 @@ function RenderCart({product}){
         </div>
     )
 }
-function RenderCheckout({v}){
+function RenderCheckout({v}:{v:boolean}){
     let product:I_pr = products[v?0:1];
     let props:I_AIOShop_props = {
         shopId: 'testrendercheckout',unit: 'تومان',
@@ -830,11 +834,11 @@ function RenderCheckout({v}){
             {Shop.renderCheckout()}
             {Shop.renderPopup()}
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 const product = ${JSON.stringify(productToCode,null,4)}
                 `)
             }
-            {AIODoc().Code(`
+            {new AIODoc().Code(`
 function RenderCheckout({product}){
     let props:I_AIOShop_props = {
         shopId: 'testrendercheckout',unit: 'تومان',

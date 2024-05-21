@@ -273,14 +273,14 @@ pre[class*="language-"] > code[class*="language-"] {
 	box-shadow: inset 5px 0 0 #f7d87c;
 	z-index: 0;
 }
-.desc-list li{
+.aio-doc-list li{
 	margin-bottom:6px;
 	font-size:11px;
 	font-weight: lighter;
 	color:#000;
 	line-height:16px;
 }
-.desc-list mark{
+.aio-doc-list mark{
     background:lightblue;
     padding:0 3px;
     border-radius:4px;
@@ -292,6 +292,6 @@ pre[class*="language-"] > code[class*="language-"] {
     margin-bottom:12px;
     margin-top:24px; 
 }
-.Code{
+.aio-doc-code{
 	width: 100%;
 }

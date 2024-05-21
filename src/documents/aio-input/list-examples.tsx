@@ -1,11 +1,10 @@
 import React, { FC, useEffect, useState } from "react"
-import AIOInput from "../../npm/aio-input"
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import AIOInput,{ AI } from "../../npm/aio-input"
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import { mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-import { AI} from "../../npm/aio-input/types.tsx";
 const ListExamples:FC = ()=>{
     let [examples] = useState<any>([
         ['Basic',Basic],
@@ -115,7 +114,7 @@ function Basic() {
                     {flex:1,input:{type:'range',start:0,end:9,before:'stop'},field:'value.stop'}
                 ]
             },
-            onChange:(model)=>{
+            onChange:(model:any)=>{
                 setModel({...model})
             }
         }
@@ -130,7 +129,7 @@ function Basic() {
             size:model.size,
             decay:model.decay,
             stop:model.stop,
-            onChange:(newValue)=>setValue(newValue)
+            onChange:(newValue:number)=>setValue(newValue)
         }
         return <AIOInput {...p}/>
     }
@@ -142,7 +141,7 @@ function Basic() {
             {renderList()}    
             <div style={{marginTop:24,fontSize:12}}>{`changed value is : ${value}`}</div>            
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 function App(){
 let [value,setValue] = useState(12);
 let [options] = useState(getOptions())

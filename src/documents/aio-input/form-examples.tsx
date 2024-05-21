@@ -2,10 +2,9 @@ import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
+import AIODoc from '../../npm/aio-doc/aio-doc';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
-import Markdown from "markdown-to-jsx";
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
     { name: 'stephan', id: '2', gender: 'male', color: '#ffa500' },
@@ -78,7 +77,6 @@ const FormExamples: FC = () => {
         setSetting({ ...setting, show: titles[index] })
     }
     function setting_node() {
-        return {}
         let btnstyle = { background: 'none', border: 'none' }
         return {
             className: 'p-12',
@@ -120,7 +118,7 @@ const FormExamples: FC = () => {
     }
     function code(code: string) {
         if (setting.showCode === false) { return null }
-        return AIODoc().Code(code)
+        return new AIODoc().Code(code)
     }
     function render_node() {
         return {

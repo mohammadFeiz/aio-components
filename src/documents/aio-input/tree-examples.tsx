@@ -1,6 +1,6 @@
 import React, { FC, createContext, useContext, useState } from "react"
 import AIOInput from "../../npm/aio-input"
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiEye, mdiFolder, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
@@ -85,7 +85,7 @@ const TreeExamples:FC = ()=>{
     }
     function code(code: string) {
         if (setting.showCode === false) { return null }
-        return AIODoc().Code(code)
+        return new AIODoc().Code(code)
     }
     function render_node(){
         return {
@@ -144,7 +144,7 @@ function getValue(){
 function ModelCode(setting:I_setting){
     if(!setting.showCode){return null}
     return (
-        AIODoc().Code(
+        new AIODoc().Code(
 
 `const [value,setValue] = useState([
     {

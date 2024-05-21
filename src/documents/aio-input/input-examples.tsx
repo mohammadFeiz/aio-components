@@ -1,11 +1,10 @@
 import React, { FC, createContext, createRef, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-documentation/aio-documentation';
+import AIOInput,{ AI } from "../../npm/aio-input";
+import AIODoc from '../../npm/aio-doc/aio-doc';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
-import { AI } from "../../npm/aio-input/types";
 import $ from 'jquery';
 type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
 const textOptions = [
@@ -313,7 +312,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
                         type,
                         popover: {
                             position: 'center',
-                            setAttrs:(key)=>{
+                            setAttrs:(key:string)=>{
                                 if(key === 'backdrop'){
                                     return {
                                         attrs: {
@@ -433,7 +432,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     }
     function code(code: string) {
         if (setting.showCode === false) { return null }
-        return AIODoc().Code(code)
+        return new AIODoc().Code(code)
     }
     function render_node() {
         return {

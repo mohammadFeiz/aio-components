@@ -1,11 +1,10 @@
-import React, { FC, useEffect, useState } from "react"
-import AIOInput from "../../npm/aio-input"
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import { FC, useEffect, useState } from "react"
+import AIOInput,{ AI, AI_table_column, AI_table_paging } from "../../npm/aio-input"
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiEye, mdiFile, mdiFolder, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { mdiFile, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-import { AI, AI_table_column, AI_table_paging } from "../../npm/aio-input/types.tsx";
 import model from './table-model.js';
 const TableExamples:FC = ()=>{
     let [examples] = useState<any>([
@@ -162,7 +161,7 @@ function TypePlaceholder() {
                 placeholder='موردی وجود ندارد'
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 <AIOInput
     type='table'
     placeholder='موردی وجود ندارد'
@@ -188,7 +187,7 @@ function Attrs() {
                 columns={columns}
             />                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let rows = model;
 let columns = [
@@ -247,11 +246,11 @@ return (
         <div className='example'>
             <h3>{`onSwap={true}`}</h3>
             {renderTable('true')}                
-            {AIODoc().Code(getCode('true'))}
+            {new AIODoc().Code(getCode('true'))}
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
             <h3>{`onSwap={Function}`}</h3>
             {renderTable('function')}                
-            {AIODoc().Code(getCode('function'))}
+            {new AIODoc().Code(getCode('function'))}
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
     )
@@ -274,7 +273,7 @@ function Excel(p:any){
                 excel='please inter excel file name'
             />         
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'},excel:'name'},
@@ -320,7 +319,7 @@ function Toolbar(p:any) {
                 )}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -375,7 +374,7 @@ function ToolbarAttrs(p:any){
                 }}
             />   
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -425,7 +424,7 @@ function RowGapColumnGap(p:any) {
                 columnGap={6}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -481,7 +480,7 @@ function OnAdd(p:any) {
                 onChange={(newRows)=>setRows(newRows)}
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 ${rowsCode}
 let columns = [
@@ -505,7 +504,7 @@ return (
             <h3>{`onAdd={object}`}</h3>
             {renderTable('object')}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 ${rowsCode}
 let columns = [
@@ -552,7 +551,7 @@ function OnRemove(p:any) {
             <h3>{`onRemove={function}`}</h3>
             {renderTable('function')}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -575,7 +574,7 @@ return (
             <h3>{`onRemove={true}`}</h3>
             {renderTable('true')}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -619,7 +618,7 @@ function OnSearch() {
         <div className='example'>
             {renderTable('function')}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let rows = model;
 let columns = [
@@ -642,7 +641,7 @@ return (
             }
             {renderTable('true')}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let rows = model;
 let columns = [
@@ -686,7 +685,7 @@ function RowAttrs() {
                 }}
             />              
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let [rows,setRows] = useState(...)
 let columns = [
@@ -738,7 +737,7 @@ function HeaderAttrs(p:any) {
         <div className='example'>
             {renderTable()}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
@@ -795,7 +794,7 @@ function Paging() {
         <div className='example'>
             {renderTable()}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 class Paging extends Component {
 constructor(props){
@@ -882,7 +881,7 @@ function Paging_ServerSide() {
                 paging={paging}
             />           
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 class Paging extends Component {
 constructor(props){
@@ -952,7 +951,7 @@ function RowTemplate() {
                 onChange={(newRows)=>setRows(newRows)}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 let [rows,setRows] = useState(...)
 return (
     <AIOInput
@@ -1007,7 +1006,7 @@ function RowsTemplate() {
                 onSearch={true}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 let [rows,setRows] = useState(model)
 let [paging,setPaging] = useState<AI_table_paging>({
     size:10,
@@ -1080,7 +1079,7 @@ function RowAfter() {
                 onChange={(newRows)=>setRows(newRows)}
             />                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let [rows,setRows] = useState(model)
 let [columns,setColumns] = useState<AI_table_column[]>([
@@ -1126,7 +1125,7 @@ function RowBefore() {
                 onChange={(newRows)=>setRows(newRows)}
             />         
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 class Paging extends Component {
 constructor(props){
@@ -1159,7 +1158,7 @@ render() {
             }
             <h3>rows</h3>
             {
-                AIODoc().Code(JSON.stringify(rows,null,4))
+                new AIODoc().Code(JSON.stringify(rows,null,4))
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
@@ -1190,7 +1189,7 @@ function OnChangeSort() {
                 }}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let [rows,setRows] = useState(model)
 let [columns,setColumns] = useState<AI_table_column[]>([
@@ -1230,7 +1229,7 @@ function Column_Title(p:any) {
                 ]}
             />         
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:()=>'Name',value:'row.name'},
@@ -1264,7 +1263,7 @@ function Column_TitleAttrs(p:any) {
                 ]}
             />          
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',titleAttrs:{style:{background:'yellow'}}},
@@ -1295,7 +1294,7 @@ function Column_Value(p:any) {
                 }}
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     //static value
@@ -1338,7 +1337,7 @@ function Column_Width(p:any) {
                 }}
             />                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',width:120},
@@ -1375,7 +1374,7 @@ function Column_MinWidth(p:any) {
                 ]}
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',width:120},
@@ -1403,7 +1402,7 @@ function Column_Justify(p:any) {
                 ]}
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {title:'Name',value:'row.name'},
@@ -1443,7 +1442,7 @@ function Column_Input() {
         <div className='example'>
             {renderTable()}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let rows = model;
 let columns = [
@@ -1496,7 +1495,7 @@ function Column_OnChange(p:any) {
                 ]}
             />             
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 ${rowsCode}
 let [columns] = useState<AI_table_column[]>([
@@ -1519,7 +1518,7 @@ return (
             }
             <h3>rows</h3>
             {
-                AIODoc().Code(JSON.stringify(rows,null,4))
+                new AIODoc().Code(JSON.stringify(rows,null,4))
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
@@ -1541,7 +1540,7 @@ function Column_Sort() {
                 onChange={(newRows)=>setRows(newRows)}
             />
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 class Paging extends Component {
 constructor(props){
@@ -1572,7 +1571,7 @@ render() {
             }
             <h3>rows</h3>
             {
-                AIODoc().Code(JSON.stringify(rows,null,4))
+                new AIODoc().Code(JSON.stringify(rows,null,4))
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
@@ -1602,7 +1601,7 @@ function Column_CellAttrs(p:any) {
                 }}
             />             
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 ${rowsCode}
 let columns = [
     {
@@ -1695,7 +1694,7 @@ function Column_SubtextBeforeAfter(p:any) {
                 }}
             />              
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 ${rowsCode}
 let columns = [
@@ -1739,7 +1738,7 @@ return (
             }
             <h3>rows</h3>
             {
-                AIODoc().Code(JSON.stringify(rows,null,4))
+                new AIODoc().Code(JSON.stringify(rows,null,4))
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
@@ -1771,7 +1770,7 @@ function Column_Template(p:any) {
         <div className='example'>
             {renderTable()}                
             {
-                AIODoc().Code(`
+                new AIODoc().Code(`
 
 let rows = [
 {name:'mohammad',family:'feiz',age:38},
@@ -1800,7 +1799,7 @@ getValue={{
             }
             <h3>rows</h3>
             {
-                AIODoc().Code(JSON.stringify(rows,null,4))
+                new AIODoc().Code(JSON.stringify(rows,null,4))
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>

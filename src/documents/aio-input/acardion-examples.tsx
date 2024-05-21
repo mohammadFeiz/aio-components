@@ -1,6 +1,6 @@
 import React, { Component,FC, useEffect, useState } from "react"
 import AIOInput from "../../npm/aio-input"
-import AIODoc from './../../npm/aio-documentation/aio-documentation.js';
+import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
@@ -133,7 +133,7 @@ function Basic(){
                 }}
             />
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `<AIOInput 
     type='acardion'
     body={(value)=>{
@@ -173,7 +173,7 @@ function Basic(){
                 )
             }
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `.badge{
     display:flex;
     align-items:center;
@@ -237,7 +237,7 @@ function Vertical(){
                 }}
             />
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `<AIOInput 
     type='acardion'
     vertical={false}
@@ -328,7 +328,7 @@ function Multiple(){
                 }}
             />
             {
-                AIODoc().Code(
+                new AIODoc().Code(
 `<AIOInput
     type={'acardion'}
     multiple={true}
