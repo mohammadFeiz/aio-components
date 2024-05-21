@@ -1,11 +1,11 @@
-import React, { FC, useState } from "react"
-import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import React, { FC, useReducer, useRef, useState } from "react"
+import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput,{ AI } from "../../npm/aio-input";
 import AIODoc from '../../npm/aio-documentation/aio-documentation';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
-type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons'
+type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons' | 'tags'
 const textOptions = [
     {name:'john',id:'1',gender:'male',color:'#ff0000'},
     {name:'stephan',id:'2',gender:'male',color:'#ffa500'},
@@ -65,6 +65,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                     }
                 />
             ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.after',
@@ -78,7 +79,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 `after:()=><div className='badge'>12</div>`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.subtext',
@@ -92,7 +94,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 `subtext:()=>'this is my subtext'`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.close',
@@ -121,7 +124,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 `justify:()=>true`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.attrs',
@@ -143,7 +147,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 }`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.className',
@@ -157,7 +162,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 `className:()=>'my-option'`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.style',
@@ -179,7 +185,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 }`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'option.show',
@@ -221,7 +228,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         `onClick:(option:any)=>alert(JSON.stringify(option))`
                     }
                 />
-            )
+            ),
+            ['radio','select','tabs','buttons'].indexOf(type) !== -1
         ],
         [
             'popover',
@@ -308,7 +316,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         }`
                     }
                 />
-            )
+            ),
+            ['tags','select'].indexOf(type) !== -1
         ],
         [
             'option.tagBefore',
@@ -334,7 +343,8 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         }`
                     }
                 />
-            )
+            ),
+            ['tags','select'].indexOf(type) !== -1
         ],
         [
             'option.tagAfter',
@@ -360,9 +370,11 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         }`
                     }
                 />
-            )
+            ),
+            ['tags','select'].indexOf(type) !== -1
         ],
-        ['hideTags',()=><HideTags/>],
+        ['hideTags',()=><HideTags/>,['select'].indexOf(type) !== -1],
+        ['tags popover',()=><TagsPopover/>,['tags'].indexOf(type) !== -1],
           
     ])
     
@@ -445,7 +457,12 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
 }
 export default SelectExamples
 const Before:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -473,7 +490,12 @@ const Before:FC<{type:I_exampleTypes}> = ({type})=> {
     )
 }
 const After:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -501,7 +523,12 @@ const After:FC<{type:I_exampleTypes}> = ({type})=> {
     )
 }
 const Subtext:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -529,7 +556,12 @@ const Subtext:FC<{type:I_exampleTypes}> = ({type})=> {
     )
 }
 const Disabled:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -557,7 +589,12 @@ const Disabled:FC<{type:I_exampleTypes}> = ({type})=> {
     )
 }
 const Loading:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -766,7 +803,12 @@ const CheckIcon0:FC<{type:I_exampleTypes}> = ({type})=> {
 }
 
 const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:AI,propsCode?:string}> = ({type,option = {},optionCode,props={},propsCode})=> {
-    const [value,setValue] = useState<number>()
+    const [value,setValue] = useState<any>(getValue)
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
     return (
         <div className='example'>
             <AIOInput
@@ -825,6 +867,78 @@ const HideTags:FC = ()=> {
     value={value}
     onChange={(newValue)=>setValue(newValue)}
     hideTags={true}
+/>
+        `)}
+        </div> 
+    )
+}
+
+const TagsPopover:FC = ()=> {
+    const type = 'tags';
+    const [value,setValue] = useState<any>(getValue)
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    function getValue(){
+        if(type === 'tags'){
+            return ['2','3','6','8']
+        }
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} 
+                options={textOptions}
+                option={{
+                    text:'option.name',
+                    value:'option.id'
+                }}
+                className='my-tags'
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
+                after={
+                    <AIOInput
+                        type='button' style={{padding:0}}
+                        text={<Icon path={mdiDotsHorizontal} size={1}/>}
+                        popover={{
+                            header:{
+                                onClose:true,
+                                title:'Select Items',
+                                subtitle:'Some subtitle',
+                                before:<Icon path={mdiStar} size={1.5} color='orange'/>
+                            },
+                            position:'center',
+                            body:()=>{
+                                return (
+                                    <div style={{whiteSpace:'break-spaces',maxWidth:600,paddingBottom:12}}>
+                                        <AIOInput
+                                            type='radio'
+                                            multiple={true}
+                                            options={textOptions}
+                                            option={{
+                                                text:'option.name',
+                                                value:'option.id',
+                                                style:()=>({width:'32%'})
+                                            }}
+                                            value={[...valueRef.current]}
+                                            onChange={(newValue)=>setValue([...newValue])}
+                                            subtext='Please Select Some Items'
+
+                                        />                                        
+                                    </div>
+                                )
+                            }
+                        }}
+                    />
+                }
+            />
+        {AIODoc().Code(`
+<AIOInput
+    type='${type}'
+    options={${optionsCode}} 
+    option={${optionCode}}
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
+    before={<Icon path={mdiAccount} size={0.8}/>}
 />
         `)}
         </div> 

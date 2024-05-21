@@ -99,3 +99,8 @@
     padding:3px;
     color:#aaa;
 }
+.my-tags .aio-input-tags-container{
+    white-space: nowrap;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+}

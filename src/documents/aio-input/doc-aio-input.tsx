@@ -39,6 +39,7 @@ export default function DOC_Tree(props:any) {
                     { text: '20 - image', id: 'image', render: () => <InputExamples type='image' key='image'/> },
                     { text: '21 - file', id: 'file', render: () => <InputExamples type='file' key='file'/> },
                     { text: '22 - form', id: 'form', render: () => <FormExamples/> },
+                    { text: '23 - tags', id: 'tags', render: () => <SelectExamples type='tags' key='tags'/> },
                     
                 ]
             }}

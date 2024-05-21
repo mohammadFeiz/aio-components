@@ -171,45 +171,7 @@
     opacity: 0.5;
 }
 
-.aio-input-options::-webkit-scrollbar {
-    width: 10px !important;
-    height: 10px !important;
-}
 
-.aio-input-options::-webkit-scrollbar-track {
-    background-color: transparent;
-}
-
-.aio-input-options::-webkit-scrollbar-thumb {
-    background-color: #e6e7e9;
-    border-radius: 20px;
-    border: 3px solid transparent;
-    background-clip: content-box;
-}
-
-.aio-input-options::-webkit-scrollbar-thumb:hover {
-    background-color: #a8bbbf;
-}
-
-.aio-input-acardion::-webkit-scrollbar {
-    width: 10px !important;
-    height: 10px !important;
-}
-
-.aio-input-acardion::-webkit-scrollbar-track {
-    background-color: transparent;
-}
-
-.aio-input-acardion::-webkit-scrollbar-thumb {
-    background-color: #e6e7e9;
-    border-radius: 20px;
-    border: 3px solid transparent;
-    background-clip: content-box;
-}
-
-.aio-input-acardion::-webkit-scrollbar-thumb:hover {
-    background-color: #a8bbbf;
-}
 
 .aio-input-tabs-options,
 .aio-input-buttons-options {
@@ -555,7 +517,7 @@
     box-sizing: border-box;
 }
 
-.aio-input-tags {
+.aio-input-tags-container {
     top: 100%;
     width: 100%;
     left: 0;
@@ -583,14 +545,15 @@
     cursor: pointer;
     background: #0069ff;
     font-size: 12px;
+    flex-shrink: 0;
 }
 
-.aio-input-tags:not(.disabled) .aio-input-tag.disabled {
+.aio-input-tags-container:not(.disabled) .aio-input-tag.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.aio-input-tags.disabled .aio-input-tag.disabled {
+.aio-input-tags-container.disabled .aio-input-tag.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -672,7 +635,15 @@
     padding: 6px;
     border: 1px solid #ddd;
 }
-
+.aio-input-tags {
+    min-height: 30px;
+    padding: 6px;
+    border: 1px solid #ddd;
+}
+.aio-input-tags .aio-input-tags-container{
+    border:none;
+    padding:0;
+}
 .aio-input-textarea textarea {
     font-family: inherit;
     border: none;
@@ -899,29 +870,7 @@
     color: inherit;
 }
 
-.aio-input-table-unit::-webkit-scrollbar {
-    width: 6px !important;
-    height: 6px !important;
-}
 
-.aio-input-table-unit::-webkit-scrollbar-track {
-    background-color: transparent;
-}
-
-.aio-input-table-unit::-webkit-scrollbar-thumb {
-    background-color: #cdd4e0;
-    border-radius: 20px;
-    border: 1px solid transparent;
-    background-clip: content-box;
-}
-
-.aio-input-table-unit::-webkit-scrollbar-thumb {
-    background-color: #b1b9ca;
-}
-
-.aio-input-table-unit::-webkit-scrollbar-thumb:hover {
-    background-color: #6f7888;
-}
 
 .aio-input-table-border-h {
     height: 1px;
@@ -1067,24 +1016,24 @@
 }
 
 /* custom scrollbar */
-.aio-input-date-calendar select::-webkit-scrollbar {
-    width: 10px !important;
-    height: 10px !important;
+.aio-input-scroll::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
 }
 
-.aio-input-date-calendar select::-webkit-scrollbar-track {
+.aio-input-scroll::-webkit-scrollbar-track {
     background-color: transparent;
 }
 
-.aio-input-date-calendar select::-webkit-scrollbar-thumb {
-    background-color: #e6e7e9;
+.aio-input-scroll::-webkit-scrollbar-thumb {
+    background-color: #b1b9ca;
     border-radius: 20px;
-    border: 3px solid transparent;
+    border: 1px solid transparent;
     background-clip: content-box;
 }
 
-.aio-input-date-calendar select::-webkit-scrollbar-thumb:hover {
-    background-color: #a8bbbf;
+.aio-input-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #6f7888;
 }
 
 .aio-input-date-cell {

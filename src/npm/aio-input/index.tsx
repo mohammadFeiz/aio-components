@@ -49,11 +49,11 @@ function AIOINPUT(props: AI) {
         return (dom: any) => {
             let popover: AI_popover = { ...(props.popover || {}) }
             let { type,multiple } = props;
-            let { body,limitTo,header,setAttrs = ()=>{return {}} } = popover;
+            let { body,limitTo,header,setAttrs = ()=>{return {}},position = 'popover' } = popover;
             let target: React.ReactNode = $(dom.current)
             let config: AP_modal = {
                 //props that have default but can change by user
-                position: 'popover',
+                position,
                 fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
                 //props that havent default but can define by user(header,footer,fitTo,fixStyle)
                 limitTo,
@@ -61,7 +61,7 @@ function AIOINPUT(props: AI) {
                 //props that cannot change by user
                 onClose: () => toggle(false),
                 body: ({ close }) => {
-                    if (type === 'button') { return (body || (() => ''))({ close }) }
+                    if (body) { return body({ close }) }
                     else if (type === 'date') { return <Calendar onClose={close} /> }
                     else if (type === 'time') { return <TimePopover onClose={close} /> }
                     else { return <Options /> }
@@ -154,6 +154,7 @@ function AIOINPUT(props: AI) {
         slider: () => null,
         acardion: () => <Acardion/>,
         tree: () => <Tree />,
+        tags: () => <Layout properties={{ text: <Tags /> }} />,
         list: () => <List />,
         file: () => <File />,
         select: () => <Select/>,
@@ -459,30 +460,38 @@ function DateInput() {
     }
     else {return <Layout properties={{ text: getDateText() }} />}
 }
-function Tags() {
+const Tags:FC = () => {
     let { rootProps,options }: AI_context = useContext(AICTX);
-    let { value = [], rtl, disabled } = rootProps;
+    let { value = [], rtl, disabled,onChange = ()=>{} } = rootProps;
     let tags = value.map((o: any, i: number) => {
         let option:AI_option = options.optionsDic['a' + o];
         if (option === undefined) { return null }
-        return <Tag key={i} value={o} option={option} />
+        return (
+            <Tag 
+                onClose={()=>onChange(rootProps.value.filter((rpv: any) => rpv !== o))} 
+                key={i} 
+                attrs={option.tagAttrs} 
+                before={option.tagBefore} 
+                after={option.tagAfter} 
+                text={option.text} 
+                disabled={option.disabled}
+            />
+        )
     })
-    console.log(tags)
-    return !tags.length ? null : <div className={`aio-input-tags${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
+    return !tags.length ? null : <div className={`aio-input-tags-container aio-input-scroll${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
-type AI_Tag = { option:AI_option, value:any }
+type AI_Tag = { attrs?:any,before?:React.ReactNode,after?:React.ReactNode,text:React.ReactNode,disabled?:boolean,onClose?:()=>void }
 const Tag:FC<AI_Tag> = (props) => {
-    let { rootProps }: AI_context = useContext(AICTX);
-    let { onChange = () => { } } = rootProps;
-    let { option, value } = props;
-    let { text, tagAttrs = {}, tagBefore = I(mdiCircleMedium, 0.7), tagAfter, disabled } = option;
-    let onRemove = disabled ? undefined : () => { onChange(rootProps.value.filter((o: any) => o !== value)) }
+    let { attrs,before = I(mdiCircleMedium, 0.7),after,text,disabled,onClose = ()=>{} } = props;
+    let close = disabled ? undefined : onClose
+    let cls = 'aio-input-tag'
+    let Attrs = AddToAttrs(attrs,{className:[cls,disabled?'disabled':undefined]})
     return (
-        <div {...tagAttrs} className={'aio-input-tag' + (tagAttrs.className ? ' ' + tagAttrs.className : '') + (disabled ? ' disabled' : '')} style={tagAttrs.style}>
-            <div className='aio-input-tag-icon'>{tagBefore}</div>
-            <div className='aio-input-tag-text'>{text}</div>
-            {tagAfter !== undefined && <div className='aio-input-tag-icon'>{tagAfter}</div>}
-            <div className='aio-input-tag-icon' onClick={onRemove}>{I(mdiClose, 0.7)}</div>
+        <div {...Attrs}>
+            <div className={`${cls}-icon`}>{before}</div>
+            <div className={`${cls}-text`}>{text}</div>
+            {after !== undefined && <div className={`${cls}-icon`}>{after}</div>}
+            <div className={`${cls}-icon`} onClick={close}>{I(mdiClose, 0.7)}</div>
         </div>
     )
 }
@@ -886,7 +895,7 @@ function Options() {
     }
     if (!options.optionsList.length) { return null }
     let renderOptions = getRenderOptions(options.optionsList);
-    let className = `aio-input-options aio-input-${rootProps.type}-options`
+    let className = `aio-input-options aio-input-scroll aio-input-${rootProps.type}-options`
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <>
@@ -1308,7 +1317,7 @@ export const Acardion: FC = () => {
     }
     return (
         <AcardionContext.Provider value={getContext()}>
-            <div className={`aio-input-acardion${vertical ? ' aio-input-acardion-vertical' : ' aio-input-acardion-horizontal'}`}>
+            <div className={`aio-input-acardion aio-input-scroll${vertical ? ' aio-input-acardion-vertical' : ' aio-input-acardion-horizontal'}`}>
                 {options.optionsList.map((option: AI_option) => <AcardionItem option={option} />)}
             </div>
         </AcardionContext.Provider>
@@ -2085,7 +2094,7 @@ function Table() {
         <AITableContext.Provider value={getContext(ROWS)}>
             <div {...attrs}>
                 <TableToolbar />
-                <div className='aio-input-table-unit'><TableHeader /><TableRows /></div>
+                <div className='aio-input-table-unit aio-input-scroll'><TableHeader /><TableRows /></div>
                 {paging ? <TablePaging /> : ''}
             </div>
         </AITableContext.Provider>
@@ -3477,14 +3486,14 @@ function getTypes(props: AI) {
     }
     let { type, multiple } = props;
     let isMultiple;
-    if (type === 'table') { isMultiple = true }
+    if (type === 'table' || type === 'tags') { isMultiple = true }
     else if (['radio','range','file','buttons','select','date'].indexOf(type) !== -1) { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
         isMultiple,
         isInput: ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1,
         isDropdown: isDropdown(),
-        hasOption: ['text', 'number', 'textarea', 'color', 'select', 'radio', 'tabs', 'list', 'buttons'].indexOf(type) !== -1,
+        hasOption: ['text', 'number', 'textarea', 'color', 'select', 'radio', 'tabs', 'list', 'buttons','tags'].indexOf(type) !== -1,
         hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(type) !== -1,
         hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(type) !== -1,
         hasText: ['checkbox', 'button', 'select'].indexOf(type) !== -1,
@@ -3672,7 +3681,7 @@ function getTimeText(rootProps:AI) {
 }
 
 
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'map' | 'tree'|'spinner' |'slider'|
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'map' | 'tree'|'spinner' |'slider'|'tags' |
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
@@ -3836,7 +3845,10 @@ export type AI_popover = {
     header?:{
         attrs?:any,
         title?:string,
-        onClose?:boolean
+        subtitle?:string,
+        onClose?:boolean,
+        before?:React.ReactNode,
+        after?:React.ReactNode
     },
     maxHeight?:number | string,
     pageSelector?:string,
