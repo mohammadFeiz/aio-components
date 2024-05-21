@@ -4,7 +4,9 @@ import './index.css';
 export default class AIODoc {
     Code:(code:string, language?:'js' | 'css', style?:any)=>React.ReactNode;
     Ul:(list:[string,string][])=>React.ReactNode;
-    H:(text:string)=>React.ReactNode;
+    H:(text:string,num:number)=>React.ReactNode;
+    Line:(text?:string)=>React.ReactNode;
+    Mark:(text:string,color?:number)=>React.ReactNode;
     constructor(){
         this.Code = (code, language, style)=>{
             return <PrismCode code={code} language={language} style={style} />
@@ -13,10 +15,10 @@ export default class AIODoc {
             return (
                 <ul className='aio-doc-list'>
                     {
-                        list.map(([title, desc]) => {
+                        list.map(([desc,title]) => {
                             return (
                                 <li>
-                                    <mark>{title}</mark> {desc}
+                                    {!!title && this.Mark(title)} {desc}
                                 </li>
                             )
                         })
@@ -24,9 +26,19 @@ export default class AIODoc {
                 </ul>
             )
         }
+        this.Mark = (text,color = 0)=>{
+            return <mark className={`aio-doc-mark aio-doc-mark${color}`}>{text}</mark>
+        }
         this.H = (text,num = 3) => {
             const Element = `h${num}` as keyof JSX.IntrinsicElements; 
             return <Element className='aio-doc-titr'>{text}</Element>
+        }
+        this.Line = (text)=>{
+            return (
+                <div className='aio-doc-splitter'>
+                    {!!text && <div className='aio-doc-splitter-text'>{text}</div>}
+                </div>
+            )
         }
     }
 }
