@@ -2,7 +2,7 @@ import React, { FC, createContext, useContext, useState } from "react"
 import AIOInput from "../../npm/aio-input"
 import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
-import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiEye, mdiFolder, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiCircleOutline, mdiDiamond, mdiEmoticonHappyOutline, mdiEye, mdiFolder, mdiGauge, mdiHeart, mdiMinusBoxMultiple, mdiMinusBoxOutline, mdiMinusThick, mdiPlusBoxOutline, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
 type I_setting = { show: string, showCode: boolean }
@@ -13,13 +13,18 @@ const TreeExamples:FC = ()=>{
         ['Basic',()=><Basic/>],
         ['before',()=><Before/>],
         ['subtext',()=><Subtext/>],
+        ['childs',()=><Childs/>],
         ['check',()=><Check/>],
+        ['click and toggleIcon',()=><ClickAndToggleIcon/>],
+        ['customize toggleIcon',()=><CustomizeToggleIcon/>],
         ['onAdd,onRemove,onChange',()=><AddRemove/>],
         ['size',()=><Size/>],
         ['indent',()=><Indent/>],
         ['actions',()=><Actions/>],
         ['Complete features',()=><Complete/>],
-        ['input',()=><Input/>]
+        ['input',()=><Input/>],
+        ['Create Side menu',()=><SideMenu/>],
+        
     ])
     let [titles] = useState<string[]>(getTitles)
     function getTitles() {
@@ -272,6 +277,58 @@ function Subtext(){
         </div>
     )
 }
+function Childs(){
+    let {code,setting}:I_CTX = useContext(CTX);
+    let [value,setValue] = useState<any>([
+        {
+            name:'row-0',id:'row-0',
+            rows:[
+                {name:'row0-0',id:'row0-0',active:true},
+                {name:'row0-1',id:'row0-1'},
+                {
+                    name:'row0-2',id:'row0-2',
+                    subrows:[
+                        {name:'row0-2-0',id:'row0-2-0'},
+                        {name:'row0-2-1',id:'row0-2-1',active:true},
+                        {name:'row0-2-2',id:'row0-2-2'}                
+                    ]
+                },
+                {name:'row0-3',id:'row0-3'}        
+            ]
+        },
+        {name:'row-1',id:'row-1'},
+        {name:'row-2',id:'row-2',active:true},
+        {name:'row-3',id:'row-3'}
+    ])
+    return (
+        <div className='example'>
+            <AIOInput 
+                type='tree'
+                value={[...value]}
+                getChilds={({row,details})=>details.level === 0?row.rows:row.subrows}
+                option={{
+                    text:'option.name',
+                    value:'option.id'
+                }}
+            />
+            {
+                code(
+
+`<AIOInput 
+    type='tree'
+    value={[...value]}
+    getChilds={({row,details})=>details.level === 0?row.rows:row.subrows}
+    option={{
+        text:'option.name',
+        value:'option.id'
+    }}
+/>`
+                )
+            }
+            {ModelCode(setting)}
+        </div>
+    )
+}
 function Check(){
     let {code,setting}:I_CTX = useContext(CTX);
     let [value,setValue] = useState<any>(getValue)
@@ -381,6 +438,103 @@ function Check(){
         },
         checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>],
         
+    }}
+/>`
+                )
+            }
+            {ModelCode(setting)}
+        </div>
+    )
+}
+function ClickAndToggleIcon(){
+    let {code,setting}:I_CTX = useContext(CTX);
+    let [value,setValue] = useState<any>(getValue)
+    return (
+        <div className='example'>
+            <AIOInput 
+                type='tree'
+                style={{width:240,background:'#eee'}}
+                value={[...value]}
+                option={{
+                    text:'option.name',
+                    value:'option.id',
+                    toggleIcon:()=>false,
+                    onClick:(option:any,details:any)=>details.toggle(),
+                    after:(option:any,details:any)=>{
+                        let {childs = []} = option;
+                        if(!childs.length){return null}
+                        let icon = details.isOpen(option.id)?mdiChevronDown:mdiChevronLeft
+                        return (
+                            <Icon path={icon} size={0.8}/>
+                        )
+                    }
+                }}
+            />
+            {
+                code(
+
+`<AIOInput 
+    type='tree'
+    value={[...value]}
+    option={{
+        text:'option.name',
+        value:'option.id',
+        toggleIcon:()=>false,
+        onClick:(option:any,details:any)=>details.toggle(),
+        after:(option:any,details:any)=>{
+            let {childs = []} = option;
+            if(!childs.length){return null}
+            let icon = details.isOpen(option.id)?mdiChevronDown:mdiChevronLeft
+            return (
+                <Icon path={icon} size={0.8}/>
+            )
+        }
+    }}
+/>`
+                )
+            }
+            {ModelCode(setting)}
+        </div>
+    )
+}
+function CustomizeToggleIcon(){
+    let {code,setting}:I_CTX = useContext(CTX);
+    let [value,setValue] = useState<any>(getValue)
+    return (
+        <div className='example'>
+            <AIOInput 
+                type='tree'
+                style={{width:240,background:'#F8F8F8'}}
+                value={[...value]}
+                option={{
+                    text:'option.name',
+                    value:'option.id',
+                    toggleIcon:()=>{
+                        return [
+                            <Icon path={mdiPlusBoxOutline} size={0.8}/>,
+                            <Icon path={mdiMinusBoxOutline} size={0.8}/>,
+                            <Icon path={mdiCircleOutline} size={0.3}/>,
+                        ]
+                    },
+                }}
+            />
+            {
+                code(
+
+`<AIOInput 
+    type='tree'
+    style={{width:240,background:'#eee'}}
+    value={[...value]}
+    option={{
+        text:'option.name',
+        value:'option.id',
+        toggleIcon:()=>{
+            return [
+                <Icon path={mdiPlusBoxOutline} size={0.8}/>,
+                <Icon path={mdiMinusBoxOutline} size={0.8}/>,
+                <Icon path={mdiCircleOutline} size={0.3}/>,
+            ]
+        },
     }}
 />`
                 )
@@ -512,7 +666,7 @@ function Indent(){
 />`
                 )
             }
-            <h3>size:24</h3>
+            <h3>indent:24</h3>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -537,6 +691,229 @@ function Indent(){
                 )
             }
             {ModelCode(setting)}
+        </div>
+    )
+}
+function SideMenu(){
+    let {code,setting}:I_CTX = useContext(CTX);
+    let [value] = useState<any>([
+        {name:'Dashboard',id:'dashboard'},
+        {name:'Components',id:'components'},
+        {
+            name:'With Suffix',id:'ws',
+            childs:[
+                {name:'Submenu 1',id:'sm1'},
+                {name:'Submenu 2',id:'sm2'},
+                {name:'Submenu 3',id:'sm3'}        
+            ]
+        },
+        {
+            name:'With Prefix',id:'wp',
+            childs:[
+                {name:'Submenu 4',id:'sm4'},
+                {name:'Submenu 5',id:'sm5'},
+                {name:'Submenu 6',id:'sm6'}        
+            ]
+        }
+    ])
+    function getAfter(option:any,details:any){
+        let {childs = []} = option;
+        let open = details.isOpen(option.id);
+        return (
+            <div className='tree-after tree-align'>
+                {option.id === 'dashboard' && <div className='tree-new'>New</div>}
+                {option.id === 'ws' && <div className='tree-badge ws-badge tree-align'>3</div>}
+                {!!childs.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+            </div>
+        )
+    }
+    function getBefore(option:any,details:any){
+        let icons:any = {
+            'dashboard':mdiGauge,
+            'components':mdiDiamond,
+            'ws':mdiEmoticonHappyOutline,
+            'wp':mdiHeart
+        }
+        return (
+            <div className='tree-before'>
+                {details.level === 0 && <div className='tree-icon tree-align'><Icon path={icons[option.id]} size={0.6}/></div>}
+                {details.level === 1 && <Icon path={mdiCircleOutline} size={0.3}/>}
+                {option.id === 'wp' && <div className='tree-badge wp-badge tree-align'>3</div>}
+            </div>
+        )
+    }
+    return (
+        <div className='example'>
+            <AIOInput 
+                type='tree'
+                className='tree-side'
+                size={48}
+                value={[...value]}
+                option={{
+                    text:'option.name',
+                    value:'option.id',
+                    toggleIcon:()=>false,
+                    after:(option:any,details:any)=>getAfter(option,details),
+                    before:(option:any,details:any)=>getBefore(option,details),
+                    onClick:(option:any,details:any)=>details.toggle(),
+                    className:(option:any,details:any)=>`tree-row-${details.level}`
+                }}
+                indent={0}
+            />
+            <h3>JSX</h3>
+            {
+                code(
+
+`function Sidemenu(){
+    let [value] = useState([
+        {name:'Dashboard',id:'dashboard'},
+        {name:'Components',id:'components'},
+        {
+            name:'With Suffix',id:'ws',
+            childs:[
+                {name:'Submenu 1',id:'sm1'},
+                {name:'Submenu 2',id:'sm2'},
+                {name:'Submenu 3',id:'sm3'}        
+            ]
+        },
+        {
+            name:'With Prefix',id:'wp',
+            childs:[
+                {name:'Submenu 4',id:'sm4'},
+                {name:'Submenu 5',id:'sm5'},
+                {name:'Submenu 6',id:'sm6'}        
+            ]
+        }
+    ])
+    function getAfter(option:any,details:any){
+        let {childs = []} = option;
+        let open = details.isOpen(option.id);
+        return (
+            <div className='tree-after tree-align'>
+                {
+                    option.id === 'dashboard' && 
+                    <div className='tree-new'>New</div>
+                }
+                {
+                    option.id === 'ws' && 
+                    <div className='tree-badge ws-badge tree-align'>3</div>
+                }
+                {
+                    !!childs.length && 
+                    <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>
+                }
+            </div>
+        )
+    }
+    function getBefore(option:any,details:any){
+        let icons:any = {
+            'dashboard':mdiGauge,
+            'components':mdiDiamond,
+            'ws':mdiEmoticonHappyOutline,
+            'wp':mdiHeart
+        }
+        return (
+            <div className='tree-before'>
+                {
+                    details.level === 0 && 
+                    <div className='tree-icon tree-align'>
+                        <Icon path={icons[option.id]} size={0.6}/>
+                    </div>
+                }
+                {
+                    details.level === 1 && 
+                    <Icon path={mdiCircleOutline} size={0.3}/>
+                }
+                {
+                    option.id === 'wp' && 
+                    <div className='tree-badge wp-badge tree-align'>3</div>
+                }
+            </div>
+        )
+    }
+    return (
+        <AIOInput 
+            type='tree'
+            className='tree-side'
+            size={48}
+            value={[...value]}
+            option={{
+                text:'option.name',
+                value:'option.id',
+                toggleIcon:()=>false,
+                after:(option:any,details:any)=>getAfter(option,details),
+                before:(option:any,details:any)=>getBefore(option,details),
+                onClick:(option:any,details:any)=>details.toggle(),
+                className:(option:any,details:any)=>${'`tree-row-${details.level}`'}
+            }}
+            indent={0}
+        />
+    )
+}`
+                )
+            }
+            <h3>CSS</h3>
+            {
+                code(
+`.tree-side{
+    background:linear-gradient(180deg, #16191d, #2c3737);
+    color:#ddd;
+    width:240px
+}
+.tree-before{
+    display:flex;
+    align-items: center;
+    gap:6px;
+}
+.tree-after{
+    padding:0 12px;
+    height:100%;
+    color:#ddd;
+    gap:6px;
+}
+.tree-align{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.tree-icon{
+    background:rgba(255,255,255,.1);
+    width:30px;
+    height:30px;
+    border-radius:100%;
+}
+.tree-badge{
+    width:18px;
+    height:18px;
+    border-radius:100%;
+    font-size:10px;
+}
+.wp-badge{
+    color:#ddd;
+    background:rgba(255,255,255,.35);
+}
+.ws-badge{
+    color:#333;
+    background:rgb(224, 187, 19);
+}
+.tree-new{
+    background:Red;
+    border-radius:12px;
+    padding:3px 6px;
+    margin:0 24px;
+    font-size:10px;
+}
+.tree-side .aio-input-tree-body-level-1{
+    padding:12px 0;
+    background: rgba(255,255,255,0.05);
+}
+.tree-row-1{
+    padding:0 24px;
+    height:30px;
+}`
+                )
+            }
+            
         </div>
     )
 }

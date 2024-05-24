@@ -50,8 +50,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         ['multiple',()=><Multiple type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
         ['multiple (number)',()=><MultipleNumber type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
         ['checkIcon (array)',()=><CheckIconArray type={type}/>,['radio','select'].indexOf(type) !== -1],
-        ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio','select'].indexOf(type) !== -1],
-        ['checkIcon (0)',()=><CheckIcon0 type={type}/>,['radio','select'].indexOf(type) !== -1],
+        ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio'].indexOf(type) !== -1],
         [
             'option.before',
             ()=>(
@@ -756,7 +755,7 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
                 }}
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
-                checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
+                checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
             />
         {new AIODoc().Code(`
 <AIOInput
@@ -765,37 +764,7 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
     option={${optionCode}}
     value={value}
     onChange={(newValue)=>setValue(newValue)}
-    checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
-/>
-        `)}
-        </div> 
-    )
-}
-
-const CheckIcon0:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number[]>([])
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} 
-                multiple={type === 'select'}
-                options={textOptions}
-                option={{
-                    text:'option.name',
-                    value:'option.id'
-                }}
-                value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                checkIcon={0}
-            />
-        {new AIODoc().Code(`
-<AIOInput
-    type='${type}'
-    options={${optionsCode}} 
-    option={${optionCode}}
-    value={value}
-    onChange={(newValue)=>setValue(newValue)}
-    checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
+    checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
 />
         `)}
         </div> 

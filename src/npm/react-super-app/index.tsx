@@ -165,7 +165,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     return <SideMenu {...props} />
   }
   return (
-    <div className={`rsa-container` + (cls ? ' ' + cls : '')} style={{direction:rtl?'rtl':'ltr'}}>
+    <div className={`rvd-container rsa-container` + (cls ? ' ' + cls : '')} style={{direction:rtl?'rtl':'ltr'}}>
       <div className='rsa' style={{ maxWidth }}>
         {renderMain()}
         {popup.render()}

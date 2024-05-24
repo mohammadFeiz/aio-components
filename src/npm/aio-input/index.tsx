@@ -4,7 +4,8 @@ import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
     mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDotsHorizontal,
     mdiChevronRight, mdiChevronLeft, mdiArrowDown, mdiArrowUp, mdiFileExcel, mdiSort,
-    mdiDelete, mdiCrosshairsGps, mdiCircleSmall
+    mdiDelete, mdiCrosshairsGps, mdiCircleSmall,
+    mdiCircle
 } from "@mdi/js";
 import { Icon } from '@mdi/react';
 import $ from 'jquery';
@@ -17,6 +18,7 @@ import AIOPopup from './../../npm/aio-popup/index.tsx';
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
+type RN = React.ReactNode
 const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
     let type = props.type,round = props.round;
@@ -50,11 +52,12 @@ function AIOINPUT(props: AI) {
             let popover: AI_popover = { ...(props.popover || {}) }
             let { type,multiple } = props;
             let { body,limitTo,header,setAttrs = ()=>{return {}},position = 'popover' } = popover;
-            let target: React.ReactNode = $(dom.current)
+            let target: RN = $(dom.current)
+            let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple) || !!popover.fitHorizontal
             let config: AP_modal = {
                 //props that have default but can change by user
                 position,
-                fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple),
+                fitHorizontal,
                 //props that havent default but can define by user(header,footer,fitTo,fixStyle)
                 limitTo,
                 header,
@@ -111,8 +114,8 @@ function AIOINPUT(props: AI) {
         else if (attrs.onClick) { attrs.onClick(); }
     }
     function optionClick(option: AI_option) {
-        let { attrs = {}, onClick, close, text } = option;
-        if (onClick) { onClick(option.object); }
+        let { attrs = {}, onClick, close } = option;
+        if (onClick) { onClick(option.object,option.details); }
         else if (attrs.onClick) { attrs.onClick(option); }
         else if (onChange) {
             if (types.isInput) { /*do nothing*/ }
@@ -135,9 +138,20 @@ function AIOINPUT(props: AI) {
         }
         if (close) { toggle(false) }
     }
+    function getOptions():{optionsList:any[],optionsDic:{[key:string]:any}}{
+        let options:any[] = [];
+        if(type === 'date'){
+            if(!props.multiple){return {optionsList:[],optionsDic:{}}}
+            options = [...props.value]
+        }
+        else if(typeof props.options === 'function'){options = props.options()}
+        else if(props.options){options = props.options}
+        else {options = [];}
+        return GetOptions({rootProps:props,types,options})
+    }
     function getContext(): AI_context {
         let context: AI_context = {
-            options:GetOptions({rootProps:props,types}),
+            options:getOptions(),
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
             DragOptions, open, click, optionClick, types, showPassword, setShowPassword, DATE
         }
@@ -149,7 +163,7 @@ function AIOINPUT(props: AI) {
         if (vertical) { return 'aio-input-range-vertical' }
         return 'aio-input-range-horizontal'
     }
-    let render: { [key in AI_type]: () => React.ReactNode } = {
+    let render: { [key in AI_type]: () => RN } = {
         spinner: () => null,
         slider: () => null,
         acardion: () => <Acardion/>,
@@ -203,7 +217,7 @@ function TimePopover(props: { onClose: () => void }) {
         if (type === 'month') { return new Array(12).fill(0).map((o, i) => { return { text: i + 1, value: i + 1 } }) }
         return new Array(type === 'hour' ? 24 : 60).fill(0).map((o, i) => { return { text: i, value: i } })
     }
-    function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): React.ReactNode {
+    function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): RN {
         if (typeof value[type] !== 'number') { return null }
         let options = getTimeOptions(type);
         let p: AI = { type: 'list', value: value[type], options, size: 48, width: 72, onChange: (v) => change({ [type]: v }) }
@@ -480,12 +494,12 @@ const Tags:FC = () => {
     })
     return !tags.length ? null : <div className={`aio-input-tags-container aio-input-scroll${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
-type AI_Tag = { attrs?:any,before?:React.ReactNode,after?:React.ReactNode,text:React.ReactNode,disabled?:boolean,onClose?:()=>void }
+type AI_Tag = { attrs?:any,before?:RN,after?:RN,text:RN,disabled?:boolean,onClose?:()=>void }
 const Tag:FC<AI_Tag> = (props) => {
     let { attrs,before = I(mdiCircleMedium, 0.7),after,text,disabled,onClose = ()=>{} } = props;
     let close = disabled ? undefined : onClose
     let cls = 'aio-input-tag'
-    let Attrs = AddToAttrs(attrs,{className:[cls,disabled?'disabled':undefined]})
+    let Attrs = AddToAttrs(attrs,{className:[cls + ' aio-input-main-bg',disabled?'disabled':undefined]})
     return (
         <div {...Attrs}>
             <div className={`${cls}-icon`}>{before}</div>
@@ -793,7 +807,7 @@ const FormNode: FC<AI_FormNode> = (props) => {
     let { node, parentType,isRoot } = props;
     let { html, childs,dir = 'v', input, field, flex, size, show, className, style } = node;
     if (show === false) { return null }
-    function getInner(): React.ReactNode {
+    function getInner(): RN {
         let content
         if (input) { content = <FormInput node={node} setError={(v: string | undefined) => setError(field as string, v)} /> }
         if (html) { content = html; }
@@ -827,15 +841,19 @@ const FormInput: FC<AI_FormInput> = (props) => {
     function getInputProps(input: AI, node: AI_formNode) {
         let props: AI = {
             rtl, value, type: input.type,
-            onChange: (value) => {
-                setValue(field,value, validation)
-            },
             attrs: {}, inputAttrs: {}, disabled: false, point: (value) => { return { html: value } }
         };
         let prop: keyof AI;
         for (prop in input) {
             let functional = ['options', 'columns'].indexOf(prop) !== -1;
             (props[prop] as any) = getValueByField({ field: input[prop], functional, node, formNodeValue: value })
+        }
+        props.onChange = async (value) => {
+            let res:boolean | undefined | void = true;
+            if(input.onChange){
+                res = await input.onChange(value) !== false
+            }
+            if(res === true){setValue(field,value, validation)}
         }
         props.value = value;
         let { attrs = {} } = input;
@@ -883,13 +901,12 @@ function Options() {
         )
     }
     function getRenderOptions(options: AI_option[]) {
-        let renderIndex = 0;
         return options.map((option:AI_option, i) => {
             if (searchValue) {
                 if (option.text === undefined || option.text === '' || option.text === null) { return null }
                 if ((option.text as string).indexOf(searchValue) === -1) { return null }
             }
-            let p = { key: i, option, renderIndex, realIndex: i, searchValue }
+            let p = { key: i, option, index: i, searchValue }
             return <Layout {...p} />
         });
     }
@@ -904,14 +921,15 @@ function Options() {
         </>
     )
 }
+export type I_openState = boolean | undefined
 export type AI_Layout = {
-    option?: AI_option, text?: React.ReactNode, realIndex?: number, renderIndex?: number,
+    option?: AI_option, text?: RN, index?: number,
     properties?: any,indent?:AI_indent,
-    toggle?:{state:0 | 1 | 2,onClick:(e:any)=>void},
+    toggle?:{open:I_openState},
 }
 const Layout:FC<AI_Layout> = (props) => {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword }: AI_context = useContext(AICTX)
-    let { option, realIndex, toggle, indent } = props;
+    let { option, index, toggle, indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     function getClassName() {
@@ -920,6 +938,11 @@ const Layout:FC<AI_Layout> = (props) => {
             cls = `aio-input-option aio-input-${type}-option`
             if (types.isMultiple) { cls += ` aio-input-${type}-multiple-option` }
             if (types.isDropdown) { cls += ` aio-input-dropdown-option` }
+            if( option.active === true){
+                cls += ' active'
+                if(type === 'tabs'){cls += ' aio-input-main-color'}
+                if(type === 'buttons'){cls += ' aio-input-main-bg'} 
+            }
         }
         else {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
@@ -946,7 +969,7 @@ const Layout:FC<AI_Layout> = (props) => {
         else { className += ` aio-input-${type}-${key}` }
         return className;
     }
-    function Text(): React.ReactNode {
+    function Text(): RN {
         let { text, placeholder, subtext, justify } = properties;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text !== undefined) {
@@ -985,22 +1008,23 @@ const Layout:FC<AI_Layout> = (props) => {
     function CheckIcon() {
         let { checkIcon, checked } = properties;
         if (checked === undefined) { return null }
+        let {multiple} = rootProps;
         if (Array.isArray(checkIcon)) { return checkIcon[checked ? 1 : 0] }
-        if(checkIcon === 0){
+        if(!multiple && type === 'radio'){
             return (
-                <div className={'aio-input-check-0' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
-                    {checked && <div></div>}
+                <div className={'aio-input-check-out aio-input-main-color' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
+                    {checked && <div className={'aio-input-check-in aio-input-main-bg'} style={{ background: checkIcon.background }}></div>}
                 </div>
-            );    
+            );
         }
         return (
-            <div className={'aio-input-check-out' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
-                {checked && <div className={'aio-input-check-in'} style={{ background: checkIcon.background }}></div>}
+            <div className={'aio-input-check-0 aio-input-main-color' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
+                {checked && <div className='aio-input-main-bg'></div>}
             </div>
-        );
+        );    
     }
     function BeforeAfter(mode: 'before' | 'after') {
-        let res: React.ReactNode;
+        let res: RN;
         if (mode === 'after' && type === 'password' && rootProps.preview) {
             res = <div className='align-v' onClick={() => setShowPassword()}>{I(showPassword ? mdiEyeOff : mdiEye, .8)}</div>
         }
@@ -1041,8 +1065,8 @@ const Layout:FC<AI_Layout> = (props) => {
         })
         let p = { ...attrs, onClick, ref: dom, disabled }
         let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
-        if (draggable) { p = { ...p, ...DragOptions.getAttrs(options, realIndex || 0) } }
-        if (realIndex) { p['data-index'] = realIndex }
+        if (draggable) { p = { ...p, ...DragOptions.getAttrs(options, index || 0) } }
+        if (index) { p['data-index'] = index }
         return p;
     }
     function getProperties() {
@@ -1065,21 +1089,26 @@ const Layout:FC<AI_Layout> = (props) => {
         let className = classNames.length ? classNames.join(' ') : undefined;
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className }
     }
-    function getToggleIcon(state: 0 | 1 | 2) {
+    function getToggleIcon(open:I_openState) {
         if (toggle === undefined) { return null }
+        if(option && Array.isArray(option.toggleIcon)){
+            if(open === false && !!option.toggleIcon[0]){return option.toggleIcon[0]}
+            if(open === true && !!option.toggleIcon[1]){return option.toggleIcon[1]}
+            if(open === undefined && !!option.toggleIcon[2]){return option.toggleIcon[2]}
+        }
         let path;
-        if (state === 2) { path = mdiCircleSmall }
-        else if (state === 1) { path = mdiChevronDown }
+        if (open === undefined) { path = mdiCircleSmall }
+        else if (open === true) { path = mdiChevronDown }
         else { path = mdiChevronRight }
         return I(path, 1)
     }
     function Toggle(indent: AI_indent) {
+        if(!option || option.toggleIcon === false){return null}
         if (toggle === undefined) { return null }
-        let state = toggle.state;
-        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); toggle.onClick(e) }}>
-            <div className='aio-input-toggle-icon'>{getToggleIcon(state)}</div>
+        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); if(option.details.toggle){option.details.toggle()} }}>
+            <div className='aio-input-toggle-icon'>{getToggleIcon(toggle.open)}</div>
             {
-                state === 1 &&
+                toggle.open === true &&
                 <svg className='aio-input-toggle-line aio-input-indent-line'>
                     <path d={`M${indent.size / 2} ${0} L${indent.size / 2} ${indent.height / 2 - 12} Z`}></path>
                 </svg>
@@ -1267,7 +1296,7 @@ function List() {
         return (
             <Layout
                 option={o}
-                realIndex={i}
+                index={i}
                 properties={{
                     style: { height: size },
                     justify: true
@@ -1288,30 +1317,21 @@ function List() {
         </div>
     );
 }
-type I_AcardionContext = { toggle: (id: string) => void, mountedDic: { [id: string]: boolean }, openDic: { [id: string]: boolean }, rootProps: AI }
+type I_AcardionContext = { 
+    isOpen:(id:any)=>boolean,
+    rootProps: AI 
+}
 const AcardionContext = createContext({} as any);
 export const Acardion: FC = () => {
     const { rootProps,options }: AI_context = useContext(AICTX);
-    const { multiple, vertical = true } = rootProps;
-    let [openDic, setOpenDic] = useState<any>({})
-    let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
-    function SetMounted(newOpen: boolean, id: string) {
-        if (!multiple) { setMountedDic(!newOpen ? {} : { [id]: true }) }
-        else { setMountedDic({ ...mountedDic, [id]: !mountedDic[id] }) }
-    }
-    function SetOpen(newOpen: boolean, id: string) {
-        if (!multiple) { setOpenDic(!newOpen ? {} : { [id]: true }) }
-        else { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
-    }
-    function toggle(id: any) {
-        let open = !!openDic[id]
-        let time = 500
-        if (!open) { SetOpen(!open, id); setTimeout(() => SetMounted(!open, id), 0) }
-        else { SetMounted(!open, id); setTimeout(() => SetOpen(!open, id), time) }
+    const { multiple, vertical = true,onChange = ()=>{},value } = rootProps;
+    function isOpen(id:any){
+        if(!multiple){return id === value}
+        else {return (value || []).indexOf(id) !== -1}
     }
     function getContext() {
         let context: I_AcardionContext = {
-            toggle, rootProps, mountedDic, openDic
+            rootProps,isOpen
         }
         return context;
     }
@@ -1324,21 +1344,48 @@ export const Acardion: FC = () => {
     )
 }
 type I_AcardionItem = { option: AI_option }
-const AcardionItem: FC<I_AcardionItem> = (props) => {
-    const { rootProps, openDic, mountedDic, toggle }: I_AcardionContext = useContext(AcardionContext);
-    let { body } = rootProps;
-    let { option } = props;
-    let { value } = option;
-    let open = !!openDic[value]
-    let mounted = !!mountedDic[value];
-    let { html, attrs } = (typeof body === 'function' ? body(value) : body) || { html: '' }
-    let Attrs = AddToAttrs(attrs, { className: `aio-input-acardion-item${open ? ' open' : ''}${!mounted ? ' not-mounted' : ''}` })
+const AcardionItem: FC<I_AcardionItem> = ({option}) => {
+    let [mounted,SetMounted] = useState(false);
+    const [active,setActive] = useState<boolean>(option.active)
+    let [timeout] = useState<any>()
+    let Attrs = AddToAttrs(option.attrs, { className: `aio-input-acardion-item` })
+    function setMounted(mounted:boolean){
+        SetMounted(mounted)
+    }
+    useEffect(()=>{
+        setMounted(true)
+    },[])
+    useEffect(()=>{
+        if(option.active){
+            setActive(true);
+            setMounted(false);
+            timeout = setTimeout(()=>{
+                setMounted(true)
+            },10)
+        }
+        else {
+            setActive(true);
+            setMounted(false);
+            timeout = setTimeout(()=>{
+                setActive(false)
+            },300)
+        }
+    },[!!option.active])
     return (
         <div {...Attrs}>
-            <Layout option={option} properties={{ onClick: () => toggle(value) }} />
-            {!!open && <div className={`aio-input-acardion-body`}>{html}</div>}
+            <Layout option={option} />
+            {!!active && <AcardionBody option={option} mounted={mounted}/>}
         </div>
     )
+}
+type I_AcardionBody = { option: AI_option,mounted:boolean }
+const AcardionBody:FC<I_AcardionBody> = ({option,mounted})=>{
+    const { rootProps }: I_AcardionContext = useContext(AcardionContext);
+    let { value } = option;
+    let { body } = rootProps;
+    let { html, attrs } = (typeof body === 'function' ? body(value) : body) || { html: '' }
+    let Attrs = AddToAttrs(attrs,{className:[`aio-input-acardion-body`,mounted?undefined:'not-mounted']})
+    return <div {...Attrs}>{html}</div>
 }
 type I_TreeContext = {
     toggle: (id: string) => void,
@@ -1346,21 +1393,23 @@ type I_TreeContext = {
     openDic: { [id: string]: boolean },
     rootProps: AI,
     types: any,
-    add: any,
-    remove: any,
+    add: (p?:{parent: any,parentDetails:any})=>void,
+    remove: (p:{row: any,index:number, parent?: any,parentDetails?:any})=>void,
     indent: number,
     size: number,
     change: (row: any, newRow: any) => void,
-    getChilds: (row: any) => any[]
+    getChilds: (p:{row: any,details:I_treeRowDetails}) => any[]
 }
 type I_treeItem = {
     option: AI_option, row: any, parent?: any, parentId?: string,
     id: string, open: boolean, indent: AI_indent, parentOpen: boolean,
+    details:I_treeRowDetails
 }
+type I_treeRowDetails = {level:number,index:number, isLastChild: boolean, isFirstChild: boolean}
 const TreeContext = createContext({} as any);
 const Tree: FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { onAdd, onRemove, value = [], onChange, size = Def('tree-size') } = rootProps;
+    let { onAdd, onRemove, value = [], onChange, size = Def('tree-size'),attrs } = rootProps;
     let [openDic, setOpenDic] = useState<any>({})
     let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
     let [indent] = useState<number>(getIndent)
@@ -1383,61 +1432,66 @@ const Tree: FC = () => {
         for (let prop in newRow) { row[prop] = newRow[prop]; }
         if (rootProps.onChange) { rootProps.onChange(rootProps.value) }
     }
-    function getChilds(obj: any) {
+    function getChilds(p:{row: any,details:I_treeRowDetails}):any[] {
+        let {row,details} = p;
         let childs = []
         try {
-            if (rootProps.getChilds) { childs = rootProps.getChilds(obj); }
-            else { childs = obj.childs || [] }
+            if (rootProps.getChilds) { childs = rootProps.getChilds({row,details}); }
+            else { childs = row.childs || [] }
         }
         catch { childs = [] }
-        return childs
+        return childs || []
     }
-    function setChilds(obj: any, childs: any[]) {
+    function setChilds(p:{row: any, details:I_treeRowDetails,childs: any[]}) {
+        let {row,childs} = p;
         try {
-            if (rootProps.setChilds) { rootProps.setChilds(obj, childs) }
-            else { obj.childs = childs }
+            if (rootProps.setChilds) { rootProps.setChilds(p) }
+            else { row.childs = childs }
         }
         catch { }
     }
-    async function add(parent?: any) {
+    async function add(p?:{parent: any,parentDetails:I_treeRowDetails}) {
         let newRow: any;
-        if (typeof onAdd === 'function') { newRow = await onAdd({ parent }) }
+        if (typeof onAdd === 'function') { newRow = await onAdd(p) }
         else { newRow = onAdd }
         if (!newRow) { return }
-        if (parent) {
-            let parentChilds = getChilds(parent);
-            setChilds(parent, parentChilds.concat(newRow));
+        if (p) {
+            let parentChilds:any[] = getChilds({row:p.parent,details:p.parentDetails});
+            setChilds({row:p.parent, childs:parentChilds.concat(newRow),details:p.parentDetails});
         }
         else { value.push(newRow) }
         if (onChange) { onChange(value); }
     }
-    async function remove(row: any, parent: any) {
+    async function remove(p:{row: any,index:number, parent?: any,parentDetails?:any}) {
+        let {index} = p
         let res: boolean;
-        if (typeof onRemove === 'function') { res = await onRemove({ row, parent }) as boolean }
+        if (typeof onRemove === 'function') { res = await onRemove(p) as boolean }
         else { res = true }
         if (!res) { return }
-        if (!parent) {
+        const details:I_optionDetails = {mainValue:value,index,active:false,toggle:()=>{}}
+        if (!p.parent) {
             value = value.filter((o: any) => {
-                let rowValue = GetOptionProps({ option: row, key: 'value', props: rootProps })
-                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps })
+                let rowValue = GetOptionProps({ option: p.row, key: 'value', props: rootProps,details })
+                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps,details })
                 return rowValue !== oValue
             })
         }
         else {
-            let parentChilds = getChilds(parent);
+            let parentChilds = getChilds({row:p.parent,details:p.parentDetails});
             let newChilds: any[] = parentChilds.filter((o: any) => {
-                let rowValue = GetOptionProps({ option: row, key: 'value', props: rootProps })
-                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps })
+                let rowValue = GetOptionProps({ option: p.row, key: 'value', props: rootProps,details })
+                let oValue = GetOptionProps({ option: o, key: 'value', props: rootProps,details })
                 return rowValue !== oValue
             });
-            setChilds(parent, newChilds)
+            setChilds({row:p.parent,details:p.parentDetails, childs:newChilds})
         }
         if (onChange) { onChange(value) }
     }
     function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent, size, change, getChilds } }
+    let Attrs = AddToAttrs(attrs,{className:['aio-input-tree',rootProps.className],style:rootProps.style})
     return (
         <TreeContext.Provider value={getContext()}>
-            <div className="aio-input-tree"><TreeHeader /><TreeBody rows={value} level={0} /></div>
+            <div {...Attrs}><TreeHeader /><TreeBody rows={value} level={0} /></div>
         </TreeContext.Provider>
     )
 }
@@ -1448,19 +1502,19 @@ const TreeHeader: FC = () => {
     addText = (typeof addText === 'function' ? addText('header') : addText) || 'add';
     return (<div className="aio-input-tree-header"><button onClick={() => add()}>{I(mdiPlusThick, .8)}{addText}</button></div>)
 }
-type I_TreeActions = { row: any, parent?: any }
+type I_TreeActions = { row: any,index:number, parent?: any,rowDetails:I_treeRowDetails,parentDetails?:I_treeRowDetails }
 const TreeActions: FC<I_TreeActions> = (props) => {
-    let { row, parent } = props;
+    let { row,index, parent,rowDetails,parentDetails } = props;
     let { rootProps, add, remove }: I_TreeContext = useContext(TreeContext);
     let { onAdd, onRemove, removeText = 'Remove' } = rootProps;
-    let addText: React.ReactNode = (typeof rootProps.addText === 'function' ? rootProps.addText(row) : rootProps.addText) || 'Add';
+    let addText: RN = (typeof rootProps.addText === 'function' ? rootProps.addText(row) : rootProps.addText) || 'Add';
     let options = typeof rootProps.actions === 'function' ? rootProps.actions(row, parent) : rootProps.actions;
     function getOptions() {
         let res = [];
-        if (onAdd) { res.push({ text: addText, value: 'add', before: I(mdiPlusThick, 0.7), onClick: () => add(row) }) }
+        if (onAdd) { res.push({ text: addText, value: 'add', before: I(mdiPlusThick, 0.7), onClick: () => add({parent:row,parentDetails:rowDetails}) }) }
         let Options = (options || []).map((o) => { return { ...o, onClick: () => { if (o.onClick) { o.onClick(row, parent) } } } })
         res = [...res, ...Options]
-        if (onRemove) { res.push({ text: removeText, value: 'remove', before: I(mdiDelete, 0.7), onClick: () => remove(row, parent) }) }
+        if (onRemove) { res.push({ text: removeText, value: 'remove', before: I(mdiDelete, 0.7), onClick: () => remove({row,index, parent,parentDetails}) }) }
         return res
     }
     let Options = getOptions();
@@ -1468,29 +1522,49 @@ const TreeActions: FC<I_TreeActions> = (props) => {
     let p: AI = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
     return <AIOInput {...p} />;
 }
-type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string, parentIndent?: AI_indent }
+type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string, parentIndent?: AI_indent,parentDetails?:I_treeRowDetails }
 const TreeBody: FC<I_TreeBody> = (props) => {
-    let { rootProps, types, openDic, mountedDic, indent, size, change, getChilds }: I_TreeContext = useContext(TreeContext);
-    let { rows, level, parent, parentId, parentIndent } = props;
-    let {optionsList} = GetOptions({
-        rootProps, types, options: rows, level,
-        change: (row: any, newRow: any) => change(row, newRow),
-        properties: {
-            after: (option: AI_option) => <TreeActions row={option.object} parent={parent} />
-        }
-    })
+    let { rootProps, types, openDic, mountedDic, indent, size, change, getChilds,toggle }: I_TreeContext = useContext(TreeContext);
+    let { rows, level, parent, parentId, parentIndent,parentDetails } = props;
     let parentOpen = parentId === undefined ? true : !!openDic[parentId];
     let mounted = parentId == undefined ? true : mountedDic[parentId];
+    let {onAdd,onRemove,actions} = rootProps;
+    let properties;
+    if(!!onAdd || !!onRemove || !!actions){
+        properties = {
+            after: (option: AI_option) => {
+                let {index,level = 0} = option;
+                let isFirstChild = index === 0;
+                let isLastChild = index === rows.length - 1;
+                let details:I_treeRowDetails = {index,level,isFirstChild,isLastChild}
+                return <TreeActions row={option.object} index={index} parent={parent} rowDetails={details} parentDetails={parentDetails}/>
+            }
+        }
+    }
+    let {optionsList} = GetOptions({
+        rootProps, types, options: rows, level,isOpen:(id:any)=>!!openDic[id],
+        change: (row: any, newRow: any) => change(row, newRow),
+        properties ,toggle
+    })
+    function getClassName(){
+        let className = 'aio-input-tree-body';
+        if(!parent){className += ' aio-input-tree-root'}
+        if(parentOpen){className += ' open'}
+        className += !mounted ? ' not-mounted' : ' mounted';
+        className += ` aio-input-tree-body-level-${level}`
+        return className
+    }
     return (
-        <div className={`aio-input-tree-body${!parent ? ' aio-input-tree-root' : ''}${parentOpen ? ' open' : ''}${!mounted ? ' not-mounted' : ' mounted'}`}>
+        <div className={getClassName()}>
             {optionsList.map((option: any, index: number) => {
                 let row = rows[index];
                 let id = option.value;
-                let childs = getChilds(row);
+                let details:I_treeRowDetails = {level,index, isLastChild: index === optionsList.length - 1, isFirstChild: index === 0}
+                let childs = getChilds({row,details});
                 let open = !!openDic[id];
-                let item: I_treeItem = {
-                    row, option, parent, parentId, id, parentOpen, open,
-                    indent: { height: size, level, childsLength: childs.length, size: indent, index, isLastChild: index === optionsList.length - 1, isFirstChild: index === 0, parentIndent }
+                let item:I_treeItem = {
+                    row, option, parent, parentId, id, parentOpen, open,details,
+                    indent: { height: size, childsLength: childs.length, size: indent, parentIndent,...details }
                 }
                 let p = { className: `aio-input-tree-row` }
                 return <div {...p} key={id}><TreeRow item={item} /><TreeChilds item={item} /></div>;
@@ -1499,18 +1573,22 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     )
 }
 const TreeRow: FC<{ item: I_treeItem }> = (props) => {
-    let { toggle, openDic, getChilds }: I_TreeContext = useContext(TreeContext);
+    let { openDic, getChilds }: I_TreeContext = useContext(TreeContext);
     let { item } = props;
-    let childs = getChilds(item.row);
-    let toggleState: (0 | 1 | 2) = !childs.length ? 2 : (!!openDic[item.id] ? 1 : 0);
-    let p: AI_Layout = { indent: item.indent, option: item.option, toggle: { state: toggleState, onClick: () => toggle(item.id) } };
+    let childs = getChilds(item);
+    let open: I_openState = !childs.length ? undefined : (!!openDic[item.id] ? true : false);
+    let p: AI_Layout = { 
+        indent: item.indent, 
+        option: item.option, 
+        toggle: { open } 
+    };
     return <Layout {...p} />;
 }
 const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
     let { getChilds }: I_TreeContext = useContext(TreeContext);
-    let { row, id, open, indent } = props.item, childs = getChilds(row);
+    let { row, id, open, indent,details } = props.item, childs = getChilds(props.item);
     if (!open || !childs || !childs.length) { return null }
-    return <TreeBody rows={childs} level={indent.level + 1} parent={row} parentId={id} parentIndent={indent} />
+    return <TreeBody rows={childs} level={indent.level + 1} parent={row} parentId={id} parentIndent={indent} parentDetails={details} />
 }
 type I_DPContext = {
     translate: (text: string) => string,
@@ -1603,7 +1681,7 @@ export function Calendar(props: { onClose?: () => void }) {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
                     year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
                 }
-                let newValue;
+                let newValue,index = 0;
                 if(multiple){
                     let current:string[] = [];
                     if(value){
@@ -1619,12 +1697,15 @@ export function Calendar(props: { onClose?: () => void }) {
                             newValue = newValue.slice(1, newValue.length)
                         }
                     }
+                    index = newValue.length - 1;
                 }
-                else {newValue = dateString}
+                else {
+                    index = 0
+                    newValue = dateString
+                }
                 onChange(newValue, props);
                 if (onClose) {
-                    if (typeof option.close === 'function') { if (option.close()) { onClose() } }
-                    else if (option.close === true) { onClose() }
+                    if (typeof option.close === 'function') { if (option.close(option,{mainValue:newValue,index,active:false,toggle:()=>{}})) { onClose() } }
                 }
             }
         }
@@ -1857,7 +1938,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);
     let { size = Def('date-size'), unit = Def('date-unit') } = rootProps;
-    function getDays(): React.ReactNode {
+    function getDays(): RN {
         if (!activeDate || !activeDate.year || !activeDate.month) { return null }
         let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
         let options = new Array(daysLength).fill(0).map((o, i) => { return { text: (i + 1).toString(), value: i + 1 } })
@@ -2631,7 +2712,7 @@ const Range: FC = () => {
         let rootStyle = getRootStyle();
         return AddToAttrs(attrs, { className: getRootClassName(), style: rootStyle, attrs: { ref: temp.dom } })
     }
-    function root_node(): React.ReactNode {
+    function root_node(): RN {
         return (
             <div {...getRootProps()}>
                 <RangeGroove/>
@@ -2722,7 +2803,7 @@ const RangeFills: FC = () => {
     let { start = 0, fill, round } = rootProps;
     if (round || fill === false) { return null }
     let limit = value.length === 1 ? [start, value[0]] : [...value];
-    let res: React.ReactNode[] = [];
+    let res: RN[] = [];
     for (let i = 1; i < limit.length; i++) {
         let { thickness, style, className: fillClassName, color } = (typeof fill === 'function' ? fill(i) : fill) || {};
         let from = limit[i - 1];
@@ -2741,7 +2822,7 @@ const RangeRanges: FC = () => {
     for (let i = 0; i < list.length; i++) {
         let [value, config] = list[i];
         let to = value
-        let rangeItem: React.ReactNode
+        let rangeItem: RN
         if (round) {
             let { thickness, color, radius, roundCap } = getCircleByStr(config,'offset')
             let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false }
@@ -2860,7 +2941,7 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
     let { label } = props;
     let {zIndex,dynamic,step,list = []} = label;
     let { round, start = 0, end = 360, reverse, vertical } = rootProps;
-    let [def] = useState<React.ReactNode>(getDef);
+    let [def] = useState<RN>(getDef);
     function getDef() { return RENDER(true) }
     function getList(): number[] {
         let res: number[] = [];
@@ -2901,7 +2982,7 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
     }
     useEffect(() => { $(window).on('resize', updateLabels) }, [])
     useEffect(() => { updateLabels() })
-    function RENDER(init: boolean): React.ReactNode {
+    function RENDER(init: boolean): RN {
         if (!init && !dynamic) {return def}
         return (
             <div className='ai-range-labels' style={{zIndex}}>
@@ -3126,9 +3207,9 @@ function MapUnit(props: I_MapUnit) {
         }
         return null
     }
-    function header_node(): React.ReactNode { return <MapHeader /> }
-    function body_node(): React.ReactNode { return <div style={{ flex: 1 }} ref={temp.dom}></div> }
-    function footer_node(): React.ReactNode { return <MapFooter /> }
+    function header_node(): RN { return <MapHeader /> }
+    function body_node(): RN { return <div style={{ flex: 1 }} ref={temp.dom}></div> }
+    function footer_node(): RN { return <MapFooter /> }
     return (
         <MapContext.Provider value={getContext()}>
             <div
@@ -3244,7 +3325,7 @@ function MapHeader() {
             catch (err) { }
         }, 1000)
     }
-    function input_node(): React.ReactNode {
+    function input_node(): RN {
         if (!search) { return null }
         let p: AI = {
             type: 'text', placeholder: search, className: 'aio-input-map-serach-input', value: searchValue, attrs: { ref: dom }, options: searchResult,
@@ -3265,7 +3346,7 @@ function MapHeader() {
         }
         return (<div className="aio-input-map-search"><AIOInput {...p} /></div>)
     }
-    function header_node(): React.ReactNode {
+    function header_node(): RN {
         if (typeof title !== 'string' && !onClose) { return null }
         return (
             <div style={{ display: 'flex' }}>
@@ -3283,12 +3364,12 @@ function MapHeader() {
 function MapFooter() {
     let { value, addressLoading, address, onClose, onChange, mapConfig = {} }: I_Map_context = useContext(MapContext);
     let { lat, lng } = value;
-    function submit_node(): React.ReactNode {
+    function submit_node(): RN {
         if (!mapConfig.isPopup) { return null }
         let { submitText = 'Submit' } = mapConfig;
         return (<button className='aio-input-map-submit' onClick={async () => { onChange(value); if (onClose) { onClose() } }}>{submitText}</button>)
     }
-    function details_node(): React.ReactNode {
+    function details_node(): RN {
         if (!mapConfig.address) { return null }
         if (addressLoading) { return loading_node() }
         return (
@@ -3297,14 +3378,89 @@ function MapFooter() {
             </div>
         )
     }
-    function loading_node(): React.ReactNode { return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>{I(mdiLoading, 1, { spin: 0.4 })}</div> }
-    function address_node(): React.ReactNode { return <div className="aio-input-map-address">{address}</div> }
-    function coords_node(): React.ReactNode {
+    function loading_node(): RN { return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>{I(mdiLoading, 1, { spin: 0.4 })}</div> }
+    function address_node(): RN { return <div className="aio-input-map-address">{address}</div> }
+    function coords_node(): RN {
         if (!lat || !lng) { return null }
         <div className="aio-input-map-coords">{`${lat} - ${lng}`}</div>
     }
     if (!mapConfig.isPopup && !mapConfig.address) { return null }
     return <div className="aio-input-map-footer">{details_node()} {submit_node()}</div>
+}
+export type AI_Sidemenu = {
+    options:AI_Sidemenu_option[],
+    onChange:(newValue:string)=>void
+}
+export type AI_Sidemenu_option = {
+    text:string,
+    value:string,
+    badge?:AI_Sidemenu_badge | AI_Sidemenu_badge[],
+    icon?:RN,
+    options?:AI_Sidemenu_option[],
+}
+export type AI_Sidemenu_badge = {
+    text:string,circle?:boolean,
+    color:'red'|'green'|'blue'|'grey'|'white'|'orange'|'yellow',
+}
+export const SideMenu:FC<AI_Sidemenu> = (props) => {
+    let {options = [],onChange} = props;
+    let cls = 'aio-input-sidemenu'
+    function getBadge(item:AI_Sidemenu_option){
+        let {badge} = item;
+        if(!badge){badge = []}
+        if(!Array.isArray(badge)){badge = [badge]}
+        if(!badge.length){return []}
+        let res:RN[] = []
+        for(let i = 0; i < badge.length; i++){
+            let {text,color = 'red',circle} = badge[i]
+            res.push(<div className={`${cls}-badge ${cls}-align ${cls}-badge-${color}${circle?' ' + cls + `-badge-circle`:''}`}>{text}</div>)
+        }
+        return res
+    }
+    function getAfter(option:AI_Sidemenu_option,details:I_optionDetails){
+        let {options = []} = option;
+        let open = details.isOpen?details.isOpen(option.value):false;
+        let badge:RN[] = getBadge(option);
+        return (
+            <div className={`${cls}-after ${cls}-align`}>
+                {!!badge.length && badge}
+                {!!options.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+            </div>
+        )
+    }
+    function getBefore(option:any,details:any){
+        let {icon = <Icon path={mdiCircle} size={0.6}/>} = option;
+        if(!icon){return null}
+        return (
+            <div className={`${cls}-before`}>
+                {details.level === 0 && <div className={`${cls}-icon ${cls}-align`}>{icon}</div>}
+                {details.level !== 0 && icon}
+            </div>
+        )
+    }
+    return (
+        <AIOInput
+            type='tree'
+            className={cls}
+            size={48}
+            value={[...options]}
+            getChilds={(p:{row:AI_Sidemenu_option})=>p.row.options || []}
+            option={{
+                text:'option.text',
+                value:'option.value',
+                toggleIcon:()=>false,
+                after:(option:AI_Sidemenu_option,details:I_optionDetails)=>getAfter(option,details),
+                before:(option:AI_Sidemenu_option,details:I_optionDetails)=>getBefore(option,details),
+                onClick:(option:AI_Sidemenu_option,details:I_optionDetails)=>{
+                    let {options = []} = option;
+                    if(!!options.length){if(details.toggle){details.toggle()}}
+                    else if(onChange){onChange(option.value)}
+                },
+                className:(option:AI_Sidemenu_option,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
+            }}
+            indent={0}
+        />
+    )
 }
 function GetDistance(p1: I_Map_coords, p2: I_Map_coords) {
     let { lat: lat1, lng: lon1 } = p1;
@@ -3487,7 +3643,7 @@ function getTypes(props: AI) {
     let { type, multiple } = props;
     let isMultiple;
     if (type === 'table' || type === 'tags') { isMultiple = true }
-    else if (['radio','range','file','buttons','select','date'].indexOf(type) !== -1) { isMultiple = !!multiple }
+    else if (['radio','range','file','buttons','select','date','acardion'].indexOf(type) !== -1) { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
         isMultiple,
@@ -3504,15 +3660,21 @@ function getTypes(props: AI) {
 function getDefaultProps(props: AI, types: AI_types) {
     let valueType = Array.isArray(props.value) ? 'array' : typeof props.value;
     props = { ...props }
-    if (props.type === 'select' && !!props.multiple) {
-        if (!props.text) { props.text = 'Select Items' }
+    if (props.type === 'select') {
+        if (!!props.multiple) {
+            if (!props.text) { props.text = 'Select Items' }
+        }
     }
     else if (props.type === 'time') {
         if (!props.value) { props.value = {} }
     }
+    else if (props.type === 'acardion') {
+        props.deSelect = true
+    }
     else if (props.type === 'date') {
         if (props.multiple) { props.option = {...props.option,text:'option',value:'option'} }
     }
+
     if (props.loading === true) { props.disabled = true }
     if (types.isMultiple) {
 
@@ -3539,21 +3701,22 @@ function Def(prop: string) {
 function I(path: any, size: number, p?: any) {
     return <Icon path={path} size={size} {...p} />
 }
-function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], properties?: any, level?: number, change?: (row: any, newRow: any) => void, defaultOptionProps?: AI_optionProp }): AI_options {
-    let { rootProps, types, properties = {}, level, change, defaultOptionProps } = p;
-    let { deSelect,type,multiple } = rootProps;
-    let options:any[] = []
-    if(type === 'date'){
-        if(!multiple){return {optionsList:[],optionsDic:{}}}
-        options = [...rootProps.value]
-    }
-    else if(p.options){options = p.options}
-    else if(typeof rootProps.options === 'function'){options = rootProps.options()}
-    else if(rootProps.options){options = rootProps.options}
-    else {options = [];}
+type I_GetOptions = {
+    rootProps: AI, 
+    types: AI_types, 
+    options: any[], 
+    properties?: any, 
+    level?: number, 
+    toggle?:(id:any)=>void,
+    change?: (row: any, newRow: any) => void, 
+    isOpen?:(id:any)=> boolean | undefined,
+    defaultOptionProps?: AI_optionProp
+}
+function GetOptions(p:I_GetOptions): AI_options {
+    let { options,rootProps, types, properties = {}, level,isOpen, change, defaultOptionProps,toggle } = p;
+    let { deSelect } = rootProps;
     let result = [];
     let dic:AI_optionDic = {}
-    let renderIndex = 0;
     let draggable: boolean = types.isDropdown && types.hasOption && !!rootProps.onSwap;
     function getDefaultOptionChecked(v: any) {
         if (rootProps.type === 'select' && types.isMultiple) { return rootProps.value.indexOf(v) !== -1 }
@@ -3567,55 +3730,69 @@ function GetOptions(p: { rootProps: AI, types: AI_types, options?: any[], proper
         }
         return option as AI_option
     }
+    function isActive(optionValue:any):boolean{
+        if (types.isMultiple) {return rootProps.value.indexOf(optionValue) !== -1}
+        else {return optionValue === rootProps.value}
+    }
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        let details: any = { defaultOptionProps, renderIndex, realIndex: i, level, change: change ? (newRow: any) => { change(option, newRow) } : undefined };
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ props: rootProps, option, key: 'disabled', ...details });
-        let show = GetOptionProps({ props: rootProps, option, key: 'show', ...details })
+        let details: I_optionDetails = { 
+            defaultOptionProps,index: i,active:false,mainValue:rootProps.value, level,isOpen, 
+            change: change ? (newRow: any) => { change(option, newRow) } : undefined,
+        };
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ props: rootProps, option, key: 'disabled', details });
+        //ghabl az har chiz sharte namayesh ro check kon
+        let show = GetOptionProps({ props: rootProps, option, key: 'show', details })
         if (show === false) { continue }
-        let text = GetOptionProps({ props: rootProps, option, key: 'text', ...details });
-        //در اینپوت ها آپشن هایی رو نشون بده که با ولیو مچ هستند
-        //if (types.isInput && value && text.toString().indexOf(value.toString()) !== 0) { continue }
-        let optionValue = GetOptionProps({ props: rootProps, option, key: 'value', ...details })
-        let attrs = GetOptionProps({ props: rootProps, option, key: 'attrs', def: {}, ...details });
+        let optionValue = GetOptionProps({ props: rootProps, option, key: 'value', details })
+        let active = isActive(optionValue);
+        let text = GetOptionProps({ props: rootProps, option, key: 'text', details });
+        //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
+        details.active = active;
+        details.toggle = toggle?()=> toggle(optionValue):undefined;
+        let attrs = GetOptionProps({ props: rootProps, option, key: 'attrs', def: {}, details });
         let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = GetOptionProps({ props: rootProps, option, key: 'checked', def: defaultChecked, ...details })
+        let checked = GetOptionProps({ props: rootProps, option, key: 'checked', def: defaultChecked, details })
         //object:option => do not remove mutability to use original value of option in for example tree row
-        let obj = {
+        let obj:AI_option = {
+            active,
             object: option, show,
             loading: rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
-            checkIcon: GetOptionProps({ props: rootProps, option, key: 'checkIcon', ...details }) || rootProps.checkIcon,
+            checkIcon: GetOptionProps({ props: rootProps, option, key: 'checkIcon', details }) || rootProps.checkIcon,
             checked,
-            before: GetOptionProps({ props: rootProps, option, key: 'before', ...details }),
-            after: GetOptionProps({ props: rootProps, option, key: 'after', ...details }),
-            justify: GetOptionProps({ props: rootProps, option, key: 'justify', ...details }),
-            subtext: GetOptionProps({ props: rootProps, option, key: 'subtext', ...details }),
-            onClick: GetOptionProps({ props: rootProps, option, key: 'onClick', preventFunction: true, ...details }),
-            className: GetOptionProps({ props: rootProps, option, key: 'className', ...details }),
-            style: GetOptionProps({ props: rootProps, option, key: 'style', ...details }),
-            tagAttrs: GetOptionProps({ props: rootProps, option, key: 'tagAttrs', ...details }),
-            tagBefore: GetOptionProps({ props: rootProps, option, key: 'tagBefore', ...details }),
-            close: GetOptionProps({ props: rootProps, option, key: 'close', def: !types.isMultiple, ...details }),
-            tagAfter: GetOptionProps({ props: rootProps, option, key: 'tagAfter', ...details }),
-            renderIndex, realIndex: i
-        }
-        if (types.isMultiple) {
-            if (rootProps.value.indexOf(optionValue) !== -1) { obj.attrs = AddToAttrs(obj.attrs, { className: 'active' }) }
-        }
-        else {
-            if (optionValue === rootProps.value) { obj.attrs = AddToAttrs(obj.attrs, { className: 'active' }) }
+            toggleIcon: GetOptionProps({ props: rootProps, option, def:true,key: 'toggleIcon', details }),
+            before: GetOptionProps({ props: rootProps, option, key: 'before', details }),
+            after: GetOptionProps({ props: rootProps, option, key: 'after', details }),
+            justify: GetOptionProps({ props: rootProps, option, key: 'justify', details }),
+            subtext: GetOptionProps({ props: rootProps, option, key: 'subtext', details }),
+            onClick: GetOptionProps({ props: rootProps, option, key: 'onClick', preventFunction: true, details }),
+            className: GetOptionProps({ props: rootProps, option, key: 'className', details }),
+            style: GetOptionProps({ props: rootProps, option, key: 'style', details }),
+            tagAttrs: GetOptionProps({ props: rootProps, option, key: 'tagAttrs', details }),
+            tagBefore: GetOptionProps({ props: rootProps, option, key: 'tagBefore', details }),
+            close: GetOptionProps({ props: rootProps, option, key: 'close', def: !types.isMultiple, details }),
+            tagAfter: GetOptionProps({ props: rootProps, option, key: 'tagAfter', details }),
+            index: i,
+            details,
         }
         let OBJ:any = updateOptionByProperties(obj);
         result.push(OBJ)
         dic['a' + OBJ.value] = OBJ;
-        renderIndex++;
     }
     return {optionsList:result,optionsDic:dic};
 }
-function GetOptionProps(p: { defaultOptionProps?: AI_optionProp, props: AI, option: AI_option, key: AI_optionKey, def?: any, preventFunction?: boolean, realIndex?: number, renderIndex?: number, level?: number, change?: (v: any) => any }) {
-    let { props, option, key, def, preventFunction, realIndex, renderIndex, level, change, defaultOptionProps = {} } = p;
-    let details: any = { realIndex, renderIndex, level, change, value: props.value };
+type I_GetOptionProps = { 
+    defaultOptionProps?: AI_optionProp, 
+    props: AI, 
+    option: AI_option, 
+    key: AI_optionKey, 
+    def?: any, 
+    preventFunction?: boolean, 
+    details:I_optionDetails
+}
+function GetOptionProps(p:I_GetOptionProps) {
+    let { props, option, key, def, preventFunction, details, defaultOptionProps = {} } = p;
     let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](option, details) : option[key]
     if (optionResult !== undefined) { return optionResult }
     let prop = (props.option || {})[key];
@@ -3685,20 +3862,20 @@ export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | '
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'form' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
-    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' 
+    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon' 
 )
 export type AI_formNode = {
     field?:string,
     label?:string,
     addressField?:string,
-    footer?:React.ReactNode,
+    footer?:RN,
     input?:AI,
     labelAttrs?:any,
     errorAttrs?:any,
     validations?:any[],
     childs?:AI_formNode[],
     dir?:'h' | 'v',//if there is property row or column,
-    html?:React.ReactNode,
+    html?:RN,
     className?:string,
     style?:any,
     attrs?:any,
@@ -3718,7 +3895,7 @@ export type AI_table_column = {
     input?: AI,
     onChange?: (newValue: any) => void,
     titleAttrs?:{[key:string]:any} | string,
-    template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>React.ReactNode),
+    template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
     excel?: string,
     justify?:boolean,
     cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
@@ -3727,13 +3904,13 @@ export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI = {
     actions?:({[key in keyof AI_option]?:any}[]) | ((row:any,parent:any)=>{[key in keyof AI_option]?:any}[]),
-    addText?:React.ReactNode | ((value:any)=>React.ReactNode),
-    after?: React.ReactNode | ((p?:any) => React.ReactNode),
+    addText?:RN | ((value:any)=>RN),
+    after?: RN | ((p?:any) => RN),
     attrs?: any,
     blurChange?: boolean,
-    before?: React.ReactNode | ((p?:any) => React.ReactNode),
-    body?:(value?:any)=>{attrs?:any,html?:React.ReactNode},//form,acardion
-    caret?: boolean | React.ReactNode,
+    before?: RN | ((p?:any) => RN),
+    body?:(value?:any)=>{attrs?:any,html?:RN},//form,acardion
+    caret?: boolean | RN,
     checkIcon?: AI_checkIcon,
     circles?:string[],
     className?:string,
@@ -3753,8 +3930,8 @@ export type AI = {
     excel?: string,
     fill?:false | AI_fill | ((index:number)=>AI_fill),
     filter?: string[],
-    footer?:React.ReactNode,//form
-    getChilds?:(row:any)=>any[],//tree
+    footer?:RN,//form
+    getChilds?:(p:{row:any,details:I_treeRowDetails})=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
     handle?:AI_range_handle,//range
@@ -3773,17 +3950,17 @@ export type AI = {
     lang?:'fa' | 'en',//form,
     line?:(index:number,active:boolean)=>{
         attrs?:any,
-        html?:React.ReactNode
+        html?:RN
     }
-    loading?: boolean | React.ReactNode,
+    loading?: boolean | RN,
     mapConfig?:I_Map_config,
     max?: number,//slider,number
     maxLength?: number,
     min?: number,//slider,number
     move?: any,//list
     multiple?: boolean | number,
-    onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void>),
-    onChange?: (newValue: any, p?: any) => void,
+    onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void | undefined>),
+    onChange?: ((newValue: any, p?: any) => undefined | boolean | void) | ((newValue: any, p?: any) => Promise<undefined | boolean | void>),
     onChangePaging?: (newPaging: AI_table_paging) => void,
     onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
     onClick?:()=>void,
@@ -3805,15 +3982,15 @@ export type AI = {
     reverse?:boolean,
     rotate?:number,
     round?:number,
-    rowAfter?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    rowAfter?: (p: { row: any, rowIndex: number }) => RN,
     rowAttrs?: (p: { row: any, rowIndex: number }) => any,
-    rowBefore?: (p: { row: any, rowIndex: number }) => React.ReactNode,
+    rowBefore?: (p: { row: any, rowIndex: number }) => RN,
     rowGap?: number,
-    rowsTemplate?: (rows: any[]) => React.ReactNode,
-    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => React.ReactNode,
+    rowsTemplate?: (rows: any[]) => RN,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => RN,
     rtl?: boolean,
     search?: string,
-    setChilds?:(row:any,childs:any[])=>void,//tree
+    setChilds?:(p:{row:any,childs:any[],details:I_treeRowDetails})=>void,//tree
     showErrors?:boolean | string,
     size?: number,//list,date
     spin?: boolean,
@@ -3823,10 +4000,10 @@ export type AI = {
     stop?: number,//list
     style?: any,
     swip?: number,
-    subtext?: React.ReactNode | (() => React.ReactNode),
-    text?: React.ReactNode | (() => React.ReactNode)
+    subtext?: RN | (() => RN),
+    text?: RN | (() => RN)
     theme?: string[],//date
-    toolbar?: React.ReactNode | (() => React.ReactNode),
+    toolbar?: RN | (() => RN),
     toolbarAttrs?: any,
     translate?: (text: string) => string,//date,
     type: AI_type,
@@ -3839,7 +4016,7 @@ export type AI = {
 export type AI_popover = {
     position?:AP_position,
     fitHorizontal?:boolean,
-    body?:(close:any)=>React.ReactNode,
+    body?:(close:any)=>RN,
     limitTo?:string,
     fitTo?:string,
     header?:{
@@ -3847,20 +4024,24 @@ export type AI_popover = {
         title?:string,
         subtitle?:string,
         onClose?:boolean,
-        before?:React.ReactNode,
-        after?:React.ReactNode
+        before?:RN,
+        after?:RN
     },
     maxHeight?:number | string,
     pageSelector?:string,
     setAttrs?:(key:'backdrop' | 'modal' | 'header' | 'body' | 'footer')=>any
 }
-export type AI_optionProp = {[key in AI_optionKey]?:any}
+type I_optionDetails = {
+    index: number, level?: number, change?: (v: any) => any,mainValue:any,active:boolean,defaultOptionProps?:{[key:string]:any},
+    isOpen?:(id:any)=>boolean | undefined,toggle?:()=>void
+}
+export type AI_optionProp = {[key in AI_optionKey]?:string | ((option:any,details:I_optionDetails)=>any)}
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 
 export type AI_point = (index:number,p:any)=>{
     offset?:number,
-    html?:React.ReactNode,
+    html?:RN,
     attrs?:any
 }
 export type AI_labels = AI_label[]
@@ -3875,7 +4056,7 @@ export type AI_label = {
 export type AI_labelItem = {
     offset?:number,
     fixAngle?:boolean,
-    html?:React.ReactNode
+    html?:RN
 }
 export type AI_range_handle = ((value:number,p:any)=>AI_range_handle_config) | false
 export type AI_range_handle_config = {
@@ -3890,19 +4071,20 @@ export type AI_fill = {thickness?:number,color?:string,className?:string,style?:
 //use global fixed options in List
 //create list document 
 //define popover type by aio popup
-export type AI_checkIcon = ((checked: boolean) => React.ReactNode) | Object;
+export type AI_checkIcon = Object | [RN,RN];
 export type AI_option = {
     object:any,
+    active:boolean,
     show:any,
     checked: boolean,
     checkIcon: AI_checkIcon,
-    after: React.ReactNode | ((p?:any) => React.ReactNode),
-    before: React.ReactNode | ((p?:any) => React.ReactNode),
+    after: RN | ((p?:any) => RN),
+    before: RN | ((p?:any) => RN),
     draggable: boolean,
-    text: React.ReactNode,
-    subtext: React.ReactNode,
+    text: RN,
+    subtext: RN,
     justify: boolean,
-    loading: boolean | React.ReactNode,
+    loading: boolean | RN,
     disabled: boolean,
     attrs: any,
     className:string,
@@ -3911,9 +4093,12 @@ export type AI_option = {
     tagAttrs:any,
     tagBefore:any,
     tagAfter:any,
+    toggleIcon:boolean | RN[],
     onClick?:(o1:any,o2?:any)=>void,
     close?:boolean,
     level?:number,
+    index:number,
+    details:I_optionDetails
 }
 export type AI_optionDic = {[key:string]:AI_option}
 export type AI_options = {optionsList:AI_option[],optionsDic:AI_optionDic}
@@ -3929,7 +4114,7 @@ export type AI_context = {
     touch: boolean,
     open: boolean,
     click: (e: any, dom: any) => void,
-    optionClick: (option: AI_option) => void,
+    optionClick: (option: AI_option,p?:any) => void,
     types: AI_types,
     DATE:AIODate,
     options:AI_options
@@ -3945,7 +4130,7 @@ export type AI_types = {
     hasSearch: boolean
 }
 export type AI_table_sort = {
-    active?: boolean, dir?: 'dec' | 'inc', title?: React.ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any
+    active?: boolean, dir?: 'dec' | 'inc', title?: RN, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any
 }
 export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
 export type AI_table_paging = {
@@ -4001,12 +4186,12 @@ export type I_Map_config = {
     title?:string,
     draggable?:boolean,
     address?:boolean,
-    submitText?:React.ReactNode,
+    submitText?:RN,
     isPopup?:boolean
 }
 
 export type I_Map_area = {color:string, opacity:number, radius:number, lat:number, lng:number}
-export type I_Map_marker = {size?:number,color?:string,html?:React.ReactNode,text?:React.ReactNode,lat?:number,lng?:number,popup?:(marker:I_Map_marker)=>any}
+export type I_Map_marker = {size?:number,color?:string,html?:RN,text?:RN,lat?:number,lng?:number,popup?:(marker:I_Map_marker)=>any}
 export type I_Map_value = {lat:number,lng:number,address?:string}
 export type I_MapUnit = {
     onClose?:()=>void,

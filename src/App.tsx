@@ -1,4 +1,4 @@
-import React,{Component, useState} from "react";
+import React,{Component, FC, useEffect, useState} from "react";
 import './App.css'
 import {Storage} from './npm/aio-utils/index.tsx';
 import { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
@@ -18,14 +18,17 @@ import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1.tsx";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import DOC_AIODoc from './documents/aio-doc/doc-aio-doc.tsx';
+import UIKit from './documents/aio-input/ui-kit/ui-kit.tsx';
 import Test from './test.tsx';
+import Layout1 from "./documents/aio-input/ui-kit/layout1.tsx";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
+import {useNavigate} from 'react-router-dom';
 AIOInputSetStorage('mapApiKeys',{
   map:'web.0a2aa5f83d314a8c9916473aa0e01438',
   service:'service.09a2234e299a4ff585007b2894df9fca',
 })
 export default function AIOComponents(){
-  let [storage] = useState<Storage>(new Storage('aio-componentspart'))
-  let [part,setPart] = useState(storage.load('part','aio-input'))
+  const navigate = useNavigate()
   let [parts] = useState<any>({
     'aio-input':DOC_AIOInput,
     'aio-highlighter':DOC_AIOHighlighter,
@@ -43,30 +46,33 @@ export default function AIOComponents(){
     'react-virtual-dom':DOC_ReactVirtualDom,
     'aio-doc':DOC_AIODoc,
     'msfloading1':DOC_MSFLoading1,
+    'kit':UIKit,
+    'Layout1':Layout1,
     'test':Test
   })
-  function changePart(part:any){
-    storage.save('part',part)
-    setPart(part)
+  function goToHome(){
+    navigate('/')
   }
-  function Part(){
-    let COMPONENT = parts[part];
-    if(!COMPONENT){
-      changePart(false);
-      return
-    }
-    let props = {
-      goToHome:()=>changePart(false),
-      name:part
-    }
-    return <COMPONENT {...props}/>
-  }
-  if(part){return Part()}
+  return (
+    <Routes>
+      <Route path='/' element={<Home parts={parts}/>}/>
+      {
+        Object.keys(parts).map((o)=>{
+          let TAG = parts[o];
+          return <Route path={`/${o}`} element={<TAG name={o} goToHome={goToHome}/>}/>
+        })
+      }
+    </Routes>
+  )
+}
+
+const Home:FC<{parts:{[key:string]:FC}}> = (props)=>{
+  const {parts} = props;
   return (
     <div className='aio-components'>
       {
         Object.keys(parts).map((o,i)=>{
-          return (<div key={i} className='aio-component' onClick={()=>changePart(o)}>{o}</div>)
+          return (<Link key={i} className='aio-component' to={`/${o}`}>{o}</Link>)
         })
       }
     </div>

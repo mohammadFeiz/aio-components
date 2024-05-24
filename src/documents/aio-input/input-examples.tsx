@@ -86,7 +86,6 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['multiple', () => <Multiple />, ['date', 'file'].indexOf(type) !== -1],
         ['multiple (number)', () => <MultipleNumber />, ['date', 'file'].indexOf(type) !== -1],
         ['checkIcon (array)', () => <CheckIconArray />, ['checkbox'].indexOf(type) !== -1],
-        ['checkIcon (css object)', () => <CheckIconObject />, ['checkbox'].indexOf(type) !== -1],
         ['options', () => <Options />, ['text', 'number'].indexOf(type) !== -1],
         [
             'caret (false)',

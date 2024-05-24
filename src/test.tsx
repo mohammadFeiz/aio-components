@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Canvas from "./npm/aio-canvas";
 import { I_canvas_item } from "./npm/aio-canvas/types";
-function Test({goToHome}) {
+import { Link, Navigate } from "react-router-dom";
+function Test(props:any) {
     let [CTX] = useState(new Canvas())
     let [remote] = useState(new Remote())
     return (
         <>
-        <button onClick={()=>goToHome()}>Home</button>
+        <button style={{position:'absolute',top:30}} onClick={props.goToHome}>Home</button>
         {
             CTX.render({
                 attrs:{
@@ -82,7 +83,7 @@ class Remote{
             ...p
         }
     }
-    buttonRow = (text1,text2,text3,p?:any):I_canvas_item=>{
+    buttonRow = (text1:any,text2:any,text3:any,p?:any):I_canvas_item=>{
         return {
             type:'Group',
             items:[

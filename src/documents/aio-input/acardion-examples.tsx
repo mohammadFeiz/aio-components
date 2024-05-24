@@ -93,10 +93,13 @@ let [rows,setRows] = useState([
 export default AcardionExamples
 
 function Basic(){
+    const [value,setValue] = useState<string>()
     return (
         <div className='example'>
             <AIOInput 
                 type='acardion'
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
                 body={(value:string)=>{
                     if(value === '0'){
                         return {
@@ -128,14 +131,17 @@ function Basic(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
+                    before:(option,details)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
                     subtext:()=>'this is my subtext'
                 }}
             />
             {
                 new AIODoc().Code(
-`<AIOInput 
+`const [value,setValue] = useState<string>()
+<AIOInput 
     type='acardion'
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
     body={(value)=>{
         if(value === '0'){
             return {
@@ -157,6 +163,7 @@ function Basic(){
                 html:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti, praesentium. Est architecto magni minima impedit cum odit in expedita molestias rerum! Consectetur aliquam enim placeat iste fuga nisi aliquid nobis obcaecati dolorem, culpa non quo vel harum ducimus corporis aut rem iusto? Corporis, delectus? Minima, repellendus ut. Quis ullam aliquid temporibus rerum voluptatum, officia, perspiciatis quos iure voluptate, dolorum velit.'
             }
         }
+        return {html:''}
     }}
     options={[
         {text:'acardion1',value:'0'},
@@ -166,7 +173,7 @@ function Basic(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option)=><div className='badge' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+        before:(option,details)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
         subtext:()=>'this is my subtext'
     }}
 />`
@@ -191,10 +198,13 @@ function Basic(){
     )
 }
 function Vertical(){
+    const [value,setValue] = useState<string>()
     return (
         <div className='example'>
             <AIOInput 
                 type='acardion'
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
                 vertical={false}
                 body={(value:string)=>{
                     let attrs = {style:{width:200}}
@@ -232,16 +242,20 @@ function Vertical(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
+                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
+                    style:()=>({width:200}),
                     subtext:()=>'this is my subtext',
                 }}
             />
             {
                 new AIODoc().Code(
-`<AIOInput 
+`const [value,setValue] = useState()
+<AIOInput 
     type='acardion'
+    value={value}
+    onChange={(newValue)=>setValue(newValue)}
     vertical={false}
-    body={(value)=>{
+    body={(value:string)=>{
         let attrs = {style:{width:200}}
         if(value === '0'){
             return {
@@ -277,7 +291,7 @@ function Vertical(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+        before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
         subtext:()=>'this is my subtext',
     }}
 />`
@@ -287,10 +301,13 @@ function Vertical(){
     )
 }
 function Multiple(){
+    const [value,setValue] = useState<string[]>([])
     return (
         <div className='example'>
             <AIOInput
                 type={'acardion'}
+                value={value}
+                onChange={(newValue)=>setValue(newValue)}
                 multiple={true}
                 body={(value:string)=>{
                     if(value === '0'){
@@ -323,7 +340,7 @@ function Multiple(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.renderIndex + 1}</div>,
+                    before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
                     subtext:()=>'this is my subtext',
                 }}
             />

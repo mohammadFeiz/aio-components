@@ -131,7 +131,7 @@ return (
                         className:'h-96 brd-c-16',
                         row:[
                             {
-                                html:'A',className:'bg-12 flex-1 align-vh c-32'
+                                html:'A',className:'bg-12 flex-1 align-vh c-15'
                             },
                             {
                                 flex:1,
