@@ -47,7 +47,8 @@ export type AP_alert = {
   time?:number,
   className?:string,
   closeText?:string,
-  animate?:boolean
+  animate?:boolean,
+  onClose?:boolean | (()=>void)
 }
 
 export type AP_snackebar = {
@@ -60,7 +61,7 @@ export type AP_snackebar = {
   type:'success'|'error'|'warning'|'info',
   verticalAlign?:'start' | 'end',
   horizontalAlign?:'start' | 'center' | 'end',
-  onClose?:false
+  onClose?:boolean | (()=>void),
   attrs?:any
 }
 export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
@@ -383,7 +384,7 @@ const ModalBody:FC<{modal:AP_modal}> = (props) => {
   return (<div {...AddToAttrs(attrs,{className:'aio-popup-body aio-popup-scroll'})}>{content}</div>)
 }
 function Alert(props: AP_alert) {
-  let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center' } = props;
+  let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center',onClose } = props;
   let $$ = {
     id: '',
     time: 0,
@@ -415,7 +416,11 @@ function Alert(props: AP_alert) {
     },
     close() {
       $$.toggleClass(false)
-      setTimeout(() => $('.' + $$.id).remove(), 200);
+      setTimeout(() => {
+        if(typeof onClose === 'function'){onClose()}
+        if(onClose === false){return}
+        $('.' + $$.id).remove()
+      }, 200);
     },
     getIcon() {
       if (icon === false) { return '' }
@@ -463,10 +468,12 @@ class Snackebar extends Component<AP_Snackebar, { items: AP_snackebar[] }> {
     let newItems: AP_snackebar[] = [...items, { ...item, id: 'a' + Math.round(Math.random() * 1000000000) }]
     this.setState({ items: newItems })
   }
-  remove(id: string) {
+  remove(id: string,onClose?:(boolean | (()=>void))) {
+    if(onClose === false){return}
     let { items } = this.state;
     let newItems: AP_snackebar[] = items.filter((o: AP_snackebar, i) => o.id !== id)
     this.setState({ items: newItems })
+    if(typeof onClose === 'function'){onClose()}
   }
   render() {
     let { items } = this.state;
@@ -475,7 +482,7 @@ class Snackebar extends Component<AP_Snackebar, { items: AP_snackebar[] }> {
       <>
         {
           items.map((item: AP_snackebar, i) => {
-            let p: AP_SnackebarItem = { rtl, item, index: i, onRemove: (id: string) => this.remove(id) }
+            let p: AP_SnackebarItem = { rtl, item, index: i, onRemove: (id: string) => this.remove(id,item.onClose) }
             return (
               <SnackebarItem {...p} key={item.id} />
             )
