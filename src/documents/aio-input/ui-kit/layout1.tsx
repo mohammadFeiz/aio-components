@@ -1,6 +1,5 @@
 import { FC, createContext, useContext, useState } from "react";
 import AIOInput, { AI_Sidemenu_option, SideMenu } from "../../../npm/aio-input";
-import './../../../npm/aio-input/style.css';
 import './theme1.css';
 import { mdiAccessPointNetworkOff, mdiAlphaBBox, mdiArrowRight, mdiCakeVariant, mdiCamera, mdiDatabaseArrowLeftOutline, mdiEarthBoxRemove, mdiFaceRecognition, mdiFileDocument, mdiInformation, mdiMicrophone, mdiStar, mdiVideo } from "@mdi/js";
 import {Icon} from "@mdi/react";

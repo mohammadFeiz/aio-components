@@ -129,12 +129,12 @@ const Draggable:FC = ()=> {
                 `)
             }
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
-            <AIOInput key='p2' {...p2}/>
+            {/* <AIOInput key='p2' {...p2}/>
             {
                 new AIODoc().Code(`
 <AIOInput type='map' mapConfig={{draggable:false}}/>
                 `)
-            }
+            } */}
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </div>
     )

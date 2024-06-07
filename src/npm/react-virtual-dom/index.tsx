@@ -49,7 +49,6 @@ export type I_RVD_state = any;
 export type I_RVD_setState = (key:any,value?:any)=>void
 export type I_RVD_temp = { dragIndex?:false | number, lt?: string, time?: number, timeOut?: any }
 export type I_RVD_context = {getTemp:I_RVD_getTemp,setTemp:I_RVD_setTemp,rootProps:I_RVD_props,state:I_RVD_state,setState:I_RVD_setState}
-type I_RVD_tempKey = 'dragIndex' | 'lt' | 'time' | 'timeOut'
 export type I_RVDNode = {node: I_RVD_node, index: number, parent?: I_RVD_node, level: number}
 
 export type I_RVDAttrs = {
@@ -207,7 +206,7 @@ class RVDAttrs{
     getClassName = () => {
         let {classes = {}} = this.context.rootProps;
         let res = 'rvd';
-        if (this.level === 0) { res += ' rvd-root' }
+        if (this.level === 0) { res += ' rvd-root ai' }
         let {attrs = {},nodeClass,nodeClasses,row,column,grid,loading,wrap,mountAfter} = this.node
         if (this.node.className) {
             let className:string;

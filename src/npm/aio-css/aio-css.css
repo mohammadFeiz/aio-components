@@ -4,11 +4,11 @@
 @media screen and (min-width: 992px) and (max-width: 1200px) {.ai .hide-md {display: none !important;}}
 @media screen and (min-width: 1200px) {.ai .hide-lg {display: none !important;}}
 /* custom scrollbar */
-.ai .scrollbar::-webkit-scrollbar {width: 10px !important;height: 10px !important;}
-.ai .scrollbar::-webkit-scrollbar-track {background-color: transparent;}
-.ai .scrollbar::-webkit-scrollbar-thumb {background-color: #cdd4e0;border-radius: 20px;border: 3px solid transparent;background-clip: content-box;}
-.ai .scrollbar::-webkit-scrollbar-thumb {background-color: #b1b9ca;}
-.ai .scrollbar::-webkit-scrollbar-thumb:hover {background-color: #6f7888;}
+.ai *::-webkit-scrollbar {width: 10px !important;height: 10px !important;}
+.ai *::-webkit-scrollbar-track {background-color: transparent;}
+.ai *::-webkit-scrollbar-thumb {background-color: #cdd4e0;border-radius: 20px;border: 3px solid transparent;background-clip: content-box;}
+.ai *::-webkit-scrollbar-thumb {background-color: #b1b9ca;}
+.ai *::-webkit-scrollbar-thumb:hover {background-color: #6f7888;}
 .ai .p-0 {padding: 0px;} .ai .p-3 {padding: 3px;} .ai .p-6 {padding: 6px;} .ai .p-8 {padding: 8px;} .ai .p-12 {padding: 12px;} .ai .p-16 {padding: 16px;} 
 .ai .p-24 {padding: 24px;} .ai .p-36 {padding: 36px;} .ai .p-48 {padding: 48px;} .ai .p-60 {padding: 60px;} .ai .p-72 {padding: 72px;} .ai .p-84 {padding: 84px;}
 .ai .p-l-0,.ltr .ai .p-s-0,.ai.rtl .p-e-0 {padding-left: 0px;} .ai .p-l-3,.ltr .ai .p-s-3,.ai.rtl .p-e-3 {padding-left: 3px;}
@@ -209,3 +209,12 @@
 .ai .jc-between{justify-content: space-between;} .ai .jc-around{justify-content: space-around;} .ai .jc-evenly{justify-content: space-evenly;}
 .ai .jc-start{justify-content: flex-start;} .ai .jc-end{justify-content: flex-end;} .ai .jc-center{justify-content: center;} 
 .ai .ai-start{align-items: flex-start;} .ai .ai-end{align-items: flex-end;}
+.ai .rotate-card{
+    transform:rotateX(180deg);
+    opacity:0;
+  }
+  .ai .rotate-card.mounted{
+    transform: rotateX(0deg);
+    opacity:1;
+    transition: 1s;
+  }

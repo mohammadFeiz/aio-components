@@ -10,11 +10,12 @@ import {
 import { Icon } from '@mdi/react';
 import $ from 'jquery';
 import Axios from "axios";
-import { AP_position } from "../aio-popup"
-import { AP_modal } from '../aio-popup';
+import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup/index";
 /////////////my dependencies//////////
-import { Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString, GetPrecisionCount } from './../aio-utils';
-import AIOPopup from './../../npm/aio-popup/index.tsx';
+import { 
+    Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
+    getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString, GetPrecisionCount 
+} from './../../npm/aio-utils/index';
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
@@ -278,8 +279,8 @@ function Image() {
     }
     function openPopup() {
         popup.addModal({
-            position: 'center',header: { title: '', onClose: (e) => popup.removeModal() },
-            body: () => <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder} /></div>
+            position: 'center',header: { title: '', onClose: () => popup.removeModal() },
+            body: () => <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder as string} /></div>
         })
     }
     let IMG = url ? (
@@ -287,7 +288,7 @@ function Image() {
             <img
                 ref={dom as any}
                 src={url}
-                alt={placeholder}
+                alt={placeholder as string}
                 style={{ objectFit: 'contain', cursor: !onChange ? 'default' : undefined }}
                 width={width}
                 height={height}
@@ -1783,7 +1784,7 @@ function DPBodyDay() {
     let daysLength = DATE.getMonthDaysLength([activeDate.year as number, activeDate.month as number]);
     let weekDays = DATE.getWeekDays(jalali);
     return (<>
-        {weekDays.map((weekDay, i) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
+        {weekDays.map((weekDay:string, i:number) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
         {new Array(firstDayWeekDayIndex).fill(0).map((o, i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
         {new Array(daysLength).fill(0).map((o, i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
         {new Array(42 - (firstDayWeekDayIndex + daysLength)).fill(0).map((o, i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
@@ -2004,7 +2005,7 @@ function Table() {
     let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
     let [temp] = useState<type_table_temp>({})
     let [DragRows] = useState<DragClass | false>(!onSwap ? false : new DragClass({
-        onChange: (newRows, from, to) => {
+        onChange: (newRows:any[], from:any, to:any) => {
             if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
             else { onChange(newRows) }
         },
@@ -2516,7 +2517,8 @@ const Range: FC = () => {
                 //vertical condition
                 reverseY: !!reverse && !!vertical,
                 dom: () => $(temp.dom.current),
-                start: ({ event }) => {
+                start: (p:{event:Event}) => {
+                    let { event } = p;
                     let target = $(event.target);
                     if (HasClass(target, 'ai-range-point')) {
                         let index: string = target.attr('data-index') || '0';
@@ -2528,10 +2530,11 @@ const Range: FC = () => {
                     temp.start = [...valueRef.current];
                     return [0, 0];
                 },
-                move: ({ change, mousePosition }) => {
+                move: (p:I_Swip_parameter) => {
+                    let { change, mousePosition } = p;
                     if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
                 },
-                onClick: function (p) { click(p.mousePosition) }
+                onClick: function (p:I_Swip_parameter) { click(p.mousePosition) }
             })
         },100)
     }, [changeHandle])
@@ -3041,9 +3044,7 @@ function Map() {
         catch (err) { console.log(err) }
     }, [])
     if (!isScriptAdded) { return null }
-    if (!value) { value = { lat: 35.699739, lng: 51.338097 } }
-    if (!value.lat) { value.lat = 35.699739 }
-    if (!value.lng) { value.lng = 51.338097 }
+    
     let p: I_MapUnit = { popupConfig, onChange, attrs, value, mapConfig, disabled: disabled === true }
     return <MapUnit {...p} />
 }
@@ -3200,8 +3201,11 @@ function MapUnit(props: I_MapUnit) {
                 disabled,
                 mapConfig: { ...popupConfig, isPopup: true },
                 onClose: () => setShowPopup(false),
-                attrs: { ...attrs, style: { width: '100%', height: '100%', top: 0, position: 'fixed', left: 0, zIndex: 1000000, ...attrs.style }, onClick: undefined },
-                onChange: (obj) => move(obj)
+                attrs,
+                onChange: (obj) => {
+                    debugger
+                    move(obj)
+                }
             }
             return <MapUnit {...props} />
         }
@@ -3210,10 +3214,17 @@ function MapUnit(props: I_MapUnit) {
     function header_node(): RN { return <MapHeader /> }
     function body_node(): RN { return <div style={{ flex: 1 }} ref={temp.dom}></div> }
     function footer_node(): RN { return <MapFooter /> }
+    function getClassName(){
+        let cls = 'aio-input-map-container';
+        if(mapConfig.draggable === false){cls += ' not-draggable';}
+        if(mapConfig.isPopup){cls += ' aio-input-map-container-popup';}
+        if(attrs.className){cls += ' ' + attrs.className;}
+        return cls; 
+    }
     return (
         <MapContext.Provider value={getContext()}>
             <div
-                className={'aio-input-map-container' + (mapConfig.draggable === false ? ' not-draggable' : '')}
+                className={getClassName()}
                 style={attrs.style}
                 onClick={() => { if (popupConfig) { setShowPopup(true) } }}
             >
@@ -3306,6 +3317,7 @@ function MapHeader() {
     let [showResult, setShowResult] = useState(false);
     let dom = createRef();
     let timeout: any;
+    const cls = 'aio-input-map'
     async function changeSearch(searchValue: string) {
         let { lat, lng } = value;
         setSearchValue(searchValue);
@@ -3325,39 +3337,36 @@ function MapHeader() {
             catch (err) { }
         }, 1000)
     }
-    function input_node(): RN {
-        if (!search) { return null }
-        let p: AI = {
-            type: 'text', placeholder: search, className: 'aio-input-map-serach-input', value: searchValue, attrs: { ref: dom }, options: searchResult,
-            before: <div onClick={() => goToCurrent()} className='align-vh'>{I(mdiCrosshairsGps, 0.6)}</div>,
-            after: () => {
-                let path, spin, size, onClick;
-                if (loading) { path = mdiLoading; spin = 0.4; size = 1; }
-                else if (!!showResult && !!searchResult.length) { path = mdiClose; size = 0.8; onClick = () => { changeSearch('') } }
-                else { path = mdiMagnify; size = 0.8; }
-                return (<div className='aio-input-map-serach-icon align-vh' onClick={onClick}>{I(path, size, { spin })}</div>)
-            },
-            option: {
-                text: 'option.title', value: 'option.location.x + "-" + option.location.y', close: () => true,
-                subtext: 'option.address',
-                onClick: (option: any) => flyTo({ lat: option.object.location.y, lng: option.object.location.x })
-            },
-            onChange: (searchValue: string) => changeSearch(searchValue)
-        }
-        return (<div className="aio-input-map-search"><AIOInput {...p} /></div>)
-    }
-    function header_node(): RN {
-        if (typeof title !== 'string' && !onClose) { return null }
+    function getSearchInput(){
         return (
-            <div style={{ display: 'flex' }}>
-                {!!onClose && <div className='aio-input-map-close align-vh' onClick={() => { if (onClose) { onClose() } }}>{I(mdiChevronRight, 1)}</div>}
-            </div>
+            <AIOInput
+                type='text' placeholder={search} className={`aio-input-map-serach-input`} value={searchValue} attrs={{ ref: dom }} options={searchResult}
+                caret={false}
+                before={<div onClick={() => goToCurrent()} className='aio-input-map-header-current'>{I(mdiCrosshairsGps, 0.6)}</div>}
+                after={() => {
+                    let path, spin, size, onClick;
+                    if (loading) { path = mdiLoading; spin = 0.4; size = 1; }
+                    else if (!!showResult && !!searchResult.length) { path = mdiClose; size = 0.8; onClick = () => { changeSearch('') } }
+                    else { path = mdiMagnify; size = 0.8; }
+                    return (<div className={`aio-input-map-serach-icon`} onClick={onClick}>{I(path, size, { spin })}</div>)
+                }}
+                option={{
+                    text: 'option.title', value: 'option.location.x + "-" + option.location.y', close: () => true,
+                    subtext: 'option.address',
+                    onClick: (option: any) => flyTo({ lat: option.object.location.y, lng: option.object.location.x })
+                }}
+                onChange={(searchValue: string) => changeSearch(searchValue)}
+            />
         )
     }
     if (!search && !title && !onClose) { return null }
     return (
-        <div className={'aio-input-map-header of-visible' + (searchResult && searchResult.length && showResult ? ' aio-input-map-header-open' : '')}>
-            {header_node()} {input_node()}
+        <div className={`aio-input-map-header` + (searchResult && searchResult.length && showResult ? ` aio-input-map-header-open` : '')}>
+            <div className='aio-input-map-header-title'>
+                {!!onClose && <div className='aio-input-map-header-close' onClick={() => onClose()}>{I(mdiChevronRight, 1)}</div>}
+                {title || null}
+            </div>
+            {!!search && <div className={`aio-input-map-search`}>{getSearchInput()}</div>}
         </div>
     )
 }
@@ -3470,23 +3479,25 @@ function GetDistance(p1: I_Map_coords, p2: I_Map_coords) {
     return Math.acos(Math.sin(lat2 * rad) * Math.sin(lat1 * rad) + Math.cos(lat2 * rad) * Math.cos(lat1 * rad) * Math.cos(lon2 * rad - lon1 * rad)) * radius; //result in Kilometers
 }
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
-export type AV_operator = 'contain' | '!contain' | 'required' | '=' | '!=' | '>' | '!>' | '>=' | '!>=' | '<' | '!<' | '<=' | '!<='
+export type AV_operator = 'contain' | '!contain' | 'required' | '=' | '!=' | '>' | '!>' | '>=' | '!>=' | '<' | '!<' | '<=' | '!<=' | 'startBy'
 export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
 export type AV_item = string
 export class AIOValidation {
-    contain: (target: any, value: any) => boolean;
-    equal: (target: any, value: any,equal?:boolean) => boolean;
-    less: (target: any, value: any,equal?:boolean) => boolean;
-    greater: (target: any, value: any,equal?:boolean) => boolean;
-    between: (targets:any[], value:any,equal?:boolean)=>boolean;
+    contain: (target: any, value: any) => {result:boolean,unit:any};
+    startBy: (target: any, value: any) => {result:boolean,unit:any};
+    equal: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
+    less: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
+    greater: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
+    between: (targets:any[], value:any,equal?:boolean)=>{result:boolean,unit:any};
     getMessage: (p:{operator: AV_operator, target: string, message?: string,title?:string,unit: string}) => string;
     translate: (operator: AV_operator) => string
-    getResult: (p: { target: any, title: string,message?:string, value: any, unit: string, operator: AV_operator }) => string | undefined
+    getResult: (p: { target: any, title: string,message?:string, value: any, operator: AV_operator }) => string | undefined
     getValidation: () => string | undefined;
     validate: () => string | undefined;
     fnMapper:(operatorName:any)=>string;
     boolKey:(key:'more' | 'less')=>string;
     boolDic:any;
+    getUnit:(value:any)=>string;
     constructor(props: AV_props) {
         let { lang = 'en',value } = props;
         let isDate = typeof value === 'string' && value.indexOf('/') !== -1;
@@ -3503,42 +3514,45 @@ export class AIOValidation {
             else if (target === 'symbol') { result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value);}
             else if (typeof target.test === 'function') { result = target.test(value);}
             else { result = value.indexOf(target) !== -1;}
-            return result
+            return {result,unit:''}
+        }
+        this.startBy = (target, value)=>{
+            return {result:value.indexOf(target) === 0,unit:''};
         }
         this.equal = (target, value) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
-            let result;
-            if (isDate) { result = DATE.isEqual(value, typeof target === 'number'?target.toString():target) }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target }
-            else { result = JSON.stringify(value) === JSON.stringify(target) }
-            return result
+            let result,unit;
+            if (isDate) { result = DATE.isEqual(value, typeof target === 'number'?target.toString():target); unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target; unit = this.getUnit(value) }
+            else { result = JSON.stringify(value) === JSON.stringify(target); unit = '' }
+            return {result,unit}
         }
         this.less = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
-            let result;
-            if (isDate) { result = DATE.isLess(value, typeof target === 'number'?target.toString():target) }
-            else if (targetType === 'number' && valueType === 'number') { result = value < target }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target }
-            else { result = false }
-            return equal?result || this.equal(target,value):result;
+            let result,unit = '';
+            if (isDate) { result = DATE.isLess(value, typeof target === 'number'?target.toString():target); unit = '' }
+            else if (targetType === 'number' && valueType === 'number') { result = value < target; unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target; unit = this.getUnit(value) }
+            else { result = false; unit = ''; }
+            return {result:equal?result || this.equal(target,value).result:result,unit};
         }
         this.greater = (target, value,equal) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
-            let result;
-            if (isDate) { result = DATE.isGreater(value, typeof target === 'number'?target.toString():target) }
-            else if (targetType === 'number' && valueType === 'number') { result = value > target }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target }
-            else { result = false }
-            return equal?result || this.equal(target,value):result;
+            let result,unit;
+            if (isDate) { result = DATE.isGreater(value, typeof target === 'number'?target.toString():target); unit = '' }
+            else if (targetType === 'number' && valueType === 'number') { result = value > target; unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target; unit = this.getUnit(value) }
+            else { result = false; unit = '' }
+            return {result:equal?result || this.equal(target,value).result:result,unit};
         }
         this.between = (targets, value,equal) => {
-            let res1 = this.greater(targets[0],value)
-            let res2 = this.less(targets[1],value)
+            let res1 = this.greater(targets[0],value).result
+            let res2 = this.less(targets[1],value).result
             let result = !!res1 && !!res2
-            return equal?(result || this.equal(targets[0],value) ||this.equal(targets[1],value)):result
+            return {result:equal?(result || this.equal(targets[0],value).result ||this.equal(targets[1],value).result):result,unit:''}
         }
         this.translate = (operator):string => {
             
@@ -3555,13 +3569,14 @@ export class AIOValidation {
                 '!<=': { en: `could not be ${this.boolKey('less')} than or equal`, fa: `نباید ${this.boolKey('less')} یا مساوی` },
                 '=': { en: `should be equal`, fa: `باید برابر` },
                 '!=': { en: `cannot be equal`, fa: `نمی تواند برابر` },
+                'startBy': { en: `should start by`, fa: `باید در ابتدا شامل` },
                 'required': { en: '', fa: '' }
             }
             return dict[operator][lang]
         }
         this.fnMapper = (operatorName:any)=>{
             let dict:any = {
-                'contain': 'contain','!contain': 'contain',
+                'contain': 'contain','!contain': 'contain','startBy':'startBy',
                 '!=': 'equal','=': 'equal',
                 '<': 'less','<=': 'less','!<': 'less','!<=': 'less',
                 '>': 'greater','>=': 'greater','!>': 'greater','!>=': 'greater',
@@ -3577,7 +3592,7 @@ export class AIOValidation {
             return res.trim()
         }
         this.getResult = (p) => {
-            let { target, message,title, value, unit, operator } = p;
+            let { target, message,title, value, operator } = p;
             let operatorName: string = operator, not = false,equal = operator.indexOf('=') !== -1;
             let notIndex = operatorName.indexOf('!');
             if (notIndex === 0) {
@@ -3585,14 +3600,17 @@ export class AIOValidation {
                 operatorName = operator.slice(1, operator.length);
             }
             let fn: any = (this as any)[this.fnMapper(operatorName)];
-            let result = fn(target, value,equal)
+            let {result,unit} = fn(target, value,equal)
             if ((not && result) || (!not && !result)) { return this.getMessage({operator, target, message,title, unit}) }
         }
-        this.getValidation = () => {
-            let { value, validations = [] } = props;
+        this.getUnit = (value)=>{
             let unit = '';
             if (Array.isArray(value)) { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
             else if (typeof value === 'string') { unit = lang === 'fa' ? 'کاراکتر' : 'character(s)' }
+            return unit;
+        }
+        this.getValidation = () => {
+            let { value, validations = [] } = props;
             for (let i = 0; i < validations.length; i++) {
                 let [operator, target, text ] = validations[i].split(',');
                 let otherTarget;
@@ -3610,13 +3628,12 @@ export class AIOValidation {
                     }
                 }    
                 else {
-                    if(['=','!=','contain','!contain'].indexOf(operator) !== -1 || isDate){unit = ''}
                     let isBetween = operator.indexOf('<') !== -1 && operator.indexOf('>') !== -1
                     target = ParseString(target);
                     let Target;
                     if(isBetween){Target = [target,otherTarget]}
                     else {Target = target}
-                    result = this.getResult({ operator:operator as AV_operator, target:Target, title,message, value, unit })
+                    result = this.getResult({ operator:operator as AV_operator, target:Target, title,message, value })
                 }
                 if (result) { return result }
             }
@@ -3629,9 +3646,9 @@ export class AIOValidation {
         }
     }
 }
-export function AIOInputSetStorage(name: string, value: any) {
+export function AIOInput_defaultProps(p:{[key in ('mapApiKeys')]?:any}) {
     let storage: Storage = new Storage('aio-input-storage');
-    storage.save(name, value)
+    for(let prop in p){storage.save(prop,(p as any)[prop])}
 }
 function getTypes(props: AI) {
     function isDropdown() {
@@ -3674,7 +3691,11 @@ function getDefaultProps(props: AI, types: AI_types) {
     else if (props.type === 'date') {
         if (props.multiple) { props.option = {...props.option,text:'option',value:'option'} }
     }
-
+    else if(props.type === 'map'){
+        if (!props.value) { props.value = { lat: 35.699739, lng: 51.338097 } }
+        if (!props.value.lat) { props.value.lat = 35.699739 }
+        if (!props.value.lng) { props.value.lng = 51.338097 }
+    }
     if (props.loading === true) { props.disabled = true }
     if (types.isMultiple) {
 
@@ -3972,7 +3993,7 @@ export type AI = {
     option?:AI_optionProp,
     paging?: AI_table_paging,
     pattern?:string,
-    placeholder?: string,
+    placeholder?: React.ReactNode,
     popover?: AI_popover,//notice get type from aio popup
     point?:false | AI_point,//range
     popupConfig?:I_Map_config

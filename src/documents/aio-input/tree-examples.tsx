@@ -548,7 +548,33 @@ function AddRemove(){
     let [value,setValue] = useState<any>(getValue)
     return (
         <div className='example'>
-            <h3>onAdd onRemove onChange</h3>
+            <AIOInput 
+                type='tree'
+                value={[...value]}
+                option={{
+                    text:'option.name',
+                    value:'option.id'
+                }}
+                onAdd={{name:'New Name',value:'a' + Math.round(Math.random())}}
+                onRemove={true}
+                onChange={(value)=>setValue(value)}
+            />
+            {
+                code(
+
+`<AIOInput 
+    type='tree'
+    value={[...value]}
+    option={{
+        text:'option.name',
+        value:'option.id'
+    }}
+    onAdd={{name:'New Name',value:'a' + Math.round(Math.random())}}
+    onRemove={true}
+    onChange={(value)=>setValue(value)}
+/>`
+                )
+            }
             <AIOInput 
                 type='tree'
                 value={[...value]}

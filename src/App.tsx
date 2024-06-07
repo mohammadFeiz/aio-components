@@ -23,9 +23,10 @@ import Test from './test.tsx';
 import Layout1 from "./documents/aio-input/ui-kit/layout1.tsx";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {useNavigate} from 'react-router-dom';
+import './npm/aio-css/aio-css.css';
 AIOInputSetStorage('mapApiKeys',{
-  map:'web.0a2aa5f83d314a8c9916473aa0e01438',
-  service:'service.09a2234e299a4ff585007b2894df9fca',
+  map:'web.aab3173ee1ca48f3985d3fc3976539db',
+  service:'service.0d7b067eb6984a8c864920fe7b09800c',
 })
 export default function AIOComponents(){
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ export default function AIOComponents(){
 const Home:FC<{parts:{[key:string]:FC}}> = (props)=>{
   const {parts} = props;
   return (
-    <div className='aio-components'>
+    <div className='aio-components ai'>
       {
         Object.keys(parts).map((o,i)=>{
           return (<Link key={i} className='aio-component' to={`/${o}`}>{o}</Link>)

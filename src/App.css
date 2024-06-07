@@ -34,6 +34,7 @@
   overflow-y:auto;
   color:#555;
   box-sizing: border-box;
+  height:100%;
 }
 .example ul{
   padding:0 16px;

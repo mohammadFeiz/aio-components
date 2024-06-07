@@ -1,10 +1,10 @@
-import React, { Component, createRef, useEffect, useState, isValidElement, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { Component, createRef, useEffect, useState, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
-import { mdiClose, mdiChevronRight, mdiChevronLeft } from '@mdi/js';
+import { mdiClose } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
-import { AddToAttrs } from '../aio-utils';
+import { AddToAttrs } from './../../npm/aio-utils/index';
 export type AP_props = {rtl?:boolean,id?:string}
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export type AP_attrsKey = 'backdrop'|'modal'|'header'|'body'|'footer';
@@ -358,7 +358,7 @@ const ModalHeader:FC<{modal:AP_modal}> = (props) => {
     if (!subtitle) {return <div className={`${cls}-title`} style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
     else {
       return (
-        <div style={{display:'flex',flexDirection:'column',justifyContent:'center',flex:1}}>
+        <div className={`${cls}-text`}>
           <div className={`${cls}-title`}>{title}</div>
           <div className={`${cls}-subtitle`}>{subtitle}</div>
         </div>

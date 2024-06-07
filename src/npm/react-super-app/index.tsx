@@ -1,17 +1,17 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {Storage} from '../aio-utils/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import RVD,{ I_RVD_node } from '../react-virtual-dom/index.tsx';
 import AIOPopup, { AP_alert, AP_confirm, AP_modal, AP_prompt, AP_snackebar } from './../../npm/aio-popup/index.tsx';
 import './index.css';
+type RN = React.ReactNode
 export type I_RSA_props = {
   rtl?:boolean, 
   maxWidth?:number,
   id:string,
   nav:I_RSA_nav,
   side?:I_RSA_side,
-  title?:(nav:I_RSA_nav)=>string,
+  title?:(nav:I_RSA_navItem)=>string,
   subtitle?:(nav:I_RSA_nav)=>string,
   headerContent?:()=>React.ReactNode,
   header?:false | React.ReactNode | (()=>React.ReactNode),
@@ -82,7 +82,7 @@ export default class RSA {
   setBackButtonCallBack:(fn:any)=>void;
   render:I_RSA_render;
   addAlert:(p:AP_alert)=>void;
-  addSnakebar:(p:AP_snackebar)=>void;
+  addSnackebar:(p:AP_snackebar)=>void;
   addConfirm:(p:AP_confirm)=>void;
   addPrompt:(p:AP_prompt)=>void;
   constructor(props:I_RSA_props) {
@@ -105,7 +105,7 @@ export default class RSA {
       this.closeSide = closeSide;
     }}/>
     this.addAlert = (obj) => this.popup.addAlert(obj);
-    this.addSnakebar = (obj:AP_snackebar) => this.popup.addSnackebar(obj);
+    this.addSnackebar = (obj:AP_snackebar) => this.popup.addSnackebar(obj);
     this.addConfirm = (obj) => this.popup.addConfirm(obj);
     this.addPrompt = (obj) => this.popup.addPrompt(obj);  
     window.history.pushState({}, '')
@@ -146,36 +146,31 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     if(nav.cache){storage.save('navId',navId)}
     SETNAVID(navId)
   }
-  function header_node(activeNav:I_RSA_navItem | false):I_RVD_node {
+  function header_node(activeNav:I_RSA_navItem | false):RN {
     let Header = typeof header === 'function'?header():header;
-    if (Header === false) { return {} }
-    if(Header){return {style: { flex: 'none', width: '100%' }, className: 'rsa-header of-visible align-v',html: Header}}
+    if (Header === false) { return null }
+    if(Header){<div className="rsa-header">{Header}</div>}
     let Title:string;
     if(activeNav === false){Title = ''}
     else {
-      if(title){Title = title(nav)}
+      if(title){Title = title(activeNav)}
       else {
         if(typeof activeNav.text === 'function'){Title = activeNav.text()}
         else {Title = activeNav.text}
       }
     }
     let Subtitle:string = subtitle(nav);
-    if(!Title && !side && !headerContent){return {}}
-    return {
-      style: { flex: 'none'}, className: 'rsa-header of-visible align-v w-100',
-      row: [
-        { size: 60, show: !!side, html: <Icon path={mdiMenu} size={1} />, className: 'align-vh',onClick: () => openSide()},
-        {
-          show: !!Title,
-          column:[
-            {  html: Title, className: 'rsa-header-title' },
-            {  show:!!Subtitle,html: Subtitle, className: 'rsa-header-subtitle' }
-          ]
-        },
-        {show:!!title || !!side ,flex:1},
-        { flex: !!title || !!side?undefined:1, show: !!headerContent, html: () => (headerContent as any)(), className: 'of-visible' },
-      ]
-    }
+    if(!Title && !side && !headerContent){return null}
+    return (
+      <div className="rsa-header">
+        {!!side && <div className="rsa-side-icon" onClick={() => openSide()}><Icon path={mdiMenu} size={1} /></div>}
+        <div className="rsa-header-text">
+          {!!Title && <div className="rsa-header-title">{Title}</div>}
+          {!!Subtitle && <div className="rsa-header-subtitle">{Subtitle}</div>}
+        </div> 
+        {!!headerContent && <div className="msf">{(headerContent as any)()}</div> } 
+      </div>
+    )
   }
   let navResult:I_RSA_navItem | false = false;
   function getNavById(id:string):I_RSA_navItem | false {
@@ -195,33 +190,30 @@ function ReactSuperApp(props:I_ReactSuperApp) {
       if (navItems) {getNavById_req(navItems, id);}
     }
   }
-  function navigation_node(type:'bottom' | 'side'):I_RVD_node {
-    if (!nav || !navItems || !navItems.length || navId === false) { return {} }
+  function navigation_node(type:'bottom' | 'side'):RN {
+    if (!nav || !navItems || !navItems.length || navId === false) { return null }
     let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl:!!rtl,navItems }
-    return { className: 'of-visible' + (type === 'bottom'?' rsa-bottom-menu-container':''), html: (<Navigation {...props} navItems={navItems}/>) };
+    return (<Navigation {...props} navItems={navItems}/>)
   }
-  function page_node(navItem:I_RSA_navItem | boolean):I_RVD_node {
+  function page_node(navItem:I_RSA_navItem | boolean):RN {
     let content = body(navItem as I_RSA_navItem);
     let activeNav:I_RSA_navItem | false = typeof navId === 'string'?getNavById(navId):false;
-    return {
-      flex: 1,
-      column: [
-        header_node(activeNav),
-        { flex: 1, html: <div className='rsa-body'>{content}</div> },
-        navigation_node('bottom')
-      ]
-    }
+    return (
+      <div className="rsa-page">
+        {header_node(activeNav)}
+        <div className="rsa-body">{content}</div>
+        {navigation_node('bottom')}
+      </div>
+    )
   }
 
-  function renderMain() {
+  function renderMain():RN {
     if(typeof navId !== 'string'){return null}
     let navItem = getNavById(navId);
     let className = 'rsa-main';
     className += cls ? ' ' + cls : '';
     className += rtl ? ' rtl' : ' ltr';
-    let rootNode:I_RVD_node = { className }
-    rootNode.row = [navigation_node('side'), page_node(navItem)]
-    return (<RVD rootNode={rootNode} />)
+    return <div className={className}>{navigation_node('side')} {page_node(navItem)}</div>
   }
   function openSide() {
     popup.addModal({
@@ -231,19 +223,17 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     })
   }
   function closeSide(){popup.removeModal('rsadefaultsidemodal')}
-  function renderSide(close:()=>void) {
+  function renderSide(close:()=>void):RN {
     if(!side){return null}
     let items = typeof side.items === 'function'?side.items():side.items;
     let props:I_RSA_SideMenu = {...side,attrs:side.attrs,items,onClose:()=>close()}
     return <SideMenu {...props} />
   }
   return (
-    <div className={`rvd-container rsa-container` + (cls ? ' ' + cls : '')} style={{direction:rtl?'rtl':'ltr'}}>
-      <div className='rsa' style={{ maxWidth }}>
-        {renderMain()}
-        {popup.render()}
-        {showSplash && !!splash && splash()}
-      </div>
+    <div className='rsa ai' style={{ maxWidth }}>
+      {renderMain()}
+      {popup.render()}
+      {showSplash && !!splash && splash()}
     </div>
   );
 }
@@ -251,114 +241,127 @@ function Navigation(props:I_RSA_Navigation) {
   let {nav,navId, setNavId,rtl,navItems,type} = props;
     
   let [openDic,setOpenDic] = useState<{[key:string]:boolean}>({})
-  function header_node():I_RVD_node {
-    if (!nav.header) { return { size: 12 } }
-    return { html: nav.header() };
+  function header_node():RN {
+    if (!nav.header) { return null }
+    return nav.header()
   }
-  function footer_node():I_RVD_node {
-    if (!nav.footer) { return { size: 12 } }
-    return { html: nav.footer() };
+  function footer_node():RN {
+    if (!nav.footer) { return null }
+    return nav.footer()
   }
-  function items_node(navItems:I_RSA_navItem[], level:number):I_RVD_node {
-    return {
-      flex: 1, className: 'ofy-auto',
-      column: navItems.filter(({ show = () => true }) => show()).map((o, i) => {
-        if (o.items) {
-          let open = openDic[o.id] === undefined ? true : openDic[o.id]
-          let column = [item_node(o, level)]
-          if (open) { column.push(items_node(o.items, level + 1)) }
-          return { column }
+  function items_node(navItems:I_RSA_navItem[], level:number):RN {
+    return (
+      <div className="rsa-navigation-items">
+        {
+          navItems.filter(({ show = () => true }) => show()).map((o, i) => {
+            if (o.items) {
+              let open = openDic[o.id] === undefined ? true : openDic[o.id]
+              let column = [item_node(o, level)]
+              if (open) { column.push(items_node(o.items, level + 1)) }
+              return column
+            }
+            return item_node(o, level)
+          })
         }
-        return item_node(o, level)
-      })
-    }
+      </div>
+    )
   }
   function toggle(id:string) {
     let open = openDic[id] === undefined ? true : openDic[id]
     setOpenDic({ ...openDic, [id]: !open })
   }
-  function text_node(navItem:I_RSA_navItem,type:'side'|'bottom'):I_RVD_node {
+  function text_node(navItem:I_RSA_navItem,type:'side'|'bottom'):RN {
     let {text,marquee} = navItem;
     text = typeof text === 'function' ? text() : text; 
     let html;
     if (!marquee) { html = text }
-    else {
-      html = <marquee behavior='scroll' scrollamount={3} direction='right'>{text}</marquee>
-    }
-    if(type === 'side'){return { html, className: 'align-v' }}
-    if(type === 'bottom'){return { html, className: 'rsa-bottom-menu-item-text align-vh' }}
-    return {}
+    else {html = <marquee behavior='scroll' scrollamount={3} direction='right'>{text}</marquee>}
+    if(type === 'side'){return <div className="rsa-navigation-item-text">{html}</div>}
+    if(type === 'bottom'){return <div className="rsa-bottom-menu-item-text">{html}</div>}
+    return null
   }
-  function item_node(o:I_RSA_navItem, level = 0):I_RVD_node {
+  function item_node(o:I_RSA_navItem, level = 0):RN {
     let { id, icon, items ,disabled} = o;
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
-    return {
-      className: 'rsa-navigation-item' + (active ? ' active' : ''), onClick: disabled?undefined:() => items ? toggle(id) : setNavId(id),
-      row: [
-        { size: level * 16 },
-        { show:nav.nested === true,size: 24, html: items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : '', className: 'align-vh' },
-        { show: !!icon, size: 48, html: () => typeof icon === 'function' ? icon() : icon, className: 'align-vh' },
-        text_node(o,'side')
-      ]
-    }
+    return (
+      <div className={'rsa-navigation-item' + (active ? ' active' : '')} onClick={disabled?undefined:() => items ? toggle(id) : setNavId(id)}>
+        <div style={{width:level * 16}}></div>
+        {
+          nav.nested === true &&
+          <div className="rsa-toggle">
+            {items ? <Icon path={open ? mdiChevronDown : (rtl ? mdiChevronLeft : mdiChevronRight)} size={1} /> : ''}
+          </div>
+        }
+        {
+          !!icon &&
+          <div className="rsa-navigation-icon">{typeof icon === 'function' ? icon() : icon}</div>
+        }
+        {text_node(o,'side')}
+      </div>
+    )
   }
-  function bottomMenu_node(o:I_RSA_navItem):I_RVD_node {
+  function bottomMenu_node(o:I_RSA_navItem):RN {
     let { icon, id,disabled } = o;
     let active = id === navId;
-    return {
-      flex: 1, className: 'rsa-bottom-menu-item of-visible' + (active ? ' active' : ''), onClick: disabled?undefined:() => setNavId(id),
-      column: [
-        { show: !icon,flex: 1 },
-        { show: !!icon,flex: 2 },
-        { show: !!icon, html: () => typeof icon === 'function' ? icon() : icon, className: 'of-visible rsa-bottom-menu-item-icon align-vh' },
-        { show: !!icon,flex: 1 },
-        text_node(o,'bottom'),
-        { flex: 1 }
-      ]
-    }
+    return (
+      <div className={'rsa-bottom-menu-item of-visible' + (active ? ' active' : '')} onClick={disabled?undefined:() => setNavId(id)}>
+        {!!icon && <div className="rsa-bottom-menu-item-icon">{typeof icon === 'function' ? icon() : icon}</div> }
+        {text_node(o,'bottom')}
+      </div>
+    )
   }
   if (type === 'bottom') {
-    return (<RVD rootNode={{ className: 'rsa-bottom-menu', hide_sm: true, hide_md: true, hide_lg: true, row: navItems.filter(({ show = () => true }) => show()).map((o) => bottomMenu_node(o)) }} />)
+    return (
+      <div className="rsa-bottom-menu-container rsa-show-xs">
+        <div className="rsa-bottom-menu">
+          {navItems.filter(({ show = () => true }) => show()).map((o) => bottomMenu_node(o))}
+        </div>
+      </div>
+    )
   }
-  return (<RVD rootNode={{ hide_xs: true, className: 'rsa-navigation', column: [header_node(), items_node(navItems, 0),footer_node()] }} />);
+  return (
+    <div className="rsa-navigation rsa-hide-xs">
+      {header_node()} {items_node(navItems, 0)} {footer_node()}
+    </div>
+  )
 }
 function SideMenu(props:I_RSA_SideMenu) {
   let { attrs = {},header,items, onClose,footer } = props;
-  function header_node():I_RVD_node {
-    if (!header) { return {} }
-    return { html: header(), className: 'rsa-sidemenu-header' };
+  function header_node():RN {
+    if (!header) { return null }
+    return (<div className="rsa-sidemenu-header">{header()}</div>)
   }
-  function items_node() {
-    return {
-      flex: 1,
-      column: items.map((o, i) => {
-        let { icon = () => <div style={{ width: 12 }}></div>, text, attrs = {}, onClick = () => { }, show = () => true } = o;
-        let Show = show();
-        return {
-          style:attrs.style,
-          show: Show !== false, size: 36, className: 'rsa-sidemenu-item' + (attrs.className ? ' ' + attrs.className : ''), onClick: () => { onClick(o); onClose() },
-          row: [
-            { size: 48, html: typeof icon === 'function'?icon():icon, className: 'align-vh' },
-            { html: text, className: 'align-v' }
-          ]
+  function items_node():RN {
+    return (
+      <div className="rsa-sidemenu-items">
+        {
+          items.map((o, i) => {
+            let { icon = () => <div style={{ width: 12 }}></div>, text, attrs = {}, onClick = () => { }, show = () => true } = o;
+            let Show = show();
+            if(Show === false){return null}
+            return (
+              <div className={'rsa-sidemenu-item' + (attrs.className ? ' ' + attrs.className : '')} style={attrs.style} onClick={()=>{onClick(o); onClose()}}>
+                <div className="rsa-sidemenu-item-icon">{typeof icon === 'function'?icon():icon}</div>
+                <div className="rsa-sidemenu-item-text">{text}</div>
+              </div>
+            )
+          })
         }
-      })
-    }
+      </div>
+    )
   }
-  function footer_node():I_RVD_node {
-    if (!footer) { return {} }
-    return { html: footer(), className: 'rsa-sidemenu-footer' };
+  function footer_node():RN {
+    if (!footer) { return null }
+    return (
+      <div className="rsa-sidemenu-footer">{footer()}</div>
+    )
   }
   return (
-    <RVD
-      rootNode={{
-        attrs,
-        className: 'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : ''),
-        column: [header_node(), items_node(), footer_node()]
-      }}
-    />
-  );
+    <div {...attrs} className={'rsa-sidemenu' + (attrs.className ? ' ' + attrs.className : '')}>
+      {header_node()} {items_node()} {footer_node()}
+    </div>
+  )
 }
 const RSANavInterface = `
 {
