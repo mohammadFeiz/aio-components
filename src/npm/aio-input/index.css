@@ -762,6 +762,7 @@
     background: #f8f8f8;
     z-index: 100;
     box-sizing:border-box;
+    min-height:36px;
 }
 
 .aio-input-table-toolbar-content {

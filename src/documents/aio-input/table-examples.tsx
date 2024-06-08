@@ -463,7 +463,7 @@ function OnAdd(p:any) {
             onChange:(newRows)=>setRows(newRows)
         }
         if(type === 'function'){
-            p.onAdd = ()=>{setRows([{name:'',family:'',age:0},...rows])}
+            p.onAdd = ()=>setRows([{name:'',family:'',age:0},...rows])
         }
         else {
             p.onAdd = {name:'',family:'',age:0}
@@ -473,12 +473,7 @@ function OnAdd(p:any) {
     return (
         <div className='example'>
             <h3>{`onAdd={function}`}</h3>
-            <AIOInput
-                type='table'
-                value={rows}
-                columns={columns}
-                onChange={(newRows)=>setRows(newRows)}
-            />
+            {renderTable('function')}
             {
                 new AIODoc().Code(`
 
@@ -529,7 +524,7 @@ return (
 }
 function OnRemove(p:any) {
     let {rows:Rows,rowsCode} = p;
-    let [rows,setRows] = useState<any[]>(Rows)
+    const [rows,setRows] = useState<any[]>(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {title:'Family',value:'row.family',input:{type:'text'}},
@@ -542,7 +537,10 @@ function OnRemove(p:any) {
             columns,
             onChange:(newRows)=>setRows(newRows)
         }
-        if(type === 'function'){p.onRemove = async (row:any)=>await setRows(rows.filter((o)=>o.id !== row.id))}
+        if(type === 'function'){p.onRemove = async ({row})=>{
+            const newRows:any[] = rows.filter((o)=>o.id !== row.id);
+            setRows(newRows)
+        }}
         else {p.onRemove = true}
         return <AIOInput {...p}/>
     }
@@ -565,7 +563,8 @@ return (
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onRemove={(row)=>{
-            this.setState({rows:rows.filter((o)=>o.id !== row.id)})
+            const newRows = rows.filter((o)=>o.id !== row.id);
+            setRows(newRows)
         }}
     />
 )
