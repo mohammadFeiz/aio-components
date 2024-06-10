@@ -1,6 +1,6 @@
 import React from 'react';
 import Axios from 'axios';
-import {AIODate,Storage} from './../../npm/aio-utils/index';
+import {AIODate,Storage} from './../../npm/aio-utils';
 import AIOPopup from './../../npm/aio-popup/index';
 import $ from 'jquery';
 import './index.css';
@@ -44,7 +44,7 @@ type AA_messageParameter = {result:any,message:AA_message,description:string}
 export type AA_apis = {[key:string]:AA_api}
 export type AA_api = AA_apiSetting & {
     method?:AA_method,
-    getUrl?:(baseUrl:string)=>string,
+    getUrl?:(baseUrl:string,parameter:any)=>string,
     getBody?:(p:any)=>any,
     getResult?:(response:any)=>any,
 };
@@ -240,7 +240,7 @@ export default class AIOApis {
                 let {getBody} = setting;
                 let config = {description,message,loading,loadingParent,token,onError,onSuccess,onCatch,getError,errorResult,cache}
                 let body = typeof getBody === 'function'?getBody(p):undefined;
-                let url = typeof setting.getUrl === 'function'?setting.getUrl(baseUrl):''
+                let url = typeof setting.getUrl === 'function'?setting.getUrl(baseUrl,p):''
                 let getResult = typeof setting.getResult === 'function'?setting.getResult:()=>{}
                 let mockResult = !!setting.mockResult || !!mockResultByCalling
                 return this.request({

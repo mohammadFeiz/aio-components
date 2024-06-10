@@ -108,10 +108,10 @@ function AIOINPUT(props: AI) {
             setTimeout(() => $(parentDom.current).focus(), 0)
         }
     }
-    function click(e: any, dom: any) {
-        if (type === 'checkbox') { if (onChange) { onChange(!value) } }
+    function click(e: Event, dom: any) {
+        if (type === 'checkbox') { if (onChange) { onChange(!value,e) } }
         else if (openPopover !== false) { toggle(openPopover(dom)) }
-        else if (typeof props.onClick === 'function') { props.onClick() }
+        else if (typeof props.onClick === 'function') { props.onClick(e) }
         else if (attrs.onClick) { attrs.onClick(); }
     }
     function optionClick(option: AI_option) {
@@ -209,7 +209,7 @@ function TimePopover(props: { onClose: () => void }) {
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         let { year, month, day } = value;
-        if (type === 'year' && startYear && endYear) { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
+        if (type === 'year' && startYear && endYear) { return new Array(endYear - startYear + 1).fill(0).map((o:any, i) => { return { text: i + startYear, value: i + startYear } }) }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
@@ -679,7 +679,7 @@ type AI_validation = {validations:string[],label:string}
 const Formcontext = createContext({} as any);
 const Form: FC = () => {
     let { rootProps }: AI_context = useContext(AICTX);
-    let { node, lang, onChange, attrs, style, className,footer,body,showErrors = true } = rootProps;
+    let { node, lang, onChange, attrs, style, className,footer,showErrors = true } = rootProps;
     let [errors] = useState<{ [key: string]: string | undefined }>({})
     let [dom] = useState<any>(getDom)
     function getDom(){
@@ -719,8 +719,7 @@ const Form: FC = () => {
     }
     function setValueByField(obj: any = {}, field: string, value: any) {
         try {
-            field = field.replaceAll('[', '.');
-            field = field.replaceAll(']', '');
+            field = field.replace(/\[/g, '.').replace(/\]/g, '');
         }
         catch { }
         let fields = field.split('.');
@@ -1101,7 +1100,7 @@ const Layout:FC<AI_Layout> = (props) => {
         if (open === undefined) { path = mdiCircleSmall }
         else if (open === true) { path = mdiChevronDown }
         else { path = mdiChevronRight }
-        return I(path, 1)
+        return <div style={{transform:rootProps.rtl?`scaleX(-1)`:undefined}}>{I(path, 1)}</div>
     }
     function Toggle(indent: AI_indent) {
         if(!option || option.toggleIcon === false){return null}
@@ -1122,7 +1121,7 @@ const Layout:FC<AI_Layout> = (props) => {
         let x0 = size / 2, x1 = size, y0 = 0, y1 = height / 2, y2 = height, pathes = [];
         if (order === level - 1) {
             //horizontal line
-            pathes.push(<path key={'hl' + order} d={`M${x0} ${y1} L${x1} ${y1} Z`}></path>)
+            pathes.push(<path key={'hl' + order} d={`M${x0} ${y1} L${x1*(rootProps.rtl?-1:1)} ${y1} Z`}></path>)
             //vertical direct line
             pathes.push(<path key={'vdl' + order} d={`M${x0} ${y0} L${x0} ${isLastChild ? y1 : y2} Z`}></path>)
         }
@@ -1140,6 +1139,7 @@ const Layout:FC<AI_Layout> = (props) => {
         return (
             <div className="aio-input-indents">
                 {new Array(level).fill(0).map((o, i) => {
+                    if(o){}
                     return (
                         <div key={i} className={`aio-input-indent`}>{indentIcon(indent, i)}</div>
                     )
@@ -1325,7 +1325,7 @@ type I_AcardionContext = {
 const AcardionContext = createContext({} as any);
 export const Acardion: FC = () => {
     const { rootProps,options }: AI_context = useContext(AICTX);
-    const { multiple, vertical = true,onChange = ()=>{},value } = rootProps;
+    const { multiple, vertical = true,value } = rootProps;
     function isOpen(id:any){
         if(!multiple){return id === value}
         else {return (value || []).indexOf(id) !== -1}
@@ -2068,7 +2068,7 @@ function Table() {
             return result === undefined ? def : result;
         }
         if (type === 'undefined') { return def }
-        if (type === 'function') { return value({ row, column, rowIndex }) }
+        if (type === 'function') { return value(p) }
         return value === undefined ? def : value
     }
     useEffect(() => {
@@ -2519,15 +2519,17 @@ const Range: FC = () => {
                 dom: () => $(temp.dom.current),
                 start: (p:{event:Event}) => {
                     let { event } = p;
-                    let target = $(event.target);
-                    if (HasClass(target, 'ai-range-point')) {
-                        let index: string = target.attr('data-index') || '0';
-                        temp.index = +index;
+                    if(event.target !== null){
+                        let target = $(event.target);
+                        if (HasClass(target, 'ai-range-point')) {
+                            let index: string = target.attr('data-index') || '0';
+                            temp.index = +index;
+                        }
+                        else {
+                            temp.index = false
+                        }
+                        temp.start = [...valueRef.current];
                     }
-                    else {
-                        temp.index = false
-                    }
-                    temp.start = [...valueRef.current];
                     return [0, 0];
                 },
                 move: (p:I_Swip_parameter) => {
@@ -2989,7 +2991,7 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
         if (!init && !dynamic) {return def}
         return (
             <div className='ai-range-labels' style={{zIndex}}>
-                {getList().map((itemValue, i) => <RangeLabelItem key={itemValue} label={label} itemValue={itemValue} />)}
+                {getList().map((itemValue) => <RangeLabelItem key={itemValue} label={label} itemValue={itemValue} />)}
             </div>
         )
     }
@@ -3033,7 +3035,7 @@ function Map() {
     let { popupConfig, mapConfig = {}, onChange = () => { }, disabled, attrs, value } = rootProps;
     let [isScriptAdded, setIsScriptAdded] = useState<boolean>(false);
     useEffect(() => {
-        let scr = document.getElementById('aio-input-map-neshan');
+        //let scr = document.getElementById('aio-input-map-neshan');
         try {
             const script = document.createElement("script");
             script.src = `https://static.neshan.org/sdk/leaflet/1.4.0/leaflet.js`;
@@ -3056,7 +3058,7 @@ function MapUnit(props: I_MapUnit) {
     let [value, setValue] = useState<{ lat: number, lng: number }>(props.value)
     let [address, setAddress] = useState<string>('')
     let [addressLoading, setAddressLoading] = useState<boolean>(false)
-    let [zoom, setZoom] = useState<number>(Zoom);
+    let [zoom] = useState<number>(Zoom);
     let [mounted, setMounted] = useState<boolean>(false)
     let [temp] = useState<I_Map_temp>({
         datauniqid: 'mp' + (Math.round(Math.random() * 10000000)),
@@ -3135,23 +3137,23 @@ function MapUnit(props: I_MapUnit) {
                     let { latitude: lat, longitude: lng } = position.coords;
                     flyTo({ lat, lng });
                 },
-                (error_message) => { ipLookUp() }
+                () => { ipLookUp() }
             )
         }
         else { ipLookUp() }
     }
-    async function route(from = [35.699739, 51.338097], to = [35.699939, 51.338497]) {
-        try {
-            let param = { headers: { 'Api-Key': mapApiKeys.service } }
-            let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
-            await Axios.get(url, param);
-        }
-        catch (err) { return '' }
-    }
-    async function showPath(path: string) {
-        try { await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`, { headers: { 'Api-Key': mapApiKeys.service } }); }
-        catch (err) { return '' }
-    }
+    // async function route(from = [35.699739, 51.338097], to = [35.699939, 51.338497]) {
+    //     try {
+    //         let param = { headers: { 'Api-Key': mapApiKeys.service } }
+    //         let url = `https://api.neshan.org/v4/direction?type=car&origin=${from[0]},${from[1]}&destination=${to[0]},${to[1]}`;
+    //         await Axios.get(url, param);
+    //     }
+    //     catch (err) { return '' }
+    // }
+    // async function showPath(path: string) {
+    //     try { await Axios.post(`https://api.neshan.org/v3/map-matching?path=${path}`, { headers: { 'Api-Key': mapApiKeys.service } }); }
+    //     catch (err) { return '' }
+    // }
     function flyTo(coords: I_Map_coords) {
         if (!coords) { return }
         let animate = GetDistance(value, coords) > 0.3;
@@ -3984,7 +3986,7 @@ export type AI = {
     onChange?: ((newValue: any, p?: any) => undefined | boolean | void) | ((newValue: any, p?: any) => Promise<undefined | boolean | void>),
     onChangePaging?: (newPaging: AI_table_paging) => void,
     onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
-    onClick?:()=>void,
+    onClick?:(e:Event)=>void,
     onRemove?: true | ((p: { row: any, action?: Function, rowIndex?: number,parent?:any }) => Promise<boolean | void>),
     onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
     onSearch?: true | ((searchValue: string) => void),

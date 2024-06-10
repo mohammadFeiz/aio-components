@@ -847,7 +847,6 @@
     border-radius: 6px;
     box-sizing: border-box;
     margin: 0 3px;
-    opacity: .5;
 }
 
 .aio-input-table-paging-button-hidden {
@@ -2192,14 +2191,14 @@
 
 .aio-input-check-0 div:before{
     content: '';
-    position: absolute;
-    width: 3px;
-    height: 9px;
-    transform: rotate(45deg);
-    left: 4px;
-    top: 0px;
-    border: 3px solid #fff;
-    border-width: 0px 3px 3px 0px;
+    position: absolute !important;
+    width: 3px !important;
+    height: 9px !important;
+    transform: rotate(45deg) !important;
+    left: 4px !important;
+    top: 0px !important;
+    border: 3px solid #fff !important;
+    border-width: 0px 3px 3px 0px !important;
 }
 .aio-input-sidemenu{
     color:#444;
