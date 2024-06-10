@@ -1716,3 +1716,25 @@ export class Storage {
         this.init()
     }
 }
+type I_dd_date = {year:number,month:number,day:number,hour:number,minute:number}
+type I_dd_data = {
+    [year:string]:I_dd_year
+}
+type I_dd_year = {
+    [month:string]:I_dd_month
+}
+type I_dd_month = {
+    [day:string]:I_dd_day
+}
+type I_dd_day = any
+export class DateData{
+    data:I_dd_data;
+    add:(date:I_dd_date,data:any)=>void;
+    constructor(){
+        this.data = {}
+        this.add = (date,data)=>{
+            const {year,month,day,hour,minute} = date
+            let y = this.data[year.toString()]
+        }
+    }
+}

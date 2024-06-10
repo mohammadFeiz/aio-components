@@ -209,7 +209,7 @@ function TimePopover(props: { onClose: () => void }) {
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         let { year, month, day } = value;
-        if (type === 'year' && startYear && endYear) { return new Array(endYear - startYear + 1).fill(0).map((o:any, i) => { return { text: i + startYear, value: i + startYear } }) }
+        if (type === 'year' && startYear && endYear) { return new Array(endYear - startYear + 1).fill(0).map((o, i) => { return { text: i + startYear, value: i + startYear } }) }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
@@ -1139,7 +1139,6 @@ const Layout:FC<AI_Layout> = (props) => {
         return (
             <div className="aio-input-indents">
                 {new Array(level).fill(0).map((o, i) => {
-                    if(o){}
                     return (
                         <div key={i} className={`aio-input-indent`}>{indentIcon(indent, i)}</div>
                     )
@@ -2068,7 +2067,7 @@ function Table() {
             return result === undefined ? def : result;
         }
         if (type === 'undefined') { return def }
-        if (type === 'function') { return value(p) }
+        if (type === 'function') { return value({ row, column, rowIndex }) }
         return value === undefined ? def : value
     }
     useEffect(() => {
