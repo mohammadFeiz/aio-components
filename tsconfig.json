@@ -12,21 +12,3 @@
         "allowJs": true,
     }
 }
-
-// {
-//     "compilerOptions": {
-//       "lib": [
-//         "dom",
-//         "dom.iterable",
-//         "esnext"
-//       ],
-//       "forceConsistentCasingInFileNames": true,
-//       "noFallthroughCasesInSwitch": true,
-//       "resolveJsonModule": true,
-//       "isolatedModules": true,
-//     },
-//     "include": [
-//       "src"
-//     ]
-//   }
-  
