@@ -34,7 +34,6 @@ export default function DOC_AIOShop(props:any) {
                     { text: 'state setState', id: 'statesetstate', render: () => <StateSetState /> },
                     { text: 'reOrder', id: 'reOrder', render: () => <ReOrder /> },
                     { text: 'longTouch', id: 'longTouch', render: () => <LongTouch /> },
-                    { text: 'Style Generator', id: 'stylegenerator', render: () => <StyleGenerator /> },
                     
                 ]
             }}
