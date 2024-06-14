@@ -2,7 +2,7 @@ import { FC, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput,{ AI } from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-doc/aio-doc';
+import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
 type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons' | 'tags'
@@ -475,7 +475,7 @@ const Before:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 before={<Icon path={mdiAccount} size={0.8}/>}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -508,7 +508,7 @@ const After:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 after={<div className='badge'>{12}</div>}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -541,7 +541,7 @@ const Subtext:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 subtext='My subtext'
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -574,7 +574,7 @@ const Disabled:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 disabled={true} 
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -607,7 +607,7 @@ const Loading:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 loading={true}  
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -635,7 +635,7 @@ const Text:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 text='My Text'      
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -663,7 +663,7 @@ const Multiple:FC<{type:I_exampleTypes}> = ({type})=> {
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -691,7 +691,7 @@ const MultipleNumber:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 multiple={6}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}' 
     options={${optionsCode}} 
@@ -725,7 +725,7 @@ const CheckIconArray:FC<{type:I_exampleTypes}> = ({type})=> {
                     <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
                 ]}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -757,7 +757,7 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
                 onChange={(newValue)=>setValue(newValue)}
                 checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -792,7 +792,7 @@ const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:AI,p
                 {...props}
                 type={type} 
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}' 
     value={value}
@@ -827,7 +827,7 @@ const HideTags:FC = ()=> {
                 onChange={(newValue)=>setValue(newValue)}
                 hideTags={true}
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='select'
     multiple={true} 
@@ -900,7 +900,7 @@ const TagsPopover:FC = ()=> {
                     />
                 }
             />
-        {new AIODoc().Code(`
+        {Code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 

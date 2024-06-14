@@ -1,6 +1,6 @@
-import React, { Component,Fragment,useState } from 'react';
+import { useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import products from './products.tsx';
 import AIOShop from '../../npm/aio-shop/index.tsx';
 import './index.css';
@@ -103,7 +103,7 @@ function Part(p:{content?:any,code?:string}){
     return (
         <>
             <div style={{maxWidth:400}}>{content}</div>
-            {!!code && new AIODoc().Code(code)}
+            {!!code && Code(code)}
             <div style={{marginTop:24}} className='aio-component-splitter'></div>
         </>
     )
@@ -739,12 +739,12 @@ function RenderCart({v}:{v:boolean}){
             {Shop.renderCart()}
             {Shop.renderPopup()}
             {
-                new AIODoc().Code(`
+                Code(`
 const product = ${JSON.stringify(productToCode,null,4)}
                 `)
             }
             {
-                new AIODoc().Code(`
+                Code(`
 function RenderCart({product}){
     let props:I_AIOShop_props = {
         shopId: 'test-render-cart',
@@ -834,11 +834,11 @@ function RenderCheckout({v}:{v:boolean}){
             {Shop.renderCheckout()}
             {Shop.renderPopup()}
             {
-                new AIODoc().Code(`
+                Code(`
 const product = ${JSON.stringify(productToCode,null,4)}
                 `)
             }
-            {new AIODoc().Code(`
+            {Code(`
 function RenderCheckout({product}){
     let props:I_AIOShop_props = {
         shopId: 'testrendercheckout',unit: 'تومان',

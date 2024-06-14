@@ -12,7 +12,7 @@ export type I_rect = [I_point, I_point]
 export function HasClass(target: any, className: string) {
     return target.hasClass(className) || !!target.parents(`.${className}`).length
 }
-export async function DownloadFile(file:any) {
+export async function DownloadFile(file: any) {
     let name = file.name;
     let url = GetFileUrl(file)
     fetch(url, {
@@ -31,7 +31,7 @@ export async function DownloadFile(file:any) {
         })
         .catch(() => alert('oh no!'));
 }
-export function GetFileUrl(file:any){
+export function GetFileUrl(file: any) {
     return window.URL.createObjectURL(file)
 }
 export async function Stall(stallTime: number = 3000) {
@@ -42,12 +42,12 @@ export function FileToBase64(file: any, callback: (result: any) => void) {
     fileReader.onload = () => callback(fileReader.result);
     fileReader.readAsDataURL(file);
 }
-export function GetPrecisionCount(number:number) {
+export function GetPrecisionCount(number: number) {
     // Convert the number to a string
     number = number || 0;
     const numberString = number.toString();
     const decimalIndex = numberString.indexOf('.');
-    if (decimalIndex === -1) {return 0;}
+    if (decimalIndex === -1) { return 0; }
     return numberString.length - decimalIndex - 1;
 }
 export function HandleBackButton(callback: () => void = () => { }) {
@@ -58,14 +58,14 @@ export function HandleBackButton(callback: () => void = () => { }) {
         callback()
     };
 }
-export function ParseString(str:string):any{
+export function ParseString(str: string): any {
     // Check if the string starts and ends with a quote character
-    try{
-        if (str.startsWith("{") || str.startsWith('[')){return JSON.parse(str);}
-        else if ((str.startsWith("'") && str.endsWith("'")) || (str.startsWith('"') && str.endsWith('"'))){return str.slice(1, -1);} 
-        else {let res = parseFloat(str); return isNaN(res)?str:res}
+    try {
+        if (str.startsWith("{") || str.startsWith('[')) { return JSON.parse(str); }
+        else if ((str.startsWith("'") && str.endsWith("'")) || (str.startsWith('"') && str.endsWith('"'))) { return str.slice(1, -1); }
+        else { let res = parseFloat(str); return isNaN(res) ? str : res }
     }
-    catch{return str}
+    catch { return str }
 }
 export class DragClass {
     dragIndex: number;
@@ -187,14 +187,14 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
 }
 export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup' | 'click', action: any, type?: 'bind' | 'unbind') {
     type = type || 'bind';
-    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend",click:'click' };
+    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend", click: 'click' };
     let touch = 'ontouchstart' in document.documentElement
     let fixedEvent = touch ? me[event] : event;
     var element: any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
     element.unbind(fixedEvent, action);
     if (type === 'bind') { element.bind(fixedEvent, action) }
 }
-export function getValueByStep(p:{ value:number, start:number, step:number, end:number }) {
+export function getValueByStep(p: { value: number, start: number, step: number, end: number }) {
     let { value, start, step, end } = p;
     let res = Math.round((value - start) / step) * step + start;
     if (res < start) { res = start }
@@ -214,7 +214,7 @@ export function FileSize(number: number) {
         return `${(number / 1048576).toFixed(1)} MB`;
     }
 }
-function IsFileTypeValid(file:any):boolean {
+function IsFileTypeValid(file: any): boolean {
     const fileTypes = [
         "image/apng",
         "image/bmp",
@@ -229,10 +229,10 @@ function IsFileTypeValid(file:any):boolean {
     ];
     return fileTypes.includes(file.type);
 }
-export function FilePreview(file:any,attrs?:any):React.ReactNode {
-    if(!IsFileTypeValid(file)){return null}
-    let url:string = GetFileUrl(file);
-    return <img src={url} alt={file.name} title={file.name} objectFit='cover' {...attrs}/>
+export function FilePreview(file: any, attrs?: any): React.ReactNode {
+    if (!IsFileTypeValid(file)) { return null }
+    let url: string = GetFileUrl(file);
+    return <img src={url} alt={file.name} title={file.name} objectFit='cover' {...attrs} />
 }
 export function JSXToHTML(jsx: any): string {
     return ReactDOMServer.renderToStaticMarkup(jsx)
@@ -247,13 +247,13 @@ export async function Paste() {
     try {
         return window.navigator.clipboard.read();
     }
-    catch (err:any) {
+    catch (err: any) {
         console.log(err.message)
     }
 }
 export function Search(items: any[], searchValue: string, getValue: (item: any, index: number) => any = (o) => o): any[] {
     if (!searchValue) { return items }
-    function isMatch(keys:string[], value:string) {
+    function isMatch(keys: string[], value: string) {
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
             if (value.indexOf(key) === -1) { return false }
@@ -263,7 +263,7 @@ export function Search(items: any[], searchValue: string, getValue: (item: any, 
     let keys = searchValue.split(' ');
     return items.filter((o, i) => isMatch(keys, getValue(o, i)))
 }
-export function GenerateComponsition(p:{ level?:number, length?:number, childsField?:string, fields:any }) {
+export function GenerateComponsition(p: { level?: number, length?: number, childsField?: string, fields: any }) {
     let { level: maxLevel = 4, length = 4, childsField = 'childs', fields = {} } = p;
     let $$ = {
         generate(level = 0, index = '') {
@@ -271,7 +271,7 @@ export function GenerateComponsition(p:{ level?:number, length?:number, childsFi
             let res = []
             for (let i = 0; i < length; i++) {
                 let newIndex = index + '-' + i;
-                let newItem:any = {
+                let newItem: any = {
                     id: 'aa' + Math.round(Math.random() * 10000),
                     [childsField]: $$.generate(level + 1, newIndex)
                 }
@@ -283,7 +283,7 @@ export function GenerateComponsition(p:{ level?:number, length?:number, childsFi
     }
     return $$.generate()
 }
-export function CalculateDistance(lat1:number, lon1:number, lat2:number, lon2:number) {
+export function CalculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     const R = 6371; // Radius of the Earth in kilometers
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
@@ -295,14 +295,14 @@ export function CalculateDistance(lat1:number, lon1:number, lat2:number, lon2:nu
     const distance = R * c;
     return distance;
 }
-export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback:(e:any)=>void) {
+export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback: (e: any) => void) {
     let touch = IsTouch()
     let fixedEvent: string;
     if (touch) { fixedEvent = { 'onMouseDown': 'onTouchStart', 'onMouseMove': 'onTouchMove', 'onMouseUp': 'onTouchEnd' }[eventType]; }
     else { fixedEvent = eventType }
     return { [fixedEvent]: callback }
 }
-function toRadians(degree:number) {
+function toRadians(degree: number) {
     return degree * (Math.PI / 180);
 }
 export function AddToAttrs(attrs: any, p: any) {
@@ -310,7 +310,7 @@ export function AddToAttrs(attrs: any, p: any) {
     let { style } = p;
     let attrClassName = attrs.className ? attrs.className.split(' ') : [];
     let className = p.className ? (Array.isArray(p.className) ? p.className : p.className.split(' ')) : [];
-    let classNames = [...attrClassName, ...className.filter((o:any) => !!o)];
+    let classNames = [...attrClassName, ...className.filter((o: any) => !!o)];
     let newClassName = classNames.length ? classNames.join(' ') : undefined
     let newStyle = { ...attrs.style, ...style };
     return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
@@ -384,10 +384,10 @@ export type I_Swip_change = {
     deltaCenterAngle: number,
 }
 export type I_Swip_parameter = {
-    change: I_Swip_change, mousePosition: I_Swip_mousePosition, domLimit: I_Swip_domLimit, parentLimit: I_Swip_domLimit, event: any,selectRect?:I_Swip_selectRect,
-    isInSelectRect?:I_Swip_isInSelectRect
+    change: I_Swip_change, mousePosition: I_Swip_mousePosition, domLimit: I_Swip_domLimit, parentLimit: I_Swip_domLimit, event: any, selectRect?: I_Swip_selectRect,
+    isInSelectRect?: I_Swip_isInSelectRect
 }
-type I_Swip_selectRect_config = {color?:string,enable:()=>boolean}
+type I_Swip_selectRect_config = { color?: string, enable: () => boolean }
 export type I_Swip = {
     dom: () => any,
     parent?: () => any,
@@ -396,7 +396,7 @@ export type I_Swip = {
     start?: (p: I_Swip_parameter) => number[],
     move?: (p: I_Swip_parameter) => void,
     end?: (p: I_Swip_parameter) => void,
-    selectRect?:I_Swip_selectRect_config,
+    selectRect?: I_Swip_selectRect_config,
     speedX?: number,
     speedY?: number,
     stepX?: number | boolean,
@@ -413,10 +413,10 @@ export type I_Swip = {
 export type I_Swip_domLimit = {
     width: number, height: number, left: number, top: number, centerX: number, centerY: number, right: number, bottom: number
 }
-type I_Swip_isInSelectRect = (x:number,y:number)=>boolean
-type I_Swip_getIsInSelectrect = (selectRect:I_Swip_selectRect)=>I_Swip_isInSelectRect
-export type I_Swip_selectRect = {left:number,top:number,width:number,height:number};
-export type I_Swip_tempSelectRect = {left:number,top:number};
+type I_Swip_isInSelectRect = (x: number, y: number) => boolean
+type I_Swip_getIsInSelectrect = (selectRect: I_Swip_selectRect) => I_Swip_isInSelectRect
+export type I_Swip_selectRect = { left: number, top: number, width: number, height: number };
+export type I_Swip_tempSelectRect = { left: number, top: number };
 export class Swip {
     p: I_Swip;
     geo: Geo;
@@ -432,7 +432,7 @@ export class Swip {
     cx: number;
     cy: number;
     dist: number;
-    so: { client?: { x: number, y: number }, x?: number, y?: number,sr?:I_Swip_selectRect,tsr?:I_Swip_tempSelectRect };
+    so: { client?: { x: number, y: number }, x?: number, y?: number, sr?: I_Swip_selectRect, tsr?: I_Swip_tempSelectRect };
     getPercentByValue: (value: number, start: number, end: number) => number;
     getMousePosition: (e: any) => I_Swip_mousePosition
     click: (e: any) => void;
@@ -444,34 +444,34 @@ export class Swip {
     getPage: () => any;
     isMoving: boolean;
     centerAngle: number;
-    defaultLimit:I_Swip_domLimit;
-    addSelectRect:(x:number,y:number)=>void;
-    setSelectRect:(width:number,height:number)=>void;
-    removeSelectRect:()=>void;
-    selectRect?:I_Swip_selectRect_config;
-    getIsInSelectRect:I_Swip_getIsInSelectrect;
-    defaultChange:I_Swip_change;
+    defaultLimit: I_Swip_domLimit;
+    addSelectRect: (x: number, y: number) => void;
+    setSelectRect: (width: number, height: number) => void;
+    removeSelectRect: () => void;
+    selectRect?: I_Swip_selectRect_config;
+    getIsInSelectRect: I_Swip_getIsInSelectrect;
+    defaultChange: I_Swip_change;
     constructor(p: I_Swip) {
-        let {selectRect} = p;
-        if(selectRect){
-            let {color = '#96a9bc'} = selectRect;
-            this.selectRect = {...selectRect,color}; 
+        let { selectRect } = p;
+        if (selectRect) {
+            let { color = '#96a9bc' } = selectRect;
+            this.selectRect = { ...selectRect, color };
         }
-        this.defaultChange = {x: 0, y: 0,dx: 0, dy: 0,dist: 0,angle: 0,deltaCenterAngle: 0}
-        this.defaultLimit = {width:0,height:0,left:0,top:0,right:0,bottom:0,centerX:0,centerY:0}
+        this.defaultChange = { x: 0, y: 0, dx: 0, dy: 0, dist: 0, angle: 0, deltaCenterAngle: 0 }
+        this.defaultLimit = { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0, centerX: 0, centerY: 0 }
         this.domLimit = this.defaultLimit;
         this.parentLimit = this.defaultLimit;
-        this.change = {x:0,y:0,dx:0,dy:0,dist:0,angle:0,deltaCenterAngle:0}
-        this.addSelectRect= ()=>{}
-        this.setSelectRect= ()=>{}
-        this.removeSelectRect= ()=>{}
+        this.change = { x: 0, y: 0, dx: 0, dy: 0, dist: 0, angle: 0, deltaCenterAngle: 0 }
+        this.addSelectRect = () => { }
+        this.setSelectRect = () => { }
+        this.removeSelectRect = () => { }
         this.so = {}
         this.p = p;
         this.geo = new Geo();
         this.timeout = undefined;
         this.count = 0;
         this.getDom = () => p.dom();
-        this.getParent = () => p.parent?p.parent():undefined;
+        this.getParent = () => p.parent ? p.parent() : undefined;
         this.dx = 0;
         this.dy = 0;
         this.cx = 0;
@@ -536,39 +536,41 @@ export class Swip {
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;
             let mousePosition = this.getMousePosition(e)
-            let clickParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e,
-                change:this.defaultChange }
-            if(p.onClick){p.onClick(clickParams)}
+            let clickParams: I_Swip_parameter = {
+                mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e,
+                change: this.defaultChange
+            }
+            if (p.onClick) { p.onClick(clickParams) }
         }
-        this.addSelectRect = (left:number,top:number)=>{
-            if(!this.selectRect || !this.selectRect.enable()){return}
-            let {color} = this.selectRect;
+        this.addSelectRect = (left: number, top: number) => {
+            if (!this.selectRect || !this.selectRect.enable()) { return }
+            let { color } = this.selectRect;
             let dom = this.getDom();
-            this.so.tsr = {left,top};
+            this.so.tsr = { left, top };
             this.removeSelectRect();
             dom.append(`<div class="swip-select-rect" style="border:1px dashed ${color};background:${color + '30'};left:${left}px;top:${top}px;position:absolute;width:0;height:0"></div>`)
         }
-        this.setSelectRect = (width:number,height:number)=>{
-            if(!this.selectRect || !this.selectRect.enable()){return}
+        this.setSelectRect = (width: number, height: number) => {
+            if (!this.selectRect || !this.selectRect.enable()) { return }
             let dom = this.getDom();
             let SR = dom.find('.swip-select-rect');
-            let {tsr = {left:0,top:0}} = this.so || {};
+            let { tsr = { left: 0, top: 0 } } = this.so || {};
             let left = tsr.left;
             let top = tsr.top;
-            if(width < 0){
+            if (width < 0) {
                 left = left + width;
                 width = Math.abs(width)
             }
-            if(height < 0){
+            if (height < 0) {
                 top = top + height;
                 height = Math.abs(height)
             }
-            let newSelectRect:I_Swip_selectRect = {left,top,width,height}
+            let newSelectRect: I_Swip_selectRect = { left, top, width, height }
             this.so.sr = newSelectRect;
             SR.css(newSelectRect)
         }
-        this.removeSelectRect = ()=>{
-            if(!this.selectRect || !this.selectRect.enable()){return}
+        this.removeSelectRect = () => {
+            if (!this.selectRect || !this.selectRect.enable()) { return }
             let dom = this.getDom();
             let selectRect = dom.find('.swip-select-rect');
             selectRect.remove();
@@ -585,8 +587,8 @@ export class Swip {
             this.so = {
                 client: { x: mousePosition.clientX, y: mousePosition.clientY }
             };
-            this.addSelectRect(mousePosition.x,mousePosition.y);
-            let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e,change:this.defaultChange }
+            this.addSelectRect(mousePosition.x, mousePosition.y);
+            let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e, change: this.defaultChange }
             let res = (p.start || (() => [0, 0]))(startParams);
             if (!Array.isArray(res)) { return; }
             let x = res[0], y = res[1];
@@ -614,8 +616,8 @@ export class Swip {
             this.dx = dx; this.dy = dy;
             this.dist = Math.round(Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)));
             let angle = this.geo.getAngle([[this.cx, this.cy], [client.x, client.y]])
-            this.setSelectRect(dx,dy);
-            let x:number = 0, y:number = 0;
+            this.setSelectRect(dx, dy);
+            let x: number = 0, y: number = 0;
             if (this.so.x !== undefined && this.so.y !== undefined) {
                 x = this.so.x + dx; y = this.so.y + dy;
                 let { minX, minY, maxX, maxY } = this.p;
@@ -657,20 +659,20 @@ export class Swip {
                 domLimit: this.domLimit,
                 parentLimit: this.parentLimit,
                 event: e,
-                selectRect:this.so.sr,
-                isInSelectRect:this.getIsInSelectRect(this.so.sr || {left:0,top:0,width:0,height:0})
+                selectRect: this.so.sr,
+                isInSelectRect: this.getIsInSelectRect(this.so.sr || { left: 0, top: 0, width: 0, height: 0 })
 
             }
             if (this.p.move) { this.p.move(p); }
         }
-        this.getIsInSelectRect = (selectRect:I_Swip_selectRect)=>{
-            let {left,top,width,height} = selectRect;
-            return (x:number,y:number)=>{            
-                if(x < left){return false}
-                if(y < top){return false}
-                if(x > left + width){return false}
-                if(y > top + height){return false}
-                return true 
+        this.getIsInSelectRect = (selectRect: I_Swip_selectRect) => {
+            let { left, top, width, height } = selectRect;
+            return (x: number, y: number) => {
+                if (x < left) { return false }
+                if (y < top) { return false }
+                if (x > left + width) { return false }
+                if (y > top + height) { return false }
+                return true
             }
         }
         this.mouseUp = (e: any) => {
@@ -688,8 +690,8 @@ export class Swip {
                 domLimit: this.domLimit,
                 parentLimit: this.parentLimit,
                 mousePosition,
-                selectRect:this.so.sr,
-                isInSelectRect:this.getIsInSelectRect(this.so.sr || {left:0,top:0,width:0,height:0})
+                selectRect: this.so.sr,
+                isInSelectRect: this.getIsInSelectRect(this.so.sr || { left: 0, top: 0, width: 0, height: 0 })
             }
             if (this.p.end) { this.p.end(p) }
         }
@@ -915,8 +917,8 @@ export class AIODate {
             }
             return pattern
         }
-        this.get2Digit = (n:number) => {
-            let ns:string;
+        this.get2Digit = (n: number) => {
+            let ns: string;
             try { ns = n.toString() }
             catch { return n.toString() }
             if (ns.length === 1) { ns = '0' + n }
@@ -1022,7 +1024,7 @@ export class AIODate {
             return this.convertMiliseconds(-dif, unit)
         }
         this.convertMiliseconds = (miliseconds = 0, unit = 'day') => {
-            let type:'remaining' | 'passed' | 'now';
+            let type: 'remaining' | 'passed' | 'now';
             if (miliseconds < 0) { type = 'passed'; miliseconds = -miliseconds }
             else if (miliseconds > 0) { type = 'remaining' }
             else { type = 'now' }
@@ -1064,7 +1066,7 @@ export class AIODate {
             return result;
         }
         this.getLastDayOfMonth = (date) => {
-            let dateArray:number[] = this.convertToArray(date);
+            let dateArray: number[] = this.convertToArray(date);
             let length = this.getMonthDaysLength(dateArray);
             let lastDay = [dateArray[0], dateArray[1], length];
             return lastDay
@@ -1306,7 +1308,7 @@ export class Geo {
             return points;
         }
         this.setLineByLength = (line, length, side = 'end') => {
-            let p1: I_point = [0,0], p2: I_point = [0,0], angle = this.getAngle(line);
+            let p1: I_point = [0, 0], p2: I_point = [0, 0], angle = this.getAngle(line);
             if (side === 'center') {
                 let center = this.getAvg(line);
                 let line1 = this.getLineBySLA(center, length / 2, angle + 180);
@@ -1515,14 +1517,14 @@ export function GetCities() {
     }
 }
 export function Get2Digit(n: number) { let ns: string = n.toString(); return ns.length === 1 ? '0' + ns : ns }
-function svgArcRange(centerX:number, centerY:number, radius:number, angleInDegrees:number) {
+function svgArcRange(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
     let angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
     return {
         x: centerX + (radius * Math.cos(angleInRadians)),
         y: centerY + (radius * Math.sin(angleInRadians))
     };
 }
-export function svgArc(x:number, y:number, radius:number, startAngle:number, endAngle:number) {
+export function svgArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     if (startAngle === endAngle || endAngle - startAngle === 360) {
         startAngle = 0; endAngle = 360;
     }
@@ -1558,6 +1560,32 @@ export function svgArc(x:number, y:number, radius:number, startAngle:number, end
     ].join(" ");
 
     return d;
+}
+export function getValueByField(data: any, field: string, def?: any) {
+    let a;
+    try { eval(`a = data.${field}`); }
+    catch { }
+    return a === undefined ? def : a;
+}
+export function setValueByField(data: any = {}, field: string, value: any) {
+    try {
+        field = field.replace(/\[/g, '.').replace(/\]/g, '');
+    }
+    catch { }
+    let fields = field.split('.');
+    let node = data;
+    for (let i = 0; i < fields.length - 1; i++) {
+        let f = fields[i];
+        if (!f) { continue }
+        if (node[f] === undefined) {
+            if (isNaN(+fields[i + 1])) { node[f] = {} }
+            else { node[f] = []; }
+            node = node[f];
+        }
+        else { node = node[f]; }
+    }
+    node[fields[fields.length - 1]] = value;
+    return data;
 }
 type I_storage_model = { [key: string]: any }
 type I_storage_time = { [key: string]: number }
@@ -1650,7 +1678,7 @@ export class Storage {
         }
         this.remove = (field, callback = () => { }) => {
             let res = this.removeValueByField(field);
-            let newTime:any = {};
+            let newTime: any = {};
             for (let prop in this.time) { if (prop !== field) { newTime[prop] = this.time[prop] } }
             this.time = newTime;
             this.saveStorage(this.model, this.time);
@@ -1716,25 +1744,98 @@ export class Storage {
         this.init()
     }
 }
-type I_dd_date = {year:number,month:number,day:number,hour:number,minute:number}
+type I_dd_dateArray = number[]
 type I_dd_data = {
-    [year:string]:I_dd_year
+    [year: string]: I_dd_year
 }
 type I_dd_year = {
-    [month:string]:I_dd_month
+    [month: string]: I_dd_month
 }
 type I_dd_month = {
-    [day:string]:I_dd_day
+    [day: string]: I_dd_day
 }
 type I_dd_day = any
-export class DateData{
-    data:I_dd_data;
-    add:(date:I_dd_date,data:any)=>void;
-    constructor(){
+export class DateData {
+    data: I_dd_data;
+    setDayValue: (dateArray: I_dd_dateArray, data: { [key: string]: any }) => void;
+    getYearDic: (dateArray: I_dd_dateArray) => I_dd_year
+    getMonthDic: (dateArray: I_dd_dateArray) => I_dd_month
+    getDayDic: (dateArray: I_dd_dateArray) => I_dd_day
+    getDayValue: (dateArray: I_dd_dateArray, field: string) => any;
+    getMonthList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
+    getYearList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
+    getWeekList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
+    d: AIODate;
+    constructor() {
         this.data = {}
-        this.add = (date,data)=>{
-            const {year,month,day,hour,minute} = date
-            let y = this.data[year.toString()]
+        this.d = new AIODate()
+        this.getYearDic = ([Year]) => {
+            let year: I_dd_year = this.data[Year.toString()]
+            if (!year) {
+                this.data[Year.toString()] = {}
+                year = this.data[Year.toString()];
+            }
+            return year
+        }
+        this.getMonthDic = ([Year, Month]) => {
+            let year = this.getYearDic([Year])
+            let month: I_dd_month = year[Month.toString()];
+            if (!month) {
+                year[Month.toString()] = {}
+                month = year[Month.toString()];
+            }
+            return month
+        }
+        this.getDayDic = ([Year, Month, Day]) => {
+            let month = this.getMonthDic([Year, Month])
+            let day: I_dd_day = month[Day.toString()];
+            if (!day) {
+                month[Day.toString()] = {}
+                day = month[Day.toString()];
+            }
+            return day
+        }
+        this.getDayValue = ([Year, Month, Day], field) => {
+            let dayData = this.getDayDic([Year, Month, Day])
+            return getValueByField(dayData, field)
+        }
+        this.setDayValue = (dateArray, data) => {
+            let day = this.getDayDic(dateArray)
+            for (let prop in data) {
+                day[prop] = data[prop]
+            }
+        }
+        this.getMonthList = ([Year, Month], field) => {
+            const daysLength = this.d.getMonthDaysLength([Year, Month])
+            let list = [];
+            for (let i = 1; i <= daysLength; i++) {
+                let date = [Year, Month, i];
+                let dayRes = this.getDayValue(date, field);
+                if (dayRes !== undefined) {
+                    list.push({ date, value: dayRes });
+                }
+            }
+            return list
+        }
+        this.getWeekList = ([Year, Month, Day], field) => {
+            let days = this.d.getDaysOfWeek([Year, Month, Day]);
+            let list = [];
+            for (let i = 0; i < days.length; i++) {
+                let date = days[i]
+                let dayRes = this.getDayValue(date, field);
+                if (dayRes !== undefined) {
+                    list.push({ date, value: dayRes });
+                }
+            }
+            return list
+        }
+        this.getYearList = ([Year], field) => {
+            let list: {date:I_dd_dateArray,value:any}[] = [];
+            for (let i = 1; i <= 12; i++) {
+                list = list.concat(this.getMonthList([Year, i], field))
+            }
+            return list
         }
     }
 }
+export function DisabledContextMenu(){window.addEventListener(`contextmenu`, (e) => e.preventDefault());}

@@ -1,6 +1,6 @@
-import React, { Component, Fragment, createRef, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
 import RVD,{animate,I_RVD_node } from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput,{ AI, AI_labelItem, AI_range_handle_config } from '../../npm/aio-input/index.tsx';
@@ -49,7 +49,7 @@ function Part(p:any) {
         <>
             {title && <h3>{title}</h3>}
             <div>{content}</div>
-            {new AIODoc().Code(code)}
+            {Code(code)}
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
         </>
     )
@@ -970,7 +970,7 @@ let PageCode =
     return (
         <div className='example' style={{background:'#f8f8f8'}}>
             <h3>App Data</h3>
-            {new AIODoc().Code(
+            {Code(
 `let sideItems = [
     { path: mdiAccount, text: 'My Cloud' },
     { path: mdiAccountGroup, text: 'Shared Files' },
@@ -1000,61 +1000,61 @@ let recentFiles = [
             )}
             <h3>Render Category Card</h3>
             <RVD rootNode={CategoryCard(categories[0])}/>
-            {new AIODoc().Code(
+            {Code(
 `${CategoryCardCode}
 return <RVD rootNode={CategoryCard(categories[0])}/>`
             )}
             <h3>Render Categories</h3>
             <RVD rootNode={Categories(categories)}/>
-            {new AIODoc().Code(
+            {Code(
 `${CategoriesCode}
 return <RVD rootNode={Categories(categories)}/>`
             )}
             <h3>Render File Card</h3>
             <RVD rootNode={FileCard(files[0])}/>
-            {new AIODoc().Code(
+            {Code(
 `${FileCardCode}
 return <RVD rootNode={FileCard(files[0])}/>`
             )}
             <h3>Render Files</h3>
             <RVD rootNode={Files(files)}/>
-            {new AIODoc().Code(
+            {Code(
 `${FilesCode}
 return <RVD rootNode={Files(files)}/>`
             )}
             <h3>Render Recent File Card</h3>
             <RVD rootNode={RecentFileCard(recentFiles[0])}/>
-            {new AIODoc().Code(
+            {Code(
 `${RecentFileCardCode}
 return <RVD rootNode={RecentFileCard(files[0])}/>`
             )}
             <h3>Render Recent Files</h3>
             <RVD rootNode={RecentFiles(recentFiles)}/>
-            {new AIODoc().Code(
+            {Code(
 `${RecentFilesCode}
 return <RVD rootNode={RecentFiles(recentFiles)}/>`
             )}
             <h3>Render Side Item</h3>
             <RVD rootNode={SideItem(sideItems[0])}/>
-            {new AIODoc().Code(
+            {Code(
 `${SideItemCode}
 return <RVD rootNode={SideItem(sideItems[0])}/>`
             )}
             <h3>Render App Side</h3>
             <RVD rootNode={Side(sideItems)}/>
-            {new AIODoc().Code(
+            {Code(
 `${SideCode}
 return <RVD rootNode={Side(sideItems)}/>`
             )}
             <h3>Render App Body</h3>
             <RVD rootNode={Body()}/>
-            {new AIODoc().Code(
+            {Code(
 `${BodyCode}
 return <RVD rootNode={Body()}/>`
             )}
             <h3>Render App Page</h3>
             <RVD rootNode={Page()}/>
-            {new AIODoc().Code(
+            {Code(
 `${PageCode}
 return <RVD rootNode={Page()}/>`
             )}
@@ -1266,7 +1266,7 @@ function CssClasses() {
                 {
                     column:rows.map((v:any)=>{
                         if(v[0] === '.'){
-                            return {html:new AIODoc().Code(v),flex:1}
+                            return {html:Code(v),flex:1}
                         }
                         return {html:v,flex:1,className:'bold m-t-24'}
                     })
@@ -1528,7 +1528,7 @@ function ClassName() {
                     ]
                 }}
             />
-            {new AIODoc().Code(
+            {Code(
 `let [round,setRound] = useState(false);
 return (
     <RVD 
@@ -1576,7 +1576,7 @@ function MountAfter() {
                 }}
             />
             {
-                new AIODoc().Code(
+                Code(
 `<RVD 
     rootNode={{
         className:'gap-12',
@@ -1591,7 +1591,7 @@ function MountAfter() {
                 )
             }
             {
-                new AIODoc().Code(
+                Code(
 `.y-effect.not-mounted{
     transform:translateX(100vw);
     opacity:0;
@@ -1621,7 +1621,7 @@ function MountAfter() {
                 }}
             />
              {
-                new AIODoc().Code(
+                Code(
 `<RVD 
     rootNode={{
         className:'gap-12',
@@ -1636,7 +1636,7 @@ function MountAfter() {
                 )
             }
             {
-                new AIODoc().Code(
+                Code(
 `.x-effect.not-mounted{
     transform:rotateX(90deg);
     transition:1s;
@@ -2395,7 +2395,7 @@ function StyleGenerator(){
             position:'center',
             header:{title:'generated style'},
             body:()=>{
-                return new AIODoc().Code(style)
+                return Code(style)
             }
         })
     }

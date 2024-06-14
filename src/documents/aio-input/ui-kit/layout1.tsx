@@ -3,8 +3,8 @@ import AIOInput, { AI_Sidemenu_option, SideMenu } from "../../../npm/aio-input";
 import './theme1.css';
 import { mdiAccessPointNetworkOff, mdiAlphaBBox, mdiArrowRight, mdiCakeVariant, mdiCamera, mdiDatabaseArrowLeftOutline, mdiEarthBoxRemove, mdiFaceRecognition, mdiFileDocument, mdiInformation, mdiMicrophone, mdiStar, mdiVideo } from "@mdi/js";
 import {Icon} from "@mdi/react";
-import AIOPopup from "../../../npm/aio-popup";
-import AIODoc from "../../../npm/aio-doc/aio-doc";
+import AIOPopup, { AP_confirm, AP_prompt } from "../../../npm/aio-popup";
+import Code from "../../../npm/code";
 const CTX = createContext({} as any);
 type I_ctx = {
     sideItems:AI_Sidemenu_option[],
@@ -30,6 +30,14 @@ const Theme1:FC = ()=>{
                     text:'Box1',value:'box1'
                 }
             ]
+        },
+        {
+            text:'Modals',value:'modals',
+            icon:<Icon path={mdiAlphaBBox} size={0.8}/>,
+            options:[
+                {text:'Confirm',value:'confirm'},
+                {text:'Prompt',value:'prompt'},
+            ]
         }
     ]
     function getContext():I_ctx{
@@ -38,6 +46,8 @@ const Theme1:FC = ()=>{
     function getContent(){
         if(activeSide === 'selectiveInputs'){return <SelectiveInputs/>}
         else if(activeSide === 'box1'){return <Boxes1/>}
+        else if(activeSide === 'confirm'){return <Confirm/>}
+        else if(activeSide === 'prompt'){return <Prompt/>}
         
     }
     console.log(activeSide)
@@ -346,7 +356,7 @@ const Boxes1:FC = ()=>{
             header:{title:'Code',subtitle:'Box1',onClose:true},
             body:()=>{
                 return (
-                    new AIODoc().Code(
+                    Code(
 `type I_Box1 = {
     icon:React.ReactNode,
     text:string,
@@ -374,7 +384,7 @@ const Boxes1:FC = ()=>{
             header:{title:'Code',subtitle:'Box2',onClose:true},
             body:()=>{
                 return (
-                    new AIODoc().Code(
+                    Code(
 `type I_Box1 = {
     icon:React.ReactNode,
     text:string,
@@ -404,6 +414,91 @@ const Boxes1:FC = ()=>{
             <div className='flex-row'>
             </div>
         </div>
+    )
+}
+const Confirm:FC = ()=>{
+    const [confirm,setConfirm] = useState<boolean>(false)
+    const [popup] = useState<AIOPopup>(new AIOPopup())
+    function openCofirm(){
+        const config:AP_confirm = {
+            title:'My Confirm',
+            subtitle:'My subtitle',
+            text:'Are you agree?',
+            onSubmit:async ()=>{
+                setConfirm(true); 
+                return true
+            },
+            onCansel:async ()=>{
+                setConfirm(false)
+                return true
+            }
+        }
+        popup.addConfirm(config)
+    }
+    return (
+        <>
+            <div className="p-12 flex-col gap-12 c-16">
+                <button type='button' className="w-108" onClick={()=>openCofirm()}>Open Cofirm</button>
+                <div className="msf">{`Confirmed value is : ${confirm}`}</div>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Qui deleniti, nesciunt perferendis distinctio perspiciatis, earum voluptatum ut, corporis facilis eius tempora aliquid adipisci rem nam minus esse? Quaerat, repellendus sint.
+                Dolore, quo aut minus voluptates aperiam pariatur consequatur, tempora aliquid repellendus corporis nemo hic ipsa, perferendis distinctio aspernatur provident praesentium consequuntur laudantium quis. Nostrum magnam quasi praesentium ex temporibus laborum.
+                Commodi eius, neque nemo, dolorum veniam molestias architecto dicta voluptatibus nesciunt mollitia eum ratione consequuntur magnam ut, harum fugiat fuga. Sequi fugit totam soluta itaque officia, sed voluptates et culpa.
+                Nesciunt odio rerum nobis reiciendis molestiae voluptates praesentium placeat, atque veritatis vero expedita ex eius quos numquam nulla in. Quae sint reiciendis praesentium cumque repudiandae. Sit reiciendis officiis dolore inventore.
+                Facilis cupiditate, ullam adipisci ducimus nulla non et quae ipsa nobis. Cum incidunt voluptas soluta temporibus eligendi tenetur, rem totam laborum? Tempore libero ex perspiciatis ullam excepturi laudantium? Magni, harum.
+                Error, tenetur vel iusto reiciendis ea labore amet minus. Fuga dignissimos, vitae facere est velit natus sed. Eaque expedita quos dignissimos officia explicabo, laudantium minima est molestias non repellat ab?
+                Incidunt officia quasi totam neque et velit blanditiis repudiandae vero sed distinctio reprehenderit quae eligendi soluta, iusto assumenda cupiditate iure modi laboriosam qui quas ipsa hic earum odit libero. Voluptatum!
+                Officiis illo ullam in, numquam doloremque non. Beatae laboriosam neque doloremque eligendi libero pariatur aliquam commodi repellendus rerum, reprehenderit dolor animi. Iure officiis reprehenderit molestias magnam animi non tenetur nostrum!
+                Inventore amet repellat sapiente libero temporibus atque facilis quos nostrum excepturi explicabo? Distinctio quidem accusamus quae laudantium nostrum consequuntur, perspiciatis quaerat fugit dolorum quis ut sed atque tenetur odit ratione!
+                Perferendis, aut, officiis dolores magni, voluptates sequi voluptatum assumenda hic sint cumque exercitationem non sed praesentium esse error! Natus, sapiente fuga. Nam ab porro nemo ea ad pariatur odio ut?
+                Quas ea ex libero doloremque sunt repellendus officiis voluptatibus soluta eaque corporis iste cumque accusantium dolorum id maxime a perspiciatis exercitationem eius harum, expedita praesentium? Omnis iusto repellat ipsum ratione?
+                At, earum! Possimus, exercitationem ullam porro quod excepturi in asperiores sed molestias iste doloremque vel earum fugiat, vitae temporibus rem voluptatum laborum quo ipsa quis pariatur obcaecati a cumque? Inventore.
+                
+                </p>
+            </div>
+            {popup.render()}
+        </>
+    )
+}
+const Prompt:FC = ()=>{
+    const [prompt,setPrompt] = useState<string>('')
+    const [popup] = useState<AIOPopup>(new AIOPopup())
+    function openCofirm(){
+        const config:AP_prompt = {
+            title:'My Prompt',
+            subtitle:'My subtitle',
+            text:'Please inter your name',
+            onSubmit:async (p)=>{
+                setPrompt(p); 
+                return true
+            },
+            onCansel:async ()=>{
+                return true
+            }
+        }
+        popup.addPrompt(config)
+    }
+    return (
+        <>
+            <div className="p-12 flex-col gap-12 c-16">
+                <button type='button' className="w-108" onClick={()=>openCofirm()}>Open Prompt</button>
+                <div className="msf">{`Confirmed value is : ${prompt}`}</div>
+                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Qui deleniti, nesciunt perferendis distinctio perspiciatis, earum voluptatum ut, corporis facilis eius tempora aliquid adipisci rem nam minus esse? Quaerat, repellendus sint.
+                Dolore, quo aut minus voluptates aperiam pariatur consequatur, tempora aliquid repellendus corporis nemo hic ipsa, perferendis distinctio aspernatur provident praesentium consequuntur laudantium quis. Nostrum magnam quasi praesentium ex temporibus laborum.
+                Commodi eius, neque nemo, dolorum veniam molestias architecto dicta voluptatibus nesciunt mollitia eum ratione consequuntur magnam ut, harum fugiat fuga. Sequi fugit totam soluta itaque officia, sed voluptates et culpa.
+                Nesciunt odio rerum nobis reiciendis molestiae voluptates praesentium placeat, atque veritatis vero expedita ex eius quos numquam nulla in. Quae sint reiciendis praesentium cumque repudiandae. Sit reiciendis officiis dolore inventore.
+                Facilis cupiditate, ullam adipisci ducimus nulla non et quae ipsa nobis. Cum incidunt voluptas soluta temporibus eligendi tenetur, rem totam laborum? Tempore libero ex perspiciatis ullam excepturi laudantium? Magni, harum.
+                Error, tenetur vel iusto reiciendis ea labore amet minus. Fuga dignissimos, vitae facere est velit natus sed. Eaque expedita quos dignissimos officia explicabo, laudantium minima est molestias non repellat ab?
+                Incidunt officia quasi totam neque et velit blanditiis repudiandae vero sed distinctio reprehenderit quae eligendi soluta, iusto assumenda cupiditate iure modi laboriosam qui quas ipsa hic earum odit libero. Voluptatum!
+                Officiis illo ullam in, numquam doloremque non. Beatae laboriosam neque doloremque eligendi libero pariatur aliquam commodi repellendus rerum, reprehenderit dolor animi. Iure officiis reprehenderit molestias magnam animi non tenetur nostrum!
+                Inventore amet repellat sapiente libero temporibus atque facilis quos nostrum excepturi explicabo? Distinctio quidem accusamus quae laudantium nostrum consequuntur, perspiciatis quaerat fugit dolorum quis ut sed atque tenetur odit ratione!
+                Perferendis, aut, officiis dolores magni, voluptates sequi voluptatum assumenda hic sint cumque exercitationem non sed praesentium esse error! Natus, sapiente fuga. Nam ab porro nemo ea ad pariatur odio ut?
+                Quas ea ex libero doloremque sunt repellendus officiis voluptatibus soluta eaque corporis iste cumque accusantium dolorum id maxime a perspiciatis exercitationem eius harum, expedita praesentium? Omnis iusto repellat ipsum ratione?
+                At, earum! Possimus, exercitationem ullam porro quod excepturi in asperiores sed molestias iste doloremque vel earum fugiat, vitae temporibus rem voluptatum laborum quo ipsa quis pariatur obcaecati a cumque? Inventore.
+                
+                </p>
+            </div>
+            {popup.render()}
+        </>
     )
 }
 type I_Box1 = {

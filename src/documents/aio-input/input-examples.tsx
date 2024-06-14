@@ -2,7 +2,7 @@ import React, { FC, createContext, createRef, useContext, useRef, useState } fro
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput,{ AI } from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-doc/aio-doc';
+import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 import RVD from '../../npm/react-virtual-dom/index';
 import $ from 'jquery';
@@ -431,7 +431,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     }
     function code(code: string) {
         if (setting.showCode === false) { return null }
-        return new AIODoc().Code(code)
+        return Code(code)
     }
     function render_node() {
         return {

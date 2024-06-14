@@ -139,7 +139,7 @@ export default class AIOPopup {
       this.addModal(config)
     }
     this.addPrompt = (obj: AP_prompt) => {
-      let { title, subtitle, text, submitText = 'تایید', canselText = 'بستن', onSubmit, onCansel = () => { }, setAttrs = ()=>{return {}} } = obj;
+      let { title, subtitle, text, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = ()=>{return {}} } = obj;
       let config: AP_modal = {
         position: 'center',
         setAttrs:(key)=>{

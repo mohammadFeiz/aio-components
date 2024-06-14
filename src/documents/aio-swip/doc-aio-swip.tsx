@@ -1,7 +1,7 @@
-import React, { Component, useEffect, useRef, useState } from 'react';
-import { I_Swip, I_Swip_mousePosition, Swip } from '../../npm/aio-utils/index.tsx';
+import { useEffect, useRef, useState } from 'react';
+import { I_Swip, Swip } from '../../npm/aio-utils/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import $ from 'jquery';
 export default function DOC_AIOValidation(props:any) {
     return (
@@ -129,7 +129,7 @@ function Basic(p: { props?: { [key in keyof I_Swip]?: any }, propsCode?: string,
                 <div className='box' style={{ position: 'absolute', width: 50, height: 50, left, top, background: 'red' }}></div>
             </div>
             {
-                new AIODoc().Code(`
+                Code(`
 function Example(){
     let [left, setLeft] = useState<number>(0)
     let [top, setTop] = useState<number>(0)
@@ -184,7 +184,7 @@ function SelectRect() {
         <div className='example'>
             <div className='parent' style={{ border: '1px solid', width: '100%', height: 500, position: 'relative', flexShrink: 0 }}></div>
             {
-                new AIODoc().Code(`
+                Code(`
 function Example(){
     let [left, setLeft] = useState<number>(0)
     let [top, setTop] = useState<number>(0)
@@ -278,7 +278,7 @@ function Example() {
                 }
             </div>
             {
-                new AIODoc().Code(`
+                Code(`
 
                     `)
             }
@@ -320,7 +320,7 @@ function MultiUse() {
 
             </div>
             {
-                new AIODoc().Code(`
+                Code(`
 function Example(){
     let [boxes, setBoxes] = useState<{ left: number, top: number }[]>([{ left: 100, top: 100 }, { left: 200, top: 100 }, { left: 300, top: 100 }])
     let ref = useRef(boxes)
@@ -399,7 +399,7 @@ function Id() {
 
             </div>
             {
-                new AIODoc().Code(`
+                Code(`
 function Example(){
     let [boxes, setBoxes] = useState([
         { left: 100, top: 100, id: '0' }, 
@@ -478,7 +478,7 @@ function MousePosition() {
                 </div>
             </>
             {
-                new AIODoc().Code(`
+                Code(`
 import React,{Component} from 'react';
 import Swip from 'aio-swip';
 

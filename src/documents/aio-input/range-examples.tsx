@@ -2,7 +2,7 @@ import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import {Icon} from "@mdi/react"
 import AIOInput from "../../npm/aio-input";
-import AIODoc from '../../npm/aio-doc/aio-doc';
+import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 import RVD from './../../npm/react-virtual-dom/index';
 type I_exampleType = 'slider' | 'spinner'
@@ -116,7 +116,7 @@ const RangeExamples:FC<{type:I_exampleType}> = ({type}) => {
     }
     function code(code:string){
         //return <div style={{height:500}}></div>
-        return new AIODoc().Code(code)
+        return Code(code)
     }
     function getContext(){
         let context:I_CTX = {setting,type,code}

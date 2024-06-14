@@ -2774,11 +2774,12 @@ const Range: FC = () => {
 }
 const RangeGroove:FC = ()=>{
     let {rootProps}:I_RangeContext = useContext(RangeContext);
+    const attrs = AddToAttrs(rootProps.grooveAttrs,{className:'ai-range-groove'})
     if(rootProps.round){
         return null
     }
     else {
-        return <div className='ai-range-groove'></div>
+        return <div {...attrs}></div>
     }
     
 }
@@ -2950,9 +2951,8 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
     function getList(): number[] {
         let res: number[] = [];
         if (step) {
-            let endStep = !round || round !== 1;
-            let stepLength = Math.floor((end - start) / step) + (endStep ? 1 : 0);
-            res = new Array(stepLength).fill(0).map((o, i) => i * step);
+            let {start:lstart = start,end:lend = end} = label;
+            for (let i = lstart; i <= lend; i+=step) {res.push(i)}
         }
         for (let i = 0; i < list.length; i++) {
             if (res.indexOf(list[i]) === -1) { res.push(list[i]) }
@@ -3956,6 +3956,7 @@ export type AI = {
     getChilds?:(p:{row:any,details:I_treeRowDetails})=>any[],//tree
     getErrors?:(p:string[])=>void,//form
     getValue?: { [key: string]: (p: AI_table_param) => any },
+    grooveAttrs?:{[key:string]:any},
     handle?:AI_range_handle,//range
     headerAttrs?: any,
     height?: number | string,
@@ -4069,6 +4070,8 @@ export type AI_point = (index:number,p:any)=>{
 export type AI_labels = AI_label[]
 export type AI_label = {
     list?:number[],
+    start?:number,
+    end?:number,
     step?:number,
     dynamic?:boolean,
     autoHide?:boolean,

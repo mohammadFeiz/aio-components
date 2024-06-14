@@ -4,7 +4,7 @@ import AIOInput from "../../npm/aio-input/index.tsx";
 import AIOCanvas from './../../npm/aio-canvas/index.tsx';
 import {Swip} from '../../npm/aio-utils/index.tsx';
 import {Icon} from '@mdi/react';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
 import './index.css';
 import $ from 'jquery';
@@ -683,8 +683,7 @@ function Setting({activeItem}){
         return {
             flex:1,
             html:(
-                new AIODoc().Code(`${JSON.stringify(activeItem,null,4)}`,'js',{height:'100%'})
-                
+                Code(`${JSON.stringify(activeItem,null,4)}`,'js',{height:'100%'}) 
             )
         }
     }

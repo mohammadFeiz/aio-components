@@ -1,6 +1,6 @@
 import  { Component, createRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import AIOPopup, { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import { Icon } from '@mdi/react';
@@ -20,6 +20,7 @@ export default function DOC_AIOForm(props: any) {
                     { text: 'alert', id: 'alert', render: () => <Alert /> },
                     { text: 'snackebar', id: 'snackebar', render: () => <Snackebar /> },
                     { text: 'popover', id: 'popover', render: () => <Popover /> },
+                    { text: 'theme1', id: 'theme1', render: () => <Theme1 /> },
                 ]
             }}
         />
@@ -36,7 +37,7 @@ class Instance extends Component {
             <div className='example'>
                 <h3>create aio-popup instance</h3>
                 {
-                    new AIODoc().Code(`
+                    Code(`
 let instance = new AIOPopup()
                     `)
                 }
@@ -45,7 +46,7 @@ let instance = new AIOPopup()
                 <h5>use instance.render() for rendering aio-popup in render method of parent component</h5>
 
                 {
-                    new AIODoc().Code(`
+                    Code(`
 function MyCompoennt(){
     //some codes...
     return (
@@ -63,7 +64,7 @@ function MyCompoennt(){
                     user instance.addModal() to show modal in your page. you can add more than one modal and dont need to handle any state of that
                 </h5>
                 {
-                    new AIODoc().Code(`
+                    Code(`
 instance.addModal({
     header:{
         attrs:{className:'my-modal-header'},
@@ -342,7 +343,7 @@ instance.addModal({
                     user instance.addAlert() to show alert box in your page. you can add more than one alert and dont need to handle any state of that
                 </h5>
                 {
-                    new AIODoc().Code(`
+                    Code(`
 instance.addAlert(props)
 `)
                 }
@@ -352,7 +353,7 @@ instance.addAlert(props)
                     user instance.addSnackebar() to show snackebar box in your page. you can add more than one snackebar and dont need to handle any state of that
                 </h5>
                 {
-                    new AIODoc().Code(`
+                    Code(`
 instance.addSnackebar(props)
 `)
                 }
@@ -370,7 +371,7 @@ function AddModal() {
         return (
             <>
                 <h3>{title}</h3>
-                {new AIODoc().Code(code)}
+                {Code(code)}
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
                     if (!Array.isArray(props)) { props = [props] }
                     for (let i = 0; i < props.length; i++) {
@@ -787,7 +788,7 @@ function ModalPosition() {
     body:{render:({close})=><MyComponent onClose={close}/>} 
 `
         }
-        return new AIODoc().Code(`
+        return Code(`
 instance.addModal({
     position:'${position}',
     ${body}
@@ -832,7 +833,7 @@ function Alert() {
         <div className='example'>
             <h3>addAlert</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -846,7 +847,7 @@ closeText:'بستن'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>position:'top'</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -861,7 +862,7 @@ position:'top'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>position:'bottom'</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -876,7 +877,7 @@ position:'bottom'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type error</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -891,7 +892,7 @@ closeText:'بستن'
 
             <h3>alert type error</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -905,7 +906,7 @@ closeText:'بستن'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type warning</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -919,7 +920,7 @@ closeText:'بستن'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type success</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -933,7 +934,7 @@ closeText:'بستن'
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type info</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 instance.addAlert({
 text:'my alert text',
 subtext:'my subtext of my alert',
@@ -975,19 +976,19 @@ function Snackebar() {
         <div className='example'>
             <h3>import</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
                 `)
             }
             <h3>create instance</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 const [popup] = useState(new AIOPopup())
                 `)
             }
             <h3>snackebar type</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 type I_config = {
     id?:string, //uniq id (optional)
     text:string, //main text
@@ -1005,13 +1006,13 @@ type I_config = {
             }
             <h3>show snackebar</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popup.addSnackebar(config:I_config)
                 `)
             }
             <h3>Basic Example</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1037,7 +1038,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>rtl</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup({rtl:true}))
@@ -1061,7 +1062,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>time</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1087,7 +1088,7 @@ const example = () => {
 
             <h3>type info</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1111,7 +1112,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type error</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1135,7 +1136,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type warning</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1159,7 +1160,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>type success</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1184,7 +1185,7 @@ const example = () => {
 
             <h3>verticalAlign</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1209,7 +1210,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>icon</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1262,7 +1263,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>attrs</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1321,7 +1322,7 @@ const example = () => {
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>horizontalAlign</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
     const [popup] = useState(new AIOPopup())
@@ -1478,7 +1479,7 @@ function Popover() {
         <div className='example'>
             <h3>popover</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popupInstance.addModal({
     position: 'popover',
     getTarget: () => $(temp.dom1.current as any),
@@ -1490,7 +1491,7 @@ popupInstance.addModal({
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>popover fixStyle</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popupInstance.addModal({
     position: 'popover',
     getTarget: () => $(temp.dom2.current as any),
@@ -1503,7 +1504,7 @@ popupInstance.addModal({
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>fitHorizontal</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popupInstance.addModal({
     position: 'popover',
     getTarget: () => $(temp.dom3.current as any),
@@ -1516,7 +1517,7 @@ popupInstance.addModal({
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>styling popover</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popupInstance.addModal({
     position: 'popover',
     getTarget: () => $(temp.dom4.current as any),
@@ -1538,7 +1539,7 @@ popupInstance.addModal({
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>popover without backdrop</h3>
             {
-                new AIODoc().Code(`
+                Code(`
 popupInstance.addModal({
     getTarget: () => $(temp.dom5.current as any),
     fitHorizontal: true,
@@ -1570,7 +1571,39 @@ popupInstance.addModal({
         </div>
     )
 }
-
-
-
-
+function Theme1() {
+    let [popup] = useState(new AIOPopup())
+    
+    return (
+        <div className='example'>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
+                popup.addModal({
+                    position:'center',
+                    setAttrs:(key)=>{
+                        if(key === 'modal'){
+                            return {className:'aio-popup-theme1'}
+                        }
+                    },
+                    header:{
+                        title:'Theme1',
+                        
+                    },
+                    body:()=>{
+                        return (
+                            <div className='h-300 p-12' style={{width:320}}>
+                                <div className="flex-row gap-6">
+                                    <button className='active'>My Active Button</button>
+                                    <button>My Button</button>
+                                </div>
+                                <p>
+                                this is my sample text
+                                </p>
+                            </div>
+                        )
+                    }
+                })
+            }}>Open Modal</button>
+            {popup.render()}
+        </div>
+    )
+}

@@ -70,7 +70,7 @@
   padding: 6px 12px;
   font-size: 16px;
   font-weight: bold;
-  min-height: 48px;
+  min-height: 36px;
   gap:12px;
 }
 .aio-popup-header-text{
@@ -478,4 +478,64 @@
 
 .aio-popup-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #6f7888;
+}
+.aio-popup-theme1{
+  background:#253340;
+  border-radius: 12px;
+  color:#fff;
+  font-family:cursive;
+}
+.aio-popup-theme1 .aio-popup-header{
+  height: 36px;
+  box-shadow:0 1px 1px 0 rgba(255,255,255,0.07);
+  border:none;
+  background: linear-gradient(180deg, #446481, rgba(0,0,0,0.25));
+  border-radius: 10px;
+  color:#fff;
+  font-size:12px;
+}
+.aio-popup-theme1 .aio-popup-body{
+  background:none;
+}
+.aio-popup-theme1 .aio-popup-header-close-button{
+  width:24px;
+}
+
+.aio-popup-theme1 .aio-popup-body button{
+  background:none;
+  border:1px solid rgba(255,255,255,0.8);
+  color:rgba(255,255,255,0.8);
+  height:30px;
+  border-radius:6px;
+  font-size:12px;
+  padding:0 24px;
+  font-family:inherit;
+}
+.aio-popup-theme1 .aio-popup-body button.active{
+  background:dodgerblue;
+  border:1px solid dodgerblue;
+  color:#fff;
+  height:30px;
+  border-radius:6px;
+  font-size:12px;
+  padding:0 24px;
+  font-family:inherit;
+}
+.aio-popup-theme1 .aio-popup-body p{
+  border:1px solid #364458;
+  padding:6px;
+}
+.aio-popup-prompt .aio-popup-body{
+  padding:6px;
+}
+.aio-popup-prompt .aio-popup-body textarea{
+  width:100%;
+  left:0;
+  top:0;
+  border:none;
+  height:60px;
+  font-family:inherit;
+  outline:none;
+  color:inherit;
+  padding:6px;
 }

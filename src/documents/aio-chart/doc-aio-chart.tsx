@@ -1,7 +1,6 @@
 import React, { Component, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import RVD from '../../npm/react-virtual-dom/index.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import Chart, { getFakeData } from '../../npm/aio-chart/index.tsx';
 import AIOInput from '../../npm/aio-input/index.tsx';
 import './index.css';
@@ -74,7 +73,7 @@ function Performance() {
         }}
         keys={keys}
       />
-      {new AIODoc().Code(
+      {Code(
         `<Chart
   data={[
     {points}
@@ -101,7 +100,7 @@ function Data({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -142,7 +141,7 @@ function MultiData({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -181,7 +180,7 @@ function Data_color({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {points,color: '#0094D4'}
@@ -203,7 +202,7 @@ function Data_title({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -229,7 +228,7 @@ function Data_pointRadius({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {points,color: '#0094D4',title: 'Sale',pointRadius: 6}
@@ -257,7 +256,7 @@ function Data_pointStrokeWidth({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -292,7 +291,7 @@ function Data_pointStroke({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -329,7 +328,7 @@ function Data_pointFill({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -368,7 +367,7 @@ function Data_pointDash({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -408,7 +407,7 @@ function Data_pointText({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -449,7 +448,7 @@ function Data_pointTextStyle({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -500,7 +499,7 @@ function Data_lineWidth({ keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -535,7 +534,7 @@ function Data_lineDash({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -569,7 +568,7 @@ function Data_areaColor({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -606,7 +605,7 @@ function ValueAxis({ points, keys }) {
         }}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -648,7 +647,7 @@ function Lines({ points, keys }) {
         ]}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {
@@ -685,7 +684,7 @@ function BarChart({ points, keys }) {
         keys={keys}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -718,7 +717,7 @@ function BarWidth({ points, keys }) {
         barWidth={50}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -752,7 +751,7 @@ function LabelRotate({ points, keys }) {
         labelRotate={45}
       />
       {
-        new AIODoc().Code(
+        Code(
           `<Chart
   data={[
     {
@@ -790,7 +789,7 @@ function EditLabel({ points, keys }) {
         }}
       />
       {
-        new AIODoc().Code(
+        Code(
 `<Chart
   data={[
     {

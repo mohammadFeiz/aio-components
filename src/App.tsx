@@ -1,7 +1,6 @@
-import React,{Component, FC, useEffect, useState} from "react";
+import React,{FC, useState} from "react";
 import './App.css'
-import {Storage} from './npm/aio-utils/index.tsx';
-import { AIOInputSetStorage } from "./npm/aio-input/index.tsx";
+import { AIOInput_defaultProps } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput from './documents/aio-input/doc-aio-input.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
 import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter.tsx';
@@ -17,16 +16,18 @@ import DOC_AIOLogin from './documents/aio-login/doc-aio-login.js';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1.tsx";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
-import DOC_AIODoc from './documents/aio-doc/doc-aio-doc.tsx';
 import UIKit from './documents/aio-input/ui-kit/ui-kit.tsx';
 import Test from './test.tsx';
 import Layout1 from "./documents/aio-input/ui-kit/layout1.tsx";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {useNavigate} from 'react-router-dom';
 import './npm/aio-css/aio-css.css';
-AIOInputSetStorage('mapApiKeys',{
-  map:'web.aab3173ee1ca48f3985d3fc3976539db',
-  service:'service.0d7b067eb6984a8c864920fe7b09800c',
+import DOC_Flip from "./documents/flip/doc-flip.tsx";
+AIOInput_defaultProps({
+  'mapApiKeys':{
+    map:'web.aab3173ee1ca48f3985d3fc3976539db',
+    service:'service.0d7b067eb6984a8c864920fe7b09800c',
+  }
 })
 export default function AIOComponents(){
   const navigate = useNavigate()
@@ -45,7 +46,7 @@ export default function AIOComponents(){
     'aio-login':DOC_AIOLogin,
     'aio-shop':DOC_AIOShop,
     'react-virtual-dom':DOC_ReactVirtualDom,
-    'aio-doc':DOC_AIODoc,
+    'flip':DOC_Flip,
     'msfloading1':DOC_MSFLoading1,
     'kit':UIKit,
     'Layout1':Layout1,
@@ -58,9 +59,9 @@ export default function AIOComponents(){
     <Routes>
       <Route path='/' element={<Home parts={parts}/>}/>
       {
-        Object.keys(parts).map((o)=>{
+        Object.keys(parts).map((o,i)=>{
           let TAG = parts[o];
-          return <Route path={`/${o}`} element={<TAG name={o} goToHome={goToHome}/>}/>
+          return <Route key={i} path={`/${o}`} element={<TAG name={o} goToHome={goToHome}/>}/>
         })
       }
     </Routes>

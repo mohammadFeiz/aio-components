@@ -1,7 +1,7 @@
-import React, { Component, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import AIOHighlighter from '../../npm/aio-highlighter/index.tsx';
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import AIOPopup from '../../npm/aio-popup/index.tsx';
 import $ from 'jquery';
 import './index.css';
@@ -59,7 +59,7 @@ function Basic() {
             id: 'code',
             header: { title: 'code' },
             body: () => {
-                return new AIODoc().Code(
+                return Code(
                     `import AIOHighlighter from 'aio-highlighter';
                     function Basic() {
                         let [show, setShow] = useState<boolean>(true)
@@ -151,7 +151,7 @@ function MouseAccess() {
             id: 'code',
             header: { title: 'code' },
             body: ()=>{
-                return new AIODoc().Code(
+                return Code(
                     `import AIOHighlighter from 'aio-highlighter';
                     function MouseAccess() {
                         let [show, setShow] = useState<boolean>(true)

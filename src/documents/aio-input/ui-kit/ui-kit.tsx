@@ -3,7 +3,7 @@ import DOC from "./../../../resuse-components/doc"
 import { AI_Sidemenu_item, SideMenu } from "../../../npm/aio-input";
 import { mdiDiamond, mdiEmoticonHappyOutline, mdiFile, mdiGauge, mdiHeart } from "@mdi/js"
 import Icon from '@mdi/react';
-import AIODoc from "../../../npm/aio-doc/aio-doc";
+import Code from "../../../npm/code";
 
 export default function DOC_Tree(props:any) {
     return (
@@ -84,7 +84,7 @@ const EXSideMenu:FC = ()=> {
     return (
         <div className='example'>
             <SideMenu items={items}/>
-        {new AIODoc().Code(`
+        {Code(`
 import { SideMenu } from "aio-input";
 
 const items = [

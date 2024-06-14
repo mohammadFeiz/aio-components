@@ -1,6 +1,6 @@
-import React, { Component,FC, useEffect, useState } from "react"
+import { FC, useState } from "react"
 import AIOInput from "../../npm/aio-input"
-import AIODoc from '../../npm/aio-doc/aio-doc.tsx';
+import Code from '../../npm/code/index';
 import RVD from './../../npm/react-virtual-dom/index.tsx';
 import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
@@ -136,7 +136,7 @@ function Basic(){
                 }}
             />
             {
-                new AIODoc().Code(
+                Code(
 `const [value,setValue] = useState<string>()
 <AIOInput 
     type='acardion'
@@ -180,7 +180,7 @@ function Basic(){
                 )
             }
             {
-                new AIODoc().Code(
+                Code(
 `.badge{
     display:flex;
     align-items:center;
@@ -248,7 +248,7 @@ function Vertical(){
                 }}
             />
             {
-                new AIODoc().Code(
+                Code(
 `const [value,setValue] = useState()
 <AIOInput 
     type='acardion'
@@ -345,7 +345,7 @@ function Multiple(){
                 }}
             />
             {
-                new AIODoc().Code(
+                Code(
 `<AIOInput
     type={'acardion'}
     multiple={true}
