@@ -3,7 +3,6 @@ import './App.css'
 import { AIOInput_defaultProps } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput from './documents/aio-input/doc-aio-input.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
-import DOC_AIOHighlighter from './documents/aio-highlighter/doc-aio-highlighter.tsx';
 import DOC_AIOLoading from './documents/aio-loading/doc-aio-loading.tsx';
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider.tsx';
 import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip.tsx';
@@ -33,7 +32,6 @@ export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
     'aio-input':DOC_AIOInput,
-    'aio-highlighter':DOC_AIOHighlighter,
     'aio-validation':DOC_AIOValidation,
     'aio-loading':DOC_AIOLoading,
     'aio-content-slider':DOC_AIOContentSlider,

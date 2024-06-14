@@ -13,6 +13,7 @@ export default function DOC_AIOForm(props: any) {
         <DOC
             name={props.name} goToHome={props.goToHome}
             nav={{
+                nested:true,
                 items: () => [
                     { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
                     { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
@@ -20,6 +21,14 @@ export default function DOC_AIOForm(props: any) {
                     { text: 'alert', id: 'alert', render: () => <Alert /> },
                     { text: 'snackebar', id: 'snackebar', render: () => <Snackebar /> },
                     { text: 'popover', id: 'popover', render: () => <Popover /> },
+                    { 
+                        text: 'highlight', id: 'highlight',
+                        items:[
+                            { text: 'Basic Highlight', id: 'basichighlight', render: () => <BasicHighlight /> },
+                            { text: 'mouseAccess', id: 'mouseAccess', render: () => <MouseAccess /> },
+                            { text: 'Scroll Focus', id: 'testfocus', render: () => <TestFocus /> },
+                        ]
+                    },
                     { text: 'theme1', id: 'theme1', render: () => <Theme1 /> },
                 ]
             }}
@@ -1567,6 +1576,206 @@ popupInstance.addModal({
             }
             <button ref={temp.dom5 as any} style={{ height: 36, padding: '0 24px', width: '100%' }} onClick={() => without_backdrop()}>test long</button>
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
+            {popup.render()}
+        </div>
+    )
+}
+function BasicHighlight() {
+    let [popup] = useState<AIOPopup>(new AIOPopup())
+    function start(index:number){
+        let dom,html;
+        if(index === 0){
+            dom = $('.rsa-navigation-item').eq(0);
+            html = 'this tab show basic usage of aio-highlighter component'
+        }
+        else if(index === 1){
+            dom = $('.rsa-navigation-item').eq(1);
+            html = 'this tab show usage of aio-highlighter mouseAccess Props';
+        }
+        else if(index === 2){
+            dom = $('.rsa-header-title');
+            html = 'this is title of page';
+        }
+        else if(index === 3){
+            dom = $('#go-to-home');
+            html = 'this button is for exit to home page';
+        }
+        else {
+            popup.removeHighlight();
+            return;
+        }
+        popup.addHighlight({dom,html,onClick:()=>start(index + 1)})
+    }
+    function showCode() {
+        popup.addModal({
+            id: 'code',
+            header: { title: 'code' },
+            body: () => {
+                return Code(
+`import AIOPopup from 'aio-popup';
+function BasicHighlight() {
+    let [popup] = useState<AIOPopup>(new AIOPopup())
+    function start(index:number){
+        let dom,html;
+        if(index === 0){
+            dom = $('.rsa-navigation-item').eq(0);
+            html = 'this tab show basic usage of aio-highlighter component'
+        }
+        else if(index === 1){
+            dom = $('.rsa-navigation-item').eq(1);
+            html = 'this tab show usage of aio-highlighter mouseAccess Props';
+        }
+        else if(index === 2){
+            dom = $('.rsa-header-title');
+            html = 'this is title of page';
+        }
+        else if(index === 3){
+            dom = $('#go-to-home');
+            html = 'this button is for exit to home page';
+        }
+        else {
+            popup.removeHighlight();
+            return;
+        }
+        popup.addHighlight({dom,html,onClick:()=>start(index + 1)})
+    }
+    
+    return (
+        <div className='example'>
+            <div style={{ padding: 12, display: 'flex', gap: 12 }}>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => start(0)}>start</button>
+            </div>
+            {popup.render()}
+        </div>
+    )
+}`
+                        )
+                
+            }
+        })
+    }
+    return (
+        <div className='example'>
+            <div style={{ padding: 12, display: 'flex', gap: 12 }}>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => start(0)}>start</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => showCode()}>Code</button>
+            </div>
+            {popup.render()}
+        </div>
+    )
+}
+function MouseAccess() {
+    let [popup] = useState<AIOPopup>(new AIOPopup())
+    function start(){
+        popup.addHighlight({
+            dom:$('#button1'),
+            html:'click here to show code',
+            mouseAccess:true
+        })
+    }
+    function button1(){
+        popup.addHighlight({
+            dom:$('#button2'),
+            html:(
+                <div 
+                    style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}
+                >click here to show preview</div>
+            ),
+            mouseAccess:true
+        })
+    }
+    function button2(){
+        popup.removeHighlight()
+    }
+    function showCode() {
+        popup.addModal({
+            id: 'code',
+            header: { title: 'code' },
+            body: ()=>{
+                return Code(
+`import AIOPopup from 'aio-popup';
+function MouseAccess() {
+    let [popup] = useState<AIOPopup>(new AIOPopup())
+    function start(){
+        popup.addHighlight({
+            dom:$('#button1'),
+            html:'click here to show code',
+            mouseAccess:true
+        })
+    }
+    function button1(){
+        popup.addHighlight({
+            dom:$('#button2'),
+            html:(
+                <div 
+                    style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}
+                >click here to show preview</div>
+            ),
+            mouseAccess:true
+        })
+    }
+    function button2(){
+        popup.removeHighlight()
+    }
+    
+    return (
+        <div className='example'>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => start()}>start</button>
+            <div style={{ display: 'flex', gap: 12, padding: 12 }}>
+                <button type='button' id='button1' onClick={(e)=>button1()}>Button 1</button>
+                <button type='button' id='button2' onClick={(e)=>button2()}>Button 2</button>
+            </div>
+            {popup.render()}
+        </div>
+    )
+}`
+            )
+            }
+        })
+    }
+    return (
+        <div className='example'>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => start()}>start</button>
+            <div style={{ display: 'flex', gap: 12, padding: 12 }}>
+                <button type='button' id='button1' onClick={(e)=>button1()}>Button 1</button>
+                <button type='button' id='button2' onClick={(e)=>button2()}>Button 2</button>
+                <button style={{ height: 36, padding: '0 24px' }} onClick={() => showCode()}>Code</button>
+            </div>
+            {popup.render()}
+        </div>
+    )
+}
+function TestFocus() {
+    let [popup] = useState<AIOPopup>(new AIOPopup())
+    function start(index:number){
+        if(index === 0){
+            popup.addHighlight({
+                dom:$('.my-test').eq(0),
+                html:'test0',
+                onClick:()=>start(1)
+            })
+        }
+        else if(index === 1){
+            popup.addHighlight({
+                dom:$('.my-test').eq(11),
+                html:'test11',
+                onClick:()=>popup.removeHighlight()
+            })
+        }
+
+    }
+    return (
+        <div className='example'>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => start(0)}>start</button>
+            <div className='ofy-auto w-100'>
+                {
+                    new Array(12).fill(0).map((o, i) => {
+                        return (
+                            <div className='my-test' style={{ width: '100%', padding: 48, fontSize: 20 }}>{`this is my text ${i}`}</div>
+                        )
+                    })
+                }
+            </div>
             {popup.render()}
         </div>
     )
