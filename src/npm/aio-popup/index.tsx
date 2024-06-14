@@ -1,23 +1,24 @@
-import React, { Component, createRef, useEffect, useState, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { Component, createRef, useEffect, useState, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle, ReactNode } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { Icon } from '@mdi/react';
 import { mdiClose } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
 import { AddToAttrs } from './../../npm/aio-utils/index';
+import anime from "animejs/lib/anime.es.js";
 export type AP_props = {rtl?:boolean,id?:string}
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export type AP_attrsKey = 'backdrop'|'modal'|'header'|'body'|'footer';
-export type AP_header = ((p:{close:()=>void,state:any,setState:any})=>React.ReactNode) | {
+export type AP_header = ((p:{close:()=>void,state:any,setState:any})=>ReactNode) | {
   title?:string,
   subtitle?:string,
-  before?:React.ReactNode,
-  after?:React.ReactNode,
+  before?:ReactNode,
+  after?:ReactNode,
   onClose?:boolean | ((p:{state:any,setState:(state:any)=>void})=>void),
   attrs?:any
 }
-export type AP_body = (p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>React.ReactNode
-export type AP_footer = (p:{state:any,setState:(v:any)=>void,close:()=>void})=>React.ReactNode
+export type AP_body = (p:{close:()=>void,state?:any,setState?:(state:any)=>void})=>ReactNode
+export type AP_footer = (p:{state:any,setState:(v:any)=>void,close:()=>void})=>ReactNode
 type AP_setAttrs = (mode:AP_attrsKey)=>any
 export type AP_modal = {
     getTarget?:()=>any,
@@ -39,10 +40,10 @@ export type AP_modal = {
     setAttrs?:AP_setAttrs
 }
 export type AP_alert = { 
-  icon?:false | React.ReactNode,
+  icon?:false | ReactNode,
   position?:AP_position,
   type:'success'|'error'|'warning'|'info',
-  text?:React.ReactNode,
+  text?:ReactNode,
   subtext?:string,
   time?:number,
   className?:string,
@@ -55,7 +56,7 @@ export type AP_snackebar = {
   id?:string,
   text:string,
   subtext?:string,
-  icon?:React.ReactNode,
+  icon?:ReactNode,
   time?:number,
   action?:{text:string,onClick:()=>void},
   type:'success'|'error'|'warning'|'info',
@@ -64,7 +65,17 @@ export type AP_snackebar = {
   onClose?:boolean | (()=>void),
   attrs?:any
 }
-export type AP_confirm = {title?:string,subtitle?:string,text?:React.ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
+export type AP_highlight = {
+  dom:any,
+  html:ReactNode,
+  onClick?:()=>void,
+  mouseAccess?:boolean,
+  attrs?:any,
+  padding?:number,
+  easing?:number | AP_easing,
+  duration?:number
+}
+export type AP_confirm = {title?:string,subtitle?:string,text?:ReactNode,submitText?:string,canselText?:string,onSubmit?:()=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
 export type AP_prompt = {title?:string,subtitle?:string,text?:string,submitText?:string,canselText?:string,onSubmit?:(text:string)=>Promise<boolean>,onCansel?:()=>void,setAttrs?:AP_setAttrs}
 export type AP_Snackebar = {getActions:(p:{add:(item:AP_snackebar)=>void})=>void,rtl:boolean}
 export type AP_SnackebarItem = {
@@ -75,8 +86,10 @@ export type AP_SnackebarItem = {
 }
 export default class AIOPopup {
   rtl?: boolean;
-  render: () => React.ReactNode;
+  render: () => ReactNode;
   addModal: (p: AP_modal) => void;
+  addHighlight: (p: AP_highlight) => void;
+  removeHighlight: () => void;
   addAlert: (p: AP_alert) => void;
   removeModal: (arg?: string) => void;
   addSnackebar: (p: AP_snackebar) => void;
@@ -85,11 +98,13 @@ export default class AIOPopup {
   addPrompt: (p: AP_prompt) => void;
   popupId?: string;
   popupsRef:React.RefObject<typeof Popups>;
+  highlightRef:React.RefObject<typeof Highlight>;
   constructor(obj?: AP_props) {
     let { rtl = false } = obj || {}
     this.rtl = rtl;
     this.addSnackebar = () => { };
-    this.popupsRef = createRef()
+    this.popupsRef = createRef();
+    this.highlightRef = createRef();
     this.getModals = ()=>{
       let comp:any = this.popupsRef.current
       if(comp === null){return []}
@@ -100,14 +115,30 @@ export default class AIOPopup {
       if(comp === null){return}
       comp.addModal(modal)
     }
+    this.addHighlight = (highlight:AP_highlight)=>{
+      let comp:any = this.highlightRef.current
+      if(comp === null){return}
+      comp.addHighlight(highlight)
+    }
     this.removeModal = (arg)=>{
       let comp:any = this.popupsRef.current
       if(comp === null){return}
       comp.removeModal(arg)
     }
+    this.removeHighlight = ()=>{
+      let comp:any = this.highlightRef.current
+      if(comp === null){return}
+      comp.removeHighlight()
+    }
     this.render = () => {
       let snackebarProps: AP_Snackebar = {rtl,getActions: ({ add }) => this.addSnackebar = add}
-      return (<><Popups rtl={rtl} ref={this.popupsRef} /><Snackebar {...snackebarProps} /></>)
+      return (
+        <>
+          <Popups rtl={rtl} ref={this.popupsRef} />
+          <Snackebar {...snackebarProps} />
+          <Highlight ref={this.highlightRef}/>
+        </>
+      )
     }
     this.addAlert = (obj) => Alert(obj);
     this.addConfirm = (obj: AP_confirm) => {
@@ -221,7 +252,7 @@ const Popups:FC<AP_Popups> = forwardRef((props,ref)=> {
       )
     })
   }
-  let Modals:React.ReactNode[] = getModals();
+  let Modals:ReactNode[] = getModals();
   return !Modals.length?null:<>{Modals}</>
 })
 type AP_Popup_temp = {dom: any,backdropDom: any,dui?: string,isDown: boolean,}
@@ -354,7 +385,7 @@ const ModalHeader:FC<{modal:AP_modal}> = (props) => {
     e.stopPropagation(); e.preventDefault();
     if (typeof onClose === 'function') { onClose({ state, setState }) } else { context.close() }
   }
-  function title_node(): React.ReactNode {
+  function title_node(): ReactNode {
     if (!subtitle) {return <div className={`${cls}-title`} style={{display:'flex',alignItems:'center',flex:1}}>{title}</div>}
     else {
       return (
@@ -379,7 +410,7 @@ const ModalBody:FC<{modal:AP_modal}> = (props) => {
   let {modal} = props;
   let {body = ()=>null,setAttrs = ()=>{return {}}} = modal;
   let attrs = setAttrs('body') || {}
-  let content:React.ReactNode = body({ close, state, setState });
+  let content:ReactNode = body({ close, state, setState });
   if(!content || content === null){return null}
   return (<div {...AddToAttrs(attrs,{className:'aio-popup-body aio-popup-scroll'})}>{content}</div>)
 }
@@ -690,3 +721,173 @@ function Align(p: AP_align) {
   }
   return $$.align();
 }
+type AP_easing = 'linear'|'easeInQuad'|'easeInCubic'|'easeInQuart'|'easeInQuint'|'easeInSine'|'easeInExpo'|'easeInCirc'|'easeInBack'|'easeOutQuad'|'easeOutCubic'|'easeOutQuart'|'easeOutQuint'|'easeOutSine'|'easeOutExpo'|
+'easeOutCirc'|'easeOutBack'|'easeInBounce'|'easeInOutQuad'|'easeInOutCubic'|'easeInOutQuart'|'easeInOutQuint'|'easeInOutSine'|'easeInOutExpo'|'easeInOutCirc'|'easeInOutBack'|'easeInOutBounce'|
+'easeOutBounce'|'easeOutInQuad'|'easeOutInCubic'|'easeOutInQuart'|'easeOutInQuint'|'easeOutInSine'|'easeOutInExpo'|'easeOutInCirc'|'easeOutInBack'|'easeOutInBounce'
+
+type AP_Highlight = {
+  ref:any,
+}
+type AP_limit = {Left:number,Top:number,Width:number,Height:number,TopSpace:number,BottomSpace:number}
+const Highlight:FC<AP_Highlight> = forwardRef((props,ref) => {
+  let [open,setOpen] = useState<boolean>(false)
+  let [limit,setLimit] = useState<AP_limit>({Left:0,Top:0,Width:0,Height:0,TopSpace:0,BottomSpace:0})
+  let configRef = useRef<AP_highlight>();
+  const config = configRef.current;
+  let limitRef = useRef(limit);
+  limitRef.current = limit;
+  useImperativeHandle(ref,()=>({addHighlight,removeHighlight}))
+  function getDomLimit(dom:any):AP_limit{
+    const padding = getConfig('padding',6)
+    let offset = dom.offset();
+    let left = offset.left - window.pageXOffset;
+    let top = offset.top - window.pageYOffset;
+    let pageHeight = window.innerHeight;
+    let width = dom.outerWidth();
+    let height = dom.outerHeight();
+    let Top = top - 1 * padding;
+    let Left = left - 1 * padding;
+    let Width = width + 2 * padding;
+    let Height = height + 2 * padding;
+    let TopSpace = top;
+    let BottomSpace = pageHeight - (top + height)
+    let res:AP_limit = {Left,Top,Width,Height,TopSpace,BottomSpace};
+    return res
+  }
+  function getEasing(){
+    const easing = getConfig('easing',undefined)
+    var easingNames = [
+      'linear',
+      'easeInQuad',//1
+      'easeInSine',//5
+      'easeInCirc',//7
+      'easeInBack',//8
+      'easeOutQuad',//9
+      'easeOutSine',//13
+      'easeOutCirc',//15
+      'easeInOutQuad',//18
+      'easeInOutSine',//22
+      'easeInOutBack',//25
+      'easeOutBounce',//27
+    ]
+    if(typeof easing === 'number'){
+      let res = easingNames[easing]
+      return res || easingNames[0]
+    }
+    return easing
+    
+  }
+  function removeHighlight(){
+    setLimit({Left:0,Top:0,Width:0,Height:0,TopSpace:0,BottomSpace:0})
+    setOpen(false)
+  }
+  function addHighlight(config:AP_highlight){
+    const {dom} = config
+    configRef.current = config;
+    setOpen(true)
+    setTimeout(()=>{
+      try{
+        const duration = getConfig('duration',1200)
+        dom[0].scrollIntoView();
+        let newLimit:AP_limit = getDomLimit(dom)
+        let easing = getEasing()
+        let obj:any = {
+          ...newLimit,
+          targets: [{...limitRef.current}],
+          duration,
+          update: (p:any) => {
+            const {animatables} = p;
+            setLimit({...animatables[0].target})
+          }
+        }
+        if(easing){obj.easing = easing}
+        anime(obj);
+      }
+      catch{
+        alert(`
+          aio-highlighter error => connot find dom
+        `)
+      }
+    },0)
+  }
+  function getArrowIcon(props:{[key:string]:any}):ReactNode{
+    return (
+      <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	      viewBox="0 0 512 512" {...props}>
+        <g>
+          <path d="M242.1,45.2c7.7-7.7,20.2-7.7,27.8-0.1l0.1,0.1l236.3,236.3c7.7,7.7,7.7,20.2,0,27.9c-7.7,7.7-20.2,7.7-27.9,0
+            L256,86.9L33.7,309.3c-7.7,7.7-20.2,7.7-27.9,0c-7.7-7.7-7.7-20.2,0-27.9L242.1,45.2z"/>
+          <path d="M242.1,202.7c7.7-7.7,20.2-7.7,27.8-0.1l0.1,0.1L506.2,439c7.7,7.7,7.7,20.2,0,27.9c-7.7,7.7-20.2,7.7-27.9,0
+            L256,244.5L33.7,466.9c-7.7,7.7-20.2,7.7-27.9,0c-7.7-7.7-7.7-20.2,0-27.9L242.1,202.7z"/>
+        </g>
+      </svg>
+    )
+  }
+  function getArrow(dir:'top' | 'bottom',left:number,width:number):ReactNode{
+    let center = left + width / 2,Left = center - 12;
+    let style = {position:'absolute',height:24,width:24,left:Left}
+    let props = {width:24,height:24,style,className:`aio-popup-highlight-arrow-${dir}`}
+    return (<div className="aio-popup-highlight-arrow">{getArrowIcon(props)}</div>)
+  }
+  function getHtml(dir:'top' | 'bottom'):ReactNode{
+    if(!config || !config.html){return ''}
+    let column:ReactNode;
+    let html = config.html || '';
+    let space = <div className="aio-popup-highlight-space"></div>;
+    let content = <div className="aio-popup-highlight-html">{html}</div>
+    let arrow = getArrow(dir,limitRef.current.Left,limitRef.current.Width);
+    if(dir === 'top'){column = <>{space}{content}{arrow}</>}
+    else {column = <>{arrow}{content}{space}</>}
+    return <div className="aio-popup-highlight-html-container">{column}</div>
+  }
+  function getConfig(field:keyof AP_highlight,def:any){
+    if(!config){return def}
+    if(config === null){return def}
+    let res = config[field];
+    return res === undefined?def:res
+  }
+  function click(){
+    if(getConfig('mouseAccess',false)){return}
+    if(config?.onClick){config.onClick()}
+  }
+  function vMask_node(type:'top' | 'bottom' | 'left' | 'right'):ReactNode{
+    let html:ReactNode = '',size:number = 0,className = 'aio-popup-highlight-mask'
+    let dir = type === 'top' || type === 'bottom'?'height':'width'
+    let limit = limitRef.current;
+    if(type === 'top'){
+      size = limit.Top;
+      if(limit.TopSpace > limit.BottomSpace){html = getHtml('top')}
+    }
+    else if(type === 'bottom'){
+      className += ' aio-popup-highlight-mask-flex';
+      if(limit.TopSpace <= limit.BottomSpace){html = getHtml('bottom')}
+    }
+    else if(type === 'left'){size = limit.Left;}
+    else {className += ' aio-popup-highlight-mask-flex';}
+    return (<div className={className} style={{[dir]:size}} onClick={()=>click()}>{html}</div>)
+  }
+  function focus_node():ReactNode{
+    const mouseAccess = getConfig('mouseAccess',false);
+    return (
+      <div 
+        style={{width:limit.Width}} 
+        className="aio-popup-highlight-focus-container" 
+        onClick={mouseAccess?undefined:()=>click()}
+      ><div className='aio-popup-highlight-focus'></div></div>
+    )
+  }
+  function main_node():ReactNode{
+    return <div className="aio-popup-highlight-main" style={{height:limit.Height}}>{vMask_node('left')}{focus_node()}{vMask_node('right')}</div>
+  }
+  if(!open){return null}
+  function getStyle(){
+    const mouseAccess = getConfig('mouseAccess',false);
+    return {pointerEvents:mouseAccess?'none':'all'}
+  }
+  const attrs = AddToAttrs(getConfig('attrs',{}),{className:'aio-popup-highlight',style:getStyle()})
+  return (
+    <div {...attrs}>
+      {vMask_node('top')}{main_node()}{vMask_node('bottom')}
+    </div>
+  )
+})
