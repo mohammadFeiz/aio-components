@@ -1766,8 +1766,8 @@ export class DateData {
     getYearList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
     getWeekList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
     d: AIODate;
-    constructor() {
-        this.data = {}
+    constructor(data:I_dd_data) {
+        this.data = data
         this.d = new AIODate()
         this.getYearDic = ([Year]) => {
             let year: I_dd_year = this.data[Year.toString()]
