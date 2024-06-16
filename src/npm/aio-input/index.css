@@ -1919,7 +1919,14 @@
     display: flex;
     padding: 3px 6px;
 }
-
+.aio-input-form-label-star{
+    color:red;
+    display:flex;
+    justify-content: center;
+    width:12px;
+    font-size:14px; 
+    font-weight:bold;
+}
 .aio-input-form-input {
     display: flex;
     flex-direction: column;

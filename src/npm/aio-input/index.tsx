@@ -836,6 +836,11 @@ const FormInput: FC<AI_FormInput> = (props) => {
     let { rtl, disabled,showErrors = true } = rootProps;
     let { node, setError } = props;
     let { input, label = '', field = '',validations = [] } = node;
+    let required = false;
+    if(typeof label === 'string' && label[0] === '*'){
+        required = true;
+        label = label.slice(1,label.length)
+    }
     if (!input || !field) { return null }
     let validation:AI_validation = {validations,label}
     function getInputProps(input: AI, node: AI_formNode) {
@@ -877,9 +882,17 @@ const FormInput: FC<AI_FormInput> = (props) => {
     let error = getError(value,validation)
     setError(error)
     let InputProps: AI = getInputProps(input, node);
+    function getLabel(){
+        if(typeof label !== 'string'){return null}
+        return (
+            <section className='aio-input-form-label'>
+                {label} {!!required && <div className="aio-input-form-label-star">*</div>}
+            </section>
+        )
+    }
     return (
         <section className='aio-input-form-input'>
-            {label && <section className='aio-input-form-label'>{label}</section>}
+            {getLabel()}
             <AIOInput {...InputProps} />
             {error && showErrors === true && <div className='aio-input-form-error'>{error}</div>}
         </section>
