@@ -1102,17 +1102,18 @@ export class AIODate {
             return { day, hour, minute, second, tenthsecond, miliseconds, type }
         }
         this.getDaysOfMonth = (date, pattern) => {
+            if (!date) { return [] }
             let dateArray = this.convertToArray(date);
-            let firstDay = [dateArray[0], dateArray[1], 1];
-            let lastDay = this.getLastDayOfMonth(dateArray)
-            let betweenDayes = this.getDatesBetween(firstDay, lastDay, 24 * 60 * 60 * 1000);
-            let result = [firstDay];
-            result = result.concat(betweenDayes);
-            result.push(lastDay as number[]);
-            if (pattern) {
-                return result.map((o) => this.getDateByPattern(o, pattern))
+            let daysLength = this.getMonthDaysLength(date)
+            let firstDay:I_Date = [dateArray[0],dateArray[1],1];
+            let res:I_Date[] = []
+            for(let i = 0; i < daysLength; i++){
+                res.push(firstDay)
+                firstDay = this.getTomarrow(firstDay);
             }
-            return result;
+            
+            if(pattern){return res.map((o)=>this.getDateByPattern(o,pattern))}
+            return res
         }
         this.getLastDayOfMonth = (date) => {
             let dateArray: number[] = this.convertToArray(date);
