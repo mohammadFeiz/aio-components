@@ -837,12 +837,12 @@ export class AIODate {
                     let today = this.getToday(jalali);
                     let dateObject = date as { year?: number, month?: number, day?: number, hour?: number,minute?:number,second?:number }
                     return [
-                        dateObject.year || today[0], 
-                        dateObject.month || today[1], 
-                        dateObject.day || today[2], 
-                        dateObject.hour || today[3],
-                        dateObject.minute || today[4],
-                        dateObject.second || today[5],
+                        dateObject.year === undefined?today[0]:dateObject.year, 
+                        dateObject.month === undefined?today[1]:dateObject.month, 
+                        dateObject.day === undefined?today[2]:dateObject.day, 
+                        dateObject.hour === undefined?today[3]:dateObject.hour,
+                        dateObject.minute === undefined?today[4]:dateObject.minute,
+                        dateObject.second === undefined?today[5]:dateObject.second,
                     ]    
                 }
             }
