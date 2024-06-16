@@ -1923,6 +1923,7 @@
 .aio-input-form-input {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .aio-input-form-input>.aio-input {
