@@ -728,6 +728,8 @@ export class AIODate {
     getDateByPattern: (date: I_Date, pattern: string) => string;
     getToday: (jalali?: boolean) => number[];
     getDayIndex: (date: I_Date, unit: 'week' | 'year' | 'month') => number;
+    getYesterday:(date:I_Date)=>I_Date
+    getTomarrow:(date:I_Date)=>I_Date
     constructor() {
         this.isMatch = (date, matchers) => {
             date = this.convertToArray(date)
@@ -992,13 +994,60 @@ export class AIODate {
             }
             return res
         }
+        this.getYesterday = (date)=>{
+            const [year,month,day] = this.convertToArray(date);
+            let newYear = year,newMonth = month,newDay = day;
+            if(day === 1){
+                if(month === 1){
+                    newYear = newYear - 1;
+                    newMonth = 12;
+                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                }
+                else {
+                    newMonth = newMonth - 1;
+                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                }
+            }
+            else {
+                newDay = newDay - 1
+            }
+            return [newYear,newMonth,newDay]
+        }
+        this.getTomarrow = (date)=>{
+            const [year,month,day] = this.convertToArray(date);
+            let newYear = year,newMonth = month,newDay = day;
+            const daysLength = this.getMonthDaysLength(date)
+            if(day === daysLength){
+                if(month === 12){
+                    newYear = newYear + 1;
+                    newMonth = 1;
+                    newDay = 1
+                }
+                else {
+                    newMonth = newMonth + 1;
+                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                }
+            }
+            else {
+                newDay = newDay + 1
+            }
+            return [newYear,newMonth,newDay]
+        }
         this.getDaysOfWeek = (date, pattern) => {
             if (!date) { return [] }
             let dateArray = this.convertToArray(date);
             let { index } = this.getWeekDay(dateArray);
-            let startDate = this.getNextTime([dateArray[0], dateArray[1], dateArray[2]], -(index + 1) * 24 * 60 * 60 * 1000);
-            let endDate = this.getNextTime([dateArray[0], dateArray[1], dateArray[2]], (7 - index) * 24 * 60 * 60 * 1000);
-            return this.getDatesBetween(startDate, endDate, 24 * 60 * 60 * 1000)
+            let firstDay:I_Date = [...dateArray];
+            for(let i = 0; i < index; i++){
+                firstDay = this.getYesterday(firstDay);
+            }
+            const res:I_Date[] = [];
+            for(let i = 0; i < 7; i++){
+                res.push(firstDay)
+                firstDay = this.getTomarrow(firstDay)
+            }
+            if(pattern){return res.map((o)=>this.getDateByPattern(o,pattern))}
+            return res
         }
         this.getDatesBetween = (date, otherDate, step = 24 * 60 * 60 * 1000) => {
             if (!date || !otherDate) { return [] }

@@ -2522,6 +2522,7 @@ const Range: FC = () => {
     }
     useEffect(() => { setDisabledDic(getDisabledDic()) }, [JSON.stringify(disabled)])
     useEffect(() => {
+        if(!onChange){return}
         clearTimeout(temp.timeOut)
         temp.timeOut = setTimeout(()=>{
             new Swip({
