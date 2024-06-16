@@ -75,7 +75,7 @@ function AIOINPUT(props: AI) {
                 setAttrs:(key:'backdrop' | 'modal' | 'header' | 'body' | 'footer')=>{
                     let attrs = setAttrs(key);
                     if(key === 'modal'){
-                        AddToAttrs(attrs, { className })
+                        return AddToAttrs(attrs, { className })
                     }
                     if(key === 'backdrop'){
                         return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid })

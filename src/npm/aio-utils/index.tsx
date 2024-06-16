@@ -1,8 +1,8 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 
-
-export type I_Date = string | number | Date | { year?: number, month?: number, day?: number, hour?: number, minute?: number } | number[];
+type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
+export type I_Date = string | number | Date | I_dateObject | number[];
 export type I_point = number[]
 export type I_line = [I_point, I_point]
 export type I_dline = [number, number, number]//x,y,dip
@@ -821,11 +821,7 @@ export class AIODate {
                 list = [year, month, day, hour, minute, second, tenthsecond]
             }
             else if (typeof date === 'object') {
-                if (typeof (date as { year: number }).year === 'number') {
-                    let dateObject = date as { year: number, month: number, day: number, hour: number }
-                    return [dateObject.year, dateObject.month, dateObject.day, dateObject.hour]
-                }
-                else {
+                if(typeof (date as Date).getMonth === 'function'){
                     let dateObject = date as Date;
                     let year = dateObject.getFullYear();
                     let month = dateObject.getMonth() + 1;
@@ -836,6 +832,18 @@ export class AIODate {
                     let miliseconds = dateObject.getMilliseconds();
                     let tenthsecond = Math.round(miliseconds / 100);
                     list = [year, month, day, hour, minute, second, tenthsecond]
+                }
+                else {
+                    let today = this.getToday(jalali);
+                    let dateObject = date as { year?: number, month?: number, day?: number, hour?: number,minute?:number,second?:number }
+                    return [
+                        dateObject.year || today[0], 
+                        dateObject.month || today[1], 
+                        dateObject.day || today[2], 
+                        dateObject.hour || today[3],
+                        dateObject.minute || today[4],
+                        dateObject.second || today[5],
+                    ]    
                 }
             }
             else { return [] }
