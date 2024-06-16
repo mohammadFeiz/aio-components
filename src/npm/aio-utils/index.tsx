@@ -1025,7 +1025,7 @@ export class AIODate {
                 }
                 else {
                     newMonth = newMonth + 1;
-                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                    newDay = 1
                 }
             }
             else {
