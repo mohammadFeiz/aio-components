@@ -238,7 +238,7 @@ function TimePopover(props: { onClose: () => void }) {
             </div>
             <div className="aio-input-time-popover-footer">
                 <button className='aio-input-primary-button' onClick={submit}>{translate('Submit')}</button>
-                <button className='aio-input-secondary-button' onClick={now}>{translate('Now')}</button>
+                {rootProps.now !== false && <button className='aio-input-secondary-button' onClick={now}>{translate('Now')}</button>}
             </div>
         </div>
     )
@@ -919,8 +919,8 @@ function Options() {
                 if (option.text === undefined || option.text === '' || option.text === null) { return null }
                 if ((option.text as string).indexOf(searchValue) === -1) { return null }
             }
-            let p = { key: i, option, index: i, searchValue }
-            return <Layout {...p} />
+            let p = { option, index: i, searchValue }
+            return <Layout {...p} key={i}/>
         });
     }
     if (!options.optionsList.length) { return null }
@@ -1308,6 +1308,7 @@ function List() {
         if (o.value === rootProps.value) { temp.activeIndex = i; }
         return (
             <Layout
+                key={i}
                 option={o}
                 index={i}
                 properties={{
@@ -3996,6 +3997,7 @@ export type AI = {
     min?: number,//slider,number
     move?: any,//list
     multiple?: boolean | number,
+    now?:boolean,
     onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void | undefined>),
     onChange?: ((newValue: any, p?: any) => undefined | boolean | void) | ((newValue: any, p?: any) => Promise<undefined | boolean | void>),
     onChangePaging?: (newPaging: AI_table_paging) => void,

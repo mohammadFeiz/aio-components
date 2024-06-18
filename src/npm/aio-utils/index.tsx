@@ -730,7 +730,17 @@ export class AIODate {
     getDayIndex: (date: I_Date, unit: 'week' | 'year' | 'month') => number;
     getYesterday:(date:I_Date)=>I_Date
     getTomarrow:(date:I_Date)=>I_Date
+    toMiliseconds:(p:{year?:number,month?:number,day?:number,hour?:number,minute?:number,second?:number})=>number
     constructor() {
+        this.toMiliseconds = (p)=>{
+            const {day = 0,hour = 0,minute = 0,second = 0} = p;
+            let res = 0;
+            res += day * 24 * 60 * 60 * 1000;
+            res += hour * 60 * 60 * 1000;
+            res += minute * 60 * 1000;
+            res += second * 1000;
+            return res
+        }
         this.isMatch = (date, matchers) => {
             date = this.convertToArray(date)
             for (let i = 0; i < matchers.length; i++) {

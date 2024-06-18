@@ -39,7 +39,6 @@
 
 .aio-input-popover .aio-popup-body {
     padding: 0;
-    background: none;
 }
 
 .aio-input-popover-rtl {
@@ -246,28 +245,6 @@
     opacity: 1;
     transform: unset;
     font-weight: bold;
-}
-
-.aio-input-time-popover .aio-input-list-option:after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.3);
-    width: 100%;
-    height: 1px;
-    pointer-events: none;
-}
-
-.aio-input-time-popover .aio-input-list-option:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: rgba(255, 255, 255, 0.3);
-    width: 100%;
-    height: 1px;
-    pointer-events: none;
 }
 
 .aio-input.disabled .aio-input-option {
@@ -1241,7 +1218,7 @@
     position: absolute;
     left: 0;
     top: 48px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     width: 100%;
     height: 48px;
     pointer-events: none;
