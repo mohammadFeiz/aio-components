@@ -1,7 +1,7 @@
 import React from 'react';
 import Axios from 'axios';
 import {AIODate,Storage} from './../../npm/aio-utils';
-import AIOPopup from './../../npm/aio-popup/index';
+import AIOPopup from './../../npm/aio-popup';
 import $ from 'jquery';
 import './index.css';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
@@ -21,7 +21,7 @@ export type AA_props = {
     apis:AA_apis,mock?:any,lang:'en' | 'fa',
 }
 export type AA_apiSetting = {
-    description?:string,
+    description?:string | ((p:any)=>string),
     message?:AA_message,
     cache?: AA_cache,
     loading?: boolean, 
@@ -205,6 +205,7 @@ export default class AIOApis {
             this.setToken(token);
             this.handleLoading(true, id, config);
             let result = await this.responseToResult(p)
+            description = typeof description === 'function'?description(parameter):description;
             if (typeof result === 'string') {
                 this.showErrorMessage({result,message,description});
                 if(onError){onError(result)}

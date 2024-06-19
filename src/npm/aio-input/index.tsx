@@ -10,7 +10,7 @@ import {
 import { Icon } from '@mdi/react';
 import $ from 'jquery';
 import Axios from "axios";
-import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup/index";
+import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup";
 /////////////my dependencies//////////
 import { 
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
@@ -806,7 +806,7 @@ const FormNode: FC<AI_FormNode> = (props) => {
     let { setError }: AI_FormContext = useContext(Formcontext)
     let { node, parentType,isRoot } = props;
     let { html, childs,dir = 'v', input, field, flex, size, show, className, style } = node;
-    if (show === false) { return null }
+    if (show === false || (typeof show === 'function' && show() === false) ) { return null }
     function getInner(): RN {
         let content
         if (input) { content = <FormInput node={node} setError={(v: string | undefined) => setError(field as string, v)} /> }
@@ -1352,7 +1352,7 @@ export const Acardion: FC = () => {
     return (
         <AcardionContext.Provider value={getContext()}>
             <div className={`aio-input-acardion aio-input-scroll${vertical ? ' aio-input-acardion-vertical' : ' aio-input-acardion-horizontal'}`}>
-                {options.optionsList.map((option: AI_option) => <AcardionItem option={option} />)}
+                {options.optionsList.map((option: AI_option,i:number) => <AcardionItem key={i} option={option} />)}
             </div>
         </AcardionContext.Provider>
     )
@@ -2099,8 +2099,14 @@ function Table() {
             let row = value[i], json: any = {};
             for (let j = 0; j < excelColumns.length; j++) {
                 let column = excelColumns[j], { excel, value } = column;
-                if (typeof excel !== 'string') { continue }
-                json[excel] = getDynamics({ value, row, column, rowIndex: i })
+                let key:string = '';
+                if(excel === true){
+                    if(typeof column.title === 'string'){key  = column.title}
+                    else {key = 'untitle'}
+                }
+                else if(typeof excel === 'string'){key = excel}
+                else {continue}
+                json[key] = getDynamics({ value, row, column, rowIndex: i })
             }
             list.push(json)
         }
@@ -3933,7 +3939,7 @@ export type AI_table_column = {
     onChange?: (newValue: any) => void,
     titleAttrs?:{[key:string]:any} | string,
     template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
-    excel?: string,
+    excel?: string | boolean,
     justify?:boolean,
     cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
 }
