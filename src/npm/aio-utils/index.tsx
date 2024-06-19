@@ -1813,7 +1813,7 @@ export class Storage {
     }
 }
 type I_dd_dateArray = number[]
-type I_dd_data = {
+export type I_dd_data = {
     [year: string]: I_dd_year
 }
 type I_dd_year = {
@@ -1823,20 +1823,26 @@ type I_dd_month = {
     [day: string]: I_dd_day
 }
 type I_dd_day = any
-export class DateData {
+type I_list_item = { date: I_dd_dateArray, value: any }
+export default class DateData {
     data: I_dd_data;
+    getToday:()=>number[];
+    isToday:(date:I_dd_dateArray)=>boolean;
     setDayValue: (dateArray: I_dd_dateArray, data: { [key: string]: any }) => void;
     getYearDic: (dateArray: I_dd_dateArray) => I_dd_year
     getMonthDic: (dateArray: I_dd_dateArray) => I_dd_month
     getDayDic: (dateArray: I_dd_dateArray) => I_dd_day
-    getDayValue: (dateArray: I_dd_dateArray, field: string) => any;
-    getMonthList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
-    getYearList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
-    getWeekList: (dateArray: I_dd_dateArray, field: string) => { date: I_dd_dateArray, value: any }[];
+    getDayValue: (dateArray: I_dd_dateArray, field?: string,def?:any) => any;
+    getMonthList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
+    getYearList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
+    getWeekList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
+    getData:()=>I_dd_data;
     d: AIODate;
     constructor(data:I_dd_data) {
         this.data = data
         this.d = new AIODate()
+        this.getToday = ()=>this.d.convertToArray(this.d.getTime(this.d.getToday()) - (12 * 60 * 60 * 1000),true)
+        this.getData = ()=>this.data
         this.getYearDic = ([Year]) => {
             let year: I_dd_year = this.data[Year.toString()]
             if (!year) {
@@ -1863,9 +1869,10 @@ export class DateData {
             }
             return day
         }
-        this.getDayValue = ([Year, Month, Day], field) => {
+        this.getDayValue = ([Year, Month, Day], field,def) => {
             let dayData = this.getDayDic([Year, Month, Day])
-            return getValueByField(dayData, field)
+            if(field){return getValueByField(dayData, field,def)}
+            return dayData === undefined?def:dayData
         }
         this.setDayValue = (dateArray, data) => {
             let day = this.getDayDic(dateArray)
@@ -1873,36 +1880,42 @@ export class DateData {
                 day[prop] = data[prop]
             }
         }
-        this.getMonthList = ([Year, Month], field) => {
+        this.getMonthList = ([Year, Month], field,def) => {
             const daysLength = this.d.getMonthDaysLength([Year, Month])
             let list = [];
             for (let i = 1; i <= daysLength; i++) {
                 let date = [Year, Month, i];
-                let dayRes = this.getDayValue(date, field);
+                let dayRes = this.getDayValue(date, field,def);
                 if (dayRes !== undefined) {
                     list.push({ date, value: dayRes });
                 }
             }
             return list
         }
-        this.getWeekList = ([Year, Month, Day], field) => {
+        this.getWeekList = ([Year, Month, Day], field,def) => {
             let days = this.d.getDaysOfWeek([Year, Month, Day]);
             let list = [];
             for (let i = 0; i < days.length; i++) {
                 let date = days[i]
-                let dayRes = this.getDayValue(date, field);
+                let dayRes = this.getDayValue(date, field,def);
                 if (dayRes !== undefined) {
                     list.push({ date, value: dayRes });
                 }
             }
-            return list
+            return JSON.parse(JSON.stringify(list))
         }
-        this.getYearList = ([Year], field) => {
+        this.getYearList = ([Year], field,def) => {
             let list: {date:I_dd_dateArray,value:any}[] = [];
             for (let i = 1; i <= 12; i++) {
-                list = list.concat(this.getMonthList([Year, i], field))
+                list = list.concat(this.getMonthList([Year, i], field,def))
             }
             return list
+        }
+        this.isToday = (dateArray)=>{
+            for(let i = 0; i < dateArray.length; i++){
+                if(dateArray[i] !== this.getToday()[i]){return false}
+            }
+            return true
         }
     }
 }
