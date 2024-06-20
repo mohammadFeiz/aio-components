@@ -872,8 +872,8 @@ export class AIODate {
                 if (isNaN(o2[i])) { o2[i] = o1[i] }
                 let a = o1[i];
                 let b = o2[i] || 0;
-                if (a < b) { compaireKey = 'less' }
-                if (a > b) { compaireKey = 'greater' }
+                if (a < b) { compaireKey = 'less'; break; }
+                if (a > b) { compaireKey = 'greater'; break; }
             }
             return compaireKey === key
         }
@@ -1827,7 +1827,6 @@ type I_list_item = { date: I_dd_dateArray, value: any }
 export default class DateData {
     data: I_dd_data;
     getToday:()=>number[];
-    isToday:(date:I_dd_dateArray)=>boolean;
     setDayValue: (dateArray: I_dd_dateArray, data: { [key: string]: any }) => void;
     getYearDic: (dateArray: I_dd_dateArray) => I_dd_year
     getMonthDic: (dateArray: I_dd_dateArray) => I_dd_month
@@ -1910,12 +1909,6 @@ export default class DateData {
                 list = list.concat(this.getMonthList([Year, i], field,def))
             }
             return list
-        }
-        this.isToday = (dateArray)=>{
-            for(let i = 0; i < dateArray.length; i++){
-                if(dateArray[i] !== this.getToday()[i]){return false}
-            }
-            return true
         }
     }
 }
