@@ -1825,6 +1825,7 @@ function DPCell(props: {dateArray:number[]}) {
         var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
         if (isActive) { str += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'; }
+        else {str += ' aio-input-date-theme-bg1 aio-input-date-theme-color0';}
         if (isToday) { str += ' today aio-input-date-theme-border0'; }
         if (className) { str += ' className'; }
         return str;

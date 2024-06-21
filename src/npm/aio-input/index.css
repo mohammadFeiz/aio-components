@@ -859,6 +859,7 @@
     flex-direction: column;
     stroke: #333;
     background:#fff;
+    color:#333;
 }
 
 .aio-input-date-header {
