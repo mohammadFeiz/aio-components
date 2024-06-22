@@ -21,6 +21,7 @@ import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {useNavigate} from 'react-router-dom';
 import './npm/aio-css/aio-css.css';
 import DOC_Flip from "./documents/flip/doc-flip.tsx";
+import AppContainer from './documents/aio-layout';
 AIOInput_defaultProps({
   'mapApiKeys':{
     map:'web.aab3173ee1ca48f3985d3fc3976539db',
@@ -46,6 +47,7 @@ export default function AIOComponents(){
     'msfloading1':DOC_MSFLoading1,
     'kit':UIKit,
     'Layout1':Layout1,
+    'aio-layout':AppContainer,
     'test':Test
   })
   function goToHome(){
@@ -57,7 +59,9 @@ export default function AIOComponents(){
       {
         Object.keys(parts).map((o,i)=>{
           let TAG = parts[o];
-          return <Route key={i} path={`/${o}`} element={<TAG name={o} goToHome={goToHome}/>}/>
+          let path = `/${o}`
+          if(o === 'aio-layout'){path += '/*'}
+          return <Route key={i} path={path} element={<TAG name={o} goToHome={goToHome}/>}/>
         })
       }
     </Routes>

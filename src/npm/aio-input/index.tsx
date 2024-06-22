@@ -3420,24 +3420,25 @@ function MapFooter() {
     return <div className="aio-input-map-footer">{details_node()} {submit_node()}</div>
 }
 export type AI_Sidemenu = {
-    options:AI_Sidemenu_option[],
-    onChange:(newValue:string)=>void
+    items:AI_Sidemenu_child[],
+    onChange:(item:AI_Sidemenu_child)=>void,
+    option?:any
 }
-export type AI_Sidemenu_option = {
+export type AI_Sidemenu_child = {
     text:string,
     value:string,
     badge?:AI_Sidemenu_badge | AI_Sidemenu_badge[],
-    icon?:RN,
-    options?:AI_Sidemenu_option[],
+    icon:RN,
+    childs?:AI_Sidemenu_child[],
 }
 export type AI_Sidemenu_badge = {
     text:string,circle?:boolean,
     color:'red'|'green'|'blue'|'grey'|'white'|'orange'|'yellow',
 }
 export const SideMenu:FC<AI_Sidemenu> = (props) => {
-    let {options = [],onChange} = props;
+    let {items = [],onChange,option = {}} = props;
     let cls = 'aio-input-sidemenu'
-    function getBadge(item:AI_Sidemenu_option){
+    function getBadge(item:AI_Sidemenu_child){
         let {badge} = item;
         if(!badge){badge = []}
         if(!Array.isArray(badge)){badge = [badge]}
@@ -3449,14 +3450,14 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         }
         return res
     }
-    function getAfter(option:AI_Sidemenu_option,details:I_optionDetails){
-        let {options = []} = option;
+    function getAfter(option:AI_Sidemenu_child,details:I_optionDetails){
+        let {childs = []} = option;
         let open = details.isOpen?details.isOpen(option.value):false;
         let badge:RN[] = getBadge(option);
         return (
             <div className={`${cls}-after ${cls}-align`}>
                 {!!badge.length && badge}
-                {!!options.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+                {!!childs.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
             </div>
         )
     }
@@ -3465,31 +3466,31 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         if(!icon){return null}
         return (
             <div className={`${cls}-before`}>
-                {details.level === 0 && <div className={`${cls}-icon ${cls}-align`}>{icon}</div>}
-                {details.level !== 0 && icon}
+                <div className={`${cls}-icon ${cls}-align`}>{icon}</div>
             </div>
         )
+    }
+    const defaultOption = {
+        text:'option.text',
+        value:'option.value',
+        toggleIcon:()=>false,
+        after:(option:AI_Sidemenu_child,details:I_optionDetails)=>getAfter(option,details),
+        before:(option:AI_Sidemenu_child,details:I_optionDetails)=>getBefore(option,details),
+        onClick:(option:AI_Sidemenu_child,details:I_optionDetails)=>{
+            let {childs = []} = option;
+            if(!!childs.length){if(details.toggle){details.toggle()}}
+            else if(onChange){onChange(option)}
+        },
+        className:(option:AI_Sidemenu_child,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
     }
     return (
         <AIOInput
             type='tree'
             className={cls}
             size={48}
-            value={[...options]}
-            getChilds={(p:{row:AI_Sidemenu_option})=>p.row.options || []}
-            option={{
-                text:'option.text',
-                value:'option.value',
-                toggleIcon:()=>false,
-                after:(option:AI_Sidemenu_option,details:I_optionDetails)=>getAfter(option,details),
-                before:(option:AI_Sidemenu_option,details:I_optionDetails)=>getBefore(option,details),
-                onClick:(option:AI_Sidemenu_option,details:I_optionDetails)=>{
-                    let {options = []} = option;
-                    if(!!options.length){if(details.toggle){details.toggle()}}
-                    else if(onChange){onChange(option.value)}
-                },
-                className:(option:AI_Sidemenu_option,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
-            }}
+            value={[...items]}
+            getChilds={(p:{row:AI_Sidemenu_child})=>p.row.childs || []}
+            option={{...defaultOption,...option}}
             indent={0}
         />
     )

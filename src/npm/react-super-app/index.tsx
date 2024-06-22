@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {Storage} from '../aio-utils/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import AIOPopup, { AP_alert, AP_confirm, AP_modal, AP_prompt, AP_snackebar } from './../../npm/aio-popup/index.tsx';
 import './index.css';
+import { AI_Sidemenu_option } from '../aio-input/index.tsx';
 type RN = React.ReactNode
 export type I_RSA_props = {
   rtl?:boolean, 
@@ -86,7 +87,6 @@ export default class RSA {
   addConfirm:(p:AP_confirm)=>void;
   addPrompt:(p:AP_prompt)=>void;
   constructor(props:I_RSA_props) {
-    RSAValidate(props || {});
     let { rtl} = props;
     this.rootProps = props;
     this.backButtonCallBack = true;
@@ -227,7 +227,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     if(!side){return null}
     let items = typeof side.items === 'function'?side.items():side.items;
     let props:I_RSA_SideMenu = {...side,attrs:side.attrs,items,onClose:()=>close()}
-    return <SideMenu {...props} />
+    return <Side {...props} />
   }
   return (
     <div className='rsa ai' style={{ maxWidth }}>
@@ -326,7 +326,7 @@ function Navigation(props:I_RSA_Navigation) {
     </div>
   )
 }
-function SideMenu(props:I_RSA_SideMenu) {
+function Side(props:I_RSA_SideMenu) {
   let { attrs = {},header,items, onClose,footer } = props;
   function header_node():RN {
     if (!header) { return null }
@@ -363,199 +363,4 @@ function SideMenu(props:I_RSA_SideMenu) {
     </div>
   )
 }
-const RSANavInterface = `
-{
-  id?:string,
-  items:[],
-  header?:()=>React.ReactNode,
-  footer?:()=>React.ReactNode,
-  cache?:boolean,
-  disabled?:boolean
-}
-`
-const RSANavItemInterface = `
-{
-  id:string,
-  text:string | ()=>string,
-  icon?:React.ReactNode || ()=>React.ReactNode,
-  items?:[],
-  show?:()=>boolean
-}
-`
-function RSAValidate(props:any){
-  let error = RSAValidateError(props);
-  if(error){alert(error)}
-}
 
-function RSAValidateError(props:any){
-  let validProps = ['id','rtl','title','nav','subtitle','body','header','headerContent','maxWidth','side','theme']
-  for(let prop in props){
-    if(validProps.indexOf(prop) === -1){
-      return `
-        react-super-app error => invalid props (${prop}). 
-        valid properties are 'id','rtl','title','nav','subtitle','body','header','headerContent','maxWidth','side','theme'
-      `
-    }
-  }
-  if(props.rtl !== undefined && typeof props.rtl !== 'boolean'){
-    return `
-        react-super-app error => rtl props should be boolean. 
-      `
-  }
-  if(!props.id || typeof props.id !== 'string'){
-    return `
-        react-super-app error => id props should be an string but is ${props.id}. 
-      `
-  }
-  if(props.title !== undefined && typeof props.title !== 'function'){
-    return `
-        react-super-app error => title props should be a functon that get nav item as parameter and returns string. 
-      `
-  }
-  if(props.subtitle !== undefined && typeof props.subtitle !== 'function'){
-    return `
-        react-super-app error => subtitle props should be a functon that get nav item as parameter and returns string. 
-      `
-  }
-  if(props.headerContent !== undefined && typeof props.headerContent !== 'function'){
-    return `
-      react-super-app error => headerContent props should be a functon that returns html. 
-    `
-  }
-  if(typeof props.body !== 'function'){
-    return `
-        react-super-app error => body props should be a funtion that returns html. 
-      `
-  }
-  let navError = RSAValidateNav(props.nav)
-  if(navError){return navError}
-  let sideError = RSAValidateSide(props.side)
-  if(sideError){return sideError}
-
-}
-function RSAValidateSide(side:I_RSA_side){
-  //type I_Sidemenu_props = {items:I_SideMenu_props_item[],header:()=>React.ReactNode,footer:()=>React.ReactNode,attrs:object}
-//type I_SideMene_props_item = {icon?:React.ReactNode | ()=>React.ReactNode,text:String,className?:String,style?:Object,onClick?:()=>void,show?:()=>boolean}
-  if(!side){return}
-  let side_validProps = ['items','header','footer','attrs']
-  for(let prop in side){
-    if(side_validProps.indexOf(prop) === -1){
-      return `
-        react-super-app error => invalid side property (${prop}). 
-        valid side properties are 'items','header','footer','attrs'
-      `
-    }
-  }
-  let sideItemError = 'each side item should be an object cointan {icon?:React.ReactNode | ()=>React.ReactNode,text:String,attrs?:object,show?:()=>boolean,onClick:function|undefined}'
-  if(!side.items || (!Array.isArray(side.items) && typeof side.items !== 'function')){
-    return `
-      react-super-app error => side.items should be an array of objects or function that returns array of objects 
-      ${sideItemError}
-    `
-  }
-  for(let i = 0; i < side.items.length; i++){
-    let {items:I} = side;
-    let items:I_RSA_sideItem[] = typeof I === 'function'?I():I;
-    let item = items[i];
-    let {text,show = ()=>true,attrs = {}} = item;
-    let sideItem_validProps = ['text','icon','attrs','show','onClick']
-    for(let prop in item){
-      if(sideItem_validProps.indexOf(prop) === -1){
-        return `
-          react-super-app error => side.items[${i}].${prop} is not a valid side item property.
-          ${sideItemError}
-        `
-      }
-    }
-    if(typeof show !== 'function'){
-      return `
-        react-super-app error => side.items[${i}].show should be a function that returns boolean.
-        ${sideItemError}
-      `
-    }
-    if(typeof attrs !== 'object' || Array.isArray(attrs)){
-      return `
-        react-super-app error => side.items[${i}].attrs should be an object contain dom attributes.
-        ${sideItemError}
-      `
-    }
-    if(!text || typeof text !== 'string'){return `react-super-app error => side.items[${i}].text should be an string`}
-  }
-}
-function RSAValidateNav(nav:I_RSA_nav){
-  if(typeof nav !== 'object' || Array.isArray(nav)){
-    return `
-      react-super-app error => nav props should be an object contain ${RSANavInterface}.
-      each nav item should be an object contain ${RSANavItemInterface}
-    `
-  }
-  let nav_validProps = ['id','items','header','footer','cache','nested']
-  for(let prop in nav){
-    if(nav_validProps.indexOf(prop) === -1){
-      return `
-        react-super-app error => invalid nav property (${prop}). 
-        valid nav properties are ${nav_validProps.join(' - ')}
-      `
-    }
-  }
-  if(nav.id && typeof nav.id !== 'string'){return `react-super-app error => exist nav.id should be an string`}
-  if(!nav.items || typeof nav.items !== 'function'){return `
-    react-super-app error => nav.items should be a function that returns array of nav items.
-    each nav item type is:
-    ${RSANavItemInterface}
-  `}
-  let navItems:I_RSA_navItem[] = typeof nav.items === 'function'?nav.items():nav.items
-  let itemsError = RSAValidateNavItems(navItems || [])
-  if(itemsError){return itemsError}
-}
-function RSAValidateNavItems(items:I_RSA_navItem[],path?:string):string | undefined{
-  path = path || 'nav';
-  items = items || []
-  let navItemError = `
-    nav item should be an object contain 
-    ${RSANavItemInterface}
-  `
-  for(let i = 0; i < items.length; i++){
-    let item = items[i];
-    let {id,text,show = ()=>true,render} = item;
-    let usedIds:string[] = [];
-    let navItem_validProps = ['id','items','icon','show','text','render','disabled']
-    for(let prop in item){
-      if(navItem_validProps.indexOf(prop) === -1){
-        return `
-          react-super-app error => ${path}.items[${i}].${prop} is not a valid nav item property.
-          ${navItemError}
-        `
-      }
-    }
-    if(render && typeof render !== 'function'){
-      return `
-        react-super-app error => ${path}.items[${i}].render should be a function that returns html.
-        ${navItemError}
-      `
-    }
-    if(typeof show !== 'function'){
-      return `
-        react-super-app error => ${path}.items[${i}].show should be a function that returns boolean.
-        ${navItemError}
-      `
-    }
-    if(!id || typeof id !== 'string'){
-      return `
-        react-super-app error => ${path}.items[${i}].id should be an string.
-        ${navItemError}
-      `
-    }
-    if(usedIds.indexOf(id) !== -1){
-      return `
-        react-super-app error => ${path}.items[${i}].id is duplicate.
-        ${navItemError}
-      `
-    }
-    usedIds.push(item.id)
-    if(!text || typeof text !== 'string'){return `react-super-app error => ${path}.items[${i}].text should be an string`}
-    let ITEMS:I_RSA_navItem[] = item.items || []
-    let itemsError = RSAValidateNavItems(ITEMS,path + `.items[${i}]`);
-    if(itemsError){return itemsError}
-  }
-}

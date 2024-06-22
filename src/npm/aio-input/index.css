@@ -2195,7 +2195,9 @@
 .aio-input-sidemenu-before{
     display:flex;
     align-items: center;
+    justify-content: center;
     gap:6px;
+    width:48px;
 }
 
 .aio-input-sidemenu-after{
@@ -2211,9 +2213,6 @@
 }
 
 .aio-input-sidemenu-icon{
-    background:rgba(0,0,0,.1);
-    width:30px;
-    height:30px;
     border-radius:100%;
 }
 
@@ -2262,18 +2261,10 @@
 }
 
 .aio-input-sidemenu .aio-input-tree-body-level-1{
-    padding:12px;
     background: rgba(0,0,0,0.03);
 }
 .aio-input-sidemenu .aio-input-tree-body-level-2{
-    padding:12px;
     background: rgba(0,0,0,0.06);
-}
-.aio-input-sidemenu .aio-input-tree-body-level-1 .aio-input-tree-option{
-    height:36px;
-}
-.aio-input-sidemenu .aio-input-tree-body-level-2 .aio-input-tree-option{
-    height:36px;
 }
 .aio-input-main-color {
     color:var(--aio-input-color);
