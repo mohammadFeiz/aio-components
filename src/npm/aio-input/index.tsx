@@ -1,5 +1,5 @@
 /////////////dependencies//////////////
-import React, { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment } from 'react';
+import React, { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode } from 'react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
     mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDotsHorizontal,
@@ -19,7 +19,7 @@ import {
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
-type RN = React.ReactNode
+type RN = ReactNode
 const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
     let type = props.type,round = props.round;
@@ -3422,10 +3422,11 @@ function MapFooter() {
 export type AI_Sidemenu = {
     items:AI_Sidemenu_child[],
     onChange:(item:AI_Sidemenu_child)=>void,
-    option?:any
+    option?:any,
+    hover?:boolean
 }
 export type AI_Sidemenu_child = {
-    text:string,
+    text:RN,
     value:string,
     badge?:AI_Sidemenu_badge | AI_Sidemenu_badge[],
     icon:RN,
@@ -3436,7 +3437,7 @@ export type AI_Sidemenu_badge = {
     color:'red'|'green'|'blue'|'grey'|'white'|'orange'|'yellow',
 }
 export const SideMenu:FC<AI_Sidemenu> = (props) => {
-    let {items = [],onChange,option = {}} = props;
+    let {items = [],onChange,option = {},hover} = props;
     let cls = 'aio-input-sidemenu'
     function getBadge(item:AI_Sidemenu_child){
         let {badge} = item;
@@ -3486,7 +3487,7 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
     return (
         <AIOInput
             type='tree'
-            className={cls}
+            className={cls + (hover?' aio-input-sidemenu-hover':'')}
             size={48}
             value={[...items]}
             getChilds={(p:{row:AI_Sidemenu_child})=>p.row.childs || []}
@@ -4019,7 +4020,7 @@ export type AI = {
     option?:AI_optionProp,
     paging?: AI_table_paging,
     pattern?:string,
-    placeholder?: React.ReactNode,
+    placeholder?: ReactNode,
     popover?: AI_popover,//notice get type from aio popup
     point?:false | AI_point,//range
     popupConfig?:I_Map_config

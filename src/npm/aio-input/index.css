@@ -2190,7 +2190,14 @@
     color:#444;
     background:#fff;
     width:240px;
-    box-shadow:0 2px 12px 0 rgba(0,0,0,0.1)
+}
+.aio-input-sidemenu.aio-input-sidemenu-hover{
+    width:60px;
+    transition: width 0.3s;
+}
+.aio-input-sidemenu-hover:hover{
+    width:240px;
+    transition:width 0.3s;
 }
 .aio-input-sidemenu-before{
     display:flex;

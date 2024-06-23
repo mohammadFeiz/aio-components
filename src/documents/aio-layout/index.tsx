@@ -1,13 +1,36 @@
-import { FC, ReactNode, useState } from "react"
+import { FC, ReactNode, useEffect, useState } from "react"
 import { SideMenu } from "../../npm/aio-input"
 import Icon from "@mdi/react"
-import { mdiFile, mdiMenu } from "@mdi/js"
-import { Route, Router, Routes, useNavigate } from "react-router-dom"
+import { mdiAccount, mdiAttachment, mdiFile, mdiMenu, mdiStar } from "@mdi/js"
+import { Route, Router, Routes, useLocation, useNavigate } from "react-router-dom"
 import './index.css';
-type I_nav = {text:string,icon:ReactNode,value:string,path?:string,element?:()=>ReactNode,childs?:I_nav[]}
-type I_context = {rootProps:I_AIOLayout,activeNav?:string,setActiveNav:(navId:string)=>void}
+import { AddToAttrs } from "../../npm/aio-utils"
+import AIOPopup from "../../npm/aio-popup"
+type I_nav = {
+    items:I_navItem[],
+    hover:boolean,
+    header?:ReactNode,
+    footer?:ReactNode,
+}
+type I_side = {
+    items:I_sideItem[],
+    header?:ReactNode,
+    footer?:ReactNode,
+    attrs?:any
+}
+type I_header = {title?:(activeNav:I_navItem | undefined)=>React.ReactNode,before?:ReactNode,after?:ReactNode}
+type I_sideItem = {text:ReactNode,icon:ReactNode,onClick?:()=>void,show?:()=>boolean,attrs?:any}
+type I_bottomMenu = {items:I_navItem[]}
+type I_navItem = {text:ReactNode,icon:ReactNode,value:string,path?:string,element?:()=>ReactNode,childs?:I_navItem[],show?:()=>boolean,attrs?:any}
+type I_context = {
+    rootProps:I_AIOLayout,
+    activeNav?:I_navItem,
+    popup:AIOPopup,
+    openSide:()=>void,
+    onNav:(navItem:I_navItem)=>void
+}
 const Example:FC = ()=>{
-    const navs:I_nav[] = [
+    const navItems:I_navItem[] = [
         {
             text:'Side menu 0',icon:<Icon path={mdiFile} size={1}/>,value:'0',
             childs:[
@@ -99,65 +122,216 @@ const Example:FC = ()=>{
             ]
         },
     ]
-    return <AIOLayout navs={navs}/>
+    const bottomMenu:I_navItem[] = [
+        {text:'Side menu 0-0',icon:<Icon path={mdiFile} size={1}/>,value:'part0_0',element:()=><Part0_0/>},
+        {text:'Side menu 0-1',icon:<Icon path={mdiFile} size={1}/>,value:'part0_1',element:()=><Part0_1/>},
+        {text:'Side menu 0-2',icon:<Icon path={mdiFile} size={1}/>,value:'part0_2',element:()=><Part0_2/>},
+        {text:'Side menu 0-3',icon:<Icon path={mdiFile} size={1}/>,value:'part0_3',element:()=><Part0_3/>},
+        {text:'Side menu 0-4',icon:<Icon path={mdiFile} size={1}/>,value:'part0_4',element:()=><Part0_4/>},
+    ]
+    return (
+        <AIOLayout 
+            nav={{items:navItems,hover:true}} 
+            bottomMenu={{items:bottomMenu}}
+            header={{
+                after:(
+                    <div className="flex-row align-v p-h-12 gap-12">
+                        <Icon path={mdiAccount} size={0.8}/>
+                        <Icon path={mdiAttachment} size={0.8}/>
+                        <Icon path={mdiStar} size={0.8}/>
+                    </div>
+                ),
+                before:<Icon path={mdiAccount} size={1}/>
+            }}
+        />
+    )
 }
 export default Example;
-type I_AIOLayout = {navs:I_nav[]}
+type I_AIOLayout = {nav?:I_nav,bottomMenu?:I_bottomMenu,side?:I_side,header?:I_header,rtl?:boolean}
 const AIOLayout:FC<I_AIOLayout> = (props)=>{
-    const {navs} = props;
-    const [activeNav,setActiveNav] = useState<string>()
-    function getRoutes(){
+    const [activeNav,SetActiveNav] = useState<I_navItem>();
+    const [popup] = useState<AIOPopup>(new AIOPopup({rtl:props.rtl}));
+    const location = useLocation()
+    const navigate = useNavigate();
+    function openSide(){
+        popup.addModal({
+            position:props.rtl?'right':'left',
+            body:()=><Sidebar context={context}/>
+        })
+    }
+    function onNav(navItem:I_navItem){
+        navigate(navItem.value); 
+        SetActiveNav(navItem);
+    }
+    function setActiveNav(){
+        const activeNav = findNavItem();
+        SetActiveNav(activeNav === false?undefined:activeNav)
+    }
+    function findNavItem():I_navItem | false{
+        const {nav} = props;
+        if(!nav){return false}
+        const {items = []} = nav;
+        const res:I_navItem | undefined = findNavItem_req(items)
+        if(res === undefined){return false}
+        return res
+    }
+    function findNavItem_req(items:I_navItem[]):I_navItem | undefined{
+        for(let i = 0; i < items.length; i++){
+            const item = items[i]
+            const pathnames = location.pathname.split('/');
+            if(pathnames.includes(item.value)){
+                return item
+            }
+            if(item.childs && item.childs.length){
+                const res:I_navItem | undefined = findNavItem_req(item.childs)
+                if(res){return res}
+            }
+        }
+    }
+    const context:I_context = {rootProps:props,activeNav,popup,openSide,onNav}
+    
+    useEffect(()=>{
+        setActiveNav()
+    },[location,props.nav?.items])
+    return (
+        <>
+            <div className="aio-layout-container">
+                <div className="aio-layout">
+                    <AIOLayoutHeader context={context}/>
+                    <AIOLayoutBody context={context}/>
+                    <AIOLayoutFooter context={context}/>
+                </div>
+            </div>
+            {popup.render()}
+        </>
+    )
+}
+const AIOLayoutHeader:FC<{context:I_context}> = ({context})=>{
+    const {rootProps,activeNav} = context;
+    const {side,header = {}} = rootProps;
+    const {title = ()=>'',after,before} = header;
+    const Title = title(activeNav) || activeNav?.text
+    return (
+        <div className="aio-layout-header">
+            {!!side && <div className='aio-layout-side-button'><Icon path={mdiMenu} size={1}/></div>}
+            {!side && <div></div>}
+            {!!before && before}
+            <div className="aio-layout-header-title">{Title || ''}</div>
+            {!!after && after}
+        </div>
+    )
+}
+const AIOLayoutBody:FC<{context:I_context}> = ({context})=>{
+    const {rootProps} = context;
+    const {nav,bottomMenu} = rootProps
+    function getRoutes(items:I_navItem[] = []){
+        if(!items.length){return []}
         let routes:ReactNode[] = []
-        getRoutes_req(navs,routes)
+        getRoutes_req(items,routes)
         return routes
     }
-    function getRoutes_req(list:I_nav[],routes:ReactNode[],parentKey?:string){
+    function getRoutes_req(list:I_navItem[],routes:ReactNode[],parentKey?:string){
         for(let i = 0; i < list.length; i++){
-            const {element,value,childs = []} = list[i];
+            const {element,value,childs = [],show = ()=>true} = list[i];
+            if(show() === false){continue}
             const key = `${parentKey || 'root'}-${i}`;
             if(element){routes.push(<Route key={key} path={`/${value}`} element={element()}/>)}
             if(childs.length){getRoutes_req(childs,routes,key)}
         }
     }
-    const context:I_context = {rootProps:props,activeNav,setActiveNav}
     return (
-        <div className="aio-layout-container">
-            <div className="aio-layout">
-            <AIOLayoutHeader context={context}/>
-            <div className="aio-layout-body">
-                <AIOLayoutSideNav context={context}/>
-                <div className="aio-layout-content">
-                    <Routes>{getRoutes()}</Routes>
-                </div>
+        <div className="aio-layout-body">
+            <AIOLayoutSideNav context={context}/>
+            <div className="aio-layout-content">
+                <Routes>{getRoutes(nav?.items)}{getRoutes(bottomMenu?.items)}</Routes>
             </div>
         </div>
-        </div>
     )
 }
-const AIOLayoutHeader:FC<{context:I_context}> = ({context})=>{
-    const side = {
-        
-    }
+const AIOLayoutFooter:FC<{context:I_context}> = ({context})=>{
+    const {rootProps,onNav} = context;
+    const {bottomMenu} = rootProps;
+    if(!bottomMenu){return null}
+    const {items = []} = bottomMenu;
+    const cls = 'aio-layout-bottom-menu'
     return (
-        <div className="aio-layout-header">
-            {!!side && <div className='aio-layout-side-button'><Icon path={mdiMenu} size={1}/></div>}
-        </div>
-    )
-}
-const AIOLayoutSideNav:FC<{context:I_context}> = ({context})=>{
-    const {rootProps} = context;
-    const {navs} = rootProps;
-    const navigate = useNavigate();
-    return (
-        <div className="aio-layout-side">
-            <SideMenu
-                items={navs}
-                onChange={(option:I_nav)=>navigate(option.value)}       
-            />
+        <div className={cls}>
+            {
+                items.map((o:I_navItem)=>{
+                    const {icon,text,value,attrs = {}} = o;
+                    const Attrs = AddToAttrs(attrs,{className:`${cls}-item`,attrs:{onClick:()=>onNav(o)}})
+                    return (
+                        <div {...Attrs}>
+                            <div className={`${cls}-item-icon`}>{icon}</div>
+                            <div className={`${cls}-item-text`}>{text}</div>
+                        </div>
+                    )
+                })
+            }
             
         </div>
     )
 }
+const AIOLayoutSideNav:FC<{context:I_context}> = ({context})=>{
+    const {rootProps,onNav} = context;
+    const {nav} = rootProps;
+    if(!nav){return null}
+    return (
+        <div className='aio-layout-side'>
+            {!!nav.header && <div className="aio-layout-nav-header">{nav.header}</div>}
+            <SideMenu
+                items={nav.items}
+                hover={nav.hover}
+                onChange={(option:I_navItem)=>onNav(option)}   
+                option={{
+                    attrs:(option:any)=>option.attrs
+                }}    
+            />
+            {!!nav.footer && <div className="aio-layout-nav-footer">{nav.footer}</div>}
+        </div>
+    )
+}
+const Sidebar:FC<{context:I_context}> = ({context}) => {
+    const {rootProps} = context;
+    const {side} = rootProps;
+    if(!side){return null}
+    let { attrs = {},header,items,footer } = side;
+    function header_node():ReactNode {
+      if (!header) { return null }
+      return (<div className="aio-layout-sidebar-header">{header}</div>)
+    }
+    function items_node():ReactNode {
+      return (
+        <div className="aio-layout-sidebar-items">
+          {
+            items.map((o, i) => {
+              let { icon = () => <div style={{ width: 12 }}></div>, text, attrs = {}, onClick = () => { }, show = () => true } = o;
+              let Show = show();
+              if(Show === false){return null}
+              return (
+                <div className={'aio-layout-sidebar-item' + (attrs.className ? ' ' + attrs.className : '')} style={attrs.style} onClick={()=>{onClick()}}>
+                  <div className="aio-layout-sidebar-item-icon">{typeof icon === 'function'?icon():icon}</div>
+                  <div className="aio-layout-sidebar-item-text">{text}</div>
+                </div>
+              )
+            })
+          }
+        </div>
+      )
+    }
+    function footer_node():ReactNode {
+      if (!footer) { return null }
+      return (
+        <div className="aio-layout-sidebar-footer">{footer}</div>
+      )
+    }
+    return (
+      <div {...attrs} className={'aio-layout-sidebar' + (attrs.className ? ' ' + attrs.className : '')}>
+        {header_node()} {items_node()} {footer_node()}
+      </div>
+    )
+  }
+  
 const Part0_0:FC = ()=>{
     return (
         <div className=''>0-0</div>

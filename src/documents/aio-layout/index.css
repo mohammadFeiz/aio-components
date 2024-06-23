@@ -26,6 +26,10 @@
     align-items:center;
     box-shadow:0 0 8px 0 rgba(0,0,0,0.3);
     flex-shrink:0;
+    gap:12px;
+  }
+  .aio-layout-header-title{
+    flex:1;
   }
   .aio-layout-side-button{
     width:60px;
@@ -39,18 +43,14 @@
     display:flex;
     overflow-y:auto;
     overflow-x:hidden;
+    flex-shrink:0;
   }
   .aio-layout-side{
-    width:60px;
     z-index:1000;
-    transition: width 0.3s;
+    box-shadow:0 0 8px 0 rgba(0,0,0,0.3);
   }
-  .aio-layout-side .aio-input-sidemenu{
-    width:60px;
-  }
-  .aio-layout-side:hover .aio-input-sidemenu{
-    width:240px;
-    transition:width 0.3s;
+  .aio-layout-side .aio-input-tree-option-value{
+    white-space: nowrap;
   }
   .aio-layout-content{
     flex:1;
@@ -60,4 +60,20 @@
     flex-direction: column;
     height:100%;
     width:calc(100% - 60px);
+  }
+  .aio-layout-bottom-menu{
+    display:flex;
+    height:60px;
+    flex-shrink:0;
+    align-items: center;
+    font-size:12px;
+    box-shadow:0 0 8px 0 rgba(0,0,0,0.3);
+  }
+  .aio-layout-bottom-menu-item{
+    display:flex;
+    flex-direction:column;
+    align-items: center;
+    justify-content: center;
+    flex:1;
+    
   }
