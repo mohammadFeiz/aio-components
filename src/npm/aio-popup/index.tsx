@@ -4,7 +4,7 @@ import { Icon } from '@mdi/react';
 import { mdiClose } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
-import { AddToAttrs } from './../../npm/aio-utils/index';
+import { AddToAttrs } from './../../npm/aio-utils';
 import anime from "animejs/lib/anime.es.js";
 export type AP_props = {rtl?:boolean,id?:string}
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
@@ -376,7 +376,7 @@ const ModalHeader:FC<{modal:AP_modal}> = (props) => {
   let { modal } = props;
   let { state, setState } = context;
   let {setAttrs = ()=>{return {}}} = modal;
-  let attrs = setAttrs('modal') || {};
+  let attrs = setAttrs('header') || {};
   if(typeof modal.header === 'function'){return modal.header({close:context.close,state,setState}) as any}
   if (typeof modal.header !== 'object') { return null }
   let cls = 'aio-popup-header'
