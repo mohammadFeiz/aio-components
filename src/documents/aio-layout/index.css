@@ -27,16 +27,20 @@
     box-shadow:0 0 8px 0 rgba(0,0,0,0.3);
     flex-shrink:0;
     gap:12px;
+    z-index:10;
   }
   .aio-layout-header-title{
     flex:1;
   }
-  .aio-layout-side-button{
+  .aio-layout-sidebar-toggle{
     width:60px;
     height:100%;
     display:flex;
     align-items: center;
     justify-content: center;
+  }
+  .aio-layout .aio-input-sidemenu{
+    background:none !important;
   }
   .aio-layout-body{
     flex:1;
@@ -45,11 +49,14 @@
     overflow-x:hidden;
     flex-shrink:0;
   }
-  .aio-layout-side{
+  .aio-layout-nav{
     z-index:1000;
     box-shadow:0 0 8px 0 rgba(0,0,0,0.3);
   }
-  .aio-layout-side .aio-input-tree-option-value{
+  .aio-layout-nav .aio-input-sidemenu{
+    color:inherit;
+  }
+  .aio-layout-nav .aio-input-tree-option-value{
     white-space: nowrap;
   }
   .aio-layout-content{
@@ -75,5 +82,40 @@
     align-items: center;
     justify-content: center;
     flex:1;
-    
+    height:100%;
+    cursor:pointer;
+  }
+  .aio-layout .aio-popup-backdrop{
+    position:absolute;
+
+  }
+  .aio-layout-sidebar{
+    height:100%;
+    width:200px;
+    display:flex;
+    flex-direction:column;
+  }
+  .aio-layout-sidebar-body{
+    flex:1;
+    flex-shrink: 0;
+    overflow-y:auto;
+  }
+  .aio-layout-sidebar-item{
+    display:flex;
+    align-items: center;
+  }
+  .aio-layout-sidebar-item-icon{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .aio-layout-nav-item-active{
+    background:#0069ff;
+    color:#fff;
+  }
+  .aio-layout-bottom-menu-item-active{
+    background:#0069ff;
+    color:#fff;
   }

@@ -1,5 +1,5 @@
 import { FC, createContext, useContext, useState } from "react";
-import AIOInput, { AI_Sidemenu_option, SideMenu } from "../../../npm/aio-input";
+import AIOInput, { AI_Sidemenu_item, SideMenu } from "../../../npm/aio-input";
 import './theme1.css';
 import { mdiAccessPointNetworkOff, mdiAlphaBBox, mdiArrowRight, mdiCakeVariant, mdiCamera, mdiDatabaseArrowLeftOutline, mdiEarthBoxRemove, mdiFaceRecognition, mdiFileDocument, mdiInformation, mdiMicrophone, mdiStar, mdiVideo } from "@mdi/js";
 import {Icon} from "@mdi/react";
@@ -7,36 +7,36 @@ import AIOPopup, { AP_confirm, AP_prompt } from "../../../npm/aio-popup";
 import Code from "../../../npm/code";
 const CTX = createContext({} as any);
 type I_ctx = {
-    sideItems:AI_Sidemenu_option[],
+    sideItems:AI_Sidemenu_item[],
     popup:AIOPopup
 }
 const Theme1:FC = ()=>{
     const [popup] = useState<AIOPopup>(new AIOPopup())
     const [activeSide,setActiveSide] = useState<string>('selectiveInputs')
-    const sideItems:AI_Sidemenu_option[] = [
+    const sideItems:AI_Sidemenu_item[] = [
         {
-            text:'Inputs',value:'inputs',
-            options:[
+            text:'Inputs',value:'inputs',icon:'',
+            items:[
                 {
-                    text:'Selective Inputs',value:'selectiveInputs'
+                    text:'Selective Inputs',value:'selectiveInputs',icon:''
                 }
             ]
         },
         {
             text:'Boxes',value:'boxes',
             icon:<Icon path={mdiAlphaBBox} size={0.8}/>,
-            options:[
+            items:[
                 {
-                    text:'Box1',value:'box1'
+                    text:'Box1',value:'box1',icon:''
                 }
             ]
         },
         {
             text:'Modals',value:'modals',
             icon:<Icon path={mdiAlphaBBox} size={0.8}/>,
-            options:[
-                {text:'Confirm',value:'confirm'},
-                {text:'Prompt',value:'prompt'},
+            items:[
+                {text:'Confirm',value:'confirm',icon:''},
+                {text:'Prompt',value:'prompt',icon:''},
             ]
         }
     ]
@@ -58,8 +58,8 @@ const Theme1:FC = ()=>{
             <div className='ai-body'>
                 <div className='ai-side'>
                     <SideMenu
-                        options={sideItems}
-                        onChange={(activeSide)=>setActiveSide(activeSide)}
+                        items={sideItems}
+                        onChange={(activeSide)=>setActiveSide(activeSide.value)}
                     /> 
                 </div>
                 <div className='ai-border-v'></div>
@@ -73,7 +73,7 @@ const Theme1:FC = ()=>{
 export default Theme1
 const AINavbar:FC = ()=>{
     return (
-        <div className='ai-navbar'>
+        <div className='aio-layout-header'>
             <div className='ai-logo'>
 
             </div>

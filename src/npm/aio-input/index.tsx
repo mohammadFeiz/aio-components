@@ -3420,26 +3420,26 @@ function MapFooter() {
     return <div className="aio-input-map-footer">{details_node()} {submit_node()}</div>
 }
 export type AI_Sidemenu = {
-    items:AI_Sidemenu_child[],
-    onChange:(item:AI_Sidemenu_child)=>void,
+    items:AI_Sidemenu_item[],
+    onChange:(item:AI_Sidemenu_item)=>void,
     option?:any,
-    hover?:boolean
+    type?:'hover' | 'normal' | 'icon'
 }
-export type AI_Sidemenu_child = {
+export type AI_Sidemenu_item = {
     text:RN,
     value:string,
     badge?:AI_Sidemenu_badge | AI_Sidemenu_badge[],
     icon:RN,
-    childs?:AI_Sidemenu_child[],
+    items?:AI_Sidemenu_item[],
 }
 export type AI_Sidemenu_badge = {
     text:string,circle?:boolean,
     color:'red'|'green'|'blue'|'grey'|'white'|'orange'|'yellow',
 }
 export const SideMenu:FC<AI_Sidemenu> = (props) => {
-    let {items = [],onChange,option = {},hover} = props;
+    let {items = [],onChange,option = {},type} = props;
     let cls = 'aio-input-sidemenu'
-    function getBadge(item:AI_Sidemenu_child){
+    function getBadge(item:AI_Sidemenu_item){
         let {badge} = item;
         if(!badge){badge = []}
         if(!Array.isArray(badge)){badge = [badge]}
@@ -3451,14 +3451,14 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         }
         return res
     }
-    function getAfter(option:AI_Sidemenu_child,details:I_optionDetails){
-        let {childs = []} = option;
+    function getAfter(option:AI_Sidemenu_item,details:I_optionDetails){
+        let {items = []} = option;
         let open = details.isOpen?details.isOpen(option.value):false;
         let badge:RN[] = getBadge(option);
         return (
             <div className={`${cls}-after ${cls}-align`}>
                 {!!badge.length && badge}
-                {!!childs.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+                {!!items.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
             </div>
         )
     }
@@ -3475,23 +3475,34 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         text:'option.text',
         value:'option.value',
         toggleIcon:()=>false,
-        after:(option:AI_Sidemenu_child,details:I_optionDetails)=>getAfter(option,details),
-        before:(option:AI_Sidemenu_child,details:I_optionDetails)=>getBefore(option,details),
-        onClick:(option:AI_Sidemenu_child,details:I_optionDetails)=>{
-            let {childs = []} = option;
-            if(!!childs.length){if(details.toggle){details.toggle()}}
+        after:(option:AI_Sidemenu_item,details:I_optionDetails)=>getAfter(option,details),
+        before:(option:AI_Sidemenu_item,details:I_optionDetails)=>getBefore(option,details),
+        onClick:(option:AI_Sidemenu_item,details:I_optionDetails)=>{
+            let {items = []} = option;
+            if(!!items.length){if(details.toggle){details.toggle()}}
             else if(onChange){onChange(option)}
         },
-        className:(option:AI_Sidemenu_child,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
+        className:(option:AI_Sidemenu_item,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
+    }
+    let finalOptions = {
+        ...defaultOption,...option,
+        className:(item:AI_Sidemenu_item,details:I_optionDetails)=>{
+            let className = `${cls}-row-level-${details.level}`
+            if(typeof option.className === 'function'){
+                const res = option.className(item,details)
+                if(res){className += ' ' + res}
+            }
+            return className
+        }
     }
     return (
         <AIOInput
             type='tree'
-            className={cls + (hover?' aio-input-sidemenu-hover':'')}
+            className={cls + ` aio-input-sidemenu-${type}`}
             size={48}
             value={[...items]}
-            getChilds={(p:{row:AI_Sidemenu_child})=>p.row.childs || []}
-            option={{...defaultOption,...option}}
+            getChilds={(p:{row:AI_Sidemenu_item})=>p.row.items || []}
+            option={finalOptions}
             indent={0}
         />
     )
