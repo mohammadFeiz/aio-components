@@ -32,9 +32,42 @@ const AIOInput: FC<AI> = (props) => {
     else if (type === 'range') {return null;}
     if(type === 'form'){value = {...value}}
     let rootProps: AI = { ...props, type, round,value }
+    if(type === 'text' && rootProps.fetchOptions){
+        return <SuggestionInput {...rootProps}/>
+    }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
+const SuggestionInput: FC<AI> = (props) => {
+    const [searchResult, SetSearchResult] = useState<any[]>([])
+    const [value, setValue] = useState<string>('')
+    async function setSearchResult(newValue: any) {
+        setValue(newValue)
+        if (!newValue) {
+            SetSearchResult([])
+            return
+        }
+        const res: any[] = props.fetchOptions?await props.fetchOptions(newValue):[];
+        SetSearchResult(res)
+    }
+    return (
+        <AIOInput
+            {...props}
+            value={value}
+            options={searchResult}
+            option={{
+                ...props.option,
+                onClick: (obj: any,details) => {
+                    const text = GetOptionProps({props,option:obj,key:'text',details})
+                    setSearchResult(text);
+                    if(props.onChange){props.onChange(obj);}
+                }
+            }}
+            fetchOptions={undefined}
+            onChange={(newValue) => setSearchResult(newValue)}
+        />
+    )
+}
 function AIOINPUT(props: AI) {
     let [types] = useState<AI_types>(getTypes(props))
     let [DATE] = useState<AIODate>(new AIODate())
@@ -4000,6 +4033,7 @@ export type AI = {
     endYear?: string | number,//date
     errorAttrs?:any,//form
     excel?: string,
+    fetchOptions?:(text:string)=>Promise<any[]>
     fill?:false | AI_fill | ((index:number)=>AI_fill),
     filter?: string[],
     footer?:RN,//form
