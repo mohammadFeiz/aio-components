@@ -15,7 +15,7 @@ import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup";
 import { 
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
     getEventAttrs, svgArc, JSXToHTML, HasClass, FilePreview, DownloadFile, ParseString, GetPrecisionCount 
-} from './../../npm/aio-utils/index';
+} from './../../npm/aio-utils';
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
@@ -961,7 +961,7 @@ const Layout:FC<AI_Layout> = (props) => {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
             if (types.isInput) { cls += ` aio-input-input` }
             if (rootProps.justify) { cls += ' aio-input-justify' }
-            if (rtl) { cls += ' aio-input-rtl' }
+            cls += rtl?' aio-input-rtl':' aio-input-ltr'
         }
         if (indent) { cls += ` aio-input-indent-${indent.size}` }
         if (type === 'tree') {
@@ -1160,11 +1160,22 @@ const Layout:FC<AI_Layout> = (props) => {
             </div>
         )
     }
+    function Label(){
+        if(option){return null}
+        const {label} = rootProps
+        if(!label){return null}
+        let className = 'aio-input-label'
+        const required = label[0] === '*'
+        if(required){className += ' aio-input-label-required'}
+        const finalLabel = required?label.slice(1,label.length):label
+        return (<div className="aio-input-label">{finalLabel}</div>)
+    }
     let properties = getProperties();
     let content = (<>
         {Indent()}
         {DragIcon()}
         {CheckIcon()}
+        {Label()}
         {BeforeAfter('before')}
         {Text()}
         {BeforeAfter('after')}
@@ -3226,7 +3237,6 @@ function MapUnit(props: I_MapUnit) {
                 onClose: () => setShowPopup(false),
                 attrs,
                 onChange: (obj) => {
-                    debugger
                     move(obj)
                 }
             }
@@ -3423,7 +3433,10 @@ export type AI_Sidemenu = {
     items:AI_Sidemenu_item[],
     onChange:(item:AI_Sidemenu_item)=>void,
     option?:any,
-    type?:'hover' | 'normal' | 'icon'
+    type?:'hover' | 'normal' | 'icon',
+    className?:string,
+    style?:any,
+    attrs?:any
 }
 export type AI_Sidemenu_item = {
     text:RN,
@@ -3437,7 +3450,7 @@ export type AI_Sidemenu_badge = {
     color:'red'|'green'|'blue'|'grey'|'white'|'orange'|'yellow',
 }
 export const SideMenu:FC<AI_Sidemenu> = (props) => {
-    let {items = [],onChange,option = {},type} = props;
+    let {items = [],onChange,option = {},type = 'normal'} = props;
     let cls = 'aio-input-sidemenu'
     function getBadge(item:AI_Sidemenu_item){
         let {badge} = item;
@@ -3495,10 +3508,12 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
             return className
         }
     }
+    const attrs = AddToAttrs(props.attrs,{className:[cls,`aio-input-sidemenu-${type}`,props.className]})
     return (
         <AIOInput
+            {...attrs}
+            className={attrs.className}
             type='tree'
-            className={cls + ` aio-input-sidemenu-${type}`}
             size={48}
             value={[...items]}
             getChilds={(p:{row:AI_Sidemenu_item})=>p.row.items || []}
@@ -4003,6 +4018,7 @@ export type AI = {
     jalali?: boolean,
     justify?: boolean,
     justNumber?: boolean | (string[]),
+    label?:string,
     labels?:AI_labels,//range
     labelAttrs?:any,//form
     lang?:'fa' | 'en',//form,
