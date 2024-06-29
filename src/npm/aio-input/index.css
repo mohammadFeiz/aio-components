@@ -2282,3 +2282,24 @@
 .aio-input-main-bg {
     background:var(--aio-input-color);
 }
+
+.aio-input-label{
+    position:absolute;
+    top:-8px;
+    background: #fff;
+    z-index:10;
+    padding:0 12px;
+    font-size:12px;
+  }
+  .aio-input.ltr .aio-input-label{
+    left:16px;
+  }
+  .aio-input.rtl .aio-input-label{
+    right:16px;
+  }
+  .aio-input-label-required:after{
+    content:'*';
+    position: absolute;
+    color:red;
+    font-size:18px;
+  }
