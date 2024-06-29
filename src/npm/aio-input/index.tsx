@@ -3477,6 +3477,7 @@ export type AI_Sidemenu_item = {
     badge?:AI_Sidemenu_badge | AI_Sidemenu_badge[],
     icon:RN,
     items?:AI_Sidemenu_item[],
+    onClick?:()=>void
 }
 export type AI_Sidemenu_badge = {
     text:string,circle?:boolean,
@@ -3526,6 +3527,7 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         onClick:(option:AI_Sidemenu_item,details:I_optionDetails)=>{
             let {items = []} = option;
             if(!!items.length){if(details.toggle){details.toggle()}}
+            else if(option.onClick){option.onClick()}
             else if(onChange){onChange(option)}
         },
         className:(option:AI_Sidemenu_item,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
