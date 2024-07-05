@@ -285,7 +285,7 @@ function Navigation(props:I_RSA_Navigation) {
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
     return (
-      <div className={'rsa-navigation-item' + (active ? ' active' : '')} onClick={disabled?undefined:() => items ? toggle(id) : setNavId(id)}>
+      <div key={id} className={'rsa-navigation-item' + (active ? ' active' : '')} onClick={disabled?undefined:() => items ? toggle(id) : setNavId(id)}>
         <div style={{width:level * 16}}></div>
         {
           nav.nested === true &&
