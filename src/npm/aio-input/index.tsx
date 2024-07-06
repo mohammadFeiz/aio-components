@@ -3376,6 +3376,10 @@ export class AIOValidation {
         }
     }
 }
+export function AIOInput_defaultProps(p:{[key in ('mapApiKeys')]?:any}) {
+    let storage: Storage = new Storage('aio-input-storage');
+    for(let prop in p){storage.save(prop,(p as any)[prop])}
+}
 function getTypes(props: AI) {
     function isDropdown() {
         if (['select', 'date', 'time'].indexOf(type) !== -1) { return true }

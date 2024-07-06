@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    height:100%;
 }
 .aio-map-footer{
     padding:0 6px;
