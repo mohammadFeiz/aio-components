@@ -1414,13 +1414,6 @@
     direction: rtl;
 }
 
-.leaflet-control {
-    display: none;
-}
-
-.leaflet-container a {
-    display: none;
-}
 
 .aio-input-map-footer {
     width: 100%;

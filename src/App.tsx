@@ -22,6 +22,7 @@ import {useNavigate} from 'react-router-dom';
 import './npm/aio-css/aio-css.css';
 import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import AppContainer from './documents/aio-layout';
+import DOC_Map from './documents/map/doc-map.tsx';
 AIOInput_defaultProps({
   'mapApiKeys':{
     map:'web.ff233630c7064c87a5544216029a36c6',
@@ -48,6 +49,7 @@ export default function AIOComponents(){
     'kit':UIKit,
     'Layout1':Layout1,
     'aio-layout':AppContainer,
+    'map':DOC_Map,
     'test':Test
   })
   function goToHome(){

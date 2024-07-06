@@ -1,0 +1,39 @@
+.aio-map{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.aio-map-footer{
+    padding:0 6px;
+    box-sizing: border-box;
+    background:#f8f8f8;
+    display:flex;
+    width:100%;
+    align-items: center;
+    position: relative;
+    height:48px;
+}
+.aio-map-footer button{
+    background:#0069ff;
+    color:#fff;
+    font-family:inherit;
+    border:none;
+    border-radius:6px;
+    padding:0 24px;
+    height:36px;
+}
+.aio-map-footer-html{
+    flex:1;
+    height:100%;
+}
+.aio-map-header{
+    height:48px;
+    position: absolute;
+    top:0;
+    width:100%;
+    z-index:1000;
+    box-sizing: border-box;
+    display:flex;
+    padding:0 6px;
+    align-items: center;
+}
