@@ -24,7 +24,7 @@ import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import AppContainer from './documents/aio-layout';
 AIOInput_defaultProps({
   'mapApiKeys':{
-    map:'web.aab3173ee1ca48f3985d3fc3976539db',
+    map:'web.ff233630c7064c87a5544216029a36c6',
     service:'service.0d7b067eb6984a8c864920fe7b09800c',
   }
 })

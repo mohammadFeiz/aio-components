@@ -76,6 +76,17 @@ function AIOINPUT(props: AI) {
     let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
     let [openPopover] = useState<any>(getOpenPopover);
+    let [error,setError]=  useState<string>()
+    useEffect(()=>{
+        validate()
+    },[props.value])
+    function validate(){
+        const {validations,lang = 'en',label} = props;
+        if(!validations){return}
+        const title = label || '';
+        const res = new AIOValidation({ value, title: title.replace(/\*/g, ''), lang, validations }).validate()
+        setError(res)
+    }
     function getOpenPopover(){
         if(!types.isDropdown){return false}
         let className = 'aio-input-popover';
@@ -185,6 +196,7 @@ function AIOINPUT(props: AI) {
     }
     function getContext(): AI_context {
         let context: AI_context = {
+            error,
             options:getOptions(),
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
             DragOptions, open, click, optionClick, types, showPassword, setShowPassword, DATE
@@ -724,9 +736,7 @@ const Form: FC = () => {
         if (!validations.length) { return '' }
         //در مپ مقدار یک آبجکت است پس لت و ال ان جی در مجموع به یک مقدار بولین مپ می کنیم تا فقط در ریکوآیرد بتوان ارور هندلینگ انجام داد
         //if (input.type === 'map') { value = !!value && !!value.lat && !!value.lng }
-        let a: AV_props = { value, title: label || '', lang, validations }
-        let inst = new AIOValidation(a);
-        return inst.validate();
+        return new AIOValidation({ value, title: label || '', lang, validations }).validate();
     }
     function setError(key: string, value: string | undefined) {
         let newErrors = errors = { ...errors, [key]: value }
@@ -974,7 +984,7 @@ export type AI_Layout = {
     toggle?:{open:I_openState},
 }
 const Layout:FC<AI_Layout> = (props) => {
-    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword }: AI_context = useContext(AICTX)
+    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword,error }: AI_context = useContext(AICTX)
     let { option, index, toggle, indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
@@ -994,6 +1004,7 @@ const Layout:FC<AI_Layout> = (props) => {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
             if (types.isInput) { cls += ` aio-input-input` }
             if (rootProps.justify) { cls += ' aio-input-justify' }
+            if(error){cls += ' has-error'}
             cls += rtl?' aio-input-rtl':' aio-input-ltr'
         }
         if (indent) { cls += ` aio-input-indent-${indent.size}` }
@@ -1131,9 +1142,10 @@ const Layout:FC<AI_Layout> = (props) => {
         let style = { ...(obj.style || {}), ...p.style }
         let { before = obj.before } = p;
         let { after = obj.after } = p;
+        let { footer = (obj as AI).footer } = p;
         let classNames = [obj.className, p.className].filter((o) => !!o)
         let className = classNames.length ? classNames.join(' ') : undefined;
-        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className }
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className,footer }
     }
     function getToggleIcon(open:I_openState) {
         if (toggle === undefined) { return null }
@@ -1201,7 +1213,14 @@ const Layout:FC<AI_Layout> = (props) => {
         const required = label[0] === '*'
         if(required){className += ' aio-input-label-required'}
         const finalLabel = required?label.slice(1,label.length):label
-        return (<div className="aio-input-label">{finalLabel}</div>)
+        return (<div className={className}>{finalLabel}</div>)
+    }
+    function getFooter(){
+        if(option){return null}
+        let text:string = '';
+        if(properties.footer !== undefined){text = properties.footer}
+        else if(error){text = error}
+        if(text !== undefined){return (<div className='aio-input-footer'>{text}</div>)}
     }
     let properties = getProperties();
     let content = (<>
@@ -1221,6 +1240,7 @@ const Layout:FC<AI_Layout> = (props) => {
         <div {...p}>
             {content}
             {!!option && type === 'tabs' && <div className='aio-input-tabs-option-bar'></div>}
+            {getFooter()}
         </div>
     )
 }
@@ -3602,9 +3622,7 @@ export class AIOValidation {
             else { result = value.indexOf(target) !== -1;}
             return {result,unit:''}
         }
-        this.startBy = (target, value)=>{
-            return {result:value.indexOf(target) === 0,unit:''};
-        }
+        this.startBy = (target, value)=>({result:value.indexOf(target) === 0,unit:''})
         this.equal = (target, value) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
@@ -4119,6 +4137,7 @@ export type AI = {
     translate?: (text: string) => string,//date,
     type: AI_type,
     unit?: AI_date_unit | AI_time_unit,
+    validations?:any[],
     value?: any,
     vertical?:boolean,
     width?: number | string,
@@ -4230,7 +4249,8 @@ export type AI_context = {
     optionClick: (option: AI_option,p?:any) => void,
     types: AI_types,
     DATE:AIODate,
-    options:AI_options
+    options:AI_options,
+    error?:string
 }
 export type AI_types = {
     isMultiple: boolean,
