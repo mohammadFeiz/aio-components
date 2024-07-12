@@ -1655,6 +1655,10 @@ export function setValueByField(data: any = {}, field: string, value: any) {
     node[fields[fields.length - 1]] = value;
     return data;
 }
+export function GetArray(count:number,fn?:(index:number)=>any){
+    fn = fn || ((index)=>index)
+    return new Array(count).fill(0).map((o,i)=>fn(i))
+}
 type I_storage_model = { [key: string]: any }
 type I_storage_time = { [key: string]: number }
 export class Storage {

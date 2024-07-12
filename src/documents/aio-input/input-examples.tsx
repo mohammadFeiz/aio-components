@@ -1,10 +1,9 @@
-import React, { FC, createContext, createRef, useContext, useRef, useState } from "react"
+import React, { FC, ReactNode, createContext, createRef, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput,{ AI } from "../../npm/aio-input";
 import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
-import RVD from '../../npm/react-virtual-dom/index';
 import $ from 'jquery';
 type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
 const textOptions = [
@@ -67,7 +66,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['unit (hour)', () => <Unit props={{ unit: 'hour' }} propsCode={`unit='hour'`} />, ['date'].indexOf(type) !== -1],
         ['unit (year month day)', () => <Unit props={{ unit: { year: true, month: true, day: true } }} propsCode={`unit={{year:true,month:true,day:true}}`} />, ['date', 'time'].indexOf(type) !== -1],
         ['unit (hour minute second)', () => <Unit props={{ unit: { hour: true, minute: true, second: true } }} propsCode={`unit={{hour:true,minute:true,second:true}}`} />, ['date', 'time'].indexOf(type) !== -1],
-        ['size', () => <Size />, ['date'].indexOf(type) !== -1],
+        ['size', () => <Size />, ['date','time'].indexOf(type) !== -1],
         ['theme', () => <Theme />, ['date'].indexOf(type) !== -1],
         ['caret (false)', () => <CaretFalse />, ['date', 'time'].indexOf(type) !== -1],
         ['caret (html)', () => <CaretHtml />, ['date', 'time'].indexOf(type) !== -1],
@@ -379,9 +378,12 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     let [setting, SetSetting] = useState<I_setting>(new Storage(`${type}examplessetting`).load('setting', {
         show: 'all', showCode: true
     }))
-    function setSetting(setting: any) {
-        new Storage(`${type}examplessetting`).save('setting', setting)
-        SetSetting(setting)
+    function setSetting(value:any,field?:keyof I_setting){
+        let newSetting = {...setting};
+        if(field){newSetting = {...setting,[field]:value}}
+        else{newSetting = {...value}}
+        new Storage('treeexamplessetting').save('setting',newSetting)
+        SetSetting(newSetting)
     }
     function changeShow(dir: 1 | -1) {
         let index = titles.indexOf(setting.show) + dir
@@ -391,75 +393,51 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     }
     function setting_node() {
         let btnstyle = { background: 'none', border: 'none' }
-        return {
-            className: 'p-12',
-            html: (
-                <AIOInput
-                    type='form'
-                    value={{ ...setting }}
-                    onChange={(newSetting) => setSetting({ ...newSetting })}
-                    node={{
-                        dir:'h',
-                        childs:[
-                            { flex: 1 },
-                            {
-                                input: {
-                                    type: 'checkbox', text: 'Show Code'
-                                },
-                                field: 'value.showCode'
-                            },
-                            {
-                                input: {
-                                    type: 'select', options: titles, before: 'Show:',
-                                    option: {
-                                        text: 'option',
-                                        value: 'option'
-                                    },
-                                    popover: {
-                                        maxHeight: '100vh'
-                                    }
-                                },
-                                field: 'value.show'
-                            },
-                            { className: 'align-vh', html: <button type='button' style={btnstyle} onClick={() => changeShow(-1)}><Icon path={mdiMinusThick} size={1} /></button> },
-                            { className: 'align-vh', html: <button type='button' style={btnstyle} onClick={() => changeShow(1)}><Icon path={mdiPlusThick} size={1} /></button> }
-                        ]
-                    }}
-                />
-            )
-        }
+        return (
+            <div className="p-12">
+                <div className="flex-row">
+                    <div className="flex-1"></div>
+                    <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
+                    <AIOInput
+                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
+                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
+                    />
+                    <div className="flex-row align-v">
+                        <button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>
+                        <button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>
+                    </div>
+                </div>
+            </div>
+        )
     }
     function code(code: string) {
         if (setting.showCode === false) { return null }
         return Code(code)
     }
-    function render_node() {
-        return {
-            key: JSON.stringify(setting),
-            className: 'ofy-auto flex-1 p-12',
-            column: examples.map((o: any, i: number) => {
-                let [title, COMP, cond, description] = o;
-                if (cond === false) { return {} }
-                if (setting.show !== 'all' && setting.show !== title) { return {} }
-                return {
-                    html: (
-                        <div className='w-100' style={{ fontFamily: 'Arial' }}>
-                            <h3>{`${i} - ${title}`}</h3>
-                            {description && <h5>{description}</h5>}
-                            {COMP()}
-                        </div>
-                    )
+    function render_node():ReactNode {
+        return (
+            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
+                {
+                    examples.map((o: any, i: number):ReactNode => {
+                        let [title, COMP, cond, description] = o;
+                        if (cond === false) { return null }
+                        if (setting.show !== 'all' && setting.show !== title) { return null }
+                        return (
+                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
+                                <h3>{`${i} - ${title}`}</h3>
+                                {description && <h5>{description}</h5>}
+                                {COMP()}
+                            </div>
+                        )
+                    })
                 }
-            })
-        }
+            </div>
+        )
     }
-    function getContext() {
-        let context: I_CTX = { setting, type, code }
-        return context;
-    }
+    function getContext():I_CTX {return { setting, type, code }}
     return (
         <CTX.Provider value={getContext()}>
-            <RVD rootNode={{ className: 'h-100', column: [setting_node(), render_node()] }} />
+            <div className="flex-col h-100">{setting_node()} {render_node()}</div>
         </CTX.Provider>
     )
 }

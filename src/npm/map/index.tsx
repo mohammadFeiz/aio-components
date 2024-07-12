@@ -1,7 +1,7 @@
 import { FC, ReactNode, createContext, isValidElement, useContext, useEffect, useRef, useState } from 'react';
 import {divIcon} from 'leaflet';
 import { Circle, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
-import { JSXToHTML } from 'aio-utils';
+import { JSXToHTML } from './../../npm/aio-utils';
 import './index.css';
 import { mdiMagnify } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -111,7 +111,7 @@ const MapHeader:FC = ()=>{
           before={<Icon path={mdiMagnify} size={0.8}/>}
           onChange={(searchValue)=>changeSearch(searchValue)}
           option={{
-            onClick:(option:I_searchResult)=>{if(onSearch){onSearch(option)}}
+            onClick:({option})=>{if(onSearch){onSearch(option as I_searchResult)}}
           }}
         />
     </div>

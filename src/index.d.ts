@@ -10,9 +10,5 @@ declare module "animejs/lib/anime.es.js" {
     const a:any;
     export default a
 }
-declare module 'leaflet' {
-    const a:any;
-    export default a;
-}
 
 

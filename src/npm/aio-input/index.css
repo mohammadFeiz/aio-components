@@ -1202,24 +1202,26 @@
     display: flex;
     flex-direction: column;
 }
+.aio-input-time-popover .aio-popup-body{
+    overflow:hidden;
+}
 
 .aio-input-time-popover .aio-input-list {
     border: none;
     width: 72px;
-    font-size: 16px;
 }
 
-.aio-input-time-popover .aio-input-list:after {
+/* .aio-input-time-popover .aio-input-list:after {
     content: '';
+    
+} */
+.aio-input-time-popover-highlight{
     position: absolute;
     left: 0;
-    top: 48px;
     background: rgba(0, 0, 0, 0.1);
-    width: 100%;
-    height: 48px;
     pointer-events: none;
+    width: 100%;
 }
-
 
 .aio-input-time-popover .aio-input-time-popover-content {
     direction: ltr;
@@ -1227,15 +1229,17 @@
 
 .aio-input-time-popover .aio-input-time-popover-body {
     display: flex;
-    padding:12px;
     align-items: center;
     justify-content: center;
+    padding:0.5rem;
+    box-sizing: border-box;
 }
 
 .aio-input-time-popover .aio-input-time-popover-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
 .aio-input-time-popover .aio-input-time-popover-item-title {
@@ -1247,9 +1251,10 @@
 
 .aio-input-time-popover .aio-input-time-popover-footer {
     display: flex;
-    padding:12px;
+    padding:0.5rem;
     justify-content: space-around;
-    
+    box-sizing: border-box;
+    gap:0.4rem;
 }
 
 .aio-input-primary-button {
@@ -1257,9 +1262,10 @@
     color: #fff;
     border-radius: 4px;
     border: none;
-    font-size: 14px;
     font-family: inherit;
-    padding: 4px 24px;
+    font-size: inherit;
+    padding:0 1.2rem;
+    height:1.6rem;
     border:2px solid #0069ff;
 }
 .aio-input-secondary-button {
@@ -1267,9 +1273,10 @@
     border-radius: 4px;
     background:#fff;
     border: none;
-    font-size: 14px;
     font-family: inherit;
-    padding: 4px 24px;
+    font-size: inherit;
+    padding: 0 1.2rem;
+    height:1.6rem;
     border:2px solid #0069ff;
 }
 
@@ -2073,26 +2080,29 @@
 
 .aio-input-label{
     position:absolute;
-    top:-8px;
-    background: #fff;
+    top:-1px !important;
     z-index:10;
-    padding:0 12px;
+    padding:0 6px;
     font-size:12px;
+    height:2px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background:#fff;
   }
-  .aio-input.ltr .aio-input-label{
-    left:16px;
+  .aio-input-ltr .aio-input-label{
+    left:12px;
   }
-  .aio-input.rtl .aio-input-label{
-    right:16px;
+  .aio-input-rtl .aio-input-label{
+    right:12px;
   }
   .aio-input-label-required:after{
     content:'*';
-    position: absolute;
     color:red;
     font-size:18px;
-    margin:0 3px;
+    padding:0 3px;
   }
-
+  
   .aio-input-footer{
     position: absolute;
     color:red;
