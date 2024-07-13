@@ -23,7 +23,9 @@ const AICTX = createContext({} as any);
 const AIOInput: FC<AI> = (props) => {
     let type = props.type,round = props.round;
     let value = props.value
-    if (type as any === 'spinner') {
+    if(type === 'text'){if(typeof value !== 'string'){value = ''}}
+    else if(type === 'number'){if(typeof value !== 'number'){value = ''}}
+    if (type === 'spinner') {
         type = 'range';
         if (!round || typeof round !== 'number') {round = 1;}
     }
@@ -57,7 +59,7 @@ const SuggestionInput: FC<AI> = (props) => {
             option={{
                 ...props.option,
                 onClick: (optionDetails) => {
-                    const text = GetOptionProps({props,key:'text',optionDetails})
+                    const text = GetOptionProps({rootProps:props,key:'text',optionDetails})
                     setSearchResult(text);
                     if(props.onChange){props.onChange(text,optionDetails.option);}
                 }
@@ -282,7 +284,6 @@ function TimePopover(props: { onClose: () => void }) {
     }
     function submit() {if (onChange) { onChange(value); }onClose();}
     function now() {setValue(getTimeByUnit(rootProps,true))}
-    const buttonStyle = {fontSize:size / 11.25,height:size / 4.5,padding:`0 ${size / 8}px`}
     return (
         <div className='aio-input-time-popover-content'>
             <div className="aio-input-time-popover-body">
@@ -290,7 +291,7 @@ function TimePopover(props: { onClose: () => void }) {
             </div>
             <div className="aio-input-time-popover-footer">
                 <button className='aio-input-primary-button' onClick={submit}>{translate('Submit')}</button>
-                {rootProps.now !== false && <button className='aio-input-secondary-button'>{translate('Now')}</button>}
+                {rootProps.now !== false && <button className='aio-input-secondary-button' onClick={()=>now()}>{translate('Now')}</button>}
             </div>
         </div>
     )
@@ -371,18 +372,19 @@ function Image() {
     }
     return (<AIOInput {...p} />)
 }
+type AI_fileType = File | {url:string,name?:string,size?:number}
 function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
 function InputFile() {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { value = [], onChange = () => { }, disabled, multiple, inputAttrs } = rootProps;
     function change(e: any) {
-        let Files = e.target.files;
+        let Files:FileList = e.target.files;
         let result;
         if (types.isMultiple) {
             result = [...value];
             let names = result.map(({ name }) => name);
             for (let i = 0; i < Files.length; i++) {
-                let file = Files[i];
+                let file:File = Files[i];
                 if (names.indexOf(file.name) !== -1) { continue }
                 result.push({ name: file.name, size: file.size, file })
             }
@@ -409,12 +411,12 @@ function FileItems() {
     let Files = files.map((file, i) => { return <FileItem key={i} file={file} index={i}/> })
     return (<div className='aio-input-files' style={{ direction: rtl ? 'rtl' : 'ltr' }}>{Files}</div>)
 }
-type AI_FileItem = {file:any,index:number}
+type AI_FileItem = {file:AI_fileType,index:number}
 const FileItem:FC<AI_FileItem> = (props) => {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { onChange = () => { }, value = [] } = rootProps;
     let { file, index } = props;
-    function getFile(file: any): { minName: string, sizeString: string | false } {
+    function getFile(file: AI_fileType): { minName: string, sizeString: string | false } {
         let filename = file.name || 'untitle';
         let fileSize = file.size || 0;
         let nameLength = 20;
@@ -458,11 +460,10 @@ const FileItem:FC<AI_FileItem> = (props) => {
         return (<div className='aio-input-file-item-icon' onClick={() => download()}>{I(mdiAttachment, .8)}</div>)
     }
     let { minName, sizeString } = getFile(file);
-    let { url } = file;
 
     let {optionsList} = GetOptions({
         rootProps, types,
-        options: [{ url, minName, sizeString, index }],
+        options: [{ minName, sizeString, index }],
         defaultOptionProps: {
             subtext: () => sizeString,
             text: () => minName,
@@ -1330,16 +1331,16 @@ const Tree: FC = () => {
         const details = {index,active:false,toggle:()=>{}}
         if (!p.parent) {
             value = value.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', props: rootProps,optionDetails:{...details,option:p.row} })
-                let oValue = GetOptionProps({ key: 'value', props: rootProps,optionDetails:{...details,option:o} })
+                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row} })
+                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o} })
                 return rowValue !== oValue
             })
         }
         else {
             let parentChilds = getChilds({row:p.parent,details:p.parentDetails});
             let newChilds: any[] = parentChilds.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', props: rootProps,optionDetails:{...details,option:p.row} })
-                let oValue = GetOptionProps({ key: 'value', props: rootProps,optionDetails:{...details,option:o} })
+                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row} })
+                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o} })
                 return rowValue !== oValue
             });
             setChilds({row:p.parent,details:p.parentDetails, childs:newChilds})
@@ -3237,7 +3238,7 @@ type I_GetOptions = {
 }
 //isOpen ro baraye tashkhise active(open) boodane node haye tree mifrestim
 function GetOptions(p:I_GetOptions): AI_options {
-    let { options,rootProps, types, level,isOpen, change,toggle } = p;
+    let { options,rootProps, types, level,isOpen, change,toggle,defaultOptionProps = {} } = p;
     let { deSelect } = rootProps;
     let result = [];
     let dic:AI_optionDic = {}
@@ -3258,38 +3259,38 @@ function GetOptions(p:I_GetOptions): AI_options {
             option,index: i,active:false, level, 
             change: change ? (newRow: any) => { change(option, newRow) } : undefined,
         };
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ props: rootProps, optionDetails, key: 'disabled' });
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'disabled' });
         //ghabl az har chiz sharte namayesh ro check kon
-        let show = GetOptionProps({ props: rootProps, optionDetails, key: 'show' })
+        let show = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'show' })
         if (show === false) { continue }
-        let optionValue = GetOptionProps({ props: rootProps, optionDetails, key: 'value' })
+        let optionValue = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'value' })
         let active = isActive(optionValue);
-        let text = GetOptionProps({ props: rootProps, optionDetails, key: 'text' });
+        let text = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'text' });
         //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
         optionDetails.active = active;
         optionDetails.toggle = toggle?()=> toggle(optionValue):undefined;
-        let attrs = GetOptionProps({ props: rootProps, optionDetails, key: 'attrs', def: {} });
+        let attrs = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'attrs', def: {} });
         let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = GetOptionProps({ props: rootProps, optionDetails, key: 'checked', def: defaultChecked })
+        let checked = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'checked', def: defaultChecked })
         //object:option => do not remove mutability to use original value of option in for example tree row
         let obj:AI_option = {
             show,
             loading: rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
-            checkIcon: GetOptionProps({ props: rootProps, optionDetails, key: 'checkIcon' }) || rootProps.checkIcon,
+            checkIcon: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'checkIcon' }) || rootProps.checkIcon,
             checked,
-            toggleIcon: GetOptionProps({ props: rootProps, optionDetails, def:true,key: 'toggleIcon' }),
-            before: GetOptionProps({ props: rootProps, optionDetails, key: 'before' }),
-            after: GetOptionProps({ props: rootProps, optionDetails, key: 'after' }),
-            justify: GetOptionProps({ props: rootProps, optionDetails, key: 'justify' }),
-            subtext: GetOptionProps({ props: rootProps, optionDetails, key: 'subtext' }),
-            onClick: GetOptionProps({ props: rootProps, optionDetails, key: 'onClick', preventFunction: true }),
-            className: GetOptionProps({ props: rootProps, optionDetails, key: 'className' }),
-            style: GetOptionProps({ props: rootProps, optionDetails, key: 'style' }),
-            tagAttrs: GetOptionProps({ props: rootProps, optionDetails, key: 'tagAttrs' }),
-            tagBefore: GetOptionProps({ props: rootProps, optionDetails, key: 'tagBefore' }),
-            close: GetOptionProps({ props: rootProps, optionDetails, key: 'close', def: !types.isMultiple }),
-            tagAfter: GetOptionProps({ props: rootProps, optionDetails, key: 'tagAfter' }),
+            toggleIcon: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, def:true,key: 'toggleIcon' }),
+            before: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'before' }),
+            after: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'after' }),
+            justify: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'justify' }),
+            subtext: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'subtext' }),
+            onClick: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'onClick', preventFunction: true }),
+            className: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'className' }),
+            style: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'style' }),
+            tagAttrs: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'tagAttrs' }),
+            tagBefore: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'tagBefore' }),
+            close: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'close', def: !types.isMultiple }),
+            tagAfter: GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'tagAfter' }),
             details:optionDetails
         }
         result.push(obj)
@@ -3299,18 +3300,18 @@ function GetOptions(p:I_GetOptions): AI_options {
 }
 type I_GetOptionProps = { 
     defaultOptionProps?: AI_optionProp, 
-    props: AI, 
+    rootProps: AI, 
     key: AI_optionKey, 
     def?: any, 
     preventFunction?: boolean, 
     optionDetails:I_optionDetails
 }
 function GetOptionProps(p:I_GetOptionProps) {
-    let { props, key, def, preventFunction, optionDetails, defaultOptionProps = {} } = p;
+    let { rootProps, key, def, preventFunction, optionDetails, defaultOptionProps = {} } = p;
     const {option} = optionDetails;
     let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](optionDetails) : option[key]
     if (optionResult !== undefined) { return optionResult }
-    let prop = (props.option || {})[key];
+    let prop = (rootProps.option || {})[key];
     prop = prop === undefined ? defaultOptionProps[key] : prop
     if (typeof prop === 'string') {
         try {
@@ -3370,41 +3371,63 @@ function getTimeText(rootProps:AI) {
     if (timeArray.length) { text.push(timeArray.join(':')) }
     return text.join(' ');
 }
-const AIText:FC<AI_public & AI_hasOption & AI_hasKeyboard & AI_text> = (props)=><AIOInput {...props} type='text'/>
-const AITextarea:FC<AI_public & AI_hasOption & AI_hasKeyboard & AI_textarea> = (props)=><AIOInput {...props} type='textarea'/>
-const AINumber:FC<AI_public & AI_hasOption & AI_hasKeyboard & AI_number> = (props)=><AIOInput {...props} type='number'/>
-const AIPassword:FC<AI_public & AI_hasKeyboard & AI_password> = (props)=><AIOInput {...props} type='password'/>
-const AISelect:FC<AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & AI_select> = (props)=><AIOInput {...props} type='select'/>
-const AIRadio:FC<AI_public & AI_hasOption & AI_isMultiple & AI_radio> = (props)=><AIOInput {...props} type='radio'/>
-const AIButtons:FC<AI_public & AI_hasOption & AI_isMultiple & AI_buttons> = (props)=><AIOInput {...props} type='buttons'/>
-const AITabs:FC<AI_public & AI_hasOption & AI_tabs> = (props)=><AIOInput {...props} type='tabs'/>
-const AIFile:FC<AI_public & AI_hasOption & AI_file> = (props)=><AIOInput {...props} type='file'/>
-const AIImage:FC<AI_public & AI_image> = (props)=><AIOInput {...props} type='image'/>
-const AIDate:FC<AI_public & AI_hasOption & AI_isDropdown & AI_date> = (props)=><AIOInput {...props} type='date'/>
-const AITime:FC<AI_public & AI_isDropdown & AI_time> = (props)=><AIOInput {...props} type='time'/>
-const AITable:FC<AI_public & AI_table> = (props)=><AIOInput {...props} type='table'/>
+const AIText:FC<AI_text> = (props)=><AIOInput {...props} type='text'/>
+const AITextarea:FC<AI_textarea> = (props)=><AIOInput {...props} type='textarea'/>
+const AINumber:FC<AI_number> = (props)=><AIOInput {...props} type='number'/>
+const AIPassword:FC<AI_password> = (props)=><AIOInput {...props} type='password'/>
+const AISelect:FC<AI_select> = (props)=><AIOInput {...props} type='select'/>
+const AIRadio:FC<AI_radio> = (props)=><AIOInput {...props} type='radio'/>
+const AIButtons:FC<AI_buttons> = (props)=><AIOInput {...props} type='buttons'/>
+const AITabs:FC<AI_tabs> = (props)=><AIOInput {...props} type='tabs'/>
+const AIFile:FC<AI_file> = (props)=><AIOInput {...props} type='file'/>
+const AIImage:FC<AI_image> = (props)=><AIOInput {...props} type='image'/>
+const AIDate:FC<AI_date> = (props)=><AIOInput {...props} type='date'/>
+const AITime:FC<AI_time> = (props)=><AIOInput {...props} type='time'/>
+const AITable:FC<AI_table> = (props)=><AIOInput {...props} type='table'/>
 const AISlider:FC<AI_slider> = (props)=><AIOInput {...props} type='slider'/>
 const AISpinner:FC<AI_spinner> = (props)=><AIOInput {...props} type='spinner'/>
-const AITree:FC<AI_public & AI_hasOption & AI_tree> = (props)=><AIOInput {...props} type='tree'/>
-
-type I_optionDetails = {option:any,index: number, level?: number,active?:boolean, change?: (v: any) => any,toggle?:()=>void}
-export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
-export type AI_optionKey = (
-    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
-    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon' 
-)
-export type AI_table_column = {
-    title?: any,value?: any,sort?: true | AI_table_sort,search?: boolean,id?: string,_id?: string,width?: any,minWidth?: any,input?: AI,
-    onChange?: (newValue: any) => void,titleAttrs?:{[key:string]:any} | string,template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
-    excel?: string | boolean,justify?:boolean,cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
+const AITree:FC<AI_tree> = (props)=><AIOInput {...props} type='tree'/>
+type AI_text = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
+type AI_textarea = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
+type AI_number = AI_public & AI_hasOption & AI_hasKeyboard & {max?: number,min?: number,spin?: boolean,swip?: number,value?:number | null | undefined,onChange:(v:number | undefined)=>void}
+type AI_password = AI_public & AI_hasKeyboard & {preview?:boolean,value?:string | null | undefined,onChange:(v:string)=>void}
+type AI_select = AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & {
+    checkIcon?: AI_checkIcon,deSelect?:any,hideTags?: boolean,text?: RN | (() => RN),
+    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    value?:string | number | boolean,
+    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
 }
-export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
-export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
+type AI_radio = AI_public & AI_hasOption & AI_isMultiple & {
+    checkIcon?: AI_checkIcon,deSelect?:any,
+    value?:string | number | boolean,
+    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
+}
+type AI_buttons = AI_public & AI_hasOption & AI_isMultiple & {
+    deSelect?:any,
+    value?:string | number | boolean,
+    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
+}
+type AI_tabs = AI_public & AI_hasOption & {
+    deSelect?:any,
+    value?:string | number | boolean,
+    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
+}
+type AI_file = AI_public & AI_hasOption & {preview?:boolean}
+type AI_image = AI_public & {preview?:boolean,height?: number | string,width?: number | string}
+type AI_date = AI_public & AI_hasOption & AI_isDropdown & {
+    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,
+    deSelect?:any,jalali?: boolean,pattern?:string,size?: number,text?: RN | (() => RN),
+    theme?: string[],translate?: (text: string) => string,unit?: AI_date_unit,
+}
+type AI_time = AI_public & AI_isDropdown & {jalali?: boolean,now?:boolean,pattern?:string,text?: RN | (() => RN),unit?: AI_time_unit}
+
+type AI_table = AI_public & AI_isTable
+type AI_slider = AI_public & AI_isRange;
+type AI_spinner = AI_public & AI_isRange;
+type AI_tree = AI_public & AI_hasOption & AI_isTree
 export type AI = 
     AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & 
-    AI_hasKeyboard & AI_table & AI_isRange & AI_tree & AI_isDate & {
+    AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
     body?:(value?:any)=>{attrs?:any,html?:RN},//acardion
     checkIcon?: AI_checkIcon,//select,checkbox,radio
     count?: number,//list
@@ -3421,6 +3444,22 @@ export type AI =
     text?: RN | (() => RN),//select,checkbox,button,
     width?: number | string,//image
 }
+
+type I_optionDetails = {option:any,index: number, level?: number,active?:boolean, change?: (v: any) => any,toggle?:()=>void}
+export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
+export type AI_optionKey = (
+    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
+    'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon' 
+)
+export type AI_table_column = {
+    title?: any,value?: any,sort?: true | AI_table_sort,search?: boolean,id?: string,_id?: string,width?: any,minWidth?: any,input?: AI,
+    onChange?: (newValue: any) => void,titleAttrs?:{[key:string]:any} | string,template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
+    excel?: string | boolean,justify?:boolean,cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
+}
+export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
+export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
 export type AI_popover = {
     position?:AP_position,
     fitHorizontal?:boolean,
@@ -3540,26 +3579,7 @@ type AI_hasKeyboard = {
     blurChange?: boolean,filter?: string[],inputAttrs?: any,justNumber?: boolean | (string[]),
     maxLength?: number,swip?: number,spin?: boolean,
 }
-type AI_text = {fetchOptions?:(text:string)=>Promise<any[]>,}
-type AI_textarea = {fetchOptions?:(text:string)=>Promise<any[]>}
-type AI_number = {max?: number,min?: number,spin?: boolean,swip?: number}
-type AI_password = {preview?:boolean}
-type AI_select = {
-    checkIcon?: AI_checkIcon,deSelect?:any,hideTags?: boolean,text?: RN | (() => RN),
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void)
-}
-type AI_radio = {checkIcon?: AI_checkIcon,deSelect?:any}
-type AI_buttons = {deSelect?:any}
-type AI_tabs = {deSelect?:any,}
-type AI_file = {preview?:boolean}
-type AI_image = {preview?:boolean,height?: number | string,width?: number | string}
-type AI_date = {
-    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,
-    deSelect?:any,jalali?: boolean,pattern?:string,size?: number,text?: RN | (() => RN),
-    theme?: string[],translate?: (text: string) => string,unit?: AI_date_unit,
-}
-type AI_time = {jalali?: boolean,now?:boolean,pattern?:string,text?: RN | (() => RN),unit?: AI_time_unit}
-type AI_table = {
+type AI_isTable = {
     addText?:RN | ((value:any)=>RN),
     columnGap?: number,
     columns?: AI_table_column[] | ((p?:any)=>AI_table_column[]),
@@ -3601,9 +3621,7 @@ type AI_isRange = {
     rotate?:number,
     round?:number,
 }
-type AI_slider = AI_public & AI_isRange;
-type AI_spinner = AI_public & AI_isRange;
-type AI_tree = {
+type AI_isTree = {
     actions?:({[key in keyof AI_option]?:any}[]) | ((row:any,parent:any)=>{[key in keyof AI_option]?:any}[]),
     addText?:RN | ((value:any)=>RN),
     checkIcon?: AI_checkIcon,
@@ -3614,8 +3632,7 @@ type AI_tree = {
     onToggle?:(openDic:{[id:string]:boolean})=>void,
     removeText?:string,
     setChilds?:(p:{row:any,childs:any[],details:I_treeRowDetails})=>void,
-    toggleRef?:MutableRefObject<(id:any)=>void>,
-    
+    toggleRef?:MutableRefObject<(id:any)=>void>,   
 }
 export {
     AIText,AI_text,//1
@@ -3642,6 +3659,7 @@ export {
 //size and theme on time
 //now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
 //deSelect on text,textarea,number hazf meghdare type shode
+//checked on buttons
 function ProceedSentences(sentence:string,rows:any[],columns:any[]){
     const sentences = sentence.split('.');
     const filterItems = []

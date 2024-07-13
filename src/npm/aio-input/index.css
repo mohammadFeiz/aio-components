@@ -185,7 +185,7 @@
 .aio-input-file-option-before{
     max-width:60px;
     overflow:hidden;
-    height:100%;
+    height:60px;
 }
 .aio-input-multiselect-option,
 .aio-input-select-option,

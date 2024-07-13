@@ -111,6 +111,20 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             ['text', 'number'].indexOf(type) !== -1
         ],
         [
+            'option.text',
+            () => (
+                <Options
+                    option={{
+                        text: () => 'file sample text'
+                    }}
+                    optionCode={
+                        `text: () => 'file sample text'`
+                    }
+                />
+            ),
+            ['file'].indexOf(type) !== -1
+        ],
+        [
             'option.before',
             () => (
                 <Options
@@ -1354,6 +1368,7 @@ const Options: FC<{ option?: any, optionCode?: string, props?: AI, propsCode?: s
     const { type }: I_CTX = useContext(CTX);
     if (type === 'text') { return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'number') { return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
+    if (type === 'file') { return <OptionsFile option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     return null
 }
 const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
@@ -1420,6 +1435,36 @@ const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsC
         text:'option',
         value:'option',
         onClick:(option:any)=>setValue(+option),
+        ${optionCode || ''}
+    }}
+    ${propsCode || ''}
+/>
+        `)}
+        </div>
+    )
+}
+const OptionsFile: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
+    const { code }: I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number>()
+    return (
+        <div className='example'>
+            <AIOInput
+                type='file' value={value}
+                onChange={(newValue) => setValue(newValue)}
+                options={textOptions}
+                option={{
+                    ...option
+                }}
+                {...props}
+
+            />
+            {code(`
+<AIOInput
+    type='file' 
+    value='${value}'
+    onChange={(newValue)=>setValue(newValue)}
+    ${textOptionsCode}
+    option={{
         ${optionCode || ''}
     }}
     ${propsCode || ''}
