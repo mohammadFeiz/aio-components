@@ -3642,4 +3642,113 @@ export {
 //size and theme on time
 //now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
 //deSelect on text,textarea,number hazf meghdare type shode
-
+function ProceedSentences(sentence:string,rows:any[],columns:any[]){
+    const sentences = sentence.split('.');
+    const filterItems = []
+    for(let i = 0; i < sentences.length; i++){
+        const res = ProceedSentence(sentences[i],rows,columns);
+        if(res !== false){filterItems.push(res)}
+    }
+    return filterItems
+}
+function ProceedSentence(sentence:string,rows:any[],columns:any[]){
+    function getFieldsAndTitles(){
+        let fields = [];
+        let titlesDic:any = {};
+        let titles = []
+        for(let i = 0; i < columns.length; i++){
+            const {title,value} = columns[i];
+            let field = value?value.slice(4,value.length):undefined
+            if(field !== undefined){
+                fields.push(field);
+                if(title){titles[title] = field; titles.push(title)}
+            }
+        }
+        return {fields,titles,titlesDic}
+    }
+    function getOperator():'more' | 'notmore' | 'moreequal' | 'notmoreequal' | 'less' | 'notless' | 'lessequal' | 'notlessequal' | 'equal' | 'notequal' | false {
+        if(sentence.indexOf('مخالف ') !== -1){
+            return 'notequal'
+        }
+        if(sentence.indexOf('نا برابر') !== -1){
+            return 'notequal'
+        }
+        if(sentence.indexOf('نا مساوی') !== -1){
+            return 'notequal'
+        }
+        else {
+            let equal:boolean = false;
+            let diff:'more' | 'less' | undefined;
+            let not:boolean = false;
+            if(sentence.indexOf('نباشد') !== -1){not = true}
+            else if(sentence.indexOf('نیستند') !== -1){not = true}
+            else if(sentence.indexOf('نیست') !== -1){not = true}
+            else if(sentence.indexOf('ندارد') !== -1){not = true}
+            else if(sentence.indexOf('ندارند') !== -1){not = true}
+            
+            const equalOperators = [
+                {text:'مساوی',type:'equal'},
+                {text:'به اندازه',type:'equal'},
+                {text:'به میزان',type:'equal'},
+                {text:'حدود',type:'equal'},
+            ]
+            const diffOperators:{text:string,type:'less' | 'more'}[] = [
+                {text:'کوچکتر',type:'less'},
+                {text:'کوچک تر',type:'less'},
+                {text:'زیر',type:'less'},
+                {text:'کمتر',type:'less'},
+                {text:'کم تر',type:'less'},
+                {text:'بیشتر',type:'more'},
+                {text:'بیش تر',type:'more'},
+                {text:'بالای',type:'more'},
+                {text:'بیش از',type:'more'},
+                {text:'بزرگتر',type:'more'},
+                {text:'بزرگ تر',type:'more'}
+            ]
+            for(let i = 0; i < equalOperators.length; i++){
+                const {text,type} = equalOperators[i];
+                if(sentence.indexOf(text) !== -1){equal = true; break;}
+            }
+            for(let i = 0; i < diffOperators.length; i++){
+                const {text,type} = diffOperators[i];
+                if(sentence.indexOf(text) !== -1){diff = type; break;}
+            }
+            if(equal){
+                if(diff === 'more'){return not?'notmoreequal':'moreequal'}
+                if(diff === 'less'){return not?'notlessequal':'lessequal'}
+                else{return not?'notequal':'equal'}
+            }
+            else {
+                if(diff === 'more'){return not?'notmore':'more'}
+                if(diff === 'less'){return not?'notless':'less'}
+                else{return false}
+            }
+        }
+    }
+    function getField(){
+        for(let i = 0; i < fields.length; i++){
+            const field = fields[i];
+            if(sentence.indexOf(field) !== -1){return field}
+        }
+        for(let i = 0; i < titles.length; i++){
+            const title = titles[i];
+            if(sentence.indexOf(title) !== -1){return titlesDic[title]}
+        }
+    }
+    function getValue(){
+        const start = sentence.indexOf(')') + 1
+        const end = sentence.indexOf('(');
+        const res = sentence.slice(start,end);
+        const num = +res
+        if(isNaN(num)){
+            return res.replace(/['"]/g, '')
+        }
+        return num
+    }
+    const {fields,titlesDic,titles} = getFieldsAndTitles()
+    const operator = getOperator();
+    const field = getField();
+    const value = getValue();
+    if(!field || !operator){return false}
+    return {operator,field,value}
+}
