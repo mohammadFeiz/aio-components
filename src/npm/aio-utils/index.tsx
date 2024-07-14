@@ -14,10 +14,9 @@ export function HasClass(target: any, className: string) {
 }
 export async function DownloadFile(file: any) {
     let name = file.name;
-    let url = GetFileUrl(file)
-    fetch(url, {
-        mode: 'no-cors',
-    })
+    const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+    const url = corsProxy + (file.url || GetFileUrl(file));
+    fetch(url)
         .then(resp => resp.blob())
         .then(blob => {
             let url = GetFileUrl(blob);

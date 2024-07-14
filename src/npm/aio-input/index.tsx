@@ -440,7 +440,13 @@ const FileItem:FC<AI_FileItem> = (props) => {
         }
         catch { return { minName: 'untitle', sizeString: false } }
     }
-    function remove(index: number) {
+    async function remove(e:any,index: number) {
+        e.stopPropagation(); 
+        e.preventDefault(); 
+        if(typeof rootProps.onRemove === 'function'){
+            const res = await rootProps.onRemove({row:value[index],rowIndex:index})
+            if(res === false){return}
+        }
         let newValue = [];
         for (let i = 0; i < value.length; i++) {
             if (i === index) { continue }
@@ -453,7 +459,7 @@ const FileItem:FC<AI_FileItem> = (props) => {
     }
     function getIcon() {
         let filePreview;
-        if (rootProps.preview) { filePreview = FilePreview(file, { style: { height: '100%' }, height: '100%', onClick: () => download() }) }
+        if (rootProps.preview) { filePreview = FilePreview(file, { onClick: () => download() }) }
         if (filePreview && filePreview !== null) {
             return filePreview;
         }
@@ -468,7 +474,7 @@ const FileItem:FC<AI_FileItem> = (props) => {
             subtext: () => sizeString,
             text: () => minName,
             before: () => getIcon(),
-            after: () => <div className='aio-input-file-item-icon' onClick={(e) => { e.stopPropagation(); e.preventDefault(); remove(index) }}>{I(mdiClose, .7)}</div>
+            after: () => <div className='aio-input-file-item-icon' onClick={(e:any) => remove(e,index)}>{I(mdiClose, .7)}</div>
         }
     })
     let option = optionsList[0]
@@ -598,10 +604,13 @@ function Input() {
     useEffect(() => { setSwip() }, [])
     function getValidValue() {
         let v = rootProps.value;
-        if (type === 'number' && !isNaN(+v)) {
-            v = +v;
-            if (typeof min === 'number' && v < min) { v = min }
-            else if (typeof max === 'number' && v > max) { v = max }
+        if (type === 'number') {
+            if(v === ''){return ''}//important because +('') is 0
+            else if (!isNaN(+v)) {
+                v = +v;
+                if (typeof min === 'number' && v < min) { v = min }
+                else if (typeof max === 'number' && v > max) { v = max }
+            }
         }
         return v
     }
@@ -674,7 +683,7 @@ function Input() {
                 catch{}
             }
         }
-        if (rootProps.type === 'number') { if (value && !isNaN(+value)) { value = +value; } }
+        if (rootProps.type === 'number' && value !== ''){value = +value}
         setValue(value);
         if (!blurChange && onChange) {
             clearTimeout(temp.btimeout);
@@ -751,10 +760,10 @@ function Options() {
     let className = `aio-input-options aio-input-scroll aio-input-${rootProps.type}-options`
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
-        <>
+        <div className='aio-input-options-container'>
             {renderSearchBox(options.optionsList)}
             <div className={className}>{renderOptions}</div>
-        </>
+        </div>
     )
 }
 export type I_openState = boolean | undefined
@@ -1331,16 +1340,16 @@ const Tree: FC = () => {
         const details = {index,active:false,toggle:()=>{}}
         if (!p.parent) {
             value = value.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row} })
-                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o} })
+                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row,rootProps} })
+                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o,rootProps} })
                 return rowValue !== oValue
             })
         }
         else {
             let parentChilds = getChilds({row:p.parent,details:p.parentDetails});
             let newChilds: any[] = parentChilds.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row} })
-                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o} })
+                let rowValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:p.row,rootProps} })
+                let oValue = GetOptionProps({ key: 'value', rootProps,optionDetails:{...details,option:o,rootProps} })
                 return rowValue !== oValue
             });
             setChilds({row:p.parent,details:p.parentDetails, childs:newChilds})
@@ -1563,7 +1572,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 }
                 onChange(newValue, props);
                 if (onClose) {
-                    if (typeof option.close === 'function') { if (option.close({option:undefined,index})) { onClose() } }
+                    if (typeof option.close === 'function') { if (option.close({option:undefined,index,rootProps})) { onClose() } }
                 }
             }
         }
@@ -3256,7 +3265,7 @@ function GetOptions(p:I_GetOptions): AI_options {
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
         let optionDetails: I_optionDetails = { 
-            option,index: i,active:false, level, 
+            option,index: i,active:false, level, rootProps,
             change: change ? (newRow: any) => { change(option, newRow) } : undefined,
         };
         let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'disabled' });
@@ -3389,7 +3398,7 @@ const AISpinner:FC<AI_spinner> = (props)=><AIOInput {...props} type='spinner'/>
 const AITree:FC<AI_tree> = (props)=><AIOInput {...props} type='tree'/>
 type AI_text = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
 type AI_textarea = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
-type AI_number = AI_public & AI_hasOption & AI_hasKeyboard & {max?: number,min?: number,spin?: boolean,swip?: number,value?:number | null | undefined,onChange:(v:number | undefined)=>void}
+type AI_number = AI_public & AI_hasOption & AI_hasKeyboard & {max?: number,min?: number,spin?: boolean,swip?: number,value?:number | null | undefined | '',onChange:(v:number | '')=>void}
 type AI_password = AI_public & AI_hasKeyboard & {preview?:boolean,value?:string | null | undefined,onChange:(v:string)=>void}
 type AI_select = AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & {
     checkIcon?: AI_checkIcon,deSelect?:any,hideTags?: boolean,text?: RN | (() => RN),
@@ -3412,7 +3421,10 @@ type AI_tabs = AI_public & AI_hasOption & {
     value?:string | number | boolean,
     onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
 }
-type AI_file = AI_public & AI_hasOption & {preview?:boolean}
+type AI_file = AI_public & AI_hasOption & {
+    preview?:boolean,
+    value?:(undefined | null | AI_fileType) | ((undefined | null | AI_fileType)[])
+}
 type AI_image = AI_public & {preview?:boolean,height?: number | string,width?: number | string}
 type AI_date = AI_public & AI_hasOption & AI_isDropdown & {
     dateAttrs?:(p:{dateArray:number[], isToday:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,
@@ -3445,7 +3457,7 @@ export type AI =
     width?: number | string,//image
 }
 
-type I_optionDetails = {option:any,index: number, level?: number,active?:boolean, change?: (v: any) => any,toggle?:()=>void}
+type I_optionDetails = {option:any,rootProps:AI,index: number, level?: number,active?:boolean, change?: (v: any) => any,toggle?:()=>void}
 export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
@@ -3658,8 +3670,6 @@ export {
 //rowOption on table
 //size and theme on time
 //now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
-//deSelect on text,textarea,number hazf meghdare type shode
-//checked on buttons
 function ProceedSentences(sentence:string,rows:any[],columns:any[]){
     const sentences = sentence.split('.');
     const filterItems = []
@@ -3770,3 +3780,19 @@ function ProceedSentence(sentence:string,rows:any[],columns:any[]){
     if(!field || !operator){return false}
     return {operator,field,value}
 }
+
+
+// type I_onChange<AI_type> = AI_type extends 'number' ? (v:number)=>void : AI_type extends 'text' ? (v:string)=>void : never;
+
+// // function handleTypes<A>(a: A): B<A> {
+// //     if (typeof a === 'number') {
+// //         return true as B<A>; // If A is a number, B should be boolean
+// //     } else if (typeof a === 'string') {
+// //         return ['example'] as B<A>; // If A is a string, B should be string[]
+// //     } else {
+// //         throw new Error('Unsupported type');
+// //     }
+// // }
+
+// type C = I_onChange<'text'>
+// type D = I_onChange<'number'>

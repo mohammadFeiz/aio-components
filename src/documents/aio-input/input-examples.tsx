@@ -6,6 +6,9 @@ import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 import $ from 'jquery';
 type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
+type I_setting = { show: string, showCode: boolean }
+type I_CTX = { setting: I_setting, type: I_exampleType, code: (code: string) => React.ReactNode }
+const CTX = createContext({} as any);
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
     { name: 'stephan', id: '2', gender: 'male', color: '#ffa500' },
@@ -40,9 +43,6 @@ const textOptionsCode = `[
     {name:'lucas',id:'11',gender:'male',color:'#000000'},
     {name:'maria',id:'12',gender:'female',color:'#ffc0cb'}
 ]`
-type I_setting = { show: string, showCode: boolean }
-type I_CTX = { setting: I_setting, type: I_exampleType, code: (code: string) => React.ReactNode }
-const CTX = createContext({} as any);
 const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     let [examples] = useState<any>([
         ['placeholder', () => <Placeholder />],
@@ -85,6 +85,8 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['multiple', () => <Multiple />, ['date', 'file'].indexOf(type) !== -1],
         ['multiple (number)', () => <MultipleNumber />, ['date', 'file'].indexOf(type) !== -1],
         ['checkIcon (array)', () => <CheckIconArray />, ['checkbox'].indexOf(type) !== -1],
+        ['file value', () => <FileValue />, ['file'].indexOf(type) !== -1],
+        ['file onRemove', () => <FileOnremove />, ['file'].indexOf(type) !== -1],
         ['options', () => <Options />, ['text', 'number'].indexOf(type) !== -1],
         [
             'caret (false)',
@@ -243,7 +245,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        show: (option: any) => option.gender !== 'male'
+                        show: ({option}) => option.gender !== 'male'
                     }}
                     optionCode={
                         `show:(option:any)=>option.gender !== 'male'`
@@ -257,7 +259,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        show: (option: any) => option !== '3453463453'
+                        show: ({option}) => option !== '3453463453'
                     }}
                     optionCode={
                         `show:(option:any)=>option !== '3453463453'`
@@ -271,7 +273,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        checked: (option: any, details: any) => (type === 'text' ? option.name : +option) === details.value,
+                        checked: ({option,rootProps}) => (type === 'text' ? option.name : +option) === rootProps.value,
                         checkIcon: () => [
                             <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd' />,
                             <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />
@@ -286,14 +288,14 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
                     }
                 />
             ),
-            ['text', 'number'].indexOf(type) !== -1
+            ['text', 'number','buttons'].indexOf(type) !== -1
         ],
         [
             'option.disabled',
             () => (
                 <Options
                     option={{
-                        disabled: (option: any) => type === 'text' ? option.gender === 'male' : +option < 100000000
+                        disabled: ({option}) => type === 'text' ? option.gender === 'male' : +option < 100000000
                     }}
                     optionCode={
                         `disabled:(option:any)=>${type === 'text' ? "option.gender === 'male'" : "+option < 100000000"}`
@@ -307,7 +309,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        onClick: (option: any) => alert(JSON.stringify(option))
+                        onClick: ({option}) => alert(JSON.stringify(option))
                     }}
                     optionCode={
                         `onClick:(option:any)=>alert(JSON.stringify(option))`
@@ -1364,7 +1366,7 @@ const CheckIconObject: FC = () => {
         </div>
     )
 }
-const Options: FC<{ option?: any, optionCode?: string, props?: AI, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
+const Options: FC<{ option?: AI['option'], optionCode?: string, props?: AI, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
     const { type }: I_CTX = useContext(CTX);
     if (type === 'text') { return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'number') { return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
@@ -1653,6 +1655,55 @@ const DateAttrsIsActive: FC = () => {
             }
         }
     }}
+/>
+        `)}
+        </div>
+    )
+}
+const FileValue: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>({
+        url:'https://media.macphun.com/img/uploads/customer/how-to/608/15542038745ca344e267fb80.28757312.jpg?q=85&w=1340',
+        name:'my file',
+        size:1235000
+    })
+    return (
+        <div className='example'>
+            <AIOInput
+                type='file' value={value}
+                onChange={(newValue) => setValue(newValue)}
+            />
+            {code(`
+
+        `)}
+        </div>
+    )
+}
+const FileOnremove: FC = () => {
+    const { code }: I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>({
+        url:'https://media.macphun.com/img/uploads/customer/how-to/608/15542038745ca344e267fb80.28757312.jpg?q=85&w=1340',
+        name:'my file',
+        size:1235000
+    })
+    return (
+        <div className='example'>
+            <AIOInput
+                type='file' value={value}
+                onRemove={async ({row,rowIndex})=>{
+                    const res = window.confirm('remove file?');
+                    return res === true
+                }}
+                onChange={(newValue) => setValue(newValue)}
+            />
+            {code(`
+<AIOInput
+    type='file' value={value}
+    onRemove={async ({row,rowIndex})=>{
+        const res = window.confirm('remove file?');
+        return res === true
+    }}
+    onChange={(newValue) => setValue(newValue)}
 />
         `)}
         </div>

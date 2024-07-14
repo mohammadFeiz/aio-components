@@ -1,24 +1,27 @@
-import { FC, useRef, useState } from "react"
+import { createContext, FC, ReactNode, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
-import {Icon} from "@mdi/react"
-import AIOInput,{ AI } from "../../npm/aio-input";
+import { Icon } from "@mdi/react"
+import AIOInput, { AI } from "../../npm/aio-input";
 import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
-import RVD from '../../npm/react-virtual-dom/index';
-type I_exampleTypes = 'select' | 'radio' | 'tabs' | 'buttons' | 'tags'
+type I_exampleType = 'select' | 'radio' | 'tabs' | 'buttons' | 'tags'
+type I_setting = { show: string, showCode: boolean }
+type I_CTX = { setting: I_setting, type: I_exampleType, code: (code: string) => React.ReactNode }
+const CTX = createContext({} as any);
+
 const textOptions = [
-    {name:'john',id:'1',gender:'male',color:'#ff0000'},
-    {name:'stephan',id:'2',gender:'male',color:'#ffa500'},
-    {name:'edvard',id:'3',gender:'male',color:'#ffff00'},
-    {name:'luis',id:'4',gender:'male',color:'#9acd32'},
-    {name:'carlos',id:'5',gender:'male',color:'#90ee90'},
-    {name:'kate',id:'6',gender:'female',color:'#008000'},
-    {name:'fernando',id:'7',gender:'male',color:'#add8e6'},
-    {name:'mark',id:'8',gender:'male',color:'#1e90ff'},
-    {name:'nicol',id:'9',gender:'female',color:'#0000ff'},
-    {name:'lisa',id:'10',gender:'female',color:'#a52a2a'},
-    {name:'lucas',id:'11',gender:'male',color:'#000000'},
-    {name:'maria',id:'12',gender:'female',color:'#ffc0cb'}
+    { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
+    { name: 'stephan', id: '2', gender: 'male', color: '#ffa500' },
+    { name: 'edvard', id: '3', gender: 'male', color: '#ffff00' },
+    { name: 'luis', id: '4', gender: 'male', color: '#9acd32' },
+    { name: 'carlos', id: '5', gender: 'male', color: '#90ee90' },
+    { name: 'kate', id: '6', gender: 'female', color: '#008000' },
+    { name: 'fernando', id: '7', gender: 'male', color: '#add8e6' },
+    { name: 'mark', id: '8', gender: 'male', color: '#1e90ff' },
+    { name: 'nicol', id: '9', gender: 'female', color: '#0000ff' },
+    { name: 'lisa', id: '10', gender: 'female', color: '#a52a2a' },
+    { name: 'lucas', id: '11', gender: 'male', color: '#000000' },
+    { name: 'maria', id: '12', gender: 'female', color: '#ffc0cb' }
 ]
 const optionsCode = `[
     {name:'john',id:'1',gender:'male',color:'#ff0000'},
@@ -34,78 +37,96 @@ const optionsCode = `[
     {name:'lucas',id:'11',gender:'male',color:'#000000'},
     {name:'maria',id:'12',gender:'female',color:'#ffc0cb'}
 ]`
-const optionCode = 
-`option={{
+const optionCode =
+    `option={{
     text:'option.name',
     value:'option.id'
 }}`
-const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
+const SelectExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     let [examples] = useState<any>([
-        ['before',()=><Before type={type}/>],
-        ['after',()=><After type={type}/>],
-        ['subtext',()=><Subtext type={type}/>],
-        ['disabled',()=><Disabled type={type}/>],
-        ['loading',()=><Loading type={type}/>],
-        ['text',()=><Text type={type}/>,['select'].indexOf(type) !== -1],
-        ['multiple',()=><Multiple type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
-        ['multiple (number)',()=><MultipleNumber type={type}/>,['radio','buttons','select'].indexOf(type) !== -1],
-        ['checkIcon (array)',()=><CheckIconArray type={type}/>,['radio','select'].indexOf(type) !== -1],
-        ['checkIcon (css object)',()=><CheckIconObject type={type}/>,['radio'].indexOf(type) !== -1],
+        ['before', () => <Before type={type} />],
+        ['after', () => <After type={type} />],
+        ['subtext', () => <Subtext type={type} />],
+        ['disabled', () => <Disabled type={type} />],
+        ['deSelect', () => <DeSelect_true type={type} />],
+        ['deSelect', () => <DeSelect_Object type={type} />],
+        ['search', () => <Search type={type} />],
+        ['loading', () => <Loading type={type} />],
+        ['text', () => <Text type={type} />, ['select'].indexOf(type) !== -1],
+        ['multiple', () => <Multiple type={type} />, ['radio', 'buttons', 'select'].indexOf(type) !== -1],
+        ['multiple (number)', () => <MultipleNumber type={type} />, ['radio', 'buttons', 'select'].indexOf(type) !== -1],
+        ['checkIcon (array)', () => <CheckIconArray type={type} />, ['radio', 'select'].indexOf(type) !== -1],
+        ['checkIcon (css object)', () => <CheckIconObject type={type} />, ['radio'].indexOf(type) !== -1],
         [
             'option.before',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        before:()=><Icon path={mdiAccount} size={0.8}/>
+                        before: () => <Icon path={mdiAccount} size={0.8} />
                     }}
                     optionCode={
-`before:()=><Icon path={mdiAccount} size={0.8}/>`
+                        `before:()=><Icon path={mdiAccount} size={0.8}/>`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.after',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        after:()=><div className='badge'>12</div>
+                        after: () => <div className='badge'>12</div>
                     }}
                     optionCode={
-`after:()=><div className='badge'>12</div>`
+                        `after:()=><div className='badge'>12</div>`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.subtext',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        subtext:()=>'this is my subtext'
+                        subtext: () => 'this is my subtext'
                     }}
                     optionCode={
-`subtext:()=>'this is my subtext'`
+                        `subtext:()=>'this is my subtext'`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
+        ],
+        [
+            'option.checked',
+            () => (
+                <Options
+                    type={type}
+                    option={{
+                        checked: ({option,rootProps}) => option.id === rootProps.value
+                    }}
+                    optionCode={
+                        `checked: ({option,rootProps}) => option.id === rootProps.value`
+                    }
+                />
+            ),
+            ['buttons'].indexOf(type) !== -1
         ],
         [
             'option.close',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        close:()=>true
+                        close: () => true
                     }}
                     optionCode={
-`close:()=>true`
+                        `close:()=>true`
                     }
                 />
             ),
@@ -113,33 +134,33 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         ],
         [
             'option.justify',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        justify:()=>true
+                        justify: () => true
                     }}
                     optionCode={
-`justify:()=>true`
+                        `justify:()=>true`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.attrs',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        attrs:()=>{
+                        attrs: () => {
                             return {
-                                style:{background:'lightblue'}
+                                style: { background: 'lightblue' }
                             }
                         }
                     }}
                     optionCode={
-`attrs:()=>{
+                        `attrs:()=>{
     return {
         style:{background:'lightblue'}
     }
@@ -147,37 +168,37 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.className',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        className:()=>'my-option'
+                        className: () => 'my-option'
                     }}
                     optionCode={
-`className:()=>'my-option'`
+                        `className:()=>'my-option'`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.style',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        style:()=>{
+                        style: () => {
                             return {
-                                background:'lightblue'
+                                background: 'lightblue'
                             }
                         }
                     }}
                     optionCode={
-`style:()=>{
+                        `style:()=>{
     return {
         background:'lightblue'
     }
@@ -185,73 +206,73 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'option.show',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        show:(option:any)=>option.gender !== 'male'
+                        show: (option: any) => option.gender !== 'male'
                     }}
                     optionCode={
-`show:(option:any)=>option.gender !== 'male'`
+                        `show:(option:any)=>option.gender !== 'male'`
                     }
                 />
             )
         ],
         [
             'option.disabled',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        disabled:(option:any)=>option.gender === 'male'
+                        disabled: (option: any) => option.gender === 'male'
                     }}
                     optionCode={
-        `disabled:(option:any)=>option.gender === 'male'`
+                        `disabled:(option:any)=>option.gender === 'male'`
                     }
                 />
             )
         ],
         [
             'option.onClick',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     option={{
-                        onClick:(option:any)=>alert(JSON.stringify(option))
+                        onClick: (option: any) => alert(JSON.stringify(option))
                     }}
                     optionCode={
-        `onClick:(option:any)=>alert(JSON.stringify(option))`
+                        `onClick:(option:any)=>alert(JSON.stringify(option))`
                     }
                 />
             ),
-            ['radio','select','tabs','buttons'].indexOf(type) !== -1
+            ['radio', 'select', 'tabs', 'buttons'].indexOf(type) !== -1
         ],
         [
             'popover',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     props={{
                         type,
-                        popover:{
-                            fitHorizontal:true,
-                            setAttrs:(key:string)=>{
-                                if(key === 'backdrop'){
+                        popover: {
+                            fitHorizontal: true,
+                            setAttrs: (key: string) => {
+                                if (key === 'backdrop') {
                                     return {
-                                        style:{
-                                            background:'rgba(0,0,0,0.8)'
+                                        style: {
+                                            background: 'rgba(0,0,0,0.8)'
                                         }
                                     }
                                 }
-                                if(key === 'modal'){
+                                if (key === 'modal') {
                                     return {
-                                        style:{
-                                            background:'#f2f2f2',
-                                            minWidth:240
+                                        style: {
+                                            background: '#f2f2f2',
+                                            minWidth: 240
                                         }
                                     }
                                 }
@@ -259,7 +280,7 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                         }
                     }}
                     propsCode={
-            `popover:{
+                        `popover:{
                 fitHorizontal:true,
                 setAttrs:(key)=>{
                     if(key === 'backdrop'){
@@ -286,27 +307,27 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
         ],
         [
             'option.tagAttrs',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     props={{
                         type,
-                        multiple:true
+                        multiple: true
                     }}
                     propsCode={
-            `multiple={true}`
+                        `multiple={true}`
                     }
                     option={{
-                        tagAttrs:(option:any)=>{
+                        tagAttrs: (option: any) => {
                             return {
-                                style:{
-                                    background:option.gender === 'male'?'dodgerblue':'pink'
+                                style: {
+                                    background: option.gender === 'male' ? 'dodgerblue' : 'pink'
                                 }
                             }
                         }
                     }}
                     optionCode={
-        `tagAttrs:(option:any)=>{
+                        `tagAttrs:(option:any)=>{
             return {
                 style:{
                     background:option.gender === 'male'?'dodgerblue':'pink'
@@ -316,166 +337,167 @@ const SelectExamples:FC<{type:I_exampleTypes}> = ({type}) => {
                     }
                 />
             ),
-            ['tags','select'].indexOf(type) !== -1
+            ['tags', 'select'].indexOf(type) !== -1
         ],
         [
             'option.tagBefore',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     props={{
                         type,
-                        multiple:true
+                        multiple: true
                     }}
                     propsCode={
-            `multiple={true}`
+                        `multiple={true}`
                     }
-                    
+
                     option={{
-                        tagBefore:(option:any)=>{
-                            return <Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>
+                        tagBefore: (option: any) => {
+                            return <Icon path={option.gender === 'male' ? mdiHumanMale : mdiHumanFemale} size={0.8} />
                         }
                     }}
                     optionCode={
-        `tagBefore:(option:any)=>{
+                        `tagBefore:(option:any)=>{
             return <Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>
         }`
                     }
                 />
             ),
-            ['tags','select'].indexOf(type) !== -1
+            ['tags', 'select'].indexOf(type) !== -1
         ],
         [
             'option.tagAfter',
-            ()=>(
-                <Options 
+            () => (
+                <Options
                     type={type}
                     props={{
                         type,
-                        multiple:true
+                        multiple: true
                     }}
                     propsCode={
-            `multiple={true}`
+                        `multiple={true}`
                     }
-                    
+
                     option={{
-                        tagAfter:(option:any)=>{
+                        tagAfter: (option: any) => {
                             return option.gender
                         }
                     }}
                     optionCode={
-        `tagAfter:(option:any)=>{
+                        `tagAfter:(option:any)=>{
             return option.gender
         }`
                     }
                 />
             ),
-            ['tags','select'].indexOf(type) !== -1
+            ['tags', 'select'].indexOf(type) !== -1
         ],
-        ['hideTags',()=><HideTags/>,['select'].indexOf(type) !== -1],
-        ['tags popover',()=><TagsPopover/>,['tags'].indexOf(type) !== -1],
-          
+        ['hideTags', () => <HideTags />, ['select'].indexOf(type) !== -1],
+        ['tags popover', () => <TagsPopover />, ['tags'].indexOf(type) !== -1],
+
     ])
-    
 
 
-    let [numbers] = useState<number[]>(new Array(examples.length + 1).fill(0).map((o,i)=>i - 1))
-    let [setting,SetSetting] = useState<any>(new Storage(`selectexamplessetting`).load('setting',{
-        show:-1
+
+    let [titles] = useState<string[]>(getTitles)
+    function getTitles() {
+        let res = ['all'];
+        for (let i = 0; i < examples.length; i++) {
+            let ex = examples[i];
+            if (ex[2] !== false) { res.push(ex[0]) }
+        }
+        return res
+    }
+    let [setting, SetSetting] = useState<I_setting>(new Storage(`${type}examplessetting`).load('setting', {
+        show: 'all', showCode: true
     }))
-    function setSetting(setting:any){
-        new Storage(`selectexamplessetting`).save('setting',setting)
-        SetSetting(setting)
+    function setSetting(value: any, field?: keyof I_setting) {
+        let newSetting = { ...setting };
+        if (field) { newSetting = { ...setting, [field]: value } }
+        else { newSetting = { ...value } }
+        new Storage('treeexamplessetting').save('setting', newSetting)
+        SetSetting(newSetting)
     }
-    function changeShow(dir: 1 | -1 ){
-        let newShow:number = setting.show + dir;
-        if(newShow < -1){newShow = examples.length - 1 }
-        if(newShow > examples.length - 1){newShow = -1}
-        setSetting({...setting,show:newShow})
+    function changeShow(dir: 1 | -1) {
+        let index = titles.indexOf(setting.show) + dir
+        if (index < 0) { index = titles.length - 1 }
+        if (index > titles.length - 1) { index = 0 }
+        setSetting({ ...setting, show: titles[index] })
     }
-    function setting_node(){
-        let btnstyle = {background:'none',border:'none'}
-        return {
-            className:'p-12',
-            html:(
-                <AIOInput
-                    type='form'
-                    value={{...setting}}
-                    onChange={(newSetting)=>setSetting({...newSetting})}
-                    node={{
-                        dir:'h',
-                        childs:[
-                            {flex:1},
-                            {
-                                input:{
-                                    type:'select',options:numbers,before:'Show:',
-                                    option:{
-                                        text:(option:any)=>option === -1?"all":examples[option][0],
-                                        value:'option'
-                                    },
-                                    popover:{
-                                        setAttrs:(key)=>{
-                                            if(key === 'modal'){
-                                                return {
-                                                    style:{maxHeight:'100vh'}
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                field:'value.show'
-                            },
-                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>},
-                            {className:'align-vh',html:<button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>}
-                        ]
-                    }}
-                />
-            )
-        }
+    function setting_node(): ReactNode {
+        let btnstyle = { background: 'none', border: 'none' }
+        return (
+            <div className="p-12">
+                <div className="flex-row">
+                    <div className="flex-1"></div>
+                    <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode) => setSetting(showCode, 'showCode')} />
+                    <AIOInput
+                        type='select' options={titles} before='Show' option={{ text: 'option', value: 'option' }} popover={{ maxHeight: '100vh' }}
+                        value={setting.show} onChange={(show) => setSetting(show, 'show')} className="w-fit"
+                    />
+                    <div className="flex-row align-v">
+                        <button type='button' style={btnstyle} onClick={() => changeShow(-1)}><Icon path={mdiMinusThick} size={1} /></button>
+                        <button type='button' style={btnstyle} onClick={() => changeShow(1)}><Icon path={mdiPlusThick} size={1} /></button>
+                    </div>
+                </div>
+            </div>
+        )
     }
-    function render_node(){
-        return {
-            key:JSON.stringify(setting),
-            className:'ofy-auto flex-1 p-12',
-            column:examples.map((o:any,i:number)=>{
-                let [title,COMP,cond] = o;
-                if(cond === false){return {}}
-                if(setting.show !== -1 && setting.show !== i){return {}}
-                return {
-                    html:(
-                        <div className='w-100'>
-                            <h3>{`${i} - ${title}`}</h3>
-                            {COMP()}
-                        </div>
-                    )
+    function code(code: string) {
+        if (setting.showCode === false) { return null }
+        return Code(code)
+    }
+    function render_node(): ReactNode {
+        return (
+            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
+                {
+                    examples.map((o: any, i: number): ReactNode => {
+                        let [title, COMP, cond, description] = o;
+                        if (cond === false) { return null }
+                        if (setting.show !== 'all' && setting.show !== title) { return null }
+                        return (
+                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
+                                <h3>{`${i} - ${title}`}</h3>
+                                {description && <h5>{description}</h5>}
+                                {COMP()}
+                            </div>
+                        )
+                    })
                 }
-            })
-        }
+            </div>
+        )
     }
-    return (<RVD rootNode={{className:'h-100',column:[setting_node(),render_node()]}}/>)   
+    function getContext():I_CTX {return { setting, type, code }}
+    return (
+        <CTX.Provider value={getContext()}>
+            <div className="flex-col h-100">{setting_node()} {render_node()}</div>
+        </CTX.Provider>
+    )
 }
 export default SelectExamples
-const Before:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const Before: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                before={<Icon path={mdiAccount} size={0.8}/>}
+                onChange={(newValue) => setValue(newValue)}
+                before={<Icon path={mdiAccount} size={0.8} />}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -485,30 +507,31 @@ const Before:FC<{type:I_exampleTypes}> = ({type})=> {
     before={<Icon path={mdiAccount} size={0.8}/>}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const After:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const After: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 after={<div className='badge'>{12}</div>}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -518,30 +541,31 @@ const After:FC<{type:I_exampleTypes}> = ({type})=> {
     after={<div className='badge'>{12}</div>}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const Subtext:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const Subtext: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 value={value}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 subtext='My subtext'
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -551,30 +575,31 @@ const Subtext:FC<{type:I_exampleTypes}> = ({type})=> {
     subtext='My subtext'
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const Disabled:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const Disabled: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                disabled={true} 
+                onChange={(newValue) => setValue(newValue)}
+                disabled={true}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -584,30 +609,142 @@ const Disabled:FC<{type:I_exampleTypes}> = ({type})=> {
     disabled={true}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const Loading:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const DeSelect_true: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                loading={true}  
+                onChange={(newValue) => setValue(newValue)}
+                deSelect={true}
             />
-        {Code(`
+            {code(`
+<AIOInput
+    type={type}
+    options={textOptions}
+    option={{
+        text: 'option.name',
+        value: 'option.id'
+    }}
+    value={value}
+    onChange={(newValue) => setValue(newValue)}
+    deSelect={true}
+/>
+        `)}
+        </div>
+    )
+}
+const DeSelect_Object: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
+        }
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type}
+                options={textOptions}
+                option={{
+                    text: 'option.name',
+                    value: 'option.id'
+                }}
+                value={value}
+                onChange={(newValue) => setValue(newValue)}
+                deSelect={{id:false,text:'Not Selected'}}
+            />
+            {code(`
+<AIOInput
+    type={type}
+    options={textOptions}
+    option={{
+        text: 'option.name',
+        value: 'option.id'
+    }}
+    value={value}
+    onChange={(newValue) => setValue(newValue)}
+    deSelect={{id:false,text:'Not Selected'}}
+/>
+        `)}
+        </div>
+    )
+}
+const Search: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
+        }
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type}
+                options={textOptions}
+                option={{
+                    text: 'option.name',
+                    value: 'option.id'
+                }}
+                value={value}
+                onChange={(newValue) => setValue(newValue)}
+                search={'search here'}
+            />
+            {code(`
+<AIOInput
+    type={type}
+    options={textOptions}
+    option={{
+        text: 'option.name',
+        value: 'option.id'
+    }}
+    value={value}
+    onChange={(newValue) => setValue(newValue)}
+    deSelect={{id:false,text:'Not Selected'}}
+/>
+        `)}
+        </div>
+    )
+}
+const Loading: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
+        }
+    }
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type}
+                options={textOptions}
+                option={{
+                    text: 'option.name',
+                    value: 'option.id'
+                }}
+                value={value}
+                onChange={(newValue) => setValue(newValue)}
+                loading={true}
+            />
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -617,25 +754,26 @@ const Loading:FC<{type:I_exampleTypes}> = ({type})=> {
     loading={true}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const Text:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+const Text: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                text='My Text'      
+                onChange={(newValue) => setValue(newValue)}
+                text='My Text'
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -645,25 +783,26 @@ const Text:FC<{type:I_exampleTypes}> = ({type})=> {
     text='My Text'      
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const Multiple:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number>()
+const Multiple: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number>()
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 multiple={true}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -673,25 +812,26 @@ const Multiple:FC<{type:I_exampleTypes}> = ({type})=> {
     multiple={true}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const MultipleNumber:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number[]>([])
+const MultipleNumber: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number[]>([])
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 multiple={6}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}' 
     options={${optionsCode}} 
@@ -702,12 +842,13 @@ const MultipleNumber:FC<{type:I_exampleTypes}> = ({type})=> {
     maxLength={6}
 />
         `)}
-        </div> 
+        </div>
     )
 }
 
-const CheckIconArray:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number[]>([])
+const CheckIconArray: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number[]>([])
     return (
         <div className='example'>
             <AIOInput
@@ -715,17 +856,17 @@ const CheckIconArray:FC<{type:I_exampleTypes}> = ({type})=> {
                 multiple={type === 'select'}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 checkIcon={[
-                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-                    <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
+                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd' />,
+                    <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />
                 ]}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -738,26 +879,27 @@ const CheckIconArray:FC<{type:I_exampleTypes}> = ({type})=> {
     ]}
 />
         `)}
-        </div> 
+        </div>
     )
 }
-const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
-    const [value,setValue] = useState<number[]>([])
+const CheckIconObject: FC<{ type: I_exampleType }> = ({ type }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number[]>([])
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 multiple={type === 'select'}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
+                onChange={(newValue) => setValue(newValue)}
+                checkIcon={{ background: 'orange', border: '1px solid orange', width: 16, height: 16, padding: 4 }}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -767,32 +909,33 @@ const CheckIconObject:FC<{type:I_exampleTypes}> = ({type})=> {
     checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
 />
         `)}
-        </div> 
+        </div>
     )
 }
 
-const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:AI,propsCode?:string}> = ({type,option = {},optionCode,props={},propsCode})=> {
-    const [value,setValue] = useState<any>(getValue)
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+const Options: FC<{ type: I_exampleType, option?: AI['option'], optionCode?: string, props?: AI, propsCode?: string }> = ({ type, option = {}, optionCode, props = {}, propsCode }) => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<any>(getValue)
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
-                options={textOptions}   
+                onChange={(newValue) => setValue(newValue)}
+                options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id',
+                    text: 'option.name',
+                    value: 'option.id',
                     ...option
                 }}
                 {...props}
-                type={type} 
+                type={type}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}' 
     value={value}
@@ -807,27 +950,28 @@ const Options:FC<{type:I_exampleTypes,option?:any,optionCode?:string,props?:AI,p
     ${propsCode || ''}
 />
         `)}
-        </div> 
+        </div>
     )
 }
- 
-const HideTags:FC = ()=> {
-    const [value,setValue] = useState<number[]>([])
+
+const HideTags: FC = () => {
+    const {code}:I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number[]>([])
     return (
         <div className='example'>
             <AIOInput
                 type='select'
-                multiple={true} 
+                multiple={true}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 hideTags={true}
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='select'
     multiple={true} 
@@ -838,61 +982,62 @@ const HideTags:FC = ()=> {
     hideTags={true}
 />
         `)}
-        </div> 
+        </div>
     )
 }
 
-const TagsPopover:FC = ()=> {
+const TagsPopover: FC = () => {
+    const {code}:I_CTX = useContext(CTX);
     const type = 'tags';
-    const [value,setValue] = useState<any>(getValue)
+    const [value, setValue] = useState<any>(getValue)
     const valueRef = useRef(value);
     valueRef.current = value;
-    function getValue(){
-        if(type === 'tags'){
-            return ['2','3','6','8']
+    function getValue() {
+        if (type === 'tags') {
+            return ['2', '3', '6', '8']
         }
     }
     return (
         <div className='example'>
             <AIOInput
-                type={type} 
+                type={type}
                 options={textOptions}
                 option={{
-                    text:'option.name',
-                    value:'option.id'
+                    text: 'option.name',
+                    value: 'option.id'
                 }}
                 className='my-tags'
                 value={value}
-                onChange={(newValue)=>setValue(newValue)}
+                onChange={(newValue) => setValue(newValue)}
                 after={
                     <AIOInput
-                        type='button' style={{padding:0}}
-                        text={<Icon path={mdiDotsHorizontal} size={1}/>}
+                        type='button' style={{ padding: 0 }}
+                        text={<Icon path={mdiDotsHorizontal} size={1} />}
                         popover={{
-                            header:{
-                                onClose:true,
-                                title:'Select Items',
-                                subtitle:'Some subtitle',
-                                before:<Icon path={mdiStar} size={1.5} color='orange'/>
+                            header: {
+                                onClose: true,
+                                title: 'Select Items',
+                                subtitle: 'Some subtitle',
+                                before: <Icon path={mdiStar} size={1.5} color='orange' />
                             },
-                            position:'center',
-                            body:()=>{
+                            position: 'center',
+                            body: () => {
                                 return (
-                                    <div style={{whiteSpace:'break-spaces',maxWidth:600,paddingBottom:12}}>
+                                    <div style={{ whiteSpace: 'break-spaces', maxWidth: 600, paddingBottom: 12 }}>
                                         <AIOInput
                                             type='radio'
                                             multiple={true}
                                             options={textOptions}
                                             option={{
-                                                text:'option.name',
-                                                value:'option.id',
-                                                style:()=>({width:'32%'})
+                                                text: 'option.name',
+                                                value: 'option.id',
+                                                style: () => ({ width: '32%' })
                                             }}
                                             value={[...valueRef.current]}
-                                            onChange={(newValue)=>setValue([...newValue])}
+                                            onChange={(newValue) => setValue([...newValue])}
                                             subtext='Please Select Some Items'
 
-                                        />                                        
+                                        />
                                     </div>
                                 )
                             }
@@ -900,7 +1045,7 @@ const TagsPopover:FC = ()=> {
                     />
                 }
             />
-        {Code(`
+            {code(`
 <AIOInput
     type='${type}'
     options={${optionsCode}} 
@@ -910,6 +1055,6 @@ const TagsPopover:FC = ()=> {
     before={<Icon path={mdiAccount} size={0.8}/>}
 />
         `)}
-        </div> 
+        </div>
     )
 }
