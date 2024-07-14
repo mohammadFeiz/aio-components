@@ -770,7 +770,7 @@ export type I_openState = boolean | undefined
 export type AI_Layout = {
     option?: AI_option, text?: RN, index?: number,
     properties?: any,indent?:AI_indent,
-    toggle?:{open:I_openState},
+    toggle?:{state:I_openState,action:()=>void},
 }
 const Layout:FC<AI_Layout> = (props) => {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword,error }: AI_context = useContext(AICTX)
@@ -952,10 +952,10 @@ const Layout:FC<AI_Layout> = (props) => {
     function Toggle(indent: AI_indent) {
         if(!option || option.toggleIcon === false){return null}
         if (toggle === undefined) { return null }
-        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); if(option.details.toggle){option.details.toggle()} }}>
-            <div className='aio-input-toggle-icon'>{getToggleIcon(toggle.open)}</div>
+        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); toggle.action()} }>
+            <div className='aio-input-toggle-icon'>{getToggleIcon(toggle.state)}</div>
             {
-                toggle.open === true &&
+                toggle.state === true &&
                 <svg className='aio-input-toggle-line aio-input-indent-line'>
                     <path d={`M${indent.size / 2} ${0} L${indent.size / 2} ${indent.height / 2 - 12} Z`}></path>
                 </svg>
@@ -1401,7 +1401,6 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     let {optionsList} = GetOptions({
         rootProps, types, options: rows, level,isOpen:(id:any)=>!!openDic[id],
         change: (row: any, newRow: any) => change(row, newRow),
-        toggle
     })
     if(!!onAdd || !!onRemove || !!actions){
         optionsList = optionsList.map((o)=>{
@@ -1440,14 +1439,14 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     )
 }
 const TreeRow: FC<{ item: I_treeItem }> = (props) => {
-    let { openDic, getChilds }: I_TreeContext = useContext(TreeContext);
+    let { openDic, getChilds,toggle }: I_TreeContext = useContext(TreeContext);
     let { item } = props;
     let childs = getChilds(item);
     let open: I_openState = !childs.length ? undefined : (!!openDic[item.id] ? true : false);
     let p: AI_Layout = { 
         indent: item.indent, 
         option: item.option, 
-        toggle: { open } 
+        toggle: { state:open,action:()=>toggle(item.id) } 
     };
     return <Layout {...p} />;
 }
@@ -2927,6 +2926,7 @@ export type AI_Sidemenu_badge = {
 export const SideMenu:FC<AI_Sidemenu> = (props) => {
     let {items = [],onChange,option = {},type = 'normal'} = props;
     let cls = 'aio-input-sidemenu'
+    const toggleRef = useRef((id:any)=>{})
     function getBadge(item:AI_Sidemenu_item){
         let {badge} = item;
         if(!badge){badge = []}
@@ -2939,18 +2939,17 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         }
         return res
     }
-    function getAfter(option:AI_Sidemenu_item,details:I_optionDetails){
+    function getAfter(option:AI_Sidemenu_item,active:boolean){
         let {items = []} = option;
-        let open = !!details.active;
         let badge:RN[] = getBadge(option);
         return (
             <div className={`${cls}-after ${cls}-align`}>
                 {!!badge.length && badge}
-                {!!items.length && <Icon path={open?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+                {!!items.length && <Icon path={active?mdiChevronDown:mdiChevronRight} size={0.7}/>}
             </div>
         )
     }
-    function getBefore(option:any,details:any){
+    function getBefore(option:any){
         let {icon = <Icon path={mdiCircle} size={0.6}/>} = option;
         if(!icon){return null}
         return (
@@ -2959,21 +2958,21 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
             </div>
         )
     }
-    const defaultOption = {
+    const defaultOption:AI_optionProp = {
         text:'option.text',
         value:'option.value',
         toggleIcon:()=>false,
-        after:(option:AI_Sidemenu_item,details:I_optionDetails)=>getAfter(option,details),
-        before:(option:AI_Sidemenu_item,details:I_optionDetails)=>getBefore(option,details),
-        onClick:(option:AI_Sidemenu_item,details:I_optionDetails)=>{
-            let {items = []} = option;
-            if(!!items.length){if(details.toggle){details.toggle()}}
+        after:({option,active})=>getAfter(option,!!active),
+        before:({option})=>getBefore(option),
+        onClick:({option})=>{
+            let {items = [],value} = option;
+            if(!!items.length){toggleRef.current(value)}
             else if(option.onClick){option.onClick()}
             else if(onChange){onChange(option)}
         },
-        className:(option:AI_Sidemenu_item,details:I_optionDetails)=>`${cls}-row-level-${details.level}`
+        className:({level})=>`${cls}-row-level-${level}`
     }
-    let finalOptions = {
+    let finalOptions:AI_optionProp = {
         ...defaultOption,...option,
         className:(item:AI_Sidemenu_item,details:I_optionDetails)=>{
             let className = `${cls}-row-level-${details.level}`
@@ -2991,6 +2990,7 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
             className={attrs.className}
             type='tree'
             size={48}
+            toggleRef={toggleRef}
             value={[...items]}
             getChilds={(p:{row:AI_Sidemenu_item})=>p.row.items || []}
             option={finalOptions}
@@ -3240,14 +3240,13 @@ type I_GetOptions = {
     types: AI_types, 
     options: any[], 
     level?: number, 
-    toggle?:(id:any)=>void,
     change?: (row: any, newRow: any) => void, 
     isOpen?:(id:any)=> boolean | undefined,
     defaultOptionProps?: AI_optionProp
 }
 //isOpen ro baraye tashkhise active(open) boodane node haye tree mifrestim
 function GetOptions(p:I_GetOptions): AI_options {
-    let { options,rootProps, types, level,isOpen, change,toggle,defaultOptionProps = {} } = p;
+    let { options,rootProps, types, level,isOpen, change,defaultOptionProps = {} } = p;
     let { deSelect } = rootProps;
     let result = [];
     let dic:AI_optionDic = {}
@@ -3277,7 +3276,6 @@ function GetOptions(p:I_GetOptions): AI_options {
         let text = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'text' });
         //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
         optionDetails.active = active;
-        optionDetails.toggle = toggle?()=> toggle(optionValue):undefined;
         let attrs = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'attrs', def: {} });
         let defaultChecked = getDefaultOptionChecked(optionValue)
         let checked = GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'checked', def: defaultChecked })
@@ -3456,15 +3454,22 @@ export type AI =
     text?: RN | (() => RN),//select,checkbox,button,
     width?: number | string,//image
 }
-
-type I_optionDetails = {option:any,rootProps:AI,index: number, level?: number,active?:boolean, change?: (v: any) => any,toggle?:()=>void}
-export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
+export type AI_option = {
+    show:any,checked: boolean,checkIcon: AI_checkIcon,after: RN | ((p?:any) => RN),before: RN | ((p?:any) => RN),draggable: boolean,
+    text: RN,subtext: RN,justify: boolean,loading: boolean | RN,disabled: boolean,attrs: any,className:string,style: any,value:any,
+    tagAttrs:any,tagBefore:any,tagAfter:any,toggleIcon:boolean | RN[],onClick?:(o1:any,o2?:any)=>void,close?:boolean,level?:number,
+    details:I_optionDetails
+}
+type I_optionDetails = {option:any,rootProps:AI,index: number, level?: number,active?:boolean, change?: (v: any) => any}
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon' 
 )
+export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
+export type AI_optionDic = {[key:string]:AI_option}
+export type AI_options = {optionsList:AI_option[],optionsDic:AI_optionDic}
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
+'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_table_column = {
     title?: any,value?: any,sort?: true | AI_table_sort,search?: boolean,id?: string,_id?: string,width?: any,minWidth?: any,input?: AI,
     onChange?: (newValue: any) => void,titleAttrs?:{[key:string]:any} | string,template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
@@ -3496,14 +3501,6 @@ export type AI_range_handle = ((value:number,p:any)=>AI_range_handle_config) | f
 export type AI_range_handle_config = {thickness?:number,size?:number,color?:string,offset?:number,sharp?:boolean}
 export type AI_fill = {thickness?:number,color?:string,className?:string,style?:any}
 export type AI_checkIcon = Object | [RN,RN];
-export type AI_option = {
-    show:any,checked: boolean,checkIcon: AI_checkIcon,after: RN | ((p?:any) => RN),before: RN | ((p?:any) => RN),draggable: boolean,
-    text: RN,subtext: RN,justify: boolean,loading: boolean | RN,disabled: boolean,attrs: any,className:string,style: any,value:any,
-    tagAttrs:any,tagBefore:any,tagAfter:any,toggleIcon:boolean | RN[],onClick?:(o1:any,o2?:any)=>void,close?:boolean,level?:number,
-    details:I_optionDetails
-}
-export type AI_optionDic = {[key:string]:AI_option}
-export type AI_options = {optionsList:AI_option[],optionsDic:AI_optionDic}
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any,attrs?:any }) => any
