@@ -178,11 +178,11 @@ function AIOINPUT(props: AI) {
                 while (typeof multiple === 'number' && newValue.length > multiple) {
                     newValue = newValue.slice(1, newValue.length)
                 }
-                onChange(newValue)
+                onChange(newValue,option.details)
             }
             else {
-                if (option.value !== props.value) { onChange(option.value, option) }
-                else if (props.deSelect === true) { onChange(undefined, option) }
+                if (option.value !== props.value) { onChange(option.value, option.details) }
+                else if (props.deSelect === true) { onChange(undefined, option.details) }
                 else if (typeof props.deSelect === 'function') { props.deSelect() }
             }
         }
