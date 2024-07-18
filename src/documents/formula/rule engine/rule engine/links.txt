@@ -1,0 +1,6 @@
+Ali Mojtahedi  4:45 ب.ظ
+https://docs.drools.org/7.70.0.Final/drools-docs/html_single/
+مستند اصلی
+
+Ali Mojtahedi  4:48 ب.ظ
+نمونه https://github.com/kiegroup/drools/blob/main/drools-examples/src/main/resources/org/drools/examples/shopping/Shopping.drl

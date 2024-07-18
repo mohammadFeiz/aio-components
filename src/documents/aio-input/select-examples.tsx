@@ -1,7 +1,7 @@
 import { createContext, FC, ReactNode, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput, { AI } from "../../npm/aio-input";
+import AIOInput, { AI, AITYPE } from "../../npm/aio-input";
 import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 type I_exampleType = 'select' | 'radio' | 'tabs' | 'buttons' | 'tags'
@@ -913,7 +913,7 @@ const CheckIconObject: FC<{ type: I_exampleType }> = ({ type }) => {
     )
 }
 
-const Options: FC<{ type: I_exampleType, option?: AI['option'], optionCode?: string, props?: AI, propsCode?: string }> = ({ type, option = {}, optionCode, props = {}, propsCode }) => {
+const Options: FC<{ type: I_exampleType, option?: AITYPE['option'], optionCode?: string, props?: AITYPE, propsCode?: string }> = ({ type, option = {}, optionCode, props = {}, propsCode }) => {
     const {code}:I_CTX = useContext(CTX);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {

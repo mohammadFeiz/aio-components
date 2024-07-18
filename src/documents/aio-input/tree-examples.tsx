@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, createContext, useContext, useRef, useState } from "react"
-import AIOInput from "../../npm/aio-input"
+import AIOInput, { AITree } from "../../npm/aio-input"
 import Code from '../../npm/code/index';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiCircleOutline, mdiDiamond, mdiEmoticonHappyOutline, mdiEye, mdiFolder, mdiGauge, mdiHeart, mdiMinusBoxMultiple, mdiMinusBoxOutline, mdiMinusThick, mdiPlusBoxOutline, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
@@ -723,6 +723,7 @@ function Indent(){
 }
 function SideMenu(){
     let {code,setting}:I_CTX = useContext(CTX);
+    const toggleRef = useRef<(id:any)=>void>(()=>{})
     let [value] = useState<any>([
         {name:'Dashboard',id:'dashboard'},
         {name:'Components',id:'components'},
@@ -770,18 +771,18 @@ function SideMenu(){
     }
     return (
         <div className='example'>
-            <AIOInput 
-                type='tree'
+            <AITree
                 className='tree-side'
                 size={48}
                 value={[...value]}
+                toggleRef={toggleRef}
                 option={{
                     text:'option.name',
                     value:'option.id',
                     toggleIcon:()=>false,
                     after:({option,active = false})=>getAfter(option,active),
                     before:({option,level = 0})=>getBefore(option,level),
-                    onClick:({toggle = ()=>{}})=>toggle(),
+                    onClick:({option})=>toggleRef.current(option.id),
                     className:({level = 0})=>`tree-row-${level}`
                 }}
                 indent={0}

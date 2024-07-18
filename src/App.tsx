@@ -23,12 +23,8 @@ import './npm/aio-css/aio-css.css';
 import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import AppContainer from './documents/aio-layout';
 import DOC_Map from './documents/map/doc-map.tsx';
-AIOInput_defaultProps({
-  'mapApiKeys':{
-    map:'web.ff233630c7064c87a5544216029a36c6',
-    service:'service.0d7b067eb6984a8c864920fe7b09800c',
-  }
-})
+import AIFilter from './documents/ai-filter';
+import Formula from "./documents/formula/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -50,6 +46,8 @@ export default function AIOComponents(){
     'Layout1':Layout1,
     'aio-layout':AppContainer,
     'map':DOC_Map,
+    'ai filter':AIFilter,
+    'formula':Formula,
     'test':Test
   })
   function goToHome(){

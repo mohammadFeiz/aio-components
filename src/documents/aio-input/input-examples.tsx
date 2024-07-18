@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, createContext, createRef, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput,{ AI } from "../../npm/aio-input";
+import AIOInput,{ AI, AI_type, AICheckbox, AIFile, AINumber, AISelect, AIText, AITYPE } from "../../npm/aio-input";
 import Code from '../../npm/code';
 import { Storage } from "../../npm/aio-utils";
 import $ from 'jquery';
@@ -74,9 +74,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['jalali', () => <Jalali />, ['date', 'time'].indexOf(type) !== -1],
         ['option.close', () => <DateOptionClose />, ['date'].indexOf(type) !== -1],
         ['image value', () => <Image />, ['image'].indexOf(type) !== -1],
-        ['width', () => <Width />, ['image'].indexOf(type) !== -1],
-        ['height', () => <Height />, ['image'].indexOf(type) !== -1],
-        ['width and height', () => <WidthHeight />, ['image'].indexOf(type) !== -1],
+        ['image size', () => <ImageSize />, ['image'].indexOf(type) !== -1],
         ['deSelect (true)', () => <DeSelectTrue />, ['date', 'image'].indexOf(type) !== -1],
         ['deSelect (function)', () => <DeSelectFunction />, ['date', 'image'].indexOf(type) !== -1],
         ['preview', () => <Preview />, ['password', 'image', 'file'].indexOf(type) !== -1],
@@ -413,9 +411,9 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
             <div className="p-12">
                 <div className="flex-row">
                     <div className="flex-1"></div>
-                    <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
-                    <AIOInput
-                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
+                    <AICheckbox text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
+                    <AISelect
+                        options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
                         value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
                     />
                     <div className="flex-row align-v">
@@ -584,30 +582,30 @@ const Mask: FC = () => {
             let inputIndex = temp;
             if(type === 'text' || type === 'number'){
                 let length = +o[1];
-                let p:AI = {
-                    style:{width:length * 10},
-                    placeholder:new Array(length).fill('x').join(''),
-                    maxLength:length,
-                    type:'text',
-                    justNumber:type === 'number',
-                    value:valuesRef.current[inputIndex],
-                    onChange:(v:string)=>changeValue(v,inputIndex,patternIndex)   
-                }
                 temp++;
-                return <AIOInput {...p}/>
+                return (
+                    <AIText 
+                        style={{width:length * 10}}
+                        placeholder={new Array(length).fill('x').join('')}
+                        maxLength={length}
+                        justNumber={type === 'number'}
+                        value={valuesRef.current[inputIndex]}
+                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                    />
+                )
             }
             else if(type === 'select'){
                 let options = o[2] as any[];
-                let p:AI = {
-                    type:'select',
-                    style:{width:'fit-content'},
-                    options,
-                    option:{text:'option',value:'option'},
-                    value:valuesRef.current[inputIndex],
-                    onChange:(v:string)=>changeValue(v,inputIndex,patternIndex)    
-                }
                 temp++;
-                return <AIOInput {...p}/>
+                return (
+                    <AISelect
+                        style={{width:'fit-content'}}
+                        options={options}
+                        option={{text:'option',value:'option'}}
+                        value={valuesRef.current[inputIndex]}
+                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                    />
+                )
             }
             else {
                 return <div className='aio-input-mask-gap'>{o}</div>
@@ -1063,66 +1061,54 @@ const Image: FC = () => {
         </div>
     )
 }
-const Width: FC = () => {
+const ImageSize: FC = () => {
     const { type, code }: I_CTX = useContext(CTX);
-    const [value, setValue] = useState<number>()
+    const [value, setValue] = useState<string>('https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg')
     return (
         <div className='example'>
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                width={120}
+                placeholder='Select Image'
+                attrs={{style:{height:120}}}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    width={120}
+    placeholder='Select Image'
+    attrs={{style:{height:120}}}
 />
         `)}
-        </div>
-    )
-}
-const Height: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
-    const [value, setValue] = useState<number>()
-    return (
-        <div className='example'>
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                height={200}
+                placeholder='Select Image'
+                attrs={{style:{width:120}}}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    height={200}
+    placeholder='Select Image'
+    attrs={{style:{width:120}}}
 />
         `)}
-        </div>
-    )
-}
-const WidthHeight: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
-    const [value, setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
+        <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                width={200}
-                height={200}
+                placeholder='Select Image'
+                attrs={{style:{width:200,height:200}}}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    width={200}
-    height={200}
+    placeholder='Select Image'
+    attrs={{style:{width:200,height:200}}}
 />
         `)}
         </div>
@@ -1366,7 +1352,7 @@ const CheckIconObject: FC = () => {
         </div>
     )
 }
-const Options: FC<{ option?: AI['option'], optionCode?: string, props?: AI, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
+const Options: FC<{ option?: AI<AI_type>['option'], optionCode?: string, props?: AITYPE, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
     const { type }: I_CTX = useContext(CTX);
     if (type === 'text') { return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'number') { return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
@@ -1375,11 +1361,11 @@ const Options: FC<{ option?: AI['option'], optionCode?: string, props?: AI, prop
 }
 const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
     const { code }: I_CTX = useContext(CTX);
-    const [value, setValue] = useState<number>()
+    const [value, setValue] = useState<string>()
     return (
         <div className='example'>
-            <AIOInput
-                type='text' value={value}
+            <AIText
+                value={value}
                 onChange={(newValue) => setValue(newValue)}
                 options={textOptions}
                 option={{
@@ -1392,8 +1378,7 @@ const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCod
 
             />
             {code(`
-<AIOInput
-    type='text' 
+<AIText
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
     ${textOptionsCode}
@@ -1415,8 +1400,8 @@ const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsC
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
-            <AIOInput
-                type='number' value={value}
+            <AINumber
+                value={value}
                 onChange={(newValue) => setValue(newValue)}
                 options={numberOptions}
                 option={{
@@ -1428,8 +1413,7 @@ const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsC
                 {...props}
             />
             {code(`
-<AIOInput
-    type='number' 
+<AINumber
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
     ${numberOptionsCode}
@@ -1450,8 +1434,8 @@ const OptionsFile: FC<{ option?: any, optionCode?: string, props?: any, propsCod
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
-            <AIOInput
-                type='file' value={value}
+            <AIFile
+                value={value}
                 onChange={(newValue) => setValue(newValue)}
                 options={textOptions}
                 option={{

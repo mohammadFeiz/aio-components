@@ -1,17 +1,15 @@
-import React, { Component, FC, useState } from 'react';
-import AIOInput, { AIOValidation } from '../../npm/aio-input/index.tsx';
+import { FC, useState } from 'react';
+import { AIRadio, AISelect, AIText } from '../../npm/aio-input/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
-import RVD from '../../npm/react-virtual-dom/index.tsx';
-import { AV_operator } from '../../npm/aio-input';
+import { AV_operator,Validation } from '../../npm/aio-utils';
 import { ParseString } from '../../npm/aio-utils/index.tsx';
-export default function DOC_AIOValidation(props: any) {
+export default function DOC_Validation(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
             nav={{
                 items: () => [
-                    { text: 'try it', id: 'try it', render: () => <TryIt /> },
-
+                    { text: 'try it', id: 'try it', render: () => <TryIt /> }
                 ]
             }}
         />
@@ -415,7 +413,7 @@ const TryIt: FC = () => {
         operator: '=',
         target: 3,
     })
-    let [ops] = useState<AV_operator[]>([
+    let [ops] = useState<any[]>([
         'required', 'contain', '!contain', '=', '!=', '<', '!<', '>', '!>', '<=', '!<=', '>=', '!>='
     ])
     let testMode = false;
@@ -443,56 +441,39 @@ const TryIt: FC = () => {
         }
         if(allResult){alert('Good Job!!! all test cases was success and was match')}
     }
-    let { message, code, success,result } = getResult(model)
+    function changeModelByField(field:string,value:any){
+        setModel({...model,[field]:value})
+    }
+    let { message, code,result } = getResult(model)
     return (
         <div className="example">
-            <AIOInput
-                type='form'
-                value={{ ...model }}
-                onChange={(newValue) => setModel({ ...newValue })}
-                node={{
-                    dir:'v',
-                    childs: [
-                        {
-                            dir:'h',
-                            childs: [
-                                { input: { type: 'text' }, label: 'title', field: 'value.title' },
-                                { input: { type: 'radio', popover: { fitHorizontal: true }, options: ['en', 'fa'], option: { text: 'option', value: 'option' } }, label: 'lang', field: 'value.lang' },
-                            ]
-                        },
-                        
-                        {
-                            dir:'h',
-                            childs: [
-                                { input: { type: 'text' }, label: 'value', field: 'value.value' },
-                                { input: { type: 'select', options: ops, option: { text: 'option', value: 'option' } }, label: 'operator', field: 'value.operator' },
-                                { input: { type: 'text' }, label: 'target', field: 'value.target' },
-                            ]
-                        }
-                    ]
-                }}
-            />
-            <RVD
-                rootNode={{
-                    column: [
-                        {
-                            className: 'p-24 brd-c-20 m-12',
-                            column: [
-                                { html: 'Config' },
-                                { html: <pre>{code}</pre> }
-                            ]
-                        },
-                        { size: 12 },
-                        {
-                            className: 'p-24 brd-c-20 m-12',
-                            column: [
-                                { html: 'Result Message' },
-                                { html: message, style: { color: result ? 'green' : 'red', direction: model.lang === 'fa' ? 'rtl' : 'ltr' } }
-                            ]
-                        }
-                    ]
-                }}
-            />
+            <div className="flex-row">
+                <div className="flex-row align-v gap-12">
+                    <AIText label='title' value={model.title} onChange={(title)=>changeModelByField('title',title)}/>
+                    <AIRadio 
+                        label='lang' options={['en', 'fa']} option={{ text: 'option', value: 'option' } }
+                        value={model.lang} onChange={(lang)=>changeModelByField('lang',lang)} 
+                    />
+                </div>
+                <div className="flex-row align-v gap-12">
+                    <AIText label='value' value={model.value} onChange={(value)=>changeModelByField('value',value)}/>
+                    <AISelect
+                        label='operator' options={ops} option={{ text: 'option', value: 'option' }} 
+                        value={model.operator} onChange={(operator)=>changeModelByField('operator',operator)}
+                    />
+                    <AIText label='target' value={model.target} onChange={(target)=>changeModelByField('target',target)}/>
+                </div>
+            </div>
+            <div className="flex-col gap-12">
+                <div className="flex-col p-24 brd-c-20 m-12">
+                    <div className="">Config</div>
+                    <pre>{code}</pre>
+                </div>
+                <div className="flex-col p-24 brd-c-20 m-12">
+                    <div className="">Result Message</div>
+                    <div style={{ color: result ? 'green' : 'red', direction: model.lang === 'fa' ? 'rtl' : 'ltr' }}>{message}</div>
+                </div>
+            </div>
         </div>
     )
 }
@@ -512,7 +493,7 @@ function getResult(p: { target: any, title: string, lang: 'en' | 'fa', value: an
             validations: [`${operator},${target}`]
         }
         code = JSON.stringify(config, null, 4)
-        let inst = new AIOValidation(config)
+        let inst = new Validation(config)
         message = inst.validate()
         if (!message) { 
             message = 'value is match by operator and target' 

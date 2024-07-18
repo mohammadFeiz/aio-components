@@ -12,19 +12,19 @@ import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup";
 /////////////my dependencies//////////
 import { 
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
-    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, ParseString, GetPrecisionCount, 
-    GetArray
+    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, 
+    GetArray,Validation
 } from './../../npm/aio-utils';
 /////////////style//////////////////
 import './index.css';
 ////////////////////////////////////
 type RN = ReactNode
 const AICTX = createContext({} as any);
-const AIOInput: FC<AI> = (props) => {
+const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type,round = props.round;
     let value = props.value
     if(type === 'text'){if(typeof value !== 'string'){value = ''}}
-    else if(type === 'number'){if(typeof value !== 'number'){value = ''}}
+    else if(type === 'number'){if(typeof value !== 'number'){value = undefined}}
     if (type === 'spinner') {
         type = 'range';
         if (!round || typeof round !== 'number') {round = 1;}
@@ -32,14 +32,14 @@ const AIOInput: FC<AI> = (props) => {
     else if (type === 'slider') {type = 'range'; round = 0;}
     else if (type === 'range') {return null;}
     const defaultProps = new Storage('aio-input-storage').getModel() || {}
-    let rootProps: AI = { ...props, type, round,value,...defaultProps }
+    let rootProps: AITYPE = { ...props, type, round,value,...defaultProps }
     if(type === 'text' && rootProps.fetchOptions){
         return <SuggestionInput {...rootProps}/>
     }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
-const SuggestionInput: FC<AI> = (props) => {
+const SuggestionInput: FC<AITYPE> = (props) => {
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
     async function setSearchResult(newValue: any) {
@@ -72,7 +72,7 @@ const SuggestionInput: FC<AI> = (props) => {
         />
     )
 }
-function AIOINPUT(props: AI) {
+function AIOINPUT(props: AITYPE) {
     let [types] = useState<AI_types>(getTypes(props))
     let [DATE] = useState<AIODate>(new AIODate())
     props = getDefaultProps(props, types)
@@ -88,7 +88,7 @@ function AIOINPUT(props: AI) {
         const {validations,lang = 'en',label,reportError = ()=>{}} = props;
         if(!validations){return}
         const title = label || '';
-        const res = new AIOValidation({ value, title: title.replace(/\*/g, ''), lang, validations }).validate()
+        const res = new Validation({ value, title: title.replace(/\*/g, ''), lang, validations }).validate() as string | undefined
         reportError(res)
         setError(res)
     }
@@ -143,8 +143,14 @@ function AIOINPUT(props: AI) {
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
     let [DragOptions] = useState<DragClass>(
         new DragClass({
-            className: 'aio-input-option',
-            onChange: (newOptions, from, to) => { if (typeof props.onSwap === 'function') { props.onSwap(newOptions, from, to) } }
+            callback: (fromData, toData) => { 
+                if (typeof props.onSwap === 'function') { 
+                    const {fromIndex} = fromData;
+                    const {options,toIndex} = toData;
+                    const sorted = DragOptions.reOrder(options,fromIndex,toIndex);
+                    props.onSwap(sorted, options[fromIndex], options[toIndex]) 
+                } 
+            }
         })
     )
     function toggle(popover: any) {
@@ -244,7 +250,7 @@ function AIOINPUT(props: AI) {
 }
 function TimePopover(props: { onClose: () => void }) {
     let { DATE, rootProps }: AI_context = useContext(AICTX)
-    let { jalali,onChange,size = 180 } = rootProps;
+    let { jalali,onChange, size = 12} = rootProps;
     let { onClose } = props;
     let [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
     let [startYear] = useState(value.year ? value.year - 10 : undefined);
@@ -269,29 +275,25 @@ function TimePopover(props: { onClose: () => void }) {
     function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): RN {
         if (typeof value[type] !== 'number') { return null }
         let options = getTimeOptions(type);
-        let p: AI = { type: 'list', value: value[type], options, size: size / 3.75, onChange: (v) => change({ [type]: v }),attrs:{style:{fontSize:size / 11.25}} }
+        let p: AITYPE = { type: 'list', value: value[type], options, size: size * 2.5, onChange: (v) => change({ [type]: v }) }
         return (
-            <div className="aio-input-time-popover-item" style={{width:size / 2.5}}>
-                <div className="aio-input-time-popover-item-title" style={{fontSize:size / 11.25,height:size / 7.5}}>{translate(type)}</div>
+            <div className="aio-input-time-popover-item">
+                <div className="aio-input-time-popover-item-title">{translate(type)}</div>
                 <AIOInput {...p} />
-                <div className='aio-input-time-popover-highlight' style={{
-                    height:size / 3.75,top:size / 3.75 * 1.5,
-                }}>
-
-                </div>
+                <div className='aio-input-time-popover-highlight'></div>
             </div>
         )
     }
     function submit() {if (onChange) { onChange(value); }onClose();}
     function now() {setValue(getTimeByUnit(rootProps,true))}
     return (
-        <div className='aio-input-time-popover-content'>
+        <div className='aio-input-time-popover-content aio-input-theme-bg1 aio-input-theme-color0' style={{fontSize:size}}>
             <div className="aio-input-time-popover-body">
                 {layout('year')} {layout('month')} {layout('day')} {layout('hour')} {layout('minute')} {layout('second')}
             </div>
             <div className="aio-input-time-popover-footer">
-                <button className='aio-input-primary-button' onClick={submit}>{translate('Submit')}</button>
-                {rootProps.now !== false && <button className='aio-input-secondary-button' onClick={()=>now()}>{translate('Now')}</button>}
+                <button onClick={submit}>{translate('Submit')}</button>
+                {rootProps.now !== false && <button onClick={()=>now()}>{translate('Now')}</button>}
             </div>
         </div>
     )
@@ -299,7 +301,7 @@ function TimePopover(props: { onClose: () => void }) {
 function Image() {
     let { rootProps }: AI_context = useContext(AICTX);
     let [popup] = useState(new AIOPopup());
-    let { value, width, height, onChange, disabled, placeholder, preview, deSelect } = rootProps;
+    let { value, attrs, onChange, disabled, placeholder, preview, deSelect,imageAttrs = {} } = rootProps;
     let [url, setUrl] = useState<string>();
     let dom: any = createRef()
     // if(typeof value === 'object'){
@@ -343,9 +345,9 @@ function Image() {
                 src={url}
                 alt={placeholder as string}
                 style={{ objectFit: 'contain', cursor: !onChange ? 'default' : undefined }}
-                width={width}
-                height={height}
                 onClick={!!onChange ? undefined : onPreview}
+                height='100%'
+                {...imageAttrs}
             />
             {
                 !!deSelect &&
@@ -353,7 +355,7 @@ function Image() {
                     onClick={(e) => {
                         e.stopPropagation(); e.preventDefault();
                         if (typeof deSelect === 'function') { deSelect() }
-                        else if (onChange) { onChange(undefined) }
+                        else if (onChange) { onChange('') }
 
                     }}
                     className='aio-input-image-remove'
@@ -361,16 +363,16 @@ function Image() {
             {preview && !!onChange && <div onClick={(e) => onPreview(e)} className='aio-input-image-preview'>{I(mdiImage, 1)}</div>}
             {popup.render()}
         </>
-    ) : <span className='aio-input-image-placeholder' style={{ width, height }}>{placeholder}</span>
+    ) : <span {...attrs} className='aio-input-image-placeholder'>{placeholder || 'placeholder'}</span>
     if (!onChange) {
         return IMG
     }
-    let p: AI = {
+    let p: AI<'file'> = {
         disabled,
-        type: 'file', justify: true, text: IMG, attrs: { style: { width: '100%', height: '100%', padding: 0 } },
+        justify: true, text: IMG, attrs: { style: { width: '100%', height: '100%', padding: 0 } },
         onChange: (file) => changeUrl(file, (url: string) => onChange(url))
     }
-    return (<AIOInput {...p} />)
+    return (<AIFile {...p} />)
 }
 type AI_fileType = File | {url:string,name?:string,size?:number}
 function File() { return (<div className='aio-input-file-container'><Layout /><FileItems /></div>) }
@@ -605,7 +607,7 @@ function Input() {
     function getValidValue() {
         let v = rootProps.value;
         if (type === 'number') {
-            if(v === ''){return ''}//important because +('') is 0
+            if(v === ''){return undefined}//important because +('') is 0
             else if (!isNaN(+v)) {
                 v = +v;
                 if (typeof min === 'number' && v < min) { v = min }
@@ -683,7 +685,10 @@ function Input() {
                 catch{}
             }
         }
-        if (rootProps.type === 'number' && value !== ''){value = +value}
+        if (rootProps.type === 'number'){
+            if (value !== ''){value = +value}
+            else {value = undefined}
+        }
         setValue(value);
         if (!blurChange && onChange) {
             clearTimeout(temp.btimeout);
@@ -911,7 +916,13 @@ const Layout:FC<AI_Layout> = (props) => {
         })
         let p = { ...attrs, onClick, ref: dom, disabled }
         let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
-        if (draggable) { p = { ...p, ...DragOptions.getAttrs(options, index || 0) } }
+        if (draggable) { 
+            p = { 
+                ...p, 
+                ...DragOptions.getDragAttrs({fromIndex:index || 0}),
+                ...DragOptions.getDropAttrs({options,toIndex:index || 0}) 
+            } 
+        }
         if (index) { p['data-index'] = index }
         return p;
     }
@@ -931,7 +942,7 @@ const Layout:FC<AI_Layout> = (props) => {
         let style = { ...(obj.style || {}), ...p.style }
         let { before = obj.before } = p;
         let { after = obj.after } = p;
-        let { footer = (obj as AI).footer } = p;
+        let { footer = (obj as AITYPE).footer } = p;
         let classNames = [obj.className, p.className].filter((o) => !!o)
         let className = classNames.length ? classNames.join(' ') : undefined;
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className,footer }
@@ -1031,7 +1042,8 @@ const Layout:FC<AI_Layout> = (props) => {
 }
 function List() {
     let { rootProps,options }: AI_context = useContext(AICTX);
-    let { attrs = {}, size = 36, count = 3, editable = true, stop = 3, decay = 8, onChange = () => { } } = rootProps;
+    let { attrs = {}, size = 36, listOptions = {count:3, editable:true, stop:3, decay:8}, onChange = () => { } } = rootProps;
+    let {count = 3, editable = true, stop = 3, decay = 8} = listOptions;
     let optionsLength:number = options.optionsList.length
     let [temp] = useState<I_list_temp>({
         dom: createRef(),
@@ -1142,14 +1154,15 @@ function List() {
                 if (index > optionsLength - 1) { index = optionsLength - 1 }
                 let top = getTopByIndex(index);
                 setStyle({ top, transition: '0.3s' });
-                onChange(options.optionsList[index].value, index)
+                const option = options.optionsList[index]
+                onChange(option.value, option.details)
                 return;
             }
             deltaY /= decay;
             setStyle({ top: startTop });
         }, 20)
     }
-    useEffect(() => { if (rootProps.move) { rootProps.move(move) } }, [])
+    useEffect(() => { if (rootProps.listOptions?.move) { rootProps.listOptions.move(move) } }, [])
     useEffect(() => {
         setBoldStyle(temp.activeIndex);
     })
@@ -1182,7 +1195,7 @@ function List() {
 }
 type I_AcardionContext = { 
     isOpen:(id:any)=>boolean,
-    rootProps: AI 
+    rootProps: AITYPE 
 }
 const AcardionContext = createContext({} as any);
 export const Acardion: FC = () => {
@@ -1254,7 +1267,7 @@ type I_TreeContext = {
     toggle: (id: string) => void,
     mountedDic: { [id: string]: boolean },
     openDic: { [id: string]: boolean },
-    rootProps: AI,
+    rootProps: AITYPE,
     types: any,
     add: (p?:{parent: any,parentDetails:any})=>void,
     remove: (p:{row: any,index:number, parent?: any,parentDetails?:any})=>void,
@@ -1292,7 +1305,7 @@ const Tree: FC = () => {
         else { SetMounted(id); setTimeout(() => SetOpen(id), time) }
     }
     useEffect(()=>{
-        if(rootProps.toggleRef){rootProps.toggleRef.current = (id)=>toggle(id)}
+        if(rootProps.toggleRef){rootProps.toggleRef.current = (id:any)=>toggle(id)}
     },[toggle])
     useEffect(()=>{
         if(rootProps.onToggle){rootProps.onToggle(openDic)}
@@ -1388,7 +1401,7 @@ const TreeActions: FC<I_TreeActions> = (props) => {
     }
     let Options = getOptions();
     if (!Options.length) { return null }
-    let p: AI = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
+    let p: AITYPE = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
     return <AIOInput {...p} />;
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string, parentIndent?: AI_indent,parentDetails?:I_treeRowDetails }
@@ -1459,18 +1472,22 @@ const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
 type I_DPContext = {
     translate: (text: string) => string,
     DATE:AIODate,
-    rootProps: AI,
+    rootProps: AITYPE,
     activeDate: I_DP_activeDate,
     changeActiveDate: (obj: 'today' | I_DP_activeDate) => void,
     onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => void,
     today: any, todayWeekDay: any, thisMonthString: any,months:string[],
 }
 type I_DP_activeDate = { year?: number, month?: number, day?: number }
+type AI_dateDetails = {
+    months:string[], jalaliDateArray:number[], gregorianDateArray:number[], dateArray:number[], weekDay:string, weekDayIndex:number, dateString:string,
+    year:number, month:number, day:number, hour:number, monthString:string, jalaliMonthString:string, gregorianMonthString:string
+}
 const DPContext = createContext({} as any);
 export function Calendar(props: { onClose?: () => void }) {
     let { rootProps, DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
-    let { multiple,unit = Def('date-unit'), jalali, value, disabled, size = Def('date-size'), theme = Def('theme'), translate = (text) => text, onChange = () => { }, option = {} } = rootProps;
+    let { multiple,unit = Def('date-unit'), jalali, value, disabled, size = 12, theme = Def('theme'), translate = (text:string) => text, onChange = () => { }, option = {} } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
     let [today] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
@@ -1511,7 +1528,7 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     function getPopupStyle() {
         return {
-            width: size, fontSize: size / 17, background: theme[1], color: theme[0], stroke: theme[0],
+            fontSize: size, background: theme[1], color: theme[0], stroke: theme[0],
             cursor: disabled === true ? 'not-allowed' : undefined,
         };
     }
@@ -1529,7 +1546,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 let dateArray = [year, month, day, hour];
                 let jalaliDateArray = !jalali ? DATE.toJalali(dateArray) : dateArray;
                 let gregorianDateArray = jalali ? DATE.toGregorian(dateArray) : dateArray;
-                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: null, index: null } : DATE.getWeekDay(dateArray)
+                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: '', index: 0 } : DATE.getWeekDay(dateArray)
                 let get2digit = (v: number) => {
                     if (v === undefined) { return }
                     let vn: string = v.toString();
@@ -1543,9 +1560,9 @@ export function Calendar(props: { onClose?: () => void }) {
                 let monthString = months[month - 1];
                 let jalaliMonthString = !jalali ? DATE.getMonths(true)[month - 1] : monthString;
                 let gregorianMonthString = jalali ? DATE.getMonths(false)[month - 1] : monthString;
-                let props = {
+                let props:AI_dateDetails = {
                     months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
-                    year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString,
+                    year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString
                 }
                 let newValue,index = 0;
                 if(multiple){
@@ -1579,8 +1596,8 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     return (
         <DPContext.Provider value={getContext()}>
-            <div className='aio-input-date-container' style={{ display: 'flex' }}>
-                <div className='aio-input-date-calendar aio-input-date-theme-bg1 aio-input-date-theme-color0 aio-input-date-theme-stroke0' style={getPopupStyle()}>
+            <div className='aio-input-date-container' style={{ display: 'flex',fontSize:size }}>
+                <div className='aio-input-date-calendar aio-input-theme-bg1 aio-input-theme-color0 aio-input-theme-stroke0' style={getPopupStyle()}>
                     <DPHeader /><DPBody /><DPFooter />
                 </div>
                 <DPToday />
@@ -1590,52 +1607,47 @@ export function Calendar(props: { onClose?: () => void }) {
 }
 function DPToday() {
     let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
-    let { theme = Def('theme'), jalali, unit = Def('date-unit'), size = Def('date-size') } = rootProps;
+    let { theme = Def('theme'), jalali, unit = Def('date-unit') } = rootProps;
     return (
-        <div className='aio-input-date-today aio-input-date-theme-color1 aio-input-date-theme-bg0' style={{ width: size / 2, color: theme[1], background: theme[0] }}>
-            <div style={{ fontSize: size / 13 }}>{translate('Today')}</div>
-            {
-                (unit === 'day' || unit === 'hour') &&
-                <>
-                    <div style={{ fontSize: size / 11 }}>{!jalali ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>
-                    <div style={{ fontSize: size / 12 * 4, height: size / 12 * 4 }}>{today[2]}</div>
-                    <div style={{ fontSize: size / 11 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>
-                </>
-            }
-            {unit === 'month' && <div style={{ fontSize: size / 8 }}>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>}
-            <div style={{ fontSize: size / 11 }}>{today[0]}</div>
-            {unit === 'hour' && <div style={{ fontSize: size / 10 }}>{today[3] + ':00'}</div>}
+        <div className='aio-input-date-today aio-input-theme-color1 aio-input-theme-bg0' style={{ color: theme[1], background: theme[0] }}>
+            <div className='aio-input-date-today-label'>{translate('Today')}</div>
+            {unit !== 'month' && <div className='aio-input-date-today-weekday'>{!jalali ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>}
+            {unit !== 'month' && <div className='aio-input-date-today-day'>{today[2]}</div>}
+            <div className='aio-input-date-today-month'>{!jalali ? thisMonthString.slice(0, 3) : thisMonthString}</div>
+            <div className='aio-input-date-today-year'>{today[0]}</div>
+            {unit === 'hour' && <div className='aio-input-date-today-year'>{today[3] + ':00'}</div>}
         </div>
     )
 }
 function DPFooter() {
     let { rootProps, changeActiveDate, translate }: I_DPContext = useContext(DPContext);
-    let { disabled, onChange = () => { }, size = Def('date-size'), deSelect,multiple } = rootProps;
+    let { disabled, onChange = () => { }, deSelect,multiple,now = true } = rootProps;
     if (disabled) { return null }
-    let buttonStyle = { padding: `${size / 20}px 0`, fontFamily: 'inherit' };
+    const buttonClassName = 'aio-input-theme-color0'
+    function clear(){
+        if(typeof deSelect === 'function'){deSelect()} 
+        else {onChange(multiple?[]:undefined)}
+    }
     return (
-        <div className='aio-input-date-footer' style={{ fontSize: size / 13 }}>
-            {!!deSelect && <button style={buttonStyle} onClick={() => typeof deSelect === 'function' ? deSelect() : onChange(multiple?[]:undefined)}>{translate('Clear')}</button>}
-            <button style={buttonStyle} onClick={() => changeActiveDate('today')}>{translate('Today')}</button>
+        <div className='aio-input-date-footer'>
+            {!!deSelect && <button onClick={() => clear()} className={buttonClassName}>{translate('Clear')}</button>}
+            {!!now && <button onClick={() => changeActiveDate('today')} className={buttonClassName}>{translate('Today')}</button>}
         </div>
     )
 }
 function DPBody() {
     let { rootProps, activeDate }: I_DPContext = useContext(DPContext);
-    let { unit = Def('date-unit'), jalali, size = Def('date-size') } = rootProps;
-    function getStyle() {
-        var columnCount = { hour: 4, day: 7, month: 3, year: 1 }[unit as AI_date_unit];
-        var rowCount = { hour: 6, day: 7, month: 4, year: 1 }[unit as AI_date_unit];
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = { hour: size / 7, day: a, month: size / 6, year: size / 7 }[unit as AI_date_unit];
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction: 'ltr' | 'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
+    let { unit = Def('date-unit'), jalali } = rootProps;
+    function getClassName() {
+        let res = 'aio-input-date-body';
+        res += ` aio-input-date-body-${unit}`
+        res += ` aio-input-date-${jalali?'rtl':'ltr'}`
+        //var columnCount = { hour: 4, day: 7, month: 3, year: 1 }[unit as AI_date_unit];
+        //var rowCount = { hour: 6, day: 7, month: 4, year: 1 }[unit as AI_date_unit];
+        return res
     }
     return (
-        <div className='aio-input-date-body' style={getStyle()}>
+        <div className={getClassName()}>
             {unit === 'hour' && GetArray(24,(i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, activeDate.month as number, activeDate.day as number, i]} />)}
             {unit === 'day' && <DPBodyDay />}
             {unit === 'month' && GetArray(12,(i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, i + 1]} />)}
@@ -1650,9 +1662,9 @@ function DPBodyDay() {
     let weekDays = DATE.getWeekDays(jalali);
     return (<>
         {weekDays.map((weekDay:string, i:number) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-        {GetArray(firstDayWeekDayIndex,(i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
+        {GetArray(firstDayWeekDayIndex,(i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-theme-bg1' style={{ background: theme[1] }}></div>)}
         {GetArray(daysLength,(i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
-        {GetArray(42 - (firstDayWeekDayIndex + daysLength),(i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-date-theme-bg1' style={{ background: theme[1] }}></div>)}
+        {GetArray(42 - (firstDayWeekDayIndex + daysLength),(i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-theme-bg1' style={{ background: theme[1] }}></div>)}
     </>)
 }
 const DPCellWeekday:FC<{weekDay:string}> = (props) => {
@@ -1660,7 +1672,7 @@ const DPCellWeekday:FC<{weekDay:string}> = (props) => {
     let { theme = Def('theme'), jalali } = rootProps;
     let { weekDay } = props;
     return (
-        <div className='aio-input-date-weekday aio-input-date-cell aio-input-date-theme-bg1 aio-input-date-theme-color0' style={{ background: theme[1], color: theme[0] }}>
+        <div className='aio-input-date-weekday aio-input-date-cell aio-input-theme-bg1 aio-input-theme-color0' style={{ background: theme[1], color: theme[0] }}>
             <span>{translate(weekDay.slice(0, !jalali ? 2 : 1))}</span>
         </div>
     )
@@ -1676,9 +1688,9 @@ function DPCell(props: {dateArray:number[]}) {
     function getClassName(isActive: boolean, isToday: boolean, isDisabled: boolean, className?: string) {
         var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
-        if (isActive) { str += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1'; }
-        else {str += ' aio-input-date-theme-bg1 aio-input-date-theme-color0';}
-        if (isToday) { str += ' today aio-input-date-theme-border0'; }
+        if (isActive) { str += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1'; }
+        else {str += ' aio-input-theme-bg1 aio-input-theme-color0';}
+        if (isToday) { str += ' today aio-input-theme-border0'; }
         if (className) { str += ' className'; }
         return str;
     }
@@ -1715,9 +1727,9 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let { theme = Def('theme'),jalali } = rootProps;
     if (!activeDate || !activeDate[unit]) { return null }
     let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0,jalali?10:3)
-    let p: AI = {
+    let p: AITYPE = {
         type: 'button', text, justify: true, caret: false,
-        attrs: { className: 'aio-input-date-dropdown' },
+        attrs: { className: 'aio-input-date-dropdown aio-input-theme-color0' },
         popover: {
             fitTo: '.aio-input-date-calendar',
             setAttrs:(key)=>{if(key === 'modal'){return { style: { background: theme[1], color: theme[0] } }}},
@@ -1729,7 +1741,7 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
 const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (props) => {
     let { onClose, unit } = props;
     let { rootProps, DATE, translate, activeDate, changeActiveDate }: I_DPContext = useContext(DPContext);
-    let { jalali, size = Def('date-size'), theme = Def('theme') } = rootProps;
+    let { jalali, theme = Def('theme') } = rootProps;
     let [months] = useState<string[]>(DATE.getMonths(jalali));
     let [start, setStart] = useState<number>(Math.floor((activeDate.year as number) / 10) * 10);
     let [year, setYear] = useState<number>(activeDate.year as number);
@@ -1753,8 +1765,8 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
             for (let i = start; i < start + 10; i++) {
                 let active = i === year;
                 let className = 'aio-input-date-cell'
-                if (active) { className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1' }
-                else { className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0' }
+                if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1' }
+                else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
                 let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className, onClick: () => changeValue(i) }
                 cells.push(<div {...p} key={i}>{i}</div>)
             }
@@ -1763,48 +1775,37 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
             for (let i = 1; i <= 12; i++) {
                 let active = i === month;
                 let className = 'aio-input-date-cell'
-                if (active) { className += ' aio-input-date-active aio-input-date-theme-bg0 aio-input-date-theme-color1' }
-                else { className += ' aio-input-date-theme-bg1 aio-input-date-theme-color0' }
+                if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1' }
+                else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
                 let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className, onClick: () => changeValue(i) }
                 cells.push(<div {...p} key={i}>{months[i - 1].slice(0, 3)}</div>)
             }
         }
         return cells
     }
-    function getBodyStyle() {
-        var columnCount = 3;
-        var rowCount = 4;
-        var padding = size / 18, fontSize = size / 15, a = (size - padding * 2) / columnCount;
-        var rowHeight = size / 6;
-        var gridTemplateColumns = '', gridTemplateRows = '';
-        for (let i = 1; i <= columnCount; i++) { gridTemplateColumns += a + 'px' + (i !== columnCount ? ' ' : '') }
-        for (let i = 1; i <= rowCount; i++) { gridTemplateRows += (rowHeight) + 'px' + (i !== rowCount ? ' ' : '') }
-        let direction: 'ltr' | 'rtl' = !jalali ? 'ltr' : 'rtl';
-        return { gridTemplateColumns, gridTemplateRows, direction, padding, fontSize }
-    }
     function header_node() {
         if (unit !== 'year') { return null }
         return (
             <div className='aio-input-date-popup-header'>
                 <DPArrow type='minus' onClick={() => changePage(-1)} />
-                <div className='aio-input-date-popup-label' style={{ fontSize: size / 15 }}>{translate('Select Year')}</div>
+                <div className='aio-input-date-popup-label'>{translate('Select Year')}</div>
                 <DPArrow type='plus' onClick={() => changePage(1)} />
             </div>
         )
     }
-    function body_node() { return <div style={getBodyStyle()} className='aio-input-date-popup-body'>{getCells()}</div> }
+    function body_node() { return <div className='aio-input-date-popup-body'>{getCells()}</div> }
     function footer_node() {
         return (
-            <div style={getBodyStyle()} className='aio-input-date-popup-footer'>
-                <button onClick={() => onClose()}>{translate('Close')}</button>
+            <div className='aio-input-date-popup-footer'>
+                <button className='aio-input-theme-bg0 aio-input-theme-color0' onClick={() => onClose()}>{translate('Close')}</button>
             </div>
         )
     }
-    return (<div className='aio-input-date-popup'>{header_node()}{body_node()}{footer_node()}</div>)
+    return (<div className={'aio-input-date-popup' + (jalali?' aio-input-date-rtl':' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
 }
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);
-    let { size = Def('date-size'), unit = Def('date-unit') } = rootProps;
+    let { unit = Def('date-unit') } = rootProps;
     function getDays(): RN {
         if (!activeDate || !activeDate.year || !activeDate.month) { return null }
         let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
@@ -1813,9 +1814,9 @@ function DPHeader() {
         return <DPHeaderDropdown {...p} />
     }
     return (
-        <div className='aio-input-date-header' style={{ height: size / 4 }}>
+        <div className='aio-input-date-header'>
             <DPArrow type='minus' />
-            <div className='aio-input-date-select' style={{ fontSize: Math.floor(size / 13) }}>
+            <div className='aio-input-date-select'>
                 <DPHeaderItem unit='year' />
                 {unit !== 'month' ? <DPHeaderItem unit='month' /> : null}
                 {unit === 'hour' ? getDays() : null}
@@ -1828,18 +1829,18 @@ type I_DPHeaderDropdown = { value: any, options: { text: string, value: any }[],
 function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { rootProps }: I_DPContext = useContext(DPContext);
     let { value, options, onChange } = props;
-    let { size = Def('date-size'), theme = Def('theme') } = rootProps;
-    let p: AI = {
+    let { theme = Def('theme') } = rootProps;
+    let p: AITYPE = {
         value, options, onChange, caret: false, type: 'select',
-        attrs: { className: 'aio-input-date-dropdown aio-input-date-theme-bg1 aio-input-date-theme-color0' },
-        option: { style: () => { return { height: size / 6, background: theme[1], color: theme[0] } } },
+        attrs: { className: 'aio-input-date-dropdown aio-input-theme-bg1 aio-input-theme-color0' },
+        option: { style: () => { return { background: theme[1], color: theme[0] } } },
     }
     return (<AIOInput {...p} />)
 }
 function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
     let { rootProps, changeActiveDate, activeDate, DATE }: I_DPContext = useContext(DPContext);
     let { type, onClick } = props;
-    let { jalali, unit = Def('date-unit'), size = Def('date-size'), theme = Def('theme') } = rootProps;
+    let { jalali, unit = Def('date-unit'), theme = Def('theme') } = rootProps;
     function change() {
         if (onClick) { onClick(); return }
         let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
@@ -1857,8 +1858,8 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] })
         }
     }
-    function getIcon() { return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight, 1, { style: { color: theme[0] }, className: 'aio-input-date-theme-color0' }) }
-    return (<div className='aio-input-date-arrow' style={{ width: size / 6, height: size / 6 }} onClick={() => change()}>{getIcon()}</div>)
+    function getIcon() { return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight, 1, { style: { color: theme[0] }, className: 'aio-input-theme-color0' }) }
+    return (<div className='aio-input-date-arrow' onClick={() => change()}>{getIcon()}</div>)
 }
 const AITableContext = createContext({} as any);
 function Table() {
@@ -1871,18 +1872,23 @@ function Table() {
     let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
     let [temp] = useState<type_table_temp>({})
     let [DragRows] = useState<DragClass | false>(!onSwap ? false : new DragClass({
-        onChange: (newRows:any[], from:any, to:any) => {
+        callback: (dragData,dropData) => {
+            if(DragRows === false){return}
+            const {dragIndex} = dragData;
+            const {dropIndex,rows} = dropData;
+            const newRows = DragRows.reOrder(rows,dragIndex,dropIndex); 
+            const from = rows[dragIndex];
+            const to = rows[dropIndex];
             if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
             else { onChange(newRows) }
-        },
-        className: 'aio-input-table-row',
+        }
     }))
     let [sorts, setSorts] = useState<AI_table_sort[]>([])
     function getColumns() {
         let { columns = [] } = rootProps;
         columns = typeof columns === 'function' ? columns() : columns;
         let searchColumns: AI_table_column[] = [], excelColumns: AI_table_column[] = [];
-        let updatedColumns = columns.map((o) => {
+        let updatedColumns = columns.map((o:AI_table_column) => {
             let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
             let column = { ...o, _id: id };
             if (search) { searchColumns.push(column) }
@@ -1948,20 +1954,25 @@ function Table() {
     }
     function exportToExcel() {
         let list = [];
-        for (let i = 0; i < value.length; i++) {
-            let row = value[i], json: any = {};
-            for (let j = 0; j < excelColumns.length; j++) {
-                let column = excelColumns[j], { excel, value } = column;
-                let key:string = '';
-                if(excel === true){
-                    if(typeof column.title === 'string'){key  = column.title}
-                    else {key = 'untitle'}
+        if(typeof rootProps.excel === 'function'){
+            list = rootProps.excel(value)
+        }
+        else {
+            for (let i = 0; i < value.length; i++) {
+                let row = value[i], json: any = {};
+                for (let j = 0; j < excelColumns.length; j++) {
+                    let column = excelColumns[j], { excel, value } = column;
+                    let key:string = '';
+                    if(excel === true){
+                        if(typeof column.title === 'string'){key  = column.title}
+                        else {key = 'untitle'}
+                    }
+                    else if(typeof excel === 'string'){key = excel}
+                    else {continue}
+                    json[key] = getDynamics({ value, row, column, rowIndex: i })
                 }
-                else if(typeof excel === 'string'){key = excel}
-                else {continue}
-                json[key] = getDynamics({ value, row, column, rowIndex: i })
+                list.push(json)
             }
-            list.push(json)
         }
         ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
     }
@@ -2028,7 +2039,13 @@ function Table() {
     function getRowAttrs(row: any, rowIndex: number) {
         let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
         let obj = AddToAttrs(attrs, { className: 'aio-input-table-row' })
-        if (DragRows !== false) { obj = { ...obj, ...DragRows.getAttrs(value, rowIndex) } }
+        if (DragRows !== false) { 
+            obj = { 
+                ...obj, 
+                ...DragRows.getDragAttrs({dragIndex:rowIndex}),
+                ...DragRows.getDropAttrs({dropIndex:rowIndex,rows:value})
+            } 
+        }
         return obj;
     }
     function search(searchValue: string) {
@@ -2116,7 +2133,7 @@ function TablePaging() {
     }
     function changeSizeButton() {
         if (!sizes || !sizes.length) { return null }
-        let p: AI = {
+        let p: AITYPE = {
             attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
             type: 'select', value: size, options: sizes, option: { text: 'option', value: 'option' },
             onChange: (value) => changePaging({ size: value }),
@@ -2184,7 +2201,7 @@ function TableToolbar() {
 
     function button() {
         if (!sorts.length) { return null }
-        let p: AI = {
+        let p: AITYPE = {
             popover: {
                 header: {
                     attrs: { className: 'aio-input-table-toolbar-popover-header' },
@@ -2306,19 +2323,19 @@ function TableCellContent(props: AI_TableCellContent) {
     let { getDynamics }: type_table_context = useContext(AITableContext);
     let template = getDynamics({ value: column.template, row, rowIndex, column });
     if (template !== undefined) { return template }
-    let input: AI = getDynamics({ value: column.input, row, rowIndex, column });
+    let input: AITYPE = getDynamics({ value: column.input, row, rowIndex, column });
     let value = getDynamics({ value: column.value, row, rowIndex, column })
     if (!input) { return value }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
     let convertedInput: any = { type: 'text' }
     for (let property in input) {
-        let prop: (keyof AI) = property as keyof AI;
+        let prop: (keyof AITYPE) = property as keyof AITYPE;
         let res: any = input[prop];
         if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = res }
         else { convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column }) }
     }
-    let p: AI = { ...convertedInput, value, onChange, type: input.type }
+    let p: AITYPE = { ...convertedInput, value, onChange, type: input.type }
     return (<AIOInput {...p} key={row._id + ' ' + column._id} />)
 }
 function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, index: number) => any) {
@@ -2342,7 +2359,7 @@ export type I_RangeContext = {
     isValueDisabled: (value: number) => boolean,
     getSide: () => 'left' | 'right' | 'top' | 'bottom',
     getOffset: () => 'top' | 'left',
-    rootProps: AI, dom: any, value: number[],
+    rootProps: AITYPE, dom: any, value: number[],
     getDefaultOffset: (type: 'point' | 'label' | 'scale') => number,
     getCircleByStr: AI_cbs, getRectByStr: AI_rbs,
     sbp: AI_sbp
@@ -2974,7 +2991,7 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
     }
     let finalOptions:AI_optionProp = {
         ...defaultOption,...option,
-        className:(item:AI_Sidemenu_item,details:I_optionDetails)=>{
+        className:(item:AI_Sidemenu_item,details:AI_optionDetails)=>{
             let className = `${cls}-row-level-${details.level}`
             if(typeof option.className === 'function'){
                 const res = option.className(item,details)
@@ -2999,176 +3016,11 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
     )
 }
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
-export type AV_operator = 'contain' | '!contain' | 'required' | '=' | '!=' | '>' | '!>' | '>=' | '!>=' | '<' | '!<' | '<=' | '!<=' | 'startBy'
-export type AV_props = {lang?:'fa'|'en',title:string,value:any,validations:AV_item[]}
-export type AV_item = string
-export class AIOValidation {
-    contain: (target: any, value: any) => {result:boolean,unit:any};
-    startBy: (target: any, value: any) => {result:boolean,unit:any};
-    equal: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
-    less: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
-    greater: (target: any, value: any,equal?:boolean) => {result:boolean,unit:any};
-    between: (targets:any[], value:any,equal?:boolean)=>{result:boolean,unit:any};
-    getMessage: (p:{operator: AV_operator, target: string, message?: string,title?:string,unit: string}) => string;
-    translate: (operator: AV_operator) => string
-    getResult: (p: { target: any, title: string,message?:string, value: any, operator: AV_operator }) => string | undefined
-    getValidation: () => string | undefined;
-    validate: () => string | undefined;
-    fnMapper:(operatorName:any)=>string;
-    boolKey:(key:'more' | 'less')=>string;
-    boolDic:any;
-    getUnit:(value:any)=>string;
-    constructor(props: AV_props) {
-        let { lang = 'en',value } = props;
-        let isDate = typeof value === 'string' && value.indexOf('/') !== -1;
-        this.boolDic = isDate?{more:{en:'after',fa:'بعد از'},less:{en:'before',fa:'قبل از'}}:{more:{en:'more',fa:'بیشتر'},less:{en:'less',fa:'کمتر'}}
-        this.boolKey = (key)=>this.boolDic[key][lang]
-        let DATE = new AIODate();
-        this.contain = (target, value) => {
-            let result
-            if (Array.isArray(value)) { result = value.indexOf(target) !== -1 }
-            else if (target === 'number') { result = /\d/.test(value);}
-            else if (target === 'letter') { result = /[a-zA-Z]/.test(value);}
-            else if (target === 'uppercase') { result = /[A-Z]/.test(value);}
-            else if (target === 'lowercase') { result = /[a-z]/.test(value);}
-            else if (target === 'symbol') { result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value);}
-            else if (typeof target.test === 'function') { result = target.test(value);}
-            else { result = value.indexOf(target) !== -1;}
-            return {result,unit:''}
-        }
-        this.startBy = (target, value)=>({result:value.indexOf(target) === 0,unit:''})
-        this.equal = (target, value) => {
-            let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = typeof target;
-            let result,unit;
-            if (isDate) { result = DATE.isEqual(value, typeof target === 'number'?target.toString():target); unit = '' }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target; unit = this.getUnit(value) }
-            else { result = JSON.stringify(value) === JSON.stringify(target); unit = '' }
-            return {result,unit}
-        }
-        this.less = (target, value,equal) => {
-            let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = typeof target;
-            let result,unit = '';
-            if (isDate) { result = DATE.isLess(value, typeof target === 'number'?target.toString():target); unit = '' }
-            else if (targetType === 'number' && valueType === 'number') { result = value < target; unit = '' }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target; unit = this.getUnit(value) }
-            else { result = false; unit = ''; }
-            return {result:equal?result || this.equal(target,value).result:result,unit};
-        }
-        this.greater = (target, value,equal) => {
-            let valueType = Array.isArray(value) ? 'array' : typeof value;
-            let targetType = typeof target;
-            let result,unit;
-            if (isDate) { result = DATE.isGreater(value, typeof target === 'number'?target.toString():target); unit = '' }
-            else if (targetType === 'number' && valueType === 'number') { result = value > target; unit = '' }
-            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target; unit = this.getUnit(value) }
-            else { result = false; unit = '' }
-            return {result:equal?result || this.equal(target,value).result:result,unit};
-        }
-        this.between = (targets, value,equal) => {
-            let res1 = this.greater(targets[0],value).result
-            let res2 = this.less(targets[1],value).result
-            let result = !!res1 && !!res2
-            return {result:equal?(result || this.equal(targets[0],value).result ||this.equal(targets[1],value).result):result,unit:''}
-        }
-        this.translate = (operator):string => {
-            
-            let dict = {
-                'contain': { en: `should be contain`, fa: `باید شامل` },
-                '!contain': { en: `should not be contain`, fa: `نمی تواند شامل` },
-                '>': { en: `should be ${this.boolKey('more')} than`, fa: `باید ${this.boolKey('more')} از` },
-                '!>': { en: `could not be ${this.boolKey('more')} than`, fa: `نباید ${this.boolKey('more')} از` },
-                '>=': { en: `should be ${this.boolKey('more')} than or equal`, fa: `باید ${this.boolKey('more')} یا مساوی` },
-                '!>=': { en: `could not be ${this.boolKey('more')} than or equal`, fa: `نباید ${this.boolKey('more')} یا مساوی` },
-                '<': { en: `should be ${this.boolKey('less')} than`, fa: `باید ${this.boolKey('less')} از` },
-                '!<': { en: `could not be ${this.boolKey('less')} than`, fa: `نباید ${this.boolKey('less')} از` },
-                '<=': { en: `should be ${this.boolKey('less')} than or equal`, fa: `باید ${this.boolKey('less')} یا مساوی` },
-                '!<=': { en: `could not be ${this.boolKey('less')} than or equal`, fa: `نباید ${this.boolKey('less')} یا مساوی` },
-                '=': { en: `should be equal`, fa: `باید برابر` },
-                '!=': { en: `cannot be equal`, fa: `نمی تواند برابر` },
-                'startBy': { en: `should start by`, fa: `باید در ابتدا شامل` },
-                'required': { en: '', fa: '' }
-            }
-            return dict[operator][lang]
-        }
-        this.fnMapper = (operatorName:any)=>{
-            let dict:any = {
-                'contain': 'contain','!contain': 'contain','startBy':'startBy',
-                '!=': 'equal','=': 'equal',
-                '<': 'less','<=': 'less','!<': 'less','!<=': 'less',
-                '>': 'greater','>=': 'greater','!>': 'greater','!>=': 'greater',
-                '<>': 'between','<=>':'between','!<>': 'between','!<=>':'between'
-            }
-            return dict[operatorName]
-        }
-        this.getMessage = (p) => {
-            let {operator, target, unit,title,message} = p;
-            if (message) { return message }
-            let operatorName = this.translate(operator)
-            let res = `${title} ${operatorName} ${target} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
-            return res.trim()
-        }
-        this.getResult = (p) => {
-            let { target, message,title, value, operator } = p;
-            let operatorName: string = operator, not = false,equal = operator.indexOf('=') !== -1;
-            let notIndex = operatorName.indexOf('!');
-            if (notIndex === 0) {
-                not = true;
-                operatorName = operator.slice(1, operator.length);
-            }
-            let fn: any = (this as any)[this.fnMapper(operatorName)];
-            let {result,unit} = fn(target, value,equal)
-            if ((not && result) || (!not && !result)) { return this.getMessage({operator, target, message,title, unit}) }
-        }
-        this.getUnit = (value)=>{
-            let unit = '';
-            if (Array.isArray(value)) { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
-            else if (typeof value === 'string') { unit = lang === 'fa' ? 'کاراکتر' : 'character(s)' }
-            return unit;
-        }
-        this.getValidation = () => {
-            let { value, validations = [] } = props;
-            for (let i = 0; i < validations.length; i++) {
-                let [operator, target, text ] = validations[i].split(',');
-                let otherTarget;
-                let title:string = props.title,message:string = '';
-                if(text){
-                    if(text[0] === 'title(' && text[text.length - 1] === ')'){title = text.slice(6,text.length - 1)}
-                    else if(text[0] === 'message(' && text[text.length - 1] === ')'){message = text.slice(8,text.length - 1)}
-                    else {otherTarget = ParseString(text)}
-                }
-                let result;
-                if (operator === 'required') {
-                    if (value === undefined || value === null || value === '' || value === false || value.length === 0) {
-                        if (lang === 'en') { return `${title} is required` }
-                        if (lang === 'fa') { return `وارد کردن ${title} ضروری است` }
-                    }
-                }    
-                else {
-                    let isBetween = operator.indexOf('<') !== -1 && operator.indexOf('>') !== -1
-                    target = ParseString(target);
-                    let Target;
-                    if(isBetween){Target = [target,otherTarget]}
-                    else {Target = target}
-                    result = this.getResult({ operator:operator as AV_operator, target:Target, title,message, value })
-                }
-                if (result) { return result }
-            }
-            return
-        }
-        this.validate = () => {
-            let validation;
-            try { validation = this.getValidation() } catch { validation = '' }
-            return validation;
-        }
-    }
-}
-export function AIOInput_defaultProps(p:{[key in keyof AI]?:any}) {
+export function AIOInput_defaultProps(p:{[key in keyof AITYPE]?:any}) {
     let storage: Storage = new Storage('aio-input-storage');
     for(let prop in p){storage.save(prop,(p as any)[prop])}
 }
-function getTypes(props: AI) {
+function getTypes(props: AITYPE) {
     function isDropdown() {
         if (['select', 'date', 'time'].indexOf(type) !== -1) { return true }
         if (['text', 'number', 'textarea'].indexOf(type) !== -1 && props.options) { return true }
@@ -3192,7 +3044,7 @@ function getTypes(props: AI) {
     }
 }
 
-function getDefaultProps(props: AI, types: AI_types) {
+function getDefaultProps(props: AITYPE, types: AI_types) {
     let valueType = Array.isArray(props.value) ? 'array' : typeof props.value;
     props = { ...props }
     if (props.type === 'select') {
@@ -3236,7 +3088,7 @@ function I(path: any, size: number, p?: any) {
     return <Icon path={path} size={size} {...p} />
 }
 type I_GetOptions = {
-    rootProps: AI, 
+    rootProps: AITYPE, 
     types: AI_types, 
     options: any[], 
     level?: number, 
@@ -3263,7 +3115,7 @@ function GetOptions(p:I_GetOptions): AI_options {
     }
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        let optionDetails: I_optionDetails = { 
+        let optionDetails: AI_optionDetails = { 
             option,index: i,active:false, level, rootProps,
             change: change ? (newRow: any) => { change(option, newRow) } : undefined,
         };
@@ -3307,11 +3159,11 @@ function GetOptions(p:I_GetOptions): AI_options {
 }
 type I_GetOptionProps = { 
     defaultOptionProps?: AI_optionProp, 
-    rootProps: AI, 
+    rootProps: AITYPE, 
     key: AI_optionKey, 
     def?: any, 
     preventFunction?: boolean, 
-    optionDetails:I_optionDetails
+    optionDetails:AI_optionDetails
 }
 function GetOptionProps(p:I_GetOptionProps) {
     let { rootProps, key, def, preventFunction, optionDetails, defaultOptionProps = {} } = p;
@@ -3334,7 +3186,7 @@ function GetOptionProps(p:I_GetOptionProps) {
     }
     return prop !== undefined ? prop : def;
 }
-function getTimeByUnit(rootProps:AI,justToday?: boolean) {
+function getTimeByUnit(rootProps:AITYPE,justToday?: boolean) {
     let { value = {}, jalali, unit = { year: true, month: true, day: true } } = rootProps;
     function getToday() {
         let today = new AIODate().getToday(jalali);
@@ -3357,7 +3209,7 @@ function getTimeByUnit(rootProps:AI,justToday?: boolean) {
     }
     return newValue;
 }
-function getTimeText(rootProps:AI) {
+function getTimeText(rootProps:AITYPE) {
     let value = getTimeByUnit(rootProps);
     if (!value) {
         if (typeof rootProps.placeholder === 'string') { return rootProps.placeholder }
@@ -3378,100 +3230,59 @@ function getTimeText(rootProps:AI) {
     if (timeArray.length) { text.push(timeArray.join(':')) }
     return text.join(' ');
 }
-const AIText:FC<AI_text> = (props)=><AIOInput {...props} type='text'/>
-const AITextarea:FC<AI_textarea> = (props)=><AIOInput {...props} type='textarea'/>
-const AINumber:FC<AI_number> = (props)=><AIOInput {...props} type='number'/>
-const AIPassword:FC<AI_password> = (props)=><AIOInput {...props} type='password'/>
-const AISelect:FC<AI_select> = (props)=><AIOInput {...props} type='select'/>
-const AIRadio:FC<AI_radio> = (props)=><AIOInput {...props} type='radio'/>
-const AIButtons:FC<AI_buttons> = (props)=><AIOInput {...props} type='buttons'/>
-const AITabs:FC<AI_tabs> = (props)=><AIOInput {...props} type='tabs'/>
-const AIFile:FC<AI_file> = (props)=><AIOInput {...props} type='file'/>
-const AIImage:FC<AI_image> = (props)=><AIOInput {...props} type='image'/>
-const AIDate:FC<AI_date> = (props)=><AIOInput {...props} type='date'/>
-const AITime:FC<AI_time> = (props)=><AIOInput {...props} type='time'/>
-const AITable:FC<AI_table> = (props)=><AIOInput {...props} type='table'/>
-const AISlider:FC<AI_slider> = (props)=><AIOInput {...props} type='slider'/>
-const AISpinner:FC<AI_spinner> = (props)=><AIOInput {...props} type='spinner'/>
-const AITree:FC<AI_tree> = (props)=><AIOInput {...props} type='tree'/>
-type AI_text = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
-type AI_textarea = AI_public & AI_hasOption & AI_hasKeyboard & {fetchOptions?:(text:string)=>Promise<any[]>,value?:string | null | undefined,onChange:(v:string)=>void}
-type AI_number = AI_public & AI_hasOption & AI_hasKeyboard & {max?: number,min?: number,spin?: boolean,swip?: number,value?:number | null | undefined | '',onChange:(v:number | '')=>void}
-type AI_password = AI_public & AI_hasKeyboard & {preview?:boolean,value?:string | null | undefined,onChange:(v:string)=>void}
-type AI_select = AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & {
-    checkIcon?: AI_checkIcon,deSelect?:any,hideTags?: boolean,text?: RN | (() => RN),
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-    value?:string | number | boolean,
-    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
-}
-type AI_radio = AI_public & AI_hasOption & AI_isMultiple & {
-    checkIcon?: AI_checkIcon,deSelect?:any,
-    value?:string | number | boolean,
-    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
-}
-type AI_buttons = AI_public & AI_hasOption & AI_isMultiple & {
-    deSelect?:any,
-    value?:string | number | boolean,
-    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
-}
-type AI_tabs = AI_public & AI_hasOption & {
-    deSelect?:any,
-    value?:string | number | boolean,
-    onChange:(v:string | number | boolean,details:{option:any,index:number,active:boolean})=>void
-}
-type AI_file = AI_public & AI_hasOption & {
-    preview?:boolean,
-    value?:(undefined | null | AI_fileType) | ((undefined | null | AI_fileType)[])
-}
-type AI_image = AI_public & {preview?:boolean,height?: number | string,width?: number | string}
-type AI_date = AI_public & AI_hasOption & AI_isDropdown & {
-    dateAttrs?:(p:{dateArray:number[], isToday:boolean, isActive:boolean, isMatch:(p:any[])=>boolean})=>any,
-    deSelect?:any,jalali?: boolean,pattern?:string,size?: number,text?: RN | (() => RN),
-    theme?: string[],translate?: (text: string) => string,unit?: AI_date_unit,
-}
-type AI_time = AI_public & AI_isDropdown & {jalali?: boolean,now?:boolean,pattern?:string,text?: RN | (() => RN),unit?: AI_time_unit}
-
-type AI_table = AI_public & AI_isTable
-type AI_slider = AI_public & AI_isRange;
-type AI_spinner = AI_public & AI_isRange;
-type AI_tree = AI_public & AI_hasOption & AI_isTree
-export type AI = 
-    AI_public & AI_hasOption & AI_isDropdown & AI_isMultiple & 
+export type AITYPE = 
+    AI_hasOption & AI_isDropdown & AI_isMultiple & 
     AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
+    after?: RN | ((p?:any) => RN),
+    attrs?: any,
+    before?: RN | ((p?:any) => RN),
+    className?:string,
+    disabled?: boolean | any[],
+    footer?:RN,
+    imageAttrs?:any,
+    justify?: boolean,
+    label?:string,
+    lang?:'fa' | 'en',
+    loading?: boolean | RN,
+    onChange?: (newValue: any, p?: any) => undefined | boolean | void,
+    placeholder?: ReactNode,
+    reportError?:(errorMessage:string | undefined)=>void,
+    rtl?: boolean,
+    showErrors?:boolean | string,
+    style?: any,
+    subtext?: RN | (() => RN),
+    type: AI_type,
+    validations?:any[],
+    value?: any,
     body?:(value?:any)=>{attrs?:any,html?:RN},//acardion
     checkIcon?: AI_checkIcon,//select,checkbox,radio
-    count?: number,//list
-    decay?: number,//list
-    editable?:boolean,//list
+    listOptions?:{decay?: number,stop?: number,count?: number,move?: any,editable?:boolean},//list
     fetchOptions?:(text:string)=>Promise<any[]>,//text,textarea
-    height?: number | string,//image
     hideTags?: boolean,//select
-    move?: any,//list
     onClick?:(e:Event)=>void,//button
     onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
     preview?:boolean,//password,image,file
-    stop?: number,//list
     text?: RN | (() => RN),//select,checkbox,button,
-    width?: number | string,//image
 }
+
 export type AI_option = {
     show:any,checked: boolean,checkIcon: AI_checkIcon,after: RN | ((p?:any) => RN),before: RN | ((p?:any) => RN),draggable: boolean,
     text: RN,subtext: RN,justify: boolean,loading: boolean | RN,disabled: boolean,attrs: any,className:string,style: any,value:any,
     tagAttrs:any,tagBefore:any,tagAfter:any,toggleIcon:boolean | RN[],onClick?:(o1:any,o2?:any)=>void,close?:boolean,level?:number,
-    details:I_optionDetails
+    details:AI_optionDetails
 }
-type I_optionDetails = {option:any,rootProps:AI,index: number, level?: number,active?:boolean, change?: (v: any) => any}
+type AI_optionDetails = {option:any,rootProps:AITYPE,index: number, level?: number,active?:boolean, change?: (v: any) => any}
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 
     'className' |  'style' |  'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon' 
 )
-export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:I_optionDetails)=>any)}
+export type AI_optionProp = {[key in AI_optionKey]?:string | ((optionDetails:AI_optionDetails)=>any)}
 export type AI_optionDic = {[key:string]:AI_option}
 export type AI_options = {optionsList:AI_option[],optionsDic:AI_optionDic}
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree'|'spinner' |'slider'|'tags' |
 'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file'  | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_table_column = {
-    title?: any,value?: any,sort?: true | AI_table_sort,search?: boolean,id?: string,_id?: string,width?: any,minWidth?: any,input?: AI,
+    title?: any,value?: any,sort?: true | AI_table_sort,search?: boolean,id?: string,_id?: string,width?: any,minWidth?: any,input?: AITYPE,
     onChange?: (newValue: any) => void,titleAttrs?:{[key:string]:any} | string,template?:string | ((p:{row:any,column:AI_table_column,rowIndex:number})=>RN),
     excel?: string | boolean,justify?:boolean,cellAttrs?:{[key:string]:any} | ((p:{row:any,rowIndex:number,column:AI_table_column})=>any) | string
 }
@@ -3505,7 +3316,7 @@ export type AI_getProp_param = { key: string, def?: any, preventFunction?: boole
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any,attrs?:any }) => any
 export type AI_context = {
-    rootProps: AI,
+    rootProps: AITYPE,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
     DragOptions: DragClass,
@@ -3526,7 +3337,7 @@ export type AI_table_paging = {serverSide?: boolean,number: number,size: number,
 export type AI_table_rows = { rows: any[], searchedRows:any[], sortedRows:any[], pagedRows:any[] }
 export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
 export type type_table_context = {
-    rootProps: AI,
+    rootProps: AITYPE,
     columns: AI_table_column[],
     ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
     add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
@@ -3539,34 +3350,12 @@ export type type_table_context = {
     getCellAttrs: type_table_getCellAttrs,
     getDynamics:any
 }
-export type AI_Popover_props = {getRootProps: () => AI, id: string, toggle: (popover: any) => void,types:AI_types}
+export type AI_Popover_props = {getRootProps: () => AITYPE, id: string, toggle: (popover: any) => void,types:AI_types}
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
 export type AI_indent = {size:number,isLastChild:boolean,isFirstChild:boolean,childsLength:number,level:number,index:number,parentIndent?:AI_indent,height:number}
 export type I_list_temp = {
     dom:any,activeIndex:number,interval:any,moved:boolean,lastY:number,deltaY:number,
     so:{ y: number, top: number, newTop?: number, limit: { top: number, bottom: number } }
-}
-type AI_public = {
-    after?: RN | ((p?:any) => RN),
-    attrs?: any,
-    before?: RN | ((p?:any) => RN),
-    className?:string,
-    disabled?: boolean | any[],
-    footer?:RN,
-    justify?: boolean,
-    label?:string,
-    lang?:'fa' | 'en',
-    loading?: boolean | RN,
-    onChange?: ((newValue: any, p?: any) => undefined | boolean | void) | ((newValue: any, p?: any) => Promise<undefined | boolean | void>),
-    placeholder?: ReactNode,
-    reportError?:(errorMessage:string | undefined)=>void,
-    rtl?: boolean,
-    showErrors?:boolean | string,
-    style?: any,
-    subtext?: RN | (() => RN),
-    type: AI_type,
-    validations?:any[],
-    value?: any,
 }
 type AI_hasOption = {
     deSelect?:any,onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
@@ -3592,7 +3381,7 @@ type AI_isTable = {
     addText?:RN | ((value:any)=>RN),
     columnGap?: number,
     columns?: AI_table_column[] | ((p?:any)=>AI_table_column[]),
-    excel?: string,
+    excel?: string | ((value:any[])=>any[]),
     getValue?: { [key: string]: (p: AI_table_param) => any },
     headerAttrs?: any,
     onAdd?: {[key:string]:any} | ((p?:any) => Promise<boolean | void | undefined>),
@@ -3643,153 +3432,56 @@ type AI_isTree = {
     setChilds?:(p:{row:any,childs:any[],details:I_treeRowDetails})=>void,
     toggleRef?:MutableRefObject<(id:any)=>void>,   
 }
-export {
-    AIText,AI_text,//1
-    AITextarea,AI_textarea,//2
-    AINumber,AI_number,//3
-    AIPassword,AI_password,//4
-    AISelect,AI_select,//5
-    AIRadio,AI_radio,//6
-    AIButtons,AI_buttons,//7
-    AITabs,AI_tabs,//8
-    AIFile,AI_file,//9
-    AIImage,AI_image,//10
-    AIDate,AI_date,//11
-    AITime,AI_time,//12
-    AITable,AI_table,//13
-    AISlider,AI_slider,//14
-    AISpinner,AI_spinner,//15
-    AITree,AI_tree,//16
-}
 
 
 //onSearch on tree
 //rowOption on table
-//size and theme on time
 //now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
-function ProceedSentences(sentence:string,rows:any[],columns:any[]){
-    const sentences = sentence.split('.');
-    const filterItems = []
-    for(let i = 0; i < sentences.length; i++){
-        const res = ProceedSentence(sentences[i],rows,columns);
-        if(res !== false){filterItems.push(res)}
-    }
-    return filterItems
+
+export type AI<AI_type> = Omit<AITYPE,'onChange' | 'type'> & {
+    onChange?:AI_onChange<AI_type>,
 }
-function ProceedSentence(sentence:string,rows:any[],columns:any[]){
-    function getFieldsAndTitles(){
-        let fields = [];
-        let titlesDic:any = {};
-        let titles = []
-        for(let i = 0; i < columns.length; i++){
-            const {title,value} = columns[i];
-            let field = value?value.slice(4,value.length):undefined
-            if(field !== undefined){
-                fields.push(field);
-                if(title){titles[title] = field; titles.push(title)}
-            }
-        }
-        return {fields,titles,titlesDic}
-    }
-    function getOperator():'more' | 'notmore' | 'moreequal' | 'notmoreequal' | 'less' | 'notless' | 'lessequal' | 'notlessequal' | 'equal' | 'notequal' | false {
-        if(sentence.indexOf('مخالف ') !== -1){
-            return 'notequal'
-        }
-        if(sentence.indexOf('نا برابر') !== -1){
-            return 'notequal'
-        }
-        if(sentence.indexOf('نا مساوی') !== -1){
-            return 'notequal'
-        }
-        else {
-            let equal:boolean = false;
-            let diff:'more' | 'less' | undefined;
-            let not:boolean = false;
-            if(sentence.indexOf('نباشد') !== -1){not = true}
-            else if(sentence.indexOf('نیستند') !== -1){not = true}
-            else if(sentence.indexOf('نیست') !== -1){not = true}
-            else if(sentence.indexOf('ندارد') !== -1){not = true}
-            else if(sentence.indexOf('ندارند') !== -1){not = true}
-            
-            const equalOperators = [
-                {text:'مساوی',type:'equal'},
-                {text:'به اندازه',type:'equal'},
-                {text:'به میزان',type:'equal'},
-                {text:'حدود',type:'equal'},
-            ]
-            const diffOperators:{text:string,type:'less' | 'more'}[] = [
-                {text:'کوچکتر',type:'less'},
-                {text:'کوچک تر',type:'less'},
-                {text:'زیر',type:'less'},
-                {text:'کمتر',type:'less'},
-                {text:'کم تر',type:'less'},
-                {text:'بیشتر',type:'more'},
-                {text:'بیش تر',type:'more'},
-                {text:'بالای',type:'more'},
-                {text:'بیش از',type:'more'},
-                {text:'بزرگتر',type:'more'},
-                {text:'بزرگ تر',type:'more'}
-            ]
-            for(let i = 0; i < equalOperators.length; i++){
-                const {text,type} = equalOperators[i];
-                if(sentence.indexOf(text) !== -1){equal = true; break;}
-            }
-            for(let i = 0; i < diffOperators.length; i++){
-                const {text,type} = diffOperators[i];
-                if(sentence.indexOf(text) !== -1){diff = type; break;}
-            }
-            if(equal){
-                if(diff === 'more'){return not?'notmoreequal':'moreequal'}
-                if(diff === 'less'){return not?'notlessequal':'lessequal'}
-                else{return not?'notequal':'equal'}
-            }
-            else {
-                if(diff === 'more'){return not?'notmore':'more'}
-                if(diff === 'less'){return not?'notless':'less'}
-                else{return false}
-            }
-        }
-    }
-    function getField(){
-        for(let i = 0; i < fields.length; i++){
-            const field = fields[i];
-            if(sentence.indexOf(field) !== -1){return field}
-        }
-        for(let i = 0; i < titles.length; i++){
-            const title = titles[i];
-            if(sentence.indexOf(title) !== -1){return titlesDic[title]}
-        }
-    }
-    function getValue(){
-        const start = sentence.indexOf(')') + 1
-        const end = sentence.indexOf('(');
-        const res = sentence.slice(start,end);
-        const num = +res
-        if(isNaN(num)){
-            return res.replace(/['"]/g, '')
-        }
-        return num
-    }
-    const {fields,titlesDic,titles} = getFieldsAndTitles()
-    const operator = getOperator();
-    const field = getField();
-    const value = getValue();
-    if(!field || !operator){return false}
-    return {operator,field,value}
-}
-
-
-// type I_onChange<AI_type> = AI_type extends 'number' ? (v:number)=>void : AI_type extends 'text' ? (v:string)=>void : never;
-
-// // function handleTypes<A>(a: A): B<A> {
-// //     if (typeof a === 'number') {
-// //         return true as B<A>; // If A is a number, B should be boolean
-// //     } else if (typeof a === 'string') {
-// //         return ['example'] as B<A>; // If A is a string, B should be string[]
-// //     } else {
-// //         throw new Error('Unsupported type');
-// //     }
-// // }
-
-// type C = I_onChange<'text'>
-// type D = I_onChange<'number'>
+type AI_onChange<AI_type> = 
+    AI_type extends 'text' ? (v:string)=>void : 
+    AI_type extends 'number' ? (v:number | undefined)=>void : 
+    AI_type extends 'textarea' ? (v:string)=>void :
+    AI_type extends 'password' ? (v:string)=>void :
+    AI_type extends 'color' ? (v:string)=>void :
+    AI_type extends 'select' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'radio' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'tabs' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'buttons' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'tags' ? (v:any[])=>void :
+    AI_type extends 'tree' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'image' ? (v:any)=>void :
+    AI_type extends 'file' ? (v:any)=>void :
+    AI_type extends 'checkbox' ? (v:any)=>void :
+    AI_type extends 'date' ? (v:any,dateDetails:AI_dateDetails)=>void :
+    AI_type extends 'time' ? (v:any)=>void :
+    AI_type extends 'slider' ? (v:any)=>void :
+    AI_type extends 'spinner' ? (v:any)=>void :
+    AI_type extends 'acardion' ? (v:any)=>void :
+    AI_type extends 'list' ? (v:any,optionDetails:AI_optionDetails)=>void :
+    AI_type extends 'table' ? (v:any)=>void :
+    never;
+    export const AIText:FC<AI<'text'>> = (props)=><AIOInput {...props} type='text'/>
+    export const AINumber:FC<AI<'number'>> = (props)=><AIOInput {...props} type='number'/>
+    export const AITextarea:FC<AI<'textarea'>> = (props)=><AIOInput {...props} type='textarea'/>
+    export const AIPassword:FC<AI<'password'>> = (props)=><AIOInput {...props} type='password'/>
+    export const AIColor:FC<AI<'color'>> = (props)=><AIOInput {...props} type='color'/>
+    export const AISelect:FC<AI<'select'>> = (props)=><AIOInput {...props} type='select'/>
+    export const AIRadio:FC<AI<'radio'>> = (props)=><AIOInput {...props} type='radio'/>
+    export const AITabs:FC<AI<'tabs'>> = (props)=><AIOInput {...props} type='tabs'/>
+    export const AIButtons:FC<AI<'buttons'>> = (props)=><AIOInput {...props} type='buttons'/>
+    export const AITags:FC<AI<'tags'>> = (props)=><AIOInput {...props} type='tags'/>
+    export const AITree:FC<AI<'tree'>> = (props)=><AIOInput {...props} type='tree'/>
+    export const AIImage:FC<AI<'image'>> = (props)=><AIOInput {...props} type='image'/>
+    export const AIFile:FC<AI<'file'>> = (props)=><AIOInput {...props} type='file'/>
+    export const AICheckbox:FC<AI<'checkbox'>> = (props)=><AIOInput {...props} type='checkbox'/>
+    export const AIDate:FC<AI<'date'>> = (props)=><AIOInput {...props} type='date'/>
+    export const AITime:FC<AI<'time'>> = (props)=><AIOInput {...props} type='time'/>
+    export const AISlider:FC<AI<'slider'>> = (props)=><AIOInput {...props} type='slider'/>
+    export const AISpinner:FC<AI<'spinner'>> = (props)=><AIOInput {...props} type='spinner'/>
+    export const AIAcardion:FC<AI<'acardion'>> = (props)=><AIOInput {...props} type='acardion'/>
+    export const AIList:FC<AI<'list'>> = (props)=><AIOInput {...props} type='list'/>
+    export const AITable:FC<AI<'table'>> = (props)=><AIOInput {...props} type='table'/>

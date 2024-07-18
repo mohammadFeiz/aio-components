@@ -66,47 +66,32 @@ export function ParseString(str: string): any {
     }
     catch { return str }
 }
+export function ReOrder(data:any[],fromIndex:number,toIndex:number){
+    let from = data[fromIndex];
+    let newData = data.filter((o,i) => i !== fromIndex);
+    newData.splice(toIndex, 0, from)
+    return newData;
+}
 export class DragClass {
-    dragIndex: number;
-    onChange: (list: any[], from: any, to: any) => void;
-    start: (e: any) => void;
     over: (e: any) => void;
-    drop: (e: any, list: any[]) => void;
-    swap: (arr: any[], from: any, to: any) => any[];
-    className: string;
-    getAttrs: (list: any[], index: number) => any;
-    constructor(p: { onChange: (list: any[], from: any, to: any) => void, className: string }) {
-        this.dragIndex = 0;
-        this.className = p.className;
-        this.onChange = p.onChange;
-        this.start = (e) => { this.dragIndex = parseInt($(e.target).attr('data-index') as any); }
+    dragData: any;
+    getDragAttrs: (dragData:any) => any;
+    getDropAttrs: (dropData:any) => any;
+    reOrder:(data:any[],fromIndex:number,toIndex:number)=>any[];
+    constructor(p:{callback:(dragData:any,dropData:any)=>void} ) {
+        const {callback} = p;
+        this.reOrder = (data,fromIndex,toIndex)=>ReOrder(data,fromIndex,toIndex)
         this.over = (e) => { e.preventDefault(); }
-        this.drop = (e, list) => {
-            e.stopPropagation();
-            let from = this.dragIndex, dom = $(e.target);
-            if (!dom.hasClass(this.className)) { dom = dom.parents(`.${this.className}`); };
-            if (!dom.hasClass(this.className)) { return };
-            let to = parseInt(dom.attr('data-index') as any);
-            if (from === to) { return }
-            if (typeof this.onChange === 'function') {
-                let newList = this.swap(list, from, to);
-                this.onChange(newList, list[from], list[to])
+        this.getDragAttrs = (dragData) => {
+            return {
+                onDragStart: ()=>this.dragData = dragData,
+                onDragOver: this.over,
+                draggable: true
             }
         }
-        this.swap = (arr, from, to) => {
-            if (to === from + 1) { let a = to; to = from; from = a; }
-            let Arr = arr.map((o, i) => { o._testswapindex = i; return o })
-            let fromIndex = Arr[from]._testswapindex
-            Arr.splice(to, 0, { ...Arr[from], _testswapindex: false })
-            return Arr.filter((o) => o._testswapindex !== fromIndex)
-        }
-        this.getAttrs = (list, index) => {
+        this.getDropAttrs = (dropData)=>{
             return {
-                ['data-index']: index,
-                onDragStart: this.start,
-                onDragOver: this.over,
-                onDrop: (e: any) => this.drop(e, list),
-                draggable: true
+                onDrop: (e: any) => callback(this.dragData,dropData)
             }
         }
     }
@@ -727,12 +712,12 @@ export class AIODate {
     getDateByPattern: (date: I_Date, pattern: string) => string;
     getToday: (jalali?: boolean) => number[];
     getDayIndex: (date: I_Date, unit: 'week' | 'year' | 'month') => number;
-    getYesterday:(date:I_Date)=>I_Date
-    getTomarrow:(date:I_Date)=>I_Date
-    toMiliseconds:(p:{year?:number,month?:number,day?:number,hour?:number,minute?:number,second?:number})=>number
+    getYesterday: (date: I_Date) => I_Date
+    getTomarrow: (date: I_Date) => I_Date
+    toMiliseconds: (p: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }) => number
     constructor() {
-        this.toMiliseconds = (p)=>{
-            const {day = 0,hour = 0,minute = 0,second = 0} = p;
+        this.toMiliseconds = (p) => {
+            const { day = 0, hour = 0, minute = 0, second = 0 } = p;
             let res = 0;
             res += day * 24 * 60 * 60 * 1000;
             res += hour * 60 * 60 * 1000;
@@ -830,7 +815,7 @@ export class AIODate {
                 list = [year, month, day, hour, minute, second, tenthsecond]
             }
             else if (typeof date === 'object') {
-                if(typeof (date as Date).getMonth === 'function'){
+                if (typeof (date as Date).getMonth === 'function') {
                     let dateObject = date as Date;
                     let year = dateObject.getFullYear();
                     let month = dateObject.getMonth() + 1;
@@ -844,15 +829,15 @@ export class AIODate {
                 }
                 else {
                     let today = this.getToday(jalali);
-                    let dateObject = date as { year?: number, month?: number, day?: number, hour?: number,minute?:number,second?:number }
+                    let dateObject = date as { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
                     return [
-                        dateObject.year === undefined?today[0]:dateObject.year, 
-                        dateObject.month === undefined?today[1]:dateObject.month, 
-                        dateObject.day === undefined?today[2]:dateObject.day, 
-                        dateObject.hour === undefined?today[3]:dateObject.hour,
-                        dateObject.minute === undefined?today[4]:dateObject.minute,
-                        dateObject.second === undefined?today[5]:dateObject.second,
-                    ]    
+                        dateObject.year === undefined ? today[0] : dateObject.year,
+                        dateObject.month === undefined ? today[1] : dateObject.month,
+                        dateObject.day === undefined ? today[2] : dateObject.day,
+                        dateObject.hour === undefined ? today[3] : dateObject.hour,
+                        dateObject.minute === undefined ? today[4] : dateObject.minute,
+                        dateObject.second === undefined ? today[5] : dateObject.second,
+                    ]
                 }
             }
             else { return [] }
@@ -1011,31 +996,31 @@ export class AIODate {
             }
             return res
         }
-        this.getYesterday = (date)=>{
-            const [year,month,day] = this.convertToArray(date);
-            let newYear = year,newMonth = month,newDay = day;
-            if(day === 1){
-                if(month === 1){
+        this.getYesterday = (date) => {
+            const [year, month, day] = this.convertToArray(date);
+            let newYear = year, newMonth = month, newDay = day;
+            if (day === 1) {
+                if (month === 1) {
                     newYear = newYear - 1;
                     newMonth = 12;
-                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                    newDay = this.getMonthDaysLength([newYear, newMonth])
                 }
                 else {
                     newMonth = newMonth - 1;
-                    newDay = this.getMonthDaysLength([newYear,newMonth])
+                    newDay = this.getMonthDaysLength([newYear, newMonth])
                 }
             }
             else {
                 newDay = newDay - 1
             }
-            return [newYear,newMonth,newDay]
+            return [newYear, newMonth, newDay]
         }
-        this.getTomarrow = (date)=>{
-            const [year,month,day] = this.convertToArray(date);
-            let newYear = year,newMonth = month,newDay = day;
+        this.getTomarrow = (date) => {
+            const [year, month, day] = this.convertToArray(date);
+            let newYear = year, newMonth = month, newDay = day;
             const daysLength = this.getMonthDaysLength(date)
-            if(day === daysLength){
-                if(month === 12){
+            if (day === daysLength) {
+                if (month === 12) {
                     newYear = newYear + 1;
                     newMonth = 1;
                     newDay = 1
@@ -1048,22 +1033,22 @@ export class AIODate {
             else {
                 newDay = newDay + 1
             }
-            return [newYear,newMonth,newDay]
+            return [newYear, newMonth, newDay]
         }
         this.getDaysOfWeek = (date, pattern) => {
             if (!date) { return [] }
             let dateArray = this.convertToArray(date);
             let { index } = this.getWeekDay(dateArray);
-            let firstDay:I_Date = [...dateArray];
-            for(let i = 0; i < index; i++){
+            let firstDay: I_Date = [...dateArray];
+            for (let i = 0; i < index; i++) {
                 firstDay = this.getYesterday(firstDay);
             }
-            const res:I_Date[] = [];
-            for(let i = 0; i < 7; i++){
+            const res: I_Date[] = [];
+            for (let i = 0; i < 7; i++) {
                 res.push(firstDay)
                 firstDay = this.getTomarrow(firstDay)
             }
-            if(pattern){return res.map((o)=>this.getDateByPattern(o,pattern))}
+            if (pattern) { return res.map((o) => this.getDateByPattern(o, pattern)) }
             return res
         }
         this.getDatesBetween = (date, otherDate, step = 24 * 60 * 60 * 1000) => {
@@ -1122,14 +1107,14 @@ export class AIODate {
             if (!date) { return [] }
             let dateArray = this.convertToArray(date);
             let daysLength = this.getMonthDaysLength(date)
-            let firstDay:I_Date = [dateArray[0],dateArray[1],1];
-            let res:I_Date[] = []
-            for(let i = 0; i < daysLength; i++){
+            let firstDay: I_Date = [dateArray[0], dateArray[1], 1];
+            let res: I_Date[] = []
+            for (let i = 0; i < daysLength; i++) {
                 res.push(firstDay)
                 firstDay = this.getTomarrow(firstDay);
             }
-            
-            if(pattern){return res.map((o)=>this.getDateByPattern(o,pattern))}
+
+            if (pattern) { return res.map((o) => this.getDateByPattern(o, pattern)) }
             return res
         }
         this.getLastDayOfMonth = (date) => {
@@ -1654,9 +1639,9 @@ export function setValueByField(data: any = {}, field: string, value: any) {
     node[fields[fields.length - 1]] = value;
     return data;
 }
-export function GetArray(count:number,fn?:(index:number)=>any){
-    fn = fn || ((index)=>index)
-    return new Array(count).fill(0).map((o,i)=>fn(i))
+export function GetArray(count: number, fn?: (index: number) => any) {
+    fn = fn || ((index) => index)
+    return new Array(count).fill(0).map((o, i) => fn(i))
 }
 type I_storage_model = { [key: string]: any }
 type I_storage_time = { [key: string]: number }
@@ -1829,22 +1814,22 @@ type I_dd_day = any
 type I_list_item = { date: I_dd_dateArray, value: any }
 export default class DateData {
     data: I_dd_data;
-    getToday:()=>number[];
+    getToday: () => number[];
     setDayValue: (dateArray: I_dd_dateArray, data: { [key: string]: any }) => void;
     getYearDic: (dateArray: I_dd_dateArray) => I_dd_year
     getMonthDic: (dateArray: I_dd_dateArray) => I_dd_month
     getDayDic: (dateArray: I_dd_dateArray) => I_dd_day
-    getDayValue: (dateArray: I_dd_dateArray, field?: string,def?:any) => any;
-    getMonthList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
-    getYearList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
-    getWeekList: (dateArray: I_dd_dateArray, field: string,def?:any) => I_list_item[];
-    getData:()=>I_dd_data;
+    getDayValue: (dateArray: I_dd_dateArray, field?: string, def?: any) => any;
+    getMonthList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
+    getYearList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
+    getWeekList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
+    getData: () => I_dd_data;
     d: AIODate;
-    constructor(data:I_dd_data) {
+    constructor(data: I_dd_data) {
         this.data = data
         this.d = new AIODate()
-        this.getToday = ()=>this.d.convertToArray(this.d.getTime(this.d.getToday()) - (12 * 60 * 60 * 1000),true)
-        this.getData = ()=>this.data
+        this.getToday = () => this.d.convertToArray(this.d.getTime(this.d.getToday()) - (12 * 60 * 60 * 1000), true)
+        this.getData = () => this.data
         this.getYearDic = ([Year]) => {
             let year: I_dd_year = this.data[Year.toString()]
             if (!year) {
@@ -1871,10 +1856,10 @@ export default class DateData {
             }
             return day
         }
-        this.getDayValue = ([Year, Month, Day], field,def) => {
+        this.getDayValue = ([Year, Month, Day], field, def) => {
             let dayData = this.getDayDic([Year, Month, Day])
-            if(field){return getValueByField(dayData, field,def)}
-            return dayData === undefined?def:dayData
+            if (field) { return getValueByField(dayData, field, def) }
+            return dayData === undefined ? def : dayData
         }
         this.setDayValue = (dateArray, data) => {
             let day = this.getDayDic(dateArray)
@@ -1882,37 +1867,460 @@ export default class DateData {
                 day[prop] = data[prop]
             }
         }
-        this.getMonthList = ([Year, Month], field,def) => {
+        this.getMonthList = ([Year, Month], field, def) => {
             const daysLength = this.d.getMonthDaysLength([Year, Month])
             let list = [];
             for (let i = 1; i <= daysLength; i++) {
                 let date = [Year, Month, i];
-                let dayRes = this.getDayValue(date, field,def);
+                let dayRes = this.getDayValue(date, field, def);
                 if (dayRes !== undefined) {
                     list.push({ date, value: dayRes });
                 }
             }
             return list
         }
-        this.getWeekList = ([Year, Month, Day], field,def) => {
+        this.getWeekList = ([Year, Month, Day], field, def) => {
             let days = this.d.getDaysOfWeek([Year, Month, Day]);
             let list = [];
             for (let i = 0; i < days.length; i++) {
                 let date = days[i]
-                let dayRes = this.getDayValue(date, field,def);
+                let dayRes = this.getDayValue(date, field, def);
                 if (dayRes !== undefined) {
                     list.push({ date, value: dayRes });
                 }
             }
             return JSON.parse(JSON.stringify(list))
         }
-        this.getYearList = ([Year], field,def) => {
-            let list: {date:I_dd_dateArray,value:any}[] = [];
+        this.getYearList = ([Year], field, def) => {
+            let list: { date: I_dd_dateArray, value: any }[] = [];
             for (let i = 1; i <= 12; i++) {
-                list = list.concat(this.getMonthList([Year, i], field,def))
+                list = list.concat(this.getMonthList([Year, i], field, def))
             }
             return list
         }
     }
 }
-export function DisabledContextMenu(){window.addEventListener(`contextmenu`, (e) => e.preventDefault());}
+export function DisabledContextMenu() { window.addEventListener(`contextmenu`, (e) => e.preventDefault()); }
+export type AV_operator = 'contain' | 'required' | '=' | '>' | '>=' | '<' | '<=' | 'startBy' | '<>' | '<=>'
+export type AV_props = { lang?: 'fa' | 'en', title?: string, value: any, validations: AV_item[] }
+type AV_item_object = { target: any, title?: string, message?: string, value: any, operator: AV_operator, not: boolean, equal: boolean, fn: any };
+export type AV_item = string | Omit<AV_item_object, 'value' | 'equal' | 'fn'>
+type AV_fn = 'less' | 'greater' | 'equal' | 'contain' | 'startBy' | 'required' | 'between'
+export class Validation {
+    contain: (target: any, value: any) => { result: boolean, unit: any };
+    startBy: (target: any, value: any) => { result: boolean, unit: any };
+    equal: (target: any, value: any, equal?: boolean) => { result: boolean, unit: any };
+    less: (target: any, value: any, equal?: boolean) => { result: boolean, unit: any };
+    greater: (target: any, value: any, equal?: boolean) => { result: boolean, unit: any };
+    between: (targets: any[], value: any, equal?: boolean) => { result: boolean, unit: any };
+    getMessage: (p: { translate: string, target: string, message?: string, title?: string, unit: string }) => string;
+    translate: (operator: AV_operator, not: boolean) => string
+    getResult: (p: AV_item_object) => string | boolean
+    getValidation: () => string | boolean;
+    validate: () => string | boolean;
+    boolKey: (key: 'more' | 'less') => string;
+    boolDic: any;
+    getUnit: (value: any) => string;
+    constructor(props: AV_props) {
+        let { lang = 'en', value } = props;
+        let isDate = typeof value === 'string' && value.indexOf('/') !== -1;
+        this.boolDic = isDate ? { more: { en: 'after', fa: 'بعد از' }, less: { en: 'before', fa: 'قبل از' } } : { more: { en: 'more', fa: 'بیشتر' }, less: { en: 'less', fa: 'کمتر' } }
+        this.boolKey = (key) => this.boolDic[key][lang]
+        let DATE = new AIODate();
+        this.contain = (target, value) => {
+            let result
+            if (Array.isArray(value)) { result = value.indexOf(target) !== -1 }
+            else if (target === 'number') { result = /\d/.test(value); }
+            else if (target === 'letter') { result = /[a-zA-Z]/.test(value); }
+            else if (target === 'uppercase') { result = /[A-Z]/.test(value); }
+            else if (target === 'lowercase') { result = /[a-z]/.test(value); }
+            else if (target === 'symbol') { result = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(value); }
+            else if (typeof target.test === 'function') { result = target.test(value); }
+            else { result = value.indexOf(target) !== -1; }
+            return { result, unit: '' }
+        }
+        this.startBy = (target, value) => ({ result: value.indexOf(target) === 0, unit: '' })
+        this.equal = (target, value) => {
+            let valueType = Array.isArray(value) ? 'array' : typeof value;
+            let targetType = typeof target;
+            let result, unit;
+            if (isDate) { result = DATE.isEqual(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target; unit = this.getUnit(value) }
+            else { result = JSON.stringify(value) === JSON.stringify(target); unit = '' }
+            return { result, unit }
+        }
+        this.less = (target, value, equal) => {
+            let valueType = Array.isArray(value) ? 'array' : typeof value;
+            let targetType = typeof target;
+            let result, unit = '';
+            if (isDate) { result = DATE.isLess(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            else if (targetType === 'number' && valueType === 'number') { result = value < target; unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target; unit = this.getUnit(value) }
+            else { result = false; unit = ''; }
+            return { result: equal ? result || this.equal(target, value).result : result, unit };
+        }
+        this.greater = (target, value, equal) => {
+            let valueType = Array.isArray(value) ? 'array' : typeof value;
+            let targetType = typeof target;
+            let result, unit;
+            if (isDate) { result = DATE.isGreater(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            else if (targetType === 'number' && valueType === 'number') { result = value > target; unit = '' }
+            else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target; unit = this.getUnit(value) }
+            else { result = false; unit = '' }
+            return { result: equal ? result || this.equal(target, value).result : result, unit };
+        }
+        this.between = (targets, value, equal) => {
+            let res1 = this.greater(targets[0], value).result
+            let res2 = this.less(targets[1], value).result
+            let result = !!res1 && !!res2
+            return { result: equal ? (result || this.equal(targets[0], value).result || this.equal(targets[1], value).result) : result, unit: '' }
+        }
+        this.translate = (operator, not): string => {
+            let dict;
+            if (not) {
+                dict = {
+                    'contain': { en: `should not be contain`, fa: `نمی تواند شامل` },
+                    '>': { en: `could not be ${this.boolKey('more')} than`, fa: `نباید ${this.boolKey('more')} از` },
+                    '>=': { en: `could not be ${this.boolKey('more')} than or equal`, fa: `نباید ${this.boolKey('more')} یا مساوی` },
+                    '<': { en: `could not be ${this.boolKey('less')} than`, fa: `نباید ${this.boolKey('less')} از` },
+                    '<=': { en: `could not be ${this.boolKey('less')} than or equal`, fa: `نباید ${this.boolKey('less')} یا مساوی` },
+                    '=': { en: `cannot be equal`, fa: `نمی تواند برابر` },
+                    'startBy': { en: `should not start by`, fa: `نباید در ابتدا شامل` },
+                    '<>': { en: `should not be between`, fa: `نباید بین` },
+                    '<=>': { en: `should not be between`, fa: `نباید بین یا برابر` },
+                    'required': { en: '', fa: '' }
+                }
+            }
+            else {
+                dict = {
+                    'contain': { en: `should be contain`, fa: `باید شامل` },
+                    '>': { en: `should be ${this.boolKey('more')} than`, fa: `باید ${this.boolKey('more')} از` },
+                    '>=': { en: `should be ${this.boolKey('more')} than or equal`, fa: `باید ${this.boolKey('more')} یا مساوی` },
+                    '<': { en: `should be ${this.boolKey('less')} than`, fa: `باید ${this.boolKey('less')} از` },
+                    '<=': { en: `should be ${this.boolKey('less')} than or equal`, fa: `باید ${this.boolKey('less')} یا مساوی` },
+                    '=': { en: `should be equal`, fa: `باید برابر` },
+                    'startBy': { en: `should start by`, fa: `باید در ابتدا شامل` },
+                    '<>': { en: `should be between`, fa: `باید بین` },
+                    '<=>': { en: `should be between`, fa: `باید بین یا برابر` },
+                    'required': { en: '', fa: '' }
+                }
+            }
+            return dict[operator][lang]
+        }
+        this.getMessage = (p) => {
+            let { translate, target, unit, title, message } = p;
+            if (message) { return message }
+            let res = `${title} ${translate} ${target} ${unit}` + (props.lang === 'fa' ? ' باشد' : '')
+            return res.trim()
+        }
+        this.getResult = (p) => {
+            let { target, message, title = '', value, operator, not, equal, fn } = p;
+            fn = (this as any)[fn];
+            let { result, unit } = fn(target, value, equal)
+            if ((not && result) || (!not && !result)) {
+                let translate = this.translate(operator, not)
+                return !!title ? this.getMessage({ translate, target, message, title, unit }) : true
+            }
+            return false
+        }
+        this.getUnit = (value) => {
+            let unit = '';
+            if (Array.isArray(value)) { unit = lang === 'fa' ? 'مورد' : 'items(s)' }
+            else if (typeof value === 'string') { unit = lang === 'fa' ? 'کاراکتر' : 'character(s)' }
+            return unit;
+        }
+        this.getValidation = () => {
+            let { value, validations = [] } = props;
+            for (let i = 0; i < validations.length; i++) {
+                const v = validations[i];
+                let title, target, not, equal, fn, operator, message;
+                if (typeof v === 'string') {
+                    let res = ValidationTextToObject(v, props.title)
+                    title = res.title; target = res.target; not = res.not; equal = res.equal;
+                    fn = res.fn; operator = res.operator; message = res.message;
+                }
+                else {
+                    title = v.title; target = v.target; operator = v.operator; message = v.message;
+                    let details = getOperatorDetails(operator); equal = details.equal; not = details.not; fn = details.fn;
+                }
+                if (operator === 'required') {
+                    const isNull = value === undefined || value === null || value === '' || value === false || value.length === 0;
+                    if (!not && isNull) {
+                        if (lang === 'en') { return `${title} is required` }
+                        if (lang === 'fa') { return `وارد کردن ${title} ضروری است` }
+                    }
+                    else if (not && !isNull) {
+                        if (lang === 'en') { return `${title} is forbidden` }
+                        if (lang === 'fa') { return `وارد کردن ${title} مجاز نیست` }
+                    }
+                }
+                else {
+                    let result = this.getResult({ operator: operator as AV_operator, not, target, title, message, value, equal, fn })
+                    if (result) { return result }
+                }
+            }
+            return false
+        }
+        this.validate = () => {
+            let validation: boolean | string = false;
+            try { validation = this.getValidation() } catch { validation = false }
+            return validation;
+        }
+    }
+}
+function getOperatorDetails(operator: AV_operator): { fn: AV_fn, not: boolean, equal: boolean } {
+    let fn: AV_fn;
+    if (operator === 'contain' || operator === 'startBy') { fn = operator }
+    else {
+        let lessIndex = operator.indexOf('<');
+        let moreIndex = operator.indexOf('>');
+        if (lessIndex !== -1 && moreIndex !== -1) { fn = 'between'; }
+        else if (lessIndex !== -1) { fn = 'less' }
+        else if (moreIndex !== -1) { fn = 'greater' }
+        else { fn = 'equal' }
+    }
+    let not = operator.indexOf('!') !== -1;
+    let equal = operator.indexOf('=') !== -1;
+    return { fn, not, equal }
+}
+export function ValidationTextToObject(vtext: string, Title?: string) {
+    let [operator, target, text] = vtext.split(',');
+    let otherTarget;
+    let title: string | undefined = Title, message: string = '';
+    if (text) {
+        if (text[0] === 'title(' && text[text.length - 1] === ')') { title = text.slice(6, text.length - 1) }
+        else if (text[0] === 'message(' && text[text.length - 1] === ')') { message = text.slice(8, text.length - 1) }
+        else { otherTarget = ParseString(text) }
+    }
+    target = ParseString(target);
+    let Target: any = target;
+    let { fn, not, equal } = getOperatorDetails(operator as AV_operator);
+    if (fn === 'between') { Target = [target, otherTarget]; }
+    return { title, target: Target, not, equal, fn, operator: operator as AV_operator, message }
+}
+type PS_validation = { targets: any[], not: boolean, operator: AV_operator,bool?:PS_bool }
+type PS_filter = { field: string, validation: PS_validation | string }
+type PS_column = { title: string, field: string };
+export function ConvertTextToFilters(sentence: string, columns: any[]): (PS_filter | string)[] {
+    const sentences = sentence.split('.');
+    const filterItems: PS_filter[] = []
+    const inst: ConvertPToFilter = new ConvertPToFilter(columns)
+    for (let i = 0; i < sentences.length; i++) {
+        const res: PS_filter | false = inst.convert(sentences[i]);
+        if (res !== false) { filterItems.push(res) }
+    }
+    return filterItems
+}
+type PS_bool = 'و' | 'یا'
+class ConvertPToFilter {
+    sentence: string = '';
+    columns: PS_column[];
+    fields: string[] = [];
+    titlesDic: { [key: string]: string } = {};
+    titles: string[] = [];
+    fieldsDic: { [key: string]: boolean } = {};
+    not: boolean = false;
+    targets: (string | number)[] = [];
+    bool?:PS_bool;
+    equalWords: string[] = ['مساوی ', 'به اندازه ', 'به میزان ', 'به مقدار ', 'حدود ', 'برابر ']
+    lessWords: string[] = ['کوچکتر ', 'کوچک تر ', 'زیر ', 'کمتر ', 'کم تر ', 'قبل از ']
+    moreWords: string[] = ['بیشتر ', 'بیش تر ', 'بالای ', 'بیش از ', 'بزرگتر ', 'بزرگ تر ', 'بعد از ']
+    betweenWords: string[] = ['بین ']
+    notWords: string[] = ['نباشد', 'نباید', 'نباشند', 'نیستند', 'نیست', 'ندارد', 'ندارند', 'نداشته باشد', 'نداشته باشند', 'نشده باشد', 'نشده باشند']
+    constructor(columns: PS_column[]) {
+        this.columns = columns;
+        this.getFieldsAndTitles();
+    }
+    convert = (sentence: string): PS_filter | false => {
+        if (!sentence) { return false }
+        this.sentence = sentence;
+        this.getTargets();
+        const field = this.getField();
+        if (!field) { return false }
+        const not = this.isNot();
+        const operator = this.getOperator();
+        if (!operator) { return false }
+        return { field, validation: { operator, targets: this.targets, not,bool:this.bool } }
+    }
+    getField = () => {
+        for (let i = 0; i < this.fields.length; i++) {
+            const field = this.fields[i];
+            if (this.sentence.indexOf(field) !== -1) { return field }
+        }
+        for (let i = 0; i < this.titles.length; i++) {
+            const title = this.titles[i];
+            if (this.sentence.indexOf(title) !== -1) { return this.titlesDic[title] }
+        }
+    }
+    getFieldsAndTitles = () => {
+        for (let i = 0; i < this.columns.length; i++) {
+            const { title, field } = this.columns[i];
+            if (field !== undefined) {
+                this.fieldsDic[field] = true;
+                this.fields.push(field);
+                if (title) {
+                    this.titlesDic[title] = field;
+                    this.titles.push(title)
+                }
+            }
+        }
+    }
+    getTargets = ():void => {
+        const start = this.sentence.indexOf('(') + 1;
+        const end = this.sentence.indexOf(')');
+        let value = this.sentence.slice(start, end);
+        let {text,bool} = this.replaceAndOr(value);
+        const values = text.split(` ${bool} `);
+        let targets:(string | number)[] = [];
+        for (let i = 0; i < values.length; i++) {
+            const res:string | number = this.getTarget(values[i]);
+            if (res !== undefined) {
+                targets.push(res)
+            }
+        }
+        if (targets.length) { this.sentence = this.sentence.replace(/\(.*?\)/g, ''); }
+        this.targets = targets;
+        this.bool = bool;
+    }
+    getTarget = (res: string):string | number => {
+        let result;
+        if (this.fieldsDic[res]) { result = `field_${res}` }
+        else if (this.titlesDic[res]) { result = `field_${this.titlesDic[res]}` }
+        else {
+            const num = +res
+            if (isNaN(num)) { result = res.replace(/['"]/g, '') }
+            else { result = num }
+        }
+        return result
+    }
+    isNot = (): boolean => {
+        for (let i = 0; i < this.notWords.length; i++) {
+            const word = this.notWords[i];
+            if (this.sentence.indexOf(word) !== -1) {
+                this.sentence = this.sentence.replace(word, '')
+                return true
+            }
+        }
+        return false
+    }
+    getOperator = (): AV_operator | false => {
+        if (!this.targets.length) { return 'required' }
+        if (this.sentence.indexOf('مخالف ') !== -1) { return '=' }
+        else if (this.sentence.indexOf('نا برابر ') !== -1) { return '=' }
+        else if (this.sentence.indexOf('نا مساوی ') !== -1) { return '=' }
+        else {
+            if (this.sentence.indexOf('شروع شود') !== -1) { return 'startBy' }
+            if (this.sentence.indexOf('شامل') !== -1) { return 'contain' }
+            let equal: boolean = false;
+            for (let i = 0; i < this.equalWords.length; i++) {
+                const eo = this.equalWords[i];
+                if (this.sentence.indexOf(eo) !== -1) { equal = true; break; }
+            }
+            for (let i = 0; i < this.betweenWords.length; i++) {
+                if (this.sentence.indexOf(this.betweenWords[i]) !== -1) {
+                    if (equal) { return '<=>' } else { return '<>' }
+                }
+            }
+            for (let i = 0; i < this.moreWords.length; i++) {
+                if (this.sentence.indexOf(this.moreWords[i]) !== -1) {
+                    if (equal) { return '>=' } else { return '>' }
+                }
+            }
+            for (let i = 0; i < this.lessWords.length; i++) {
+                if (this.sentence.indexOf(this.lessWords[i]) !== -1) {
+                    if (equal) { return '<=' } else { return '<' }
+                }
+            }
+            if (!equal) { return false }
+            return '='
+        }
+    }
+    replaceAndOr = (text: string):{text:string,bool?:PS_bool} => {
+        const firstAndIndex = text.search(/\bو\b/), firstOrIndex = text.search(/\bیا\b/);
+        let replaceTarget, bool:PS_bool;
+        if (firstAndIndex !== -1 && (firstOrIndex === -1 || firstAndIndex < firstOrIndex)) {
+            replaceTarget = /\bیا\b/g;
+            bool = "و";
+        }
+        else if (firstOrIndex !== -1 && (firstAndIndex === -1 || firstOrIndex < firstAndIndex)) {
+            replaceTarget = /\bو\b/g;
+            bool = "یا";
+        }
+        else { return {text}; }
+        return {text:text.replace(replaceTarget, bool),bool};
+    }
+}
+//فیلتر آرایه ای از آرایه ها باید باشد که آرایه داخلی ها اور و آرایه خارجی ها اند می شوند
+export function FilterRows(rows: any[], filters: PS_filter[][]) {
+    function getValueByField(row: any, field: string) {
+        return row[field];
+    }
+    function getUnitResult(row:any,field:string,validation:PS_validation):boolean{
+        const value = getValueByField(row, field)
+        const {targets,operator,not,bool} = validation;
+        if(operator === '<>' || operator === '<=>'){
+            return !!new Validation({ value, validations: [{ operator, target:targets, not }] })
+        }
+        else if(targets.length === 1){
+            return !!new Validation({ value, validations: [{ operator, target:targets[0], not }] })
+        }
+        let foundMatch = false;
+        let foundNotMatch = false;
+        for(let i = 0; i < targets.length; i++){
+            const res: boolean = !!new Validation({ value, validations: [{ operator, target:targets[i], not }] })
+            if(res){//اگر مچ نبود
+                foundNotMatch = true
+                if(bool === 'و'){return false}
+            }
+            else{//اگر مچ بود
+                if(bool === 'یا'){return true}
+                foundMatch = true;
+            }
+        }
+        if(bool === 'و'){return !foundNotMatch}
+        else {return foundMatch}
+    }
+    function getOrResult(filters: PS_filter[], row: any): boolean {
+        for (let i = 0; i < filters.length; i++) {
+            const { field, validation } = filters[i];
+            let operator: AV_operator, targets: any[], not: boolean,bool:PS_bool | undefined;
+            if (typeof validation === 'string') {
+                const res = ValidationTextToObject(validation);
+                operator = res.operator;
+                targets = !Array.isArray(res.target) ? [res.target] : res.target;
+                not = res.not;
+                bool = 'و'
+            }
+            else {
+                operator = validation.operator;
+                targets = validation.targets;
+                not = validation.not;
+                bool = validation.bool;
+            }
+            targets = targets.map((t) => {
+                if (typeof t === 'string' && t.indexOf('field_') === 0) {
+                    return getValueByField(row, t.slice(6, t.length))
+                }
+                return t;
+            })
+            const res = getUnitResult(row,field,{targets,not,operator,bool})
+            if (res) {//اگر مچ بود
+                return true
+            }
+        }
+        return false
+    }
+    let result: any[] = [];
+    const ands:PS_filter[][] = filters;
+    for (let i = 0; i < rows.length; i++) {
+        let isMatch = true;
+        const row = rows[i];
+        for (let j = 0; j < ands.length; j++) {
+            const and:PS_filter[] = ands[i];
+            const res = getOrResult(and, row);
+            if (!res) { isMatch = false; break; }
+        }
+        if (isMatch) { result.push(row) }
+    }
+    return result;
+}
