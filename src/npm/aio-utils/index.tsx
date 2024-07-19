@@ -66,32 +66,32 @@ export function ParseString(str: string): any {
     }
     catch { return str }
 }
-export function ReOrder(data:any[],fromIndex:number,toIndex:number){
+export function ReOrder(data: any[], fromIndex: number, toIndex: number) {
     let from = data[fromIndex];
-    let newData = data.filter((o,i) => i !== fromIndex);
+    let newData = data.filter((o, i) => i !== fromIndex);
     newData.splice(toIndex, 0, from)
     return newData;
 }
 export class DragClass {
     over: (e: any) => void;
     dragData: any;
-    getDragAttrs: (dragData:any) => any;
-    getDropAttrs: (dropData:any) => any;
-    reOrder:(data:any[],fromIndex:number,toIndex:number)=>any[];
-    constructor(p:{callback:(dragData:any,dropData:any)=>void} ) {
-        const {callback} = p;
-        this.reOrder = (data,fromIndex,toIndex)=>ReOrder(data,fromIndex,toIndex)
+    getDragAttrs: (dragData: any) => any;
+    getDropAttrs: (dropData: any) => any;
+    reOrder: (data: any[], fromIndex: number, toIndex: number) => any[];
+    constructor(p: { callback: (dragData: any, dropData: any) => void }) {
+        const { callback } = p;
+        this.reOrder = (data, fromIndex, toIndex) => ReOrder(data, fromIndex, toIndex)
         this.over = (e) => { e.preventDefault(); }
         this.getDragAttrs = (dragData) => {
             return {
-                onDragStart: ()=>this.dragData = dragData,
+                onDragStart: () => this.dragData = dragData,
                 onDragOver: this.over,
                 draggable: true
             }
         }
-        this.getDropAttrs = (dropData)=>{
+        this.getDropAttrs = (dropData) => {
             return {
-                onDrop: (e: any) => callback(this.dragData,dropData)
+                onDrop: (e: any) => callback(this.dragData, dropData)
             }
         }
     }
@@ -1643,6 +1643,7 @@ export function GetArray(count: number, fn?: (index: number) => any) {
     fn = fn || ((index) => index)
     return new Array(count).fill(0).map((o, i) => fn(i))
 }
+export function GetRandomNumber(from:number, to:number) { return from + Math.round(Math.random() * (to - from)) }
 type I_storage_model = { [key: string]: any }
 type I_storage_time = { [key: string]: number }
 export class Storage {
@@ -2098,7 +2099,7 @@ export function ValidationTextToObject(vtext: string, Title?: string) {
     if (fn === 'between') { Target = [target, otherTarget]; }
     return { title, target: Target, not, equal, fn, operator: operator as AV_operator, message }
 }
-type PS_validation = { targets: any[], not: boolean, operator: AV_operator,bool?:PS_bool }
+type PS_validation = { targets: any[], not: boolean, operator: AV_operator, bool?: PS_bool }
 type PS_filter = { field: string, validation: PS_validation | string }
 type PS_column = { title: string, field: string };
 export function ConvertTextToFilters(sentence: string, columns: any[]): (PS_filter | string)[] {
@@ -2121,7 +2122,7 @@ class ConvertPToFilter {
     fieldsDic: { [key: string]: boolean } = {};
     not: boolean = false;
     targets: (string | number)[] = [];
-    bool?:PS_bool;
+    bool?: PS_bool;
     equalWords: string[] = ['مساوی ', 'به اندازه ', 'به میزان ', 'به مقدار ', 'حدود ', 'برابر ']
     lessWords: string[] = ['کوچکتر ', 'کوچک تر ', 'زیر ', 'کمتر ', 'کم تر ', 'قبل از ']
     moreWords: string[] = ['بیشتر ', 'بیش تر ', 'بالای ', 'بیش از ', 'بزرگتر ', 'بزرگ تر ', 'بعد از ']
@@ -2140,7 +2141,7 @@ class ConvertPToFilter {
         const not = this.isNot();
         const operator = this.getOperator();
         if (!operator) { return false }
-        return { field, validation: { operator, targets: this.targets, not,bool:this.bool } }
+        return { field, validation: { operator, targets: this.targets, not, bool: this.bool } }
     }
     getField = () => {
         for (let i = 0; i < this.fields.length; i++) {
@@ -2165,15 +2166,15 @@ class ConvertPToFilter {
             }
         }
     }
-    getTargets = ():void => {
+    getTargets = (): void => {
         const start = this.sentence.indexOf('(') + 1;
         const end = this.sentence.indexOf(')');
         let value = this.sentence.slice(start, end);
-        let {text,bool} = this.replaceAndOr(value);
+        let { text, bool } = this.replaceAndOr(value);
         const values = text.split(` ${bool} `);
-        let targets:(string | number)[] = [];
+        let targets: (string | number)[] = [];
         for (let i = 0; i < values.length; i++) {
-            const res:string | number = this.getTarget(values[i]);
+            const res: string | number = this.getTarget(values[i]);
             if (res !== undefined) {
                 targets.push(res)
             }
@@ -2182,7 +2183,7 @@ class ConvertPToFilter {
         this.targets = targets;
         this.bool = bool;
     }
-    getTarget = (res: string):string | number => {
+    getTarget = (res: string): string | number => {
         let result;
         if (this.fieldsDic[res]) { result = `field_${res}` }
         else if (this.titlesDic[res]) { result = `field_${this.titlesDic[res]}` }
@@ -2235,9 +2236,9 @@ class ConvertPToFilter {
             return '='
         }
     }
-    replaceAndOr = (text: string):{text:string,bool?:PS_bool} => {
+    replaceAndOr = (text: string): { text: string, bool?: PS_bool } => {
         const firstAndIndex = text.search(/\bو\b/), firstOrIndex = text.search(/\bیا\b/);
-        let replaceTarget, bool:PS_bool;
+        let replaceTarget, bool: PS_bool;
         if (firstAndIndex !== -1 && (firstOrIndex === -1 || firstAndIndex < firstOrIndex)) {
             replaceTarget = /\bیا\b/g;
             bool = "و";
@@ -2246,8 +2247,8 @@ class ConvertPToFilter {
             replaceTarget = /\bو\b/g;
             bool = "یا";
         }
-        else { return {text}; }
-        return {text:text.replace(replaceTarget, bool),bool};
+        else { return { text }; }
+        return { text: text.replace(replaceTarget, bool), bool };
     }
 }
 //فیلتر آرایه ای از آرایه ها باید باشد که آرایه داخلی ها اور و آرایه خارجی ها اند می شوند
@@ -2255,35 +2256,35 @@ export function FilterRows(rows: any[], filters: PS_filter[][]) {
     function getValueByField(row: any, field: string) {
         return row[field];
     }
-    function getUnitResult(row:any,field:string,validation:PS_validation):boolean{
+    function getUnitResult(row: any, field: string, validation: PS_validation): boolean {
         const value = getValueByField(row, field)
-        const {targets,operator,not,bool} = validation;
-        if(operator === '<>' || operator === '<=>'){
-            return !!new Validation({ value, validations: [{ operator, target:targets, not }] })
+        const { targets, operator, not, bool } = validation;
+        if (operator === '<>' || operator === '<=>') {
+            return !!new Validation({ value, validations: [{ operator, target: targets, not }] })
         }
-        else if(targets.length === 1){
-            return !!new Validation({ value, validations: [{ operator, target:targets[0], not }] })
+        else if (targets.length === 1) {
+            return !!new Validation({ value, validations: [{ operator, target: targets[0], not }] })
         }
         let foundMatch = false;
         let foundNotMatch = false;
-        for(let i = 0; i < targets.length; i++){
-            const res: boolean = !!new Validation({ value, validations: [{ operator, target:targets[i], not }] })
-            if(res){//اگر مچ نبود
+        for (let i = 0; i < targets.length; i++) {
+            const res: boolean = !!new Validation({ value, validations: [{ operator, target: targets[i], not }] })
+            if (res) {//اگر مچ نبود
                 foundNotMatch = true
-                if(bool === 'و'){return false}
+                if (bool === 'و') { return false }
             }
-            else{//اگر مچ بود
-                if(bool === 'یا'){return true}
+            else {//اگر مچ بود
+                if (bool === 'یا') { return true }
                 foundMatch = true;
             }
         }
-        if(bool === 'و'){return !foundNotMatch}
-        else {return foundMatch}
+        if (bool === 'و') { return !foundNotMatch }
+        else { return foundMatch }
     }
     function getOrResult(filters: PS_filter[], row: any): boolean {
         for (let i = 0; i < filters.length; i++) {
             const { field, validation } = filters[i];
-            let operator: AV_operator, targets: any[], not: boolean,bool:PS_bool | undefined;
+            let operator: AV_operator, targets: any[], not: boolean, bool: PS_bool | undefined;
             if (typeof validation === 'string') {
                 const res = ValidationTextToObject(validation);
                 operator = res.operator;
@@ -2303,7 +2304,7 @@ export function FilterRows(rows: any[], filters: PS_filter[][]) {
                 }
                 return t;
             })
-            const res = getUnitResult(row,field,{targets,not,operator,bool})
+            const res = getUnitResult(row, field, { targets, not, operator, bool })
             if (res) {//اگر مچ بود
                 return true
             }
@@ -2311,16 +2312,134 @@ export function FilterRows(rows: any[], filters: PS_filter[][]) {
         return false
     }
     let result: any[] = [];
-    const ands:PS_filter[][] = filters;
+    const ands: PS_filter[][] = filters;
     for (let i = 0; i < rows.length; i++) {
         let isMatch = true;
         const row = rows[i];
         for (let j = 0; j < ands.length; j++) {
-            const and:PS_filter[] = ands[i];
+            const and: PS_filter[] = ands[i];
             const res = getOrResult(and, row);
             if (!res) { isMatch = false; break; }
         }
         if (isMatch) { result.push(row) }
     }
     return result;
+}
+type I_color = any
+type I_color_type = 'rgb' | 'hex' | 'array'
+export class AIOColors {
+    number_to_hex: (number: number) => string;
+    getType: (c: I_color) => I_color_type;
+    to_array:(c:I_color)=>number[];
+    between:(c1:I_color,c2:I_color,count:number)=>string[];
+    getBetween:(v:(string | number)[])=>I_color[]
+    to_dark:(c:I_color,percent:number)=>I_color;
+    to_light:(c:I_color,percent:number)=>I_color;
+    brightness:(c:I_color,percent:number)=>I_color;
+    to_hex:(c:I_color)=>string;
+    to_rgb:(c:I_color)=>string;
+    log:(c:I_color[])=>void;
+    getRandomRGB:(c1?:I_color,c2?:I_color)=>string;
+    reverse:(c:I_color)=>I_color;
+    constructor() {
+        this.number_to_hex = (num) => {
+            const str = num.toString(16); return str.length === 1 ? "0" + str : str;
+        }
+        this.getType = (c) => {
+            if (Array.isArray(c)) { return 'array' }
+            return c.indexOf('rgb') !== -1 ? 'rgb' : 'hex';
+        }
+        this.to_array = (c) => {
+            if (Array.isArray(c)) { return c }
+            if (c.indexOf('rgb(') === 0) {
+                return c.slice(c.indexOf('(') + 1, c.indexOf(')')).split(',').map((o:string) => +o);
+            }
+            c = c.substr(1);
+            let values = c.split(''), r, g, b;
+            if (c.length === 3) {
+                r = parseInt(values[0] + values[0], 16);
+                g = parseInt(values[1] + values[1], 16);
+                b = parseInt(values[2] + values[2], 16);
+            }
+            else if (c.length === 6) {
+                r = parseInt(values[0] + values[1], 16);
+                g = parseInt(values[2] + values[3], 16);
+                b = parseInt(values[4] + values[5], 16);
+            }
+            return [r, g, b];
+        }
+        this.between = (c1,c2,count)=>{
+            let [r1, g1, b1] = this.to_array(c1);
+            let [r2, g2, b2] = this.to_array(c2);
+            let rDelta = (r2 - r1) / (count - 1);
+            let gDelta = (g2 - g1) / (count - 1);
+            let bDelta = (b2 - b1) / (count - 1);
+            let colors = [];
+            for (var i = 0; i < count; i++) {
+                let color = `rgb(${Math.round(r1 + rDelta * i)},${Math.round(g1 + gDelta * i)},${Math.round(b1 + bDelta * i)})`;
+                colors.push(color)
+            }
+            return colors;
+        }
+        this.getBetween = (array) => {
+            let res:I_color[] = [];
+            let colors:I_color[] = []
+            let counts:number[] = []
+            for(let i = 0; i < array.length; i++){
+                let a = array[i];
+                let b = Array.isArray(a)?this.to_rgb(a):a
+                if(typeof b === 'string'){colors.push(b)}
+                else if(typeof b === 'number'){counts.push(b)}
+            }
+            for(let i = 0; i < colors.length - 1; i++){
+                const c1 = colors[i];
+                const c2 = colors[i + 1];
+                const count = counts[i];
+                res = [...res,this.between(c1,c2,count)]
+            }
+            return res
+        }
+        this.to_dark = (c, percent) => {
+            let [r, g, b] = this.to_array(c);
+            r = Math.round(r - (r * (percent / 100)))
+            g = Math.round(g - (g * (percent / 100)))
+            b = Math.round(b - (b * (percent / 100)))
+            const type:I_color_type = this.getType(c)
+            const key = 'to_' + type as 'to_array' | 'to_hex' | 'to_rgb'
+            const fn:any = (this as any)[key]
+            return fn([r, g, b])
+        }
+        this.to_light = (c, percent) => {
+            let [r, g, b] = this.to_array(c);
+            r = Math.round(r + ((255 - r) * (percent / 100)))
+            g = Math.round(g + ((255 - g) * (percent / 100)))
+            b = Math.round(b + ((255 - b) * (percent / 100)))
+            const type:I_color_type = this.getType(c)
+            const key = 'to_' + type as 'to_array' | 'to_hex' | 'to_rgb'
+            const fn:any = (this as any)[key]
+            return fn([r, g, b])
+        }
+        this.to_hex = (c) => { return `#${this.to_array(c).map((o) => this.number_to_hex(o)).join('')}`; },
+        this.to_rgb = (c) => { return `rgb(${this.to_array(c).toString()})`; }
+        this.brightness = (c, percent) => {
+            if (percent === 0) { return c }
+            if (percent < 0) { return this.to_dark(c, percent * -1) }
+            if (percent > 0) { return this.to_light(c, percent) }
+        }
+        this.log = (c) => {
+            for(let i = 0; i < c.length; i++){
+                let color = this.to_rgb(c[i]);
+                console.log(`%c ${this.reverse(color)}`, 'background: ' + color + '; color: #000');
+            }
+        }
+        this.getRandomRGB = (c1 = '#000',c2 = '#fff') => {
+            const array1 = this.to_array(c1)
+            const array2 = this.to_array(c2)
+            let r = GetRandomNumber(array1[0], array2[0]);
+            let g = GetRandomNumber(array1[1], array2[1]);
+            let b = GetRandomNumber(array1[2], array2[2]);
+            return this.to_rgb([r,g,b])
+        }
+        this.reverse = (c) => { return (this as any)['to_' + this.getType(c)](this.to_array(c).map((o) => 255 - o)) }
+    }
 }

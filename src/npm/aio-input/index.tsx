@@ -3485,3 +3485,26 @@ type AI_onChange<AI_type> =
     export const AIAcardion:FC<AI<'acardion'>> = (props)=><AIOInput {...props} type='acardion'/>
     export const AIList:FC<AI<'list'>> = (props)=><AIOInput {...props} type='list'/>
     export const AITable:FC<AI<'table'>> = (props)=><AIOInput {...props} type='table'/>
+
+    export type I_MonthCalendar = {date:number[],onClick?:(date:number[])=>void,dateAttrs?:(date:number[])=>any}
+    export const MonthCalendar:FC<I_MonthCalendar> = ({date,onClick = ()=>{},dateAttrs = ()=>({})})=>{
+        const DATE = new AIODate();
+        const [jalali] = useState<boolean>(DATE.isJalali(date));
+        const [monthStrings] = useState<string[]>(DATE.getMonths(jalali))
+        const [firstDayIndex] = useState<number>(DATE.getWeekDay([date[0], date[1], 1]).index);
+        const [monthDaysLength] = useState<number>(DATE.getMonthDaysLength(date))
+        function weekDays_layout(){return DATE.getWeekDays(true).map((o) => <div className="month-calendar-weekday">{o[0]}</div>)}
+        function spaces_layout(){return new Array(firstDayIndex).fill(0).map(() => <div className=""></div>)}
+        function cells_layout(){return new Array(monthDaysLength).fill(0).map((o: number, i: number) => cell_layout([date[0],date[1],i + 1]))}
+        function cell_layout(dateArray:number[]){
+            const attrs = AddToAttrs(dateAttrs(dateArray),{className:`month-calendar-day`,attrs:{onClick:() => onClick(dateArray)}})
+            return (<div {...attrs}>{dateArray[2]}</div>)
+        }
+        return (
+            <div className="month-calendar">
+                <div className="month-calendar-title">{monthStrings[date[1] - 1]}</div>
+                <div className="month-calendar-weekdays">{weekDays_layout()}</div>
+                <div className="month-calendar-days">{spaces_layout()} {cells_layout()}</div>
+            </div>
+        )
+    }
