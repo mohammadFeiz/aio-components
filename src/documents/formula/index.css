@@ -1,0 +1,13 @@
+.rule-engine{
+    color:#ddd;
+    background:#222;
+}
+.rule-engine .aio-input-tabs-option.active{
+    color:orange;
+}
+.rule-engine .aio-popup-body{
+    background:#333
+}
+.rule-engine .aio-input-select-option{
+    border-bottom:1px solid rgba(255,255,255,0.1)
+}
