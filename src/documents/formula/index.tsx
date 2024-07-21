@@ -13,7 +13,7 @@ type I_cell = string
 type I_mode = 'editor' | 'preview'
 type I_rule = {
     date: string,
-    texts: string[],
+    model: I_model,
     text: string,
     name: string,
     id: number
@@ -30,16 +30,39 @@ const Formula: FC = () => {
     const [history, setHistory] = useState<I_rule[]>(getHistory)
     function getRules(): I_rule[] {
         return [
-            { texts: ['text1', 'text2'], text: 'text', name: 'Rule1', id: 0, date: '1403/3/3' },
-            { texts: ['text1', 'text2'], text: 'text', name: 'Rule2', id: 1, date: '1403/3/3' },
-            { texts: ['text1', 'text2'], text: 'text', name: 'Rule3', id: 2, date: '1403/3/3' }
+            { 
+                
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                text: 'text', name: 'Rule1', id: 0, date: '1403/3/3' 
+            },
+            { 
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                text: 'text', name: 'Rule2', id: 1, date: '1403/3/3' 
+            },
+            { 
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                text: 'text', name: 'Rule3', id: 2, date: '1403/3/3' 
+            }
         ]
+    }
+    function selectRule(rule:I_rule){
+        changeModel(rule.model)
+        setSelectedRule(rule)
     }
     function getHistory(): I_rule[] {
         return [
-            { date: '1403/2/3 12:00', texts: ['text1', 'text2'], text: 'text', name: 'Rule1', id: 0 },
-            { date: '1403/3/3 12:00', texts: ['text1', 'text2'], text: 'text', name: 'Rule1', id: 0 },
-            { date: '1403/3/4 12:00', texts: ['text1', 'text2'], text: 'text', name: 'Rule1', id: 0 }
+            { 
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                date: '1403/2/3 12:00', text: 'text', name: 'Rule1', id: 0,
+            },
+            { 
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                date: '1403/3/3 12:00', text: 'text', name: 'Rule1', id: 0 
+            },
+            { 
+                model: {"field0-1-1": "rule1","field0-2-4-3": "text1","field0-2-7-2": "text2","field0-2-0-2": true,"field0-2-1-2": true}, 
+                date: '1403/3/4 12:00', text: 'text', name: 'Rule1', id: 0 
+            }
         ]
     }
     const modelRef = useRef(model);
@@ -50,7 +73,7 @@ const Formula: FC = () => {
         const { item } = dragData;
         const { field } = dropData;
         const newValue = (model[field] || '') + item.text;
-        setModel({ ...model, [field]: newValue })
+        changeModel({ ...model, [field]: newValue })
     }
     const [blocks, setBlocks] = useState<I_block[]>(
         [
@@ -60,14 +83,14 @@ const Formula: FC = () => {
                     { cells: ['rule', 'text(ruleName)'] },
                     {
                         rows: [
-                            { cells: ['no-loop', 'select(boolean)'] },
-                            { cells: ['lock-on-active', 'select(boolean)'] },
-                            { cells: ['when'] },
-                            { cells: ['indent', 'ruleFact:RuleFact('] },
-                            { cells: ['indent', 'indent', 'textarea(then)'] },
-                            { cells: ['indent', ')'] },
-                            { cells: ['then'] },
-                            { cells: ['indent', 'textarea(then)'] },
+                            { cells: ['indent','no-loop', 'select(boolean)'] },
+                            { cells: ['indent','lock-on-active', 'select(boolean)'] },
+                            { cells: ['indent','when'] },
+                            { cells: ['indent','indent', 'ruleFact:RuleFact('] },
+                            { cells: ['indent','indent', 'indent', 'textarea(then)'] },
+                            { cells: ['indent','indent', ')'] },
+                            { cells: ['indent','then'] },
+                            { cells: ['indent','indent', 'textarea(then)'] },
                         ]
                     },
                     { cells: ['end'] }
@@ -166,8 +189,13 @@ const Formula: FC = () => {
             </div>
         )
     }
+    function changeModel(newModel:I_model){
+        console.log(newModel)
+        setModel({...newModel})
+    }
     function changeModelByField(field: string, value: any) {
-        setModel({ ...model, [field]: value })
+        const model = modelRef.current
+        changeModel({ ...model, [field]: value })
     }
     function body_layout() {
         return (
@@ -182,29 +210,28 @@ const Formula: FC = () => {
                     )}
                 />
                 <div className="flex-col flex-1 p-12 gap-3 ofy-auto w-100">
-                    {blocks.map((o, i) => rows_layout(o.rows, [i], 0))}
+                    {blocks.map((o, i) => rows_layout(o.rows, [i]))}
                 </div>
             </div>
         )
     }
-    function rows_layout(rows: I_row[], nestedIndex: number[], level: number): ReactNode[] {
+    function rows_layout(rows: I_row[], nestedIndex: number[]): ReactNode[] {
         return rows.map((o: I_row, rowIndex: number) => {
             const newNestedIndex = [...nestedIndex, rowIndex]
             if (o.rows) {
-                return rows_layout(o.rows, newNestedIndex, level + 1)
+                return rows_layout(o.rows, newNestedIndex)
             }
             else if (o.cells) {
-                return row_layout(o, newNestedIndex, level)
+                return row_layout(o, newNestedIndex)
             }
             else { return null }
         })
     }
-    function row_layout(o: I_row, nestedIndex: number[], level: number) {
-        const indentSize = 16;
+    function row_layout(o: I_row, nestedIndex: number[]) {
         const { cells = [] } = o;
         if (!cells.length) { return null }
         return (
-            <div className="flex-row align-v" style={{ paddingLeft: indentSize * level }}>
+            <div className="flex-row align-v">
                 {cells_layout(cells, nestedIndex)}
                 {options_layout()}
             </div>
@@ -240,7 +267,11 @@ const Formula: FC = () => {
             return textarea_layout(field)
         }
         if (cell === 'indent') {
-            return (<div className="w-12 shrink-0"></div>)
+            return (
+                <div className="w-12 shrink-0 flex-row align-vh">
+                    <div className="w-1 h-100 bg-d-60"></div>
+                </div>
+            )
         }
         return (
             <div className="flex-row">{cell}</div>
@@ -249,29 +280,34 @@ const Formula: FC = () => {
     function select_layout(selectfield: string, listName: string) {
         const list = lists.find((o) => o.text === listName)
         const { options } = list
+        const model = modelRef.current
         let value = model[selectfield]
-        if (value === undefined) { value = options[0].value }
         return (
             <AIOInput
                 type='select' className='w-fit bg-l-5 brd-none' options={options} value={value}
                 onChange={(newValue) => changeModelByField(selectfield, newValue)}
+                validations={['required']} lang='en' showErrors={false}
             />
         )
     }
     function text_layout(field: string) {
+        const model = modelRef.current
         return (
             <AIOInput
                 type='text' className='w-fit bg-l-5 brd-none' value={model[field] || ''}
                 onChange={(newValue) => changeModelByField(field, newValue)}
+                validations={['required']} lang='en' showErrors={false}
             />
         )
     }
     function textarea_layout(field: string) {
         const dragAttrs = Drag.getDropAttrs({ field });
+        const model = modelRef.current
         return (
             <AIOInput
                 attrs={{ ...dragAttrs }} type='textarea' className='flex-1 bg-l-5 brd-none' inputAttrs={{ className: 'resize-v' }} value={model[field] || ''}
                 onChange={(newValue) => changeModelByField(field, newValue)} autoHighlight={false}
+                validations={['required']} lang='en' showErrors={false}
             />
         )
     }
@@ -290,14 +326,14 @@ const Formula: FC = () => {
             {
                 !selectedRule &&
                 <div className="flex-col align-h flex-1 p-12">
-                    <div className="flex-col align-h h-100 p-12 br-12 w-100" style={{border:'1px solid orange'}}>
+                    <div className="flex-col align-h h-100 p-12 br-12 w-100">
                         <div className="fs-24 m-b-12" style={{ color: 'orange' }}>Rules</div>
-                        <div className="flex-1 ofy-auto flex-col gap-12 w-100 align-h">
+                        <div className="flex-1 ofy-auto flex-col gap-12 w-100 align-h p-12">
                             {
                                 rules.map((o) => {
                                     return (
-                                        <div className="h-72 w-240 flex-col align-vh bg-d-40 br-12 gap-6" style={{boxShadow:'2px 2px 4px 1px rgba(0,0,0,0.7)'}}>
-                                            <div className="msf">{o.name}</div>
+                                        <div className="rule-button" onClick={()=>selectRule(o)}>
+                                            <div className="">{o.name}</div>
                                             <div className="op-60 fs-p70">{o.date}</div>
                                         </div>
                                     )
