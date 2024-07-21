@@ -696,6 +696,7 @@ function Input() {
         }
     }
     function click() {
+        if(rootProps.autoHighlight === false){return}
         if (temp.clicked) { return }
         temp.clicked = true;
         $(dom.current).focus().select();
@@ -3375,7 +3376,7 @@ type AI_isDropdown = {caret?: boolean | RN,popover?: AI_popover,open?: boolean}
 type AI_isMultiple = {multiple?: boolean | number,maxLength?: number}
 type AI_hasKeyboard = {
     blurChange?: boolean,filter?: string[],inputAttrs?: any,justNumber?: boolean | (string[]),
-    maxLength?: number,swip?: number,spin?: boolean,
+    maxLength?: number,swip?: number,spin?: boolean,autoHighlight?:boolean
 }
 type AI_isTable = {
     addText?:RN | ((value:any)=>RN),

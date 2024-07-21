@@ -1,6 +1,36 @@
+.rule-engine-nav{
+    height:36px;
+    display:flex;
+    align-items: center;
+    padding:0 19px;
+}
+.rule-engine-nav button{
+    background:none;
+    color:orange;
+}
+.rule-engine-app-title{
+    color:orange;
+    font-weight: bold;
+    font-size:16px;
+    letter-spacing: 3px;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif
+}
+.rule-engine-rule-name{
+    flex:1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.rule-engine-save{
+    background:none;
+    color:orange;
+}
 .rule-engine{
     color:#ddd;
     background:#222;
+}
+.rule-engine .aio-input-tabs{
+    background:rgba(0,0,0,0.2);
 }
 .rule-engine .aio-input-tabs-option.active{
     color:orange;
@@ -10,4 +40,28 @@
 }
 .rule-engine .aio-input-select-option{
     border-bottom:1px solid rgba(255,255,255,0.1)
+}
+.rule-engine .aio-popup-header{
+    background:#333;
+    color:#fff;
+    border-bottom:1px solid rgba(0,0,0,0.4)
+}
+.rule-engine .aio-popup-body{
+    border-top:1px solid rgba(255,255,255,0.2);
+    border-bottom:1px solid rgba(0,0,0,0.4);
+}
+.rule-engine .aio-popup-footer{
+    background:#333;
+    border-top:1px solid rgba(255,255,255,0.2)
+}
+.rule-engine .aio-popup-footer button{
+    color:orange;
+    background: none;
+    padding:3px 24px;
+    border-radius:4px;
+}
+.rule-engine .aio-popup-footer button.active{
+    background:#ffa500;
+    color:#000;
+    border-color:#ffb938 #c78408 #c78408 #ffb938
 }

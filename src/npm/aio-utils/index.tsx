@@ -91,6 +91,7 @@ export class DragClass {
         }
         this.getDropAttrs = (dropData) => {
             return {
+                onDragOver:(e:any)=>e.preventDefault(),
                 onDrop: (e: any) => callback(this.dragData, dropData)
             }
         }

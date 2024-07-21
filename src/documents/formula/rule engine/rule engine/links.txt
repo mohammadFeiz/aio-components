@@ -4,3 +4,74 @@ https://docs.drools.org/7.70.0.Final/drools-docs/html_single/
 
 Ali Mojtahedi  4:48 ب.ظ
 نمونه https://github.com/kiegroup/drools/blob/main/drools-examples/src/main/resources/org/drools/examples/shopping/Shopping.drl
+
+کارت درسته محمد عزیز  ادامه بده
+
+Ali Mojtahedi  3:23 ب.ظ
+ولی یه جاش رو برعکس زدی در واقع $ دارها متغییر دلخواه اند و اونطرفش باید اجباری باشه برعکس شده
+
+Ali Mojtahedi  3:24 ب.ظ
+$cost رو مثلا شاید طرف زد $c
+
+Ali Mojtahedi  3:25 ب.ظ
+ولی اونور اسامی تو فایل هست مثلا costOfGoods
+
+Ali Mojtahedi  3:26 ب.ظ
+rule  "s0023_2"
+   no-loop 
+   when  
+    ruleFact : RuleFact( $costOfGood: costOfGood !=null ,  costOfGood &gt;= 10000000.0 &amp;&amp; costOfGood < 30000000.0 , $f : effectiveFormula ,$prices : prices );
+   then  	 
+          $prices.put("s0023", 60000.0);
+	 	   ruleFact.setEffectiveFormula($f + ", 10000000<=costOfGood<30000000");
+          update(ruleFact); 
+end ;
+میتونم اینو اینجوری بزنم
+
+Ali Mojtahedi  3:27 ب.ظ
+rule  "s0023_2"
+   no-loop 
+   when  
+    ruleFact : RuleFact( $c: costOfGood !=null ,  costOfGood &gt;= 10000000.0 &amp;&amp; costOfGood < 30000000.0 , $f : effectiveFormula ,$prices : prices );
+   then  	 
+          $prices.put("s0023", 60000.0);
+	 	   ruleFact.setEffectiveFormula($f + ", 10000000<=$c<30000000");
+          update(ruleFact); 
+end ;
+ولی costOfGood بدون دلار طرف راست قابل تغییر نیست
+
+Ali Mojtahedi  3:28 ب.ظ
+اگر بخوای میتونی خودت ثابتش کنی که اونرو هم نتونه عوض کنه
+
+ای پی آی های مورد نیاز
+ای پی آی دریافت کلیه ی رول های ذخیره شده 
+response:{
+    rules:{
+        id:number, // آی دی رول
+        name:string, // نام رول
+        text:string // متن رول
+    }[] //آرایه ای از رول ها حاوی آی دی رول نام رول و متن رول
+}
+هر رول یک نام و یک آی دی و یک متن رول داره. این متن رول آخرین ورژن دخیره شده ی کاربره
+
+ای پی آی ایجاد رول 
+body:{
+    ruleText:string //متن رول
+}
+response:{
+    ruleId:number
+}
+
+ای پی آی ویرایش رول 
+body:{
+    ruleId:number,//آی دی رول
+    ruleText:string //متن رول
+}
+
+ای پی آی دریافت تاریخچه رول با آی دی .
+body:{
+    ruleId:number //ای دی رول
+}
+response:{
+    history:string[] //آرایه ای از تاریخچه این رول
+}
