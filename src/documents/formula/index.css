@@ -91,3 +91,29 @@
     color:#000;
     border-color:#ffb938 #c78408 #c78408 #ffb938
 }
+.rule-engine-border-left{
+    border-left:2px solid rgba(255,255,255,0.1);
+}
+.rule-engine-border-right{
+    border-right:2px solid rgba(0,0,0,0.4);
+}
+.rule-engine-options-table{
+    background:#222;
+    border:none;
+    border-radius:8px;
+    overflow:hidden
+}
+.rule-engine-options-table .aio-input-table-header{
+    background:rgba(255,255,255,0.1) !important;
+    color:#aaa;
+    border-bottom:none;
+}
+.rule-engine-options-table .aio-input-table-row{
+    background:rgba(0,0,0,0.3) !important;
+}
+.rule-engine-options-table .aio-input-table-toolbar{
+    background:rgba(0,0,0,0.3) !important;
+}
+.rule-engine-options-table .aio-input-table-cell .aio-input{
+    background:none
+}

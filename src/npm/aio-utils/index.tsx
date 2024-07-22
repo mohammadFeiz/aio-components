@@ -2420,7 +2420,7 @@ export class AIOColors {
             const fn:any = (this as any)[key]
             return fn([r, g, b])
         }
-        this.to_hex = (c) => { return `#${this.to_array(c).map((o) => this.number_to_hex(o)).join('')}`; },
+        this.to_hex = (c) => { return `#${this.to_array(c).map((o) => this.number_to_hex(o)).join('')}`; }
         this.to_rgb = (c) => { return `rgb(${this.to_array(c).toString()})`; }
         this.brightness = (c, percent) => {
             if (percent === 0) { return c }

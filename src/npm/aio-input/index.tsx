@@ -573,7 +573,7 @@ const Tag:FC<AI_Tag> = (props) => {
 }
 function Input() {
     let { rootProps, types, showPassword,options }: AI_context = useContext(AICTX)
-    let { type } = rootProps;
+    let { type,delay = 500 } = rootProps;
     let {
         min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], disabled, placeholder,
         inputAttrs, spin = true, justify
@@ -621,7 +621,7 @@ function Input() {
         temp.atimeout = setTimeout(() => {
             let v = getValidValue();
             if (v !== value) { setValue(v) }
-        }, 500);
+        }, delay);
     }
     useEffect(() => {
         update()
@@ -692,7 +692,7 @@ function Input() {
         setValue(value);
         if (!blurChange && onChange) {
             clearTimeout(temp.btimeout);
-            temp.btimeout = setTimeout(() => onChange(value), 500);
+            temp.btimeout = setTimeout(() => onChange(value), delay);
         }
     }
     function click() {
@@ -3376,7 +3376,7 @@ type AI_isDropdown = {caret?: boolean | RN,popover?: AI_popover,open?: boolean}
 type AI_isMultiple = {multiple?: boolean | number,maxLength?: number}
 type AI_hasKeyboard = {
     blurChange?: boolean,filter?: string[],inputAttrs?: any,justNumber?: boolean | (string[]),
-    maxLength?: number,swip?: number,spin?: boolean,autoHighlight?:boolean
+    maxLength?: number,swip?: number,spin?: boolean,autoHighlight?:boolean,delay?:number
 }
 type AI_isTable = {
     addText?:RN | ((value:any)=>RN),
