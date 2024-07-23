@@ -75,3 +75,18 @@ body:{
 response:{
     history:string[] //آرایه ای از تاریخچه این رول
 }
+
+
+
+
+
+
+
+
+nazarate gholamnejad
+
+
+dar kenare variables bayad list rules bashe betone rule drag kone
+mode draft bayad dide beshe va mode Final
+rule ha bayad daste bandi beshan
+dokmeye validate bayad ezafe beshe ta ba server check kone ke ta injaye kar valid hast ya na 
