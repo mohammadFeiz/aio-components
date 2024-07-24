@@ -10,5 +10,8 @@ declare module "animejs/lib/anime.es.js" {
     const a:any;
     export default a
 }
-
+declare module "prismjs"{
+    const a:any;
+    export default a;
+}
 

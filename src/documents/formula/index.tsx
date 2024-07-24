@@ -3,14 +3,18 @@ import './index.css';
 import './style.css';
 import AIOInput, { AISelect, AITable, AITabs, AIText } from "../../npm/aio-input";
 import Icon from "@mdi/react";
-import { mdiArrowExpandHorizontal, mdiCheckBold, mdiClose, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiDotsVertical, 
-    mdiFileCode, mdiHistory, mdiHome, mdiPlusCircleOutline, mdiPlusThick } from "@mdi/js";
+import {
+    mdiArrowExpandHorizontal, mdiCheckBold, mdiClose, mdiContentSave, mdiDelete, mdiDotsHorizontal, mdiDotsVertical,
+    mdiFileCode, mdiHistory, mdiHome, mdiPlusCircleOutline, mdiPlusThick
+} from "@mdi/js";
 import { AIODate, DragClass, GetRandomNumber } from "../../npm/aio-utils";
 import AIOPopup from "../../npm/aio-popup";
+import Code from "../../code";
 type I_template = { id: number, rows: I_template_row[], name: string };
 type I_template_row = { cells: I_template_cell[] }
 type I_template_cell = string
-
+type I_dynamic = { [key: string]: I_dynamic_row }
+type I_dynamic_row = { [key: string]: { field: string, value: string } }
 const mockTemplate: I_template = {
     name: 'template1',
     id: 1235565,
@@ -44,7 +48,7 @@ type I_model = any
 type I_rule = {
     date: string,
     model: I_model,
-    text: string,
+    finalCode: string,
     name: string,
     id: number,
     templateId: number,
@@ -61,14 +65,20 @@ type I_CTX = {
     selectRule: (rule: I_rule | undefined) => void,
     popup: AIOPopup,
     templates: I_template[],
-    changeTemplates:(newTemplates:I_template[])=>void,
-    trans:(v:string)=>string,
-    removeRule:(id:number)=>void,
-    removeTemplate:(id:number)=>void,
-    addRule:(name:string,templateId:number)=>boolean,
-    selectedVariables:I_variable[],
-    changeSelectedVariables:(newVariables:I_variable[])=>void,
-    submitRuleChange:()=>void
+    changeTemplates: (newTemplates: I_template[]) => void,
+    trans: (v: string) => string,
+    removeRule: (id: number) => void,
+    removeTemplate: (id: number) => void,
+    addRule: (name: string, templateId: number) => boolean,
+    selectedVariables: I_variable[],
+    changeSelectedVariables: (newVariables: I_variable[]) => void,
+    submitRuleChange: () => void,
+    getFieldByIndex: (rowIndex: number, cellIndex: number) => string,
+    getIndexByField: (field: string) => { rowIndex: number, cellIndex: number, starter: string },
+    getDynamicByModel: (model: I_model) => I_dynamic,
+    generatePreview: (model: I_model, template: I_template) => string,
+    selectedTemplate?:I_template,
+    changeSelectedTemplate:(template:I_template)=>void
 }
 
 const CTX = createContext({} as any)
@@ -76,100 +86,143 @@ const RuleEngine: FC = () => {
     const [rules, setRules] = useState<I_rule[]>(getRules);
     const [templates, setTemplates] = useState<I_template[]>(getTemplates)
     const [selectedRule, setSelectedRule] = useState<I_rule>()
-    const [selectedVariables,setSelectedVariables] = useState<I_variable[]>([])
+    const [selectedVariables, setSelectedVariables] = useState<I_variable[]>([])
+    const [selectedTemplate,setSelectedTemplate] = useState<I_template>()
     const [popup] = useState<AIOPopup>(new AIOPopup())
     const [model, setModel] = useState<I_model>({})
     const [history, setHistory] = useState<I_rule[]>(getHistory)
     function getTemplates(): I_template[] {
         return [mockTemplate]
     }
-    function trans(v:string){
-        const dic:{[key:string]:string} = {
+    function trans(v: string) {
+        const dic: { [key: string]: string } = {
 
         }
         return dic[v] || v
+    }
+    function getFieldByIndex(rowIndex: number, cellIndex: number) {
+        return `field-${rowIndex}-${cellIndex}`
+    }
+    function getIndexByField(field: string): { rowIndex: number, cellIndex: number, starter: string } {
+        const [starter, rowIndex, cellIndex] = field.split('-')
+        return { rowIndex: +rowIndex, cellIndex: +cellIndex, starter }
+    }
+    function getDynamicByModel(model: I_model) {
+        let res: I_dynamic = {}
+        for (let prop in model) {
+            const { rowIndex, cellIndex } = getIndexByField(prop);
+            let row: I_dynamic_row = res['a' + rowIndex] || {};
+            row['a' + cellIndex] = { field: prop, value: model[prop] }
+            res['a' + rowIndex] = row;
+        }
+        return res
+    }
+    function generatePreview(model: I_model, template: I_template): string {
+        let preview = '\n'
+        let dynamic_dic = getDynamicByModel(model);
+        for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
+            const row = template.rows[rowIndex]
+            for (let cellIndex = 0; cellIndex < row.cells.length; cellIndex++) {
+                const cell = row.cells[cellIndex]
+                if (dynamic_dic['a' + rowIndex] && dynamic_dic['a' + rowIndex]['a' + cellIndex]) {
+                    const { value } = dynamic_dic['a' + rowIndex]['a' + cellIndex]
+                    preview += value + ' '
+                }
+                else if (cell === 'indent') {
+                    preview += '  '
+                }
+                else {
+                    preview += cell + ' '
+                }
+            }
+            preview += '\n'
+        }
+        return preview
     }
     function getRules(): I_rule[] {
         return [
             {
                 model: {},
-                text: 'text', name: 'Rule1', id: 0, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
+                finalCode: 'text', name: 'Rule1', id: 0, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
             },
             {
                 model: {},
-                text: 'text', name: 'Rule2', id: 1, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
+                finalCode: 'text', name: 'Rule2', id: 1, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
             },
             {
                 model: {},
-                text: 'text', name: 'Rule3', id: 2, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
+                finalCode: 'text', name: 'Rule3', id: 2, date: '1403/3/3', templateId: 1235565, variables: [{ text: '$c' }, { text: '$w' }]
             }
         ]
     }
     function selectRule(rule: I_rule | undefined) {
-        if (rule) { 
-            changeModel(rule.model) 
-            changeSelectedVariables(rule.variables || [])
+        if (rule) {
+            changeModel(rule.model)
+            changeSelectedVariables(rule.variables || []);
+            const template:I_template | undefined = templates.find((o)=>o.id === rule.templateId)
+            if(template){changeSelectedTemplate(template)}
+            else {console.error('error543467344')}
         }
-        setSelectedRule(rule)
+        setSelectedRule(JSON.parse(JSON.stringify(rule)))
     }
-    function addRule(name:string,templateId:number){
+    function addRule(name: string, templateId: number) {
         const DATE = new AIODate();
-        const newRule:I_rule = {variables:[],text:'',templateId,name,model:{},id:GetRandomNumber(100000,900000),date:DATE.getDateByPattern(DATE.getToday(),'{year}/{month}/{day} {hour}:{minute}')}
-        setRules([...rules,newRule])
+        const newRule: I_rule = { variables: [], finalCode: '', templateId, name, model: {}, id: GetRandomNumber(100000, 900000), date: DATE.getDateByPattern(DATE.getToday(), '{year}/{month}/{day} {hour}:{minute}') }
+        setRules([...rules, newRule])
         return true
     }
-    function removeRule(id:number){
-        const rule:I_rule | undefined = rules.find((o)=>o.id === id);
-        if(!rule){return}
+    function removeRule(id: number) {
+        const rule: I_rule | undefined = rules.find((o) => o.id === id);
+        if (!rule) { return }
         popup.addConfirm({
-            title:'Remove Rule',
-            subtitle:rule.name,
-            text:'َAre You Sure Want To Remove This Rule?',
-            onSubmit:async ()=>{
-                setRules(rules.filter((o)=>o.id !== id));
+            title: 'Remove Rule',
+            subtitle: rule.name,
+            text: 'َAre You Sure Want To Remove This Rule?',
+            onSubmit: async () => {
+                setRules(rules.filter((o) => o.id !== id));
                 return true
             },
-            onCansel:()=>{
+            onCansel: () => {
                 popup.removeModal()
             }
         })
     }
-    function submitRuleChange(){
+    function submitRuleChange() {
         const DATE = new AIODate();
-        if(!selectedRule){return}
-        const newRule:I_rule = {
+        if (!selectedRule) { return }
+        const newRule: I_rule = {
             ...selectedRule,
-            variables:selectedVariablesRef.current,
-            model:modelRef.current,
-            date:DATE.getDateByPattern(DATE.getToday(),'{year}/{month}/{day} {hour}:{minute}')
+            variables: selectedVariablesRef.current,
+            model: modelRef.current,
+            date: DATE.getDateByPattern(DATE.getToday(), '{year}/{month}/{day} {hour}:{minute}')
         }
-        setRules(rules.map((o)=>o.id === selectedRule.id?newRule:o));
+        setRules(rules.map((o) => o.id === selectedRule.id ? newRule : o));
         setSelectedRule(undefined)
     }
-    function removeTemplate(id:number){
-        const template:I_template | undefined = templates.find((o)=>o.id === id);
-        if(!template){return}
+    function removeTemplate(id: number) {
+        const template: I_template | undefined = templates.find((o) => o.id === id);
+        if (!template) { return }
         popup.addConfirm({
-            title:'Remove Template',
-            subtitle:template.name,
-            text:'َAre You Sure Want To Remove This Template?',
-            onSubmit:async ()=>{
-                const ruleWithThisTemplate:I_rule | undefined = rules.find((o)=>o.templateId === id);
-                if(!!ruleWithThisTemplate){
+            title: 'Remove Template',
+            subtitle: template.name,
+            text: 'َAre You Sure Want To Remove This Template?',
+            onSubmit: async () => {
+                const ruleWithThisTemplate: I_rule | undefined = rules.find((o) => o.templateId === id);
+                if (!!ruleWithThisTemplate) {
                     popup.addSnackebar({
-                        type:'error',
-                        text:'you cannot remove this template',
-                        subtext:'There is some rules that use this template',
-                        verticalAlign:'start',
-                        horizontalAlign:'end',
-                        attrs:{style:{maxWidth:360,background:'#111',borderRadius:12,border:'2px solid #555',fontSize:16}}
+                        type: 'error',
+                        text: 'you cannot remove this template',
+                        subtext: 'There is some rules that use this template',
+                        verticalAlign: 'start',
+                        horizontalAlign: 'end',
+                        attrs: { style: { maxWidth: 360, background: '#111', borderRadius: 12, border: '2px solid #555', fontSize: 16 } }
                     })
                     return false;
                 }
-                setTemplates(templates.filter((o)=>o.id !== id));
+                setTemplates(templates.filter((o) => o.id !== id));
                 return true
             },
-            onCansel:()=>{
+            onCansel: () => {
                 popup.removeModal()
             }
         })
@@ -178,15 +231,15 @@ const RuleEngine: FC = () => {
         return [
             {
                 model: {},
-                date: '1403/2/3 12:00', text: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
+                date: '1403/2/3 12:00', finalCode: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
             },
             {
                 model: {},
-                date: '1403/3/3 12:00', text: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
+                date: '1403/3/3 12:00', finalCode: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
             },
             {
                 model: {},
-                date: '1403/3/4 12:00', text: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
+                date: '1403/3/4 12:00', finalCode: 'text', name: 'Rule1', id: 0, templateId: 0, variables: [{ text: '$c' }, { text: '$w' }]
             }
         ]
     }
@@ -195,7 +248,7 @@ const RuleEngine: FC = () => {
     const selectedVariablesRef = useRef(selectedVariables);
     selectedVariablesRef.current = selectedVariables
     const [Drag] = useState<DragClass>(new DragClass({ callback: onDrag }))
-    function changeTemplates(newTemplates:I_template[]){
+    function changeTemplates(newTemplates: I_template[]) {
         setTemplates([...newTemplates]);
     }
     function onDrag(dragData: any, dropData: any) {
@@ -205,24 +258,24 @@ const RuleEngine: FC = () => {
         const newValue = (model[field] || '') + item.text;
         changeModel({ ...model, [field]: newValue })
     }
-
     function changeModel(newModel: I_model) {
+        if (selectedTemplate && selectedRule) {
+            const preview = generatePreview(newModel, selectedTemplate);
+            const newSelectedRule: I_rule = { ...selectedRule, finalCode: preview }
+            setSelectedRule(newSelectedRule)
+        }
         setModel({ ...newModel })
     }
-    function changeSelectedVariables(newVariables: I_variable[]) {
-        setSelectedVariables([...newVariables])
-    }
-    function changeModelByField(field: string, value: any) {
-        const model = modelRef.current
-        changeModel({ ...model, [field]: value })
-    }
-
-    function getContext(): I_CTX { 
-        return { 
+    function changeSelectedVariables(newVariables: I_variable[]) {setSelectedVariables([...newVariables])}
+    function changeSelectedTemplate(template: I_template) {setSelectedTemplate(template)}
+    function changeModelByField(field: string, value: any) {changeModel({ ...modelRef.current, [field]: value })}
+    function getContext(): I_CTX {
+        return {
             rules, selectRule, selectedRule, popup, Drag, model: modelRef.current, changeModelByField, history, templates,
-            changeTemplates,trans,removeRule,removeTemplate,addRule,submitRuleChange,
-            selectedVariables:selectedVariablesRef.current,changeSelectedVariables
-        } 
+            changeTemplates, trans, removeRule, removeTemplate, addRule, submitRuleChange, getFieldByIndex, getIndexByField,
+            selectedVariables: selectedVariablesRef.current, changeSelectedVariables, getDynamicByModel, generatePreview,
+            selectedTemplate,changeSelectedTemplate
+        }
     }
     return (
         <CTX.Provider value={getContext()}>
@@ -235,35 +288,35 @@ const RuleEngine: FC = () => {
     )
 }
 export default RuleEngine
-const AddRule:FC<{onSubmit:(name:string,templateId:number)=>void}> = ({onSubmit})=>{
-    const {templates}:I_CTX = useContext(CTX);
-    const [name,setName] = useState<string>('')
-    const [templateId,setTemplateId] = useState<number>();
-    const [errors,setErrors] = useState<any>({})
+const AddRule: FC<{ onSubmit: (name: string, templateId: number) => void }> = ({ onSubmit }) => {
+    const { templates }: I_CTX = useContext(CTX);
+    const [name, setName] = useState<string>('')
+    const [templateId, setTemplateId] = useState<number>();
+    const [errors, setErrors] = useState<any>({})
     return (
         <div className="add-rule">
             <div className="add-rule-label">Rule Name</div>
-            <AIText 
-                value={name} onChange={(v:string)=>setName(v)} validations={['required']} lang='en'
-                reportError={(error)=>setErrors({...errors,name:error})}
+            <AIText
+                value={name} onChange={(v: string) => setName(v)} validations={['required']} lang='en'
+                reportError={(error) => setErrors({ ...errors, name: error })}
             />
             <div className="add-rule-label">Rule Template</div>
             <AISelect
                 options={templates}
-                subtext={templateId !== undefined?templateId:undefined}
+                subtext={templateId !== undefined ? templateId : undefined}
                 validations={['required']}
                 value={templateId}
                 option={{
-                    text:'option.name',
-                    value:'option.id',
-                    subtext:(option:any)=>option.id
+                    text: 'option.name',
+                    value: 'option.id',
+                    subtext: (option: any) => option.id
                 }}
-                popover={{fitHorizontal:true}}
-                onChange={(templateId)=>setTemplateId(templateId)}
-                reportError={(error)=>setErrors({...errors,template:error})}
+                popover={{ fitHorizontal: true }}
+                onChange={(templateId) => setTemplateId(templateId)}
+                reportError={(error) => setErrors({ ...errors, template: error })}
             />
             <div className="msf"></div>
-            <button type='button' disabled={!!errors.name || !!errors.template} onClick={()=>onSubmit(name,templateId as number)}>Add Rule</button>
+            <button type='button' disabled={!!errors.name || !!errors.template} onClick={() => onSubmit(name, templateId as number)}>Add Rule</button>
         </div>
     )
 }
@@ -292,7 +345,7 @@ const RulePage: FC = () => {
     )
 }
 const Nav: FC = () => {
-    const { selectedRule, selectRule,trans }: I_CTX = useContext(CTX)
+    const { selectedRule, selectRule, trans }: I_CTX = useContext(CTX)
     return (
         <nav className='rule-engine-nav'>
             <div className='rule-engine-app-title'>RULE ENGINE</div>
@@ -311,34 +364,34 @@ const Nav: FC = () => {
     )
 }
 const Variables: FC = () => {
-    const { popup,selectedRule, Drag,selectedVariables,changeSelectedVariables }: I_CTX = useContext(CTX);
-    function removeVariable(index:number){
+    const { popup, selectedRule, Drag, selectedVariables, changeSelectedVariables }: I_CTX = useContext(CTX);
+    function removeVariable(index: number) {
         popup.addConfirm({
-            title:'Remove Variable',
-            text:'Are you sure want to remove this variable?',
-            subtitle:selectedVariables[index].text,
-            onSubmit:async ()=>{
-                changeSelectedVariables(selectedVariables.filter((o,i)=>i !== index))
+            title: 'Remove Variable',
+            text: 'Are you sure want to remove this variable?',
+            subtitle: selectedVariables[index].text,
+            onSubmit: async () => {
+                changeSelectedVariables(selectedVariables.filter((o, i) => i !== index))
                 return true
             }
         })
     }
-    function addVariableModal(){
+    function addVariableModal() {
         popup.addPrompt({
-            title:'Add Variable',
-            text:'inter variable',
-            onSubmit:async (text)=>{
-                changeSelectedVariables([...selectedVariables,{text}])
+            title: 'Add Variable',
+            text: 'inter variable',
+            onSubmit: async (text) => {
+                changeSelectedVariables([...selectedVariables, { text }])
                 return true
             }
         })
     }
-    function item_layout(item: I_variable,index:number) {
+    function item_layout(item: I_variable, index: number) {
         return (
             <div key={item.text} className="jflex-row jp-6 jbrd-c-5 jflex-row jalign-v" {...Drag.getDragAttrs({ item })}>
                 <div className="jflex-1">{item.text}</div>
-                <div className="jw-24 jh-24 jflex-row jalign-vh" onClick={()=>removeVariable(index)}>
-                    <Icon path={mdiClose} size={0.7}/>
+                <div className="jw-24 jh-24 jflex-row jalign-vh" onClick={() => removeVariable(index)}>
+                    <Icon path={mdiClose} size={0.7} />
                 </div>
             </div>
         )
@@ -346,7 +399,7 @@ const Variables: FC = () => {
     function hedaer_layout() {
         return (
             <div className="msf jflex-row jalign-v jp-6 jalign-vh">
-                <button type='button' className='jflex-row jalign-v' style={{ color: 'orange', background: 'none' }} onClick={()=>addVariableModal()}>
+                <button type='button' className='jflex-row jalign-v' style={{ color: 'orange', background: 'none' }} onClick={() => addVariableModal()}>
                     <Icon path={mdiPlusThick} size={0.7} />Add Variable
                 </button>
             </div>
@@ -356,22 +409,23 @@ const Variables: FC = () => {
         if (!selectedRule) { return null }
         return (
             <div className="jflex-col jgap-3 jp-3 jflex-1 jofy-auto">
-                {selectedVariables.map((o: I_variable,i:number) => item_layout(o,i))}
+                {selectedVariables.map((o: I_variable, i: number) => item_layout(o, i))}
             </div>
         )
     }
     return (<>{hedaer_layout()} {body_layout()}</>)
 }
-type I_mode = 'editor' | 'preview'
+type I_codeTab = 'editor' | 'preview'
 const RuleCode: FC = () => {
-    const { selectedRule, templates,trans,submitRuleChange }: I_CTX = useContext(CTX)
-    const [template] = useState<I_template>(getTemplate)
-    function getTemplate(): I_template {
-        return templates.find((o: I_template) => o.id === selectedRule?.templateId) as I_template
+    const { selectedRule, trans, submitRuleChange,selectedTemplate }: I_CTX = useContext(CTX)
+    const template:I_template = selectedTemplate as I_template
+    const [tab, setTab] = useState<I_codeTab>('editor')
+    function changeTab(tab: I_codeTab) {
+        setTab(tab)
     }
-    const [mode, setMode] = useState<I_mode>('editor')
     if (!selectedRule) { return null }
-    function template_rows_layout(): ReactNode[] {
+    function template_rows_layout(): ReactNode {
+        if (tab !== 'editor') { return null }
         const { rows } = template;
         return rows.map((row: I_template_row, rowIndex: number) => template_row_layout(row, rowIndex))
     }
@@ -395,10 +449,14 @@ const RuleCode: FC = () => {
             </div>
         )
     }
+    function preview_layout() {
+        if (tab !== 'preview' || !selectedRule) { return null }
+        return Code(selectedRule.finalCode)
+    }
     return (
         <div className="jflex-col jw-100 rule-engine-border-left rule-engine-border-right">
             <AITabs
-                value={mode} onChange={(mode) => setMode(mode)} options={[{ text: 'Editor', value: 'editor' }, { text: 'Preview', value: 'preview' }]}
+                value={tab} onChange={(tab) => changeTab(tab)} options={[{ text: 'Editor', value: 'editor' }, { text: 'Preview', value: 'preview' }]}
                 before={(
                     <button className='rule-engine-save jalign-v jflex-row jgap-6 jfs-14 jbold' onClick={submitRuleChange}>
                         <Icon path={mdiContentSave} size={1} />{trans('Save')}
@@ -407,20 +465,21 @@ const RuleCode: FC = () => {
             />
             <div className="jflex-col jflex-1 jp-12 jgap-3 jofy-auto jw-100">
                 {template_rows_layout()}
+                {preview_layout()}
             </div>
         </div>
     )
 }
 
 const CodeCell: FC<{ cell: string, rowIndex: number, cellIndex: number }> = ({ cell, rowIndex, cellIndex }) => {
-    const { Drag, model, changeModelByField }: I_CTX = useContext(CTX);
+    const { Drag, model, changeModelByField, getFieldByIndex }: I_CTX = useContext(CTX);
     function select_layout(selectfield: string, options: { text: string, value: any }[]) {
         let value = model[selectfield]
         return (
             <AIOInput
                 type='select' className='jw-fit jbg-l-5 jbrd-none' options={options} value={value}
                 onChange={(newValue) => changeModelByField(selectfield, newValue)}
-                option={{text:'option',value:'option'}}
+                option={{ text: 'option', value: 'option' }}
                 validations={['required']} lang='en' showErrors={false}
             />
         )
@@ -444,7 +503,7 @@ const CodeCell: FC<{ cell: string, rowIndex: number, cellIndex: number }> = ({ c
             />
         )
     }
-    const field = `field-${rowIndex}-${cellIndex}`
+    const field = getFieldByIndex(rowIndex, cellIndex)
     if (cell.indexOf('select(') === 0) {
         const optionsString = cell.slice(7, cell.length - 1);
         const options = JSON.parse(optionsString)
@@ -457,7 +516,7 @@ const CodeCell: FC<{ cell: string, rowIndex: number, cellIndex: number }> = ({ c
 }
 
 const History: FC = () => {
-    const { history,trans }: I_CTX = useContext(CTX);
+    const { history, trans }: I_CTX = useContext(CTX);
     function header_layout() {
         return (
             <div className="msf jflex-row jalign-v jp-6 jalign-vh jbg-d-20 jfs-14 jgap-6" style={{ color: 'orange' }}>
@@ -485,17 +544,17 @@ const History: FC = () => {
     return (<div className="jw-204 jflex-col jshrink-0 rule-engine-border-left">{header_layout()} {items_layout()}</div>)
 }
 const Home: FC = () => {
-    const { popup,rules, templates, selectRule,changeTemplates,removeTemplate,removeRule,addRule }: I_CTX = useContext(CTX);
+    const { popup, rules, templates, selectRule, changeTemplates, removeTemplate, removeRule, addRule }: I_CTX = useContext(CTX);
     const [templateToEdit, setTemplateToEdit] = useState<I_template | undefined>()
     const [templateToAdd, setTemplateToAdd] = useState<boolean>(false)
-    function addRuleModal(){
+    function addRuleModal() {
         popup.addModal({
-            header:{title:'AddRule'},
-            position:'center',
-            body:()=><AddRule onSubmit={async (name,templateId)=>{
-                const res = await addRule(name,templateId);
-                if(res){popup.removeModal()}
-            }}/>
+            header: { title: 'AddRule' },
+            position: 'center',
+            body: () => <AddRule onSubmit={async (name, templateId) => {
+                const res = await addRule(name, templateId);
+                if (res) { popup.removeModal() }
+            }} />
         })
     }
     function part_header_layout(label: string, onAdd: () => void) {
@@ -509,7 +568,7 @@ const Home: FC = () => {
     function part_body_layout(items: any[]) {
         return (<div className="jflex-1 jofy-auto jflex-col jgap-12 jw-100 jalign-h jp-12">{items}</div>)
     }
-    function part_layout(label: string, items: any[],onAdd:()=>void) {
+    function part_layout(label: string, items: any[], onAdd: () => void) {
         return (
             <div className="jflex-col jalign-h jh-100 jp-12 jbr-12 jw-100">
                 {part_header_layout(label, onAdd)} {part_body_layout(items)}
@@ -518,70 +577,70 @@ const Home: FC = () => {
     }
     function rules_layout() {
         const items = rules.map((rule) => {
-            return part_item_layout({ 
-                id: rule.id, 
-                text: rule.name, 
-                subtext: rule.date, 
+            return part_item_layout({
+                id: rule.id,
+                text: rule.name,
+                subtext: rule.date,
                 onClick: () => selectRule(rule),
-                onRemove:()=>removeRule(rule.id) 
+                onRemove: () => removeRule(rule.id)
             })
         })
-        return part_layout('Rules',items,()=>addRuleModal())
+        return part_layout('Rules', items, () => addRuleModal())
     }
     function templates_layout() {
         const items = templates.map((template: I_template) => {
-            return part_item_layout({ 
-                id: template.id, 
-                text: template.name, 
+            return part_item_layout({
+                id: template.id,
+                text: template.name,
                 onClick: () => setTemplateToEdit(template),
-                onRemove:()=>removeTemplate(template.id)
+                onRemove: () => removeTemplate(template.id)
             })
         })
-        return part_layout('Templates',items,()=>setTemplateToAdd(true))
+        return part_layout('Templates', items, () => setTemplateToAdd(true))
     }
-    function part_item_layout(p: { text: string, id: number, subtext?: string, onClick: () => void,onRemove:()=>void }) {
-        const { id, text, subtext, onClick,onRemove } = p;
+    function part_item_layout(p: { text: string, id: number, subtext?: string, onClick: () => void, onRemove: () => void }) {
+        const { id, text, subtext, onClick, onRemove } = p;
         return (
             <div key={id} className="part-button">
                 <div className="part-button-body" onClick={onClick}>
                     <div className="">{text}</div>
                     {subtext !== undefined && <div className="jop-60 jfs-p70">{subtext}</div>}
                 </div>
-                <div className="part-button-remove" onClick={()=>onRemove()}><Icon path={mdiClose} size={0.7}/></div>
+                <div className="part-button-remove" onClick={() => onRemove()}><Icon path={mdiClose} size={0.7} /></div>
             </div>
         )
     }
     if (templateToAdd) {
         return (
-            <Template 
-                onClose={()=>setTemplateToAdd(false)}
-                mode='add' onSubmit={(newTemplate)=>{
-                changeTemplates([...templates,newTemplate]);
-                setTemplateToAdd(false)
-                
-            }}/>
+            <Template
+                onClose={() => setTemplateToAdd(false)}
+                mode='add' onSubmit={(newTemplate) => {
+                    changeTemplates([...templates, newTemplate]);
+                    setTemplateToAdd(false)
+
+                }} />
         )
     }
     if (templateToEdit) {
         return (
-            <Template 
-                onClose={()=>setTemplateToEdit(undefined)}
-                mode='edit' template={templateToEdit} onSubmit={(newTemplate)=>{
-                changeTemplates(templates.map((o)=>o.id === templateToEdit.id?newTemplate:o))
-                setTemplateToEdit(undefined)
-            }}/>
+            <Template
+                onClose={() => setTemplateToEdit(undefined)}
+                mode='edit' template={templateToEdit} onSubmit={(newTemplate) => {
+                    changeTemplates(templates.map((o) => o.id === templateToEdit.id ? newTemplate : o))
+                    setTemplateToEdit(undefined)
+                }} />
         )
     }
     return (<div className="jflex-row jalign-h jflex-1 jp-12">{rules_layout()} {templates_layout()}</div>)
 }
 type I_templateContext = {
-    popup:AIOPopup,
-    removeCell:(rowIndex:number)=>void,
-    addCell:(type: 'static_text' | 'select' | 'textbox' | 'code_block' | 'indent', rowIndex: number, isEmptyRow: boolean)=>void,
-    changeCell:(value:string,rowIndex:number,cellIndex:number)=>void
+    popup: AIOPopup,
+    removeCell: (rowIndex: number) => void,
+    addCell: (type: 'static_text' | 'select' | 'textbox' | 'code_block' | 'indent', rowIndex: number, isEmptyRow: boolean) => void,
+    changeCell: (value: string, rowIndex: number, cellIndex: number) => void
 }
 const TemplateContext = createContext({} as any);
-const Template: FC<{ mode: 'add' | 'edit', template?: I_template,onSubmit:(newTemplate:I_template)=>void,onClose:()=>void }> = (props) => {
+const Template: FC<{ mode: 'add' | 'edit', template?: I_template, onSubmit: (newTemplate: I_template) => void, onClose: () => void }> = (props) => {
     const { popup }: I_CTX = useContext(CTX)
     const { mode } = props;
     const [template, setTemplate] = useState<I_template>(getTemplate)
@@ -592,22 +651,22 @@ const Template: FC<{ mode: 'add' | 'edit', template?: I_template,onSubmit:(newTe
         return { id: GetRandomNumber(100000, 900000), name: '', rows: [] }
     }
     function header_layout() {
-        let title = '',submitText = ''
+        let title = '', submitText = ''
         if (mode === 'edit') { title = `Edit Template (${template.name})`; submitText = 'Edit'; }
         else if (mode === 'add') { title = 'Add Template'; submitText = 'Add'; }
         return (
             <div className="jbg-d-20 jp-h-24 jfs-14 jbold jflex-row jh-36 jalign-v gap-6">
                 {title}
                 <div className="jflex-1"></div>
-                <button onClick={()=>props.onClose()} style={{color:'orange',border:'1px solid'}} className='jbr-4 jh-30 jw-72 bg-none'>Close</button>
-                <button onClick={()=>props.onSubmit(template)} style={{background:'orange',border:'none'}} className='jbr-4 jh-30 jw-72'>{submitText}</button>
+                <button onClick={() => props.onClose()} style={{ color: 'orange', border: '1px solid' }} className='jbr-4 jh-30 jw-72 bg-none'>Close</button>
+                <button onClick={() => props.onSubmit(template)} style={{ background: 'orange', border: 'none' }} className='jbr-4 jh-30 jw-72'>{submitText}</button>
             </div>
         )
     }
-    function addFirstCell(type:any){
+    function addFirstCell(type: any) {
         setTemplate({ ...template, rows: [{ cells: [getNewCellByType(type)] }] })
 
-        
+
     }
     function body_layout() {
         return (
@@ -628,18 +687,18 @@ const Template: FC<{ mode: 'add' | 'edit', template?: I_template,onSubmit:(newTe
                     ]}
                     onChange={(v) => addFirstCell(v)}
                 />}
-                {!!template.rows.length && template.rows.map((o, rowIndex) => <TemplateRow key={rowIndex} row={o} rowIndex={rowIndex}/>)}
+                {!!template.rows.length && template.rows.map((o, rowIndex) => <TemplateRow key={rowIndex} row={o} rowIndex={rowIndex} />)}
             </div>
         )
     }
-    function changeCell(value:string,rowIndex:number,cellIndex:number){
-        const row:I_template_row = template.rows[rowIndex]
-        const newCells:I_template_cell[] = row.cells.map((cell,i)=>i !== cellIndex?cell:value)
-        const newRow:I_template_row = {...row,cells:newCells}
-        const newRows:I_template_row[] = template.rows.map((row,i)=>i !== rowIndex?row:newRow)
-        setTemplate({...template,rows:newRows})
+    function changeCell(value: string, rowIndex: number, cellIndex: number) {
+        const row: I_template_row = template.rows[rowIndex]
+        const newCells: I_template_cell[] = row.cells.map((cell, i) => i !== cellIndex ? cell : value)
+        const newRow: I_template_row = { ...row, cells: newCells }
+        const newRows: I_template_row[] = template.rows.map((row, i) => i !== rowIndex ? row : newRow)
+        setTemplate({ ...template, rows: newRows })
     }
-    function getNewCellByType(type: 'static_text' | 'select' | 'textbox' | 'code_block' | 'indent'){
+    function getNewCellByType(type: 'static_text' | 'select' | 'textbox' | 'code_block' | 'indent') {
         let newCell = '';
         if (type === 'static_text') { newCell = 'text' }
         else if (type === 'textbox') { newCell = 'text()' }
@@ -652,14 +711,14 @@ const Template: FC<{ mode: 'add' | 'edit', template?: I_template,onSubmit:(newTe
         let newRows: I_template_row[] = []
         const newCell = getNewCellByType(type)
         if (isEmptyRow) {
-            let tempRows:I_template_row[] = []
+            let tempRows: I_template_row[] = []
             for (let i = 0; i < template.rows.length; i++) {
-                if (i === rowIndex) {tempRows.push(template.rows[i],{ cells: [newCell] })}
-                else {tempRows.push(template.rows[i])}
+                if (i === rowIndex) { tempRows.push(template.rows[i], { cells: [newCell] }) }
+                else { tempRows.push(template.rows[i]) }
             }
             newRows = tempRows
         }
-        else {newRows = template.rows.map((row, i) => i !== rowIndex?row:{...row,cells: [...row.cells, newCell]})}
+        else { newRows = template.rows.map((row, i) => i !== rowIndex ? row : { ...row, cells: [...row.cells, newCell] }) }
         setTemplate({ ...template, rows: newRows })
     }
     function removeCell(rowIndex: number) {
@@ -670,15 +729,15 @@ const Template: FC<{ mode: 'add' | 'edit', template?: I_template,onSubmit:(newTe
         else { newRows = template.rows.map((row, i) => i !== rowIndex ? row : newRow) }
         setTemplate({ ...template, rows: newRows })
     }
-    function getContext():I_templateContext{return {popup,removeCell,addCell,changeCell}}
+    function getContext(): I_templateContext { return { popup, removeCell, addCell, changeCell } }
     return (
         <TemplateContext.Provider value={getContext()}>
             <div className="jh-100 jw-100 jofy-auto">{header_layout()} {body_layout()}</div>
         </TemplateContext.Provider>
     )
 }
-const TemplateRow:FC<{row:I_template_row,rowIndex:number}> = ({row,rowIndex})=>{
-    const {removeCell,addCell}:I_templateContext = useContext(TemplateContext);
+const TemplateRow: FC<{ row: I_template_row, rowIndex: number }> = ({ row, rowIndex }) => {
+    const { removeCell, addCell }: I_templateContext = useContext(TemplateContext);
     function addCell_layout(rowIndex: number, isEmptyRow: boolean) {
         return (
             <div className="jflex-row jalign-v" key={`addRojw-${rowIndex}-${isEmptyRow}`}>
@@ -712,25 +771,25 @@ const TemplateRow:FC<{row:I_template_row,rowIndex:number}> = ({row,rowIndex})=>{
         <>
             <div key={rowIndex} className="jflex-row jalign-v jgap-12">
                 {addCell_layout(rowIndex, false)}
-                {row.cells.map((o, cellIndex) => <TemplateCell key={cellIndex} cell={o} rowIndex={rowIndex} cellIndex={cellIndex}/>)}
+                {row.cells.map((o, cellIndex) => <TemplateCell key={cellIndex} cell={o} rowIndex={rowIndex} cellIndex={cellIndex} />)}
             </div>
             {addCell_layout(rowIndex, true)}
         </>
     )
 }
-const TemplateCell:FC<{cell:I_template_cell,rowIndex:number,cellIndex:number}> = ({cell,rowIndex,cellIndex})=>{
-    const {popup,changeCell}:I_templateContext = useContext(TemplateContext)
-    function openOptionsModal(options:string[],rowIndex:number,cellIndex:number) {
+const TemplateCell: FC<{ cell: I_template_cell, rowIndex: number, cellIndex: number }> = ({ cell, rowIndex, cellIndex }) => {
+    const { popup, changeCell }: I_templateContext = useContext(TemplateContext)
+    function openOptionsModal(options: string[], rowIndex: number, cellIndex: number) {
         popup.addModal({
-            position: 'center',header: { title: 'Edit Options' },
+            position: 'center', header: { title: 'Edit Options' },
             body: () => {
                 return (
-                    <CellOptions 
-                        options={options} 
-                        onChange={(newOptions)=>{
-                            const options = newOptions.map((o)=>o.text)
-                            const newCell:I_template_cell = `select(${JSON.stringify(options)})`
-                            changeCell(newCell,rowIndex,cellIndex)
+                    <CellOptions
+                        options={options}
+                        onChange={(newOptions) => {
+                            const options = newOptions.map((o) => o.text)
+                            const newCell: I_template_cell = `select(${JSON.stringify(options)})`
+                            changeCell(newCell, rowIndex, cellIndex)
                             popup.removeModal()
                         }}
                     />
@@ -738,40 +797,40 @@ const TemplateCell:FC<{cell:I_template_cell,rowIndex:number,cellIndex:number}> =
             }
         })
     }
-    function getContent(){
-        if (cell === 'indent') {return (<div className="jw-16 jh-24 jflex-row jalign-vh jm-2 jop-15"><Icon path={mdiArrowExpandHorizontal} size={0.8} /></div>)}
-        if (cell.indexOf('text(') === 0) {return <div className="jp-h-6 jbr-4" style={{ background: '#0069ff' }}>TextBox</div>}
-        if (cell.indexOf('textarea(') === 0) {return <div className="jp-h-6 jbr-4" style={{ background: '#0069ff' }}>Code Block</div>}
-        if (cell.indexOf('select(') === 0) {return select_layout(cell,rowIndex,cellIndex)}
-        return static_text_layout(cell,rowIndex,cellIndex)
+    function getContent() {
+        if (cell === 'indent') { return (<div className="jw-16 jh-24 jflex-row jalign-vh jm-2 jop-15"><Icon path={mdiArrowExpandHorizontal} size={0.8} /></div>) }
+        if (cell.indexOf('text(') === 0) { return <div className="jp-h-6 jbr-4" style={{ background: '#0069ff' }}>TextBox</div> }
+        if (cell.indexOf('textarea(') === 0) { return <div className="jp-h-6 jbr-4" style={{ background: '#0069ff' }}>Code Block</div> }
+        if (cell.indexOf('select(') === 0) { return select_layout(cell, rowIndex, cellIndex) }
+        return static_text_layout(cell, rowIndex, cellIndex)
     }
-    function select_layout(cell:I_template_cell,rowIndex:number,cellIndex:number){
-        const options:string[] = JSON.parse(cell.slice(7, cell.length - 1))
+    function select_layout(cell: I_template_cell, rowIndex: number, cellIndex: number) {
+        const options: string[] = JSON.parse(cell.slice(7, cell.length - 1))
         return (
-            <div 
-                className="jp-h-6 jbr-4 jrelative jpointer jflex-row jalign-v" style={{ background: '#0069ff' }} 
-                onClick={() => openOptionsModal(options,rowIndex,cellIndex)}
+            <div
+                className="jp-h-6 jbr-4 jrelative jpointer jflex-row jalign-v" style={{ background: '#0069ff' }}
+                onClick={() => openOptionsModal(options, rowIndex, cellIndex)}
             >
                 Select
-                <div className="jfs-p70 jop-70 jm-l-6">{` ( ${options.length} options )`}</div> 
+                <div className="jfs-p70 jop-70 jm-l-6">{` ( ${options.length} options )`}</div>
                 {select_cell_icon()}
             </div>
         )
     }
-    function select_cell_icon(){
+    function select_cell_icon() {
         return (
-            <div 
-                className="jabsolute jw-16 jh-16 jflex-row jalign-vh jbr-100" 
+            <div
+                className="jabsolute jw-16 jh-16 jflex-row jalign-vh jbr-100"
                 style={{ background: 'orange', top: -8, right: -8 }}
             ><Icon path={mdiDotsHorizontal} size={0.6} /></div>
         )
     }
-    function static_text_layout(cell:I_template_cell,rowIndex:number,cellIndex:number){
+    function static_text_layout(cell: I_template_cell, rowIndex: number, cellIndex: number) {
         const width = cell.length * 6.2 + 12
         return (
             <AIText
                 value={cell} style={{ width }} autoHighlight={false} className="jbg-0 jp-h-0 jbr-4 jm-l-6 jbrd-none jh-24"
-                onChange={(newValue) => changeCell(newValue,rowIndex,cellIndex)}
+                onChange={(newValue) => changeCell(newValue, rowIndex, cellIndex)}
             />
         )
     }
@@ -779,14 +838,14 @@ const TemplateCell:FC<{cell:I_template_cell,rowIndex:number,cellIndex:number}> =
 }
 const Indent: FC = () => <div className="jw-12 jh-100 jshrink-0 jflex-row jalign-v jshrink-0"><div className="jw-1 jh-100 jbg-l-20"></div></div>
 type I_option = { text: string };
-const CellOptions: FC<{ options: string[],onChange:(newOptions:I_option[])=>void }> = (props) => {
+const CellOptions: FC<{ options: string[], onChange: (newOptions: I_option[]) => void }> = (props) => {
     const [options, setOptions] = useState<I_option[]>(JSON.parse(JSON.stringify(props.options)).map((text: string) => ({ text })))
     return (
         <div className="jp-12">
             <AITable
                 value={options} rowGap={1} className='rule-engine-options-table' headerAttrs={{ style: { display: 'none' } }}
-                columns={[{ title: 'Option', value: 'row.text', input: { type: 'text',delay:50 }, justify: true }]}
-                onAdd={() => setOptions([...options, { text: ''}])}
+                columns={[{ title: 'Option', value: 'row.text', input: { type: 'text', delay: 50 }, justify: true }]}
+                onAdd={() => setOptions([...options, { text: '' }])}
                 addText={(
                     <div className="jflex-row jalign-v jp-h-12 jh-24 jbr-4 jm-jh-6 jbold jm-3" style={{ color: 'orange' }}>
                         <Icon path={mdiPlusThick} size={0.7} /> Add Option
@@ -795,10 +854,10 @@ const CellOptions: FC<{ options: string[],onChange:(newOptions:I_option[])=>void
                 onRemove={true} onChange={(newOptions: I_option[]) => setOptions(newOptions)}
             />
             <div className="jh-36 jflex-row jalign-v jp-v-6">
-                <button 
+                <button
                     type='button' className='jbrd-none jbr-4 jp-v-3 jp-h-12 jbold jfs-14 jc-4 jflex-row jalign-v jgap-6' style={{ background: 'orange' }}
-                    onClick={()=>props.onChange(options)}
-                ><Icon path={mdiCheckBold} size={0.7}/>Submit</button>
+                    onClick={() => props.onChange(options)}
+                ><Icon path={mdiCheckBold} size={0.7} />Submit</button>
             </div>
         </div>
     )

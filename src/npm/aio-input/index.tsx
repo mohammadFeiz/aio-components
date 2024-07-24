@@ -1,4 +1,3 @@
-/////////////dependencies//////////////
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
 import {
     mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
@@ -9,15 +8,13 @@ import {
 import { Icon } from '@mdi/react';
 import $ from 'jquery';
 import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup";
-/////////////my dependencies//////////
+import Prism from 'prismjs';
 import { 
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
     getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, 
     GetArray,Validation
 } from './../../npm/aio-utils';
-/////////////style//////////////////
 import './index.css';
-////////////////////////////////////
 type RN = ReactNode
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
@@ -1859,7 +1856,7 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] })
         }
     }
-    function getIcon() { return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight, 1, { style: { color: theme[0] }, className: 'aio-input-theme-color0' }) }
+    function getIcon() { return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight, 1, { color: theme[0] , className: 'aio-input-theme-color0' }) }
     return (<div className='aio-input-date-arrow' onClick={() => change()}>{getIcon()}</div>)
 }
 const AITableContext = createContext({} as any);
@@ -3509,3 +3506,17 @@ type AI_onChange<AI_type> =
             </div>
         )
     }
+
+const PrismCode:FC<{code:string, language?:'js' | 'css', style?:any}> = ({code,language = 'js',style = {}}) => {
+    useEffect(()=>{Prism.highlightAll()},[])
+    return (
+        <div className="aio-doc-code" style={style}>
+            <pre style={{ height: '100%', overflow: 'auto' }}>
+                <code className={`language-${language}`}>{code}</code>
+            </pre>
+        </div>
+    );
+}
+export function Code(code:string, language?:'js' | 'css', style?:any){
+    return <PrismCode code={code} language={language} style={style} />
+}
