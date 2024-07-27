@@ -832,7 +832,7 @@ const Layout:FC<AI_Layout> = (props) => {
                 return <div {...p('value')}>{text}</div>
             }
         }
-        else { return <div className='flex-1'></div> }
+        else { return <div style={{flex:1}}></div> }
     }
     function DragIcon() {
         if (!properties.draggable) { return null }
@@ -1250,7 +1250,7 @@ type I_AcardionBody = { option: AI_option,mounted:boolean }
 const AcardionBody:FC<I_AcardionBody> = ({option,mounted})=>{
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
     let { body = ()=>{} } = rootProps;
-    let { html, attrs } = body(option) || { html: '' }
+    let { html, attrs } = body(option.details.option) || { html: '' }
     let Attrs = AddToAttrs(attrs,{className:[`aio-input-acardion-body`,mounted?undefined:'not-mounted']})
     return <div {...Attrs}>{html}</div>
 }
