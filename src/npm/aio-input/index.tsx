@@ -1,18 +1,12 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
-import {
-    mdiChevronDown, mdiLoading, mdiAttachment, mdiClose, mdiCircleMedium, mdiMagnify,
-    mdiPlusThick, mdiImage, mdiEye, mdiEyeOff, mdiDotsHorizontal,
-    mdiChevronRight, mdiChevronLeft, mdiArrowDown, mdiArrowUp, mdiFileExcel, mdiSort,
-    mdiDelete, mdiCircleSmall,mdiCircle
-} from "@mdi/js";
-import { Icon } from '@mdi/react';
 import $ from 'jquery';
 import AIOPopup,{ AP_position,AP_modal } from "./../../npm/aio-popup";
 import Prism from 'prismjs';
 import { 
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition, 
     getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, 
-    GetArray,Validation
+    GetArray,Validation,
+    GetSvg
 } from './../../npm/aio-utils';
 import './index.css';
 type RN = ReactNode
@@ -356,8 +350,8 @@ function Image() {
 
                     }}
                     className='aio-input-image-remove'
-                >{I(mdiClose, 1)}</div>}
-            {preview && !!onChange && <div onClick={(e) => onPreview(e)} className='aio-input-image-preview'>{I(mdiImage, 1)}</div>}
+                >{I('mdiClose', 1)}</div>}
+            {preview && !!onChange && <div onClick={(e) => onPreview(e)} className='aio-input-image-preview'>{I('mdiImage', 1)}</div>}
             {popup.render()}
         </>
     ) : <span {...attrs} className='aio-input-image-placeholder'>{placeholder || 'placeholder'}</span>
@@ -462,7 +456,7 @@ const FileItem:FC<AI_FileItem> = (props) => {
         if (filePreview && filePreview !== null) {
             return filePreview;
         }
-        return (<div className='aio-input-file-item-icon' onClick={() => download()}>{I(mdiAttachment, .8)}</div>)
+        return (<div className='aio-input-file-item-icon' onClick={() => download()}>{I('mdiAttachment', .8)}</div>)
     }
     let { minName, sizeString } = getFile(file);
 
@@ -473,7 +467,7 @@ const FileItem:FC<AI_FileItem> = (props) => {
             subtext: () => sizeString,
             text: () => minName,
             before: () => getIcon(),
-            after: () => <div className='aio-input-file-item-icon' onClick={(e:any) => remove(e,index)}>{I(mdiClose, .7)}</div>
+            after: () => <div className='aio-input-file-item-icon' onClick={(e:any) => remove(e,index)}>{I('mdiClose', .7)}</div>
         }
     })
     let option = optionsList[0]
@@ -555,7 +549,7 @@ const Tags:FC = () => {
 }
 type AI_Tag = { attrs?:any,before?:RN,after?:RN,text:RN,disabled?:boolean,onClose?:()=>void }
 const Tag:FC<AI_Tag> = (props) => {
-    let { attrs,before = I(mdiCircleMedium, 0.7),after,text,disabled,onClose = ()=>{} } = props;
+    let { attrs,before = I('mdiCircleMedium', 0.7),after,text,disabled,onClose = ()=>{} } = props;
     let close = disabled ? undefined : onClose
     let cls = 'aio-input-tag'
     let Attrs = AddToAttrs(attrs,{className:[cls + ' aio-input-main-bg',disabled?'disabled':undefined]})
@@ -564,7 +558,7 @@ const Tag:FC<AI_Tag> = (props) => {
             <div className={`${cls}-icon`}>{before}</div>
             <div className={`${cls}-text`}>{text}</div>
             {after !== undefined && <div className={`${cls}-icon`}>{after}</div>}
-            <div className={`${cls}-icon`} onClick={close}>{I(mdiClose, 0.7)}</div>
+            <div className={`${cls}-icon`} onClick={close}>{I('mdiClose', 0.7)}</div>
         </div>
     )
 }
@@ -743,7 +737,7 @@ function Options() {
             <div className='aio-input-search'>
                 <input type='text' value={searchValue} placeholder={rootProps.search} onChange={(e) => setSearchValue(e.target.value)} />
                 <div className='aio-input-search-icon' onClick={() => { setSearchValue('') }}>
-                    {I(searchValue ? mdiClose : mdiMagnify, .8)}
+                    {I(searchValue ? 'mdiClose' : 'mdiMagnify', .8)}
                 </div>
             </div>
         )
@@ -852,7 +846,7 @@ const Layout:FC<AI_Layout> = (props) => {
         if (!types.isDropdown || option || (types.isInput && !rootProps.options)) { return null }
         let { caret } = rootProps;
         if (caret === false) { return null }
-        return <div className='aio-input-caret'>{caret === undefined ? I(mdiChevronDown, .8) : caret}</div>
+        return <div className='aio-input-caret'>{caret === undefined ? I('mdiChevronDown', .8) : caret}</div>
     }
     function CheckIcon() {
         let { checkIcon, checked } = properties;
@@ -875,7 +869,7 @@ const Layout:FC<AI_Layout> = (props) => {
     function BeforeAfter(mode: 'before' | 'after') {
         let res: RN;
         if (mode === 'after' && type === 'password' && rootProps.preview) {
-            res = <div className='align-v' onClick={() => setShowPassword()}>{I(showPassword ? mdiEyeOff : mdiEye, .8)}</div>
+            res = <div className='align-v' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
         }
         else { let v = properties[mode]; res = typeof v === 'function' ? v() : v; }
         if (res === undefined) { return null }
@@ -885,7 +879,7 @@ const Layout:FC<AI_Layout> = (props) => {
         let { loading } = properties;
         let elem;
         if (!loading) { return null; }
-        else if (loading === true) { elem = I(mdiLoading, 0.8, { spin: .8 }) }
+        else if (loading === true) { elem = I('mdiLoading', 0.8, { spin: .8 }) }
         else { elem = loading }
         return <div className={cls('loading')}>{elem}</div>
     }
@@ -953,9 +947,9 @@ const Layout:FC<AI_Layout> = (props) => {
             if(open === undefined && !!option.toggleIcon[2]){return option.toggleIcon[2]}
         }
         let path;
-        if (open === undefined) { path = mdiCircleSmall }
-        else if (open === true) { path = mdiChevronDown }
-        else { path = mdiChevronRight }
+        if (open === undefined) { path = 'mdiCircleSmall' }
+        else if (open === true) { path = 'mdiChevronDown' }
+        else { path = 'mdiChevronRight' }
         return <div style={{transform:rootProps.rtl?`scaleX(-1)`:undefined}}>{I(path, 1)}</div>
     }
     function Toggle(indent: AI_indent) {
@@ -1380,7 +1374,7 @@ const TreeHeader: FC = () => {
     let { addText = 'add', onAdd } = rootProps;
     if (!onAdd) { return null }
     addText = (typeof addText === 'function' ? addText('header') : addText) || 'add';
-    return (<div className="aio-input-tree-header"><button onClick={() => add()}>{I(mdiPlusThick, .8)}{addText}</button></div>)
+    return (<div className="aio-input-tree-header"><button onClick={() => add()}>{I('mdiPlusThick', .8)}{addText}</button></div>)
 }
 type I_TreeActions = { row: any,index:number, parent?: any,rowDetails:I_treeRowDetails,parentDetails?:I_treeRowDetails }
 const TreeActions: FC<I_TreeActions> = (props) => {
@@ -1391,15 +1385,15 @@ const TreeActions: FC<I_TreeActions> = (props) => {
     let options = typeof rootProps.actions === 'function' ? rootProps.actions(row, parent) : rootProps.actions;
     function getOptions() {
         let res = [];
-        if (onAdd) { res.push({ text: addText, value: 'add', before: I(mdiPlusThick, 0.7), onClick: () => add({parent:row,parentDetails:rowDetails}) }) }
+        if (onAdd) { res.push({ text: addText, value: 'add', before: I('mdiPlusThick', 0.7), onClick: () => add({parent:row,parentDetails:rowDetails}) }) }
         let Options = (options || []).map((o) => { return { ...o, onClick: () => { if (o.onClick) { o.onClick(row, parent) } } } })
         res = [...res, ...Options]
-        if (onRemove) { res.push({ text: removeText, value: 'remove', before: I(mdiDelete, 0.7), onClick: () => remove({row,index, parent,parentDetails}) }) }
+        if (onRemove) { res.push({ text: removeText, value: 'remove', before: I('mdiDelete', 0.7), onClick: () => remove({row,index, parent,parentDetails}) }) }
         return res
     }
     let Options = getOptions();
     if (!Options.length) { return null }
-    let p: AITYPE = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I(mdiDotsHorizontal, 0.7) }
+    let p: AITYPE = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I('mdiDotsHorizontal', 0.7) }
     return <AIOInput {...p} />;
 }
 type I_TreeBody = { rows: any[], level: number, parent?: any, parentId?: string, parentIndent?: AI_indent,parentDetails?:I_treeRowDetails }
@@ -1856,7 +1850,7 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] })
         }
     }
-    function getIcon() { return I(type === 'minus' ? mdiChevronLeft : mdiChevronRight, 1, { color: theme[0] , className: 'aio-input-theme-color0' }) }
+    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1, { color: theme[0] , className: 'aio-input-theme-color0' }) }
     return (<div className='aio-input-date-arrow' onClick={() => change()}>{getIcon()}</div>)
 }
 const AITableContext = createContext({} as any);
@@ -2214,17 +2208,20 @@ function TableToolbar() {
                 checked: '!!option.active',
                 close: () => false,
                 value: 'option.sortId',
-                after: (option: any) => {
+                after: ({option}) => {
                     let { dir = 'dec', sortId } = option;
                     return (
-                        <div onClick={(e) => { e.stopPropagation(); changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) }}>
-                            {I(dir === 'dec' ? mdiArrowDown : mdiArrowUp, 0.8)}
+                        <div onClick={(e) => { 
+                            e.stopPropagation(); 
+                            changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' }) 
+                        }}>
+                            {I(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8)}
                         </div>
                     )
                 }
             },
             attrs: { className: 'aio-input-table-toolbar-button' },
-            text: I(mdiSort, 0.7),
+            text: I('mdiSort', 0.7),
             onSwap: (newSorts, from, to) => changeSorts(newSorts),
             onChange: (value, option) => changeSort(value, { active: !option.checked })
         }
@@ -2234,7 +2231,7 @@ function TableToolbar() {
     }
     function getAddText() {
         let { addText } = rootProps;
-        if (!rootProps.addText) { return I(mdiPlusThick, 0.8) }
+        if (!rootProps.addText) { return I('mdiPlusThick', 0.8) }
         if (typeof addText === 'function') {
             return addText(value)
         }
@@ -2245,10 +2242,10 @@ function TableToolbar() {
             <div {...toolbarAttrs}>
                 {toolbar && <div className='aio-input-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
                 <div className='aio-input-table-search'>
-                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={I(mdiMagnify, 0.7)} />}
+                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={I('mdiMagnify', 0.7)} />}
                 </div>
                 {button()}
-                {!!excelColumns.length && <div className='aio-input-table-toolbar-button' onClick={() => exportToExcel()}>{I(mdiFileExcel, 0.8)}</div>}
+                {!!excelColumns.length && <div className='aio-input-table-toolbar-button' onClick={() => exportToExcel()}>{I('mdiFileExcel', 0.8)}</div>}
                 {!!onAdd && <div className='aio-input-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
             </div>
             <TableGap dir='h' />
@@ -2284,7 +2281,7 @@ function TableRow(p: { row: any, isLast: boolean, rowIndex: number }) {
         <>
             <div key={row._id} {...getRowAttrs(row, rowIndex)}>
                 {getCells()}
-                {onRemove ? <><TableGap dir='v' /><button className='aio-input-table-remove' onClick={() => remove(row, rowIndex)}>{I(mdiClose, 0.8)}</button></> : null}
+                {onRemove ? <><TableGap dir='v' /><button className='aio-input-table-remove' onClick={() => remove(row, rowIndex)}>{I('mdiClose', 0.8)}</button></> : null}
             </div>
             <TableGap dir='h' />
         </>
@@ -2960,12 +2957,12 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         return (
             <div className={`${cls}-after ${cls}-align`}>
                 {!!badge.length && badge}
-                {!!items.length && <Icon path={active?mdiChevronDown:mdiChevronRight} size={0.7}/>}
+                {!!items.length && I(active?'mdiChevronDown':'mdiChevronRight',0.7)}
             </div>
         )
     }
     function getBefore(option:any){
-        let {icon = <Icon path={mdiCircle} size={0.6}/>} = option;
+        let {icon = I('mdiCircleMedium',0.6)} = option;
         if(!icon){return null}
         return (
             <div className={`${cls}-before`}>
@@ -3082,9 +3079,7 @@ function Def(prop: string) {
     }[prop]
     return res as any
 }
-function I(path: any, size: number, p?: any) {
-    return <Icon path={path} size={size} {...p} />
-}
+function I(path: string, size: number, p?: any) {return new GetSvg().getIcon(path,size,p)}
 type I_GetOptions = {
     rootProps: AITYPE, 
     types: AI_types, 
