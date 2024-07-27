@@ -1249,9 +1249,8 @@ const AcardionItem: FC<I_AcardionItem> = ({option}) => {
 type I_AcardionBody = { option: AI_option,mounted:boolean }
 const AcardionBody:FC<I_AcardionBody> = ({option,mounted})=>{
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
-    let { value } = option;
-    let { body } = rootProps;
-    let { html, attrs } = (typeof body === 'function' ? body(value) : body) || { html: '' }
+    let { body = ()=>{} } = rootProps;
+    let { html, attrs } = body(option) || { html: '' }
     let Attrs = AddToAttrs(attrs,{className:[`aio-input-acardion-body`,mounted?undefined:'not-mounted']})
     return <div {...Attrs}>{html}</div>
 }
