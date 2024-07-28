@@ -3514,3 +3514,20 @@ const PrismCode:FC<{code:string, language?:'js' | 'css', style?:any}> = ({code,l
 export function Code(code:string, language?:'js' | 'css', style?:any){
     return <PrismCode code={code} language={language} style={style} />
 }
+type AI_Section = { text: string, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, body: ReactNode }
+const Section: FC<AI_Section> = ({ text, subtext, before, after, body }) => {
+    function header_layout() {
+        return (
+            <div className="aio-input-section-header">
+                <div className="aio-input-section-before">{!!before && before}</div>
+                <div className="aio-input-section-texts">
+                    <div className="aio-input-section-text">{text}</div>
+                    {subtext !== undefined && <div className="aio-input-section-subtext">{subtext}</div>}
+                </div>
+                <div className="aio-input-section-after">{!!after && after}</div>
+            </div>
+        )
+    }
+    function body_layout() { return (<div className="aio-input-section-body">{body}</div>) }
+    return (<div className="aio-input-section">{header_layout()} {body_layout()}</div>)
+}
