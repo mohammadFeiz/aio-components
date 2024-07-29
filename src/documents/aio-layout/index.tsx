@@ -180,8 +180,8 @@ const Example:FC = ()=>{
     ]
     return (
         <AIOLayout 
-            nav={{items:navItems,type:'hover'}} 
-            bottomMenu={{items:bottomMenu}}
+            // nav={{items:navItems,type:'hover'}} 
+            // bottomMenu={{items:bottomMenu}}
             header={{
                 after:(
                     <div className="flex-row align-v p-h-12 gap-12">

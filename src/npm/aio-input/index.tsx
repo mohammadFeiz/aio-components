@@ -2985,10 +2985,10 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
     }
     let finalOptions:AI_optionProp = {
         ...defaultOption,...option,
-        className:(item:AI_Sidemenu_item,details:AI_optionDetails)=>{
-            let className = `${cls}-row-level-${details.level}`
+        className:(obj)=>{
+            let className = `${cls}-row-level-${obj.level}`
             if(typeof option.className === 'function'){
-                const res = option.className(item,details)
+                const res = option.className(obj)
                 if(res){className += ' ' + res}
             }
             return className

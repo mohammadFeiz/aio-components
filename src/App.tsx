@@ -24,7 +24,6 @@ import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import AppContainer from './documents/aio-layout';
 import DOC_Map from './documents/map/doc-map.tsx';
 import AIFilter from './documents/ai-filter';
-import Formula from "./documents/formula/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -47,7 +46,6 @@ export default function AIOComponents(){
     'aio-layout':AppContainer,
     'map':DOC_Map,
     'ai filter':AIFilter,
-    'formula':Formula,
     'test':Test
   })
   function goToHome(){
