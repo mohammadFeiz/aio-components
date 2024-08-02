@@ -3009,6 +3009,57 @@ export const SideMenu:FC<AI_Sidemenu> = (props) => {
         />
     )
 }
+type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick: () => void, before?: ReactNode, after?: ReactNode }
+export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) => {
+    return (
+        <div className="aio-input-card">
+            {before !== undefined && <div className="aio-input-card-before" onClick={(e) => e.stopPropagation()}>{before}</div>}
+            <div className="aio-input-card-body" onClick={onClick}>
+                <div className="aio-input-card-text">{text}</div>
+                {subtext !== undefined && <div className="aio-input-card-subtext">{subtext}</div>}
+            </div>
+            {after !== undefined && <div className="aio-input-card-after" onClick={(e) => e.stopPropagation()}>{after}</div>}
+        </div>
+    )
+}
+type I_AIPanel = { text: string, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, body: ReactNode }
+export const AIPanel: FC<I_AIPanel> = ({ text, subtext, before, after, body }) => {
+    function header_layout() {
+        return (
+            <div className="aio-input-panel-header">
+                <div className="aio-input-panel-before">{!!before && before}</div>
+                <div className="aio-input-panel-texts">
+                    <div className="aio-input-panel-text">{text}</div>
+                    {subtext !== undefined && <div className="aio-input-panel-subtext">{subtext}</div>}
+                </div>
+                <div className="aio-input-panel-after">{!!after && after}</div>
+            </div>
+        )
+    }
+    function body_layout() { return (<div className="aio-input-panel-body">{body}</div>) }
+    return (<div className="aio-input-panel">{header_layout()} {body_layout()}</div>)
+}
+export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: boolean) => void, colors?: string[] }> = ({ colors = ['#555', 'orange'], size = [16, 2, 3, 48], value, onChange = () => { } }) => {
+    function getContainerStyle() {
+        return {
+            paddingRight: size[0] + size[1],paddingLeft: size[1],
+            border: `${size[2]}px solid ${value ? colors[1] : colors[0]}`
+        }
+    }
+    function getOuterStyle() {
+        return {width: size[3] - size[0] - size[1],height: size[0] + (2 * size[1])}
+    }
+    function getInnerStyle() {
+        return {width: size[0],height: size[0],top: `calc(50% - ${size[0] / 2}px)`,background: value ? colors[1] : colors[0]}
+    }
+    return (
+        <div className={`aio-input-switch${value ? ' active' : ''}`} style={getContainerStyle()} onClick={() => onChange(!value)}>
+            <div className="aio-input-switch-outer" style={getOuterStyle()}>
+                <div className="aio-input-switch-inner" style={getInnerStyle()}></div>
+            </div>
+        </div>
+    )
+}
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 export function AIOInput_defaultProps(p:{[key in keyof AITYPE]?:any}) {
     let storage: Storage = new Storage('aio-input-storage');

@@ -2546,3 +2546,91 @@ pre[class*="language-"] > code[class*="language-"] {
     width:100%;
     align-items: center;
 }
+.aio-input-card{
+    width:100%; 
+    gap:6px;
+    box-shadow: 2px 2px 4px 1px rgba(0,0,0,0.7);
+    cursor: pointer;
+    font-size:16px;
+    position: relative;
+    border-radius:12px;
+    padding:12px 16px;
+    display:flex;
+    align-items: center;
+    background: rgba(0,0,0,0.4);
+}
+.aio-input-card-body{
+    flex:1;
+    
+}
+.aio-input-card-subtext{
+    font-size:75%;
+    opacity:0.7;
+}
+.aio-input-card:hover{
+    background:#0069ff;
+    color:#333;
+    font-weight: bold;
+}
+.aio-input-panel{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height:100%;
+    border-radius:13px;
+    width:100%;
+    flex-shrink: 0;
+    flex:1;
+    border:1px solid #0069ff;
+}
+.aio-input-panel-header{
+    font-size:18px;
+    margin-bottom:12px;
+    display:flex;
+    align-items: center;
+    width:100%;
+    padding:0 12px;
+    height:48px;
+    gap:12px;
+    color:#fff;
+    background:#0069ff;
+}
+.aio-input-panel-texts{
+    display:flex;
+    flex-direction: column;
+    flex:1;
+}
+
+.aio-input-panel-subtext{
+    font-size:75%;
+    opacity:0.8;
+    transform:translateY(-3px)
+}
+.aio-input-panel-body{
+    display:flex;
+    flex-direction: column;
+    flex:1;
+    overflow-y:auto;
+    gap:12px;
+    width:100%;
+    align-items: center;
+}
+.aio-input-switch{
+    border-radius:124px;
+    cursor:pointer;
+}
+.aio-input-switch-outer{
+    display:flex;
+    align-items: center;
+    position: relative;
+}
+.aio-input-switch-inner{
+    left:0%;
+    position: absolute;
+    border-radius:100%;
+    transition: left .1s;
+}
+.aio-input-switch.active .aio-input-switch-inner{
+    left:100%;
+    transition: left .1s;
+}

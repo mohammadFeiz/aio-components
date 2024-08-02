@@ -1,7 +1,6 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import { ReactNode } from 'react';
-
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
 export type I_point = number[]
@@ -687,12 +686,13 @@ export class Swip {
 export class AIODate {
     isMatch: (date: I_Date, matchers: string[]) => boolean;
     convertToArray: (date: I_Date, jalali?: boolean) => number[];
-    isAny: (date1: I_Date, date2: I_Date, key: 'less' | 'greater' | 'equal') => boolean;
     isLess: (date1: I_Date, date2: I_Date) => boolean;
     isGreater: (date1: I_Date, date2: I_Date) => boolean;
     isEqual: (date1: I_Date, date2: I_Date) => boolean;
     isBetween: (date1: I_Date, dates: [I_Date, I_Date]) => boolean;
+    compaire:(date1:I_Date,date2:I_Date)=>'less' | 'greater' | 'equal';
     getWeekDay: (date: I_Date) => { weekDay: string, index: number }
+    isToday:(date:I_Date)=>boolean;
     isJalali: (date: I_Date) => boolean;
     getWeekDays: (jalali?: boolean) => string[];
     toGregorian: (date: I_Date) => number[];
@@ -717,6 +717,7 @@ export class AIODate {
     getYesterday: (date: I_Date) => I_Date
     getTomarrow: (date: I_Date) => I_Date
     toMiliseconds: (p: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }) => number
+    getDateByDeltaMiliseconds:(date:I_Date,miliseconds:number)=>number[]
     constructor() {
         this.toMiliseconds = (p) => {
             const { day = 0, hour = 0, minute = 0, second = 0 } = p;
@@ -849,11 +850,10 @@ export class AIODate {
             }
             return list
         }
-        this.isAny = (o1, o2, key) => {
-            if (!o1 || !o2) { return false }
+        this.compaire = (o1,o2)=>{
             o1 = this.convertToArray(o1);
             o2 = this.convertToArray(o2);
-            let compaireKey = 'equal';
+            let compaireKey:'equal' | 'less' | 'greater' = 'equal';
             for (let i = 0; i < o1.length; i++) {
                 if (isNaN(o2[i])) { o2[i] = o1[i] }
                 let a = o1[i];
@@ -861,12 +861,14 @@ export class AIODate {
                 if (a < b) { compaireKey = 'less'; break; }
                 if (a > b) { compaireKey = 'greater'; break; }
             }
-            return compaireKey === key
+            return compaireKey;
         }
-        this.isLess = (o1, o2) => this.isAny(o1, o2, 'less')
-        this.isEqual = (o1, o2) => this.isAny(o1, o2, 'equal')
-        this.isGreater = (o1, o2) => this.isAny(o1, o2, 'greater')
-        this.isBetween = (o1, [o2, o3]) => this.isAny(o1, o2, 'greater') && this.isAny(o1, o3, 'less')
+        this.isLess = (o1, o2) => this.compaire(o1,o2) === 'less'
+        this.isEqual = (o1, o2) => this.compaire(o1,o2) === 'equal'
+        this.isGreater = (o1, o2) => this.compaire(o1,o2) === 'greater'
+        this.isBetween = (o1, [o2, o3]) => this.compaire(o1,o2) === 'greater' && this.compaire(o1,o2) === 'less'
+        this.isToday = (date)=>this.isEqual(date,this.getToday(this.isJalali(date)))
+        this.getDateByDeltaMiliseconds = (date:I_Date,miliseconds:number)=>this.convertToArray(this.getTime(date) + miliseconds)
         this.getWeekDay = (date) => {
             let dateArray = this.convertToArray(date);
             let jalali = this.isJalali(dateArray);
