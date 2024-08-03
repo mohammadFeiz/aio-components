@@ -2634,3 +2634,20 @@ pre[class*="language-"] > code[class*="language-"] {
     left:100%;
     transition: left .1s;
 }
+.aio-input-bottom-menu{
+    height:48px;
+    display:flex;
+    color:#333;
+    background:#fff;
+    flex-shrink:0;
+}
+.aio-input-bottom-menu-item{
+    flex:1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-input-bottom-menu-item.active{
+    background:#0069ff;
+    color:#fff;
+}

@@ -3060,6 +3060,26 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
+type AI_bottomMenuItem = { text: ReactNode, value: string, before?: ReactNode, after?: ReactNode }
+type AI_BottomMenu = { dir?: 'v' | 'h', options: AI_bottomMenuItem[], value: string, onChange: (v: string) => void }
+export const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange, dir = 'v' }) => {
+    function item_layout(item: AI_bottomMenuItem) {
+        const active = item.value === value
+        return (
+            <div key={item.value} className={`aio-input-bottom-menu-item aio-input-bottom-menu-item-${dir}${active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
+                {!!item.before && item.before}
+                {item.text}
+                {!!item.after && item.after}
+
+            </div>
+        )
+    }
+    return (
+        <div className="aio-input-bottom-menu">
+            {options.map((o, i) => item_layout(o))}
+        </div>
+    )
+}
 export type AI_timeUnits = 'year'|'month'|'day'|'hour'|'minute'|'second'
 export function AIOInput_defaultProps(p:{[key in keyof AITYPE]?:any}) {
     let storage: Storage = new Storage('aio-input-storage');
