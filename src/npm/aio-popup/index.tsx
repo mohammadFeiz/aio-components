@@ -430,7 +430,7 @@ function Alert(props: AP_alert) {
     },
     getRender() {
       return (`
-      <div class='aio-popup-alert-container not-mounted ${$$.id} aio-popup-alert-container-${position}'>
+      <div class='aio-popup-alert-container not-mounted ${$$.id} aio-popup-alert-container-${position}${!!className?` ${className}`:''}'>
         <div class='aio-popup-alert aio-popup-alert-${type}'>
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
