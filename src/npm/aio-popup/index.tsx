@@ -49,7 +49,7 @@ export type AP_alert = {
   className?:string,
   closeText?:string,
   animate?:boolean,
-  onClose?:boolean | (()=>void)
+  onClose?:boolean | (()=>void),
 }
 
 export type AP_snackebar = {

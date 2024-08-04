@@ -8,6 +8,7 @@ import { mdiAttachment, mdiContentSave } from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
+import './../../npm/aio-popup/alert1.css';
 export default function DOC_AIOForm(props: any) {
     return (
         <DOC

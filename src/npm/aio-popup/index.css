@@ -346,11 +346,12 @@
   text-align:right;
 }
 .aio-popup-snackebar-item {
-  background: rgb(24 28 41 / 95%);
+  background: rgba(24, 28, 41, 0.945);
   padding: 12px;
   right: 100%;
   position: relative;
-  width: 100%;
+  width: fit-content;
+  max-width:100%;
   height: fit-content;
   box-sizing: border-box;
   display: flex;
@@ -358,6 +359,7 @@
   transition: 0.2s;
   overflow: hidden;
   box-shadow:1px 1px 10px 0 rgba(0,0,0,0.2);
+  backdrop-filter:blur(4px);
 }
 
 .aio-popup-snackebar-item-container.mounted .aio-popup-snackebar-item {
@@ -392,6 +394,10 @@
   margin-inline-end: 6px;
   border-radius: 100%;
   padding: 3px;
+}
+.aio-popup-snackebar-item-icon svg{
+  width:48px !important;
+  height:48px !important;
 }
 
 .aio-popup-snackebar-item-success .aio-popup-snackebar-item-icon {
@@ -653,3 +659,21 @@
       opacity: 0;
   }
 }
+
+/* .aio-popup-snackebar-item{
+  background:linear-gradient(180deg, #ffffff, #d1d1d1);
+  color:#222;
+  font-weight:bold;
+  border-radius:6px;
+  border:2px solid #eee;
+  box-shadow:inset 2px 1px 4px 0px rgb(0 0 0 / 19%);
+}
+
+ */
+/* .aio-popup-snackebar-item{
+  background:#fff;
+  color:#222;
+  font-weight:bold;
+  border-radius:6px;
+  border:1px solid #eee;
+} */
