@@ -8,7 +8,8 @@ import { mdiAttachment, mdiContentSave } from '@mdi/js';
 import RVD from '../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
-import './../../npm/aio-popup/alert1.css';
+import './../../npm/aio-popup/alert2.css';
+//import './../../npm/aio-popup/alert1.css';
 export default function DOC_AIOForm(props: any) {
     return (
         <DOC
@@ -21,6 +22,8 @@ export default function DOC_AIOForm(props: any) {
                     { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
                     { text: 'alert', id: 'alert', render: () => <Alert /> },
                     { text: 'snackebar', id: 'snackebar', render: () => <Snackebar /> },
+                    { text: 'confirm', id: 'confirm', render: () => <Confirm /> },
+                    { text: 'prompt', id: 'prompt', render: () => <Prompt /> },
                     { text: 'popover', id: 'popover', render: () => <Popover /> },
                     { 
                         text: 'highlight', id: 'highlight',
@@ -960,6 +963,78 @@ closeText:'بستن'
         </div>
     )
 }
+function Confirm() {
+    let [popup] = useState(new AIOPopup())
+    function addConfirm(){
+        popup.addConfirm({
+            text:'Confirm text',
+            title:'My Title',
+            onSubmit:async ()=>{
+                alert('yes')
+                return true
+            },
+            onCansel:async ()=>{
+                alert('no')
+                return true
+            },
+        })
+    }
+    return (
+        <div className='example'>
+            <h3>addAlert</h3>
+            {
+                Code(`
+instance.addAlert({
+text:'my alert text',
+subtext:'my subtext of my alert',
+time:10,
+type:'error',
+closeText:'بستن'
+})
+                `)
+            }
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addConfirm()}>Open Confirm</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
+            {popup.render()}
+        </div>
+    )
+}
+function Prompt() {
+    let [popup] = useState(new AIOPopup())
+    function addPrompt(){
+        popup.addPrompt({
+            text:'Confirm text',
+            title:'My Title',
+            onSubmit:async ()=>{
+                alert('yes')
+                return true
+            },
+            onCansel:async ()=>{
+                alert('no')
+                return true
+            },
+        })
+    }
+    return (
+        <div className='example'>
+            <h3>addAlert</h3>
+            {
+                Code(`
+instance.addAlert({
+text:'my alert text',
+subtext:'my subtext of my alert',
+time:10,
+type:'error',
+closeText:'بستن'
+})
+                `)
+            }
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addPrompt()}>Open Prompt</button>
+            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
+            {popup.render()}
+        </div>
+    )
+}
 function Snackebar() {
     let [popup] = useState(new AIOPopup())
     let [rtlPopup] = useState(new AIOPopup({ rtl: true }))
@@ -967,7 +1042,7 @@ function Snackebar() {
         let {
             text = 'my snackebar title',
             subtext = 'my subtext of my snackebar . please click on action',
-            time,
+            time = 10000000,
             type = 'error',
             verticalAlign = 'end',
             horizontalAlign = 'center',

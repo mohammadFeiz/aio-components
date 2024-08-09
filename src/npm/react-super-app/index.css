@@ -215,6 +215,9 @@ body{
   flex-direction: column;
   flex-shrink:0;
 }
+.rsa-navigation-sub-items{
+  flex:unset;
+}
 .rsa-navigation-item {
   border-radius: 6px;
   font-size: 16px;

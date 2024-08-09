@@ -1,6 +1,5 @@
 import React,{useState} from "react";
-import RSA from '../npm/react-super-app/index.tsx';
-import {I_RSA, I_RSA_props,I_RSA_nav} from './../npm/react-super-app/types';
+import RSA,{I_RSA_props,I_RSA_nav} from '../npm/react-super-app/index.tsx';
 export type I_DOC = {name:string,goToHome:()=>void,nav:I_RSA_nav}
 export default function DOC(props:I_DOC){
     let {nav,name,goToHome} = props;
@@ -13,6 +12,6 @@ export default function DOC(props:I_DOC){
         },
         headerContent:()=><div className='w-100 flex' style={{justifyContent:'flex-end'}}><button id='go-to-home' onClick={()=>goToHome()}>Home</button></div>
     }
-    let [rsa] = useState<I_RSA>(new RSA(p))
+    let [rsa] = useState<RSA>(new RSA(p))
     return rsa.render() as any
 }

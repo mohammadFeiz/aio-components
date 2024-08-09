@@ -457,7 +457,9 @@
   border: none;
   background: none;
 }
-
+.aio-popup-confirm{
+  overflow:hidden;
+}
 .aio-popup-confirm .aio-popup-body{
   padding:12px;
 }

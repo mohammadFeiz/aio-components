@@ -12,7 +12,6 @@ import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup.tsx';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas.tsx';
 import DOC_AIOLogin from './documents/aio-login/doc-aio-login.js';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
-import DOC_MSFLoading1 from "./documents/msfloading1/msfloading1.tsx";
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import UIKit from './documents/aio-input/ui-kit/ui-kit.tsx';
 import Test from './test.tsx';
@@ -24,6 +23,7 @@ import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import AppContainer from './documents/aio-layout';
 import DOC_Map from './documents/map/doc-map.tsx';
 import AIFilter from './documents/ai-filter';
+import BeenetDoc from "./documents/beenet";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -40,12 +40,12 @@ export default function AIOComponents(){
     'aio-shop':DOC_AIOShop,
     'react-virtual-dom':DOC_ReactVirtualDom,
     'flip':DOC_Flip,
-    'msfloading1':DOC_MSFLoading1,
     'kit':UIKit,
     'Layout1':Layout1,
     'aio-layout':AppContainer,
     'map':DOC_Map,
     'ai filter':AIFilter,
+    'beenet':BeenetDoc,
     'test':Test
   })
   function goToHome(){

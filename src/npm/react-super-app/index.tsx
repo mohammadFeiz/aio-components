@@ -4,7 +4,6 @@ import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
 import AIOPopup, { AP_alert, AP_confirm, AP_modal, AP_prompt, AP_snackebar } from './../../npm/aio-popup/index.tsx';
 import './index.css';
-import { AI_Sidemenu_option } from '../aio-input/index.tsx';
 type RN = React.ReactNode
 export type I_RSA_props = {
   rtl?:boolean, 
@@ -251,7 +250,7 @@ function Navigation(props:I_RSA_Navigation) {
   }
   function items_node(navItems:I_RSA_navItem[], level:number):RN {
     return (
-      <div className="rsa-navigation-items">
+      <div className={`rsa-navigation-items${level !== 0?' rsa-navigation-sub-items':''}`}>
         {
           navItems.filter(({ show = () => true }) => show()).map((o, i) => {
             if (o.items) {
