@@ -730,6 +730,8 @@ function Input() {
 function Options() {
     let { rootProps, types,options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
+    let [dom] = useState<any>(createRef())
+    let [focused] = useState<any>()
     function renderSearchBox(options: AI_option[]) {
         if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
@@ -752,12 +754,21 @@ function Options() {
             return <Layout {...p} key={i}/>
         });
     }
+    useEffect(()=>{
+        try{setTimeout(()=>$(dom.current).focus(),30);} catch{}
+    },[])
+    function keyDown(e:any){
+        const code = e.keyCode;
+        if(code === 40){
+
+        }
+    }
     if (!options.optionsList.length) { return null }
     let renderOptions = getRenderOptions(options.optionsList);
     let className = `aio-input-options aio-input-scroll aio-input-${rootProps.type}-options`
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
-        <div className='aio-input-options-container'>
+        <div className='aio-input-options-container' ref={dom} tabIndex={0} onKeyDown={(e)=>keyDown(e)}>
             {renderSearchBox(options.optionsList)}
             <div className={className}>{renderOptions}</div>
         </div>
@@ -834,6 +845,11 @@ const Layout:FC<AI_Layout> = (props) => {
         }
         else { return <div style={{flex:1}}></div> }
     }
+    function keyDown(e:any){
+        const code = e.keyCode;
+        console.log(code)
+        if(code === 13){click(e,dom)}
+    }
     function DragIcon() {
         if (!properties.draggable) { return null }
         return (
@@ -906,7 +922,7 @@ const Layout:FC<AI_Layout> = (props) => {
             className: getClassName(),
             style: { ...style, zIndex }
         })
-        let p = { ...attrs, onClick, ref: dom, disabled }
+        let p = { tabIndex:option?undefined:0,onKeyDown:keyDown,...attrs, onClick, ref: dom, disabled }
         let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
         if (draggable) { 
             p = { 
@@ -3461,7 +3477,8 @@ type AI_isTable = {
     rowsTemplate?: (rows: any[]) => RN,
     rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => RN,//table
     toolbar?: RN | (() => RN),
-    toolbarAttrs?: any    
+    toolbarAttrs?: any,
+    tabIndex?:number
 }
 type AI_isRange = {
     end?:number,
@@ -3584,21 +3601,4 @@ const PrismCode:FC<{code:string, language?:'js' | 'css', style?:any}> = ({code,l
 }
 export function Code(code:string, language?:'js' | 'css', style?:any){
     return <PrismCode code={code} language={language} style={style} />
-}
-type AI_Section = { text: string, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, body: ReactNode }
-const Section: FC<AI_Section> = ({ text, subtext, before, after, body }) => {
-    function header_layout() {
-        return (
-            <div className="aio-input-section-header">
-                <div className="aio-input-section-before">{!!before && before}</div>
-                <div className="aio-input-section-texts">
-                    <div className="aio-input-section-text">{text}</div>
-                    {subtext !== undefined && <div className="aio-input-section-subtext">{subtext}</div>}
-                </div>
-                <div className="aio-input-section-after">{!!after && after}</div>
-            </div>
-        )
-    }
-    function body_layout() { return (<div className="aio-input-section-body">{body}</div>) }
-    return (<div className="aio-input-section">{header_layout()} {body_layout()}</div>)
 }
