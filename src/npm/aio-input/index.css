@@ -2047,6 +2047,7 @@
     top: 0px !important;
     border: 3px solid #fff !important;
     border-width: 0px 3px 3px 0px !important;
+    box-sizing: unset !important;
 }
 .aio-input-sidemenu{
     color:#444;
