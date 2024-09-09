@@ -2093,8 +2093,8 @@ export function ValidationTextToObject(vtext: string, Title?: string) {
     let otherTarget;
     let title: string | undefined = Title, message: string = '';
     if (text) {
-        if (text[0] === 'title(' && text[text.length - 1] === ')') { title = text.slice(6, text.length - 1) }
-        else if (text[0] === 'message(' && text[text.length - 1] === ')') { message = text.slice(8, text.length - 1) }
+        if (text.indexOf('title(') === 0 && text[text.length - 1] === ')') { title = text.slice(6, text.length - 1) }
+        else if (text.indexOf('message(') && text[text.length - 1] === ')') { message = text.slice(8, text.length - 1) }
         else { otherTarget = ParseString(text) }
     }
     target = ParseString(target);
