@@ -6,6 +6,7 @@ import './index.css';
 import { mdiMagnify } from '@mdi/js';
 import Icon from '@mdi/react';
 import AIOInput from './../../npm/aio-input';
+import MapMarkerSrc from './marker-icon.png';
 import 'leaflet/dist/leaflet.css';
 
 type I_pos = [number, number]
@@ -79,7 +80,7 @@ const MapBody:FC = ()=>{
       >
           <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
           <MapEvents/>
-          {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker)?marker:undefined}/>}
+          {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker)?marker:<img src={MapMarkerSrc} alt='' width={48} height={48}/>}/>}
           {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html}/>)}
           {shapes.map((o:I_shape,i:number)=><MapShape key={i} shape={o}/>)}
           <MapLayers/>
@@ -172,6 +173,7 @@ const MapMarker:FC<{pos:I_pos,html?:ReactNode}> = ({pos,html})=>{
       iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
     });
   }
+  html = html || <img src={MapMarkerSrc} alt='' width={48} height={48}/>
   let props:any = {position:pos}
   if(html){props.icon =  getHtmlIcon(html)}
   return <Marker {...props} animate={false}/>

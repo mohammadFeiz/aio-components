@@ -38,3 +38,11 @@
     padding:0 6px;
     align-items: center;
 }
+.leaflet-marker-icon{
+    width:0px !important;
+    height:0px !important;
+    margin:0 !important;
+    display:flex !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+}

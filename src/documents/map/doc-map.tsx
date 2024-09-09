@@ -1,7 +1,24 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, ReactNode, useEffect, useRef, useState } from 'react';
 import Map from '../../npm/map/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
+import { AISelect, AITabs } from '../../npm/aio-input/index.tsx';
+type I_show_item = 'preview' | 'code' | 'both'
+type I_Map = React.ComponentProps<typeof Map>;
+const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {
+    const options: I_show_item[] = ['preview', 'code', 'both']
+    const [value, setValue] = useState<I_show_item>('both')
+    function change(v: I_show_item) {
+        setValue(v)
+        onChange(v)
+    }
+    return (
+        <AISelect
+            value={value} onChange={(value) => change(value)} options={options}
+            option={{ text: ({ option }) => option, value: ({ option }) => option }}
+        />
+    )
+}
 export default function DOC_Map(props: any) {
     return (
         <DOC
@@ -18,7 +35,7 @@ export default function DOC_Map(props: any) {
                     { text: 'onClick', id: 'onclick', render: () => <OnClick /> },
                     { text: 'shapes', id: 'shapes', render: () => <Shapes /> },
                     { text: 'layers', id: 'layers', render: () => <Layers /> },
-                    { text: 'zoom.control', id: 'zoomControl', render: () => <ZoomControl /> },
+                    { text: 'zoom', id: 'zoom', render: () => <Zoom /> },
                     { text: 'footer', id: 'footer', render: () => <Footer /> },
                 ]
             }}
@@ -33,10 +50,35 @@ const Basic: FC = () => {
         </div>
     )
 }
-const ZoomControl: FC = () => {
+type I_Zoom_tab = 'value' | 'control' | 'wheel'
+const Zoom: FC = () => {
+    const [tabs] = useState<I_Zoom_tab[]>(['value', 'control', 'wheel'])
+    const [tab, setTab] = useState<I_Zoom_tab>('value')
     return (
         <div className="example">
-            <Map zoom={{control:false}}/>
+            <AITabs options={tabs} option={{ text: ({ option }) => option, value: ({ option }) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0' />
+            {
+                tab === 'control' &&
+                <>
+                    <Map zoom={{ control: false }} />
+                    {Code(`<Map zoom={{ control: false }} />`)}
+                </>
+            }
+            {
+                tab === 'wheel' &&
+                <>
+                    <Map zoom={{ wheel: true }} />
+                    {Code(`<Map zoom={{ wheel: true }} />`)}
+                </>
+            }
+            {
+                tab === 'value' &&
+                <>
+                    <Map zoom={{ value: 10 }} />
+                    {Code(`<Map zoom={{ value: 10 }} />`)}
+                </>
+            }
+
         </div>
     )
 }
@@ -121,80 +163,78 @@ const Dragging: FC = () => {
 }
 const Marker: FC = () => {
     return (
-        <div className="example">
-            <Map marker={false} />
-            {
-                Code(
-                    `<Map marker={false} />`
-                )
-            }
-            <div className="h-60"></div>
-            <Map
-                marker={(
-                    <div className='flex-col fd-column align-h w-24'>
-                        <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                        <div className='w-2 h-16 bg-0'></div>
-                    </div>
-                )}
-            />
-            {
-                Code(
-                    `<Map
-    marker={{
-        active: true,
-        html: (
-            <div className='flex-col fd-column align-h w-24'>
-                <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                <div className='w-2 h-16 bg-0'></div>
-            </div>
-        )
-    }}
-/>`
-                )
-            }
-        </div>
-    )
-}
-const Markers: FC = () => {
-    return (
-        <div className="example">
-            <Map
-                markers={[
-                    {
-                        pos: [35.699, 51.338],
-                        html: (
+        <Comp
+            tabs={{
+                'false': {
+                    preview: { marker: false },
+                    code: '{marker:false}'
+                },
+                'html': {
+                    preview: {
+                        marker: (
                             <div className='flex-col fd-column align-h w-24'>
                                 <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
                                 <div className='w-2 h-16 bg-0'></div>
                             </div>
                         )
                     },
-                    {
-                        pos: [35.700, 51.341]
+                    code:(
+                        `
+marker: (
+    <div className='flex-col fd-column align-h w-24'>
+        <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
+        <div className='w-2 h-16 bg-0'></div>
+    </div>
+)
+                        `
+                    )
+                }
+            }}
+        />
+    )
+}
+const Markers: FC = () => {
+    return (
+        <Comp
+            tabs={{
+                basic:{
+                    preview:{
+                        markers:[
+                            {
+                                pos: [35.699, 51.338],
+                                html: (
+                                    <div className='flex-col fd-column align-h w-24'>
+                                        <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
+                                        <div className='w-2 h-16 bg-0'></div>
+                                    </div>
+                                )
+                            },
+                            {
+                                pos: [35.700, 51.341]
+                            },
+                        ]
                     },
-                ]}
-            />
-            {
-                Code(
-                    `<Map
-    markers={[
-        {
-            pos: [35.699, 51.338],
-            html: (
-                <div className='flex-col fd-column align-h w-24'>
-                    <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                    <div className='w-2 h-16 bg-0'></div>
-                </div>
-            )
-        },
-        {
-            pos: [35.712, 51.370]
-        },
-    ]}
-/>`
-                )
-            }
-        </div>
+                    code:(
+                        `
+markers:[
+    {
+        pos: [35.699, 51.338],
+        html: (
+            <div className='flex-col fd-column align-h w-24'>
+                <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
+                <div className='w-2 h-16 bg-0'></div>
+            </div>
+        )
+    },
+    {
+        pos: [35.700, 51.341]
+    },
+]
+                        `
+                    )
+                }
+            }}
+        />
     )
 }
 const OnClick: FC = () => {
@@ -204,124 +244,102 @@ const OnClick: FC = () => {
         </div>
     )
 }
-
 const Shapes: FC = () => {
     return (
-        <div className="example">
-            <Map
-                shapes={[
-                    {
-                        type: 'circle',
-                        center: [35.699939, 51.338497],
-                        radius: 600,
-                        style:{
-                            stroke:{
-                                width:2,
-                                color:'red',
-                                dash:'4,8'
-                            },
-                            fill:{
-                                color:'red',
-                                opacity:0.2
+        <Comp
+            tabs={{
+                'circle': {
+                    preview: {
+                        shapes: [
+                            {
+                                type: 'circle', center: [35.699939, 51.338497], radius: 600,
+                                style: {
+                                    stroke: { width: 2, color: 'red', dash: '4,8' },
+                                    fill: { color: 'red', opacity: 0.2 }
+                                }
                             }
-                        }
-                    }
-                ]}
-            />
-            {
-                Code(
-                    `<Map 
-    shapes={[
+                        ]
+                    },
+                    code: `
+{
+    shapes: [
         {
-            type:'circle',
-            center:[35.699939, 51.338497],
-            radius:600,
-            style:{
-                stroke:{
-                    width:2,
-                    color:'red',
-                    dash:'4,8'
-                },
-                fill:{
-                    color:'red',
-                    opacity:0.2
-                }
+            type: 'circle',center: [35.699939, 51.338497],radius: 600,
+            style: {
+                stroke: {width: 2,color: 'red',dash: '4,8'},
+                fill: {color: 'red',opacity: 0.2}
             }
         }
-    ]}
-/>`
-                )
-            }
-            <Map
-                shapes={[
-                    {
-                        type: 'rect',
-                        points: [
-                            [35.699939, 51.338497],
-                            [35.692, 51.35],
-                        ],
-                        style: {
-                            stroke: {
-                                width: 2,
-                                color: 'red',
-                                dash: '4,8'
-                            },
-                            fill: {
-                                color: 'red',
-                                opacity: 0.2
+    ]
+}
+                    `
+                },
+                rect: {
+                    preview: {
+                        shapes: [
+                            {
+                                type: 'rect', points: [[35.699939, 51.338497], [35.692, 51.35]],
+                                style: {
+                                    stroke: { width: 2, color: 'red', dash: '4,8' },
+                                    fill: { color: 'red', opacity: 0.2 }
+                                }
                             }
-                        }
-                    }
-                ]}
-            />
-            {
-                Code(
-                    `<Map 
-    shapes={[
+                        ]
+                    },
+                    code: `
+{
+    shapes: [
         {
-            type:'rect',
-            points:[
+            type: 'rect',points: [[35.699939, 51.338497],[35.692, 51.35]],
+            style: {
+                stroke: {width: 2,color: 'red',dash: '4,8'},
+                fill: {color: 'red',opacity: 0.2}
+            }
+        }
+    ]
+}
+                    `
+                },
+                polyline: {
+                    preview: {
+                        shapes: [
+                            {
+                                type: 'polyline',
+                                points: [
+                                    [35.699939, 51.338497],
+                                    [35.6992, 51.34],
+                                    [35.6999, 51.345],
+                                    [35.695, 51.35],
+                                    [35.695, 51.36],
+                                ],
+                                style: {
+                                    stroke: { width: 4, color: 'purple' }
+                                }
+                            }
+                        ]
+                    },
+                    code: `
+{
+    shapes:[
+        {
+            type: 'polyline',
+            points: [
                 [35.699939, 51.338497],
-                [35.692, 51.35],
+                [35.6992, 51.34],
+                [35.6999, 51.345],
+                [35.695, 51.35],
+                [35.695, 51.36],
             ],
-            style:{
-                stroke:{
-                    width:2,
-                    color:'red',
-                    dash:'4,8'
-                },
-                fill:{
-                    color:'red',
-                    opacity:0.2
-                }
+            style: {
+                stroke: {width: 4,color: 'purple'}
             }
         }
-    ]}
-/>`
-                )
-            }
-            <Map
-                shapes={[
-                    {
-                        type: 'polyline',
-                        points: [
-                            [35.699939, 51.338497],
-                            [35.6992, 51.34],
-                            [35.6999, 51.345],
-                            [35.695, 51.35],
-                            [35.695, 51.36],
-                        ],
-                        style: {
-                            stroke: {
-                                width: 4,
-                                color: 'purple',
-                                
-                            }
-                        }
-                    }
-                ]}
-            />
-        </div>
+    ]
+}
+                    `
+                }
+            }}
+        />
     )
 }
 const Layers: FC = () => {
@@ -329,32 +347,32 @@ const Layers: FC = () => {
         <div className="example">
             <Map
                 layers={{
-                    position:'topright',
-                    items:[
+                    position: 'topright',
+                    items: [
                         {
-                            name:'circles',
-                            shapes:[
+                            name: 'circles',
+                            shapes: [
                                 {
                                     type: 'circle',
                                     center: [35.699939, 51.338497],
                                     radius: 600,
-                                    style:{
-                                        stroke:{
-                                            width:2,
-                                            color:'red',
-                                            dash:'4,8'
+                                    style: {
+                                        stroke: {
+                                            width: 2,
+                                            color: 'red',
+                                            dash: '4,8'
                                         },
-                                        fill:{
-                                            color:'red',
-                                            opacity:0.2
+                                        fill: {
+                                            color: 'red',
+                                            opacity: 0.2
                                         }
                                     }
                                 }
                             ]
                         },
                         {
-                            name:'rects',
-                            shapes:[
+                            name: 'rects',
+                            shapes: [
                                 {
                                     type: 'rect',
                                     points: [
@@ -376,8 +394,8 @@ const Layers: FC = () => {
                             ]
                         },
                         {
-                            name:'polylines',
-                            shapes:[
+                            name: 'polylines',
+                            shapes: [
                                 {
                                     type: 'polyline',
                                     points: [
@@ -391,7 +409,7 @@ const Layers: FC = () => {
                                         stroke: {
                                             width: 4,
                                             color: 'purple',
-                                            
+
                                         }
                                     }
                                 }
@@ -400,23 +418,81 @@ const Layers: FC = () => {
                     ]
                 }}
             />
+            {
+                Code(
+                    `<Map
+    layers={{
+        position: 'topright',
+        items: [
+            {
+                name: 'circles',
+                shapes: [
+                    {
+                        type: 'circle',
+                        center: [35.699939, 51.338497],
+                        radius: 600,
+                        style: {
+                            stroke: {width: 2,color: 'red',dash: '4,8'},
+                            fill: {color: 'red',opacity: 0.2}
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'rects',
+                shapes: [
+                    {
+                        type: 'rect',
+                        points: [
+                            [35.699939, 51.338497],
+                            [35.692, 51.35],
+                        ],
+                        style: {
+                            stroke: {width: 2,color: 'red',dash: '4,8'},
+                            fill: {color: 'red',opacity: 0.2}
+                        }
+                    }
+                ]
+            },
+            {
+                name: 'polylines',
+                shapes: [
+                    {
+                        type: 'polyline',
+                        points: [
+                            [35.699939, 51.338497],
+                            [35.6992, 51.34],
+                            [35.6999, 51.345],
+                            [35.695, 51.35],
+                            [35.695, 51.36],
+                        ],
+                        style: {
+                            stroke: {width: 4,color: 'purple'}
+                        }
+                    }
+                ]
+            }
+        ]
+    }}
+/>`
+                )
+            }
         </div>
     )
 }
-
 const Footer: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
     return (
         <div className="example">
-            <Map 
-                value={value} 
-                onChange={(newValue: [number, number]) => setValue(newValue)} 
+            <Map
+                value={value}
+                onChange={(newValue: [number, number]) => setValue(newValue)}
                 footer={<p>{`lat:${value[0]} - lng:${value[1]}`}</p>}
             />
-            
+
             {
                 Code(
-`function Example(){
+                    `function Example(){
     const [value,setValue] = useState([35.699939, 51.338497])
     return (
         <Map 
@@ -427,6 +503,43 @@ const Footer: FC = () => {
     )
 }`
                 )
+            }
+        </div>
+    )
+}
+type I_tabs = {
+    [key: string]: {
+        preview: I_Map,
+        code: string
+    }
+}
+const Comp: FC<{ tabs: I_tabs }> = (props) => {
+    const [tabs] = useState<string[]>(Object.keys(props.tabs))
+    const [tab, setTab] = useState<string>(tabs[0])
+    const [show, setShow] = useState<I_show_item>('both')
+    function preview(Tab: string, props: I_Map) {
+        if (Tab !== tab) { return null }
+        return show === 'code' ? null : <Map {...props} />
+    }
+    function code(Tab: string, code: string) {
+        if (Tab !== tab) { return null }
+        return show === 'preview' ? null : Code(code)
+    }
+    return (
+        <div className="example">
+            <AITabs
+                options={tabs} option={{ text: ({ option }) => option, value: ({ option }) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0'
+                after={(<Show onChange={(v) => setShow(v)} />)}
+            />
+            {
+                tabs.map((t) => {
+                    return (
+                        <>
+                            {preview(t, props.tabs[t].preview)}
+                            {code(t, props.tabs[t].code)}
+                        </>
+                    )
+                })
             }
         </div>
     )
