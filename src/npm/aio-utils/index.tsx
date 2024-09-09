@@ -2094,7 +2094,7 @@ export function ValidationTextToObject(vtext: string, Title?: string) {
     let title: string | undefined = Title, message: string = '';
     if (text) {
         if (text.indexOf('title(') === 0 && text[text.length - 1] === ')') { title = text.slice(6, text.length - 1) }
-        else if (text.indexOf('message(') && text[text.length - 1] === ')') { message = text.slice(8, text.length - 1) }
+        else if (text.indexOf('message(') === 0 && text[text.length - 1] === ')') { message = text.slice(8, text.length - 1) }
         else { otherTarget = ParseString(text) }
     }
     target = ParseString(target);
