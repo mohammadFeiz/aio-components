@@ -170,15 +170,41 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
     }
     return res
 }
-export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup' | 'click', action: any, type?: 'bind' | 'unbind') {
+export function EventHandler(
+    selector: string,
+    event: 'mousedown' | 'mousemove' | 'mouseup' | 'click',
+    action: EventListenerOrEventListenerObject,
+    type?: 'bind' | 'unbind',passive?:boolean
+  ) {
     type = type || 'bind';
-    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend", click: 'click' };
-    let touch = 'ontouchstart' in document.documentElement
-    let fixedEvent = touch ? me[event] : event;
-    var element: any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
-    element.unbind(fixedEvent, action);
-    if (type === 'bind') { element.bind(fixedEvent, action) }
-}
+  
+    // Map mouse events to touch events
+    const eventMap = {
+      mousedown: 'touchstart',
+      mousemove: 'touchmove',
+      mouseup: 'touchend',
+      click: 'click'
+    };
+  
+    // Check if the device supports touch events
+    const touch = 'ontouchstart' in document.documentElement;
+    const fixedEvent = touch ? eventMap[event] : event;
+  
+    // Select elements
+    const elements = selector === 'window'
+      ? [window]
+      : document.querySelectorAll(selector);
+  
+    // Bind or unbind event listeners
+    elements.forEach(element => {
+      if (type === 'unbind') {
+        element.removeEventListener(fixedEvent, action);
+      } else if (type === 'bind') {
+        const conf = passive !== undefined?{passive}:undefined
+        element.addEventListener(fixedEvent, action,conf);
+      }
+    });
+  }
 export function getValueByStep(p: { value: number, start: number, step: number, end: number }) {
     let { value, start, step, end } = p;
     let res = Math.round((value - start) / step) * step + start;
@@ -1645,7 +1671,7 @@ export function setValueByField(data: any = {}, field: string, value: any) {
 }
 export function GetArray(count: number, fn?: (index: number) => any) {
     fn = fn || ((index) => index)
-    return new Array(count).fill(0).map((o, i) => fn(i))
+    return new Array(count).fill(0).map((o, i) => {if(fn)return fn(i)})
 }
 export function GetRandomNumber(from:number, to:number) { return from + Math.round(Math.random() * (to - from)) }
 type I_storage_model = { [key: string]: any }

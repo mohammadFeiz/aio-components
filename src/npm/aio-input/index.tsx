@@ -244,8 +244,8 @@ function TimePopover(props: { onClose: () => void }) {
     let { jalali,onChange, size = 12} = rootProps;
     let { onClose } = props;
     let [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
-    let [startYear] = useState(value.year ? value.year - 10 : undefined);
-    let [endYear] = useState(value.year ? value.year + 10 : undefined);
+    const [startYear] = useState<number | undefined>(value.year ? value.year - 10 : undefined);
+    const [endYear] = useState<number | undefined>(value.year ? value.year + 10 : undefined);
     function change(obj: { [key in AI_timeUnits]?: number }) {
         setValue({ ...value, ...obj })
     }
@@ -253,6 +253,7 @@ function TimePopover(props: { onClose: () => void }) {
         return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت', 'Now': 'اکنون' }[key] : key
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
+        //@ts-nocheck
         let { year, month, day } = value;
         if (type === 'year' && startYear && endYear) { return GetArray(endYear - startYear + 1,(i)=>({ text: i + startYear, value: i + startYear })) }
         if (type === 'day' && day) {
@@ -361,7 +362,7 @@ function Image() {
     let p: AI<'file'> = {
         disabled,
         justify: true, text: IMG, attrs: { style: { width: '100%', height: '100%', padding: 0 } },
-        onChange: (file) => changeUrl(file, (url: string) => onChange(url))
+        onChange: (file) => changeUrl(file, (url: string) => {if(onChange)onChange(url)})
     }
     return (<AIFile {...p} />)
 }
@@ -914,7 +915,7 @@ const Layout:FC<AI_Layout> = (props) => {
                     e.stopPropagation();
                     e.preventDefault();
                     if ((props.properties || {}).onClick) { props.properties.onClick() }
-                    else { optionClick(option) }
+                    else { optionClick(option as AI_option) }
                 }
             }
         }
@@ -971,7 +972,7 @@ const Layout:FC<AI_Layout> = (props) => {
     function Toggle(indent: AI_indent) {
         if(!option || option.toggleIcon === false){return null}
         if (toggle === undefined) { return null }
-        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); toggle.action()} }>
+        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); toggle?.action()} }>
             <div className='aio-input-toggle-icon'>{getToggleIcon(toggle.state)}</div>
             {
                 toggle.state === true &&
@@ -1004,7 +1005,7 @@ const Layout:FC<AI_Layout> = (props) => {
         let { level } = indent;
         return (
             <div className="aio-input-indents">
-                {GetArray(level,(i) => <div key={i} className={`aio-input-indent`}>{indentIcon(indent, i)}</div>)}
+                {GetArray(level,(i) => <div key={i} className={`aio-input-indent`}>{indentIcon(indent as AI_indent, i)}</div>)}
                 {!!toggle && Toggle(indent)}
             </div>
         )
@@ -1069,7 +1070,8 @@ function List() {
     function getIndexByTop(top: number) { return Math.round(((count * size) - size - (2 * top)) / (2 * size)); }
     function getTopByIndex(index: number) { return (count - 2 * index - 1) * size / 2; }
     function getContainerStyle() { return { top: getTopByIndex(temp.activeIndex) }; }
-    function moveDown() {
+    function moveDown(e:any) {
+        e.preventDefault()
         if (temp.activeIndex >= optionsLength - 1) { return }
         temp.activeIndex++;
         let newTop = getTopByIndex(temp.activeIndex);
@@ -1090,7 +1092,7 @@ function List() {
     function keyDown(e: any) {
         if (!editable) { return }
         if (e.keyCode === 38) { moveUp(); }
-        else if (e.keyCode === 40) { moveDown(); }
+        else if (e.keyCode === 40) { moveDown(e); }
     }
     function getLimit() { return { top: getTopByIndex(-1), bottom: getTopByIndex(optionsLength) } }
     function getTrueTop(top: number) {
@@ -1101,8 +1103,8 @@ function List() {
     }
     function mouseDown(e: any) {
         if (!editable) { return }
-        EventHandler('window', 'mousemove', mouseMove);
-        EventHandler('window', 'mouseup', mouseUp);
+        EventHandler('window', 'mousemove', mouseMove,'bind',false);
+        EventHandler('window', 'mouseup', mouseUp,'bind',false);
         clearInterval(temp.interval);
         temp.moved = false;
         let client = GetClient(e);
@@ -1126,6 +1128,9 @@ function List() {
         return value;
     }
     function mouseMove(e: any) {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('move')
         temp.moved = true;
         var client = GetClient(e);
         let y = client.y;
@@ -2131,7 +2136,7 @@ function TablePaging() {
             buttons.push(<button key={i} className={'aio-input-table-paging-button aio-input-table-paging-button-hidden'}>{i}</button>)
         }
         else {
-            let index;
+            let index:number;
             if (isFirst) { index = 1; isFirst = false; }
             else if (i === Math.min(temp.end, temp.pages)) { index = temp.pages }
             else { index = i; }
@@ -3196,7 +3201,7 @@ function GetOptions(p:I_GetOptions): AI_options {
         let option = options[i];
         let optionDetails: AI_optionDetails = { 
             option,index: i,active:false, level, rootProps,
-            change: change ? (newRow: any) => { change(option, newRow) } : undefined,
+            change: change ? (newRow: any) => { if(change)change(option, newRow) } : undefined,
         };
         let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ rootProps, optionDetails,defaultOptionProps, key: 'disabled' });
         //ghabl az har chiz sharte namayesh ro check kon

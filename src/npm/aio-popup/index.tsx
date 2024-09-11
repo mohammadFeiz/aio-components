@@ -237,7 +237,7 @@ const Popups:FC<AP_Popups> = forwardRef((props,ref)=> {
     if (!modal) { return }
     $(`[data-id=${arg}]`).addClass('not-mounted');
     setTimeout(()=>{
-      if (typeof modal.onClose === 'function') { modal.onClose() }
+      if (modal && typeof modal.onClose === 'function') { modal.onClose() }
       setModals(prevModals => prevModals.filter((o) => o.id !== arg))
     },300)
   }
@@ -589,7 +589,7 @@ function SnackebarItem(props: AP_SnackebarItem) {
     if (!action || !action.text) { return null }
     let p = {
       className: 'aio-popup-snackebar-item-action',
-      onClick: (e: any) => { e.stopPropagation(); action.onClick(); remove() }
+      onClick: (e: any) => { e.stopPropagation(); if(action){action.onClick()} remove() }
     }
     return (<button {...p}>{action.text}</button>)
   }
@@ -630,6 +630,8 @@ function Align(p: AP_align) {
         let page = $(pageSelector);
         try {
           let { left: l, top: t } = page.offset() || {left:0,top:0}
+          l -= window.scrollX;
+          t -= window.scrollY;
           left -= l;
           top -= t;
         }
