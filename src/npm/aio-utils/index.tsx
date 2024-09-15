@@ -91,7 +91,7 @@ export class DragClass {
         }
         this.getDropAttrs = (dropData) => {
             return {
-                onDragOver:(e:any)=>e.preventDefault(),
+                onDragOver: (e: any) => e.preventDefault(),
                 onDrop: (e: any) => callback(this.dragData, dropData)
             }
         }
@@ -170,41 +170,15 @@ export function SplitNumber(price: number, count?: number, splitter?: string): s
     }
     return res
 }
-export function EventHandler(
-    selector: string,
-    event: 'mousedown' | 'mousemove' | 'mouseup' | 'click',
-    action: EventListenerOrEventListenerObject,
-    type?: 'bind' | 'unbind',passive?:boolean
-  ) {
+export function EventHandler(selector: string, event: 'mousedown' | 'mousemove' | 'mouseup' | 'click', action: any, type?: 'bind' | 'unbind') {
     type = type || 'bind';
-  
-    // Map mouse events to touch events
-    const eventMap = {
-      mousedown: 'touchstart',
-      mousemove: 'touchmove',
-      mouseup: 'touchend',
-      click: 'click'
-    };
-  
-    // Check if the device supports touch events
-    const touch = 'ontouchstart' in document.documentElement;
-    const fixedEvent = touch ? eventMap[event] : event;
-  
-    // Select elements
-    const elements = selector === 'window'
-      ? [window]
-      : document.querySelectorAll(selector);
-  
-    // Bind or unbind event listeners
-    elements.forEach(element => {
-      if (type === 'unbind') {
-        element.removeEventListener(fixedEvent, action);
-      } else if (type === 'bind') {
-        const conf = passive !== undefined?{passive}:undefined
-        element.addEventListener(fixedEvent, action,conf);
-      }
-    });
-  }
+    var me = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend", click: 'click' };
+    let touch = 'ontouchstart' in document.documentElement
+    let fixedEvent = touch ? me[event] : event;
+    var element: any = typeof selector === "string" ? (selector === "window" ? $(window) : $(selector)) : selector;
+    element.unbind(fixedEvent, action);
+    if (type === 'bind') { element.bind(fixedEvent, action) }
+}
 export function getValueByStep(p: { value: number, start: number, step: number, end: number }) {
     let { value, start, step, end } = p;
     let res = Math.round((value - start) / step) * step + start;
@@ -716,9 +690,9 @@ export class AIODate {
     isGreater: (date1: I_Date, date2: I_Date) => boolean;
     isEqual: (date1: I_Date, date2: I_Date) => boolean;
     isBetween: (date1: I_Date, dates: [I_Date, I_Date]) => boolean;
-    compaire:(date1:I_Date,date2:I_Date)=>'less' | 'greater' | 'equal';
+    compaire: (date1: I_Date, date2: I_Date) => 'less' | 'greater' | 'equal';
     getWeekDay: (date: I_Date) => { weekDay: string, index: number }
-    isToday:(date:I_Date)=>boolean;
+    isToday: (date: I_Date) => boolean;
     isJalali: (date: I_Date) => boolean;
     getWeekDays: (jalali?: boolean) => string[];
     toGregorian: (date: I_Date) => number[];
@@ -743,7 +717,7 @@ export class AIODate {
     getYesterday: (date: I_Date) => I_Date
     getTomarrow: (date: I_Date) => I_Date
     toMiliseconds: (p: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }) => number
-    getDateByDeltaMiliseconds:(date:I_Date,miliseconds:number)=>number[]
+    getDateByDeltaMiliseconds: (date: I_Date, miliseconds: number) => number[]
     constructor() {
         this.toMiliseconds = (p) => {
             const { day = 0, hour = 0, minute = 0, second = 0 } = p;
@@ -876,10 +850,10 @@ export class AIODate {
             }
             return list
         }
-        this.compaire = (o1,o2)=>{
+        this.compaire = (o1, o2) => {
             o1 = this.convertToArray(o1);
             o2 = this.convertToArray(o2);
-            let compaireKey:'equal' | 'less' | 'greater' = 'equal';
+            let compaireKey: 'equal' | 'less' | 'greater' = 'equal';
             for (let i = 0; i < o1.length; i++) {
                 if (isNaN(o2[i])) { o2[i] = o1[i] }
                 let a = o1[i];
@@ -889,12 +863,12 @@ export class AIODate {
             }
             return compaireKey;
         }
-        this.isLess = (o1, o2) => this.compaire(o1,o2) === 'less'
-        this.isEqual = (o1, o2) => this.compaire(o1,o2) === 'equal'
-        this.isGreater = (o1, o2) => this.compaire(o1,o2) === 'greater'
-        this.isBetween = (o1, [o2, o3]) => this.compaire(o1,o2) === 'greater' && this.compaire(o1,o2) === 'less'
-        this.isToday = (date)=>this.isEqual(date,this.getToday(this.isJalali(date)))
-        this.getDateByDeltaMiliseconds = (date:I_Date,miliseconds:number)=>this.convertToArray(this.getTime(date) + miliseconds)
+        this.isLess = (o1, o2) => this.compaire(o1, o2) === 'less'
+        this.isEqual = (o1, o2) => this.compaire(o1, o2) === 'equal'
+        this.isGreater = (o1, o2) => this.compaire(o1, o2) === 'greater'
+        this.isBetween = (o1, [o2, o3]) => this.compaire(o1, o2) === 'greater' && this.compaire(o1, o2) === 'less'
+        this.isToday = (date) => this.isEqual(date, this.getToday(this.isJalali(date)))
+        this.getDateByDeltaMiliseconds = (date: I_Date, miliseconds: number) => this.convertToArray(this.getTime(date) + miliseconds)
         this.getWeekDay = (date) => {
             let dateArray = this.convertToArray(date);
             let jalali = this.isJalali(dateArray);
@@ -1671,9 +1645,9 @@ export function setValueByField(data: any = {}, field: string, value: any) {
 }
 export function GetArray(count: number, fn?: (index: number) => any) {
     fn = fn || ((index) => index)
-    return new Array(count).fill(0).map((o, i) => {if(fn)return fn(i)})
+    return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
 }
-export function GetRandomNumber(from:number, to:number) { return from + Math.round(Math.random() * (to - from)) }
+export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
 type I_storage_model = { [key: string]: any }
 type I_storage_time = { [key: string]: number }
 export class Storage {
@@ -2360,17 +2334,17 @@ type I_color_type = 'rgb' | 'hex' | 'array'
 export class AIOColors {
     number_to_hex: (number: number) => string;
     getType: (c: I_color) => I_color_type;
-    to_array:(c:I_color)=>number[];
-    between:(c1:I_color,c2:I_color,count:number)=>string[];
-    getBetween:(v:(string | number)[])=>I_color[]
-    to_dark:(c:I_color,percent:number)=>I_color;
-    to_light:(c:I_color,percent:number)=>I_color;
-    brightness:(c:I_color,percent:number)=>I_color;
-    to_hex:(c:I_color)=>string;
-    to_rgb:(c:I_color)=>string;
-    log:(c:I_color[])=>void;
-    getRandomRGB:(c1?:I_color,c2?:I_color)=>string;
-    reverse:(c:I_color)=>I_color;
+    to_array: (c: I_color) => number[];
+    between: (c1: I_color, c2: I_color, count: number) => string[];
+    getBetween: (v: (string | number)[]) => I_color[]
+    to_dark: (c: I_color, percent: number) => I_color;
+    to_light: (c: I_color, percent: number) => I_color;
+    brightness: (c: I_color, percent: number) => I_color;
+    to_hex: (c: I_color) => string;
+    to_rgb: (c: I_color) => string;
+    log: (c: I_color[]) => void;
+    getRandomRGB: (c1?: I_color, c2?: I_color) => string;
+    reverse: (c: I_color) => I_color;
     constructor() {
         this.number_to_hex = (num) => {
             const str = num.toString(16); return str.length === 1 ? "0" + str : str;
@@ -2382,7 +2356,7 @@ export class AIOColors {
         this.to_array = (c) => {
             if (Array.isArray(c)) { return c }
             if (c.indexOf('rgb(') === 0) {
-                return c.slice(c.indexOf('(') + 1, c.indexOf(')')).split(',').map((o:string) => +o);
+                return c.slice(c.indexOf('(') + 1, c.indexOf(')')).split(',').map((o: string) => +o);
             }
             c = c.substr(1);
             let values = c.split(''), r, g, b;
@@ -2398,7 +2372,7 @@ export class AIOColors {
             }
             return [r, g, b];
         }
-        this.between = (c1,c2,count)=>{
+        this.between = (c1, c2, count) => {
             let [r1, g1, b1] = this.to_array(c1);
             let [r2, g2, b2] = this.to_array(c2);
             let rDelta = (r2 - r1) / (count - 1);
@@ -2412,20 +2386,20 @@ export class AIOColors {
             return colors;
         }
         this.getBetween = (array) => {
-            let res:I_color[] = [];
-            let colors:I_color[] = []
-            let counts:number[] = []
-            for(let i = 0; i < array.length; i++){
+            let res: I_color[] = [];
+            let colors: I_color[] = []
+            let counts: number[] = []
+            for (let i = 0; i < array.length; i++) {
                 let a = array[i];
-                let b = Array.isArray(a)?this.to_rgb(a):a
-                if(typeof b === 'string'){colors.push(b)}
-                else if(typeof b === 'number'){counts.push(b)}
+                let b = Array.isArray(a) ? this.to_rgb(a) : a
+                if (typeof b === 'string') { colors.push(b) }
+                else if (typeof b === 'number') { counts.push(b) }
             }
-            for(let i = 0; i < colors.length - 1; i++){
+            for (let i = 0; i < colors.length - 1; i++) {
                 const c1 = colors[i];
                 const c2 = colors[i + 1];
                 const count = counts[i];
-                res = [...res,this.between(c1,c2,count)]
+                res = [...res, this.between(c1, c2, count)]
             }
             return res
         }
@@ -2434,9 +2408,9 @@ export class AIOColors {
             r = Math.round(r - (r * (percent / 100)))
             g = Math.round(g - (g * (percent / 100)))
             b = Math.round(b - (b * (percent / 100)))
-            const type:I_color_type = this.getType(c)
+            const type: I_color_type = this.getType(c)
             const key = 'to_' + type as 'to_array' | 'to_hex' | 'to_rgb'
-            const fn:any = (this as any)[key]
+            const fn: any = (this as any)[key]
             return fn([r, g, b])
         }
         this.to_light = (c, percent) => {
@@ -2444,9 +2418,9 @@ export class AIOColors {
             r = Math.round(r + ((255 - r) * (percent / 100)))
             g = Math.round(g + ((255 - g) * (percent / 100)))
             b = Math.round(b + ((255 - b) * (percent / 100)))
-            const type:I_color_type = this.getType(c)
+            const type: I_color_type = this.getType(c)
             const key = 'to_' + type as 'to_array' | 'to_hex' | 'to_rgb'
-            const fn:any = (this as any)[key]
+            const fn: any = (this as any)[key]
             return fn([r, g, b])
         }
         this.to_hex = (c) => { return `#${this.to_array(c).map((o) => this.number_to_hex(o)).join('')}`; }
@@ -2457,68 +2431,68 @@ export class AIOColors {
             if (percent > 0) { return this.to_light(c, percent) }
         }
         this.log = (c) => {
-            for(let i = 0; i < c.length; i++){
+            for (let i = 0; i < c.length; i++) {
                 let color = this.to_rgb(c[i]);
                 console.log(`%c ${this.reverse(color)}`, 'background: ' + color + '; color: #000');
             }
         }
-        this.getRandomRGB = (c1 = '#000',c2 = '#fff') => {
+        this.getRandomRGB = (c1 = '#000', c2 = '#fff') => {
             const array1 = this.to_array(c1)
             const array2 = this.to_array(c2)
             let r = GetRandomNumber(array1[0], array2[0]);
             let g = GetRandomNumber(array1[1], array2[1]);
             let b = GetRandomNumber(array1[2], array2[2]);
-            return this.to_rgb([r,g,b])
+            return this.to_rgb([r, g, b])
         }
         this.reverse = (c) => { return (this as any)['to_' + this.getType(c)](this.to_array(c).map((o) => 255 - o)) }
     }
 }
-class GetSvg{
-    getStyle = (color?:string)=>{
+class GetSvg {
+    getStyle = (color?: string) => {
         const fill = color || "currentcolor"
-        return {fill}
+        return { fill }
     }
-    getSvgStyle = (size?:number)=>{
+    getSvgStyle = (size?: number) => {
         size = size || 1;
-        return {width: `${size * 1.5}rem`,height:`${size * 1.5}rem`}
+        return { width: `${size * 1.5}rem`, height: `${size * 1.5}rem` }
     }
-    fixSvgContent = (content:ReactNode,size?:number,p?:{spin?:number,color?:string})=>{
-        const {spin,color} = p || {}
+    fixSvgContent = (content: ReactNode, size?: number, p?: { spin?: number, color?: string }) => {
+        const { spin, color } = p || {}
         let res = null;
-        if(spin){
+        if (spin) {
             res = (
                 <>
                     <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
-                    <g style={{animation: `${spin}s linear 0s infinite normal none running spin`,transformOrigin: 'center center'}}></g>
+                    <g style={{ animation: `${spin}s linear 0s infinite normal none running spin`, transformOrigin: 'center center' }}></g>
                 </>
             )
         }
-        else {res = content}
+        else { res = content }
         return (<svg viewBox="0 0 24 24" role="presentation" style={this.getSvgStyle(size)}>{res}</svg>)
     }
-    getIcon = (path:string,size?:number,p?:{spin?:number,color?:string})=>{
-        const {color} = p || {}
+    getIcon = (path: string, size?: number, p?: { spin?: number, color?: string }) => {
+        const { color } = p || {}
         const content = (this as any)[path](color)
-        return this.fixSvgContent(content,size,p)
+        return this.fixSvgContent(content, size, p)
     }
-    mdiChevronDown = (color?:string)=>(<><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" style={this.getStyle(color)}></path></>)
-    mdiClose = (color?:string)=>(<><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={this.getStyle(color)}></path></>)
-    mdiLoading = (color?:string)=><><path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" style={this.getStyle(color)}></path><rect width="24" height="24" fill="transparent"></rect></>
-    mdiAttachment = (color?:string)=>(<><path d="M7.5,18A5.5,5.5 0 0,1 2,12.5A5.5,5.5 0 0,1 7.5,7H18A4,4 0 0,1 22,11A4,4 0 0,1 18,15H9.5A2.5,2.5 0 0,1 7,12.5A2.5,2.5 0 0,1 9.5,10H17V11.5H9.5A1,1 0 0,0 8.5,12.5A1,1 0 0,0 9.5,13.5H18A2.5,2.5 0 0,0 20.5,11A2.5,2.5 0 0,0 18,8.5H7.5A4,4 0 0,0 3.5,12.5A4,4 0 0,0 7.5,16.5H17V18H7.5Z" style={this.getStyle(color)}></path></>)
-    mdiCircleMedium = (color?:string) =>(<><path d="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" style={this.getStyle(color)}></path></>)
-    mdiMagnify = (color?:string) =>(<><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" style={this.getStyle(color)}></path></>)
-    mdiPlusThick = (color?:string) =>(<><path d="M20 14H14V20H10V14H4V10H10V4H14V10H20V14Z" style={this.getStyle(color)}></path></>)
-    mdiImage = (color?:string) =>(<><path d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" style={this.getStyle(color)}></path></>)
-    mdiEye = (color?:string) =>(<><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" style={this.getStyle(color)}></path></>)
-    mdiEyeOff = (color?:string) =>(<><path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.08L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.74,7.13 11.35,7 12,7Z" style={this.getStyle(color)}></path></>)
-    mdiDotsHorizontal = (color?:string) =>(<><path d="M16,12A2,2 0 0,1 18,10A2,2 0 0,1 20,12A2,2 0 0,1 18,14A2,2 0 0,1 16,12M10,12A2,2 0 0,1 12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12M4,12A2,2 0 0,1 6,10A2,2 0 0,1 8,12A2,2 0 0,1 6,14A2,2 0 0,1 4,12Z" style={this.getStyle(color)}></path></>)
-    mdiChevronRight = (color?:string) =>(<><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" style={this.getStyle(color)}></path></>)
-    mdiChevronLeft = (color?:string) =>(<><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" style={this.getStyle(color)}></path></>)
-    mdiArrowDown = (color?:string) =>(<><path d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" style={this.getStyle(color)}></path></>)
-    mdiArrowUp = (color?:string) =>(<><path d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" style={this.getStyle(color)}></path></>)
-    mdiFileExcel = (color?:string) =>(<><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M15.8,20H14L12,16.6L10,20H8.2L11.1,15.5L8.2,11H10L12,14.4L14,11H15.8L12.9,15.5L15.8,20M13,9V3.5L18.5,9H13Z" style={this.getStyle(color)}></path></>)
-    mdiSort = (color?:string) =>(<><path d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z" style={this.getStyle(color)}></path></>)
-    mdiDelete = (color?:string) =>(<><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" style={this.getStyle(color)}></path></>)
-    mdiCircleSmall = (color?:string) =>(<><path d="M12,10A2,2 0 0,0 10,12C10,13.11 10.9,14 12,14C13.11,14 14,13.11 14,12A2,2 0 0,0 12,10Z" style={this.getStyle(color)}></path></>)
+    mdiChevronDown = (color?: string) => (<><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" style={this.getStyle(color)}></path></>)
+    mdiClose = (color?: string) => (<><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={this.getStyle(color)}></path></>)
+    mdiLoading = (color?: string) => <><path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" style={this.getStyle(color)}></path><rect width="24" height="24" fill="transparent"></rect></>
+    mdiAttachment = (color?: string) => (<><path d="M7.5,18A5.5,5.5 0 0,1 2,12.5A5.5,5.5 0 0,1 7.5,7H18A4,4 0 0,1 22,11A4,4 0 0,1 18,15H9.5A2.5,2.5 0 0,1 7,12.5A2.5,2.5 0 0,1 9.5,10H17V11.5H9.5A1,1 0 0,0 8.5,12.5A1,1 0 0,0 9.5,13.5H18A2.5,2.5 0 0,0 20.5,11A2.5,2.5 0 0,0 18,8.5H7.5A4,4 0 0,0 3.5,12.5A4,4 0 0,0 7.5,16.5H17V18H7.5Z" style={this.getStyle(color)}></path></>)
+    mdiCircleMedium = (color?: string) => (<><path d="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" style={this.getStyle(color)}></path></>)
+    mdiMagnify = (color?: string) => (<><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" style={this.getStyle(color)}></path></>)
+    mdiPlusThick = (color?: string) => (<><path d="M20 14H14V20H10V14H4V10H10V4H14V10H20V14Z" style={this.getStyle(color)}></path></>)
+    mdiImage = (color?: string) => (<><path d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" style={this.getStyle(color)}></path></>)
+    mdiEye = (color?: string) => (<><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" style={this.getStyle(color)}></path></>)
+    mdiEyeOff = (color?: string) => (<><path d="M11.83,9L15,12.16C15,12.11 15,12.05 15,12A3,3 0 0,0 12,9C11.94,9 11.89,9 11.83,9M7.53,9.8L9.08,11.35C9.03,11.56 9,11.77 9,12A3,3 0 0,0 12,15C12.22,15 12.44,14.97 12.65,14.92L14.2,16.47C13.53,16.8 12.79,17 12,17A5,5 0 0,1 7,12C7,11.21 7.2,10.47 7.53,9.8M2,4.27L4.28,6.55L4.73,7C3.08,8.3 1.78,10 1,12C2.73,16.39 7,19.5 12,19.5C13.55,19.5 15.03,19.2 16.38,18.66L16.81,19.08L19.73,22L21,20.73L3.27,3M12,7A5,5 0 0,1 17,12C17,12.64 16.87,13.26 16.64,13.82L19.57,16.75C21.07,15.5 22.27,13.86 23,12C21.27,7.61 17,4.5 12,4.5C10.6,4.5 9.26,4.75 8,5.2L10.17,7.35C10.74,7.13 11.35,7 12,7Z" style={this.getStyle(color)}></path></>)
+    mdiDotsHorizontal = (color?: string) => (<><path d="M16,12A2,2 0 0,1 18,10A2,2 0 0,1 20,12A2,2 0 0,1 18,14A2,2 0 0,1 16,12M10,12A2,2 0 0,1 12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12M4,12A2,2 0 0,1 6,10A2,2 0 0,1 8,12A2,2 0 0,1 6,14A2,2 0 0,1 4,12Z" style={this.getStyle(color)}></path></>)
+    mdiChevronRight = (color?: string) => (<><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" style={this.getStyle(color)}></path></>)
+    mdiChevronLeft = (color?: string) => (<><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" style={this.getStyle(color)}></path></>)
+    mdiArrowDown = (color?: string) => (<><path d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" style={this.getStyle(color)}></path></>)
+    mdiArrowUp = (color?: string) => (<><path d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" style={this.getStyle(color)}></path></>)
+    mdiFileExcel = (color?: string) => (<><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M15.8,20H14L12,16.6L10,20H8.2L11.1,15.5L8.2,11H10L12,14.4L14,11H15.8L12.9,15.5L15.8,20M13,9V3.5L18.5,9H13Z" style={this.getStyle(color)}></path></>)
+    mdiSort = (color?: string) => (<><path d="M18 21L14 17H17V7H14L18 3L22 7H19V17H22M2 19V17H12V19M2 13V11H9V13M2 7V5H6V7H2Z" style={this.getStyle(color)}></path></>)
+    mdiDelete = (color?: string) => (<><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" style={this.getStyle(color)}></path></>)
+    mdiCircleSmall = (color?: string) => (<><path d="M12,10A2,2 0 0,0 10,12C10,13.11 10.9,14 12,14C13.11,14 14,13.11 14,12A2,2 0 0,0 12,10Z" style={this.getStyle(color)}></path></>)
 }
 export {GetSvg}

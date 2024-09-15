@@ -90,7 +90,7 @@ function AIOINPUT(props: AITYPE) {
         if(types.hasOption){className += ' aio-input-dropdown'}
         if(type === 'time'){className += ' aio-input-time-popover'}
         return (dom: any) => {
-            let popover: AI_popover = { ...(props.popover || {}) }
+            let popover: AP_modal = { ...(props.popover || {}) }
             let { type,multiple } = props;
             let { body,limitTo,header,setAttrs = ()=>{return {}},position = 'popover' } = popover;
             let target: RN = $(dom.current)
@@ -99,15 +99,15 @@ function AIOINPUT(props: AITYPE) {
                 //props that have default but can change by user
                 position,
                 fitHorizontal,
-                //props that havent default but can define by user(header,footer,fitTo,fixStyle)
+                //props that havent default but can define by user(header,footer,fixStyle)
                 limitTo,
                 header,
                 //props that cannot change by user
                 onClose: () => toggle(false),
-                body: ({ close }) => {
-                    if (body) { return body({ close }) }
-                    else if (type === 'date') { return <Calendar onClose={close} /> }
-                    else if (type === 'time') { return <TimePopover onClose={close} /> }
+                body: (o) => {
+                    if (body) { return body(o) }
+                    else if (type === 'date') { return <Calendar onClose={o.close} /> }
+                    else if (type === 'time') { return <TimePopover onClose={o.close} /> }
                     else { return <Options /> }
                 },
                 pageSelector: '.aio-input-backdrop.' + datauniqid,
@@ -1103,8 +1103,8 @@ function List() {
     }
     function mouseDown(e: any) {
         if (!editable) { return }
-        EventHandler('window', 'mousemove', mouseMove,'bind',false);
-        EventHandler('window', 'mouseup', mouseUp,'bind',false);
+        EventHandler('window', 'mousemove', mouseMove,'bind');
+        EventHandler('window', 'mouseup', mouseUp,'bind');
         clearInterval(temp.interval);
         temp.moved = false;
         let client = GetClient(e);
@@ -1743,9 +1743,9 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
         type: 'button', text, justify: true, caret: false,
         attrs: { className: 'aio-input-date-dropdown aio-input-theme-color0' },
         popover: {
-            fitTo: '.aio-input-date-calendar',
+            position: 'fullscreen',
             setAttrs:(key)=>{if(key === 'modal'){return { style: { background: theme[1], color: theme[0] } }}},
-            body: (close) => <DPHeaderPopup onClose={close} unit={unit} />
+            body: (o) => <DPHeaderPopup onClose={o.close} unit={unit} />
         }
     }
     return (<AIOInput {...p} />)
@@ -1790,7 +1790,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
                 if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1' }
                 else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
                 let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className, onClick: () => changeValue(i) }
-                cells.push(<div {...p} key={i}>{months[i - 1].slice(0, 3)}</div>)
+                cells.push(<div {...p} key={i}>{months[i - 1]}</div>)
             }
         }
         return cells
@@ -3372,17 +3372,6 @@ export type AI_table_column = {
 }
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {[key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?:boolean}
-export type AI_popover = {
-    position?:AP_position,
-    fitHorizontal?:boolean,
-    body?:(close:any)=>RN,
-    limitTo?:string,
-    fitTo?:string,
-    header?:{attrs?:any,title?:string,subtitle?:string,onClose?:boolean,before?:RN,after?:RN},
-    maxHeight?:number | string,
-    pageSelector?:string,
-    setAttrs?:(key:'backdrop' | 'modal' | 'header' | 'body' | 'footer')=>any
-}
 export type AI_table_param = {row:any,column:AI_table_column,rowIndex:number}
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 export type AI_point = (index:number,p:any)=>{offset?:number,html?:RN,attrs?:any}
@@ -3455,7 +3444,7 @@ type AI_isDate = {
     unit?: AI_date_unit | AI_time_unit,
     text?: RN | (() => RN),
 }
-type AI_isDropdown = {caret?: boolean | RN,popover?: AI_popover,open?: boolean}
+type AI_isDropdown = {caret?: boolean | RN,popover?: AP_modal,open?: boolean}
 type AI_isMultiple = {multiple?: boolean | number,maxLength?: number}
 type AI_hasKeyboard = {
     blurChange?: boolean,filter?: string[],inputAttrs?: any,justNumber?: boolean | (string[]),

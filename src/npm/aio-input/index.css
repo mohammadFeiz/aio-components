@@ -1006,6 +1006,7 @@
     justify-content: center;
     position: relative;
     outline: none;
+    font-size:0.78rem;
 }
 
 .aio-input-date-cell.aio-input-date-disabled {
@@ -1030,9 +1031,10 @@
     direction:rtl;
 }
 .aio-input-date-popup-body{
-    grid-template-columns: 4em 4em 4em;
-    grid-template-rows: 2em 2em 2em 2em;
+    grid-template-columns: 33% 33% 33%;
+    grid-template-rows: 25% 25% 25% 25%;
     padding:0.6em;
+    gap:1px;
 }
 .aio-input-date-popup-footer{
     font-size:1em;

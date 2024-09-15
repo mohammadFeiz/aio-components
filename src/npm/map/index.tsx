@@ -10,15 +10,15 @@ import MapMarkerSrc from './marker-icon.png';
 import 'leaflet/dist/leaflet.css';
 
 type I_pos = [number, number]
-type I_marker = { pos: [number, number],html?:ReactNode }
-type I_shapeStyle = {
+export type I_marker = { pos: [number, number],html?:ReactNode }
+export type I_shapeStyle = {
   stroke?:{color?:string,width?:number,dash?:string},
   fill?:{color?:string,opacity?:number}
 }
-type I_circle = {type:'circle',center:I_pos,radius?:number,style?:I_shapeStyle}
-type I_rect = {type:'rect',points:I_pos[],style?:I_shapeStyle}
-type I_polyline = {type:'polyline',points:I_pos[],style?:I_shapeStyle}
-type I_shape = I_circle | I_rect | I_polyline
+export type I_circle = {type:'circle',center:I_pos,radius?:number,style?:I_shapeStyle}
+export type I_rect = {type:'rect',points:I_pos[],style?:I_shapeStyle}
+export type I_polyline = {type:'polyline',points:I_pos[],style?:I_shapeStyle}
+export type I_shape = I_circle | I_rect | I_polyline
 type I_Map = {
   children?: React.ReactNode,
   onChange?: (coords: I_pos) => void,
@@ -38,8 +38,8 @@ type I_Map = {
   getSearchResult?:(searchValue:string)=>Promise<I_searchResult[]>,
   onSearch?:(searchResult:I_searchResult)=>void
 }
-type I_layers = {position:'topright' | 'topleft',items:I_layerItem[]}
-type I_layerItem = {name:string,markers?:I_marker[],shapes?:I_shape[]}
+export type I_layers = {position:'topright' | 'topleft',items:I_layerItem[]}
+export type I_layerItem = {name:string,markers?:I_marker[],shapes?:I_shape[],active?:boolean}
 type I_ctx = {rootProps: I_Map,pos:I_pos,move: (pos: I_pos) => void,setMap:any}
 const CTX = createContext({} as any)
 const Map: FC<I_Map> = (props) => {
@@ -75,7 +75,7 @@ const MapBody:FC = ()=>{
   const {style = { width: '100%', height: '100%' },zoom = {value:14},dragging = true,children,shapes = [],marker,markers = []} = rootProps 
   return (
     <MapContainer
-        center={pos} style={style} zoom={zoom.value || 14} scrollWheelZoom={zoom.wheel} zoomControl={zoom.control !== false}
+        center={pos} style={style} zoom={zoom.value || 14} scrollWheelZoom={zoom.wheel?'center':undefined} zoomControl={zoom.control !== false}
         attributionControl={true} dragging={dragging} ref={setMap}
       >
           <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
@@ -127,11 +127,11 @@ const MapLayers:FC = ()=>{
     <LayersControl position={position}>
       {
         items.map((o:I_layerItem,i:number)=>{
-          const {shapes = [],markers = []} = o;
+          const {shapes = [],markers = [],active = true} = o;
           return (
-            <LayersControl.Overlay name={o.name}>
-              {markers.map((o:I_marker,i:number)=><MapMarker key={'marker' + i} pos={o.pos} html={o.html}/>)}
-              {shapes.map((o:I_shape,i:number)=><MapShape key={'shape' + i} shape={o}/>)}
+            <LayersControl.Overlay name={o.name} checked={active} key={o.name}>
+              {!!markers.length?markers.map((marker:I_marker,j:number)=><MapMarker pos={marker.pos} html={marker.html}/>):null}
+              {!!shapes.length?shapes.map((shape:I_shape,i:number)=><MapShape key={'shape' + i} shape={shape}/>):null}
             </LayersControl.Overlay>
           )
         })
@@ -187,7 +187,9 @@ function MapEvents() {
       let { lat, lng } = e.target.getCenter()
       move([lat, lng])
     },
-    zoom: (e: any) => console.log(e.target._zoom),
+    zoom: (e: any) => {
+      if(rootProps.onChangeZoom){rootProps.onChangeZoom(e.target._zoom)}
+    },
     locationfound: (location: any) => {
       console.log('location found:', location)
     },
