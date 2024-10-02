@@ -1920,9 +1920,9 @@ export class Validation {
     between: (targets: any[], value: any, equal?: boolean) => { result: boolean, unit: any };
     getMessage: (p: { translate: string, target: string, message?: string, title?: string, unit: string }) => string;
     translate: (operator: AV_operator, not: boolean) => string
-    getResult: (p: AV_item_object) => string | boolean
-    getValidation: () => string | boolean;
-    validate: () => string | boolean;
+    getResult: (p: AV_item_object) => string | undefined
+    getValidation: () => string | undefined;
+    validate: () => string | undefined;
     boolKey: (key: 'more' | 'less') => string;
     boolDic: any;
     getUnit: (value: any) => string;
@@ -2024,9 +2024,8 @@ export class Validation {
             let { result, unit } = fn(target, value, equal)
             if ((not && result) || (!not && !result)) {
                 let translate = this.translate(operator, not)
-                return !!title ? this.getMessage({ translate, target, message, title, unit }) : true
+                return !!title ? this.getMessage({ translate, target, message, title, unit }) : undefined
             }
-            return false
         }
         this.getUnit = (value) => {
             let unit = '';
@@ -2064,11 +2063,10 @@ export class Validation {
                     if (result) { return result }
                 }
             }
-            return false
         }
         this.validate = () => {
-            let validation: boolean | string = false;
-            try { validation = this.getValidation() } catch { validation = false }
+            let validation: string | undefined = undefined;
+            try { validation = this.getValidation() } catch { validation = undefined }
             return validation;
         }
     }

@@ -36,15 +36,17 @@ type I_Map = {
   footer?:ReactNode,
   layers?:I_layers,
   getSearchResult?:(searchValue:string)=>Promise<I_searchResult[]>,
-  onSearch?:(searchResult:I_searchResult)=>void
+  onSearch?:(searchResult:I_searchResult)=>void,
+  mapRef?:any
 }
 export type I_layers = {position:'topright' | 'topleft',items:I_layerItem[]}
 export type I_layerItem = {name:string,markers?:I_marker[],shapes?:I_shape[],active?:boolean}
 type I_ctx = {rootProps: I_Map,pos:I_pos,move: (pos: I_pos) => void,setMap:any}
 const CTX = createContext({} as any)
 const Map: FC<I_Map> = (props) => {
-  const { zoom = {value:14}, value = [35.699939, 51.338497],getSearchResult,onSearch} = props;
+  const { zoom = {value:14}, value = [35.699939, 51.338497],getSearchResult,onSearch,mapRef} = props;
   const [map, setMap] = useState<any>(null)
+  if(mapRef){mapRef.current = map;}
   const [pos, setPos] = useState<I_pos>(value)
   const moveTimeout = useRef<any>(undefined)
   function move(pos: I_pos) {
@@ -79,6 +81,12 @@ const MapBody:FC = ()=>{
         attributionControl={true} dragging={dragging} ref={setMap}
       >
           <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
+          {/* <TileLayer 
+            url="https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token={accessToken}" 
+            attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'     
+            accessToken='pk.eyJ1IjoibXNmMTM2NCIsImEiOiJjbTE1MnlpM20wNTJvMmtyNDhjYjIzMXRhIn0.zRM2a68bNyBsYSeIdV8a4A'
+          /> */}
+          {/* http://leaflet-extras.github.io/leaflet-providers/preview/ */}
           <MapEvents/>
           {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker)?marker:<img src={MapMarkerSrc} alt='' width={48} height={48}/>}/>}
           {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html}/>)}
@@ -129,8 +137,8 @@ const MapLayers:FC = ()=>{
         items.map((o:I_layerItem,i:number)=>{
           const {shapes = [],markers = [],active = true} = o;
           return (
-            <LayersControl.Overlay name={o.name} checked={active} key={o.name}>
-              {!!markers.length?markers.map((marker:I_marker,j:number)=><MapMarker pos={marker.pos} html={marker.html}/>):null}
+            <LayersControl.Overlay name={o.name} checked={active} key={i}>
+              {!!markers.length?markers.map((marker:I_marker,j:number)=><MapMarker key={j} pos={marker.pos} html={marker.html}/>):null}
               {!!shapes.length?shapes.map((shape:I_shape,i:number)=><MapShape key={'shape' + i} shape={shape}/>):null}
             </LayersControl.Overlay>
           )
