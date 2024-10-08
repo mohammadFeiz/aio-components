@@ -3596,3 +3596,134 @@ const PrismCode:FC<{code:string, language?:'js' | 'css', style?:any}> = ({code,l
 export function Code(code:string, language?:'js' | 'css', style?:any){
     return <PrismCode code={code} language={language} style={style} />
 }
+type I_loginMode = 'register' | 'login'
+type I_trans = 'registerButton' | 'loginButton' | 'registerTitle' | 'loginTitle' | 'switchLogin' | 'switchRegister'
+type I_AILogin = {
+    checkToken:(token:string,callback:(res:boolean)=>void)=>Promise<void>,
+    login: (obj:{userName:string,password:string},callback:(obj:{user:any,token:any})=>void)=>Promise<void>
+    register?:(obj:{userName:string,password:string},callback:()=>void)=>Promise<void>
+    registerInputs?:(AITYPE & {field:string})[],
+    before?: ReactNode,
+    after?: ReactNode,
+    renderApp: (p: { user: any, token: string,logout:()=>void }) => ReactNode,
+    lang?:'en' | 'fa',
+    translate?:(key:I_trans)=>string,
+    rememberTime:number,
+    id:string,
+    splash?:{
+        html:ReactNode,
+        time:number
+    }
+}
+export const AILogin: FC<I_AILogin> = (props) => {
+    const { login, registerInputs, register, before = null, after = null, renderApp,lang = 'en',translate = ()=>{},id,rememberTime,checkToken,splash } = props;
+    const [data,setData] = useState<{token:string,user:any}>()
+    const [storage] = useState<Storage>(new Storage('ai-login' + id))
+    const [mode, setMode] = useState<I_loginMode>('login')
+    const [userName, setUserName] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+    const [rePassword, setRePassword] = useState<string>('')
+    const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
+    const [registerModel,setRegisterModel] = useState<any>(getRegisterModel)
+    const [loading,setLoading] = useState<boolean>(true)
+    const [splashing,setSplashing] = useState<boolean>(!!splash)
+    function getRegisterModel(){
+        if(!register || !registerInputs){return}
+        let res:any = {};
+        for(let input of registerInputs){res[input.field] = input.value;}
+        return res
+    }
+    function trans(key:I_trans){
+        const res = translate(key)
+        if(res){return res}
+        const dic:{[key in I_trans]:{en:string,fa:string}} = {
+            registerButton:{en:'Register',fa:'ثبت نام'},
+            loginButton:{en:'Login',fa:'ورود'},
+            registerTitle:{en:'Register',fa:'ثبت نام'},
+            loginTitle:{en:'Login',fa:'ورود'},
+            switchLogin:{en:'Go To Login',fa:'از اینجا وارد شوید'},
+            switchRegister:{en:'Go To Register',fa:'از اینجا ثبت نام کنید'},
+        }
+        return dic[key][lang]
+    }
+    function submit() {if (mode === 'register') { onRegister() } else { onLogin() }}
+    function onLogin() {login({userName,password},({user,token})=>{storage.save('data',{user,token}); setData({user,token})})}
+    async function onRegister() {if (register) { register({userName,password},()=>changeMode('login')) }}
+    function changeMode(mode: I_loginMode) { setUserName(''); setPassword(''); setMode(mode); }
+    function mode_layout() {
+        if (!register) { return null }
+        let text = trans(mode === 'login'?'switchRegister':'switchLogin');
+        let nextMode:I_loginMode = mode === 'login'?'register':'login'
+        return (<button className='ai-login-mode' onClick={() => changeMode(nextMode)}>{text}</button>)
+    }
+    const messages = Object.keys(errors).filter((o) => errors[o] !== undefined).map((o) => errors[o])
+    function reportError(key: string, value: string | undefined) {
+        setErrors({ ...errors, [key]: value })
+    }
+    function registerInputs_layout(){
+        if(!register || !registerInputs || !registerInputs.length ||mode !== 'register'){return null}
+        return (
+            <>
+                <AIPassword
+                    label='Re Password' value={rePassword} onChange={(rePassword) => setRePassword(rePassword)} preview={true}
+                    validations={['required',`=,"${password}",message(Re Password is not match with password)`]} showErrors={false} reportError={(v)=>reportError('rePassword',v)} lang={lang}
+                />
+                {
+                    registerInputs.map((input)=>{
+                        return (
+                            <AIOInput 
+                                {...input}
+                                value={registerModel[input.field]} onChange={(v)=>setRegisterModel({...registerModel,[input.field]:v})}
+                                showErrors={false} reportError={(v) => reportError(input.field, v)} lang={lang}
+                            />
+                        )
+                    })
+                }
+            </>
+        )
+    }
+    function login_layout(): ReactNode {
+        const submitText = trans(mode === 'register' ? 'registerButton' : 'loginButton')
+        const title = trans(mode === 'register' ? 'registerTitle' : 'loginTitle')
+        return (
+            <div className="ai-login">
+                <div className='ai-login-before'>{before}</div>
+                <div className="ai-login-form">
+                    <div className="ai-login-title">{title}</div>
+                    <AIText
+                        label='User Name' value={userName} onChange={(userName) => setUserName(userName)}
+                        validations={['required', '>,6']} showErrors={false} reportError={(v) => reportError('userName', v)} lang={lang}
+                    />
+                    <AIPassword
+                        label='Password' value={password} onChange={(password) => setPassword(password)} preview={true}
+                        validations={['required', '>=,6']} showErrors={false} reportError={(v) => reportError('password', v)} lang={lang}
+                    />
+                    {registerInputs_layout()}
+                    <div className="ai-login-errors">
+                        {messages.map((message) => <div className="ai-login-error">{message}</div>)}
+                    </div>
+                    <button className='ai-login-submit' disabled={!!messages.length} onClick={() => submit()}>{submitText}</button>
+                    {mode_layout()}
+                </div>
+                <div className='ai-login-after'>{after}</div>
+            </div>
+        )
+    }
+    function logout(){storage.remove('data'); window.location.reload();}
+    async function CheckToken(){
+        if(splash){setTimeout(()=>{setSplashing(false)},splash.time);}
+        const storedData = storage.load('data',{},rememberTime),{user,token} = storedData;
+        if(user && token){
+            await checkToken(token,(res)=>{
+                if(res === true){setData({user,token})}
+                else if(res === false){logout()}
+                else {}
+            });
+        }
+        setLoading(false)
+    }
+    useEffect(()=>{CheckToken()},[])
+    if(loading || splashing){return <>{splash?splash.html:null}</>}
+    if (!data) { return <>{login_layout()}</> }
+    return <>{renderApp({token:data.token,user:data.user,logout})}</>
+}
