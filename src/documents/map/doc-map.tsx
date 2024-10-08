@@ -1,10 +1,9 @@
 import { FC, ReactNode, useEffect, useRef, useState } from 'react';
-import Map from '../../npm/map/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
-import { AISelect, AITabs } from '../../npm/aio-input/index.tsx';
+import { AISelect, AITabs,AIMap } from '../../npm/aio-input';
 type I_show_item = 'preview' | 'code' | 'both'
-type I_Map = React.ComponentProps<typeof Map>;
+type I_Map = React.ComponentProps<typeof AIMap>;
 const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {
     const options: I_show_item[] = ['preview', 'code', 'both']
     const [value, setValue] = useState<I_show_item>('both')
@@ -46,7 +45,7 @@ export default function DOC_Map(props: any) {
 const Basic: FC = () => {
     return (
         <div className="example">
-            <Map />
+            <AIMap />
         </div>
     )
 }
@@ -60,21 +59,21 @@ const Zoom: FC = () => {
             {
                 tab === 'control' &&
                 <>
-                    <Map zoom={{ control: false }} />
+                    <AIMap zoom={{ control: false }} />
                     {Code(`<Map zoom={{ control: false }} />`)}
                 </>
             }
             {
                 tab === 'wheel' &&
                 <>
-                    <Map zoom={{ wheel: true }} />
+                    <AIMap zoom={{ wheel: true }} />
                     {Code(`<Map zoom={{ wheel: true }} />`)}
                 </>
             }
             {
                 tab === 'value' &&
                 <>
-                    <Map zoom={{ value: 10 }} />
+                    <AIMap zoom={{ value: 10 }} />
                     {Code(`<Map zoom={{ value: 10 }} />`)}
                 </>
             }
@@ -86,7 +85,7 @@ const OnChange: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
     return (
         <div className="example">
-            <Map value={value} onChange={(newValue: [number, number]) => setValue(newValue)} />
+            <AIMap value={value} onChange={(newValue: [number, number]) => setValue(newValue)} />
             <p>{`lat:${value[0]} - lng:${value[1]}`}</p>
             {
                 Code(
@@ -106,7 +105,7 @@ const OnSubmit: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
     return (
         <div className="example">
-            <Map
+            <AIMap
                 value={value}
                 onSubmit={(newValue: [number, number]) => setValue(newValue)}
                 submitText='Submit Location'
@@ -145,14 +144,14 @@ const ChangeByParent: FC = () => {
     }, [])
     return (
         <div className="example">
-            <Map value={value} />
+            <AIMap value={value} />
         </div>
     )
 }
 const Dragging: FC = () => {
     return (
         <div className="example">
-            <Map dragging={false} />
+            <AIMap dragging={false} />
             {
                 Code(
                     `<Map dragging={false}/>`
@@ -240,7 +239,7 @@ markers:[
 const OnClick: FC = () => {
     return (
         <div className="example">
-            <Map onClick={() => alert('map click')} />
+            <AIMap onClick={() => alert('map click')} />
         </div>
     )
 }
@@ -345,7 +344,7 @@ const Shapes: FC = () => {
 const Layers: FC = () => {
     return (
         <div className="example">
-            <Map
+            <AIMap
                 layers={{
                     position: 'topright',
                     items: [
@@ -484,7 +483,7 @@ const Footer: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
     return (
         <div className="example">
-            <Map
+            <AIMap
                 value={value}
                 onChange={(newValue: [number, number]) => setValue(newValue)}
                 footer={<p>{`lat:${value[0]} - lng:${value[1]}`}</p>}
@@ -519,7 +518,7 @@ const Comp: FC<{ tabs: I_tabs }> = (props) => {
     const [show, setShow] = useState<I_show_item>('both')
     function preview(Tab: string, props: I_Map) {
         if (Tab !== tab) { return null }
-        return show === 'code' ? null : <Map {...props} />
+        return show === 'code' ? null : <AIMap {...props} />
     }
     function code(Tab: string, code: string) {
         if (Tab !== tab) { return null }

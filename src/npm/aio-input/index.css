@@ -2754,3 +2754,51 @@ pre[class*="language-"] > code[class*="language-"] {
   .ai-login button:disabled{
     opacity:0.3;
   }
+  .ai-map{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height:100%;
+}
+.ai-map-footer{
+    padding:0 6px;
+    box-sizing: border-box;
+    background:#f8f8f8;
+    display:flex;
+    width:100%;
+    align-items: center;
+    position: relative;
+    height:48px;
+}
+.ai-map-footer button{
+    background:#0069ff;
+    color:#fff;
+    font-family:inherit;
+    border:none;
+    border-radius:6px;
+    padding:0 24px;
+    height:36px;
+}
+.ai-map-footer-html{
+    flex:1;
+    height:100%;
+}
+.ai-map-header{
+    height:48px;
+    position: absolute;
+    top:0;
+    width:100%;
+    z-index:1000;
+    box-sizing: border-box;
+    display:flex;
+    padding:0 6px;
+    align-items: center;
+}
+.leaflet-marker-icon{
+    width:0px !important;
+    height:0px !important;
+    margin:0 !important;
+    display:flex !important;
+    justify-content: center !important;
+    align-items: flex-end !important;
+}
