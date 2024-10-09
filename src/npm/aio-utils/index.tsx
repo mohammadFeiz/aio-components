@@ -1194,7 +1194,7 @@ export class Geo {
     rotateSpline: (points: I_point[], angle: number, center: I_point) => I_point[]
     isPointInPath: (points: I_point[], point: I_point) => boolean
     getDXF: (p: { type: 'line' | 'rect' | 'arc', obj: any }[]) => string;
-    smooth: (points: I_point[]) => I_point[]
+    smooth: (points: I_point[],angle:number) => I_point[]
     constructor() {
         this.getAngle = (l) => {
             let line: I_line = this.getLineType(l) === 'DLine' ? this.getLineByDLine(l as I_dline) : (l as I_line)
@@ -1457,7 +1457,7 @@ export class Geo {
             }
             return meets % 2 !== 0;
         }
-        this.smooth = (points: I_point[]) => {
+        this.smooth = (points,angle) => {
             let p1: I_point | undefined, p2: I_point | undefined, p3: I_point | undefined;
             let res: I_point[] = [];
             let type;
@@ -1469,7 +1469,7 @@ export class Geo {
                 if (!p3) { p3 = [point[0], point[1]]; continue; }
                 const ang1 = this.getAngle([p1, p2]);
                 const ang2 = this.getAngle([p2, p3]);
-                const isSmooth: boolean = Math.abs(ang1 - ang2) < 10;
+                const isSmooth: boolean = Math.abs(ang1 - ang2) < angle;
                 if (isSmooth) {
                     p2 = [p3[0], p3[1]];
                     p3 = [point[0], point[1]];
