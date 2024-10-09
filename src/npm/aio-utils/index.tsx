@@ -1194,6 +1194,7 @@ export class Geo {
     rotateSpline: (points: I_point[], angle: number, center: I_point) => I_point[]
     isPointInPath: (points: I_point[], point: I_point) => boolean
     getDXF: (p: { type: 'line' | 'rect' | 'arc', obj: any }[]) => string;
+    smooth: (points: I_point[]) => I_point[]
     constructor() {
         this.getAngle = (l) => {
             let line: I_line = this.getLineType(l) === 'DLine' ? this.getLineByDLine(l as I_dline) : (l as I_line)
@@ -1455,6 +1456,39 @@ export class Geo {
                 if (meet !== false) { meets++ }
             }
             return meets % 2 !== 0;
+        }
+        this.smooth = (points: I_point[]) => {
+            let p1: I_point | undefined, p2: I_point | undefined, p3: I_point | undefined;
+            let res: I_point[] = [];
+            let type;
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                if (i === 0) { res.push([point[0], point[1]]); }
+                if (!p1) { p1 = [point[0], point[1]]; continue; }
+                if (!p2) { p2 = [point[0], point[1]]; continue; }
+                if (!p3) { p3 = [point[0], point[1]]; continue; }
+                const ang1 = this.getAngle([p1, p2]);
+                const ang2 = this.getAngle([p2, p3]);
+                const isSmooth: boolean = Math.abs(ang1 - ang2) < 10;
+                if (isSmooth) {
+                    p2 = [p3[0], p3[1]];
+                    p3 = [point[0], point[1]];
+                    type = 0
+                } else {
+                    res.push(p2);
+                    p1 = [p2[0], p2[1]];
+                    p2 = [p3[0], p3[1]];
+                    p3 = [point[0], point[1]];
+                    type = 1
+                }
+                if (i === points.length - 1) {
+                    if (type === 1) {
+                        res.push([p2[0], p2[1]]);
+                    }
+                    res.push([point[0], point[1]]);
+                }
+            }
+            return res;
         }
         this.getDXF = (list = []) => {
             var get = {
@@ -2493,4 +2527,4 @@ class GetSvg {
     mdiDelete = (color?: string) => (<><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" style={this.getStyle(color)}></path></>)
     mdiCircleSmall = (color?: string) => (<><path d="M12,10A2,2 0 0,0 10,12C10,13.11 10.9,14 12,14C13.11,14 14,13.11 14,12A2,2 0 0,0 12,10Z" style={this.getStyle(color)}></path></>)
 }
-export {GetSvg}
+export { GetSvg }
