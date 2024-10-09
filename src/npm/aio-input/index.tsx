@@ -3087,10 +3087,11 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
-type AI_bottomMenuItem = { text: ReactNode, value: string, before?: ReactNode, after?: ReactNode }
+type AI_bottomMenuItem = { text: ReactNode, value: string, before?: ReactNode, after?: ReactNode,show?:boolean }
 type AI_BottomMenu = { dir?: 'v' | 'h', options: AI_bottomMenuItem[], value: string, onChange: (v: string) => void }
 export const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange, dir = 'v' }) => {
     function item_layout(item: AI_bottomMenuItem) {
+        if(item.show === false){return null}
         const active = item.value === value
         return (
             <div key={item.value} className={`aio-input-bottom-menu-item aio-input-bottom-menu-item-${dir}${active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
