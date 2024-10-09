@@ -11,7 +11,6 @@ import {
 import { divIcon } from 'leaflet';
 import { Circle, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import { JSXToHTML } from './../../npm/aio-utils';
-import MapMarkerSrc from './marker-icon.png';
 import 'leaflet/dist/leaflet.css';
 
 import './index.css';
@@ -103,11 +102,9 @@ function AIOINPUT(props: AITYPE) {
             let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple) || !!popover.fitHorizontal
             let config: AP_modal = {
                 //props that have default but can change by user
-                position,
-                fitHorizontal,
+                position, fitHorizontal,
                 //props that havent default but can define by user(header,footer,fixStyle)
-                limitTo,
-                header,
+                limitTo, header,
                 //props that cannot change by user
                 onClose: () => toggle(false),
                 body: (o) => {
@@ -116,16 +113,11 @@ function AIOINPUT(props: AITYPE) {
                     else if (type === 'time') { return <TimePopover onClose={o.close} /> }
                     else { return <Options /> }
                 },
-                pageSelector: '.aio-input-backdrop.' + datauniqid,
-                getTarget: () => target,
+                pageSelector: '.aio-input-backdrop.' + datauniqid, getTarget: () => target,
                 setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
                     let attrs = setAttrs(key);
-                    if (key === 'modal') {
-                        return AddToAttrs(attrs, { className })
-                    }
-                    if (key === 'backdrop') {
-                        return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid })
-                    }
+                    if (key === 'modal') { return AddToAttrs(attrs, { className }) }
+                    if (key === 'backdrop') { return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
                 }
             }
             return config;
@@ -204,8 +196,7 @@ function AIOINPUT(props: AITYPE) {
     }
     function getContext(): AI_context {
         let context: AI_context = {
-            error,
-            options: getOptions(),
+            error, options: getOptions(),
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
             DragOptions, open, click, optionClick, types, showPassword, setShowPassword, DATE
         }
@@ -3087,27 +3078,7 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
-type AI_bottomMenuItem = { text: ReactNode, value: string, before?: ReactNode, after?: ReactNode,show?:boolean }
-type AI_BottomMenu = { dir?: 'v' | 'h', options: AI_bottomMenuItem[], value: string, onChange: (v: string) => void }
-export const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange, dir = 'v' }) => {
-    function item_layout(item: AI_bottomMenuItem) {
-        if(item.show === false){return null}
-        const active = item.value === value
-        return (
-            <div key={item.value} className={`aio-input-bottom-menu-item aio-input-bottom-menu-item-${dir}${active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
-                {!!item.before && item.before}
-                {item.text}
-                {!!item.after && item.after}
 
-            </div>
-        )
-    }
-    return (
-        <div className="aio-input-bottom-menu">
-            {options.map((o, i) => item_layout(o))}
-        </div>
-    )
-}
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
 export function AIOInput_defaultProps(p: { [key in keyof AITYPE]?: any }) {
     let storage: Storage = new Storage('aio-input-storage');
@@ -3767,8 +3738,8 @@ type I_Map = {
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
-type I_ctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any }
-const CTX = createContext({} as any)
+type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode }
+const MAPCTX = createContext({} as any)
 export const AIMap: FC<I_Map> = (props) => {
     const { zoom = { value: 14 }, value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
     const [map, setMap] = useState<any>(null)
@@ -3782,23 +3753,26 @@ export const AIMap: FC<I_Map> = (props) => {
             moveTimeout.current = setTimeout(() => { if (props.onChange) { props.onChange(pos) } }, 600)
         }
     }
-    function getContext(): I_ctx { return { pos, setMap, rootProps: props, move } }
+    function getDefaultMarkerIcon() {
+        return <div className='marker-icon'><div className='marker-icon-circle'></div><div className='marker-icon-arrow'></div></div>
+    }
+    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon } }
     useEffect(() => {
         if (map !== null) { map.setView(value, zoom.value, { animate: false }) }
         setPos(value)
     }, [value[0] + '-' + value[1] + '-' + zoom.value])
     return (
-        <CTX.Provider value={getContext()}>
+        <MAPCTX.Provider value={getContext()}>
             <div className="ai-map">
                 {!!getSearchResult && <MapHeader />}
                 <MapBody />
                 <MapFooter />
             </div>
-        </CTX.Provider>
+        </MAPCTX.Provider>
     );
 };
 const MapBody: FC = () => {
-    const { rootProps, pos, setMap }: I_ctx = useContext(CTX)
+    const { rootProps, pos, setMap, getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
     const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [] } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
@@ -3814,7 +3788,7 @@ const MapBody: FC = () => {
             /> */}
             {/* http://leaflet-extras.github.io/leaflet-providers/preview/ */}
             <MapEvents />
-            {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker) ? marker : <img src={MapMarkerSrc} alt='' width={48} height={48} />} />}
+            {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker) ? marker : getDefaultMarkerIcon()} />}
             {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html} />)}
             {shapes.map((o: I_shape, i: number) => <MapShape key={i} shape={o} />)}
             <MapLayers />
@@ -3824,7 +3798,7 @@ const MapBody: FC = () => {
 }
 type I_searchResult = { text: string, value: string, pos: I_pos, subtext?: string, before?: ReactNode, after?: ReactNode }
 const MapHeader: FC = () => {
-    const { rootProps, move }: I_ctx = useContext(CTX);
+    const { rootProps, move }: I_mapctx = useContext(MAPCTX);
     const { getSearchResult, onSearch } = rootProps;
     const [searchValue, setSearchValue] = useState<string>('')
     const [searchResult, setSerachResult] = useState<I_searchResult[]>([])
@@ -3853,7 +3827,7 @@ const MapHeader: FC = () => {
     )
 }
 const MapLayers: FC = () => {
-    const { rootProps }: I_ctx = useContext(CTX);
+    const { rootProps }: I_mapctx = useContext(MAPCTX);
     const { layers } = rootProps;
     if (!layers) { return null }
     const { position = 'topright', items = [] } = layers;
@@ -3887,7 +3861,7 @@ const MapShape: FC<{ shape: I_shape }> = ({ shape }) => {
     return null
 }
 const MapFooter: FC = () => {
-    const { rootProps, pos }: I_ctx = useContext(CTX);
+    const { rootProps, pos }: I_mapctx = useContext(MAPCTX);
     const { submitText = 'Submit', onSubmit, footer } = rootProps;
     if (!onSubmit && !footer) { return null }
     return (
@@ -3899,6 +3873,7 @@ const MapFooter: FC = () => {
 }
 
 const MapMarker: FC<{ pos: I_pos, html?: ReactNode }> = ({ pos, html }) => {
+    const { getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
     function getHtmlIcon(html: ReactNode) {
         return divIcon({
             html: JSXToHTML(html),
@@ -3907,13 +3882,13 @@ const MapMarker: FC<{ pos: I_pos, html?: ReactNode }> = ({ pos, html }) => {
             iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
         });
     }
-    html = html || <img src={MapMarkerSrc} alt='' width={48} height={48} />
+    html = html || getDefaultMarkerIcon()
     let props: any = { position: pos }
     if (html) { props.icon = getHtmlIcon(html) }
     return <Marker {...props} animate={false} />
 }
 function MapEvents() {
-    const { rootProps, move }: I_ctx = useContext(CTX)
+    const { rootProps, move }: I_mapctx = useContext(MAPCTX)
     const map = useMapEvents({
         click: () => rootProps.onClick ? rootProps.onClick() : undefined,
         move: (e: any) => {
@@ -3930,4 +3905,92 @@ function MapEvents() {
     })
     return null
 }
+type I_AIApp = {
+    attrs?: any,
+    bottomMenu: {
+        options: I_AIApp_bottomMenu_option[],
+        value?: string,
+        onChange?: (v: string) => void
+    }
+    body: (p: I_AIApp_param) => ReactNode,
+    header?: (p: I_AIApp_param) => ReactNode | false,
+    children?: ReactNode
+}
+type I_AIApp_param = {
+    bottomMenuValue: string
+}
+type I_AIApp_bottomMenu_option = {
+    text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, show?: boolean, value: string
+}
+export const AIApp: FC<I_AIApp> = (props) => {
+    const [bm, SetBm] = useState<string>()
+    function setBm() {
+        if (props.bottomMenu.value) {
+            const res = props.bottomMenu.options.find((o) => o.show !== false && o.value === props.bottomMenu.value);
+            if (res) (SetBm(res.value))
+        }
+        const visibles = props.bottomMenu.options.filter((o) => o.show !== false);
+        if (visibles.length) { SetBm(visibles[0].value) }
+    }
+    useEffect(() => { setBm() }, [props.bottomMenu.value])
+    function getParam(): I_AIApp_param {
+        return { bottomMenuValue: bm || '' }
+    }
+    function header_layout() {
+        if (!props.header) { return null }
+        const header = props.header(getParam())
+        if (header === false) { return null }
+        return (<div className="ai-app-header">{header}</div>)
+    }
+    function body_layout() {
+        return (
+            <div className="ai-app-body">
+                {props.body({ bottomMenuValue: bm || '' })}
+            </div>
+        )
+    }
+    function bottomMenu_layout() {
+        return (<AIBottomMenu options={props.bottomMenu.options} value={bm || ''} onChange={(tab) => SetBm(tab)} />)
+    }
+    const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
+    return (
+        <div {...attrs}>
+            {header_layout()}
+            {body_layout()}
+            {bottomMenu_layout()}
+            {!!props.children && props.children}
+        </div>
+    )
+}
 
+
+type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean }
+type AI_BottomMenu = { options: AI_bottomMenuOption[], value: string, onChange: (v: string) => void }
+const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange }) => {
+    function item_layout(item: AI_bottomMenuOption) {
+        if (item.show === false) { return null }
+        const active = item.value === value
+        return (
+            <div key={item.value} className={`ai-app-bottom-menu-option${active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
+                {!!item.before && item.before}
+                <div className="ai-app-bottom-menu-option-body">
+                    {item.text !== undefined && item.text}
+                    {
+                        item.text === undefined &&
+                        <>
+                            <div className="ai-app-bottom-menu-uptext">{item.uptext}</div>
+                            <div className="ai-app-bottom-menu-subtext">{item.subtext}</div>
+                        </>
+                    }
+                </div>
+                {!!item.after && item.after}
+
+            </div>
+        )
+    }
+    return (
+        <div className="ai-app-bottom-menu">
+            {options.map((o, i) => item_layout(o))}
+        </div>
+    )
+}
