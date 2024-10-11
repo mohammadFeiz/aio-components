@@ -900,6 +900,7 @@
     width: fit-content;
     padding: 1em;
     box-sizing: border-box;
+    gap:6px;
 }
 
 .aio-input-date-today-weekday {
