@@ -42,23 +42,21 @@ const LoginRegister: FC = () => {
                 if (key === "otpnumberTitle") { return 'شماره همراه' }
                 if (key === "otpcodeTitle") { return 'کد یکبار مصرف' }
             }}
-            checkToken={async (token, callback) => {
-                axios.get(`${base_url}/auth/checkToken`, { headers: { authorization: `Bearer ${token}` } })
-                    .then(response => callback(true))
-                    .catch(response => {
-                        if (response.status === 401) { callback(false) }
-                        else {
-                            let subtext;
-                            try { subtext = response.response.data.message }
-                            catch { subtext = 'network error or service is down' }
-                            setErrorPage(true)
-                        }
-                    })
+            checkToken={async (token) => {
+                return {
+                    method:'get',
+                    url:`${base_url}/auth/checkToken`,
+                    onSuccess:(response)=>response.response.data.message,
+                    onCatch:(response)=>{
+                        if (response.status === 401) { return false }
+                        else {return response.response.data.message}
+                    }
+                }
             }}
             modes={{
                 mode:'userpass',
                 userpass:{
-                    onSubmit: async (model, setAlert) => {
+                    onSubmit: async (model) => {
                         return {
                             method:'post',
                             url:`${base_url}/auth/login`,
@@ -69,18 +67,16 @@ const LoginRegister: FC = () => {
                                 user = { ...user, id: user._id }
                                 return { user, token }
                             },
-                            onCatch:(response)=>{
-                                setAlert({ type: 'error', closeText: 'Close', text: `login Failed`, subtext: response.response.data.message })
-                            }
+                            onCatch:(response)=>response.response.data.message 
                         }
                     }
                 },
                 register:{
-                    onSubmit: async (model, setAlert) => {
+                    onSubmit: async (model) => {
                         return {
                             method:'post',url:`${base_url}/auth/register`,onSuccess:(response)=>true,
                             body:{userName:model.userName,password:model.password,role:model.register.role},
-                            onCatch:(response)=>setAlert({ type: 'error', closeText: 'Close', text: `register Failed`, subtext: response.response.data.message })
+                            onCatch:(response)=>response.response.data.message
                         }
                     },
                     inputs:(model)=>[
