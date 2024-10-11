@@ -15,6 +15,7 @@ import 'leaflet/dist/leaflet.css';
 
 import './index.css';
 import axios from 'axios';
+
 type RN = ReactNode
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
@@ -785,6 +786,31 @@ const Layout: FC<AI_Layout> = (props) => {
     let { option, index, toggle, indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
+    const [recognition, setRecognition] = useState<any>()
+    useEffect(() => {
+        if (!('webkitSpeechRecognition' in window)) { return }
+        let { lang = 'en', onChange, voice } = rootProps;
+        if (!voice || !onChange || !types.hasKeyboard) { return }
+        // @ts-ignore
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {return}
+        const recognition = new SpeechRecognition();
+        recognition.lang = { en: 'en-US', fa: 'fa-IR' }[lang];
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.onresult = (event:any) => {
+            const result = event.results[0][0].transcript;
+            onChange(result);
+        };
+        recognition.onerror = (event:any) => {
+            console.error('خطا در تشخیص گفتار: ', event.error);
+        };
+        recognition.onend = () => {
+            console.log('تشخیص گفتار پایان یافت.');
+        };
+        setRecognition(recognition)
+        return () => {recognition.stop();};
+    }, []);
     function getClassName() {
         let cls;
         if (option !== undefined) {
@@ -1026,6 +1052,13 @@ const Layout: FC<AI_Layout> = (props) => {
         else if (error && rootProps.showErrors !== false) { text = error }
         if (text !== undefined) { return (<div className='aio-input-footer'>{text}</div>) }
     }
+    function startVoice() {
+        recognition.start();
+    }
+    function voice() {
+        if (!recognition) { return null }
+        return <div className='aio-input-voice' onClick={() => startVoice()}>{I('mdiMicrophoneOutline', 0.8)}</div>
+    }
     let properties = getProperties();
     let content = (<>
         {Indent()}
@@ -1036,6 +1069,7 @@ const Layout: FC<AI_Layout> = (props) => {
         {Text()}
         {BeforeAfter('after')}
         {Loading()}
+        {voice()}
         {Caret()}
     </>)
     let p = getProps();
@@ -3428,7 +3462,7 @@ type AI_isDropdown = { caret?: boolean | RN, popover?: AP_modal, open?: boolean 
 type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
 type AI_hasKeyboard = {
     blurChange?: boolean, filter?: string[], inputAttrs?: any, justNumber?: boolean | (string[]),
-    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number
+    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
 }
 type AI_isTable = {
     addText?: RN | ((value: any) => RN),
@@ -3592,7 +3626,7 @@ type I_login_api = {
 }
 type I_AILogin = {
     rtl?: boolean,
-    checkToken: (token: string) => Promise<I_login_api & { onSuccess: (response: any) => string | boolean,onCatch:(response:any)=>string | false }>,
+    checkToken: (token: string) => Promise<I_login_api & { onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false }>,
     before?: ReactNode,
     after?: ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
@@ -3607,24 +3641,24 @@ type I_AILogin = {
     validation?: (field: I_login_field, v: any) => string | undefined,
     modes: {
         userpass?: {
-            onSubmit: (model: I_login_model) => Promise<I_login_api & { 
-                onSuccess: (response: any) => string | { user: any, token: string } ,
+            onSubmit: (model: I_login_model) => Promise<I_login_api & {
+                onSuccess: (response: any) => string | { user: any, token: string },
                 onCatch: (response: any) => string
             }>
         }
         register?: {
-            onSubmit: (model: I_login_model) => Promise<I_login_api & { 
+            onSubmit: (model: I_login_model) => Promise<I_login_api & {
                 onSuccess: (response: any) => string | true,
                 onCatch: (response: any) => string
             }>,
             inputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
         }
         otp?: {
-            onSubmitNumber: (model: I_login_model) => Promise<I_login_api & { 
-                onSuccess: (response: any) => string | true ,
+            onSubmitNumber: (model: I_login_model) => Promise<I_login_api & {
+                onSuccess: (response: any) => string | true,
                 onCatch: (response: any) => string
             }>,
-            onSubmitCode: (model: I_login_model) => Promise<I_login_api & { 
+            onSubmitCode: (model: I_login_model) => Promise<I_login_api & {
                 onSuccess: (response: any) => string | { user: any, token: string },
                 onCatch: (response: any) => string
             }>,
@@ -3802,27 +3836,27 @@ export const AILogin: FC<I_AILogin> = (props) => {
     async function CheckToken() {
         if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
         const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
-        const {url,method,onSuccess,onCatch} = await checkToken(token || '');
+        const { url, method, onSuccess, onCatch } = await checkToken(token || '');
         if (user && token) {
             axios[method](url, { headers: { authorization: `Bearer ${token}` } })
                 .then(response => {
                     let res;
-                    try{res = onSuccess(response);}
-                    catch(err:any){setAlert({type:'error',text:'checkToken failed',subtext:errors.message}); return}
-                    if (res === true) { setData({ user, token }) } 
+                    try { res = onSuccess(response); }
+                    catch (err: any) { setAlert({ type: 'error', text: 'checkToken failed', subtext: errors.message }); return }
+                    if (res === true) { setData({ user, token }) }
                     else if (res === false) { logout() }
-                    else {setAlert({type:'error',text:'checkToken failed',subtext:'checkToken props should return string as error or true as token is valid and false as token is invalid'})}
+                    else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
                 })
                 .catch(response => {
-                    let res,message:string = '';
-                    try{res = onCatch(response)}
-                    catch(err:any){message = err.message}
-                    if(typeof res === 'string'){message = res}
-                    else if(res === false){logout()}
-                    else {message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token'}
-                    if(message){setAlert({type:'error',text:'checkToken failed',subtext:message})}
+                    let res, message: string = '';
+                    try { res = onCatch(response) }
+                    catch (err: any) { message = err.message }
+                    if (typeof res === 'string') { message = res }
+                    else if (res === false) { logout() }
+                    else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
+                    if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
                 })
-            
+
         }
         setLoading(false)
     }

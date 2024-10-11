@@ -85,6 +85,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['checkIcon (array)', () => <CheckIconArray />, ['checkbox'].indexOf(type) !== -1],
         ['file value', () => <FileValue />, ['file'].indexOf(type) !== -1],
         ['file onRemove', () => <FileOnremove />, ['file'].indexOf(type) !== -1],
+        ['voice', () => <Voice />, ['text','textarea'].indexOf(type) !== -1],
         ['options', () => <Options />, ['text', 'number'].indexOf(type) !== -1],
         [
             'caret (false)',
@@ -413,7 +414,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
                     <div className="flex-1"></div>
                     <AICheckbox text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
                     <AISelect
-                        options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
+                        options={titles} before='Show' option={{text: 'option',value: 'option'}}
                         value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
                     />
                     <div className="flex-row align-v">
@@ -703,6 +704,28 @@ const Loading: FC = () => {
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
     loading={true}
+/>
+        `)}
+        </div>
+    )
+}
+const Voice: FC = () => {
+    const { type, code }: I_CTX = useContext(CTX);
+    const [value, setValue] = useState<number>()
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} value={value}
+                onChange={(newValue) => setValue(newValue)}
+                voice={true} lang='fa'
+            />
+            {code(`
+<AIOInput
+    type='${type}' 
+    value='${value}'
+    onChange={(newValue)=>setValue(newValue)}
+    voice={true}
+    lang='fa'
 />
         `)}
         </div>
