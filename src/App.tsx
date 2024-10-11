@@ -10,7 +10,6 @@ import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater.js';
 import Puzzle from './documents/puzzle/index';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup.tsx';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas.tsx';
-import DOC_AIOLogin from './documents/aio-login/doc-aio-login.js';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
 import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import UIKit from './documents/aio-input/ui-kit/ui-kit.tsx';
@@ -24,6 +23,7 @@ import AppContainer from './documents/aio-layout';
 import DOC_Map from './documents/map/doc-map.tsx';
 import AIFilter from './documents/ai-filter';
 import BeenetDoc from "./documents/beenet";
+import DOC_Login from './documents/login'
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -36,7 +36,6 @@ export default function AIOComponents(){
     'puzzle':Puzzle,
     'aio-popup':DOC_AIOPopup,
     'aio-canvas':DOC_AIOCanvas,
-    'aio-login':DOC_AIOLogin,
     'aio-shop':DOC_AIOShop,
     'react-virtual-dom':DOC_ReactVirtualDom,
     'flip':DOC_Flip,
@@ -46,6 +45,7 @@ export default function AIOComponents(){
     'map':DOC_Map,
     'ai filter':AIFilter,
     'beenet':BeenetDoc,
+    'Login':DOC_Login,
     'test':Test
   })
   function goToHome(){

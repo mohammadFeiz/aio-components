@@ -77,7 +77,7 @@ const TableExamples:FC = ()=>{
                     <div className="flex-1"></div>
                     <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
                     <AIOInput
-                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
+                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}}
                         value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
                     />
                     <div className="flex-row align-v">
@@ -115,7 +115,10 @@ let [rows,setRows] = useState([
                             <div className='w-100' style={{ fontFamily: 'Arial' }}>
                                 <h3>{`${i} - ${title}`}</h3>
                                 {description && <h5>{description}</h5>}
-                                {<COMP/>}
+                                {<COMP rows={[
+                                    {name:'mohammad',family:'feiz',age:38,id:0},
+                                    {name:'john',family:'doe',age:30,id:1},
+                                ]}/>}
                             </div>
                         )
                     })

@@ -1,6 +1,6 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
 import $ from 'jquery';
-import AIOPopup, { AP_position, AP_modal } from "./../../npm/aio-popup";
+import AIOPopup, { AP_position, AP_modal, AP_alert } from "./../../npm/aio-popup";
 import Prism from 'prismjs';
 import {
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,
@@ -14,6 +14,7 @@ import { JSXToHTML } from './../../npm/aio-utils';
 import 'leaflet/dist/leaflet.css';
 
 import './index.css';
+import axios from 'axios';
 type RN = ReactNode
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
@@ -83,8 +84,9 @@ function AIOINPUT(props: AITYPE) {
     function validate() {
         const { validations, lang = 'en', label, reportError = () => { } } = props;
         if (!validations) { return }
-        const title = label || '';
-        const res = new Validation({ value, title: title.replace(/\*/g, ''), lang, validations }).validate() as string | undefined
+        let res: string | undefined;
+        if (typeof validations === 'function') { res = validations(value); }
+        else { res = new Validation({ value, title: (label || '').replace(/\*/g, ''), lang, validations }).validate() as string | undefined }
         reportError(res)
         setError(res)
     }
@@ -883,7 +885,7 @@ const Layout: FC<AI_Layout> = (props) => {
     function BeforeAfter(mode: 'before' | 'after') {
         let res: RN;
         if (mode === 'after' && type === 'password' && rootProps.preview) {
-            res = <div className='align-v' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
+            res = <div className='aio-input-password-preview' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
         }
         else { let v = properties[mode]; res = typeof v === 'function' ? v() : v; }
         if (res === undefined) { return null }
@@ -3314,7 +3316,7 @@ export type AITYPE =
         style?: any,
         subtext?: RN | (() => RN),
         type: AI_type,
-        validations?: any[],
+        validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
         body?: (value?: any) => { attrs?: any, html?: RN },//acardion
         checkIcon?: AI_checkIcon,//select,checkbox,radio
@@ -3574,136 +3576,237 @@ const PrismCode: FC<{ code: string, language?: 'js' | 'css', style?: any }> = ({
 export function Code(code: string, language?: 'js' | 'css', style?: any) {
     return <PrismCode code={code} language={language} style={style} />
 }
-type I_loginMode = 'register' | 'login'
-type I_trans = 'registerButton' | 'loginButton' | 'registerTitle' | 'loginTitle' | 'switchLogin' | 'switchRegister'
+type I_loginMode = 'userpass' | 'register' | 'otp'
+type I_login_field = string
+export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton' | 'otpcodeButton' |
+    'registerTitle' | 'userpassTitle' | 'otpcodeTitle' | 'otpnumberTitle' |
+    'switchuserpass' | 'switchregister' | 'switchotp' |
+    'rePasswordMatch' | 'userNameRequired' | 'passwordRequired' | 'rePasswordRequired' |
+    'otpNumberRequired' | 'otpCodeLength' |
+    'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError'
+type I_login_model = { userName: string, password: string, rePassword: string, otpNumber: string, otpCode: string, register: any }
+type I_login_api = {
+    method: 'post' | 'get',
+    url: string,
+    body?: any,
+    onCatch: (response: any) => void
+}
 type I_AILogin = {
-    checkToken: (token: string, callback: (res: boolean) => void) => Promise<void>,
-    login: (obj: { userName: string, password: string }, callback: (obj: { user: any, token: any }) => void) => Promise<void>
-    register?: (obj: { userName: string, password: string }, callback: () => void) => Promise<void>
-    registerInputs?: (AITYPE & { field: string })[],
+    rtl?: boolean,
+    checkToken: (token: string, callback: (res: boolean) => void, setAlert: (p: AP_alert) => void) => Promise<void>,
     before?: ReactNode,
     after?: ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
-    lang?: 'en' | 'fa',
-    translate?: (key: I_trans) => string,
+    translate?: 'fa' | ((key: I_login_key) => string | undefined),
     rememberTime: number,
     id: string,
     splash?: {
         html: ReactNode,
         time: number
-    }
+    },
+    label: (field: I_login_field) => string,
+    validation?: (field: I_login_field, v: any) => string | undefined,
+    modes: {
+        userpass?: {
+            onSubmit: (model: I_login_model, setAlert: (p: AP_alert) => void) => Promise<I_login_api & { onSuccess: (response: any) => string | { user: any, token: string } }>
+        }
+        register?: {
+            onSubmit: (model: I_login_model, setAlert: (p: AP_alert) => void) => Promise<I_login_api & { onSuccess: (response: any) => string | true }>,
+            inputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
+        }
+        otp?: {
+            onSubmitNumber: (model: I_login_model, setAlert: (p: AP_alert) => void) => Promise<I_login_api & { onSuccess: (response: any) => string | true }>,
+            onSubmitCode: (model: I_login_model, setAlert: (p: AP_alert) => void) => Promise<I_login_api & { onSuccess: (response: any) => string | { user: any, token: string } }>,
+            length: number
+        },
+        mode?: I_loginMode
+    },
+    attrs?: any,
+    setAttrs?: (key: I_login_key) => any
+}
+type I_login_modeState = {
+    key: I_loginMode, obj: any, userNameInput: ReactNode, passwordInput: ReactNode, title: ReactNode,
+    submitText: string, registerInputs: ReactNode,responseUserType:boolean
 }
 export const AILogin: FC<I_AILogin> = (props) => {
-    const { login, registerInputs, register, before = null, after = null, renderApp, lang = 'en', translate = () => { }, id, rememberTime, checkToken, splash } = props;
+    const { modes, renderApp, translate = () => { }, id, rememberTime, checkToken, splash } = props;
+    const { validation = () => { return undefined } } = props;
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + id))
-    const [mode, setMode] = useState<I_loginMode>('login')
-    const [userName, setUserName] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
-    const [rePassword, setRePassword] = useState<string>('')
-    const [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
-    const [registerModel, setRegisterModel] = useState<any>(getRegisterModel)
-    const [loading, setLoading] = useState<boolean>(true)
-    const [splashing, setSplashing] = useState<boolean>(!!splash)
-    function getRegisterModel() {
-        if (!register || !registerInputs) { return }
-        let res: any = {};
-        for (let input of registerInputs) { res[input.field] = input.value; }
-        return res
-    }
-    function trans(key: I_trans) {
-        const res = translate(key)
-        if (res) { return res }
-        const dic: { [key in I_trans]: { en: string, fa: string } } = {
-            registerButton: { en: 'Register', fa: 'ثبت نام' },
-            loginButton: { en: 'Login', fa: 'ورود' },
-            registerTitle: { en: 'Register', fa: 'ثبت نام' },
-            loginTitle: { en: 'Login', fa: 'ورود' },
-            switchLogin: { en: 'Go To Login', fa: 'از اینجا وارد شوید' },
-            switchRegister: { en: 'Go To Register', fa: 'از اینجا ثبت نام کنید' },
+    const [model, setModel] = useState<I_login_model>(getModel)
+    const [mode, setMode] = useState<I_login_modeState>(getMode())
+    const [otpMode, setOtpMode] = useState<'number' | 'code'>('number')
+    function getMode(mode?: I_loginMode): I_login_modeState {
+        const { modes } = props;
+        let res: I_login_modeState = { userNameInput: null, passwordInput: null, key: 'userpass', obj: undefined, title: null, submitText: '', registerInputs: null,responseUserType:false }
+        mode = mode || modes.mode;
+        if (!modes || !mode) { res.key = 'userpass'; res.obj = undefined }
+        else { res.key = mode; res.obj = modes[mode] }
+        const modeKey = res.key === 'otp' ? res.key + otpMode : res.key
+        if (res.key === 'userpass') {
+            res.userNameInput = <AIText {...input_props('userName')} />
+            res.passwordInput = <AIPassword {...input_props('password')} preview={true} />
+            res.responseUserType = true
         }
-        return dic[key][lang]
-    }
-    function submit() { if (mode === 'register') { onRegister() } else { onLogin() } }
-    function onLogin() { login({ userName, password }, ({ user, token }) => { storage.save('data', { user, token }); setData({ user, token }) }) }
-    async function onRegister() { if (register) { register({ userName, password }, () => changeMode('login')) } }
-    function changeMode(mode: I_loginMode) { setUserName(''); setPassword(''); setMode(mode); }
-    function mode_layout() {
-        if (!register) { return null }
-        let text = trans(mode === 'login' ? 'switchRegister' : 'switchLogin');
-        let nextMode: I_loginMode = mode === 'login' ? 'register' : 'login'
-        return (<button className='ai-login-mode' onClick={() => changeMode(nextMode)}>{text}</button>)
-    }
-    const messages = Object.keys(errors).filter((o) => errors[o] !== undefined).map((o) => errors[o])
-    function reportError(key: string, value: string | undefined) {
-        setErrors({ ...errors, [key]: value })
-    }
-    function registerInputs_layout() {
-        if (!register || !registerInputs || !registerInputs.length || mode !== 'register') { return null }
-        return (
-            <>
-                <AIPassword
-                    label='Re Password' value={rePassword} onChange={(rePassword) => setRePassword(rePassword)} preview={true}
-                    validations={['required', `=,"${password}",message(Re Password is not match with password)`]} showErrors={false} reportError={(v) => reportError('rePassword', v)} lang={lang}
-                />
+        else if (res.key === 'register') {
+            res.userNameInput = <AIText {...input_props('userName')} />
+            res.passwordInput = <AIPassword {...input_props('password')} preview={true} />
+        }
+        else if (res.key === 'otp') {
+            if (otpMode === 'number') {res.userNameInput = <AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} />}
+            else {res.passwordInput = <AIText {...input_props('otpCode')} justNumber={true} maxLength={props.modes.otp?.length || 4} />; res.responseUserType = true}
+        }
+        if (modes.register && modes.register.inputs && modes.register.inputs.length || res.key === 'register') {
+            const inputs = (modes.register?.inputs || (()=>[]))(model) || []
+            res.registerInputs = (<>
+                <AIPassword {...input_props('rePassword')} preview={true} />
                 {
-                    registerInputs.map((input) => {
+                    inputs.map((input) => {
+                        const value = model.register[input.field]
                         return (
-                            <AIOInput
-                                {...input}
-                                value={registerModel[input.field]} onChange={(v) => setRegisterModel({ ...registerModel, [input.field]: v })}
-                                showErrors={false} reportError={(v) => reportError(input.field, v)} lang={lang}
+                            <AIOInput key={input.field}
+                                rtl={props.rtl} label={props.label(input.field)} {...input} showErrors={false} reportError={(v) => reportError(input.field, v)}
+                                value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
                             />
                         )
                     })
                 }
-            </>
-        )
+            </>)
+        }
+        res.submitText = trans(modeKey + 'Button' as I_login_key)
+        res.title = <div className="ai-login-title">{trans(modeKey + 'Title' as I_login_key)}</div>
+        return res
     }
-    function login_layout(): ReactNode {
-        const submitText = trans(mode === 'register' ? 'registerButton' : 'loginButton')
-        const title = trans(mode === 'register' ? 'registerTitle' : 'loginTitle')
+    function getModel() {
+        let model = { userName: '', password: '', rePassword: '', otpNumber: '', otpCode: '', register: {} }
+        if(!modes.register){return model}
+        if (modes.register.inputs) {
+            const inputs = modes.register.inputs(model)
+            let register: any = {}
+            for (let i = 0; i < inputs.length; i++) {register[inputs[i].field] = inputs[i].defaultValue}
+            model.register = register
+        }
+        return model
+    }
+    let [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
+    const [loading, setLoading] = useState<boolean>(true)
+    const [splashing, setSplashing] = useState<boolean>(!!splash)
+    const [popup] = useState<AIOPopup>(new AIOPopup())
+    function trans(key: I_login_key) {
+        const { otp } = modes;
+        const dic: { [key in I_login_key]: { fa: string, en: string } } = {
+            registerButton: { en: 'Register', fa: 'ثبت نام' },
+            userpassButton: { en: 'Login', fa: 'ورود' },
+            otpnumberButton: { en: 'Send Number', fa: 'ارسال شماره همراه' },
+            otpcodeButton: { en: 'Login', fa: 'ورود' },
+            registerTitle: { en: 'Register', fa: 'ثبت نام' },
+            userpassTitle: { en: 'Login', fa: 'ورود' },
+            otpcodeTitle: { en: 'OTP Code', fa: 'کد یکبار مصرف' },
+            otpnumberTitle: { en: 'Phone Number', fa: 'شماره همراه' },
+            switchuserpass: { en: 'login by user name', fa: 'ورود با نام کاربری' },
+            switchregister: { en: 'Go To Register', fa: 'ثبت نام' },
+            switchotp: { en: 'login by otp', fa: 'ورود با رمز یکبار مصرف' },
+            rePasswordMatch: { en: 'Password is not match with Re password', fa: 'رمز عبور با تکرار آن مطابقت ندارد' },
+            userNameRequired: { en: 'User Name is required', fa: 'نام کاربری ضروری است' },
+            passwordRequired: { en: 'password is required', fa: 'رمز عبور ضروری است' },
+            rePasswordRequired: { en: 'Re Password is required', fa: 'تکرار رمز عبور ضروری است' },
+            otpNumberRequired: { en: 'Phone Number is required', fa: 'شماره همراه ضروری است' },
+            otpCodeLength: { en: `otp code should be ${otp?.length} digit`, fa: `کد یکبار مصرف باید ${otp?.length} رقم باشد` },
+            registerError: { en: 'Registeration failed', fa: 'ثبت نام با خطا روبرو شد' },
+            userpassError: { en: 'login by userName failed', fa: 'ورود با نام کاربری با خطا روبرو شد' },
+            otpcodeError: { en: 'login by otp failed', fa: 'ورود با کد یکبار مصرف با خطا روبرو شد' },
+            otpnumberError: { en: 'send otp number for receive otp code failed', fa: 'ارسال شماره همراه برای دریافت کد یکبار مصرف با خطا روبرو شد' },
+        }
+        return translate === 'fa' ? dic[key].fa : translate(key) || dic[key].en
+    }
+    function userpassCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
+    function registerCallback() { window.location.reload() }
+    function otpNumberCallback() { setOtpMode('code') }
+    function otpCodeCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
+    async function success(response:any){
+        const modeKey = mode.key === 'otp' ? mode.key + otpMode : mode.key
+        let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
+        const { onSuccess } = await mode.obj.onSubmit(model, setAlert)
+        let message,res;
+        try{res = await onSuccess(response)}
+        catch(err:any) {setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return}
+        if (typeof res === 'string') { message = res }
+        let defaultMessage: string = {
+            userpass: 'modes.userpass onSuccess props should returns string as error or {user:any,token:string} as success',
+            register: 'modes.register onSuccess props should returns string as error or true as success',
+            otpnumber: 'modes.otp.onSubmitNumber onSuccess props should returns string as error or true as success',
+            otpcode: 'modes.otp.onSubmitCode onSuccess props should returns string as error or {user:any,token:string} as success'
+        }[modeKey] as string
+        if (mode.responseUserType) {
+            if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') { message = defaultMessage }
+        }
+        else if (res !== true) { message = defaultMessage }
+        if (message) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: message })}
+        else {callback(res)}
+    }
+    async function submit() {
+        const { url, method, body, onCatch } = await mode.obj.onSubmit(model, setAlert)
+        axios[method as 'post' | 'get'](url, body).then(success).catch(response => onCatch(response));
+    }
+    function changeMode(mode: I_loginMode) {setModel(getModel()); if (mode === 'otp') { setOtpMode('number') } setMode(getMode(mode))}
+    function mode_props(key: I_loginMode){return { className: 'ai-login-mode', onClick: () => changeMode(key) }}
+    function mode_layout() {
+        const { modes } = props;
         return (
-            <div className="ai-login">
-                <div className='ai-login-before'>{before}</div>
-                <div className="ai-login-form">
-                    <div className="ai-login-title">{title}</div>
-                    <AIText
-                        label='User Name' value={userName} onChange={(userName) => setUserName(userName)}
-                        validations={['required', '>,6']} showErrors={false} reportError={(v) => reportError('userName', v)} lang={lang}
-                    />
-                    <AIPassword
-                        label='Password' value={password} onChange={(password) => setPassword(password)} preview={true}
-                        validations={['required', '>=,6']} showErrors={false} reportError={(v) => reportError('password', v)} lang={lang}
-                    />
-                    {registerInputs_layout()}
-                    <div className="ai-login-errors">
-                        {messages.map((message) => <div className="ai-login-error">{message}</div>)}
-                    </div>
-                    <button className='ai-login-submit' disabled={!!messages.length} onClick={() => submit()}>{submitText}</button>
-                    {mode_layout()}
-                </div>
-                <div className='ai-login-after'>{after}</div>
+            <div className="ai-login-modes">
+                {modes.userpass && mode.key !== 'userpass' && <button {...mode_props('userpass')}>{trans('switchuserpass')}</button>}
+                {modes.register && mode.key !== 'register' && <button {...mode_props('register')}>{trans('switchregister')}</button>}
+                {modes.otp && mode.key !== 'otp' && <button {...mode_props('otp')}>{trans('switchotp')}</button>}
+                {modes.otp && mode.key === 'otp' && otpMode === 'code' && <button {...mode_props('otp')}>{trans('switchotp')}</button>}
             </div>
         )
     }
+    function reportError(key: string, value: string | undefined) { errors = { ...errors, [key]: value }; setErrors({ ...errors }) }
+    function input_props(field: keyof I_login_model) {
+        return {
+            label: props.label(field), validations: (v: any) => validate(field, v), showErrors: false, rtl: props.rtl,
+            reportError: (v: string | undefined) => reportError(field, v), value: model[field], onChange: (v: any) => setModel({ ...model, [field]: v })
+        }
+    }
+    function validate(field: keyof I_login_model, v: string) {
+        const { otp } = modes;
+        if (!v) { return trans({ otpCode: '', register: '', otpNumber: 'otpNumberRequired', userName: 'userNameRequired', password: 'passwordRequired', rePassword: 'rePasswordRequired' }[field] as any) }
+        if (field === 'otpCode' && otp && (v || '').length < otp.length) { return trans('otpCodeLength') }
+        if (field === 'rePassword' && v !== model.password) { return trans('rePasswordMatch'); }
+        return validation(field, v)
+    }
+    function submit_layout() {
+        const messages = Object.keys(errors).filter((o) => errors[o] !== undefined).map((o) => errors[o])
+        return (<>
+            <div className="ai-login-errors">{messages.map((message, i) => <div key={i} className="ai-login-error">{message}</div>)}</div>
+            <button className='ai-login-submit' disabled={!!messages.length} onClick={() => submit()}>{mode.submitText}</button>
+        </>)
+    }
+    function form_layout() {
+        const { title:t, userNameInput:u, passwordInput:p,registerInputs:r } = mode;
+        return (<div className="ai-login-form">{t}{u}{p}{r}{submit_layout()}{mode_layout()}</div>)
+    }
+    const bf_layout = (type:'before' | 'after') => <div className={`ai-login-${type}`}>{props[type]}</div>
     function logout() { storage.remove('data'); window.location.reload(); }
     async function CheckToken() {
         if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
         const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
         if (user && token) {
-            await checkToken(token, (res) => {
-                if (res === true) { setData({ user, token }) }
-                else if (res === false) { logout() }
-                else { }
-            });
+            await checkToken(token, (res) => { if (res === true) { setData({ user, token }) } else if (res === false) { logout() } }, setAlert);
         }
         setLoading(false)
     }
     useEffect(() => { CheckToken() }, [])
-    if (loading || splashing) { return <>{splash ? splash.html : null}</> }
-    if (!data) { return <>{login_layout()}</> }
-    return <>{renderApp({ token: data.token, user: data.user, logout })}</>
+    function setAlert(p: AP_alert) { popup.addAlert(p) }
+    function getContent() {
+        if (loading || splashing) { return splash ? splash.html : null }
+        if (!data) { 
+            const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: props.rtl ? 'rtl' : undefined } })
+            return (<div {...attrs}>{bf_layout('before')} {form_layout()} {bf_layout('after')}</div>)
+        }
+        return renderApp({ token: data.token, user: data.user, logout })
+    }
+    return (<>{getContent()} {popup.render()}</>)
 }
 
 type I_pos = [number, number]
