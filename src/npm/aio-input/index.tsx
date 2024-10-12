@@ -6,17 +6,13 @@ import {
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,
     getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount,
     GetArray, Validation,
-    GetSvg
+    GetSvg,JSXToHTML
 } from './../../npm/aio-utils';
 import { divIcon } from 'leaflet';
 import { Circle, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
-import { JSXToHTML } from './../../npm/aio-utils';
 import 'leaflet/dist/leaflet.css';
-
-import './index.css';
 import axios from 'axios';
-
-type RN = ReactNode
+import './index.css';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
@@ -101,7 +97,7 @@ function AIOINPUT(props: AITYPE) {
             let popover: AP_modal = { ...(props.popover || {}) }
             let { type, multiple } = props;
             let { body, limitTo, header, setAttrs = () => { return {} }, position = 'popover' } = popover;
-            let target: RN = $(dom.current)
+            let target: ReactNode = $(dom.current)
             let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple) || !!popover.fitHorizontal
             let config: AP_modal = {
                 //props that have default but can change by user
@@ -211,7 +207,7 @@ function AIOINPUT(props: AITYPE) {
         if (vertical) { return 'aio-input-range-vertical' }
         return 'aio-input-range-horizontal'
     }
-    let render: { [key in AI_type]: () => RN } = {
+    let render: { [key in AI_type]: () => ReactNode } = {
         spinner: () => null,
         slider: () => null,
         acardion: () => <Acardion />,
@@ -264,7 +260,7 @@ function TimePopover(props: { onClose: () => void }) {
         if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 })) }
         return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }))
     }
-    function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): RN {
+    function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ReactNode {
         if (typeof value[type] !== 'number') { return null }
         let options = getTimeOptions(type);
         let p: AITYPE = { type: 'list', value: value[type], options, size: size * 2.5, onChange: (v) => change({ [type]: v }) }
@@ -548,7 +544,7 @@ const Tags: FC = () => {
     })
     return !tags.length ? null : <div className={`aio-input-tags-container aio-input-scroll${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`}>{tags}</div>
 }
-type AI_Tag = { attrs?: any, before?: RN, after?: RN, text: RN, disabled?: boolean, onClose?: () => void }
+type AI_Tag = { attrs?: any, before?: ReactNode, after?: ReactNode, text: ReactNode, disabled?: boolean, onClose?: () => void }
 const Tag: FC<AI_Tag> = (props) => {
     let { attrs, before = I('mdiCircleMedium', 0.7), after, text, disabled, onClose = () => { } } = props;
     let close = disabled ? undefined : onClose
@@ -777,7 +773,7 @@ function Options() {
 }
 export type I_openState = boolean | undefined
 export type AI_Layout = {
-    option?: AI_option, text?: RN, index?: number,
+    option?: AI_option, text?: ReactNode, index?: number,
     properties?: any, indent?: AI_indent,
     toggle?: { state: I_openState, action: () => void },
 }
@@ -800,7 +796,7 @@ const Layout: FC<AI_Layout> = (props) => {
         recognition.interimResults = false;
         recognition.onresult = (event:any) => {
             const result = event.results[0][0].transcript;
-            onChange(result);
+            if(onChange)onChange(result);
         };
         recognition.onerror = (event:any) => {
             console.error('خطا در تشخیص گفتار: ', event.error);
@@ -849,7 +845,7 @@ const Layout: FC<AI_Layout> = (props) => {
         else { className += ` aio-input-${type}-${key}` }
         return className;
     }
-    function Text(): RN {
+    function Text(): ReactNode {
         let { text, placeholder, subtext, justify } = properties;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text !== undefined) {
@@ -909,7 +905,7 @@ const Layout: FC<AI_Layout> = (props) => {
         );
     }
     function BeforeAfter(mode: 'before' | 'after') {
-        let res: RN;
+        let res: ReactNode;
         if (mode === 'after' && type === 'password' && rootProps.preview) {
             res = <div className='aio-input-password-preview' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
         }
@@ -1434,7 +1430,7 @@ const TreeActions: FC<I_TreeActions> = (props) => {
     let { row, index, parent, rowDetails, parentDetails } = props;
     let { rootProps, add, remove }: I_TreeContext = useContext(TreeContext);
     let { onAdd, onRemove, removeText = 'Remove' } = rootProps;
-    let addText: RN = (typeof rootProps.addText === 'function' ? rootProps.addText(row) : rootProps.addText) || 'Add';
+    let addText: ReactNode = (typeof rootProps.addText === 'function' ? rootProps.addText(row) : rootProps.addText) || 'Add';
     let options = typeof rootProps.actions === 'function' ? rootProps.actions(row, parent) : rootProps.actions;
     function getOptions() {
         let res = [];
@@ -1851,7 +1847,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);
     let { unit = Def('date-unit') } = rootProps;
-    function getDays(): RN {
+    function getDays(): ReactNode {
         if (!activeDate || !activeDate.year || !activeDate.month) { return null }
         let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
         let options = GetArray(daysLength, (i) => ({ text: (i + 1).toString(), value: i + 1 }))
@@ -2655,7 +2651,7 @@ const Range: FC = () => {
         let rootStyle = getRootStyle();
         return AddToAttrs(attrs, { className: getRootClassName(), style: rootStyle, attrs: { ref: temp.dom } })
     }
-    function root_node(): RN {
+    function root_node(): ReactNode {
         return (
             <div {...getRootProps()}>
                 <RangeGroove />
@@ -2747,7 +2743,7 @@ const RangeFills: FC = () => {
     let { start = 0, fill, round } = rootProps;
     if (round || fill === false) { return null }
     let limit = value.length === 1 ? [start, value[0]] : [...value];
-    let res: RN[] = [];
+    let res: ReactNode[] = [];
     for (let i = 1; i < limit.length; i++) {
         let { thickness, style, className: fillClassName, color } = (typeof fill === 'function' ? fill(i) : fill) || {};
         let from = limit[i - 1];
@@ -2766,7 +2762,7 @@ const RangeRanges: FC = () => {
     for (let i = 0; i < list.length; i++) {
         let [value, config] = list[i];
         let to = value
-        let rangeItem: RN
+        let rangeItem: ReactNode
         if (round) {
             let { thickness, color, radius, roundCap } = getCircleByStr(config, 'offset')
             let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false }
@@ -2885,7 +2881,7 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
     let { label } = props;
     let { zIndex, dynamic, step, list = [] } = label;
     let { round, start = 0, end = 360, reverse, vertical } = rootProps;
-    let [def] = useState<RN>(getDef);
+    let [def] = useState<ReactNode>(getDef);
     function getDef() { return RENDER(true) }
     function getList(): number[] {
         let res: number[] = [];
@@ -2925,7 +2921,7 @@ const RangeLabel: FC<I_RangeLabel> = (props) => {
     }
     useEffect(() => { $(window).on('resize', updateLabels) }, [])
     useEffect(() => { updateLabels() })
-    function RENDER(init: boolean): RN {
+    function RENDER(init: boolean): ReactNode {
         if (!init && !dynamic) { return def }
         return (
             <div className='ai-range-labels' style={{ zIndex }}>
@@ -2977,10 +2973,10 @@ export type AI_Sidemenu = {
     attrs?: any
 }
 export type AI_Sidemenu_item = {
-    text: RN,
+    text: ReactNode,
     value: string,
     badge?: AI_Sidemenu_badge | AI_Sidemenu_badge[],
-    icon: RN,
+    icon: ReactNode,
     items?: AI_Sidemenu_item[],
     onClick?: () => void
 }
@@ -2997,7 +2993,7 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
         if (!badge) { badge = [] }
         if (!Array.isArray(badge)) { badge = [badge] }
         if (!badge.length) { return [] }
-        let res: RN[] = []
+        let res: ReactNode[] = []
         for (let i = 0; i < badge.length; i++) {
             let { text, color = 'red', circle } = badge[i]
             res.push(<div className={`${cls}-badge ${cls}-align ${cls}-badge-${color}${circle ? ' ' + cls + `-badge-circle` : ''}`}>{text}</div>)
@@ -3006,7 +3002,7 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
     }
     function getAfter(option: AI_Sidemenu_item, active: boolean) {
         let { items = [] } = option;
-        let badge: RN[] = getBadge(option);
+        let badge: ReactNode[] = getBadge(option);
         return (
             <div className={`${cls}-after ${cls}-align`}>
                 {!!badge.length && badge}
@@ -3331,28 +3327,28 @@ function getTimeText(rootProps: AITYPE) {
 export type AITYPE =
     AI_hasOption & AI_isDropdown & AI_isMultiple &
     AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
-        after?: RN | ((p?: any) => RN),
+        after?: ReactNode | ((p?: any) => ReactNode),
         attrs?: any,
-        before?: RN | ((p?: any) => RN),
+        before?: ReactNode | ((p?: any) => ReactNode),
         className?: string,
         disabled?: boolean | any[],
-        footer?: RN,
+        footer?: ReactNode,
         imageAttrs?: any,
         justify?: boolean,
         label?: string,
         lang?: 'fa' | 'en',
-        loading?: boolean | RN,
+        loading?: boolean | ReactNode,
         onChange?: (newValue: any, p?: any) => undefined | boolean | void,
         placeholder?: ReactNode,
         reportError?: (errorMessage: string | undefined) => void,
         rtl?: boolean,
         showErrors?: boolean | string,
         style?: any,
-        subtext?: RN | (() => RN),
+        subtext?: ReactNode | (() => ReactNode),
         type: AI_type,
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
-        body?: (value?: any) => { attrs?: any, html?: RN },//acardion
+        body?: (value?: any) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: AI_checkIcon,//select,checkbox,radio
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         fetchOptions?: (text: string) => Promise<any[]>,//text,textarea
@@ -3360,13 +3356,13 @@ export type AITYPE =
         onClick?: (e: Event) => void,//button
         onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
         preview?: boolean,//password,image,file
-        text?: RN | (() => RN),//select,checkbox,button,
+        text?: ReactNode | (() => ReactNode),//select,checkbox,button,
     }
 
 export type AI_option = {
-    show: any, checked: boolean, checkIcon: AI_checkIcon, after: RN | ((p?: any) => RN), before: RN | ((p?: any) => RN), draggable: boolean,
-    text: RN, subtext: RN, justify: boolean, loading: boolean | RN, disabled: boolean, attrs: any, className: string, style: any, value: any,
-    tagAttrs: any, tagBefore: any, tagAfter: any, toggleIcon: boolean | RN[], onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
+    show: any, checked: boolean, checkIcon: AI_checkIcon, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
+    text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
+    tagAttrs: any, tagBefore: any, tagAfter: any, toggleIcon: boolean | ReactNode[], onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
     details: AI_optionDetails
 }
 type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
@@ -3381,24 +3377,24 @@ export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | '
     'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
 export type AI_table_column = {
     title?: any, value?: any, sort?: true | AI_table_sort, search?: boolean, id?: string, _id?: string, width?: any, minWidth?: any, input?: AITYPE,
-    onChange?: (newValue: any) => void, titleAttrs?: { [key: string]: any } | string, template?: string | ((p: { row: any, column: AI_table_column, rowIndex: number }) => RN),
+    onChange?: (newValue: any) => void, titleAttrs?: { [key: string]: any } | string, template?: string | ((p: { row: any, column: AI_table_column, rowIndex: number }) => ReactNode),
     excel?: string | boolean, justify?: boolean, cellAttrs?: { [key: string]: any } | ((p: { row: any, rowIndex: number, column: AI_table_column }) => any) | string
 }
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = { [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean }
 export type AI_table_param = { row: any, column: AI_table_column, rowIndex: number }
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
-export type AI_point = (index: number, p: any) => { offset?: number, html?: RN, attrs?: any }
+export type AI_point = (index: number, p: any) => { offset?: number, html?: ReactNode, attrs?: any }
 export type AI_labels = AI_label[]
 export type AI_label = {
     list?: number[], start?: number, end?: number, step?: number, dynamic?: boolean, autoHide?: boolean, zIndex?: number,
     setting: (value: number, p: { angle: number, disabled: boolean }) => AI_labelItem
 }
-export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: RN }
+export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: ReactNode }
 export type AI_range_handle = ((value: number, p: any) => AI_range_handle_config) | false
 export type AI_range_handle_config = { thickness?: number, size?: number, color?: string, offset?: number, sharp?: boolean }
 export type AI_fill = { thickness?: number, color?: string, className?: string, style?: any }
-export type AI_checkIcon = Object | [RN, RN];
+export type AI_checkIcon = Object | [ReactNode, ReactNode];
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
@@ -3418,7 +3414,7 @@ export type AI_context = {
     error?: string
 }
 export type AI_types = { isMultiple: boolean, isInput: boolean, isDropdown: boolean, hasOption: boolean, hasPlaceholder: boolean, hasKeyboard: boolean, hasText: boolean, hasSearch: boolean }
-export type AI_table_sort = { active?: boolean, dir?: 'dec' | 'inc', title?: RN, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any }
+export type AI_table_sort = { active?: boolean, dir?: 'dec' | 'inc', title?: ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any }
 export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
 export type AI_table_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
 export type AI_table_rows = { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] }
@@ -3456,16 +3452,16 @@ type AI_isDate = {
     theme?: string[],
     translate?: (text: string) => string,
     unit?: AI_date_unit | AI_time_unit,
-    text?: RN | (() => RN),
+    text?: ReactNode | (() => ReactNode),
 }
-type AI_isDropdown = { caret?: boolean | RN, popover?: AP_modal, open?: boolean }
+type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
 type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
 type AI_hasKeyboard = {
     blurChange?: boolean, filter?: string[], inputAttrs?: any, justNumber?: boolean | (string[]),
     maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
 }
 type AI_isTable = {
-    addText?: RN | ((value: any) => RN),
+    addText?: ReactNode | ((value: any) => ReactNode),
     columnGap?: number,
     columns?: AI_table_column[] | ((p?: any) => AI_table_column[]),
     excel?: string | ((value: any[]) => any[]),
@@ -3478,13 +3474,13 @@ type AI_isTable = {
     onSearch?: true | ((searchValue: string) => void),
     paging?: AI_table_paging,
     removeText?: string,
-    rowAfter?: (p: { row: any, rowIndex: number }) => RN,
+    rowAfter?: (p: { row: any, rowIndex: number }) => ReactNode,
     rowAttrs?: (p: { row: any, rowIndex: number }) => any,
-    rowBefore?: (p: { row: any, rowIndex: number }) => RN,
+    rowBefore?: (p: { row: any, rowIndex: number }) => ReactNode,
     rowGap?: number,
-    rowsTemplate?: (rows: any[]) => RN,
-    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => RN,//table
-    toolbar?: RN | (() => RN),
+    rowsTemplate?: (rows: any[]) => ReactNode,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => ReactNode,//table
+    toolbar?: ReactNode | (() => ReactNode),
     toolbarAttrs?: any,
     tabIndex?: number
 }
@@ -3509,7 +3505,7 @@ type AI_isRange = {
 }
 type AI_isTree = {
     actions?: ({ [key in keyof AI_option]?: any }[]) | ((row: any, parent: any) => { [key in keyof AI_option]?: any }[]),
-    addText?: RN | ((value: any) => RN),
+    addText?: ReactNode | ((value: any) => ReactNode),
     checkIcon?: AI_checkIcon,
     getChilds?: (p: { row: any, details: I_treeRowDetails }) => any[],
     indent?: number,
@@ -3670,8 +3666,8 @@ type I_AILogin = {
     setAttrs?: (key: I_login_key) => any
 }
 type I_login_modeState = {
-    key: I_loginMode, obj: any, userNameInput: ReactNode, passwordInput: ReactNode, title: ReactNode,
-    submitText: string, registerInputs: ReactNode, responseUserType: boolean
+    key: I_loginMode, obj: any, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
+    submitText: string, registerInputs:()=> ReactNode, responseUserType: boolean
 }
 export const AILogin: FC<I_AILogin> = (props) => {
     const { modes, renderApp, translate = () => { }, id, rememberTime, checkToken, splash } = props;
@@ -3679,45 +3675,51 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + id))
     const [model, setModel] = useState<I_login_model>(getModel)
+    const modelRef = useRef(model)
+    modelRef.current = model;
     const [mode, setMode] = useState<I_login_modeState>(getMode())
     const [otpMode, setOtpMode] = useState<'number' | 'code'>('number')
     function getMode(mode?: I_loginMode): I_login_modeState {
         const { modes } = props;
-        let res: I_login_modeState = { userNameInput: null, passwordInput: null, key: 'userpass', obj: undefined, title: null, submitText: '', registerInputs: null, responseUserType: false }
+        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: 'userpass', obj: undefined, title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
         mode = mode || modes.mode;
         if (!modes || !mode) { res.key = 'userpass'; res.obj = undefined }
         else { res.key = mode; res.obj = modes[mode] }
         const modeKey = res.key === 'otp' ? res.key + otpMode : res.key
         if (res.key === 'userpass') {
-            res.userNameInput = <AIText {...input_props('userName')} />
-            res.passwordInput = <AIPassword {...input_props('password')} preview={true} />
+            res.userNameInput = ()=><AIText {...input_props('userName')} />
+            res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
             res.responseUserType = true
         }
         else if (res.key === 'register') {
-            res.userNameInput = <AIText {...input_props('userName')} />
-            res.passwordInput = <AIPassword {...input_props('password')} preview={true} />
+            res.userNameInput = ()=><AIText {...input_props('userName')} />
+            res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
+            if (modes.register && modes.register.inputs && modes.register.inputs.length) {
+                const inputs = (modes.register?.inputs || (() => []))(modelRef.current) || []
+                res.registerInputs = ()=>{
+                    const model = modelRef.current
+                    return (<>
+                        <AIPassword {...input_props('rePassword')} preview={true} />
+                        {
+                            inputs.map((input) => {
+                                const value = model.register[input.field]
+                                return (
+                                    <AIOInput key={input.field}
+                                        rtl={props.rtl} label={props.label(input.field)} {...input} showErrors={false} reportError={(v) => reportError(input.field, v)}
+                                        value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
+                                    />
+                                )
+                            })
+                        }
+                    </>)
+                }
+            }
         }
         else if (res.key === 'otp') {
-            if (otpMode === 'number') { res.userNameInput = <AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
-            else { res.passwordInput = <AIText {...input_props('otpCode')} justNumber={true} maxLength={props.modes.otp?.length || 4} />; res.responseUserType = true }
+            if (otpMode === 'number') { res.userNameInput = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
+            else { res.passwordInput = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={props.modes.otp?.length || 4} />; res.responseUserType = true }
         }
-        if (modes.register && modes.register.inputs && modes.register.inputs.length || res.key === 'register') {
-            const inputs = (modes.register?.inputs || (() => []))(model) || []
-            res.registerInputs = (<>
-                <AIPassword {...input_props('rePassword')} preview={true} />
-                {
-                    inputs.map((input) => {
-                        const value = model.register[input.field]
-                        return (
-                            <AIOInput key={input.field}
-                                rtl={props.rtl} label={props.label(input.field)} {...input} showErrors={false} reportError={(v) => reportError(input.field, v)}
-                                value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
-                            />
-                        )
-                    })
-                }
-            </>)
-        }
+        
         res.submitText = trans(modeKey + 'Button' as I_login_key)
         res.title = <div className="ai-login-title">{trans(modeKey + 'Title' as I_login_key)}</div>
         return res
@@ -3769,6 +3771,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function otpNumberCallback() { setOtpMode('code') }
     function otpCodeCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
     async function success(response: any) {
+        const model = modelRef.current
         const modeKey = mode.key === 'otp' ? mode.key + otpMode : mode.key
         let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
         const { onSuccess } = await mode.obj.onSubmit(model)
@@ -3790,8 +3793,12 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else { callback(res) }
     }
     async function submit() {
+        const model = modelRef.current
         const { url, method, body, onCatch } = await mode.obj.onSubmit(model, setAlert)
-        axios[method as 'post' | 'get'](url, body).then(success).catch(response => onCatch(response));
+        axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
+            if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
+            else{onCatch(response)}
+        });
     }
     function changeMode(mode: I_loginMode) { setModel(getModel()); if (mode === 'otp') { setOtpMode('number') } setMode(getMode(mode)) }
     function mode_props(key: I_loginMode) { return { className: 'ai-login-mode', onClick: () => changeMode(key) } }
@@ -3808,12 +3815,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     function reportError(key: string, value: string | undefined) { errors = { ...errors, [key]: value }; setErrors({ ...errors }) }
     function input_props(field: keyof I_login_model) {
+        const model = modelRef.current
         return {
             label: props.label(field), validations: (v: any) => validate(field, v), showErrors: false, rtl: props.rtl,
             reportError: (v: string | undefined) => reportError(field, v), value: model[field], onChange: (v: any) => setModel({ ...model, [field]: v })
         }
     }
     function validate(field: keyof I_login_model, v: string) {
+        const model = modelRef.current
         const { otp } = modes;
         if (!v) { return trans({ otpCode: '', register: '', otpNumber: 'otpNumberRequired', userName: 'userNameRequired', password: 'passwordRequired', rePassword: 'rePasswordRequired' }[field] as any) }
         if (field === 'otpCode' && otp && (v || '').length < otp.length) { return trans('otpCodeLength') }
@@ -3829,7 +3838,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     function form_layout() {
         const { title: t, userNameInput: u, passwordInput: p, registerInputs: r } = mode;
-        return (<div className="ai-login-form">{t}{u}{p}{r}{submit_layout()}{mode_layout()}</div>)
+        return (<div className="ai-login-form">{t}{u()}{p()}{r()}{submit_layout()}{mode_layout()}</div>)
     }
     const bf_layout = (type: 'before' | 'after') => <div className={`ai-login-${type}`}>{props[type]}</div>
     function logout() { storage.remove('data'); window.location.reload(); }
@@ -3848,13 +3857,16 @@ export const AILogin: FC<I_AILogin> = (props) => {
                     else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
                 })
                 .catch(response => {
-                    let res, message: string = '';
-                    try { res = onCatch(response) }
-                    catch (err: any) { message = err.message }
-                    if (typeof res === 'string') { message = res }
-                    else if (res === false) { logout() }
-                    else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
-                    if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
+                    if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
+                    else {
+                        let res, message: string = '';
+                        try { res = onCatch(response) }
+                        catch (err: any) { message = err.message }
+                        if (typeof res === 'string') { message = res }
+                        else if (res === false) { logout() }
+                        else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
+                        if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
+                    }
                 })
 
         }
