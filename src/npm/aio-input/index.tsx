@@ -3145,7 +3145,7 @@ function getDefaultProps(props: AITYPE, types: AI_types) {
     props = { ...props }
     if (props.type === 'select') {
         if (!!props.multiple) {
-            if (!props.text) { props.text = 'Select Items' }
+            if (props.text === undefined) { props.text = 'Select Items' }
         }
     }
     else if (props.type === 'time') {
