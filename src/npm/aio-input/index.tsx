@@ -4173,3 +4173,129 @@ const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange }) => {
         </div>
     )
 }
+
+export type I_mask_pattern = ['number' | 'text' | 'select' | ReactNode,number,(string[] | ReactNode)?][]
+export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=>void}> = (props) => {
+    const [dom] = useState(createRef())
+    // let pattern:I_mask_pattern = [
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['select',1,['a','b','c','d','e','f']],
+    //     ['-',1,<div style={{width:12,height:12,borderRadius:'100%',background:'red',marginRight:6}}></div>],
+    //     ['text',3],
+    // ]
+    const [value,setValue] = useState<string>(props.value || '')
+    const [values, setValues] = useState<string[]>(getValues(props.value || ''))
+    const valuesRef = useRef(values)
+    valuesRef.current = values
+    useEffect(()=>{
+        setValue(props.value || '');
+        setValues(getValues(props.value || ''))
+    },[props.value])
+    function getValues(value:string){
+        let values = [];
+        let temp = value
+        for (let o of props.pattern) {
+            if(o[0] === 'number' || o[0] === 'text' || o[0] === 'select'){
+                let length:number = +o[1];
+                let value = temp.slice(0,length)
+                values.push(value);
+                temp = temp.slice(length,temp.length)
+            }
+            else {temp = temp.slice(o[1],temp.length)}
+        }
+        return values
+    }
+    function SetValue(values:any,inputIndex:number,patternIndex:number){
+        let tempInputIndex = -1
+        console.log(values)
+        let temp = ''
+        for (let i = 0; i < props.pattern.length; i++) {
+            let o = props.pattern[i];
+            if(o[0] === 'number' || o[0] === 'text' || o[0] === 'select'){
+                tempInputIndex++;
+                let length:number = +o[1];
+                let res = values[tempInputIndex]
+                let delta = length - res.length;
+                if(delta){
+                    const emp = o[0] === 'number'?'0':'x'
+                    for (let j = 0; j < delta; j++){
+                        res = emp + res
+                    }
+                    values[tempInputIndex] = res
+                }
+                else if(patternIndex === i) {
+                    const inputs = $(dom.current as any).find('.aio-input');
+                    let length = inputs.length;
+                    inputIndex++;
+                    if(inputIndex > length){inputIndex = 0;}
+                    let input = inputs.eq(inputIndex).find('input');
+                    if(input.length){
+                        input.focus().select();
+                    }
+                    
+                }
+                temp += res;
+            }
+            else {temp += o[0]}
+        }
+        setValue(temp);
+        props.onChange(temp)
+        setValues(values)
+    }
+    function changeValue(value:any,inputIndex:number,patternIndex:number){
+        let newValues = valuesRef.current.map((o,j)=>inputIndex === j?value:o);
+        SetValue(newValues,inputIndex,patternIndex)
+
+    }
+    function getList(){
+        let temp = 0;
+        return props.pattern.map((o:any,patternIndex)=>{
+            let type = o[0];
+            let inputIndex = temp;
+            if(type === 'text' || type === 'number'){
+                let length = +o[1];
+                temp++;
+                return (
+                    <AIText 
+                        style={{width:length * 10}}
+                        placeholder={new Array(length).fill('x').join('')}
+                        maxLength={length}
+                        justNumber={type === 'number'}
+                        value={valuesRef.current[inputIndex]}
+                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                    />
+                )
+            }
+            else if(type === 'select'){
+                let options = o[2] as any[];
+                temp++;
+                return (
+                    <AISelect
+                        style={{width:'fit-content'}}
+                        options={options}
+                        option={{text:'option',value:'option'}}
+                        value={valuesRef.current[inputIndex]}
+                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                    />
+                )
+            }
+            else {
+                return <div className='aio-input-mask-gap'>{o[2] || o[0]}</div>
+            }
+        })
+    }
+    return (
+        <div className='example'>
+            <div className='aio-input-mask' ref={dom as any} title={value}>
+                {getList()}
+            </div>
+        </div>
+    )
+}

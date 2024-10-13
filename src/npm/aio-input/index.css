@@ -3013,3 +3013,28 @@ pre[class*="language-"]>code[class*="language-"] {
     justify-content: center;
     margin-bottom: 6px;
 }
+
+.aio-input-mask{
+    display:flex;
+    width:fit-content;
+    padding:0 12px;
+}
+.aio-input-mask .aio-input{
+    border:1px solid #ddd;
+    padding:6px;
+}
+.aio-input-mask input{
+    padding:0;
+    letter-spacing: 3px;;
+    padding:0;
+    border:none;
+    border-bottom:1px solid #aaa;
+    
+}
+.aio-input-mask-gap{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding:3px;
+    color:#aaa;
+}
