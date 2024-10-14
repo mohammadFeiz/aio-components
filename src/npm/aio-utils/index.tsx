@@ -1194,7 +1194,7 @@ export class Geo {
     rotateSpline: (points: I_point[], angle: number, center: I_point) => I_point[]
     isPointInPath: (points: I_point[], point: I_point) => boolean
     getDXF: (p: { type: 'line' | 'rect' | 'arc', obj: any }[]) => string;
-    smooth: (points: I_point[],angle:number) => I_point[]
+    smooth: (points: I_point[], angle: number) => I_point[]
     constructor() {
         this.getAngle = (l) => {
             let line: I_line = this.getLineType(l) === 'DLine' ? this.getLineByDLine(l as I_dline) : (l as I_line)
@@ -1457,7 +1457,7 @@ export class Geo {
             }
             return meets % 2 !== 0;
         }
-        this.smooth = (points,angle) => {
+        this.smooth = (points, angle) => {
             let p1: I_point | undefined, p2: I_point | undefined, p3: I_point | undefined;
             let res: I_point[] = [];
             let type;
@@ -2529,3 +2529,38 @@ class GetSvg {
     mdiMicrophoneOutline = (color?: string) => (<><path d="M17.3,11C17.3,14 14.76,16.1 12,16.1C9.24,16.1 6.7,14 6.7,11H5C5,14.41 7.72,17.23 11,17.72V21H13V17.72C16.28,17.23 19,14.41 19,11M10.8,4.9C10.8,4.24 11.34,3.7 12,3.7C12.66,3.7 13.2,4.24 13.2,4.9L13.19,11.1C13.19,11.76 12.66,12.3 12,12.3C11.34,12.3 10.8,11.76 10.8,11.1M12,14A3,3 0 0,0 15,11V5A3,3 0 0,0 12,2A3,3 0 0,0 9,5V11A3,3 0 0,0 12,14Z" style={this.getStyle(color)}></path></>)
 }
 export { GetSvg }
+
+
+
+export class getRandomByPriority {
+    private list: any[];
+    private idField:string;
+    constructor(p: { list: any[], priorityField: string,idField:string }) {
+        this.idField = p.idField
+        this.list = this.getList(p.list,p.priorityField);
+    }
+    private getList = (list: any[], priorityField: string) => {
+        const newList = [];
+        for (let i = 0; i < list.length; i++) {
+            const row = list[i];
+            const priority = row[priorityField] || 1;
+            if (!priority) { continue }
+            for (let j = 0; j < priority; j++) {
+                newList.push(row);
+            }
+        }
+        return newList
+    }
+    private remove = (index:number,type?:'remove one' | 'remove all')=>{
+        if(!type){return}
+        const id = this.list[index][this.idField]
+        if(type === 'remove one'){this.list.splice(index,1)}
+        else {this.list = this.list.filter((o)=>o[this.idField] !== id)} 
+    } 
+    getItem = (type?:'remove one' | 'remove all')=>{
+        const randomIndex = GetRandomNumber(0, this.list.length - 1);
+        const item = this.list[randomIndex]
+        this.remove(item,type)
+        return item;
+    }
+}
