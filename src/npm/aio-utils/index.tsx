@@ -2534,10 +2534,10 @@ export { GetSvg }
 
 export class getRandomByPriority {
     private list: any[];
-    private idField:string;
-    constructor(p: { list: any[], priorityField: string,idField:string }) {
+    private idField: string;
+    constructor(p: { list: any[], priorityField: string, idField: string }) {
         this.idField = p.idField
-        this.list = this.getList(p.list,p.priorityField);
+        this.list = this.getList(p.list, p.priorityField);
     }
     private getList = (list: any[], priorityField: string) => {
         const newList = [];
@@ -2551,16 +2551,59 @@ export class getRandomByPriority {
         }
         return newList
     }
-    private remove = (index:number,type?:'remove one' | 'remove all')=>{
-        if(!type){return}
+    private remove = (index: number, type?: 'remove one' | 'remove all') => {
+        if (!type) { return }
         const id = this.list[index][this.idField]
-        if(type === 'remove one'){this.list.splice(index,1)}
-        else {this.list = this.list.filter((o)=>o[this.idField] !== id)} 
-    } 
-    getItem = (type?:'remove one' | 'remove all')=>{
+        if (type === 'remove one') { this.list.splice(index, 1) }
+        else { this.list = this.list.filter((o) => o[this.idField] !== id) }
+    }
+    getItem = (type?: 'remove one' | 'remove all') => {
         const randomIndex = GetRandomNumber(0, this.list.length - 1);
         const item = this.list[randomIndex]
-        this.remove(item,type)
+        this.remove(item, type)
         return item;
     }
+}
+
+import XLSX from 'xlsx';
+export function ExcelToJSON(file: any, successCallback: (json: any) => void, errorCallback: (message: string) => void) {
+    if (!file) { successCallback('Please select a file!'); return; }
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+        errorCallback('Invalid file type. Please select an Excel file.');
+        return;
+    }
+    import('xlsx')
+    .then((XLSX) => {
+        const reader = new FileReader();
+        reader.onload = function (e: any) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const res: { [key: string]: any } = {}
+            for (let i = 0; i < workbook.SheetNames.length; i++) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const res: { [key: string]: any } = {};
+                    workbook.SheetNames.forEach(sheetName => {
+                      const sheet = workbook.Sheets[sheetName];
+                      const json = XLSX.utils.sheet_to_json(sheet);
+                      res[sheetName] = json;
+                    });
+                    successCallback(res);
+                  } 
+                  catch (error:any) {errorCallback('Error processing the file: ' + error.message);}
+            }
+            successCallback(res)
+        };
+        reader.onerror = () => errorCallback('Failed to read the file.');
+        reader.readAsArrayBuffer(file);
+    })
+    .catch((error) => {
+      // مدیریت خطا در صورت بارگذاری ناموفق ماژول xlsx
+      errorCallback('Failed to load xlsx module: ' + error.message);
+    });
+
+
+
+    
 }
