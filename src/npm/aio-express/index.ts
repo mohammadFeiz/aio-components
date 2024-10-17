@@ -40,7 +40,7 @@ export type I_virtuals = {
         set?: (this: any) => string;
     }
 }
-export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response) => any };
+export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response,reqUser:any) => any };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 class AIOExpress<I_User> {
     private app: Express;
@@ -311,7 +311,11 @@ class AIOExpress<I_User> {
     };
     addAuthApi = (api:I_api)=>{
         const {path,method,fn}:I_api = api;
-        this.AuthRouter[method](path,fn)
+        this.AuthRouter[method](path,async (req:Request,res:Response)=>{
+            const reqUser = await this.getUserByReq(req);
+            if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
+            fn(req, res,reqUser)
+        })
     }
     handleEntity = (entity: I_entity) => {
         const { name, schema, apis, requiredToken = true, path } = entity;
@@ -331,7 +335,11 @@ class AIOExpress<I_User> {
             for (let api of apis) {
                 const { path, method, fn } = api;
                 this.routers[name][method](path, async (req: Request, res: Response) => {
-                    try { fn(req, res) }
+                    try { 
+                        const reqUser = await this.getUserByReq(req);
+                        if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
+                        fn(req, res,reqUser)
+                    }
                     catch (err: any) { res.status(500).json({ message: err.message, success: false }); }
                 });
             }
