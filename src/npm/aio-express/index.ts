@@ -12,7 +12,8 @@ export type I_auth = {
     schema?: I_schema,
     path: string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
-    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status: number, message: string } | void>
+    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status: number, message: string } | void>,
+    apis?:I_api[]
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
@@ -308,6 +309,11 @@ class AIOExpress<I_User> {
             }
             catch (err: any) { return this.setResult({ res, status: 500, success: false, message: err.message }) }
         })
+        const {apis = []} = this.p.auth;
+        for(let i = 0; i < apis.length; i++){
+            const {path,method,fn}:I_api = apis[i];
+            this.AuthRouter[method](path,fn)
+        }
     };
     handleEntity = (entity: I_entity) => {
         const { name, schema, apis, requiredToken = true, path } = entity;
