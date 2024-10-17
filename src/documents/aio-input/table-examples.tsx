@@ -6,131 +6,49 @@ import { mdiFile, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } fr
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
 import model from './table-model.js';
-type I_setting = { show: string, showCode: boolean }
-type I_CTX = { setting: I_setting, code: (code: string) => React.ReactNode,rowsCode:string }
-const CTX = createContext({} as any);
-const TableExamples:FC = ()=>{
-    let [examples] = useState<any>([
-        ['performance',Performance],
-        ['type ,placeholder',TypePlaceholder],
-        ['attrs',Attrs],
-        ['onSwap',OnSwap],
-        ['excel',Excel],
-        ['toolbar',Toolbar],
-        ['toolbarAttrs',ToolbarAttrs],
-        ['rowGap columnGap',RowGapColumnGap],
-        ['onAdd',OnAdd],
-        ['onRemove',OnRemove],
-        ['onSearch',OnSearch],
-        ['rowAttrs',RowAttrs],
-        ['headerAttrs',HeaderAttrs],
-        ['paging',Paging],
-        ['paging serverSide:true',Paging_ServerSide],
-        ['rowTemplate',RowTemplate],
-        ['rowsTemplate',RowsTemplate],
-        ['rowAfter',RowAfter],
-        ['rowBefore',RowBefore],
-        ['column.title',Column_Title],
-        ['column.titleAttrs',Column_TitleAttrs],
-        ['column.value',Column_Value],
-        ['column.width',Column_Width],
-        ['column.minWidth',Column_MinWidth],
-        ['column.justify',Column_Justify],
-        ['column.input',Column_Input],
-        ['column.onChange',Column_OnChange],
-        ['column.cellAttrs',Column_CellAttrs],
-        ['column {subtext,before,after}',Column_SubtextBeforeAfter],
-        ['column.template',Column_Template],
-        ['column.sort',Column_Sort],
-        ['onChangeSort',OnChangeSort],
-    ])
-    let [titles] = useState<string[]>(getTitles)
-    function getTitles() {
-        let res = ['all'];
-        for (let i = 0; i < examples.length; i++) {
-            let ex = examples[i];
-            if (ex[2] !== false) { res.push(ex[0]) }
-        }
-        return res
-    }
-    let [setting,SetSetting] = useState<I_setting>(new Storage(`treeexamplessetting`).load('setting',{
-        show:'all',showCode:false
-    }))
-    function setSetting(value:any,field?:keyof I_setting){
-        let newSetting = {...setting};
-        if(field){newSetting = {...setting,[field]:value}}
-        else{newSetting = {...value}}
-        new Storage('treeexamplessetting').save('setting',newSetting)
-        SetSetting(newSetting)
-    }
-    function changeShow(dir: 1 | -1) {
-        let index = titles.indexOf(setting.show) + dir
-        if (index < 0) { index = titles.length - 1 }
-        if (index > titles.length - 1) { index = 0 }
-        setSetting({ ...setting, show: titles[index] })
-    }
-    function setting_node():ReactNode{
-        let btnstyle = {background:'none',border:'none'}
-        return (
-            <div className="p-12">
-                <div className="flex-row">
-                    <div className="flex-1"></div>
-                    <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
-                    <AIOInput
-                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}}
-                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
-                    />
-                    <div className="flex-row align-v">
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-    function code(code: string) {
-        if (setting.showCode === false) { return null }
-        return Code(code)
-    }
-    function getContext():I_CTX {
-        return { 
-            setting, code,
-            rowsCode:`
+import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
+const rowsCode = `
 let [rows,setRows] = useState([
     {name:'mohammad',family:'feiz',age:38,id:0},
     {name:'john',family:'doe',age:30,id:1},
 ])
         ` 
-        }
-    }
-    function render_node():ReactNode{
-        return (
-            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
-                {
-                    examples.map((o:any,i:number):ReactNode=>{
-                        let [title, COMP, cond, description] = o;
-                        if(cond === false){return null}
-                        if (setting.show !== 'all' && setting.show !== title) { return null }
-                        return (
-                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
-                                <h3>{`${i} - ${title}`}</h3>
-                                {description && <h5>{description}</h5>}
-                                {<COMP rows={[
-                                    {name:'mohammad',family:'feiz',age:38,id:0},
-                                    {name:'john',family:'doe',age:30,id:1},
-                                ]}/>}
-                            </div>
-                        )
-                    })
-                }       
-            </div>
-        )
-    }
-    return (
-        <CTX.Provider value={getContext()}>
-            <div className="h-100 flex-col">{setting_node()} {render_node()}</div>
-        </CTX.Provider>
-    )   
+const TableExamples:FC = ()=>{
+    let [examples] = useState<any>([
+        ['performance',()=><Performance/>],
+        ['type ,placeholder',()=><TypePlaceholder/>],
+        ['attrs',()=><Attrs/>],
+        ['onSwap',()=><OnSwap/>],
+        ['excel',()=><Excel/>],
+        ['toolbar',()=><Toolbar/>],
+        ['toolbarAttrs',()=><ToolbarAttrs/>],
+        ['rowGap columnGap',()=><RowGapColumnGap/>],
+        ['onAdd',()=><OnAdd/>],
+        ['onRemove',()=><OnRemove/>],
+        ['onSearch',()=><OnSearch/>],
+        ['rowAttrs',()=><RowAttrs/>],
+        ['headerAttrs',()=><HeaderAttrs/>],
+        ['paging',()=><Paging/>],
+        ['paging serverSide:true',()=><Paging_ServerSide/>],
+        ['rowTemplate',()=><RowTemplate/>],
+        ['rowsTemplate',()=><RowsTemplate/>],
+        ['rowAfter',()=><RowAfter/>],
+        ['rowBefore',()=><RowBefore/>],
+        ['column.title',()=><Column_Title/>],
+        ['column.titleAttrs',()=><Column_TitleAttrs/>],
+        ['column.value',()=><Column_Value/>],
+        ['column.width',()=><Column_Width/>],
+        ['column.minWidth',()=><Column_MinWidth/>],
+        ['column.justify',()=><Column_Justify/>],
+        ['column.input',()=><Column_Input/>],
+        ['column.onChange',()=><Column_OnChange/>],
+        ['column.cellAttrs',()=><Column_CellAttrs/>],
+        ['column {subtext,before,after}',()=><Column_SubtextBeforeAfter/>],
+        ['column.template',()=><Column_Template/>],
+        ['column.sort',()=><Column_Sort/>],
+        ['onChangeSort',()=><OnChangeSort/>],
+    ])
+    return (<Example type='table' examples={examples}/>)   
 }
 export default TableExamples
 const Performance:FC = () => {
@@ -166,7 +84,7 @@ const Performance:FC = () => {
     )
 }
 function TypePlaceholder() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     return (
         <div className='example'>
             <AIOInput 
@@ -185,7 +103,7 @@ function TypePlaceholder() {
     )
 }
 function Attrs() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {title:'Gender',value:'row.gender',input:{type:'text'}},
@@ -224,8 +142,8 @@ return (
     )
 }
 const OnSwap:FC = () => {
-    const context:I_CTX = useContext(CTX);
-    const {code,rowsCode} = context
+    const context:I_ExampleContext = useContext(ExampleContext);
+    const {code} = context
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {title:'Family',value:'row.family',input:{type:'text'}},
@@ -271,7 +189,7 @@ return (
     )
 }
 function Excel(p:any){
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -312,7 +230,7 @@ return (
     )
 }
 function Toolbar(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -365,7 +283,7 @@ return (
     )
 }
 function ToolbarAttrs(p:any){
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -424,7 +342,7 @@ return (
     )
 }
 function RowGapColumnGap(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -467,7 +385,7 @@ return (
     )
 }
 function OnAdd(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -543,7 +461,7 @@ return (
     )
 }
 function OnRemove(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     const [rows,setRows] = useState<any[]>(Rows)
     let [columns,setColumn] = useState<AI_table_column[]>([
@@ -617,7 +535,7 @@ return (
     )
 }
 function OnSearch() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'},search:true},
@@ -686,7 +604,7 @@ return (
     )
 }
 function RowAttrs() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     return (
         <div className='example'>
@@ -736,7 +654,7 @@ return (
     )
 }
 function HeaderAttrs(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumns] = useState<AI_table_column[]>([
@@ -785,7 +703,7 @@ return (
     )
 }
 function Paging() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {
@@ -867,7 +785,7 @@ render() {
     )
 }
 function Paging_ServerSide() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState<any[]>([])
     let [paging,setPaging] = useState<AI_table_paging>({
         serverSide:true,
@@ -965,7 +883,7 @@ render() {
     )
 }
 function RowTemplate() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     return (
         <div className='example'>
@@ -995,7 +913,7 @@ return (
     )
 }
 function RowsTemplate() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     let [paging,setPaging] = useState<AI_table_paging>({
         size:10,
@@ -1087,7 +1005,7 @@ function Card(p:any){
     )
 }
 function RowAfter() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
@@ -1134,7 +1052,7 @@ return (
     )
 }
 function RowBefore() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model);
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
@@ -1192,7 +1110,7 @@ render() {
     )
 }
 function OnChangeSort() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'},sort:true},
@@ -1244,7 +1162,7 @@ return (
     )
 }
 function Column_Title(p:any) {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows,rowsCode} = p;
     return (
         <div className='example'>
@@ -1279,7 +1197,7 @@ return (
     )
 }
 function Column_TitleAttrs(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows} = p;
     return (
         <div className='example'>
@@ -1308,7 +1226,7 @@ return (<AIOInput type='table' value={rows} columns={columns}/>)
     )
 }
 function Column_Value(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows} = p;
     return (
         <div className='example'>
@@ -1352,7 +1270,7 @@ return (
     )
 }
 function Column_Width(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows} = p;
     return (
         <div className='example'>
@@ -1393,7 +1311,7 @@ return (
     )
 }
 function Column_MinWidth(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows} = p;
     return (
         <div className='example'>
@@ -1422,7 +1340,7 @@ return (<AIOInput type='table' value={rows} columns={columns}/>)
     )
 }
 function Column_Justify(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows} = p;
     return (
         <div className='example'>
@@ -1451,7 +1369,7 @@ return (<AIOInput type='table' value={rows} columns={columns}/>)
     )
 }
 function Column_Input() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {
@@ -1512,7 +1430,7 @@ return (
     )
 }
 function Column_OnChange(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows);
     function change(row:any,key:string,value:any){
@@ -1559,7 +1477,7 @@ return (
     )
 }
 function Column_Sort() {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState((model))
     return (
         <div className='example'>
@@ -1611,7 +1529,7 @@ render() {
     )
 }
 function Column_CellAttrs(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     return (
@@ -1691,7 +1609,7 @@ return (
     )
 }
 function Column_SubtextBeforeAfter(p:any) {
-    const {code,rowsCode}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows);
     return (
@@ -1778,7 +1696,7 @@ return (
     )
 }
 function Column_Template(p:any) {
-    const {code}:I_CTX = useContext(CTX);
+    const {code}:I_ExampleContext = useContext(ExampleContext);
     let {rows:Rows} = p;
     let [rows,setRows] = useState(Rows)
     let [columns,setColumns] = useState<AI_table_column[]>([

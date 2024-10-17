@@ -4,9 +4,7 @@ import Code from '../../npm/code/index';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiCircleOutline, mdiDiamond, mdiEmoticonHappyOutline, mdiEye, mdiFolder, mdiGauge, mdiHeart, mdiMinusBoxMultiple, mdiMinusBoxOutline, mdiMinusThick, mdiPlusBoxOutline, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
-type I_setting = { show: string, showCode: boolean }
-type I_CTX = { setting: I_setting, code: (code: string) => React.ReactNode }
-const CTX = createContext({} as any);
+import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
 const TreeExamples:FC = ()=>{
     let [examples] = useState<any>([
         ['Basic',()=><Basic/>],
@@ -25,83 +23,7 @@ const TreeExamples:FC = ()=>{
         ['Create Side menu',()=><SideMenu/>],
         
     ])
-    let [titles] = useState<string[]>(getTitles)
-    function getTitles() {
-        let res = ['all'];
-        for (let i = 0; i < examples.length; i++) {
-            let ex = examples[i];
-            if (ex[2] !== false) { res.push(ex[0]) }
-        }
-        return res
-    }
-    let [setting,SetSetting] = useState<I_setting>(new Storage(`treeexamplessetting`).load('setting',{
-        show:'all',showCode:false
-    }))
-    function setSetting(value:any,field?:keyof I_setting){
-        let newSetting = {...setting};
-        if(field){newSetting = {...setting,[field]:value}}
-        else{newSetting = {...value}}
-        new Storage('treeexamplessetting').save('setting',newSetting)
-        SetSetting(newSetting)
-    }
-    function changeShow(dir: 1 | -1) {
-        let index = titles.indexOf(setting.show) + dir
-        if (index < 0) { index = titles.length - 1 }
-        if (index > titles.length - 1) { index = 0 }
-        setSetting({ ...setting, show: titles[index] })
-    }
-    function setting_node():ReactNode{
-        let btnstyle = {background:'none',border:'none'}
-        return (
-            <div className="p-12">
-                <div className="flex-row">
-                    <div className="flex-1"></div>
-                    <AIOInput type='checkbox' text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
-                    <AIOInput
-                        type='select' options={titles} before='Show' option={{text: 'option',value: 'option'}} popover={{maxHeight: '100vh'}}
-                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
-                    />
-                    <div className="flex-row align-v">
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-    function code(code: string) {
-        if (setting.showCode === false) { return null }
-        return Code(code)
-    }
-    function render_node():ReactNode{
-        return (
-            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
-                {
-                    examples.map((o:any,i:number):ReactNode=>{
-                        let [title, COMP, cond, description] = o;
-                        if(cond === false){return null}
-                        if (setting.show !== 'all' && setting.show !== title) { return null }
-                        return (
-                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
-                                <h3>{`${i} - ${title}`}</h3>
-                                {description && <h5>{description}</h5>}
-                                {COMP()}
-                            </div>
-                        )
-                    })
-                }       
-            </div>
-        )
-    }
-    function getContext() {
-        let context: I_CTX = { setting, code }
-        return context;
-    }
-    return (
-        <CTX.Provider value={getContext()}>
-            <div className="h-100 flex-col">{setting_node()} {render_node()}</div>
-        </CTX.Provider>
-    ) 
+    return (<Example type='tree' examples={examples}/>) 
 }
 export default TreeExamples
 function getValue(){
@@ -127,7 +49,7 @@ function getValue(){
         {name:'row-3',id:'row-3'}
     ]
 }
-function ModelCode(setting:I_setting,code?:string){
+function ModelCode(setting:any,code?:string){
     if(!setting.showCode){return null}
     if(code){return Code(code)} 
     return (
@@ -160,10 +82,10 @@ function ModelCode(setting:I_setting,code?:string){
 }
 
 function Basic(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -184,10 +106,10 @@ function Basic(){
     )
 }
 function Before(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -222,10 +144,10 @@ function Before(){
     )
 }
 function Subtext(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -254,7 +176,7 @@ function Subtext(){
     )
 }
 function Childs(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>([
         {
             name:'row-0',id:'row-0',
@@ -277,7 +199,7 @@ function Childs(){
         {name:'row-3',id:'row-3'}
     ])
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -324,10 +246,10 @@ let [value,setValue] = useState<any>([
     )
 }
 function Check(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <h3>option.checked</h3>
             <AIOInput 
                 type='tree'
@@ -441,12 +363,12 @@ function Check(){
     )
 }
 function ClickAndToggleIcon(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     const [openDic,setOpenDic] = useState<{[id:string]:boolean}>({})
     const toggleRef = useRef<(id:any)=>void>(()=>{})
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 style={{width:240,background:'#eee'}}
@@ -499,10 +421,10 @@ function ClickAndToggleIcon(){
     )
 }
 function CustomizeToggleIcon(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 style={{width:240,background:'#F8F8F8'}}
@@ -545,10 +467,10 @@ function CustomizeToggleIcon(){
     )
 }
 function AddRemove(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -608,10 +530,10 @@ function AddRemove(){
     )
 }
 function Size(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <h3>size:60</h3>
             <AIOInput 
                 type='tree'
@@ -665,10 +587,10 @@ function Size(){
     )
 }
 function Indent(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <h3>indent:48</h3>
             <AIOInput 
                 type='tree'
@@ -722,7 +644,7 @@ function Indent(){
     )
 }
 function SideMenu(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     const toggleRef = useRef<(id:any)=>void>(()=>{})
     let [value] = useState<any>([
         {name:'Dashboard',id:'dashboard'},
@@ -770,7 +692,7 @@ function SideMenu(){
         )
     }
     return (
-        <div className='example'>
+        <div>
             <AITree
                 className='tree-side'
                 size={48}
@@ -945,10 +867,10 @@ function SideMenu(){
     )
 }
 function Actions(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type={'tree'}
                 value={[...value]}
@@ -995,10 +917,10 @@ function Actions(){
     )
 }
 function Complete(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type={'tree'}
                 value={[...value]}
@@ -1077,11 +999,11 @@ function Complete(){
 }
 
 function Input(){
-    let {code,setting}:I_CTX = useContext(CTX);
+    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     console.log(value)
     return (
-        <div className='example'>
+        <div>
             <AIOInput 
                 type='tree'
                 value={[...value]}

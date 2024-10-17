@@ -1,14 +1,8 @@
-import React, { FC, ReactNode, createContext, createRef, useContext, useEffect, useRef, useState } from "react"
-import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown, mdiMinusThick, mdiPlusThick } from "@mdi/js"
+import { FC, ReactNode,  useContext,useState } from "react"
+import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput,{ AI, AI_type, AICheckbox, AIFile, AINumber, AISelect, AIText, AITYPE, Mask } from "../../npm/aio-input";
-import Code from '../../npm/code';
-import { Storage } from "../../npm/aio-utils";
-import $ from 'jquery';
-type I_exampleType = 'text' | 'number' | 'textarea' | 'password' | 'checkbox' | 'date' | 'image' | 'time' | 'file'
-type I_setting = { show: string, showCode: boolean }
-type I_CTX = { setting: I_setting, type: I_exampleType, code: (code: string) => React.ReactNode }
-const CTX = createContext({} as any);
+import AIOInput,{ AI, AI_type, AIFile, AINumber, AIText, AITYPE, Mask } from "../../npm/aio-input";
+import Example, { ExampleContext, I_ExampleContext } from "./example";
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
     { name: 'stephan', id: '2', gender: 'male', color: '#ffa500' },
@@ -43,8 +37,8 @@ const textOptionsCode = `[
     {name:'lucas',id:'11',gender:'male',color:'#000000'},
     {name:'maria',id:'12',gender:'female',color:'#ffc0cb'}
 ]`
-const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
-    let [examples] = useState<any>([
+const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
+    let [examples] = useState<[string,()=>ReactNode,boolean?][]>([
         ['placeholder', () => <Placeholder />],
         ['msk', () => <MaskExample />],
         ['before', () => <Before />],
@@ -70,7 +64,7 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ['theme', () => <Theme />, ['date'].indexOf(type) !== -1],
         ['caret (false)', () => <CaretFalse />, ['date', 'time'].indexOf(type) !== -1],
         ['caret (html)', () => <CaretHtml />, ['date', 'time'].indexOf(type) !== -1],
-        ...getDateAttrsExamples(type),
+        ...getDateAttrsExamples(type) as any,
         ['jalali', () => <Jalali />, ['date', 'time'].indexOf(type) !== -1],
         ['option.close', () => <DateOptionClose />, ['date'].indexOf(type) !== -1],
         ['image value', () => <Image />, ['image'].indexOf(type) !== -1],
@@ -381,84 +375,13 @@ const InputExamples: FC<{ type: I_exampleType }> = ({ type }) => {
         ],
 
     ])
-    let [titles] = useState<string[]>(getTitles)
-    function getTitles() {
-        let res = ['all'];
-        for (let i = 0; i < examples.length; i++) {
-            let ex = examples[i];
-            if (ex[2] !== false) { res.push(ex[0]) }
-        }
-        return res
-    }
-    let [setting, SetSetting] = useState<I_setting>(new Storage(`${type}examplessetting`).load('setting', {
-        show: 'all', showCode: true
-    }))
-    function setSetting(value:any,field?:keyof I_setting){
-        let newSetting = {...setting};
-        if(field){newSetting = {...setting,[field]:value}}
-        else{newSetting = {...value}}
-        new Storage('treeexamplessetting').save('setting',newSetting)
-        SetSetting(newSetting)
-    }
-    function changeShow(dir: 1 | -1) {
-        let index = titles.indexOf(setting.show) + dir
-        if (index < 0) { index = titles.length - 1 }
-        if (index > titles.length - 1) { index = 0 }
-        setSetting({ ...setting, show: titles[index] })
-    }
-    function setting_node() {
-        let btnstyle = { background: 'none', border: 'none' }
-        return (
-            <div className="p-12">
-                <div className="flex-row">
-                    <div className="flex-1"></div>
-                    <AICheckbox text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
-                    <AISelect
-                        options={titles} before='Show' option={{text: 'option',value: 'option'}}
-                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
-                    />
-                    <div className="flex-row align-v">
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>
-                        <button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-    function code(code: string) {
-        if (setting.showCode === false) { return null }
-        return Code(code)
-    }
-    function render_node():ReactNode {
-        return (
-            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
-                {
-                    examples.map((o: any, i: number):ReactNode => {
-                        let [title, COMP, cond, description] = o;
-                        if (cond === false) { return null }
-                        if (setting.show !== 'all' && setting.show !== title) { return null }
-                        return (
-                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
-                                <h3>{`${i} - ${title}`}</h3>
-                                {description && <h5>{description}</h5>}
-                                {COMP()}
-                            </div>
-                        )
-                    })
-                }
-            </div>
-        )
-    }
-    function getContext():I_CTX {return { setting, type, code }}
-    return (
-        <CTX.Provider value={getContext()}>
-            <div className="flex-col h-100">{setting_node()} {render_node()}</div>
-        </CTX.Provider>
-    )
+    return (<Example examples={examples} type={type}/>)
 }
 export default InputExamples
+
+
 const Placeholder: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -480,7 +403,7 @@ const Placeholder: FC = () => {
     )
 }
 const Before: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -516,7 +439,7 @@ const MaskExample:FC = (props) => {
     )
 }
 const After: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -538,7 +461,7 @@ const After: FC = () => {
     )
 }
 const Subtext: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -562,7 +485,7 @@ const Subtext: FC = () => {
     )
 }
 const Disabled: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -583,7 +506,7 @@ const Disabled: FC = () => {
     )
 }
 const Loading: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -604,7 +527,7 @@ const Loading: FC = () => {
     )
 }
 const Voice: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -626,7 +549,7 @@ const Voice: FC = () => {
     )
 }
 const Justify: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -647,7 +570,7 @@ const Justify: FC = () => {
     )
 }
 const InputAttrs: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -680,7 +603,7 @@ const InputAttrs: FC = () => {
     )
 }
 const JustNumber: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -701,7 +624,7 @@ const JustNumber: FC = () => {
     )
 }
 const JustNumberArray: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -722,7 +645,7 @@ const JustNumberArray: FC = () => {
     )
 }
 const Filter: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -743,7 +666,7 @@ const Filter: FC = () => {
     )
 }
 const MaxLength: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -766,7 +689,7 @@ const MaxLength: FC = () => {
     )
 }
 const Min: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -787,7 +710,7 @@ const Min: FC = () => {
     )
 }
 const Max: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -808,7 +731,7 @@ const Max: FC = () => {
     )
 }
 const Swip: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -829,7 +752,7 @@ const Swip: FC = () => {
     )
 }
 const Spin: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -850,7 +773,7 @@ const Spin: FC = () => {
     )
 }
 const Unit: FC<{ props: any, propsCode: string }> = ({ props, propsCode }) => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -871,7 +794,7 @@ const Unit: FC<{ props: any, propsCode: string }> = ({ props, propsCode }) => {
     )
 }
 const Jalali: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example' style={{ fontFamily: 'IRANSans-Light' }}>
@@ -894,7 +817,7 @@ const Jalali: FC = () => {
     )
 }
 const Multiple: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any[]>()
     return (
         <div className='example'>
@@ -916,7 +839,7 @@ const Multiple: FC = () => {
     )
 }
 const MultipleNumber: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any[]>()
     return (
         <div className='example'>
@@ -938,7 +861,7 @@ const MultipleNumber: FC = () => {
     )
 }
 const DateOptionClose: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -960,7 +883,7 @@ const DateOptionClose: FC = () => {
     )
 }
 const Image: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<string>('https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg')
     return (
         <div className='example'>
@@ -979,7 +902,7 @@ const Image: FC = () => {
     )
 }
 const ImageSize: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<string>('https://imgv3.fotor.com/images/blog-cover-image/part-blurry-image.jpg')
     return (
         <div className='example'>
@@ -1032,7 +955,7 @@ const ImageSize: FC = () => {
     )
 }
 const DeSelectTrue: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1054,7 +977,7 @@ const DeSelectTrue: FC = () => {
     )
 }
 const DeSelectFunction: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1075,7 +998,7 @@ const DeSelectFunction: FC = () => {
     )
 }
 const Size: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1096,7 +1019,7 @@ const Size: FC = () => {
     )
 }
 const Theme: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1117,7 +1040,7 @@ const Theme: FC = () => {
     )
 }
 const CaretFalse: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1138,7 +1061,7 @@ const CaretFalse: FC = () => {
     )
 }
 const CaretHtml: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1159,7 +1082,7 @@ const CaretHtml: FC = () => {
     )
 }
 const Preview: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1180,7 +1103,7 @@ const Preview: FC = () => {
     )
 }
 const Text: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1201,7 +1124,7 @@ const Text: FC = () => {
     )
 }
 const Pattern: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1222,7 +1145,7 @@ const Pattern: FC = () => {
     )
 }
 const CheckIconArray: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1249,7 +1172,7 @@ const CheckIconArray: FC = () => {
     )
 }
 const CheckIconObject: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1270,14 +1193,14 @@ const CheckIconObject: FC = () => {
     )
 }
 const Options: FC<{ option?: AI<AI_type>['option'], optionCode?: string, props?: AITYPE, propsCode?: string }> = ({ option = {}, optionCode, props = {}, propsCode }) => {
-    const { type }: I_CTX = useContext(CTX);
+    const { type }: I_ExampleContext = useContext(ExampleContext);
     if (type === 'text') { return <OptionsText option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'number') { return <OptionsNumber option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     if (type === 'file') { return <OptionsFile option={option} optionCode={optionCode} props={props} propsCode={propsCode} /> }
     return null
 }
 const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<string>()
     return (
         <div className='example'>
@@ -1313,7 +1236,7 @@ const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCod
 }
 
 const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1347,7 +1270,7 @@ const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsC
     )
 }
 const OptionsFile: FC<{ option?: any, optionCode?: string, props?: any, propsCode?: string }> = ({ option = {}, optionCode, props, propsCode }) => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1377,7 +1300,7 @@ const OptionsFile: FC<{ option?: any, optionCode?: string, props?: any, propsCod
     )
 }
 const DateAndTimePopover: FC = () => {
-    const { type, code }: I_CTX = useContext(CTX);
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1431,7 +1354,7 @@ const DateAndTimePopover: FC = () => {
         </div>
     )
 }
-function getDateAttrsExamples(type: I_exampleType) {
+function getDateAttrsExamples(type: AI_type) {
     if (type !== 'date') { return [] }
     let list = [
         ["<>,2022,2024", 'disabled all dates between 2022 and 2024'],
@@ -1467,7 +1390,7 @@ function getDateAttrsExamples(type: I_exampleType) {
 }
 
 const DateAttrs: FC<{ selector: string }> = ({ selector }) => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1496,7 +1419,7 @@ const DateAttrs: FC<{ selector: string }> = ({ selector }) => {
     )
 }
 const DateAttrsIsToday: FC = () => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1529,7 +1452,7 @@ const DateAttrsIsToday: FC = () => {
     )
 }
 const DateAttrsIsActive: FC = () => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -1562,7 +1485,7 @@ const DateAttrsIsActive: FC = () => {
     )
 }
 const FileValue: FC = () => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>({
         url:'https://media.macphun.com/img/uploads/customer/how-to/608/15542038745ca344e267fb80.28757312.jpg?q=85&w=1340',
         name:'my file',
@@ -1581,7 +1504,7 @@ const FileValue: FC = () => {
     )
 }
 const FileOnremove: FC = () => {
-    const { code }: I_CTX = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>({
         url:'https://media.macphun.com/img/uploads/customer/how-to/608/15542038745ca344e267fb80.28757312.jpg?q=85&w=1340',
         name:'my file',

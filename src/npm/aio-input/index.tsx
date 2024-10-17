@@ -1263,45 +1263,22 @@ export const Acardion: FC = () => {
 }
 type I_AcardionItem = { option: AI_option }
 const AcardionItem: FC<I_AcardionItem> = ({ option }) => {
-    let [mounted, SetMounted] = useState(false);
-    const [active, setActive] = useState<boolean>(!!option.details.active)
+    const active = !!option.details.active
     let [timeout] = useState<any>()
     let Attrs = AddToAttrs(option.attrs, { className: `aio-input-acardion-item` })
-    function setMounted(mounted: boolean) {
-        SetMounted(mounted)
-    }
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-    useEffect(() => {
-        if (option.details.active) {
-            setActive(true);
-            setMounted(false);
-            timeout = setTimeout(() => {
-                setMounted(true)
-            }, 10)
-        }
-        else {
-            setActive(true);
-            setMounted(false);
-            timeout = setTimeout(() => {
-                setActive(false)
-            }, 300)
-        }
-    }, [!!option.details.active])
     return (
         <div {...Attrs}>
             <Layout option={option} />
-            {!!active && <AcardionBody option={option} mounted={mounted} />}
+            {!!active && <AcardionBody option={option} />}
         </div>
     )
 }
-type I_AcardionBody = { option: AI_option, mounted: boolean }
-const AcardionBody: FC<I_AcardionBody> = ({ option, mounted }) => {
+type I_AcardionBody = { option: AI_option }
+const AcardionBody: FC<I_AcardionBody> = ({ option }) => {
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
     let { body = () => { } } = rootProps;
-    let { html, attrs } = body(option.details.option) || { html: '' }
-    let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`, mounted ? undefined : 'not-mounted'] })
+    let { html, attrs } = body(option.details) || { html: '' }
+    let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`] })
     return <div {...Attrs}>{html}</div>
 }
 type I_TreeContext = {
@@ -3348,7 +3325,7 @@ export type AITYPE =
         type: AI_type,
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
-        body?: (value?: any) => { attrs?: any, html?: ReactNode },//acardion
+        body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: AI_checkIcon,//select,checkbox,radio
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         fetchOptions?: (text: string) => Promise<any[]>,//text,textarea
@@ -3365,7 +3342,7 @@ export type AI_option = {
     tagAttrs: any, tagBefore: any, tagAfter: any, toggleIcon: boolean | ReactNode[], onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
     details: AI_optionDetails
 }
-type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
+export type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
     'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon'

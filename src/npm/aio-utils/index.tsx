@@ -2565,7 +2565,6 @@ export class getRandomByPriority {
     }
 }
 
-import XLSX from 'xlsx';
 export function ExcelToJSON(file: any, successCallback: (json: any) => void, errorCallback: (message: string) => void) {
     if (!file) { successCallback('Please select a file!'); return; }
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
@@ -2584,7 +2583,7 @@ export function ExcelToJSON(file: any, successCallback: (json: any) => void, err
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const res: { [key: string]: any } = {};
-                    workbook.SheetNames.forEach(sheetName => {
+                    workbook.SheetNames.forEach((sheetName:string) => {
                       const sheet = workbook.Sheets[sheetName];
                       const json = XLSX.utils.sheet_to_json(sheet);
                       res[sheetName] = json;

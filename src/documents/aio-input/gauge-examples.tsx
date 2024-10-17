@@ -1,115 +1,27 @@
-import React, { FC, createContext, useContext, useState } from "react"
-import { mdiAccount, mdiAccountArrowDown, mdiAccountBadge, mdiAccountBoxMultiple, mdiAccountCancel, mdiAccountChild, mdiAccountClock, mdiAccountSupervisorOutline, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
-import { Icon } from "@mdi/react"
+import { FC, createContext, useContext, useState } from "react"
 import AIOInput from "../../npm/aio-input";
-import Code from '../../npm/code';
-import { Storage } from "../../npm/aio-utils";
-import RVD from './../../npm/react-virtual-dom/index';
-const CTX = createContext({} as any)
+import Example, { ExampleContext, I_ExampleContext } from "./example";
 const GaugeExamples: FC = () => {
     let [examples] = useState<any>([
-        ['example1', Example1],
-        ['example2', Example2],
-        ['example3', Example3],
-        ['example4', Example4],
-        ['example5', Example5],
-        ['example6', Example6],
-        ['example7', Example7],
-        ['example8', Example8],
+        ['example1', ()=><Example1/>],
+        ['example2', ()=><Example2/>],
+        ['example3', ()=><Example3/>],
+        ['example4', ()=><Example4/>],
+        ['example5', ()=><Example5/>],
+        ['example6', ()=><Example6/>],
+        ['example7', ()=><Example7/>],
+        ['example8', ()=><Example8/>],
     ])
-    let [titles] = useState<string[]>(getTitles)
-    function getTitles() {
-        let res = ['all'];
-        for (let i = 0; i < examples.length; i++) {
-            let ex = examples[i];
-            if (ex[2] !== false) { res.push(ex[0]) }
-        }
-        return res
-    }
-    let [setting, SetSetting] = useState<any>(new Storage('rangeexamplessetting').load('setting', {
-        show: 'all', showCode: false
-    }))
-    function setSetting(setting: any) {
-        new Storage('rangeexamplessetting').save('setting', setting)
-        SetSetting(setting)
-    }
-    function changeShow(dir: 1 | -1) {
-        let index = titles.indexOf(setting.show) + dir
-        if (index < 0) { index = titles.length - 1 }
-        if (index > titles.length - 1) { index = 0 }
-        setSetting({ ...setting, show: titles[index] })
-    }
-    function code(code: string) {
-        if (!setting.showCode) { return null }
-        return Code(code)
-    }
-    function setting_node() {
-        let btnstyle = { background: 'none', border: 'none' }
-        return {
-            className: 'p-12',
-            html: (
-                <AIOInput
-                    type='form'
-                    value={{ ...setting }}
-                    onChange={(newSetting) => setSetting({ ...newSetting })}
-                    node={{
-                        dir: 'h',
-                        childs: [
-                            { flex: 1 },
-                            {
-                                input: {
-                                    type: 'checkbox', text: 'Show Code'
-                                },
-                                field: 'value.showCode'
-                            },
-                            {
-                                input: {
-                                    type: 'select', options: titles, before: 'Show:',
-                                    option: { text: 'option', value: 'option' },
-                                    popover: { maxHeight: '100vh' }
-                                },
-                                field: 'value.show'
-                            },
-                            { className: 'align-vh', html: <button type='button' style={btnstyle} onClick={() => changeShow(-1)}><Icon path={mdiMinusThick} size={1} /></button> },
-                            { className: 'align-vh', html: <button type='button' style={btnstyle} onClick={() => changeShow(1)}><Icon path={mdiPlusThick} size={1} /></button> }
-                        ]
-                    }}
-                />
-            )
-        }
-    }
-    function render_node() {
-        return {
-            key: JSON.stringify(setting),
-            className: 'ofy-auto flex-1 p-12',
-            column: examples.map((o: any, i: number) => {
-                let [title, COMP] = o;
-                if (setting.show !== 'all' && setting.show !== title) { return {} }
-                return {
-                    html: (
-                        <div className='w-100'>
-                            <h3>{`${i} - ${title}`}</h3>
-                            <COMP setting={setting} />
-                        </div>
-                    )
-                }
-            })
-        }
-    }
-    return (
-        <CTX.Provider value={{ code }}>
-            <RVD rootNode={{ className: 'h-100', column: [setting_node(), render_node()] }} />
-        </CTX.Provider>
-    )
+    return (<Example type={'gauge' as any} examples={examples}/>)
 }
 export default GaugeExamples
 
 
 const Example1: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(25)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 size={120}
@@ -208,10 +120,10 @@ const Example1: FC = () => {
     )
 }
 const Example2: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(75)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 size={120}
@@ -313,10 +225,10 @@ const Example2: FC = () => {
 }
 
 const Example3: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(75)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 size={160}
@@ -417,10 +329,10 @@ const Example3: FC = () => {
     )
 }
 const Example4: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(126)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 size={160}
@@ -527,10 +439,10 @@ const Example4: FC = () => {
     )
 }
 const Example5: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(75)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 style={{ border: 'none' }}
@@ -633,10 +545,10 @@ const Example5: FC = () => {
     )
 }
 const Example6: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(75)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 style={{ border: 'none' }}
@@ -785,10 +697,10 @@ const Example6: FC = () => {
     )
 }
 const Example7: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(12)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <AIOInput
                 type='spinner'
                 style={{ border: 'none' }}
@@ -868,10 +780,10 @@ const Example7: FC = () => {
 }
 
 const Example8: FC = () => {
-    const { code }: any = useContext(CTX);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(12)
     return (
-        <div className='example' style={{ fontFamily: 'Arial' }}>
+        <div style={{ fontFamily: 'Arial' }}>
             <div className="p-36 bg-0">
             <AIOInput
                 type='spinner'

@@ -1,6 +1,6 @@
 :root {
     --aio-input-color: #0069ff;
-    --aio-input-transition: .3s;
+    --aio-input-transition: 9s;
 }
 
 .aio-input {
@@ -275,11 +275,6 @@
     align-items: center;
     padding: 0 6px;
     position: relative;
-}
-
-.aio-input-list-option-value {
-    /* opacity: 0.5;
-    transform: scale(0.8); */
 }
 
 .aio-input-list-option.active {
@@ -1562,20 +1557,7 @@
     padding: 12px;
     transform: scaleY(1);
     overflow: hidden;
-    transform-origin: top;
-    transition: transform var(--aio-input-transition), margin-top var(--aio-input-transition);
-    margin-top: 0px;
-    transform: unset;
     box-sizing: border-box;
-}
-
-.aio-input-acardion-body.not-mounted {
-    transition: transform var(--aio-input-transition), margin-top var(--aio-input-transition);
-    transform: scaleY(0);
-    transform-origin: top;
-    transform-style: preserve-3d;
-    margin-top: -48px;
-    padding: 0;
 }
 
 .aio-input-date-popup {
