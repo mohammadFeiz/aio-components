@@ -3583,7 +3583,7 @@ const PrismCode: FC<{ code: string, language?: 'js' | 'css', style?: any }> = ({
 export function Code(code: string, language?: 'js' | 'css', style?: any) {
     return <PrismCode code={code} language={language} style={style} />
 }
-type I_loginMode = 'userpass' | 'register' | 'otp'
+type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber'
 type I_login_field = string
 export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton' | 'otpcodeButton' |
     'registerTitle' | 'userpassTitle' | 'otpcodeTitle' | 'otpnumberTitle' |
@@ -3592,14 +3592,12 @@ export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton
     'otpNumberRequired' | 'otpCodeLength' |
     'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError'
 type I_login_model = { userName: string, password: string, rePassword: string, otpNumber: string, otpCode: string, register: any }
-type I_login_api = {
-    method: 'post' | 'get',
-    url: string,
-    body?: any
-}
 type I_AILogin = {
     rtl?: boolean,
-    checkToken: (token: string) => Promise<I_login_api & { onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false }>,
+    checkToken: (token: string) => Promise<{ 
+        method: 'post' | 'get',url: string,body?: any
+        onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false 
+    }>,
     before?: ReactNode,
     after?: ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
@@ -3610,44 +3608,28 @@ type I_AILogin = {
         html: ReactNode,
         time: number
     },
+    getRequestOptions: (model: I_login_model,mode:I_loginMode) => Promise<{
+        method: 'post' | 'get',url: string,body?: any,
+        onSuccess: (response: any) => any,
+        onCatch: (response: any) => string
+    }>
     label: (field: I_login_field) => string,
     validation?: (field: I_login_field, v: any) => string | undefined,
-    modes: {
-        userpass?: {
-            onSubmit: (model: I_login_model) => Promise<I_login_api & {
-                onSuccess: (response: any) => string | { user: any, token: string },
-                onCatch: (response: any) => string
-            }>
-        }
-        register?: {
-            onSubmit: (model: I_login_model) => Promise<I_login_api & {
-                onSuccess: (response: any) => string | true,
-                onCatch: (response: any) => string
-            }>,
-            inputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
-        }
-        otp?: {
-            onSubmitNumber: (model: I_login_model) => Promise<I_login_api & {
-                onSuccess: (response: any) => string | true,
-                onCatch: (response: any) => string
-            }>,
-            onSubmitCode: (model: I_login_model) => Promise<I_login_api & {
-                onSuccess: (response: any) => string | { user: any, token: string },
-                onCatch: (response: any) => string
-            }>,
-            length: number
-        },
-        mode?: I_loginMode
-    },
+    otpLength?:number,
+    otp?: boolean,
+    userpass?:boolean
+    register?:boolean,
+    mode?: I_loginMode,
+    registerInputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
     attrs?: any,
     setAttrs?: (key: I_login_key) => any
 }
 type I_login_modeState = {
-    key: I_loginMode, obj: any, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
+    key: I_loginMode, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
     submitText: string, registerInputs:()=> ReactNode, responseUserType: boolean
 }
 export const AILogin: FC<I_AILogin> = (props) => {
-    const { modes, renderApp, translate = () => { }, id, rememberTime, checkToken, splash } = props;
+    const { renderApp, translate = () => { }, id, rememberTime, checkToken, splash,otpLength = 4 } = props;
     const { validation = () => { return undefined } } = props;
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + id))
@@ -3655,14 +3637,15 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const modelRef = useRef(model)
     modelRef.current = model;
     const [mode, setMode] = useState<I_login_modeState>(getMode())
-    const [otpMode, setOtpMode] = useState<'number' | 'code'>('number')
+    function getModeKey():I_loginMode{
+        if(props.mode){return props.mode}
+        if(props.userpass){return 'userpass'}
+        if(props.otp){return 'otpnumber'}
+        return 'userpass'
+    }
     function getMode(mode?: I_loginMode): I_login_modeState {
-        const { modes } = props;
-        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: 'userpass', obj: undefined, title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
-        mode = mode || modes.mode;
-        if (!modes || !mode) { res.key = 'userpass'; res.obj = undefined }
-        else { res.key = mode; res.obj = modes[mode] }
-        const modeKey = res.key === 'otp' ? res.key + otpMode : res.key
+        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: 'userpass', title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
+        let modeKey = mode || getModeKey();
         if (res.key === 'userpass') {
             res.userNameInput = ()=><AIText {...input_props('userName')} />
             res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
@@ -3671,8 +3654,8 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else if (res.key === 'register') {
             res.userNameInput = ()=><AIText {...input_props('userName')} />
             res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
-            if (modes.register && modes.register.inputs && modes.register.inputs.length) {
-                const inputs = (modes.register?.inputs || (() => []))(modelRef.current) || []
+            if (props.register && props.registerInputs && props.registerInputs.length) {
+                const inputs = (props.registerInputs || (() => []))(modelRef.current) || []
                 res.registerInputs = ()=>{
                     const model = modelRef.current
                     return (<>
@@ -3692,20 +3675,17 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 }
             }
         }
-        else if (res.key === 'otp') {
-            if (otpMode === 'number') { res.userNameInput = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
-            else { res.passwordInput = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={props.modes.otp?.length || 4} />; res.responseUserType = true }
-        }
-        
+        else if (res.key === 'otpnumber') { res.userNameInput = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
+        else if(res.key === 'otpcode'){ res.passwordInput = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
         res.submitText = trans(modeKey + 'Button' as I_login_key)
         res.title = <div className="ai-login-title">{trans(modeKey + 'Title' as I_login_key)}</div>
         return res
     }
     function getModel() {
         let model = { userName: '', password: '', rePassword: '', otpNumber: '', otpCode: '', register: {} }
-        if (!modes.register) { return model }
-        if (modes.register.inputs) {
-            const inputs = modes.register.inputs(model)
+        if (!props.register) { return model }
+        if (props.registerInputs) {
+            const inputs = props.registerInputs(model)
             let register: any = {}
             for (let i = 0; i < inputs.length; i++) { register[inputs[i].field] = inputs[i].defaultValue }
             model.register = register
@@ -3717,7 +3697,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const [splashing, setSplashing] = useState<boolean>(!!splash)
     const [popup] = useState<AIOPopup>(new AIOPopup())
     function trans(key: I_login_key) {
-        const { otp } = modes;
+        const { otp } = props;
         const dic: { [key in I_login_key]: { fa: string, en: string } } = {
             registerButton: { en: 'Register', fa: 'ثبت نام' },
             userpassButton: { en: 'Login', fa: 'ورود' },
@@ -3735,7 +3715,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
             passwordRequired: { en: 'password is required', fa: 'رمز عبور ضروری است' },
             rePasswordRequired: { en: 'Re Password is required', fa: 'تکرار رمز عبور ضروری است' },
             otpNumberRequired: { en: 'Phone Number is required', fa: 'شماره همراه ضروری است' },
-            otpCodeLength: { en: `otp code should be ${otp?.length} digit`, fa: `کد یکبار مصرف باید ${otp?.length} رقم باشد` },
+            otpCodeLength: { en: `otp code should be ${otpLength} digit`, fa: `کد یکبار مصرف باید ${otpLength} رقم باشد` },
             registerError: { en: 'Registeration failed', fa: 'ثبت نام با خطا روبرو شد' },
             userpassError: { en: 'login by userName failed', fa: 'ورود با نام کاربری با خطا روبرو شد' },
             otpcodeError: { en: 'login by otp failed', fa: 'ورود با کد یکبار مصرف با خطا روبرو شد' },
@@ -3745,13 +3725,15 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     function userpassCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
     function registerCallback() { window.location.reload() }
-    function otpNumberCallback() { setOtpMode('code') }
+    function otpNumberCallback() { setMode(getMode('otpcode')) }
     function otpCodeCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
+    async function getApisDetails(){
+        return await props.getRequestOptions(modelRef.current,mode.key)
+    }
     async function success(response: any) {
-        const model = modelRef.current
-        const modeKey = mode.key === 'otp' ? mode.key + otpMode : mode.key
+        const modeKey = mode.key
         let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
-        const { onSuccess } = await mode.obj.onSubmit(model)
+        const { onSuccess } = await getApisDetails()
         let message, res;
         try { res = await onSuccess(response) }
         catch (err: any) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return }
@@ -3770,23 +3752,23 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else { callback(res) }
     }
     async function submit() {
-        const model = modelRef.current
-        const { url, method, body, onCatch } = await mode.obj.onSubmit(model, setAlert)
+        const { url, method, body, onCatch } = await getApisDetails()
         axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
             if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
             else{onCatch(response)}
         });
     }
-    function changeMode(mode: I_loginMode) { setModel(getModel()); if (mode === 'otp') { setOtpMode('number') } setMode(getMode(mode)) }
+    function changeMode(mode: I_loginMode) { 
+        setModel(getModel()); 
+        setMode(getMode(mode)) 
+    }
     function mode_props(key: I_loginMode) { return { className: 'ai-login-mode', onClick: () => changeMode(key) } }
     function mode_layout() {
-        const { modes } = props;
         return (
             <div className="ai-login-modes">
-                {modes.userpass && mode.key !== 'userpass' && <button {...mode_props('userpass')}>{trans('switchuserpass')}</button>}
-                {modes.register && mode.key !== 'register' && <button {...mode_props('register')}>{trans('switchregister')}</button>}
-                {modes.otp && mode.key !== 'otp' && <button {...mode_props('otp')}>{trans('switchotp')}</button>}
-                {modes.otp && mode.key === 'otp' && otpMode === 'code' && <button {...mode_props('otp')}>{trans('switchotp')}</button>}
+                {props.userpass && mode.key !== 'userpass' && <button {...mode_props('userpass')}>{trans('switchuserpass')}</button>}
+                {props.register && mode.key !== 'register' && <button {...mode_props('register')}>{trans('switchregister')}</button>}
+                {props.otp && mode.key !== 'otpnumber' && <button {...mode_props('otpnumber')}>{trans('switchotp')}</button>}
             </div>
         )
     }
@@ -3800,9 +3782,9 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     function validate(field: keyof I_login_model, v: string) {
         const model = modelRef.current
-        const { otp } = modes;
+        const { otp } = props;
         if (!v) { return trans({ otpCode: '', register: '', otpNumber: 'otpNumberRequired', userName: 'userNameRequired', password: 'passwordRequired', rePassword: 'rePasswordRequired' }[field] as any) }
-        if (field === 'otpCode' && otp && (v || '').length < otp.length) { return trans('otpCodeLength') }
+        if (field === 'otpCode' && otp && (v || '').length < otpLength) { return trans('otpCodeLength') }
         if (field === 'rePassword' && v !== model.password) { return trans('rePasswordMatch'); }
         return validation(field, v)
     }
