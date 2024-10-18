@@ -67,7 +67,7 @@ export default class AIOApis {
     handleLoading: AA_handleLoading;
     responseToResult: (p: AA_request_params) => Promise<any>;
     requestFn: (p: AA_request_params) => Promise<any>;
-    addAlert: (p: { type: 'success' | 'error' | 'warning' | 'info', text: string, subtext?: string, message: AA_message }) => void;
+    addAlert: (p: { type: 'success' | 'error' | 'warning' | 'info', text: string, subtext?: string, time?: number,alertType?:'alert' | 'snackebar' }) => void;
     handleCacheVersions: (cacheVersions: { [key: string]: number }) => { [key: string]: boolean };
     showErrorMessage: (m: AA_messageParameter) => void;
     showSuccessMessage: (m: AA_messageParameter) => void;
@@ -89,9 +89,7 @@ export default class AIOApis {
             if (res) { Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`; }
         }
         this.addAlert = (p) => {
-            let { type, text, subtext, message } = p;
-            let { time, type: alertType = 'alert' } = message
-            alertType = alertType || 'alert'
+            let { type, text, subtext, time,alertType = 'alert' } = p;
             if (alertType === 'alert') { new AIOPopup().addAlert({ type, text, subtext, time,className:'aio-apis-popup' }) }
             else { new AIOPopup().addSnackebar({ type, text, subtext, time }) }
         }
@@ -156,14 +154,14 @@ export default class AIOApis {
             let text: string;
             if (typeof message.error === 'string') { text = message.error }
             else { text = lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}` }
-            this.addAlert({ type: 'error', text, subtext: result, message });
+            this.addAlert({ type: 'error', text, subtext: result, time:message.time,alertType:message.type });
         }
         this.showSuccessMessage = (m) => {
             let { result, message, description } = m;
             if (!message.success) { return }
             let subtext = typeof message.success === 'function' ? message.success(result) : message.success;
             if (subtext === true) { subtext = '' }
-            this.addAlert({ type: 'success', text: lang === 'fa' ? `${description} با موفقیت انجام شد` : `${description} was successfull`, subtext: subtext as string, message });
+            this.addAlert({ type: 'success', text: lang === 'fa' ? `${description} با موفقیت انجام شد` : `${description} was successfull`, subtext: subtext as string, time:message.time,alertType:message.type });
         }
         this.responseToResult = async (p) => {
             let { url, method, body, getResult, config = {} } = p;
