@@ -3598,8 +3598,8 @@ type I_AILogin = {
         method: 'post' | 'get',url: string,body?: any
         onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false 
     }>,
-    before?: ReactNode,
-    after?: ReactNode,
+    before?: (mode:I_loginMode)=>ReactNode,
+    after?: (mode:I_loginMode)=>ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
     translate?: 'fa' | ((key: I_login_key) => string | undefined),
     rememberTime: number,
@@ -3800,7 +3800,12 @@ export const AILogin: FC<I_AILogin> = (props) => {
         const { title: t, userNameInput: u, passwordInput: p, registerInputs: r } = mode;
         return (<div className="ai-login-form">{t}{u()}{p()}{r()}{submit_layout()}{mode_layout()}</div>)
     }
-    const bf_layout = (type: 'before' | 'after') => <div className={`ai-login-${type}`}>{props[type]}</div>
+    const bf_layout = (type: 'before' | 'after') => {
+        const fn = props[type];
+        let content = null;
+        if(fn){content = fn(mode.key)}
+        return (<div className={`ai-login-${type}`}>{content}</div>)
+    }
     function logout() { storage.remove('data'); window.location.reload(); }
     async function CheckToken() {
         if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
