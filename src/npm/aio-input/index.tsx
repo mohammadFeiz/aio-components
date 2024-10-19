@@ -3622,7 +3622,8 @@ type I_AILogin = {
     mode?: I_loginMode,
     registerInputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
     attrs?: any,
-    setAttrs?: (key: I_login_key) => any
+    setAttrs?: (key: I_login_key) => any,
+    mock?:{user:any,token:string}
 }
 type I_login_modeState = {
     key: I_loginMode, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
@@ -3803,6 +3804,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function logout() { storage.remove('data'); window.location.reload(); }
     async function CheckToken() {
         if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
+        if(props.mock){
+            setData({ user:props.mock.user, token:props.mock.token }) 
+            return
+        }
         const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
         const { url, method, onSuccess, onCatch } = await checkToken(token || '');
         if (user && token) {
