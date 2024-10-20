@@ -24,6 +24,7 @@ import DOC_Map from './documents/map/doc-map.tsx';
 import AIFilter from './documents/ai-filter';
 import BeenetDoc from "./documents/beenet";
 import DOC_Login from './documents/login'
+import DOC_AIOCss from './documents/aio-css';
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -46,6 +47,7 @@ export default function AIOComponents(){
     'ai filter':AIFilter,
     'beenet':BeenetDoc,
     'Login':DOC_Login,
+    'aio-css':DOC_AIOCss,
     'test':Test
   })
   function goToHome(){

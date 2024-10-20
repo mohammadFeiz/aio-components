@@ -23,28 +23,19 @@ function getGenralCss() {
     let res = '';
     res += `* {box-sizing: border-box;} button,input {font-family: inherit;}`
     res += `
-        .fullscreen- {position: fixed !important;left: 0 !important;top: 0 !important;width: 100% !important;height: 100% !important;overflow: hidden;}
-        .relative- {position: relative !important;}
-        .absolute- {position: absolute !important;}
-        .rtl- {direction: rtl !important;}
-        .ltr- {direction: ltr !important;}
-        .bold- {font-weight: bold !important;}
-        .sel-off- {user-select: none !important;}
-        .hide-scroll-::-webkit-scrollbar {width: 0px !important;height: 0px !important;}
-        .no-spin-::-webkit-outer-spin-button,
-        .no-spin-::-webkit-inner-spin-button {-webkit-appearance: none !important;margin: 0 !important;}
-        .no-spin-[type=number] {-moz-appearance: textfield !important;}
-        .b-b- {box-sizing: border-box !important;}
-        .t-a-right- {text-align: right !important;}
-        .t-a-left- {text-align: left !important;}
-        .t-a-center- {text-align: center !important;}
-        .resize-vh- {resize: both !important;}
-        .resize-v- {resize: vertical !important;}
-        .resize-h- {resize: horizontal !important;}
-        .resize-none- {resize: none !important;}
-        .ff-inh- {font-family: inherit !important;}
-        .break-space- {white-space: break-space !important;}
-        .text-rotate- {writing-mode: vertical-lr !important;}
+.fullscreen- {position: fixed !important;left: 0 !important;top: 0 !important;width: 100% !important;height: 100% !important;overflow: hidden;}
+.relative- {position: relative !important;} .absolute- {position: absolute !important;}
+.rtl- {direction: rtl !important;} .ltr- {direction: ltr !important;}
+.bold- {font-weight: bold !important;}
+.sel-off- {user-select: none !important;}
+.hide-scroll-::-webkit-scrollbar {width: 0px !important;height: 0px !important;}
+.no-spin-::-webkit-outer-spin-button,.no-spin-::-webkit-inner-spin-button {-webkit-appearance: none !important;margin: 0 !important;} .no-spin-[type=number] {-moz-appearance: textfield !important;}
+.b-b- {box-sizing: border-box !important;}
+.t-a-right- {text-align: right !important;} .t-a-left- {text-align: left !important;} .t-a-center- {text-align: center !important;}
+.resize-vh- {resize: both !important;} .resize-v- {resize: vertical !important;} .resize-h- {resize: horizontal !important;} .resize-none- {resize: none !important;}
+.ff-inh- {font-family: inherit !important;}
+.break-space- {white-space: break-space !important;}
+.text-rotate- {writing-mode: vertical-lr !important;}
     `
     return res
 }
@@ -55,9 +46,11 @@ function getMediaCss() {
     for (let i = 0; i < mediaNames.length; i++) {
         const s = mediaSizes[i];
         const n = mediaNames[i];
-        if (i === 0) { res += `@media screen and (max-width: ${mediaSizes[0]}px) {.hide-${mediaNames[0]}- {display: none !important;}}` }
-        else if (i === mediaNames.length - 1) { res += `@media screen and (min-width: ${s}px) {.hide-${n}- {display: none !important;}}` }
-        else { res += `@media screen and (min-width: ${mediaSizes[i - 1]}px) and (max-width: ${mediaSizes[i]}px) {.hide-${n}- {display: none !important;}}` }
+        if (i === 0) { res += `
+@media screen and (max-width: ${mediaSizes[0]}px) {.hide-${mediaNames[0]}- {display: none !important;}}` 
+}
+        else if (i === mediaNames.length - 1) { res += `@media screen and (min-width: ${s}px) {.hide-${n}- {display: none !important;}} ` }
+        else { res += `@media screen and (min-width: ${mediaSizes[i - 1]}px) and (max-width: ${mediaSizes[i]}px) {.hide-${n}- {display: none !important;}} ` }
     }
     return res
 }
@@ -94,7 +87,7 @@ function getPaddingMarginCss() {
         res += `.m-l-${n}-,.ltr- .m-s-${n}-,.rtl- .m-e-${n}- {margin-left: ${val} !important;}`;
         res += `.m-r-${n}-,.ltr- .m-e-${n}-,.rtl- .m-s-${n}- {margin-right: ${val} !important;}`;
         res += `.m-h-${n}- {margin-left: ${n}px !important; margin-right: ${val} !important;}`;
-        res += `.m-v-${n}- {margin-top: ${n}px !important; margin-bottom: ${val} !important;}`;
+        res += `.m-v-${n}- {margin-top: ${n}px !important; margin-bottom: ${val} !important;} `;
     }
     return res
 }
@@ -122,7 +115,7 @@ function getDistanceCss() {
         res += `.b-${n}-{bottom:${val} !important;}`;
         res += `.l-${n}-{left:${val} !important;}`;
         res += `.r-${n}-{right:${val} !important;}`;
-        res += `.gap-${n}-{gap:${val} !important}`
+        res += `.gap-${n}-{gap:${val} !important} `
     }
     const percents = ['0', '5', '10', '15', '20', '25', '30', '33', '40', '50', '60', '66', '70', '75', '80', '90', '100']
     for (let n of percents) {
@@ -130,7 +123,7 @@ function getDistanceCss() {
         res += `.t-p${n}-{top:${val} !important;}`;
         res += `.b-p${n}-{bottom:${val} !important;}`;
         res += `.l-p${n}-{left:${val} !important;}`;
-        res += `.r-p${n}-{right:${val} !important;}`;
+        res += `.r-p${n}-{right:${val} !important;} `;
     }
     return res
 }
@@ -174,14 +167,14 @@ function getColorsCss() {
     for (let n of numbers) {
         const val = n === 'none' ? 'none' : `rgb(${n},${n},${n})`
         res += `.bg-${n}-{background:${val} !important;}`;
-        res += `.c-${n}-{color:${val} !important;}`;
+        res += `.c-${n}-{color:${val} !important;} `;
     }
     const percents = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
     for (let n of percents) {
         res += `.bg-l-${n}-{background:rgba(255, 255, 255, .${n}) !important;}`;
         res += `.bg-d-${n}-{background:rgba(0, 0, 0, .${n}) !important;}`;
         res += `.c-l-${n}-{color:rgba(255, 255, 255, .${n}) !important;}`;
-        res += `.c-d-${n}-{color:rgba(0, 0, 0, .${n}) !important;}`;
+        res += `.c-d-${n}-{color:rgba(0, 0, 0, .${n}) !important;} `;
     }
     res += `.c-inh-{color:inherit !important;}`;
     res += `.bg-inh-{background:inherit !important;}`;
@@ -231,6 +224,7 @@ function getOpacityCss() {
         else if(n === '100'){val = '1'}
         else if(n === '5'){val = '0.05'}
         else if(n[1] === '0'){val = n[0]}
+        else {val = `0.${n}`}
         res += `.op-${n}-{opacity:${val} !important;}`;
     }
     return res
@@ -241,6 +235,7 @@ function getFlexCss() {
     for (let n of numbers) {
         res += `.flex-${n}-{flex:${n} !important;}`;
     }
+    res += ''
     res += `
         .flex-row- {display: flex;}
         .flex-col- {display: flex;flex-direction: column}
