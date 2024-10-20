@@ -6,9 +6,7 @@ import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import dotenv from 'dotenv';
-
-export type I_AIOExpress = { auth?: I_auth };
+export type I_AIOExpress = { auth?: I_auth,env:{mongoUrl:string,port:string,secretKey:string} };
 export type I_auth = {
     schema?: I_schema,
     path: string,
@@ -71,12 +69,11 @@ class AIOExpress<I_User> {
     removeUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<I_User | string>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<number | string>
     constructor(p: I_AIOExpress) {
-        dotenv.config();
         this.p = p;
         this.env = {
-            mongoUrl:process.env.MONGO_URI as string,
-            secretKey:process.env.SECRET_KEY as string,
-            port:process.env.PORT as string,
+            mongoUrl:p.env.mongoUrl as string,
+            secretKey:p.env.secretKey as string,
+            port:p.env.port as string,
         },
         this.models = {}
         this.routers = {}
