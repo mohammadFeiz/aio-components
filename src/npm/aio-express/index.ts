@@ -1,21 +1,23 @@
 import express, { NextFunction, Router, RequestHandler, Request, Response } from 'express';
 import type { Express } from 'express';
-import mongoose, { Model, SchemaType } from 'mongoose';
+//@ts-ignore
+import mongoose, { Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth,env:{mongoUrl:string,port:string,secretKey:string} };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string } };
 export type I_auth = {
     schema?: I_schema,
+    name: string,
     path: string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
     registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status: number, message: string } | void>,
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
-export type I_entity = { name: string, schema: I_schema, path: string, requiredToken?: boolean, apis: I_api[] };
+export type I_entity = { name: string, schema?: I_schema, path: string, requiredToken?: boolean, apis: I_api[] };
 export type I_schema = {
     [key: string]: {
         type: 'string' | 'boolean' | 'number' | 'date' | 'object', // اضافه شدن 'object' برای پشتیبانی از داده‌های تو در تو
@@ -39,7 +41,7 @@ export type I_virtuals = {
         set?: (this: any) => string;
     }
 }
-export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response,reqUser:any) => any };
+export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response, reqUser: any) => any };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 class AIOExpress<I_User> {
     private app: Express;
@@ -51,7 +53,7 @@ class AIOExpress<I_User> {
     private routers: { [key: string]: Router };
     private tokenBaseDic: { [key: string]: string } = {};
     private tokenLessDic: { [key: string]: string } = {};
-    env:{mongoUrl:string,port:string,secretKey:string};
+    env: { mongoUrl: string, port: string, secretKey: string };
     gcrud: GCRUD;
     getRow: I_getRow;
     getRows: I_getRows;
@@ -71,11 +73,11 @@ class AIOExpress<I_User> {
     constructor(p: I_AIOExpress) {
         this.p = p;
         this.env = {
-            mongoUrl:p.env.mongoUrl as string,
-            secretKey:p.env.secretKey as string,
-            port:p.env.port as string,
+            mongoUrl: p.env.mongoUrl as string,
+            secretKey: p.env.secretKey as string,
+            port: p.env.port as string,
         },
-        this.models = {}
+            this.models = {}
         this.routers = {}
         this.app = express();
         this.AuthRouter = express.Router();
@@ -129,6 +131,7 @@ class AIOExpress<I_User> {
     }
     getModel: I_getModel = (key) => this.models[key]
     addEntity = (entity: I_entity) => this.handleEntity(entity)
+    fixPath = (path: string) => path[0] !== '/' ? `/${path}` : path
     start = () => {
         this.app.use(cors());
         this.app.use(bodyParser.json());
@@ -138,7 +141,7 @@ class AIOExpress<I_User> {
 
         if (this.AuthRouter && this.p.auth) {
             const { path } = this.p.auth;
-            this.app.use(path, this.AuthRouter);
+            this.app.use(this.fixPath(path), this.AuthRouter);
         }
 
         // Routes without token
@@ -146,14 +149,18 @@ class AIOExpress<I_User> {
         // Middleware JWT
         this.app.use(this.jwt);
         // Routes with token
-        for (let name in this.tokenBaseDic) { this.app.use(this.tokenBaseDic[name], this.routers[name]) }
+        for (let name in this.tokenBaseDic) {
+            const path = this.tokenBaseDic[name]
+            const router = this.routers[name];
+            this.app.use(path, router)
+        }
         this.app.listen(this.env.port, () => {
             console.log(`Server running on port ${this.env.port}`);
         });
     };
 
     connectToMongoose = () => {
-        const url:string = this.env.mongoUrl;
+        const url: string = this.env.mongoUrl;
         mongoose
             .connect(url)
             .then(() => console.log('MongoDB connected'))
@@ -226,7 +233,6 @@ class AIOExpress<I_User> {
     handleAuth = () => {
         if (!this.p.auth) { return; }
         const { schema, registerExeption } = this.p.auth;
-        const fields = schema?.fields || {}
         const scm: I_schema = {
             ...schema,
             password: { type: 'string', required: true },
@@ -237,7 +243,7 @@ class AIOExpress<I_User> {
             return await bcrypt.compare(enteredPassword, this.password);
         };
 
-        this.AuthModel = mongoose.model('Users', authSchema);
+        this.AuthModel = mongoose.model(this.p.auth.name, authSchema);
 
         // Register Route
         const registerFn: any = async (req: Request, res: Response): Promise<express.Response | void> => {
@@ -314,36 +320,28 @@ class AIOExpress<I_User> {
             catch (err: any) { return this.setResult({ res, status: 500, success: false, message: err.message }) }
         })
     };
-    addAuthApi = (api:I_api)=>{
-        const {path,method,fn}:I_api = api;
-        this.AuthRouter[method](path,async (req:Request,res:Response)=>{
-            const reqUser = await this.getUserByReq(req);
-            if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
-            return fn(req, res,reqUser)
-        })
-    }
     handleEntity = (entity: I_entity) => {
         const { name, schema, apis, requiredToken = true, path } = entity;
         const dicName = requiredToken ? 'tokenBaseDic' : 'tokenLessDic';
-        this[dicName][name] = path;
-        // ساخت مدل بر اساس اسکیما
-        try {
-            const entitySchema = this.getSchema(schema);
-            const entityModel = mongoose.model(name, entitySchema);
-            this.models[name] = entityModel;
-        } catch (err: any) {
-            console.error(`Error creating model for entity ${name}:`, err.message);
-            return;
+        this[dicName][name] = this.fixPath(path);
+        if (schema) {
+            try {
+                const entitySchema = this.getSchema(schema), entityModel = mongoose.model(name, entitySchema);
+                this.models[name] = entityModel;
+            }
+            catch (err: any) { console.error(`Error creating model for entity ${name}:`, err.message); return; }
         }
         try {
             this.routers[name] = express.Router();
             for (let api of apis) {
                 const { path, method, fn } = api;
-                this.routers[name][method](path, async (req: Request, res: Response) => {
-                    try { 
+                this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
+                    try {
                         const reqUser = await this.getUserByReq(req);
                         if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
-                        return fn(req, res,reqUser)
+                        if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
+                        const result = await fn(req, res, reqUser)
+                        return this.setResult({...result,res}) 
                     }
                     catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
                 });
@@ -356,11 +354,14 @@ class AIOExpress<I_User> {
     setResult: I_setResult = (p) => {
         return p.res.status(p.status).json({ message: p.message, success: p.success, value: p.value });
     }
-    getUserByReq = async (req: Request): Promise<I_User | null> => {
-        if (!this.AuthModel) { return null }
-        const userId = (req as any).user.id
-        const user: null | I_User = await this.AuthModel.findById(userId);
-        return user
+    getUserByReq = async (req: Request): Promise<I_User | null | string> => {
+        try {
+            if (!this.AuthModel) { return null }
+            const userId = (req as any).user.id
+            const user: null | I_User = await this.AuthModel.findById(userId);
+            return user
+        }
+        catch (err: any) { return err.message }
     }
 }
 
@@ -381,12 +382,12 @@ class GCRUD {
     constructor(p: I_GCRUD) {
         this.getModel = p.getModel
     }
-    getModelByP = (p: any) => {
-        return p.model ? p.model : this.getModel(p.entityName);
+    getModelByP = async (p: any) => {
+        return p.model ? p.model : await this.getModel(p.entityName);
     }
     getRow: I_getRow = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             if (p.id) { const res: I_row | null = await model.findById(p.id); return res }
             else if (p.search) { const res: I_row | null = await model.findOne(p.search); return res }
             else { return `Error in get row: please send search object or id for search` }
@@ -395,7 +396,7 @@ class GCRUD {
     }
     getRows: I_getRows = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             if (p.ids && p.ids.length > 0) {
                 const rows: I_row[] = await model.find({ _id: { $in: p.ids } });
                 return rows;
@@ -410,7 +411,7 @@ class GCRUD {
     }
     addRow: I_addRow = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             const newRecord = new model(p.newValue);
             const res = await newRecord.save();
             return res
@@ -419,7 +420,7 @@ class GCRUD {
     }
     editRow: I_editRow = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             const updatedRecord = await model.findByIdAndUpdate(p.id, p.newValue, { new: true });
             if (!updatedRecord) { return 'Record not found'; }
             return updatedRecord;
@@ -428,7 +429,7 @@ class GCRUD {
     }
     addOrEditRow: I_addOrEditRow = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             const existingRecord = await model.findById(p.id);
             if (existingRecord) {
                 const updatedRecord = await model.findByIdAndUpdate(p.id, p.newValue, { new: true });
@@ -444,7 +445,7 @@ class GCRUD {
     }
     editRows: I_editRows = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
@@ -456,12 +457,12 @@ class GCRUD {
     }
     removeRow: I_removeRow = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             let query;
             if (p.id) { query = { _id: p.id }; }
             else if (p.search) { query = p.search; }
             else { return 'No criteria provided for deletion'; }
-            const deletedRecord = await model.findOneAndDelete(query);
+            const deletedRecord = await await model.findOneAndDelete(query);
             if (!deletedRecord) { return 'Record not found'; }
             return deletedRecord;
         }
@@ -469,7 +470,7 @@ class GCRUD {
     }
     removeRows: I_removeRows = async (p) => {
         try {
-            const model = this.getModelByP(p);
+            const model = await this.getModelByP(p);
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
