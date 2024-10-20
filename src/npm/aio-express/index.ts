@@ -6,8 +6,9 @@ import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
-export type I_AIOExpress = { auth?: I_auth,env:NodeJS.ProcessEnv };
+export type I_AIOExpress = { auth?: I_auth };
 export type I_auth = {
     schema?: I_schema,
     path: string,
@@ -52,6 +53,7 @@ class AIOExpress<I_User> {
     private routers: { [key: string]: Router };
     private tokenBaseDic: { [key: string]: string } = {};
     private tokenLessDic: { [key: string]: string } = {};
+    env:{mongoUrl:string,port:string,secretKey:string};
     gcrud: GCRUD;
     getRow: I_getRow;
     getRows: I_getRows;
@@ -69,7 +71,13 @@ class AIOExpress<I_User> {
     removeUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<I_User | string>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<number | string>
     constructor(p: I_AIOExpress) {
+        dotenv.config();
         this.p = p;
+        this.env = {
+            mongoUrl:process.env.MONGO_URI as string,
+            secretKey:process.env.SECRET_KEY as string,
+            port:process.env.PORT as string,
+        },
         this.models = {}
         this.routers = {}
         this.app = express();
@@ -142,13 +150,13 @@ class AIOExpress<I_User> {
         this.app.use(this.jwt);
         // Routes with token
         for (let name in this.tokenBaseDic) { this.app.use(this.tokenBaseDic[name], this.routers[name]) }
-        this.app.listen(this.p.env.PORT, () => {
-            console.log(`Server running on port ${this.p.env.PORT}`);
+        this.app.listen(this.env.port, () => {
+            console.log(`Server running on port ${this.env.port}`);
         });
     };
 
     connectToMongoose = () => {
-        const url:string = this.p.env.MONGO_URL as string;
+        const url:string = this.env.mongoUrl;
         mongoose
             .connect(url)
             .then(() => console.log('MongoDB connected'))
@@ -204,7 +212,7 @@ class AIOExpress<I_User> {
         if (!token) {
             return res.status(401).json({ message: 'Access denied. No token provided.', success: false });
         }
-        jwt.verify(token, this.p.env.SECRET_KEY as string, (err: any, decoded: any) => {
+        jwt.verify(token, this.env.secretKey, (err: any, decoded: any) => {
             if (err) {
                 return res.status(401).json({ message: 'Invalid token or token is expired.' });
             }
@@ -287,7 +295,7 @@ class AIOExpress<I_User> {
                 if (!user || !(await user.matchPassword(password))) {
                     return res.status(400).json({ message: 'Invalid username or password' });
                 }
-                const secretKey: string = this.p.env.SECRET_KEY as string;
+                const secretKey: string = this.env.secretKey;
                 const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: this.getExpiresIn() });
                 return res.status(200).json({ message: 'Login successful', token, user });
             } catch (err: any) {
@@ -301,7 +309,7 @@ class AIOExpress<I_User> {
             if (!this.p.auth) { return }
             try {
                 const token = req.headers['authorization']?.split(' ')[1] || ''; // استخراج توکن از هدر
-                jwt.verify(token, this.p.env.SECRET_KEY as string, (err: any, decoded: any) => {
+                jwt.verify(token, this.env.secretKey as string, (err: any, decoded: any) => {
                     if (err) { return this.setResult({ res, message: 'Token is invalid', success: false, status: 401 }) }
                     return this.setResult({ res, message: 'authorized', success: true, status: 201 })
                 });
@@ -314,7 +322,7 @@ class AIOExpress<I_User> {
         this.AuthRouter[method](path,async (req:Request,res:Response)=>{
             const reqUser = await this.getUserByReq(req);
             if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
-            fn(req, res,reqUser)
+            return fn(req, res,reqUser)
         })
     }
     handleEntity = (entity: I_entity) => {
@@ -338,9 +346,9 @@ class AIOExpress<I_User> {
                     try { 
                         const reqUser = await this.getUserByReq(req);
                         if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
-                        fn(req, res,reqUser)
+                        return fn(req, res,reqUser)
                     }
-                    catch (err: any) { res.status(500).json({ message: err.message, success: false }); }
+                    catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
                 });
             }
         }
