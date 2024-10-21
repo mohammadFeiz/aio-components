@@ -504,13 +504,17 @@ function DateInput() {
             let list = DATE.convertToArray(value);
             let [year, month = 1, day = 1, hour = 0] = list;
             list = [year, month, day, hour];
-            let pattern: string = '{}';
             let splitter = DATE.getSplitter(value)
-            if (text && text !== null) { pattern = text.toString() }
-            else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
-            else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
-            else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
-            return <div style={{ direction: 'ltr' }}>{DATE.getDateByPattern(list, pattern)}</div>
+            let content:ReactNode = '';
+            if (text && text !== null) { content = text as ReactNode }
+            else {
+                let pattern: string = '{}';
+                if (unit === 'month') { pattern = `{year}${splitter}{month}` }
+                else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
+                else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
+                content = DATE.getDateByPattern(list, pattern)
+            }
+            return <div style={{ direction: 'ltr',width:'100%' }}>{content}</div>
         }
         return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
     }
