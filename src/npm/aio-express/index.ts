@@ -372,8 +372,8 @@ type I_GCRUD = {
 type I_getRow = (p: { model?: Model<any>, entityName?: string, search?: I_row, id?: any }) => Promise<null | I_row | string>
 type I_getRows = (p: { model?: Model<any>, entityName?: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
 type I_addRow = (p: { model?: Model<any>, entityName?: string, newValue: I_row }) => Promise<I_row | string>
-type I_editRow = (p: { model?: Model<any>, entityName?: string, id: any, newValue: I_row }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id: any; newValue: I_row }) => Promise<string | I_row>
+type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?:I_row, newValue: I_row }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?:I_row,newValue: I_row }) => Promise<string | I_row>
 type I_editRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[]; newValue: I_row }) => Promise<string | number>
 type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>
 type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
@@ -421,7 +421,10 @@ class GCRUD {
     editRow: I_editRow = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            const updatedRecord = await model.findByIdAndUpdate(p.id, p.newValue, { new: true });
+            const exist = await this.getRow(p);
+            if(exist === null){return 'Record not found';}
+            if(typeof exist === 'string'){return exist}
+            const updatedRecord = await model.findByIdAndUpdate(exist._id, p.newValue, { new: true });
             if (!updatedRecord) { return 'Record not found'; }
             return updatedRecord;
         }
@@ -430,9 +433,12 @@ class GCRUD {
     addOrEditRow: I_addOrEditRow = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            const existingRecord = await model.findById(p.id);
-            if (existingRecord) {
-                const updatedRecord = await model.findByIdAndUpdate(p.id, p.newValue, { new: true });
+            let existingRecord;
+            if(p.id !== undefined){existingRecord = await model.findById(p.id);}
+            else if(p.search){existingRecord = await model.findOne(p.search);}
+            else {return 'addOrEditRow should get id our search object as parameter'}
+            if (existingRecord !== null) {
+                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true });
                 return updatedRecord;
             }
             else {

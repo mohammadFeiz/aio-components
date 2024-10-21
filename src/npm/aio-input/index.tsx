@@ -948,7 +948,7 @@ const Layout: FC<AI_Layout> = (props) => {
             className: getClassName(),
             style: { ...style, zIndex }
         })
-        let p = { tabIndex: option ? undefined : 0, onKeyDown: keyDown, ...attrs, onClick, ref: dom, disabled }
+        let p = { tabIndex: option ? undefined : 1, onKeyDown: keyDown, ...attrs, onClick, ref: dom, disabled }
         let options: any[] = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
         if (draggable) {
             p = {
@@ -3622,9 +3622,11 @@ type I_AILogin = {
     otpLength?:number,
     otp?: boolean,
     userpass?:boolean
-    register?:boolean,
+    register?:{
+        defaultValue?:{[field:string]:any}
+        inputs?: (model: I_login_model) => (AITYPE & { field: string })[]
+    },
     mode?: I_loginMode,
-    registerInputs?: (model: I_login_model) => (AITYPE & { field: string, defaultValue: any })[]
     attrs?: any,
     setAttrs?: (key: I_login_key) => any,
     mock?:{user:any,token:string}
@@ -3649,8 +3651,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
         return 'userpass'
     }
     function getMode(mode?: I_loginMode): I_login_modeState {
-        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: 'userpass', title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
-        let modeKey = mode || getModeKey();
+        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: mode || getModeKey(), title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
         if (res.key === 'userpass') {
             res.userNameInput = ()=><AIText {...input_props('userName')} />
             res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
@@ -3659,8 +3660,8 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else if (res.key === 'register') {
             res.userNameInput = ()=><AIText {...input_props('userName')} />
             res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
-            if (props.register && props.registerInputs && props.registerInputs.length) {
-                const inputs = (props.registerInputs || (() => []))(modelRef.current) || []
+            if (props.register) {
+                const inputs = (props.register.inputs || (() => []))(modelRef.current) || []
                 res.registerInputs = ()=>{
                     const model = modelRef.current
                     return (<>
@@ -3670,7 +3671,9 @@ export const AILogin: FC<I_AILogin> = (props) => {
                                 const value = model.register[input.field]
                                 return (
                                     <AIOInput key={input.field}
-                                        rtl={props.rtl} label={props.label(input.field)} {...input} showErrors={false} reportError={(v) => reportError(input.field, v)}
+                                        rtl={props.rtl} label={props.label(input.field)} {...input} 
+                                        validations={(v)=>{if(props.validation){return props.validation(input.field,v)}}} 
+                                        showErrors={false} reportError={(v) => reportError(input.field, v)}
                                         value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
                                     />
                                 )
@@ -3682,17 +3685,18 @@ export const AILogin: FC<I_AILogin> = (props) => {
         }
         else if (res.key === 'otpnumber') { res.userNameInput = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
         else if(res.key === 'otpcode'){ res.passwordInput = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
-        res.submitText = trans(modeKey + 'Button' as I_login_key)
-        res.title = <div className="ai-login-title">{trans(modeKey + 'Title' as I_login_key)}</div>
+        res.submitText = trans(res.key + 'Button' as I_login_key)
+        res.title = <div className="ai-login-title">{trans(res.key + 'Title' as I_login_key)}</div>
         return res
     }
     function getModel() {
         let model = { userName: '', password: '', rePassword: '', otpNumber: '', otpCode: '', register: {} }
         if (!props.register) { return model }
-        if (props.registerInputs) {
-            const inputs = props.registerInputs(model)
+        if (props.register?.defaultValue) {
             let register: any = {}
-            for (let i = 0; i < inputs.length; i++) { register[inputs[i].field] = inputs[i].defaultValue }
+            for (let prop in props.register.defaultValue) { 
+                register[prop] = props.register.defaultValue[prop]
+            }
             model.register = register
         }
         return model
@@ -3763,10 +3767,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
             else{onCatch(response)}
         });
     }
-    function changeMode(mode: I_loginMode) { 
-        setModel(getModel()); 
-        setMode(getMode(mode)) 
-    }
+    function changeMode(mode: I_loginMode) { setModel(getModel()); setMode(getMode(mode)) }
     function mode_props(key: I_loginMode) { return { className: 'ai-login-mode', onClick: () => changeMode(key) } }
     function mode_layout() {
         return (
@@ -3788,9 +3789,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function validate(field: keyof I_login_model, v: string) {
         const model = modelRef.current
         const { otp } = props;
+        if(mode.key !=="register" && field === 'rePassword'){return}
         if (!v) { return trans({ otpCode: '', register: '', otpNumber: 'otpNumberRequired', userName: 'userNameRequired', password: 'passwordRequired', rePassword: 'rePasswordRequired' }[field] as any) }
         if (field === 'otpCode' && otp && (v || '').length < otpLength) { return trans('otpCodeLength') }
-        if (field === 'rePassword' && v !== model.password) { return trans('rePasswordMatch'); }
+        if (field === 'rePassword' && v !== model.register.password) { return trans('rePasswordMatch'); }
         return validation(field, v)
     }
     function submit_layout() {
@@ -4268,6 +4270,64 @@ export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=
         <div className='example'>
             <div className='aio-input-mask' ref={dom as any} title={value}>
                 {getList()}
+            </div>
+        </div>
+    )
+}
+
+export type I_MonthCells = {
+    year: number, month: number, cellContent: (date: number[]) => ReactNode,weekDayContent:(v:number)=>ReactNode,
+    changeMonth: (month: number) => void
+}
+export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, changeMonth,weekDayContent }) => {
+    const [DATE] = useState<AIODate>(new AIODate())
+    const [monthes] = useState<string[]>(DATE.getMonths(true))
+    function getDateInfo() {
+        const res = {
+            monthDaysLength: DATE.getMonthDaysLength([year, month]),
+            firstDayIndex: DATE.getWeekDay([year, month, 1]).index,
+            monthString: DATE.getMonths(true)[month - 1]
+        }
+        console.log(res, year, month)
+        return res
+    }
+    const gtc = Math.floor(100 / 7);
+    const gridTemplateColumns: string = `${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}%`;
+    function ChangeMonth(dir: 1 | -1) {
+        let newMonth = month + dir;
+        if (newMonth < 1) { newMonth = 1 }
+        if (newMonth > 12) { newMonth = 12 }
+        changeMonth(newMonth);
+    }
+    function arrow_layout(dir: 1 | -1) {
+        return (
+            <div className="month-cells-arrow" onClick={() => ChangeMonth(dir)}>
+                {I(dir === 1?'mdiChevronRight':'mdiChevronLeft',1)}
+            </div>
+        )
+    }
+    function select_month_layout() {
+        return (
+            <div className="month-cells-select">
+                {arrow_layout(-1)}
+                <div className="month-cells-selected-month">{monthes[month - 1]}</div>
+                {arrow_layout(1)}
+            </div>
+        )
+    }
+    function weekDays_layout() { return DATE.getWeekDays(true).map((o: string, i: number) => <div className={`month-cells-weekday`}>{weekDayContent(i)}</div>) }
+    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map(() => <div className=""></div>) }
+    function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
+    function cell_layout(day: number) {
+        return (<div className="month-cells-cell">{cellContent([year, month, day])}</div>)
+    }
+    const dateInfo = getDateInfo()
+    return (
+        <div className="month-cells">
+            {select_month_layout()}
+            <div className="month-cells-body">
+                <div className="month-cells-grid" style={{ gridTemplateColumns }}>{weekDays_layout()}</div>
+                <div className="month-cells-grid" style={{ gridTemplateColumns }}>{spaces_layout()} {cells_layout()}</div>
             </div>
         </div>
     )
