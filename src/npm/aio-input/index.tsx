@@ -506,7 +506,7 @@ function DateInput() {
             list = [year, month, day, hour];
             let pattern: string = '{}';
             let splitter = DATE.getSplitter(value)
-            if (text && (typeof text === 'string' || typeof text === 'number')) { pattern = text.toString() }
+            if (text && text !== null) { pattern = text.toString() }
             else if (unit === 'month') { pattern = `{year}${splitter}{month}` }
             else if (unit === 'day') { pattern = `{year}${splitter}{month}${splitter}{day}` }
             else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
