@@ -41,7 +41,7 @@ export type I_virtuals = {
         set?: (this: any) => string;
     }
 }
-export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response, reqUser: any) => any };
+export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response, reqUser: any,reqUserId:any) => any };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 class AIOExpress<I_User> {
     private app: Express;
@@ -71,6 +71,7 @@ class AIOExpress<I_User> {
     removeUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<I_User | string>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<number | string>
     constructor(p: I_AIOExpress) {
+        // mongoose.set('debug', true);
         this.p = p;
         this.env = {
             mongoUrl: p.env.mongoUrl as string,
@@ -176,17 +177,17 @@ class AIOExpress<I_User> {
             // تنظیمات فیلد برای mongoose
             let mongooseField: any = {
                 type: { 'string': String, 'boolean': Boolean, 'number': Number, 'date': Date, 'object': mongoose.Schema.Types.Mixed }[fieldConfig.type],
-                required: fieldConfig.required ?? true,
-                default: fieldConfig.def,
-                unique: fieldConfig.unique,
-                enum: fieldConfig.options,
-                minlength: fieldConfig.minLength,
-                maxlength: fieldConfig.maxLength,
-                min: fieldConfig.min,
-                max: fieldConfig.max,
-                index: fieldConfig.index,
+                required: !!fieldConfig.required,
+                unique: !!fieldConfig.unique,
             };
+            if (fieldConfig.def !== undefined) mongooseField.default = fieldConfig.def;
             if (fieldConfig.ref) mongooseField.ref = fieldConfig.ref;
+            if (fieldConfig.options) mongooseField.enum = fieldConfig.options;
+            if (fieldConfig.minLength) mongooseField.minLength = fieldConfig.minLength;
+            if (fieldConfig.maxLength) mongooseField.maxLength = fieldConfig.maxLength;
+            if (fieldConfig.min) mongooseField.min = fieldConfig.min;
+            if (fieldConfig.max) mongooseField.max = fieldConfig.max;
+            if (fieldConfig.index !== undefined) mongooseField.index = fieldConfig.index;
             if (fieldConfig.validate) { mongooseField.validate = { validator: fieldConfig.validate, message: fieldConfig.errorMessage || 'Validation failed' } }
             // اضافه کردن فیلد به fields
             fields[fieldKey] = mongooseField;
@@ -338,9 +339,10 @@ class AIOExpress<I_User> {
                 this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
+                        const reqUserId = (req as any).user.id;
                         if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
                         if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
-                        const result = await fn(req, res, reqUser)
+                        const result = await fn(req, res, reqUser,reqUserId)
                         return this.setResult({...result,res}) 
                     }
                     catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
@@ -411,9 +413,16 @@ class GCRUD {
     }
     addRow: I_addRow = async (p) => {
         try {
-            const model = await this.getModelByP(p);
-            const newRecord = new model(p.newValue);
-            const res = await newRecord.save();
+            let model,newRecord;
+            try{
+                model = await this.getModelByP(p);
+                newRecord = new model(p.newValue);
+            }
+            catch(err:any){
+                return err.message
+            }
+            const res = await newRecord.save().then((res:any) => {})
+            .catch((err:any) => `Error in adding row : ${err}`);
             return res
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
