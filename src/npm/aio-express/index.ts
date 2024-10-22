@@ -917,3 +917,44 @@ export class AIODate {
         }
     }
 }
+export function SplitNumber(price: number, count?: number, splitter?: string): string {
+    if (!price) { return '' }
+    count = count || 3;
+    splitter = splitter || ',';
+    let str = price.toString()
+    let dotIndex = str.indexOf('.');
+    if (dotIndex !== -1) {
+        str = str.slice(0, dotIndex)
+    }
+    let res = ''
+    let index = 0;
+    for (let i = str.length - 1; i >= 0; i--) {
+        res = str[i] + res;
+        if (index === count - 1) {
+            index = 0;
+            if (i > 0) { res = splitter + res; }
+        }
+        else { index++ }
+    }
+    return res
+}
+function toRadians(degree: number) {
+    return degree * (Math.PI / 180);
+}
+export function CalculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+}
+export function GetArray(count: number, fn?: (index: number) => any) {
+    fn = fn || ((index) => index)
+    return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
+}
+export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
