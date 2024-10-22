@@ -381,12 +381,8 @@ type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row
 type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
-    constructor(p: I_GCRUD) {
-        this.getModel = p.getModel
-    }
-    getModelByP = async (p: any) => {
-        return p.model ? p.model : await this.getModel(p.entityName);
-    }
+    constructor(p: I_GCRUD) {this.getModel = p.getModel}
+    getModelByP = async (p: any) => p.model ? p.model : await this.getModel(p.entityName)
     getRow: I_getRow = async (p) => {
         try {
             const model = await this.getModelByP(p);
@@ -399,13 +395,10 @@ class GCRUD {
     getRows: I_getRows = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            if (p.ids && p.ids.length > 0) {
-                const rows: I_row[] = await model.find({ _id: { $in: p.ids } });
-                return rows;
-            }
+            if (p.ids && p.ids.length > 0) {return await model.find({ _id: { $in: p.ids } });}
             if (p.search) {
-                const rows: I_row[] = await model.find(p.search);
-                return rows;
+                const res = await model.find(p.search);
+                return res;
             }
             return [];
         }
@@ -414,13 +407,8 @@ class GCRUD {
     addRow: I_addRow = async (p) => {
         try {
             let model,newRecord;
-            try{
-                model = await this.getModelByP(p);
-                newRecord = new model(p.newValue);
-            }
-            catch(err:any){
-                return err.message
-            }
+            try{model = await this.getModelByP(p); newRecord = new model(p.newValue);}
+            catch(err:any){return err.message}
             const res = await newRecord.save().then((res:any) => {})
             .catch((err:any) => `Error in adding row : ${err}`);
             return res
@@ -771,9 +759,7 @@ export class AIODate {
         }
         this.getSplitter = (value) => {
             let splitter = '/';
-            for (let i = 0; i < value.length; i++) {
-                if (isNaN(parseInt(value[i]))) { return value[i] }
-            }
+            for (let i = 0; i < value.length; i++) {if (isNaN(parseInt(value[i]))) { return value[i] }}
             return splitter;
         }
         this.getTime = (date, jalali = this.isJalali(date)) => {
@@ -783,10 +769,7 @@ export class AIODate {
             let [year, month = 1, day = 1, hour = 0, minute = 0, second = 0, tenthsecond = 0] = date;
             if (jalali) { date = this.toGregorian([year, month, day, hour, minute, second, tenthsecond]) }
             let time = new Date(date[0], date[1] - 1, date[2]).getTime()
-            time += hour * 60 * 60 * 1000;
-            time += minute * 60 * 1000;
-            time += second * 1000;
-            time += tenthsecond * 100;
+            time += hour * 60 * 60 * 1000; time += minute * 60 * 1000; time += second * 1000; time += tenthsecond * 100;
             return time;
         }
         this.getNextTime = (date, offset, jalali = this.isJalali(date)) => {
@@ -809,30 +792,18 @@ export class AIODate {
         }
         this.getYearDaysLength = (date) => {
             if (!date) { return 0 }
-            let [year] = this.convertToArray(date);
-            let res = 0;
-            for (let i = 1; i <= 12; i++) {
-                res += this.getMonthDaysLength([year, i])
-            }
+            let [year] = this.convertToArray(date),res = 0;
+            for (let i = 1; i <= 12; i++) {res += this.getMonthDaysLength([year, i])}
             return res
         }
         this.getYesterday = (date) => {
             const [year, month, day] = this.convertToArray(date);
             let newYear = year, newMonth = month, newDay = day;
             if (day === 1) {
-                if (month === 1) {
-                    newYear = newYear - 1;
-                    newMonth = 12;
-                    newDay = this.getMonthDaysLength([newYear, newMonth])
-                }
-                else {
-                    newMonth = newMonth - 1;
-                    newDay = this.getMonthDaysLength([newYear, newMonth])
-                }
+                if (month === 1) { newYear = newYear - 1; newMonth = 12; newDay = this.getMonthDaysLength([newYear, newMonth])}
+                else {newMonth = newMonth - 1; newDay = this.getMonthDaysLength([newYear, newMonth])}
             }
-            else {
-                newDay = newDay - 1
-            }
+            else {newDay = newDay - 1}
             return [newYear, newMonth, newDay]
         }
         this.getTomarrow = (date) => {
@@ -840,19 +811,10 @@ export class AIODate {
             let newYear = year, newMonth = month, newDay = day;
             const daysLength = this.getMonthDaysLength(date)
             if (day === daysLength) {
-                if (month === 12) {
-                    newYear = newYear + 1;
-                    newMonth = 1;
-                    newDay = 1
-                }
-                else {
-                    newMonth = newMonth + 1;
-                    newDay = 1
-                }
+                if (month === 12) {newYear = newYear + 1; newMonth = 1; newDay = 1}
+                else {newMonth = newMonth + 1; newDay = 1}
             }
-            else {
-                newDay = newDay + 1
-            }
+            else {newDay = newDay + 1}
             return [newYear, newMonth, newDay]
         }
         this.getDaysOfWeek = (date, pattern) => {
@@ -906,21 +868,10 @@ export class AIODate {
                 day = Math.floor(dif / (24 * 60 * 60 * 1000));
                 dif -= day * (24 * 60 * 60 * 1000);
             }
-            if (index <= 1) {
-                hour = Math.floor(dif / (60 * 60 * 1000));
-                dif -= hour * (60 * 60 * 1000);
-            }
-            if (index <= 2) {
-                minute = Math.floor(dif / (60 * 1000));
-                dif -= minute * (60 * 1000);
-            }
-            if (index <= 3) {
-                second = Math.floor(dif / (1000));
-                dif -= second * (1000);
-            }
-            if (index <= 4) {
-                tenthsecond = Math.floor(dif / (100));
-            }
+            if (index <= 1) {hour = Math.floor(dif / (60 * 60 * 1000)); dif -= hour * (60 * 60 * 1000);}
+            if (index <= 2) {minute = Math.floor(dif / (60 * 1000)); dif -= minute * (60 * 1000);}
+            if (index <= 3) {second = Math.floor(dif / (1000)); dif -= second * (1000);}
+            if (index <= 4) {tenthsecond = Math.floor(dif / (100));}
             return { day, hour, minute, second, tenthsecond, miliseconds, type }
         }
         this.getDaysOfMonth = (date, pattern) => {
@@ -929,11 +880,7 @@ export class AIODate {
             let daysLength = this.getMonthDaysLength(date)
             let firstDay: I_Date = [dateArray[0], dateArray[1], 1];
             let res: I_Date[] = []
-            for (let i = 0; i < daysLength; i++) {
-                res.push(firstDay)
-                firstDay = this.getTomarrow(firstDay);
-            }
-
+            for (let i = 0; i < daysLength; i++) {res.push(firstDay); firstDay = this.getTomarrow(firstDay);}
             if (pattern) { return res.map((o) => this.getDateByPattern(o, pattern)) }
             return res
         }
@@ -956,22 +903,15 @@ export class AIODate {
                 let days = this.getDaysOfWeek(date);
                 for (let i = 0; i < days.length; i++) {
                     let [year, month, day] = days[i];
-                    if (year !== date[0]) { continue }
-                    if (month !== date[1]) { continue }
-                    if (day !== date[2]) { continue }
+                    if (year !== date[0] || month !== date[1] || day !== date[2]) { continue }
                     return i;
                 }
             }
-            if (unit === 'month') {
-                return date[2] - 1;
-            }
+            if (unit === 'month') {return date[2] - 1;}
             if (unit === 'year') {
                 let res = 0;
-                for (let i = 0; i < date[1] - 1; i++) {
-                    res += this.getMonthDaysLength(date)
-                }
-                res += date[1];
-                return res - 1
+                for (let i = 0; i < date[1] - 1; i++) {res += this.getMonthDaysLength(date)}
+                res += date[1]; return res - 1
             }
             return 0
         }
