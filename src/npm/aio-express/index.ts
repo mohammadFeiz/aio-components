@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string } };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string },uiDoc?:boolean };
 export type I_auth = {
     schema?: I_schema,
     name: string,
@@ -17,7 +17,8 @@ export type I_auth = {
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
-export type I_entity = { name: string, schema?: I_schema, path: string, requiredToken?: boolean, apis: I_api[] };
+export type I_entity = { schema?: I_schema, path?: string, requiredToken?: boolean, apis: I_api[] };
+export type I_entities = { [entityName: string]: I_entity }
 export type I_schema = {
     [key: string]: {
         type: 'string' | 'boolean' | 'number' | 'date' | 'object', // اضافه شدن 'object' برای پشتیبانی از داده‌های تو در تو
@@ -41,7 +42,19 @@ export type I_virtuals = {
         set?: (this: any) => string;
     }
 }
-export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response, reqUser: any,reqUserId:any) => any };
+export type I_api = {
+    path: string, method: 'post' | 'get' | 'put' | 'delete',
+    fn: (p: { req: Request, res: Response, reqUser: any, reqUserId: any, body?: any }) => any,
+    body?: {
+        [key: string]: {
+            type: 'string' | 'number' | 'boolean',
+            value?: string,
+        }
+    },
+    uiDoc?: {
+        description: string, errorResult: any, queryParam?: string,getResult: string,paramType?:string,returnType?:string
+    }
+};
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 class AIOExpress<I_User> {
     private app: Express;
@@ -131,7 +144,6 @@ class AIOExpress<I_User> {
         }
     }
     getModel: I_getModel = (key) => this.models[key]
-    addEntity = (entity: I_entity) => this.handleEntity(entity)
     fixPath = (path: string) => path[0] !== '/' ? `/${path}` : path
     start = () => {
         this.app.use(cors());
@@ -321,8 +333,12 @@ class AIOExpress<I_User> {
             catch (err: any) { return this.setResult({ res, status: 500, success: false, message: err.message }) }
         })
     };
-    handleEntity = (entity: I_entity) => {
-        const { name, schema, apis, requiredToken = true, path } = entity;
+    addEntities = (entities: I_entities) => {
+        if(this.p.uiDoc){console.log(getUiDoc(entities))}
+        for (let prop in entities) { this.addEntity(entities[prop], prop) }
+    }
+    private addEntity = (entity: I_entity, name: string) => {
+        const { schema, apis, requiredToken = true, path = '/' + name } = entity;
         const dicName = requiredToken ? 'tokenBaseDic' : 'tokenLessDic';
         this[dicName][name] = this.fixPath(path);
         if (schema) {
@@ -339,11 +355,26 @@ class AIOExpress<I_User> {
                 this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
+                        let body: any = {};
+                        if(method === 'post' && !api.body){return this.setResult({ status:403,success:false,message:'missing api.body in backend app', res })}
+                        if (api.body) {
+                            let reqBody = req.body;
+                            for (let propertyName in api.body) {
+                                const { type } = api.body[propertyName];
+                                const value = reqBody[propertyName];
+                                const propertyType = typeof value;
+                                if (type !== propertyType) {
+                                    const message = `${propertyName} of request should be ${type} but is ${propertyType}`
+                                    return this.setResult({ status: 403, success: false, message, res })
+                                }
+                                body[propertyName] = value;
+                            }
+                        }
                         const reqUserId = (req as any).user.id;
                         if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
                         if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
-                        const result = await fn(req, res, reqUser,reqUserId)
-                        return this.setResult({...result,res}) 
+                        const result = await fn({ req, res, reqUser, reqUserId, body })
+                        return this.setResult({ ...result, res })
                     }
                     catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
                 });
@@ -374,20 +405,24 @@ type I_GCRUD = {
 type I_getRow = (p: { model?: Model<any>, entityName?: string, search?: I_row, id?: any }) => Promise<null | I_row | string>
 type I_getRows = (p: { model?: Model<any>, entityName?: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
 type I_addRow = (p: { model?: Model<any>, entityName?: string, newValue: I_row }) => Promise<I_row | string>
-type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?:I_row, newValue: I_row }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?:I_row,newValue: I_row }) => Promise<string | I_row>
+type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
 type I_editRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[]; newValue: I_row }) => Promise<string | number>
 type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>
 type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
-    constructor(p: I_GCRUD) {this.getModel = p.getModel}
+    constructor(p: I_GCRUD) { this.getModel = p.getModel }
     getModelByP = async (p: any) => p.model ? p.model : await this.getModel(p.entityName)
+    fixId = (row:any)=>{
+        if(typeof row === 'object' && !Array.isArray(row) && row !== null){return {...row,id:row._id}}
+        return row
+    }
     getRow: I_getRow = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            if (p.id) { const res: I_row | null = await model.findById(p.id); return res }
-            else if (p.search) { const res: I_row | null = await model.findOne(p.search); return res }
+            if (p.id) { const res: I_row | null = await model.findById(p.id); return this.fixId(res) }
+            else if (p.search) { const res: I_row | null = await model.findOne(p.search); return this.fixId(res) }
             else { return `Error in get row: please send search object or id for search` }
         }
         catch (error: any) { return `Error in get row: ${error.message}`; }
@@ -395,10 +430,10 @@ class GCRUD {
     getRows: I_getRows = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            if (p.ids && p.ids.length > 0) {return await model.find({ _id: { $in: p.ids } });}
+            if (p.ids && p.ids.length > 0) { return await model.find({ _id: { $in: p.ids } }); }
             if (p.search) {
                 const res = await model.find(p.search);
-                return res;
+                return res.map((o:I_row)=>this.fixId(o))
             }
             return [];
         }
@@ -406,12 +441,12 @@ class GCRUD {
     }
     addRow: I_addRow = async (p) => {
         try {
-            let model,newRecord;
-            try{model = await this.getModelByP(p); newRecord = new model(p.newValue);}
-            catch(err:any){return err.message}
-            const res = await newRecord.save().then((res:any) => {})
-            .catch((err:any) => `Error in adding row : ${err}`);
-            return res
+            let model, newRecord;
+            try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
+            catch (err: any) { return err.message }
+            const res = await newRecord.save().then((res: any) => { })
+                .catch((err: any) => `Error in adding row : ${err}`);
+            return this.fixId(res)
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
     }
@@ -419,11 +454,11 @@ class GCRUD {
         try {
             const model = await this.getModelByP(p);
             const exist = await this.getRow(p);
-            if(exist === null){return 'Record not found';}
-            if(typeof exist === 'string'){return exist}
+            if (exist === null) { return 'Record not found'; }
+            if (typeof exist === 'string') { return exist }
             const updatedRecord = await model.findByIdAndUpdate(exist._id, p.newValue, { new: true });
             if (!updatedRecord) { return 'Record not found'; }
-            return updatedRecord;
+            return this.fixId(updatedRecord);
         }
         catch (error: any) { throw new Error(`Error updating record: ${error.message}`); }
     }
@@ -431,17 +466,17 @@ class GCRUD {
         try {
             const model = await this.getModelByP(p);
             let existingRecord;
-            if(p.id !== undefined){existingRecord = await model.findById(p.id);}
-            else if(p.search){existingRecord = await model.findOne(p.search);}
-            else {return 'addOrEditRow should get id our search object as parameter'}
+            if (p.id !== undefined) { existingRecord = await model.findById(p.id); }
+            else if (p.search) { existingRecord = await model.findOne(p.search); }
+            else { return 'addOrEditRow should get id our search object as parameter' }
             if (existingRecord !== null) {
                 const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true });
-                return updatedRecord;
+                return this.fixId(updatedRecord);
             }
             else {
                 const newRecord = new model(p.newValue);
                 await newRecord.save();
-                return newRecord;
+                return this.fixId(newRecord);
             }
         }
         catch (error: any) { return `Error adding or updating record: ${error.message}` }
@@ -467,7 +502,7 @@ class GCRUD {
             else { return 'No criteria provided for deletion'; }
             const deletedRecord = await await model.findOneAndDelete(query);
             if (!deletedRecord) { return 'Record not found'; }
-            return deletedRecord;
+            return this.fixId(deletedRecord);
         }
         catch (error: any) { throw new Error(`Error deleting record: ${error.message}`); }
     }
@@ -759,7 +794,7 @@ export class AIODate {
         }
         this.getSplitter = (value) => {
             let splitter = '/';
-            for (let i = 0; i < value.length; i++) {if (isNaN(parseInt(value[i]))) { return value[i] }}
+            for (let i = 0; i < value.length; i++) { if (isNaN(parseInt(value[i]))) { return value[i] } }
             return splitter;
         }
         this.getTime = (date, jalali = this.isJalali(date)) => {
@@ -792,18 +827,18 @@ export class AIODate {
         }
         this.getYearDaysLength = (date) => {
             if (!date) { return 0 }
-            let [year] = this.convertToArray(date),res = 0;
-            for (let i = 1; i <= 12; i++) {res += this.getMonthDaysLength([year, i])}
+            let [year] = this.convertToArray(date), res = 0;
+            for (let i = 1; i <= 12; i++) { res += this.getMonthDaysLength([year, i]) }
             return res
         }
         this.getYesterday = (date) => {
             const [year, month, day] = this.convertToArray(date);
             let newYear = year, newMonth = month, newDay = day;
             if (day === 1) {
-                if (month === 1) { newYear = newYear - 1; newMonth = 12; newDay = this.getMonthDaysLength([newYear, newMonth])}
-                else {newMonth = newMonth - 1; newDay = this.getMonthDaysLength([newYear, newMonth])}
+                if (month === 1) { newYear = newYear - 1; newMonth = 12; newDay = this.getMonthDaysLength([newYear, newMonth]) }
+                else { newMonth = newMonth - 1; newDay = this.getMonthDaysLength([newYear, newMonth]) }
             }
-            else {newDay = newDay - 1}
+            else { newDay = newDay - 1 }
             return [newYear, newMonth, newDay]
         }
         this.getTomarrow = (date) => {
@@ -811,10 +846,10 @@ export class AIODate {
             let newYear = year, newMonth = month, newDay = day;
             const daysLength = this.getMonthDaysLength(date)
             if (day === daysLength) {
-                if (month === 12) {newYear = newYear + 1; newMonth = 1; newDay = 1}
-                else {newMonth = newMonth + 1; newDay = 1}
+                if (month === 12) { newYear = newYear + 1; newMonth = 1; newDay = 1 }
+                else { newMonth = newMonth + 1; newDay = 1 }
             }
-            else {newDay = newDay + 1}
+            else { newDay = newDay + 1 }
             return [newYear, newMonth, newDay]
         }
         this.getDaysOfWeek = (date, pattern) => {
@@ -868,10 +903,10 @@ export class AIODate {
                 day = Math.floor(dif / (24 * 60 * 60 * 1000));
                 dif -= day * (24 * 60 * 60 * 1000);
             }
-            if (index <= 1) {hour = Math.floor(dif / (60 * 60 * 1000)); dif -= hour * (60 * 60 * 1000);}
-            if (index <= 2) {minute = Math.floor(dif / (60 * 1000)); dif -= minute * (60 * 1000);}
-            if (index <= 3) {second = Math.floor(dif / (1000)); dif -= second * (1000);}
-            if (index <= 4) {tenthsecond = Math.floor(dif / (100));}
+            if (index <= 1) { hour = Math.floor(dif / (60 * 60 * 1000)); dif -= hour * (60 * 60 * 1000); }
+            if (index <= 2) { minute = Math.floor(dif / (60 * 1000)); dif -= minute * (60 * 1000); }
+            if (index <= 3) { second = Math.floor(dif / (1000)); dif -= second * (1000); }
+            if (index <= 4) { tenthsecond = Math.floor(dif / (100)); }
             return { day, hour, minute, second, tenthsecond, miliseconds, type }
         }
         this.getDaysOfMonth = (date, pattern) => {
@@ -880,7 +915,7 @@ export class AIODate {
             let daysLength = this.getMonthDaysLength(date)
             let firstDay: I_Date = [dateArray[0], dateArray[1], 1];
             let res: I_Date[] = []
-            for (let i = 0; i < daysLength; i++) {res.push(firstDay); firstDay = this.getTomarrow(firstDay);}
+            for (let i = 0; i < daysLength; i++) { res.push(firstDay); firstDay = this.getTomarrow(firstDay); }
             if (pattern) { return res.map((o) => this.getDateByPattern(o, pattern)) }
             return res
         }
@@ -907,10 +942,10 @@ export class AIODate {
                     return i;
                 }
             }
-            if (unit === 'month') {return date[2] - 1;}
+            if (unit === 'month') { return date[2] - 1; }
             if (unit === 'year') {
                 let res = 0;
-                for (let i = 0; i < date[1] - 1; i++) {res += this.getMonthDaysLength(date)}
+                for (let i = 0; i < date[1] - 1; i++) { res += this.getMonthDaysLength(date) }
                 res += date[1]; return res - 1
             }
             return 0
@@ -958,3 +993,65 @@ export function GetArray(count: number, fn?: (index: number) => any) {
     return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
+
+function getUiDoc(entities: I_entities):string {
+    function getBodyString(body?: I_api["body"]) {
+        if (!body) { return '' }
+        let res = 'body:{';
+        for (let propertyName in body) {
+            const { value } = body[propertyName];
+            res += `${propertyName}:${value},`
+        }
+        res += '},'
+        return res
+    }
+    function getFunctionStr(){
+        let res = '';
+        for (let name in entities) {
+            const { apis } = entities[name];
+            for (let api of apis) {
+                const { method, uiDoc, body } = api;
+                if (!uiDoc) { continue }
+                const { description, errorResult, queryParam = '', getResult,paramType,returnType } = uiDoc
+                const path = api.path[0] !== '/'?'/' + api.path:api.path;
+                const apiName = name + path.replace(/\//g, '_')
+                res += `
+    ${apiName} = async (${paramType?`param:${paramType}`:''})${returnType?':Promise<' + returnType + '>':''}=>{
+        return await this.request({
+            description:"${description}",
+            method:"${method}",
+            errorResult:${JSON.stringify(errorResult)},
+            url:${"`${this.base_url}"}${name}${path}${queryParam}${"`"},
+            ${getBodyString(body)}
+            getResult:${getResult}
+        })
+    }
+                `
+            }
+        }
+        return res
+    }
+    return `
+import AIOApis from "aio-apis";
+type I_APIS = {base_url:string,token:string}
+export default class APIS {
+    request: AIOApis['request'];
+    base_url:string;
+    constructor(p:I_APIS) {
+        this.base_url = p.base_url;
+        const inst = new AIOApis({
+            id: 'cardexsuperadminapis', token:p.token, lang: 'fa',
+            onCatch: (response) => {
+                try{return response.response.data.message}
+                catch{return response.messge}
+            },
+            getError: (response) => {
+                if (response.data.success === false) { return response.data.message }
+            }
+        })
+        this.request = inst.request;
+    }
+${getFunctionStr()}
+}
+    `
+}
