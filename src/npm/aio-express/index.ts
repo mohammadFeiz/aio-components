@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string },uiDoc?:boolean };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean };
 export type I_auth = {
     schema?: I_schema,
     name: string,
@@ -52,7 +52,7 @@ export type I_api = {
         }
     },
     uiDoc?: {
-        description: string, errorResult: any, queryParam?: string,getResult: string,paramType?:string,returnType?:string
+        description: string, errorResult: any, queryParam?: string, getResult: string, paramType?: string, returnType?: string
     }
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
@@ -334,7 +334,7 @@ class AIOExpress<I_User> {
         })
     };
     addEntities = (entities: I_entities) => {
-        if(this.p.uiDoc){console.log(getUiDoc(entities))}
+        if (this.p.uiDoc) { console.log(getUiDoc(entities)) }
         for (let prop in entities) { this.addEntity(entities[prop], prop) }
     }
     private addEntity = (entity: I_entity, name: string) => {
@@ -356,7 +356,7 @@ class AIOExpress<I_User> {
                     try {
                         const reqUser = await this.getUserByReq(req);
                         let body: any = {};
-                        if(method === 'post' && !api.body){return this.setResult({ status:403,success:false,message:'missing api.body in backend app', res })}
+                        if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         if (api.body) {
                             let reqBody = req.body;
                             for (let propertyName in api.body) {
@@ -408,14 +408,14 @@ type I_addRow = (p: { model?: Model<any>, entityName?: string, newValue: I_row }
 type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
 type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
 type I_editRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[]; newValue: I_row }) => Promise<string | number>
-type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>
+type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>;
 type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
     constructor(p: I_GCRUD) { this.getModel = p.getModel }
     getModelByP = async (p: any) => p.model ? p.model : await this.getModel(p.entityName)
-    fixId = (row:any)=>{
-        if(typeof row === 'object' && !Array.isArray(row) && row !== null){return {...row,id:row._id}}
+    fixId = (row: any) => {
+        if (typeof row === 'object' && !Array.isArray(row) && row !== null) { row.id = row._id; }
         return row
     }
     getRow: I_getRow = async (p) => {
@@ -433,7 +433,7 @@ class GCRUD {
             if (p.ids && p.ids.length > 0) { return await model.find({ _id: { $in: p.ids } }); }
             if (p.search) {
                 const res = await model.find(p.search);
-                return res.map((o:I_row)=>this.fixId(o))
+                return res.map((o: I_row) => this.fixId(o))
             }
             return [];
         }
@@ -994,7 +994,7 @@ export function GetArray(count: number, fn?: (index: number) => any) {
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
 
-function getUiDoc(entities: I_entities):string {
+function getUiDoc(entities: I_entities): string {
     function getBodyString(body?: I_api["body"]) {
         if (!body) { return '' }
         let res = 'body:{';
@@ -1005,18 +1005,18 @@ function getUiDoc(entities: I_entities):string {
         res += '},'
         return res
     }
-    function getFunctionStr(){
+    function getFunctionStr() {
         let res = '';
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
                 const { method, uiDoc, body } = api;
                 if (!uiDoc) { continue }
-                const { description, errorResult, queryParam = '', getResult,paramType,returnType } = uiDoc
-                const path = api.path[0] !== '/'?'/' + api.path:api.path;
+                const { description, errorResult, queryParam = '', getResult, paramType, returnType } = uiDoc
+                const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 res += `
-    ${apiName} = async (${paramType?`param:${paramType}`:''})${returnType?':Promise<' + returnType + '>':''}=>{
+    ${apiName} = async (${paramType ? `param:${paramType}` : ''})${returnType ? ':Promise<' + returnType + '>' : ''}=>{
         return await this.request({
             description:"${description}",
             method:"${method}",
