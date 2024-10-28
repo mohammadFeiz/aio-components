@@ -1718,9 +1718,19 @@ function DPCell(props: { dateArray: number[] }) {
     }
     let isActive = IsActive();
     let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali))
+    let isFuture = DATE.isGreater(dateArray, DATE.getToday(jalali))
     let Attrs: any = {}
     if (dateAttrs) {
-        Attrs = dateAttrs({ dateArray, isToday, isActive, isMatch: (o) => DATE.isMatch(dateArray, o) })
+        let weekDay = null,weekDayIndex = null,monthString = ''
+        if(rootProps.unit === 'day'){
+            const a = DATE.getWeekDay(dateArray)
+            weekDay = a.weekDay; weekDayIndex = a.index;
+        }
+        else if(rootProps.unit === 'month'){
+            const months = DATE.getMonths(jalali)
+            monthString = months[dateArray[1] - 1];
+        }
+        Attrs = dateAttrs({ dateArray, isToday, isActive,isFuture,weekDayIndex,weekDay,monthString })
         Attrs = Attrs || {}
     }
     let isDisabled = disabled === true || Attrs.disabled === true;
@@ -3426,7 +3436,10 @@ type AI_hasOption = {
     option?: AI_optionProp, options?: any[] | ((p?: any) => any[]), search?: string,
 }
 type AI_isDate = {
-    dateAttrs?: (p: { dateArray: number[], isToday: boolean, isActive: boolean, isMatch: (p: any[]) => boolean }) => any,
+    dateAttrs?: (p: { 
+        dateArray: number[], isToday: boolean, isActive: boolean,isFuture:boolean, 
+        weekDayIndex:number | null,weekDay:string | null,monthString:string,
+    }) => any,
     jalali?: boolean,
     now?: boolean,
     pattern?: string,
