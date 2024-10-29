@@ -1,15 +1,15 @@
 import express, { NextFunction, Router, RequestHandler, Request, Response } from 'express';
 import type { Express } from 'express';
 //@ts-ignore
-import mongoose, { Model,Schema } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string } };
 export type I_auth = {
-    schema?: I_schemaDefinition,
+    schema?: I_schema,
     name: string,
     path: string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
@@ -17,16 +17,32 @@ export type I_auth = {
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
-export type I_entity = { schema?: I_schemaDefinition | string, path?: string, requiredToken?: boolean, apis: I_api[] };
-export type I_entities = { [entityName: string]: I_entity }
-export type I_api = {
-    path: string,
-    method: 'post' | 'get' | 'put' | 'delete',
-    body?: string, errorResult: any, successResult: string, description: string, queryParam?: string, getResult: string,
-    fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => any
+export type I_entity = { name: string, schema?: I_schema, path: string, requiredToken?: boolean, apis: I_api[] };
+export type I_schema = {
+    [key: string]: {
+        type: 'string' | 'boolean' | 'number' | 'date' | 'object', // اضافه شدن 'object' برای پشتیبانی از داده‌های تو در تو
+        required?: boolean, // فیلد اجباری (پیش‌فرض: true)
+        def?: any, // مقدار پیش‌فرض
+        options?: any[], // enum یا مقادیر ممکن
+        unique?: boolean, // یکتا بودن مقدار
+        minLength?: number, // حداقل طول برای string
+        maxLength?: number, // حداکثر طول برای string
+        min?: number, // حداقل مقدار برای number
+        max?: number, // حداکثر مقدار برای number
+        ref?: string, // برای تعریف روابط (مانند ObjectId)
+        index?: boolean, // برای ایندکس‌گذاری
+        validate?: (value: any) => boolean, // اعتبارسنجی سفارشی
+        errorMessage?: string, // پیام خطای سفارشی در صورت اعتبارسنجی ناموفق
+    }
 };
+export type I_virtuals = {
+    [virtualField: string]: {
+        get?: (this: any) => string,
+        set?: (this: any) => string;
+    }
+}
+export type I_api = { path: string, method: 'post' | 'get' | 'put' | 'delete', fn: (req: Request, res: Response, reqUser: any,reqUserId:any) => any };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
-type I_schemas = { [key: string]: (I_schemaDefinition | I_schemaDefinitionOption) }
 class AIOExpress<I_User> {
     private app: Express;
     private p: I_AIOExpress;
@@ -37,8 +53,6 @@ class AIOExpress<I_User> {
     private routers: { [key: string]: Router };
     private tokenBaseDic: { [key: string]: string } = {};
     private tokenLessDic: { [key: string]: string } = {};
-    private AIOSchemaInstance: AIOSchema = new AIOSchema();
-    schemas: I_schemas = {}
     env: { mongoUrl: string, port: string, secretKey: string };
     gcrud: GCRUD;
     getRow: I_getRow;
@@ -59,8 +73,12 @@ class AIOExpress<I_User> {
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
         this.p = p;
-        this.env = { mongoUrl: p.env.mongoUrl as string, secretKey: p.env.secretKey as string, port: p.env.port as string }
-        this.models = {}
+        this.env = {
+            mongoUrl: p.env.mongoUrl as string,
+            secretKey: p.env.secretKey as string,
+            port: p.env.port as string,
+        },
+            this.models = {}
         this.routers = {}
         this.app = express();
         this.AuthRouter = express.Router();
@@ -98,7 +116,8 @@ class AIOExpress<I_User> {
         }
         this.editUsers = async (p) => {
             if (!this.AuthModel) { return 'auth model is not set' }
-            return await this.editRows({ model: this.AuthModel, ...p, newValue: p.newValue as I_row })
+            const res = await this.editRows({ model: this.AuthModel, ...p, newValue: p.newValue as I_row })
+            return res
         }
         this.removeUser = async (p) => {
             if (!this.AuthModel) { return 'auth model is not set' }
@@ -107,16 +126,12 @@ class AIOExpress<I_User> {
         }
         this.removeUsers = async (p) => {
             if (!this.AuthModel) { return 'auth model is not set' }
-            return await this.removeRows({ model: this.AuthModel, ...p })
+            const res = await this.removeRows({ model: this.AuthModel, ...p })
+            return res
         }
     }
-    log = (message: string, color?: 'green' | 'red' | 'yellow') => {
-        if (color === "green") { console.log('\x1b[32m%s\x1b[0m', message) }
-        else if (color === "yellow") { console.log('\x1b[33m%s\x1b[0m', message) }
-        else if (color === "red") { console.log('\x1b[31m%s\x1b[0m', message) }
-        else { console.log(message) }
-    }
     getModel: I_getModel = (key) => this.models[key]
+    addEntity = (entity: I_entity) => this.handleEntity(entity)
     fixPath = (path: string) => path[0] !== '/' ? `/${path}` : path
     start = () => {
         this.app.use(cors());
@@ -124,7 +139,12 @@ class AIOExpress<I_User> {
         this.app.use(cookieParser() as RequestHandler);
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.connectToMongoose();
-        if (this.AuthRouter && this.p.auth) { this.app.use(this.fixPath(this.p.auth.path), this.AuthRouter); }
+
+        if (this.AuthRouter && this.p.auth) {
+            const { path } = this.p.auth;
+            this.app.use(this.fixPath(path), this.AuthRouter);
+        }
+
         // Routes without token
         for (let name in this.tokenLessDic) { this.app.use(this.tokenLessDic[name], this.routers[name]) }
         // Middleware JWT
@@ -135,7 +155,9 @@ class AIOExpress<I_User> {
             const router = this.routers[name];
             this.app.use(path, router)
         }
-        this.app.listen(this.env.port, () => { console.log(`Server running on port ${this.env.port}`) });
+        this.app.listen(this.env.port, () => {
+            console.log(`Server running on port ${this.env.port}`);
+        });
     };
 
     connectToMongoose = () => {
@@ -145,7 +167,44 @@ class AIOExpress<I_User> {
             .then(() => console.log('MongoDB connected'))
             .catch((err: any) => console.log(err));
     };
-    getTotal = async (name: string): Promise<number> => await this.getModel(name).countDocuments({})
+
+    getSchema = (schemaObj: I_schema) => {
+        const fields: any = {}; // برای نگه‌داری فیلدهای mongoose
+        // پیمایش درون fields برای تعریف فیلدها
+        Object.keys(schemaObj).forEach(fieldKey => {
+            const fieldConfig = schemaObj[fieldKey];
+
+            // تنظیمات فیلد برای mongoose
+            let mongooseField: any = {
+                type: { 'string': String, 'boolean': Boolean, 'number': Number, 'date': Date, 'object': mongoose.Schema.Types.Mixed }[fieldConfig.type],
+                required: !!fieldConfig.required,
+                unique: !!fieldConfig.unique,
+            };
+            if (fieldConfig.def !== undefined) mongooseField.default = fieldConfig.def;
+            if (fieldConfig.ref) mongooseField.ref = fieldConfig.ref;
+            if (fieldConfig.options) mongooseField.enum = fieldConfig.options;
+            if (fieldConfig.minLength) mongooseField.minLength = fieldConfig.minLength;
+            if (fieldConfig.maxLength) mongooseField.maxLength = fieldConfig.maxLength;
+            if (fieldConfig.min) mongooseField.min = fieldConfig.min;
+            if (fieldConfig.max) mongooseField.max = fieldConfig.max;
+            if (fieldConfig.index !== undefined) mongooseField.index = fieldConfig.index;
+            if (fieldConfig.validate) { mongooseField.validate = { validator: fieldConfig.validate, message: fieldConfig.errorMessage || 'Validation failed' } }
+            // اضافه کردن فیلد به fields
+            fields[fieldKey] = mongooseField;
+        });
+        // ساخت اسکیما با استفاده از فیلدهای تنظیم شده
+        const schema = new mongoose.Schema(fields, {
+            timestamps: true, // اضافه کردن زمان‌های create و update
+            toJSON: { virtuals: true }, // فعال‌سازی فیلدهای مجازی در خروجی JSON
+            toObject: { virtuals: true }, // فعال‌سازی فیلدهای مجازی در خروجی Object
+        });
+
+        return schema;
+    }
+    getTotal = async (name: string): Promise<number> => {
+        const model = this.getModel(name);
+        return await model.countDocuments({});
+    }
     getNewPassword = async (p: { userPassword: string, oldPassword: string, newPassword: string }): Promise<string | false> => {
         const isMatch = await bcrypt.compare(p.oldPassword, p.userPassword);
         if (!isMatch) { return false }
@@ -155,58 +214,83 @@ class AIOExpress<I_User> {
     initJwt = (req: any, res: Response, next: NextFunction) => {
         if (!this.p.auth) { return }
         const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
-        if (!token) { return res.status(401).json({ message: 'Access denied. No token provided.', success: false }); }
+        if (!token) {
+            return res.status(401).json({ message: 'Access denied. No token provided.', success: false });
+        }
         jwt.verify(token, this.env.secretKey, (err: any, decoded: any) => {
-            if (err) { return res.status(401).json({ message: 'Invalid token or token is expired.' }); }
-            req.user = decoded; next();
+            if (err) {
+                return res.status(401).json({ message: 'Invalid token or token is expired.' });
+            }
+            req.user = decoded;
+            next();
         });
     };
     getExpiresIn = (): string => {
         if (!this.p.auth) { return ''; }
-        const { tokenTime } = this.p.auth, { unit, value } = tokenTime;
+        const { tokenTime } = this.p.auth;
+        const { unit, value } = tokenTime;
         return `${value}${unit}`
-    }
-    getSchemaByRefrence = (schema: I_schemaDefinitionOption | I_schemaDefinition | string): { dif: I_schemaDefinitionOption | I_schemaDefinition, ref: string } => {
-        if (typeof schema === 'string') { return { dif: this.schemas[schema], ref: schema } }
-        return { dif: schema, ref: '' }
     }
     handleAuth = () => {
         if (!this.p.auth) { return; }
-        const { registerExeption } = this.p.auth;
-        const { dif } = this.getSchemaByRefrence(this.p.auth.schema || {})
-        const schema = dif as I_schemaDefinition
-        const scm: I_schemaDefinition = { ...schema, password: { type: 'string', required: true }, userName: { type: 'string', required: true, unique: true } }
-        const authSchema = this.AIOSchemaInstance.getSchema(scm);
+        const { schema, registerExeption } = this.p.auth;
+        const scm: I_schema = {
+            ...schema,
+            password: { type: 'string', required: true },
+            userName: { type: 'string', required: true, unique: true }
+        }
+        const authSchema = this.getSchema(scm);
         authSchema.methods.matchPassword = async function (enteredPassword: string) {
             return await bcrypt.compare(enteredPassword, this.password);
         };
+
         this.AuthModel = mongoose.model(this.p.auth.name, authSchema);
+
+        // Register Route
         const registerFn: any = async (req: Request, res: Response): Promise<express.Response | void> => {
-            if (!this.AuthModel) { return res.status(400).json({ message: 'class error 23423' }); }
-            const { userName, password, userProps = {} } = req.body;
+            if (!this.AuthModel) {
+                return res.status(400).json({ message: 'class error 23423' });
+            }
+            const { userName, password, userProps } = req.body;
             try {
                 const existingUser = await this.AuthModel.findOne({ userName });
-                if (existingUser) { return res.status(403).json({ message: 'User with this username already exists' }); }
-                if (!password || !userName) { return res.status(403).json({ message: 'Missing username or password' }); }
+                if (existingUser) {
+                    return res.status(403).json({ message: 'User with this username already exists' });
+                }
+                if (!password || !userName) {
+                    return res.status(403).json({ message: 'Missing username or password' });
+                }
                 let defModel: any = {};
-                if (schema) {
-                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, userProps);
-                    const message = this.AIOSchemaInstance.validateObjectBySchema(schema, '', defModel);
-                    if (typeof message === 'string') { return res.status(400).json({ message, success: false }); }
+                for (let prop in schema) {
+                    if (prop === 'userName' || prop === 'password') continue;
+                    const { required, def } = schema[prop];
+                    if (required) {
+                        if (userProps[prop] === undefined) {
+                            return res.status(400).json({ message: `register missing ${prop}` });
+                        }
+                    }
+                    let val = userProps[prop]
+                    val = val === undefined ? def : val;
+                    if (val !== undefined) { defModel[prop] = val; }
                 }
                 if (registerExeption) {
                     const exep = await registerExeption({ userName, password, userProps });
-                    if (exep) { return res.status(exep.status).json({ message: exep.message, success: false }); }
+                    if (exep) {
+                        const { status, message } = exep;
+                        return res.status(status).json({ message, success: false });
+                    }
                 }
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const userModel = { ...defModel, password: hashedPassword, userName };
                 const newUser = new this.AuthModel(userModel);
                 await newUser.save();
                 return res.status(201).json({ message: 'User registered successfully', user: userModel });
+            } catch (err: any) {
+                return res.status(500).json({ message: 'Error registering user', error: err.message });
             }
-            catch (err: any) { return res.status(500).json({ message: 'Error registering user', error: err.message }) }
         };
         this.AuthRouter.post('/register', registerFn);
+
         const loginFn: any = async (req: Request, res: Response) => {
             if (!this.AuthModel) { return; }
             const { userName, password } = req.body;
@@ -222,6 +306,8 @@ class AIOExpress<I_User> {
                 return res.status(500).json({ message: 'Error logging in', error: err.message });
             }
         };
+
+        // Login Route
         this.AuthRouter.post('/login', loginFn);
         this.AuthRouter.get('/checkToken', async (req: Request, res: Response) => {
             if (!this.p.auth) { return }
@@ -235,41 +321,16 @@ class AIOExpress<I_User> {
             catch (err: any) { return this.setResult({ res, status: 500, success: false, message: err.message }) }
         })
     };
-    addSchema = (name: string, scm: I_schemaDefinition | I_schemaDefinitionOption) => {
-        this.schemas[name] = scm;
-        this.AIOSchemaInstance.schemas = this.schemas;
-    }
-    getSchemaDefinition = (schema: string | I_schemaDefinition,entityName:string): I_schemaDefinition => {
-        if(typeof schema === 'string'){
-            const scm = this.schemas[schema]
-            if(!!scm.type){console.error(`Error in entity ${entityName} . schema is not valid . route schemas cannot get type property`);}
-            return scm as I_schemaDefinition
-        }
-        return schema
-    }
-    addEntities = (entities: I_entities) => {
-        if (this.p.uiDoc) {
-            const { success, result } = this.AIOSchemaInstance.generateUIDoc(entities);
-            const message = success ? 'generate ui doc was successful!!!' : 'error in generate ui doc!!!';
-            const color = success ? 'green' : 'red'
-            this.log(message, color);
-            this.log(result, 'yellow');
-        }
-        for (let prop in entities) { this.addEntity(entities[prop], prop) }
-    }
-    private addEntity = (entity: I_entity, name: string) => {
-        const { schema, apis, requiredToken = true } = entity;
+    handleEntity = (entity: I_entity) => {
+        const { name, schema, apis, requiredToken = true, path } = entity;
         const dicName = requiredToken ? 'tokenBaseDic' : 'tokenLessDic';
-        this[dicName][name] = this.fixPath(entity.path || `/${name}`);
+        this[dicName][name] = this.fixPath(path);
         if (schema) {
             try {
-                const entitySchema = this.AIOSchemaInstance.getSchema(this.getSchemaDefinition(schema,name));
-                const entityModel = mongoose.model(name, entitySchema);
+                const entitySchema = this.getSchema(schema), entityModel = mongoose.model(name, entitySchema);
                 this.models[name] = entityModel;
             }
-            catch (err: any) {
-                console.error(`Error creating model for entity ${name}:`, err.message); return;
-            }
+            catch (err: any) { console.error(`Error creating model for entity ${name}:`, err.message); return; }
         }
         try {
             this.routers[name] = express.Router();
@@ -278,19 +339,11 @@ class AIOExpress<I_User> {
                 this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
-                        let body: any = req.body;
-                        if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
-                        if (api.body) {
-                            let message = this.AIOSchemaInstance.validateObjectBySchema(this.schemas[api.body] as I_schemaDefinition, '', req.body);
-                            if (typeof message === 'string') {
-                                message = `in request body : ${message}`
-                                return this.setResult({ status: 400, success: false, message, res })
-                            }
-                        }
+                        const reqUserId = (req as any).user.id;
                         if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
                         if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
-                        const result = await fn({ req, res, reqUser, body })
-                        return this.setResult({ ...result, res })
+                        const result = await fn(req, res, reqUser,reqUserId)
+                        return this.setResult({...result,res}) 
                     }
                     catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
                 });
@@ -321,24 +374,20 @@ type I_GCRUD = {
 type I_getRow = (p: { model?: Model<any>, entityName?: string, search?: I_row, id?: any }) => Promise<null | I_row | string>
 type I_getRows = (p: { model?: Model<any>, entityName?: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
 type I_addRow = (p: { model?: Model<any>, entityName?: string, newValue: I_row }) => Promise<I_row | string>
-type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
+type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?:I_row, newValue: I_row }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?:I_row,newValue: I_row }) => Promise<string | I_row>
 type I_editRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[]; newValue: I_row }) => Promise<string | number>
 type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>
 type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
-    constructor(p: I_GCRUD) { this.getModel = p.getModel }
+    constructor(p: I_GCRUD) {this.getModel = p.getModel}
     getModelByP = async (p: any) => p.model ? p.model : await this.getModel(p.entityName)
-    fixId = (row: any) => {
-        if (typeof row === 'object' && !Array.isArray(row) && row !== null) { row.id = row._id; }
-        return row
-    }
     getRow: I_getRow = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            if (p.id) { const res: I_row | null = await model.findById(p.id); return this.fixId(res) }
-            else if (p.search) { const res: I_row | null = await model.findOne(p.search); return this.fixId(res) }
+            if (p.id) { const res: I_row | null = await model.findById(p.id); return res }
+            else if (p.search) { const res: I_row | null = await model.findOne(p.search); return res }
             else { return `Error in get row: please send search object or id for search` }
         }
         catch (error: any) { return `Error in get row: ${error.message}`; }
@@ -346,10 +395,10 @@ class GCRUD {
     getRows: I_getRows = async (p) => {
         try {
             const model = await this.getModelByP(p);
-            if (p.ids && p.ids.length > 0) { return await model.find({ _id: { $in: p.ids } }); }
+            if (p.ids && p.ids.length > 0) {return await model.find({ _id: { $in: p.ids } });}
             if (p.search) {
                 const res = await model.find(p.search);
-                return res.map((o: I_row) => this.fixId(o))
+                return res;
             }
             return [];
         }
@@ -357,12 +406,12 @@ class GCRUD {
     }
     addRow: I_addRow = async (p) => {
         try {
-            let model, newRecord;
-            try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
-            catch (err: any) { return err.message }
-            const res = await newRecord.save().then((res: any) => { })
-                .catch((err: any) => `Error in adding row : ${err}`);
-            return this.fixId(res)
+            let model,newRecord;
+            try{model = await this.getModelByP(p); newRecord = new model(p.newValue);}
+            catch(err:any){return err.message}
+            const res = await newRecord.save().then((res:any) => {})
+            .catch((err:any) => `Error in adding row : ${err}`);
+            return res
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
     }
@@ -370,11 +419,11 @@ class GCRUD {
         try {
             const model = await this.getModelByP(p);
             const exist = await this.getRow(p);
-            if (exist === null) { return 'Record not found'; }
-            if (typeof exist === 'string') { return exist }
+            if(exist === null){return 'Record not found';}
+            if(typeof exist === 'string'){return exist}
             const updatedRecord = await model.findByIdAndUpdate(exist._id, p.newValue, { new: true });
             if (!updatedRecord) { return 'Record not found'; }
-            return this.fixId(updatedRecord);
+            return updatedRecord;
         }
         catch (error: any) { throw new Error(`Error updating record: ${error.message}`); }
     }
@@ -382,17 +431,17 @@ class GCRUD {
         try {
             const model = await this.getModelByP(p);
             let existingRecord;
-            if (p.id !== undefined) { existingRecord = await model.findById(p.id); }
-            else if (p.search) { existingRecord = await model.findOne(p.search); }
-            else { return 'addOrEditRow should get id our search object as parameter' }
+            if(p.id !== undefined){existingRecord = await model.findById(p.id);}
+            else if(p.search){existingRecord = await model.findOne(p.search);}
+            else {return 'addOrEditRow should get id our search object as parameter'}
             if (existingRecord !== null) {
                 const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true });
-                return this.fixId(updatedRecord);
+                return updatedRecord;
             }
             else {
                 const newRecord = new model(p.newValue);
                 await newRecord.save();
-                return this.fixId(newRecord);
+                return newRecord;
             }
         }
         catch (error: any) { return `Error adding or updating record: ${error.message}` }
@@ -418,7 +467,7 @@ class GCRUD {
             else { return 'No criteria provided for deletion'; }
             const deletedRecord = await await model.findOneAndDelete(query);
             if (!deletedRecord) { return 'Record not found'; }
-            return this.fixId(deletedRecord);
+            return deletedRecord;
         }
         catch (error: any) { throw new Error(`Error deleting record: ${error.message}`); }
     }
@@ -710,7 +759,7 @@ export class AIODate {
         }
         this.getSplitter = (value) => {
             let splitter = '/';
-            for (let i = 0; i < value.length; i++) { if (isNaN(parseInt(value[i]))) { return value[i] } }
+            for (let i = 0; i < value.length; i++) {if (isNaN(parseInt(value[i]))) { return value[i] }}
             return splitter;
         }
         this.getTime = (date, jalali = this.isJalali(date)) => {
@@ -743,18 +792,18 @@ export class AIODate {
         }
         this.getYearDaysLength = (date) => {
             if (!date) { return 0 }
-            let [year] = this.convertToArray(date), res = 0;
-            for (let i = 1; i <= 12; i++) { res += this.getMonthDaysLength([year, i]) }
+            let [year] = this.convertToArray(date),res = 0;
+            for (let i = 1; i <= 12; i++) {res += this.getMonthDaysLength([year, i])}
             return res
         }
         this.getYesterday = (date) => {
             const [year, month, day] = this.convertToArray(date);
             let newYear = year, newMonth = month, newDay = day;
             if (day === 1) {
-                if (month === 1) { newYear = newYear - 1; newMonth = 12; newDay = this.getMonthDaysLength([newYear, newMonth]) }
-                else { newMonth = newMonth - 1; newDay = this.getMonthDaysLength([newYear, newMonth]) }
+                if (month === 1) { newYear = newYear - 1; newMonth = 12; newDay = this.getMonthDaysLength([newYear, newMonth])}
+                else {newMonth = newMonth - 1; newDay = this.getMonthDaysLength([newYear, newMonth])}
             }
-            else { newDay = newDay - 1 }
+            else {newDay = newDay - 1}
             return [newYear, newMonth, newDay]
         }
         this.getTomarrow = (date) => {
@@ -762,10 +811,10 @@ export class AIODate {
             let newYear = year, newMonth = month, newDay = day;
             const daysLength = this.getMonthDaysLength(date)
             if (day === daysLength) {
-                if (month === 12) { newYear = newYear + 1; newMonth = 1; newDay = 1 }
-                else { newMonth = newMonth + 1; newDay = 1 }
+                if (month === 12) {newYear = newYear + 1; newMonth = 1; newDay = 1}
+                else {newMonth = newMonth + 1; newDay = 1}
             }
-            else { newDay = newDay + 1 }
+            else {newDay = newDay + 1}
             return [newYear, newMonth, newDay]
         }
         this.getDaysOfWeek = (date, pattern) => {
@@ -819,10 +868,10 @@ export class AIODate {
                 day = Math.floor(dif / (24 * 60 * 60 * 1000));
                 dif -= day * (24 * 60 * 60 * 1000);
             }
-            if (index <= 1) { hour = Math.floor(dif / (60 * 60 * 1000)); dif -= hour * (60 * 60 * 1000); }
-            if (index <= 2) { minute = Math.floor(dif / (60 * 1000)); dif -= minute * (60 * 1000); }
-            if (index <= 3) { second = Math.floor(dif / (1000)); dif -= second * (1000); }
-            if (index <= 4) { tenthsecond = Math.floor(dif / (100)); }
+            if (index <= 1) {hour = Math.floor(dif / (60 * 60 * 1000)); dif -= hour * (60 * 60 * 1000);}
+            if (index <= 2) {minute = Math.floor(dif / (60 * 1000)); dif -= minute * (60 * 1000);}
+            if (index <= 3) {second = Math.floor(dif / (1000)); dif -= second * (1000);}
+            if (index <= 4) {tenthsecond = Math.floor(dif / (100));}
             return { day, hour, minute, second, tenthsecond, miliseconds, type }
         }
         this.getDaysOfMonth = (date, pattern) => {
@@ -831,7 +880,7 @@ export class AIODate {
             let daysLength = this.getMonthDaysLength(date)
             let firstDay: I_Date = [dateArray[0], dateArray[1], 1];
             let res: I_Date[] = []
-            for (let i = 0; i < daysLength; i++) { res.push(firstDay); firstDay = this.getTomarrow(firstDay); }
+            for (let i = 0; i < daysLength; i++) {res.push(firstDay); firstDay = this.getTomarrow(firstDay);}
             if (pattern) { return res.map((o) => this.getDateByPattern(o, pattern)) }
             return res
         }
@@ -858,10 +907,10 @@ export class AIODate {
                     return i;
                 }
             }
-            if (unit === 'month') { return date[2] - 1; }
+            if (unit === 'month') {return date[2] - 1;}
             if (unit === 'year') {
                 let res = 0;
-                for (let i = 0; i < date[1] - 1; i++) { res += this.getMonthDaysLength(date) }
+                for (let i = 0; i < date[1] - 1; i++) {res += this.getMonthDaysLength(date)}
                 res += date[1]; return res - 1
             }
             return 0
@@ -909,338 +958,3 @@ export function GetArray(count: number, fn?: (index: number) => any) {
     return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
-
-export type I_schemaDefinition = { [field: string]: I_schemaDefinitionOption | string }
-export type I_schema = Schema;
-export type I_schemaType = I_schemaDefinition | string | I_schemaType[]
-export type I_schemaDefinitionOption = {
-    type: I_schemaType,
-    of?: I_schemaType,
-    required?: boolean, // فیلد اجباری (پیش‌فرض: true)
-    def?: any, // مقدار پیش‌فرض
-    enum?: any[], // enum یا مقادیر ممکن
-    unique?: boolean, // یکتا بودن مقدار
-    minLength?: number, // حداقل طول برای string
-    maxLength?: number, // حداکثر طول برای string
-    min?: number, // حداقل مقدار برای number
-    max?: number, // حداکثر مقدار برای number
-    ref?: string, // برای تعریف روابط (مانند ObjectId)
-    index?: boolean, // برای ایندکس‌گذاری
-    validate?: (value: any) => boolean, // اعتبارسنجی سفارشی
-    errorMessage?: string, // پیام خطای سفارشی در صورت اعتبارسنجی ناموفق
-}
-type I_getSchemaType = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Map |I_schema;
-class AIOSchema {
-    schemas: { [key: string]: I_schemaDefinition | I_schemaDefinitionOption } = {};
-    getSchemaByRefrence = (schema: I_schemaDefinitionOption | I_schemaDefinition | string, caller: string): { dif: I_schemaDefinitionOption | I_schemaDefinition, ref: string } => {
-        if (typeof schema === 'string') { return { dif: this.schemas[schema], ref: schema } }
-        return { dif: schema, ref: '' }
-    }
-    isSchemaRowSchema = (schemaDefinitionOption: I_schemaDefinitionOption): boolean => {
-        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption, 'isSchemaRowSchema')
-        return !dif.type
-    };
-    isSchemaRowMap = (schemaDefinitionOption: I_schemaDefinitionOption): boolean => {
-        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption, 'isSchemaRowMap')
-        return !!dif.of
-    };
-    getSchemaType = (type: I_schemaType): I_getSchemaType => {
-        if (type === 'string') return String;
-        else if (type === 'number') return Number;
-        else if (type === 'boolean') return Boolean;
-        else if (type === 'date') return Date;
-        else if (type === 'map') return Map;
-        else if (typeof type === 'string') { return this.getSchemaType(this.schemas[type] as I_schemaDefinition) }
-        else if (Array.isArray(type)) return this.getSchemaType(type[0]);
-        else return this.getSchema(type);
-    }
-    getSchema = (scm: I_schemaDefinition): I_schema => {
-        const { dif } = this.getSchemaByRefrence(scm, 'getSchema');
-        const schemaDefinition = dif as I_schemaDefinition;
-        try {
-            const fields: any = {};
-            Object.keys(schemaDefinition).forEach(fieldKey => {
-                let h = this.getSchemaByRefrence(schemaDefinition[fieldKey], 'getSchema');
-                const dif = h.dif as I_schemaDefinitionOption;
-                let mongooseSchema: any = {
-                    type: this.getSchemaType(dif.type),
-                    required: !!dif.required,
-                    unique: !!dif.unique,
-                };
-                if (dif.def !== undefined) mongooseSchema.default = dif.def;
-                if (dif.ref) mongooseSchema.ref = dif.ref;
-                if (dif.enum) mongooseSchema.enum = dif.enum;
-                if (dif.minLength) mongooseSchema.minLength = dif.minLength;
-                if (dif.maxLength) mongooseSchema.maxLength = dif.maxLength;
-                if (dif.min) mongooseSchema.min = dif.min;
-                if (dif.max) mongooseSchema.max = dif.max;
-                if (dif.index !== undefined) mongooseSchema.index = dif.index;
-                if (dif.validate) {
-                    mongooseSchema.validate = {
-                        validator: dif.validate,
-                        message: dif.errorMessage || 'Validation failed'
-                    };
-                }
-                fields[fieldKey] = mongooseSchema;
-            });
-            const schema = new mongoose.Schema(fields, {
-                timestamps: true,
-                toJSON: { virtuals: true },
-                toObject: { virtuals: true },
-            });
-            return schema;
-        } catch (err: any) {
-            console.error(`generate schema error by schemaDefinition =>`, schemaDefinition);
-            return new mongoose.Schema({}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
-        }
-    }
-    validateObjectBySchema = (scm: I_schemaDefinition | I_schemaDefinitionOption, key: string, value: any) => {
-        if (typeof scm === 'string') { return 'error 56452435345' }
-        if (scm.type) { return this.validateValueBySchemaDefinitionOption(scm as I_schemaDefinitionOption, key, value) }
-        else { return this.validateObjectBySchemaDefinition(scm as I_schemaDefinition, key, value) }
-    }
-    validateObjectBySchemaDefinition = (scm: I_schemaDefinition, parentKey: string, obj: { [key: string]: any }): string | undefined => {
-        const { dif } = this.getSchemaByRefrence(scm, 'validateObjectBySchemaDefinition');
-        const schemaDefinition = dif as I_schemaDefinition
-        if (typeof schemaDefinition === 'string') { return 'error 5423456' }
-        for (const key of Object.keys(schemaDefinition)) {
-            const { dif } = this.getSchemaByRefrence(schemaDefinition[key], 'validateObjectBySchemaDefinition')
-            const scm = dif as I_schemaDefinitionOption
-            const value = obj[key];
-            const res = this.validateObjectBySchema(scm, `${parentKey}.${key}`, value);
-            if (typeof res === 'string') { return res }
-        }
-        return undefined;
-    }
-    validateValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, key: string, value: any): string | undefined => {
-        const { dif } = this.getSchemaByRefrence(sdo, 'validateValueBySchemaDefinitionOption');
-        sdo = dif as I_schemaDefinitionOption
-        if (typeof sdo === 'string') { return }
-        if (Array.isArray(sdo.type)) {
-            if (!Array.isArray(value)) { return `property "${key}" should be an array`; }
-            return this.validateObjectBySchema({ type: sdo.type[0] }, key + '[0]', value[0])
-        }
-        //اگر required true بود ولی مقدار نداشت
-        if (sdo.required && (value === undefined || value === null)) {
-            return `property "${key}" is required but not provided`;
-        }
-        //اگر نوع ردیف آبجکت سازنده ی اسکیما map بود
-        if (sdo.type === 'map') {
-            if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-                return `property "${key}" should be an object (Map)`;
-            }
-            if (!sdo.of) { return `missing of property but type is map in schemaDefinitionOption by key = ${key}` }
-            for (const mapKey in value) {
-                return this.validateObjectBySchema({ type: sdo.of, required: true }, key, value[mapKey])
-            }
-        }
-        //اگر تایپ ردیف آبجکت سازنده ی اسکیما خود یک اسکیما بود
-        if (typeof sdo.type === 'object') {
-            return this.validateObjectBySchema(sdo.type, `${key}.type`, value || {});
-        }
-        if (value !== undefined && !this.isValidType(value, sdo.type as 'string' | 'number' | 'boolean' | 'date')) {
-            return `property "${key}" is not of type ${sdo.type}`;
-        }
-    }
-    isValidType = (value: any, schemaType: 'string' | 'number' | 'boolean' | 'date'): boolean => {
-        switch (schemaType) {
-            case 'string': return typeof value === 'string';
-            case 'number': return typeof value === 'number';
-            case 'boolean': return typeof value === 'boolean';
-            case 'date': return value instanceof Date;
-            default: return true; // انواع دیگر داده‌ها (مثل any) را قبول می‌کنیم
-        }
-    }
-    getDefaultValueBySchema = (scm: I_schemaDefinition | I_schemaDefinitionOption, value: { [key: string]: any }): { [key: string]: any } => {
-        if (typeof scm === 'string') { return {} }
-        if (scm.type) { return this.getDefaultValueBySchemaDefinitionOption(scm as I_schemaDefinitionOption, value) }
-        else { return this.getDefaultObjectBySchemaDefinition(scm as I_schemaDefinition, value) }
-    }
-    getDefaultObjectBySchemaDefinition = (scm: I_schemaDefinition, obj: { [key: string]: any }): { [key: string]: any } => {
-        const { dif } = this.getSchemaByRefrence(scm, 'getDefaultObjectBySchemaDefinition');
-        const schemaDefinition = dif as I_schemaDefinition
-        if (typeof schemaDefinition === 'string') { return {} }
-        const result: { [key: string]: any } = { ...obj };
-        Object.keys(schemaDefinition).forEach((key) => {
-            const h = schemaDefinition[key]
-            if (typeof h === 'string') { return obj }//chizi ke az this.schemas mikhoonim ghatan string nist
-            result[key] = this.getDefaultValueBySchema(h, result[key])
-        });
-        return result;
-    }
-    getDefaultValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, value: any): { [key: string]: any } => {
-        const { dif } = this.getSchemaByRefrence(sdo, 'getDefaultValueBySchemaDefinitionOption');
-        sdo = dif as I_schemaDefinitionOption
-        if (typeof sdo === 'string') { return {} }
-        if (sdo.required === true && value === undefined) {
-            if (typeof sdo.type === 'string' && this.schemas[sdo.type]) {
-                return this.getDefaultValueBySchema(this.schemas[sdo.type] as I_schemaDefinitionOption, value || {});
-            }
-            else if (Array.isArray(sdo.type)) { return []; }
-            else if (typeof sdo.type === 'object') { return this.getDefaultValueBySchema(sdo.type, value || {}); }
-            else if (sdo.type === 'map') { return {} }
-            else if (sdo.def !== undefined) { return typeof sdo.def === 'function' ? sdo.def() : sdo.def; }
-            return {}
-        }
-        return {}
-    }
-    schemaDefinitionToTS = (scm: I_schemaDefinition, caller: string): { success: boolean, result: string } => {
-        const { dif } = this.getSchemaByRefrence(scm, 'schemaDefinitionToTS_1');
-        const schemaDefinition = dif as I_schemaDefinition
-        let res: string = `{\n`;
-        const schemaKeys: string[] = Object.keys(schemaDefinition);
-        for (let i = 0; i < schemaKeys.length; i++) {
-            const key = schemaKeys[i];
-            const h = schemaDefinition[key]
-            const { dif, ref } = this.getSchemaByRefrence(h, 'schemaDefinitionToTS')
-            if (ref) { res += `   ${key}: ${ref},\n` }
-            else {
-                const sdo = dif as I_schemaDefinitionOption
-                const { success, result } = this.schemaDefinitionOptionToTS(sdo, 'schemaDefinitionToTS_2')
-                if (!success) { return { success: false, result } }
-                res += `   ${key}: ${result},\n`
-            }
-        }
-        res += `}`;
-        return { success: true, result: res };
-    }
-    simpleTypeToTS = (type: 'string' | 'number' | 'boolean' | 'date', required: boolean): { success: boolean, result: string } => {
-        switch (type) {
-            case 'string': return { success: true, result: 'string' + (required ? '' : ' | undefined') };
-            case 'number': return { success: true, result: 'number' + (required ? '' : ' | undefined') };
-            case 'boolean': return { success: true, result: 'boolean' + (required ? '' : ' | undefined') };
-            case 'date': return { success: true, result: 'Date' + (required ? '' : ' | undefined') };
-            default: return { success: true, result: 'any' + (required ? '' : ' | undefined') };
-        }
-    }
-    schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string, caller: string): { success: boolean, result: string } => {
-        const { dif,ref } = this.getSchemaByRefrence(scm, 'schemaToTS');
-        if(ref){return {success:true,result:ref}}
-        else if (dif.type) { return this.schemaDefinitionOptionToTS(scm as I_schemaDefinitionOption, 'schemaToTS_1') }
-        else { return this.schemaDefinitionToTS(scm as I_schemaDefinition, 'schemaToTS_2') }
-    }
-    schemaDefinitionOptionToTS = (SDO: I_schemaDefinitionOption, caller: string): { success: boolean, result: string } => {
-        const { dif } = this.getSchemaByRefrence(SDO, 'schemaDefinitionOptionToTS_1');
-        const sdo = dif as I_schemaDefinitionOption
-        if (Array.isArray(sdo.type)) {
-            const { dif, ref } = this.getSchemaByRefrence(sdo.type[0] as any, 'schemaDefinitionOptionToTS_2')
-            if (ref) { return { success: true, result: `(${ref})[]` }; }
-            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true }, 'schemaDefinitionOptionToTS')
-            if (!success) { return { success: false, result } }
-            return { success: true, result: `(${result})[]` };
-        }
-        if (typeof sdo.type === 'object') {
-            return this.schemaDefinitionToTS(sdo.type, 'schemaDefinitionOptionToTS_1');
-        }
-        if (sdo.type === 'map') {
-            if (!sdo.of) {
-                const message = `in this schema definition option type is map but missing of property as schema definition. schema definition row is`
-                return { success: false, result: `${message} => ${JSON.stringify(sdo, null, 3)}` }
-            }
-            const { dif, ref } = this.getSchemaByRefrence(sdo.of as any, 'schemaDefinitionOptionToTS_3')
-            if (ref) { return { success: true, result: `{[key: string]: ${ref}${sdo.required ? '' : ' | undefined'}}` }; }
-            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true }, 'schemaDefinitionOptionToTS')
-            if (!success) { return { success: false, result } }
-            return { success: true, result: `{[key: string]: ${result}${sdo.required ? '' : ' | undefined'}}` };
-        }
-        if (Array.isArray(sdo.enum)) {
-            //notice enum can be schema
-            return {
-                success: true,
-                result: sdo.enum.map((value: any) => (typeof value === 'string' ? `'${value}'` : value.toString())).join(' | ')
-            }
-        }
-        if (['string', 'number', 'boolean', 'date'].indexOf(sdo.type) !== -1) {
-            return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
-        }
-        else {
-            return this.schemaToTS(sdo.type, 'schemaDefinitionOptionToTS')
-        }
-    }
-    bodyParamToString = (api: I_api): { success: boolean, result: string } => {
-        let res: string = ''
-        if (api.body) {
-            const scm = this.schemas[api.body];
-            const { success, result } = this.schemaToTS(scm, 'bodyParamToString')
-            if (!success) { return { success: false, result } }
-            res = `body:${api.body}`
-        }
-        if (api.queryParam) { res += `${res ? ',' : ''}${api.queryParam}`; }
-        return { success: true, result: res };
-    }
-    getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
-        const scm = this.schemas[api.successResult];
-        const { success, result } = this.schemaToTS(scm, 'getReturnTypeString');
-        if (!success) { return { success: false, result } }
-        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${api.successResult}>` }
-    }
-    getMethodsString = (entities: I_entities): { success: boolean, result: string } => {
-        let res = '';
-        for (let name in entities) {
-            const { apis } = entities[name];
-            for (let api of apis) {
-                const { method, errorResult, description, queryParam = '', getResult } = api;
-                const path = api.path[0] !== '/' ? '/' + api.path : api.path;
-                const apiName = name + path.replace(/\//g, '_')
-                const bodyParamString = this.bodyParamToString(api);
-                if (!bodyParamString.success) { return { success: false, result: bodyParamString.result } }
-                const returnTypeString = this.getReturnTypeString(api);
-                if (!returnTypeString.success) { return { success: false, result: returnTypeString.result } }
-                res += `
-    ${apiName} = async (${bodyParamString.result})${returnTypeString.result}=>{
-        return await this.request({
-            description:"${description}",method:"${method}",errorResult:${JSON.stringify(errorResult)},
-            url:${"`${this.base_url}"}${name}${path}${queryParam}${"`"},
-            getResult:${getResult},${!api.body ? '' : `\n            body`}
-        })
-    }
-                `
-            }
-        }
-        return { success: true, result: res }
-    }
-    getInterfaces = (): { success: boolean, result: string } => {
-        let res: string = ''
-        for (let prop in this.schemas) {
-            const scm = this.schemas[prop];
-            if (typeof scm === 'string') { continue }
-            const { success, result } = this.schemaToTS(scm, 'getInterfaces');
-            if (!success) { return { success: false, result } }
-            res += `
-export type ${prop} = ${result};
-            `
-        }
-        return { success: true, result: res }
-    }
-    generateUIDoc = (entities: I_entities): { success: boolean, result: string } => {
-        const methodsString = this.getMethodsString(entities)
-        if (!methodsString.success) { return { success: false, result: methodsString.result } }
-        const interfaces = this.getInterfaces()
-        if (!interfaces.success) { return { success: false, result: interfaces.result } }
-        const result = `
-import AIOApis from "aio-apis";
-type I_APIS = {base_url:string,token:string}
-${interfaces.result}
-export default class APIS {
-    request: AIOApis['request'];
-    base_url:string;
-    constructor(p:I_APIS) {
-        this.base_url = p.base_url;
-        const inst = new AIOApis({
-            id: 'cardexsuperadminapis', token:p.token, lang: 'fa',
-            onCatch: (response) => {
-                try{return response.response.data.message}
-                catch{return response.messge}
-            },
-            getError: (response) => {
-                if (response.data.success === false) { return response.data.message }
-            }
-        })
-        this.request = inst.request;
-    }
-${methodsString.result}
-}
-        `
-        return { success: true, result }
-    }
-}
