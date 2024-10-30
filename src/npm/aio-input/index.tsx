@@ -8,7 +8,7 @@ import {
     GetArray, Validation,
     GetSvg,JSXToHTML
 } from './../../npm/aio-utils';
-import { divIcon } from 'leaflet';
+import { divIcon, LeafletEvent } from 'leaflet';
 import { Circle, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
@@ -3901,7 +3901,9 @@ type I_Map = {
     layers?: I_layers,
     getSearchResult?: (searchValue: string) => Promise<I_searchResult[]>,
     onSearch?: (searchResult: I_searchResult) => void,
-    mapRef?: any
+    mapRef?: any,
+    whenReady?:()=>void,
+    onMoveEnd?:(e:LeafletEvent)=>void
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
@@ -3940,12 +3942,12 @@ export const AIMap: FC<I_Map> = (props) => {
 };
 const MapBody: FC = () => {
     const { rootProps, pos, setMap, getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
-    const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [] } = rootProps
+    const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [],whenReady } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
         <MapContainer
-            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom.value || 14} scrollWheelZoom={zoom.wheel ? 'center' : undefined} zoomControl={zoom.control !== false}
-            attributionControl={true} dragging={dragging} ref={setMap}
+            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom.value} scrollWheelZoom={zoom.wheel ? 'center' : undefined} zoomControl={zoom.control !== false}
+            attributionControl={true} dragging={dragging} ref={setMap} whenReady={whenReady}
         >
             <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
             {/* <TileLayer 
@@ -4069,6 +4071,9 @@ function MapEvents() {
         locationfound: (location: any) => {
             console.log('location found:', location)
         },
+        moveend:(e)=>{
+            if(rootProps.onMoveEnd){rootProps.onMoveEnd(e)}
+        }
     })
     return null
 }

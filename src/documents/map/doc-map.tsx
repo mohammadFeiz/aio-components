@@ -2,6 +2,8 @@ import { FC, ReactNode, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
 import { AISelect, AITabs,AIMap } from '../../npm/aio-input';
+import { Map } from 'leaflet';
+import { animate } from '../../npm/react-virtual-dom/index.tsx';
 type I_show_item = 'preview' | 'code' | 'both'
 type I_Map = React.ComponentProps<typeof AIMap>;
 const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {
@@ -36,6 +38,7 @@ export default function DOC_Map(props: any) {
                     { text: 'layers', id: 'layers', render: () => <Layers /> },
                     { text: 'zoom', id: 'zoom', render: () => <Zoom /> },
                     { text: 'footer', id: 'footer', render: () => <Footer /> },
+                    { text: 'flyTo', id: 'flyTo', render: () => <FlyTo /> },
                 ]
             }}
         />
@@ -543,3 +546,41 @@ const Comp: FC<{ tabs: I_tabs }> = (props) => {
         </div>
     )
 }
+const FlyTo: FC = () => {
+    const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
+    let mapRef = useRef<Map>()
+    return (
+        <div className="example">
+            <AIMap 
+                value={value} onChange={(newValue: [number, number]) => setValue(newValue)} mapRef={mapRef}/>
+            <button onClick={()=>{
+                let b = mapRef.current;
+                if(b){b.flyTo([35.69,51.33],14)}
+            }}>Fly To 35.69,51.33</button>
+            {
+                Code(`
+const FlyTo: FC = () => {
+    const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
+    let mapRef = useRef<Map>()
+    function flyTo(){
+        let b = mapRef.current;
+        if(b){b.flyTo([35.69,51.33],14)}
+    }
+    return (
+        <div className="example">
+            <AIMap 
+                value={value} 
+                onChange={(newValue: [number, number]) => setValue(newValue)} 
+                mapRef={mapRef}
+            />
+            <button onClick={()=>flyTo()}>Fly To 35.69,51.33</button>
+        </div>
+    )
+}`
+                )
+            }
+        </div>
+    )
+}
+
+
