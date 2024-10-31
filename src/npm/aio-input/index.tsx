@@ -3749,13 +3749,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function registerCallback() { window.location.reload() }
     function otpNumberCallback() { setMode(getMode('otpcode')) }
     function otpCodeCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
-    async function getApisDetails(){
-        return await props.getRequestOptions(modelRef.current,mode.key)
-    }
     async function success(response: any) {
         const modeKey = mode.key
         let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
-        const { onSuccess } = await getApisDetails()
+        const { onSuccess } = await props.getRequestOptions(modelRef.current,mode.key)
         let message, res;
         try { res = await onSuccess(response) }
         catch (err: any) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return }
@@ -3774,10 +3771,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else { callback(res) }
     }
     async function submit() {
-        const { url, method, body, onCatch } = await getApisDetails()
+        const { url, method, body, onCatch } = await props.getRequestOptions(modelRef.current,mode.key)
         axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
-            if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
-            else{onCatch(response)}
+            if(onCatch){setAlert({type:'error',text:'Error',subtext:onCatch(response)})}
+            else if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
         });
     }
     function changeMode(mode: I_loginMode) { setModel(getModel()); setMode(getMode(mode)) }
