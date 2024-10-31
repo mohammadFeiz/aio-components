@@ -4294,10 +4294,10 @@ export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=
 }
 
 export type I_MonthCells = {
-    year: number, month: number, cellContent: (date: number[]) => ReactNode,weekDayContent:(v:number)=>ReactNode,
+    year: number, month: number, cellContent: (date: number[]) => ReactNode,weekDayContent?:(v:number)=>ReactNode,
     changeMonth: (month: number) => void
 }
-export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, changeMonth,weekDayContent }) => {
+export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent,weekDayContent }) => {
     const [DATE] = useState<AIODate>(new AIODate())
     const [monthes] = useState<string[]>(DATE.getMonths(true))
     function getDateInfo() {
@@ -4311,40 +4311,24 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, changeM
     }
     const gtc = Math.floor(100 / 7);
     const gridTemplateColumns: string = `${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}%`;
-    function ChangeMonth(dir: 1 | -1) {
-        let newMonth = month + dir;
-        if (newMonth < 1) { newMonth = 1 }
-        if (newMonth > 12) { newMonth = 12 }
-        changeMonth(newMonth);
-    }
-    function arrow_layout(dir: 1 | -1) {
+    function weekDays_layout() { 
+        if(!weekDayContent){return null}
         return (
-            <div className="month-cells-arrow" onClick={() => ChangeMonth(dir)}>
-                {I(dir === 1?'mdiChevronRight':'mdiChevronLeft',1)}
+            <div className="month-cells-grid" style={{ gridTemplateColumns }}>
+                {DATE.getWeekDays(true).map((o: string, i: number) => <div key={o} className={`month-cells-weekday`}>{weekDayContent(i)}</div>) }
             </div>
         )
     }
-    function select_month_layout() {
-        return (
-            <div className="month-cells-select">
-                {arrow_layout(-1)}
-                <div className="month-cells-selected-month">{monthes[month - 1]}</div>
-                {arrow_layout(1)}
-            </div>
-        )
-    }
-    function weekDays_layout() { return DATE.getWeekDays(true).map((o: string, i: number) => <div className={`month-cells-weekday`}>{weekDayContent(i)}</div>) }
-    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map(() => <div className=""></div>) }
+    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o,i) => <div key={i} className=""></div>) }
     function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
     function cell_layout(day: number) {
-        return (<div className="month-cells-cell">{cellContent([year, month, day])}</div>)
+        return (<div key={day} className="month-cells-cell">{cellContent([year, month, day])}</div>)
     }
     const dateInfo = getDateInfo()
     return (
         <div className="month-cells">
-            {select_month_layout()}
             <div className="month-cells-body">
-                <div className="month-cells-grid" style={{ gridTemplateColumns }}>{weekDays_layout()}</div>
+                {weekDays_layout()}
                 <div className="month-cells-grid" style={{ gridTemplateColumns }}>{spaces_layout()} {cells_layout()}</div>
             </div>
         </div>

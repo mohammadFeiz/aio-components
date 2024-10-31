@@ -3053,7 +3053,6 @@ pre[class*="language-"]>code[class*="language-"] {
     align-items: center;
     justify-content: center;
     position: relative;
-    background:rgba(0,0,0,0.4);
     font-size:12px;
 }
 .month-cells-grid{
