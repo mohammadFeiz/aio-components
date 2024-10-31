@@ -175,11 +175,12 @@ export default class AIOApis {
                 return getResult(response);
             }
             catch (err: any) {
+                let error = getError ? getError(err.response || err, config) : undefined;
+                if(error){return error}
                 let catchResult;
                 try { catchResult = onCatch ? onCatch(err, config) : undefined }
                 catch (err: any) { catchResult = err.message || err.Message; }
                 if (!catchResult) { catchResult = err.message || err.Message }
-                console.log(err);
                 return catchResult
             }
         }
