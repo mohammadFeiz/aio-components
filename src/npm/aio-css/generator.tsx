@@ -162,12 +162,14 @@ function getFontSizeCss() {
     return res
 }
 function getColorsCss() {
-    const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', 'none']
+    const numbers = ['0', '8', '16', '28', '44', '64', '84', '104', '128', '152', '172', '188', '208', '224', '238', '246', '255', 'none']
     let res = ''
-    for (let n of numbers) {
+    for (let i = 0; i < numbers.length; i++) {
+        const n = numbers[i];
         const val = n === 'none' ? 'none' : `rgb(${n},${n},${n})`
-        res += `.bg-${n}-{background:${val} !important;}`;
-        res += `.c-${n}-{color:${val} !important;} `;
+        const index = n === 'none'?'none':i
+        res += `.bg-${index}-{background:${val} !important;}`;
+        res += `.c-${index}-{color:${val} !important;} `;
     }
     const percents = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
     for (let n of percents) {
@@ -242,7 +244,7 @@ function getFlexCss() {
         .flex-row-.align-v-,.flex-col-.align-h- {display: flex !important;align-items: center !important;}
         .flex-row-.align-h-,.flex-col-.align-v- {display: flex !important;justify-content: center !important;}
         .flex-col-.align-h-,.flex-row-.align-v- {display: flex !important;align-items: center !important;}
-        .align-v-h {display: flex !important;align-items: center !important;justify-content: center !important;}
+        .align-vh- {display: flex !important;align-items: center !important;justify-content: center !important;}
         .flex-row-.align-h-end-,.flex-col-.align-v-end- {display: flex !important;justify-content: flex-end !important;}
         .flex-col-.align-h-end-,.flex-row-.align-v-end- {display: flex !important;align-items: flex-end !important;}
         .flex-row-.align-between- {display: flex !important;justify-content: space-between !important;}

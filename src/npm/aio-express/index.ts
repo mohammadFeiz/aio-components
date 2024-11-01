@@ -13,7 +13,8 @@ export type I_auth = {
     name: string,
     path: string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
-    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status: number, message: string } | void>,
+    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string,userName?:string,password?:string,userProps?:any } | void>,
+    loginExeption?:(p: { user: any,token:string }) => Promise<{ status?: number, message?: string,user?:any} | void>
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
@@ -22,7 +23,7 @@ export type I_entities = { [entityName: string]: I_entity }
 export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
-    body?: string, errorResult: any, successResult: string, description: string, queryParam?: string, getResult: string,
+    body?: string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
     fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => any
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
@@ -172,7 +173,7 @@ class AIOExpress<I_User> {
     }
     handleAuth = () => {
         if (!this.p.auth) { return; }
-        const { registerExeption } = this.p.auth;
+        const { registerExeption,loginExeption } = this.p.auth;
         const { dif } = this.getSchemaByRefrence(this.p.auth.schema || {})
         const schema = dif as I_schemaDefinition
         const scm: I_schemaDefinition = { ...schema, password: { type: 'string', required: true }, userName: { type: 'string', required: true, unique: true } }
@@ -196,7 +197,10 @@ class AIOExpress<I_User> {
                 }
                 if (registerExeption) {
                     const exep = await registerExeption({ userName, password, userProps });
-                    if (exep) { return res.status(exep.status).json({ message: exep.message, success: false }); }
+                    if (exep) { 
+                        if(exep.status){return res.status(exep.status).json({ message: exep.message, success: false }); }
+                        if(exep.userName){}
+                    }
                 }
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const userModel = { ...defModel, password: hashedPassword, userName };
@@ -211,12 +215,19 @@ class AIOExpress<I_User> {
             if (!this.AuthModel) { return; }
             const { userName, password } = req.body;
             try {
-                const user = await this.AuthModel.findOne({ userName });
+                let user = await this.AuthModel.findOne({ userName });
                 if (!user || !(await user.matchPassword(password))) {
                     return res.status(400).json({ message: 'Invalid username or password' });
                 }
                 const secretKey: string = this.env.secretKey;
                 const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: this.getExpiresIn() });
+                if (loginExeption) {
+                    const exep = await loginExeption({ user,token });
+                    if (exep) { 
+                        if(exep.status){return res.status(exep.status).json({ message: exep.message, success: false }); }
+                        if(exep.user){user = exep.user}
+                    }
+                }
                 return res.status(200).json({ message: 'Login successful', token, user });
             } catch (err: any) {
                 return res.status(500).json({ message: 'Error logging in', error: err.message });
@@ -278,6 +289,7 @@ class AIOExpress<I_User> {
                 this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
+                        if (reqUser === null) { return this.setResult({ res,success: false, message: 'req user not found', status: 401 }) }
                         let body: any = req.body;
                         if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         if (api.body) {
@@ -287,7 +299,6 @@ class AIOExpress<I_User> {
                                 return this.setResult({ status: 400, success: false, message, res })
                             }
                         }
-                        if (reqUser === null) { return { success: false, message: 'req user not found', status: 403 } }
                         if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
                         const result = await fn({ req, res, reqUser, body })
                         return this.setResult({ ...result, res })
@@ -930,18 +941,18 @@ export type I_schemaDefinitionOption = {
     errorMessage?: string, // پیام خطای سفارشی در صورت اعتبارسنجی ناموفق
 }
 type I_getSchemaType = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Map |I_schema;
-class AIOSchema {
+export class AIOSchema {
     schemas: { [key: string]: I_schemaDefinition | I_schemaDefinitionOption } = {};
-    getSchemaByRefrence = (schema: I_schemaDefinitionOption | I_schemaDefinition | string, caller: string): { dif: I_schemaDefinitionOption | I_schemaDefinition, ref: string } => {
+    getSchemaByRefrence = (schema: I_schemaDefinitionOption | I_schemaDefinition | string): { dif: I_schemaDefinitionOption | I_schemaDefinition, ref: string } => {
         if (typeof schema === 'string') { return { dif: this.schemas[schema], ref: schema } }
         return { dif: schema, ref: '' }
     }
     isSchemaRowSchema = (schemaDefinitionOption: I_schemaDefinitionOption): boolean => {
-        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption, 'isSchemaRowSchema')
+        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption)
         return !dif.type
     };
     isSchemaRowMap = (schemaDefinitionOption: I_schemaDefinitionOption): boolean => {
-        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption, 'isSchemaRowMap')
+        const { dif } = this.getSchemaByRefrence(schemaDefinitionOption)
         return !!dif.of
     };
     getSchemaType = (type: I_schemaType): I_getSchemaType => {
@@ -955,12 +966,12 @@ class AIOSchema {
         else return this.getSchema(type);
     }
     getSchema = (scm: I_schemaDefinition): I_schema => {
-        const { dif } = this.getSchemaByRefrence(scm, 'getSchema');
+        const { dif } = this.getSchemaByRefrence(scm);
         const schemaDefinition = dif as I_schemaDefinition;
         try {
             const fields: any = {};
             Object.keys(schemaDefinition).forEach(fieldKey => {
-                let h = this.getSchemaByRefrence(schemaDefinition[fieldKey], 'getSchema');
+                let h = this.getSchemaByRefrence(schemaDefinition[fieldKey]);
                 const dif = h.dif as I_schemaDefinitionOption;
                 let mongooseSchema: any = {
                     type: this.getSchemaType(dif.type),
@@ -1000,11 +1011,13 @@ class AIOSchema {
         else { return this.validateObjectBySchemaDefinition(scm as I_schemaDefinition, key, value) }
     }
     validateObjectBySchemaDefinition = (scm: I_schemaDefinition, parentKey: string, obj: { [key: string]: any }): string | undefined => {
-        const { dif } = this.getSchemaByRefrence(scm, 'validateObjectBySchemaDefinition');
+        const { dif } = this.getSchemaByRefrence(scm);
         const schemaDefinition = dif as I_schemaDefinition
         if (typeof schemaDefinition === 'string') { return 'error 5423456' }
-        for (const key of Object.keys(schemaDefinition)) {
-            const { dif } = this.getSchemaByRefrence(schemaDefinition[key], 'validateObjectBySchemaDefinition')
+        const keys = Object.keys(schemaDefinition);
+        for (const key of keys) {
+            if(key === 'organization'){debugger}
+            const { dif } = this.getSchemaByRefrence(schemaDefinition[key])
             const scm = dif as I_schemaDefinitionOption
             const value = obj[key];
             const res = this.validateObjectBySchema(scm, `${parentKey}.${key}`, value);
@@ -1013,9 +1026,8 @@ class AIOSchema {
         return undefined;
     }
     validateValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, key: string, value: any): string | undefined => {
-        const { dif } = this.getSchemaByRefrence(sdo, 'validateValueBySchemaDefinitionOption');
+        const { dif } = this.getSchemaByRefrence(sdo);
         sdo = dif as I_schemaDefinitionOption
-        if (typeof sdo === 'string') { return }
         if (Array.isArray(sdo.type)) {
             if (!Array.isArray(value)) { return `property "${key}" should be an array`; }
             return this.validateObjectBySchema({ type: sdo.type[0] }, key + '[0]', value[0])
@@ -1039,7 +1051,7 @@ class AIOSchema {
             return this.validateObjectBySchema(sdo.type, `${key}.type`, value || {});
         }
         if (value !== undefined && !this.isValidType(value, sdo.type as 'string' | 'number' | 'boolean' | 'date')) {
-            return `property "${key}" is not of type ${sdo.type}`;
+            return `property "${key}" is not of type ${sdo.type}, value is ${JSON.stringify(value,null,3)}`;
         }
     }
     isValidType = (value: any, schemaType: 'string' | 'number' | 'boolean' | 'date'): boolean => {
@@ -1057,9 +1069,8 @@ class AIOSchema {
         else { return this.getDefaultObjectBySchemaDefinition(scm as I_schemaDefinition, value) }
     }
     getDefaultObjectBySchemaDefinition = (scm: I_schemaDefinition, obj: { [key: string]: any }): { [key: string]: any } => {
-        const { dif } = this.getSchemaByRefrence(scm, 'getDefaultObjectBySchemaDefinition');
+        const { dif } = this.getSchemaByRefrence(scm);
         const schemaDefinition = dif as I_schemaDefinition
-        if (typeof schemaDefinition === 'string') { return {} }
         const result: { [key: string]: any } = { ...obj };
         Object.keys(schemaDefinition).forEach((key) => {
             const h = schemaDefinition[key]
@@ -1068,35 +1079,27 @@ class AIOSchema {
         });
         return result;
     }
-    getDefaultValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, value: any): { [key: string]: any } => {
-        const { dif } = this.getSchemaByRefrence(sdo, 'getDefaultValueBySchemaDefinitionOption');
+    getDefaultValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, value: any): any => {
+        const { dif } = this.getSchemaByRefrence(sdo);
         sdo = dif as I_schemaDefinitionOption
-        if (typeof sdo === 'string') { return {} }
-        if (sdo.required === true && value === undefined) {
-            if (typeof sdo.type === 'string' && this.schemas[sdo.type]) {
-                return this.getDefaultValueBySchema(this.schemas[sdo.type] as I_schemaDefinitionOption, value || {});
-            }
-            else if (Array.isArray(sdo.type)) { return []; }
-            else if (typeof sdo.type === 'object') { return this.getDefaultValueBySchema(sdo.type, value || {}); }
-            else if (sdo.type === 'map') { return {} }
-            else if (sdo.def !== undefined) { return typeof sdo.def === 'function' ? sdo.def() : sdo.def; }
-            return {}
+        if(value === undefined){
+            if (sdo.required === true) {return sdo.def}
         }
-        return {}
+        else {return value}
     }
-    schemaDefinitionToTS = (scm: I_schemaDefinition, caller: string): { success: boolean, result: string } => {
-        const { dif } = this.getSchemaByRefrence(scm, 'schemaDefinitionToTS_1');
+    schemaDefinitionToTS = (scm: I_schemaDefinition): { success: boolean, result: string } => {
+        const { dif } = this.getSchemaByRefrence(scm);
         const schemaDefinition = dif as I_schemaDefinition
         let res: string = `{\n`;
         const schemaKeys: string[] = Object.keys(schemaDefinition);
         for (let i = 0; i < schemaKeys.length; i++) {
             const key = schemaKeys[i];
             const h = schemaDefinition[key]
-            const { dif, ref } = this.getSchemaByRefrence(h, 'schemaDefinitionToTS')
+            const { dif, ref } = this.getSchemaByRefrence(h)
             if (ref) { res += `   ${key}: ${ref},\n` }
             else {
                 const sdo = dif as I_schemaDefinitionOption
-                const { success, result } = this.schemaDefinitionOptionToTS(sdo, 'schemaDefinitionToTS_2')
+                const { success, result } = this.schemaDefinitionOptionToTS(sdo)
                 if (!success) { return { success: false, result } }
                 res += `   ${key}: ${result},\n`
             }
@@ -1113,33 +1116,33 @@ class AIOSchema {
             default: return { success: true, result: 'any' + (required ? '' : ' | undefined') };
         }
     }
-    schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string, caller: string): { success: boolean, result: string } => {
-        const { dif,ref } = this.getSchemaByRefrence(scm, 'schemaToTS');
+    schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string,caller:string): { success: boolean, result: string } => {
+        const { dif,ref } = this.getSchemaByRefrence(scm);
         if(ref){return {success:true,result:ref}}
-        else if (dif.type) { return this.schemaDefinitionOptionToTS(scm as I_schemaDefinitionOption, 'schemaToTS_1') }
-        else { return this.schemaDefinitionToTS(scm as I_schemaDefinition, 'schemaToTS_2') }
+        else if (dif.type) { return this.schemaDefinitionOptionToTS(scm as I_schemaDefinitionOption) }
+        else { return this.schemaDefinitionToTS(scm as I_schemaDefinition) }
     }
-    schemaDefinitionOptionToTS = (SDO: I_schemaDefinitionOption, caller: string): { success: boolean, result: string } => {
-        const { dif } = this.getSchemaByRefrence(SDO, 'schemaDefinitionOptionToTS_1');
+    schemaDefinitionOptionToTS = (SDO: I_schemaDefinitionOption): { success: boolean, result: string } => {
+        const { dif } = this.getSchemaByRefrence(SDO);
         const sdo = dif as I_schemaDefinitionOption
         if (Array.isArray(sdo.type)) {
-            const { dif, ref } = this.getSchemaByRefrence(sdo.type[0] as any, 'schemaDefinitionOptionToTS_2')
+            const { dif, ref } = this.getSchemaByRefrence(sdo.type[0] as any)
             if (ref) { return { success: true, result: `(${ref})[]` }; }
-            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true }, 'schemaDefinitionOptionToTS')
+            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true })
             if (!success) { return { success: false, result } }
             return { success: true, result: `(${result})[]` };
         }
         if (typeof sdo.type === 'object') {
-            return this.schemaDefinitionToTS(sdo.type, 'schemaDefinitionOptionToTS_1');
+            return this.schemaDefinitionToTS(sdo.type);
         }
         if (sdo.type === 'map') {
             if (!sdo.of) {
                 const message = `in this schema definition option type is map but missing of property as schema definition. schema definition row is`
                 return { success: false, result: `${message} => ${JSON.stringify(sdo, null, 3)}` }
             }
-            const { dif, ref } = this.getSchemaByRefrence(sdo.of as any, 'schemaDefinitionOptionToTS_3')
+            const { dif, ref } = this.getSchemaByRefrence(sdo.of as any)
             if (ref) { return { success: true, result: `{[key: string]: ${ref}${sdo.required ? '' : ' | undefined'}}` }; }
-            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true }, 'schemaDefinitionOptionToTS')
+            const { success, result } = this.schemaDefinitionOptionToTS({ type: dif as I_schemaDefinition, required: true })
             if (!success) { return { success: false, result } }
             return { success: true, result: `{[key: string]: ${result}${sdo.required ? '' : ' | undefined'}}` };
         }
@@ -1154,14 +1157,16 @@ class AIOSchema {
             return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
         }
         else {
-            return this.schemaToTS(sdo.type, 'schemaDefinitionOptionToTS')
+            return this.schemaToTS(sdo.type,'schemaDefinitionOptionToTS')
         }
     }
     bodyParamToString = (api: I_api): { success: boolean, result: string } => {
         let res: string = ''
         if (api.body) {
-            const scm = this.schemas[api.body];
-            const { success, result } = this.schemaToTS(scm, 'bodyParamToString')
+            let scm;
+            if(typeof api.body === 'string'){scm = this.schemas[api.body];}
+            else {scm = api.body}
+            const { success, result } = this.schemaToTS(scm,'bodyParamToString')
             if (!success) { return { success: false, result } }
             res = `body:${api.body}`
         }
@@ -1169,10 +1174,12 @@ class AIOSchema {
         return { success: true, result: res };
     }
     getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
-        const scm = this.schemas[api.successResult];
-        const { success, result } = this.schemaToTS(scm, 'getReturnTypeString');
+        let scm;
+        if(typeof api.successResult === 'string'){scm = this.schemas[api.successResult]}
+        else {scm = api.successResult}
+        const { success, result } = this.schemaToTS(scm,'getReturnTypeString');
         if (!success) { return { success: false, result } }
-        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${api.successResult}>` }
+        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string'?api.successResult:result}>` }
     }
     getMethodsString = (entities: I_entities): { success: boolean, result: string } => {
         let res = '';
@@ -1204,7 +1211,7 @@ class AIOSchema {
         for (let prop in this.schemas) {
             const scm = this.schemas[prop];
             if (typeof scm === 'string') { continue }
-            const { success, result } = this.schemaToTS(scm, 'getInterfaces');
+            const { success, result } = this.schemaToTS(scm,'getInterfaces');
             if (!success) { return { success: false, result } }
             res += `
 export type ${prop} = ${result};
@@ -1219,7 +1226,7 @@ export type ${prop} = ${result};
         if (!interfaces.success) { return { success: false, result: interfaces.result } }
         const result = `
 import AIOApis from "aio-apis";
-type I_APIS = {base_url:string,token:string}
+type I_APIS = {base_url:string,token:string,logout:()=>void}
 ${interfaces.result}
 export default class APIS {
     request: AIOApis['request'];
@@ -1233,7 +1240,8 @@ export default class APIS {
                 catch{return response.messge}
             },
             getError: (response) => {
-                if (response.data.success === false) { return response.data.message }
+                if(response.status === 401 || response.data.status === 401){p.logout()}
+                else if (response.data.success === false) { return response.data.message }
             }
         })
         this.request = inst.request;

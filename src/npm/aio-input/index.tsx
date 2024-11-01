@@ -4291,7 +4291,7 @@ export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=
 }
 
 export type I_MonthCells = {
-    year: number, month: number, cellContent: (date: number[]) => ReactNode,weekDayContent?:(v:number)=>ReactNode,
+    year: number, month: number, cellContent: (date: number[],weekDayIndex:number) => ReactNode,weekDayContent?:(v:number)=>ReactNode,
     changeMonth: (month: number) => void
 }
 export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent,weekDayContent }) => {
@@ -4319,7 +4319,9 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent,weekDayC
     function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o,i) => <div key={i} className=""></div>) }
     function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
     function cell_layout(day: number) {
-        return (<div key={day} className="month-cells-cell">{cellContent([year, month, day])}</div>)
+        const date = [year, month, day];
+        const weekDayIndex:number = DATE.getWeekDay(date).index;
+        return (<div key={day} className="month-cells-cell">{cellContent(date,weekDayIndex)}</div>)
     }
     const dateInfo = getDateInfo()
     return (
