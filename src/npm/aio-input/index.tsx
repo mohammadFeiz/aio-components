@@ -3648,6 +3648,13 @@ type I_login_modeState = {
     key: I_loginMode, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
     submitText: string, registerInputs:()=> ReactNode, responseUserType: boolean
 }
+export function AIOLogin_updateCatchedUser(loginId:string,newUser:any){
+    const storage = new Storage('ai-login' + loginId);
+    const storedData = storage.load('data');
+    if(!storedData){return newUser}
+    const newStoredData = {...storedData,user:newUser}
+    return storage.save('data',newStoredData)
+}
 export const AILogin: FC<I_AILogin> = (props) => {
     const { renderApp, translate = () => { }, id, rememberTime, checkToken, splash,otpLength = 4 } = props;
     const { validation = () => { return undefined } } = props;
