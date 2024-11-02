@@ -1,0 +1,13 @@
+.my-shop{
+    display:flex;
+    direction:rtl;
+}
+.my-product-list{
+    flex:1;
+}
+.my-cart{
+    flex:1;
+}
+.my-checkout{
+    flex:1;
+}
