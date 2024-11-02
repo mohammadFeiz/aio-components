@@ -383,7 +383,11 @@ class GCRUD {
             const exist = await this.getRow(p);
             if (exist === null) { return 'Record not found'; }
             if (typeof exist === 'string') { return exist }
-            const updatedRecord = await model.findByIdAndUpdate(exist._id, p.newValue, { new: true });
+            for(let prop in p.newValue){
+                if(prop === 'id' || prop === '_id'){continue}
+                exist[prop] = p.newValue[prop]
+            }
+            const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true });
             if (!updatedRecord) { return 'Record not found'; }
             return this.fixId(updatedRecord);
         }
