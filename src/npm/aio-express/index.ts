@@ -23,7 +23,7 @@ export type I_entities = { [entityName: string]: I_entity }
 export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
-    body?: string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
+    body?: I_schemaDefinition | I_schemaDefinitionOption |string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
     fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => any
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
@@ -293,7 +293,10 @@ class AIOExpress<I_User> {
                         let body: any = req.body;
                         if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         if (api.body) {
-                            let message = this.AIOSchemaInstance.validateObjectBySchema(this.schemas[api.body] as I_schemaDefinition, '', req.body);
+                            let scm;
+                            if(typeof api.body === 'string'){scm = this.schemas[api.body]}
+                            else {scm = api.body}
+                            let message = this.AIOSchemaInstance.validateObjectBySchema(scm, '', req.body);
                             if (typeof message === 'string') {
                                 message = `in request body : ${message}`
                                 return this.setResult({ status: 400, success: false, message, res })
