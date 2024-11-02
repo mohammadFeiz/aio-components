@@ -204,7 +204,7 @@ export class AIOSchema {
             default: return { success: true, result: 'any' + (required ? '' : ' | undefined') };
         }
     }
-    schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string,caller:string): { success: boolean, result: string } => {
+    schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string): { success: boolean, result: string } => {
         const { dif,ref } = this.getSchemaByRefrence(scm);
         if(ref){return {success:true,result:ref}}
         else if (dif.type) { return this.schemaDefinitionOptionToTS(scm as I_schemaDefinitionOption) }
@@ -236,16 +236,23 @@ export class AIOSchema {
         }
         if (Array.isArray(sdo.enum)) {
             //notice enum can be schema
-            return {
-                success: true,
-                result: sdo.enum.map((value: any) => (typeof value === 'string' ? `'${value}'` : value.toString())).join(' | ')
+            let errors:string[] = [];
+            const result = sdo.enum.map((value: any) => {
+                if(typeof value === 'string'){return `'${value}'`}
+                const {success,result} = this.schemaToTS(value);
+                if(success === false){errors.push(result)}
+                return result 
+            }).join(' | ')
+            if(errors.length){
+                return {success:false,result:errors.toString()}
             }
+            return {success: true,result}
         }
         if (['string', 'number', 'boolean', 'date'].indexOf(sdo.type) !== -1) {
             return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
         }
         else {
-            return this.schemaToTS(sdo.type,'schemaDefinitionOptionToTS')
+            return this.schemaToTS(sdo.type)
         }
     }
     bodyParamToString = (api: I_api): { success: boolean, result: string } => {
@@ -254,7 +261,7 @@ export class AIOSchema {
             let scm;
             if(typeof api.body === 'string'){scm = this.schemas[api.body];}
             else {scm = api.body}
-            const { success, result } = this.schemaToTS(scm,'bodyParamToString')
+            const { success, result } = this.schemaToTS(scm)
             if (!success) { return { success: false, result } }
             res = `body:${api.body}`
         }
@@ -265,7 +272,7 @@ export class AIOSchema {
         let scm;
         if(typeof api.successResult === 'string'){scm = this.schemas[api.successResult]}
         else {scm = api.successResult}
-        const { success, result } = this.schemaToTS(scm,'getReturnTypeString');
+        const { success, result } = this.schemaToTS(scm);
         if (!success) { return { success: false, result } }
         return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string'?api.successResult:result}>` }
     }
@@ -299,7 +306,7 @@ export class AIOSchema {
         for (let prop in this.schemas) {
             const scm = this.schemas[prop];
             if (typeof scm === 'string') { continue }
-            const { success, result } = this.schemaToTS(scm,'getInterfaces');
+            const { success, result } = this.schemaToTS(scm);
             if (!success) { return { success: false, result } }
             res += `
 export type ${prop} = ${result};
