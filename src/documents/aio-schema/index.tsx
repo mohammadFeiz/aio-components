@@ -137,7 +137,49 @@ const Enum: FC = () => {
     }
     const type = {
         type: 'string',
-        enum: [s_user, null]
+        enum: [s_user, 'null']
+    }
+    const { success, result } = aioSchema.schemaToTS(type)
+    return (
+        <>
+            {Code(`
+const [aioSchema] = useState<AIOSchema>(new AIOSchema())
+const s_user: I_schemaDefinition = {
+    role: { type: "string", required: true, enum: ['superAdmin', 'admin', 'user'] },
+    superAdminId: { type: "string", required: false },
+    name: { type: "string", required: true },
+    email: { type: "string", required: true },
+    mobile: { type: "string", required: true },
+    interDateString: { type: "string", required: false },
+    fingers: { type: "string", required: false },
+    organization: { type: "string", required: true }
+}
+const type = {
+    type:'string',
+    enum:[s_user,'I_user']
+}
+const {success,result} = aioSchema.schemaToTS(type)   
+            `)}
+            <div className="bold p-h-12 fs-16">Result:</div>
+            {success ? Code(result) : result}
+        </>
+    )
+}
+const SchemaToTs: FC = () => {
+    const [aioSchema] = useState<AIOSchema>(new AIOSchema())
+    const s_user: I_schemaDefinition = {
+        role: { type: "string", required: true, enum: ['superAdmin', 'admin', 'user'] },
+        superAdminId: { type: "string", required: false },
+        name: { type: "string", required: true },
+        email: { type: "string", required: true },
+        mobile: { type: "string", required: true },
+        interDateString: { type: "string", required: false },
+        fingers: { type: "string", required: false },
+        organization: { type: "string", required: true }
+    }
+    const type = {
+        type: 'string',
+        enum: [s_user, 'null']
     }
     const { success, result } = aioSchema.schemaToTS(type)
     return (
