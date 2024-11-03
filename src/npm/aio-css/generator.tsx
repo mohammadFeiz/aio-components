@@ -173,10 +173,11 @@ function getColorsCss() {
     }
     const percents = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
     for (let n of percents) {
-        res += `.bg-l-${n}-{background:rgba(255, 255, 255, .${n}) !important;}`;
-        res += `.bg-d-${n}-{background:rgba(0, 0, 0, .${n}) !important;}`;
-        res += `.c-l-${n}-{color:rgba(255, 255, 255, .${n}) !important;}`;
-        res += `.c-d-${n}-{color:rgba(0, 0, 0, .${n}) !important;} `;
+        const val = n === '5'?'05':n
+        res += `.bg-l-${n}-{background:rgba(255, 255, 255, .${val}) !important;}`;
+        res += `.bg-d-${n}-{background:rgba(0, 0, 0, .${val}) !important;}`;
+        res += `.c-l-${n}-{color:rgba(255, 255, 255, .${val}) !important;}`;
+        res += `.c-d-${n}-{color:rgba(0, 0, 0, .${val}) !important;} `;
     }
     res += `.c-inh-{color:inherit !important;}`;
     res += `.bg-inh-{background:inherit !important;}`;
@@ -225,7 +226,7 @@ function getOpacityCss() {
         if(n === '0'){val = '0'}
         else if(n === '100'){val = '1'}
         else if(n === '5'){val = '0.05'}
-        else if(n[1] === '0'){val = n[0]}
+        else if(n[1] === '0'){val = `0.${n[0]}`}
         else {val = `0.${n}`}
         res += `.op-${n}-{opacity:${val} !important;}`;
     }
