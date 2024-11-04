@@ -2385,8 +2385,10 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
     return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
 type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number, range?: number }) => number;
-type AI_cbs = (str: string, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number }
-type AI_rbs = (str: string) => { thickness: number, color: string, roundCap: boolean, offset: number }
+type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number }
+type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number }
+
+type I_rangeConfig = {thickness:number,offset:number,color:string,roundCap:boolean,full?:boolean}
 export type I_RangeContext = {
     getXPByValue: (value: number) => number,
     fixAngle: (angle: number) => number,
@@ -2499,45 +2501,36 @@ const Range: FC = () => {
         if (max !== undefined && res > max) { res = max }
         return res
     }
-    const getCircleByStr: AI_cbs = (str: string, type) => {
-        let [ticknessStr, offsetStr, colorStr, roundCapStr, fullStr] = str.split(' ');
-        let thickness = 1, radius = 0, roundCap = false, color = '#000', full = true;
+    const getCircleByStr: AI_cbs = (rc: I_rangeConfig, type) => {
+        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false,full = rc.full || false,offset = rc.offset, color = rc.color || '#000';
         try {
-            let thicknessValue = +ticknessStr;
+            let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
             thickness = thicknessValue;
-            let offsetValue = +offsetStr;
+            let offsetValue = offset;
             if (isNaN(offsetValue)) { offsetValue = 0 }
             let defaultRadius = size / 2 - thickness / 2;
             if (type === 'offset') { radius = defaultRadius - offsetValue; }
             else { radius = offsetValue; }
             if (radius > defaultRadius) { radius = defaultRadius }
             if (radius < thickness / 2) { radius = thickness / 2 }
-            if (roundCapStr === '1') { roundCap = true }
             else { roundCap = false }
-            if (fullStr === '1') { full = true }
-            else { full = false }
-            color = colorStr
         }
         catch { }
         return { thickness, radius, color, roundCap, full }
     }
-    const getRectByStr: AI_rbs = (str) => {
-        let [ticknessStr, offsetStr, colorStr, roundCapStr] = str.split(' ');
-        let thickness = 1, offset = 0, roundCap = false, color = '#000', full = true;
+    const getRectByStr: AI_rbs = (range) => {
+        let {thickness = 1, offset = 0, color = '#000', roundCap = false} = range;
         try {
-            let thicknessValue = +ticknessStr;
+            let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
             thickness = thicknessValue;
-            let offsetValue = +offsetStr;
+            let offsetValue = offset;
             if (isNaN(offsetValue)) { offsetValue = 0 }
             let defaultOffset = (size / 2) - (thickness / 2);
             offset = defaultOffset - offsetValue
             if (offset > size - thickness / 2) { offset = size - thickness / 2 }
             if (offset < thickness / 2) { offset = thickness / 2 }
-            if (roundCapStr === '1') { roundCap = true }
-            else { roundCap = false }
-            color = colorStr
         }
         catch { }
         return { thickness, offset, color, roundCap }
@@ -3486,13 +3479,13 @@ type AI_isRange = {
     max?: number,
     min?: number,
     point?: false | AI_point,
-    ranges?: [number, string][],
+    ranges?: [number, I_rangeConfig][],
     reverse?: boolean,
     size?: number,
     start?: number,
     step?: number,
     vertical?: boolean,
-    circles?: string[],
+    circles?: I_rangeConfig[],
     handle?: AI_range_handle,
     rotate?: number,
     round?: number,
