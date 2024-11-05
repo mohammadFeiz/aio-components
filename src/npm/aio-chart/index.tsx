@@ -5,12 +5,13 @@ import { EventHandler } from '../aio-utils/index.tsx';
 import $ from 'jquery';
 import './index.css';
 import { I_canvas_props } from '../aio-canvas/types.tsx';
-import { AI_point } from '../aio-input/types.tsx';
+type I_dToAxis = { key: I_axis, value: I_axis }
+type I_axisToD = { x: I_d, y: I_d }
 type I_chart_details = {
     min?: number,
     max?: number,
-    axisToD?: { x: I_d, y: I_d },
-    dToAxis?: { key: I_axis, value: I_axis }
+    axisToD?: I_axisToD,
+    dToAxis?: I_dToAxis,
     range?: { x: I_chart_filter, y: I_chart_filter },
     keysDictionary?: { [key: string]: number },
     barCount?: number,
@@ -49,16 +50,18 @@ type I_chart_data = {
     color?: string,
     editable?: boolean,
     draggable?:boolean,
-    pointRadius?:number | ((point:any)=>number),
-    pointStrokeWidth?:number | ((point:any)=>number),
-    pointStroke?:string | ((point:any)=>string),
-    pointFill?:string | ((point:any)=>string),
-    pointText?:string | ((point:any)=>string),
-    lineWidth?:number | ((point:any)=>number),
-    lineDash?:number[] | ((point:any)=>number[]),
-    pointDash?:number[] | ((point:any)=>number[]),
-    pointTextStyle?:any | ((point:any)=>any)
-    areaColor?:string
+    getPointRadius?:(point:any)=>number,
+    getPointStrokeWidth?:(point:any)=>number,
+    getPointStroke?:(point:any)=>string,
+    getPointFill?:(point:any)=>string,
+    getPointText?:(point:any)=>string,
+    lineWidth?:number,
+    getLineDash?:(point:any)=>number[],
+    getPointDash?:(point:any)=>number[],
+    getPointTextStyle?:(point:any)=>any
+    areaColor?:string,
+    getKey?:(point:any)=>number,
+    getValue?:(point:any)=>number,
 }
 type I_chart_line = { dash?: [number, number], lineWidth?: number, color?: string, key?:any, value?:any }
 type I_chart_mouseDetail = {
@@ -159,13 +162,13 @@ export default function RChart(props: I_Chart) {
 
     function normal_getArea(points:any[], color:string, areaColor:string) {
         let area;
-        area = { type: 'Line', points: points.slice(), fill: [0, 0, 0, -getCanvasSize(temp.details.dToAxis.value), ['0 ' + areaColor, '1 ' + color]] };
+        area = { type: 'Line', points: points.slice(), fill: [0, 0, 0, -getCanvasSize((temp.details.dToAxis as I_dToAxis).value), ['0 ' + areaColor, '1 ' + color]] };
         area.points.splice(0, 0, [points[0][0], 0]);
         area.points.push([points[points.length - 1][0], 0]);
         return area;
     }
     function reverse_getArea(points:any[], color:string, areaColor:string = 'rgba(255,255,255,0)') {
-        let area = { type: 'Line', points: points.slice(), fill: [0, 0, getCanvasSize(temp.details.dToAxis.value), 0, ['0 ' + areaColor, '1 ' + color]] };
+        let area = { type: 'Line', points: points.slice(), fill: [0, 0, getCanvasSize((temp.details.dToAxis as I_dToAxis).value), 0, ['0 ' + areaColor, '1 ' + color]] };
         area.points.splice(0, 0, [0, points[0][1]]);
         area.points.push([0, points[points.length - 1][1]]);
         return area;
@@ -186,9 +189,9 @@ export default function RChart(props: I_Chart) {
         return 100 * (point._keyIndex - start) / (end - start)
     }
     function getPercentByValue(axis:I_axis, point:any) {
-        return temp.details.axisToD[axis] === 'key' ? key_getPercentByValue(axis, point) : value_getPercentByValue(axis, point)
+        return (temp.details.axisToD as I_axisToD)[axis] === 'key' ? key_getPercentByValue(axis, point) : value_getPercentByValue(axis, point)
     }
-    function getLimitTypeNumber(data) {
+    function getLimitTypeNumber(data:I_chart_data[]) {
         var min = Infinity, max = -Infinity;
         for (var i = 0; i < data.length; i++) {
             var { points = [], getValue = (o) => o.y } = data[i];
@@ -203,22 +206,6 @@ export default function RChart(props: I_Chart) {
     }
     //تمامی اطلاعات لازم روی هر نقطه درج میشود با یک لوپ
     //مشخص می شود هر کلید دارای چه نقاطی است برای تشخیص قابل اد بودن
-    function getValueByField(point, field) {
-        try {
-            let type = typeof field;
-            if (type === 'function') { return field(point); }
-            if (type === 'string') {
-                if (field.indexOf('.') !== -1 && (field.indexOf('point') !== -1 || field.indexOf('props') !== -1)) {
-                    let result;
-                    eval('result = ' + field);
-                    return result;
-                }
-                return field;
-            }
-            return field;
-        }
-        catch { return; }
-    }
     function setPointDetails(data, dataIndex, point, pointIndex) {
         let { edit: keyEdit = (a) => a } = keyAxis as I_chart_axis;
         let { edit: valueEdit = (a) => a } = valueAxis as I_chart_axis;
@@ -241,10 +228,10 @@ export default function RChart(props: I_Chart) {
 
     }
     function getText(data:I_chart_data, point:any) {
-        let { pointText, pointTextStyle } = data;
-        let text = getValueByField(point, pointText)
-        if (text) {
-            let textStyle = getValueByField(point, pointTextStyle) || {}
+        let { getPointText = ()=>{}, getPointTextStyle = ()=>({}) } = data;
+        let text = getPointText(point)
+        if (text !== undefined) {
+            let textStyle = getPointTextStyle(point) || {}
             let { fontSize = 16, color = '#444', left = 0, top = 0, rotate, align } = textStyle;
             return {
                 type: 'Group', x: point._px + '%', y: point._py + '%', rotate,
@@ -254,14 +241,13 @@ export default function RChart(props: I_Chart) {
         return false
     }
     function getPoint(data:I_chart_data, dataIndex:number, point:any, pointIndex:number) {
-        let { color = '#000', lineWidth = 1, pointRadius, pointStroke, pointFill, pointStrokeWidth, pointDash, lineDash, pointSlice } = data;
-        let radius = getValueByField(point, pointRadius);
+        let { color = '#000', lineWidth = 1, getPointRadius = ()=>{}, getPointStroke = ()=>color, getPointFill = ()=>'#fff', getPointStrokeWidth = ()=>lineWidth, getPointDash = ()=>{} } = data;
+        let radius = getPointRadius(point);
         if (!radius) { return false; }
-        let stroke = getValueByField(point, pointStroke) || color;
-        let fill = getValueByField(point, pointFill) || '#fff';
-        let strokeWidth = getValueByField(point, pointStrokeWidth) || lineWidth;
-        let dash = getValueByField(point, pointDash);
-        let slice = getValueByField(point, pointSlice);
+        let stroke = getPointStroke(point) || color;
+        let fill = getPointFill(point);
+        let strokeWidth = getPointStrokeWidth(point) || lineWidth;
+        let dash = getPointDash(point);
         let space = -Infinity;
         if (hideInterfere) {
             let center = getCanvasSize('x') * point._px / 100;
@@ -273,7 +259,7 @@ export default function RChart(props: I_Chart) {
             type: 'Group', x: point._px + '%', y: point._py + '%', dataIndex, pointIndex,
             items: [
                 { type: 'Arc', r: clickRadius, fill: 'rgba(0,0,0,0)', onMouseDown: pointMouseDown, dataIndex, pointIndex },
-                { type: 'Arc', r: radius, lineWidth: strokeWidth * 2, fill, stroke, dash, slice }
+                { type: 'Arc', r: radius, lineWidth: strokeWidth * 2, fill, stroke, dash }
             ]
         };
         return res
@@ -356,8 +342,8 @@ export default function RChart(props: I_Chart) {
     }
     function getLineChart(data, dataIndex) {
         let lines = [], areas = [], points = [], texts = [];
-        let { color = '#000', lineWidth = 1, lineDash, areaColor } = data;
-        let Line = { type: 'Line', points: [], lineWidth, stroke: color, dash: lineDash };
+        let { color = '#000', lineWidth = 1, getLinedash = ()=>{}, areaColor } = data;
+        let Line = { type: 'Line', points: [], lineWidth, stroke: color, dash: getLinedash() };
         for (let pointIndex = 0; pointIndex < data.points.length; pointIndex++) {
             let point = data.points[pointIndex];
             if (setPointDetails(data, dataIndex, point, pointIndex) === false) { continue }

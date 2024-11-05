@@ -1,6 +1,9 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import { ReactNode } from 'react';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
 export type I_point = number[]
@@ -2641,3 +2644,41 @@ export function FakeName(p:{type:'firstname' | 'lastname' | 'fullname',gender?:'
     if(p.type === "lastname"){return getlastname()}
     return `${getfirstname()} ${getlastname()}`
 }
+export function StylingExcel(p: { jsonData: any, search: { rowIndex: number, field: string }[], getStyle: (cell: any) => any, successCallback: () => void }) {
+    // یک تابع برای یافتن اندیس ستون مربوط به هر فیلد
+    function getFieldColumnIndex(jsonRow: any, field: string) {
+      return Object.keys(jsonRow).indexOf(field);
+    }
+  
+    // ایجاد یک workbook جدید با استفاده از exceljs
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+  
+    // تبدیل داده‌ها به فرمت exceljs و اضافه کردن آن‌ها به worksheet
+    worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: key, key }));
+    p.jsonData.forEach((row: any) => {
+      worksheet.addRow(row);
+    });
+  
+    // اعمال استایل به سلول‌ها بر اساس جستجوی `p.search`
+    p.search.forEach(({ rowIndex, field }) => {
+      const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
+      const cell = worksheet.getRow(rowIndex + 1).getCell(columnIndex);
+      const style = p.getStyle(cell);
+      
+      if (style) {
+        cell.fill = style.fill;
+        cell.font = style.font;
+      }
+    });
+  
+    // ذخیره فایل به‌صورت باینری و دانلود آن
+    workbook.xlsx.writeBuffer().then((buffer:any) => {
+      const blob = new Blob([buffer], { type: 'application/octet-stream' });
+      const fileName = window.prompt('نام فایل جدید را وارد کنید');
+      if (fileName && fileName !== null) {
+        saveAs(blob, `${fileName}.xlsx`);
+        p.successCallback();
+      }
+    });
+  }

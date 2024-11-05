@@ -376,8 +376,6 @@ class GCRUD {
             catch (err: any) { return err.message }
             const res = await newRecord.save().catch((err: any) => `Error in adding row : ${err}`);
             const result = this.fixId(res)
-            console.log('res', res)
-            console.log('result', result)
             return result
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
