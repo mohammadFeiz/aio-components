@@ -191,7 +191,8 @@ class AIOExpress<I_User> {
                 if (!password || !userName) { return res.status(403).json({ message: 'Missing username or password' }); }
                 let defModel: any = {};
                 if (schema) {
-                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, userProps);
+                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, {...userProps,userName,password});
+                    console.log('defModel',defModel)
                     const message = this.AIOSchemaInstance.validateObjectBySchema(schema, '', defModel);
                     if (typeof message === 'string') { return res.status(400).json({ message, success: false }); }
                 }
