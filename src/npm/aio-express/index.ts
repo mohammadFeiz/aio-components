@@ -1,7 +1,7 @@
 import express, { NextFunction, Router, RequestHandler, Request, Response } from 'express';
 import type { Express } from 'express';
 //@ts-ignore
-import mongoose, { Model,Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
@@ -13,8 +13,8 @@ export type I_auth = {
     name: string,
     path: string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
-    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string,userName?:string,password?:string,userProps?:any } | void>,
-    loginExeption?:(p: { user: any,token:string }) => Promise<{ status?: number, message?: string,user?:any} | void>
+    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, userProps?: any } | void>,
+    loginExeption?: (p: { user: any, token: string }) => Promise<{ status?: number, message?: string, user?: any } | void>
 };
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
@@ -23,7 +23,7 @@ export type I_entities = { [entityName: string]: I_entity }
 export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
-    body?: I_schemaDefinition | I_schemaDefinitionOption |string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
+    body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
     fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => any
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
@@ -173,7 +173,7 @@ class AIOExpress<I_User> {
     }
     handleAuth = () => {
         if (!this.p.auth) { return; }
-        const { registerExeption,loginExeption } = this.p.auth;
+        const { registerExeption, loginExeption } = this.p.auth;
         const { dif } = this.getSchemaByRefrence(this.p.auth.schema || {})
         const schema = dif as I_schemaDefinition
         const scm: I_schemaDefinition = { ...schema, password: { type: 'string', required: true }, userName: { type: 'string', required: true, unique: true } }
@@ -191,15 +191,15 @@ class AIOExpress<I_User> {
                 if (!password || !userName) { return res.status(403).json({ message: 'Missing username or password' }); }
                 let defModel: any = {};
                 if (schema) {
-                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, {...userProps,userName,password});
+                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, { ...userProps, userName, password });
                     const message = this.AIOSchemaInstance.validateObjectBySchema(schema, '', defModel);
                     if (typeof message === 'string') { return res.status(400).json({ message, success: false }); }
                 }
                 if (registerExeption) {
                     const exep = await registerExeption({ userName, password, userProps });
-                    if (exep) { 
-                        if(exep.status){return res.status(exep.status).json({ message: exep.message, success: false }); }
-                        if(exep.userName){}
+                    if (exep) {
+                        if (exep.status) { return res.status(exep.status).json({ message: exep.message, success: false }); }
+                        if (exep.userName) { }
                     }
                 }
                 const hashedPassword = await bcrypt.hash(password, 10);
@@ -222,10 +222,10 @@ class AIOExpress<I_User> {
                 const secretKey: string = this.env.secretKey;
                 const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: this.getExpiresIn() });
                 if (loginExeption) {
-                    const exep = await loginExeption({ user,token });
-                    if (exep) { 
-                        if(exep.status){return res.status(exep.status).json({ message: exep.message, success: false }); }
-                        if(exep.user){user = exep.user}
+                    const exep = await loginExeption({ user, token });
+                    if (exep) {
+                        if (exep.status) { return res.status(exep.status).json({ message: exep.message, success: false }); }
+                        if (exep.user) { user = exep.user }
                     }
                 }
                 return res.status(200).json({ message: 'Login successful', token, user });
@@ -250,10 +250,10 @@ class AIOExpress<I_User> {
         this.schemas[name] = scm;
         this.AIOSchemaInstance.schemas = this.schemas;
     }
-    getSchemaDefinition = (schema: string | I_schemaDefinition,entityName:string): I_schemaDefinition => {
-        if(typeof schema === 'string'){
+    getSchemaDefinition = (schema: string | I_schemaDefinition, entityName: string): I_schemaDefinition => {
+        if (typeof schema === 'string') {
             const scm = this.schemas[schema]
-            if(!!scm.type){console.error(`Error in entity ${entityName} . schema is not valid . route schemas cannot get type property`);}
+            if (!!scm.type) { console.error(`Error in entity ${entityName} . schema is not valid . route schemas cannot get type property`); }
             return scm as I_schemaDefinition
         }
         return schema
@@ -274,7 +274,7 @@ class AIOExpress<I_User> {
         this[dicName][name] = this.fixPath(entity.path || `/${name}`);
         if (schema) {
             try {
-                const entitySchema = this.AIOSchemaInstance.getSchema(this.getSchemaDefinition(schema,name));
+                const entitySchema = this.AIOSchemaInstance.getSchema(this.getSchemaDefinition(schema, name));
                 const entityModel = mongoose.model(name, entitySchema);
                 this.models[name] = entityModel;
             }
@@ -289,13 +289,13 @@ class AIOExpress<I_User> {
                 this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
-                        if (reqUser === null) { return this.setResult({ res,success: false, message: 'req user not found', status: 401 }) }
+                        if (reqUser === null) { return this.setResult({ res, success: false, message: 'req user not found', status: 401 }) }
                         let body: any = req.body;
                         if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         if (api.body) {
                             let scm;
-                            if(typeof api.body === 'string'){scm = this.schemas[api.body]}
-                            else {scm = api.body}
+                            if (typeof api.body === 'string') { scm = this.schemas[api.body] }
+                            else { scm = api.body }
                             let message = this.AIOSchemaInstance.validateObjectBySchema(scm, '', req.body);
                             if (typeof message === 'string') {
                                 message = `in request body : ${message}`
@@ -374,9 +374,11 @@ class GCRUD {
             let model, newRecord;
             try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
             catch (err: any) { return err.message }
-            const res = await newRecord.save().then((res: any) => { })
-                .catch((err: any) => `Error in adding row : ${err}`);
-            return this.fixId(res)
+            const res = await newRecord.save().catch((err: any) => `Error in adding row : ${err}`);
+            const result = this.fixId(res)
+            console.log('res', res)
+            console.log('result', result)
+            return result
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
     }
@@ -386,8 +388,8 @@ class GCRUD {
             const exist = await this.getRow(p);
             if (exist === null) { return 'Record not found'; }
             if (typeof exist === 'string') { return exist }
-            for(let prop in p.newValue){
-                if(prop === 'id' || prop === '_id'){continue}
+            for (let prop in p.newValue) {
+                if (prop === 'id' || prop === '_id') { continue }
                 exist[prop] = p.newValue[prop]
             }
             const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true });
@@ -947,7 +949,7 @@ export type I_schemaDefinitionOption = {
     validate?: (value: any) => boolean, // اعتبارسنجی سفارشی
     errorMessage?: string, // پیام خطای سفارشی در صورت اعتبارسنجی ناموفق
 }
-type I_getSchemaType = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Map |I_schema;
+type I_getSchemaType = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Map | I_schema;
 export class AIOSchema {
     schemas: { [key: string]: I_schemaDefinition | I_schemaDefinitionOption } = {};
     getSchemaByRefrence = (schema: I_schemaDefinitionOption | I_schemaDefinition | string): { dif: I_schemaDefinitionOption | I_schemaDefinition, ref: string } => {
@@ -1023,7 +1025,7 @@ export class AIOSchema {
         if (typeof schemaDefinition === 'string') { return 'error 5423456' }
         const keys = Object.keys(schemaDefinition);
         for (const key of keys) {
-            if(key === 'organization'){debugger}
+            if (key === 'organization') { debugger }
             const { dif } = this.getSchemaByRefrence(schemaDefinition[key])
             const scm = dif as I_schemaDefinitionOption
             const value = obj[key];
@@ -1055,13 +1057,13 @@ export class AIOSchema {
         }
         //اگر تایپ ردیف آبجکت سازنده ی اسکیما خود یک اسکیما بود
         if (typeof sdo.type === 'object') {
-            if(sdo.type.type){
+            if (sdo.type.type) {
                 return 'invalid schema. schema.type.type detected'
             }
             return this.validateObjectBySchema(sdo.type, `${key}.type`, value || {});
         }
         if (value !== undefined && !this.isValidType(value, sdo.type as 'string' | 'number' | 'boolean' | 'date')) {
-            return `property "${key}" is not of type ${sdo.type}, value is ${JSON.stringify(value,null,3)}`;
+            return `property "${key}" is not of type ${sdo.type}, value is ${JSON.stringify(value, null, 3)}`;
         }
     }
     isValidType = (value: any, schemaType: 'string' | 'number' | 'boolean' | 'date'): boolean => {
@@ -1092,10 +1094,10 @@ export class AIOSchema {
     getDefaultValueBySchemaDefinitionOption = (sdo: I_schemaDefinitionOption, value: any): any => {
         const { dif } = this.getSchemaByRefrence(sdo);
         sdo = dif as I_schemaDefinitionOption
-        if(value === undefined){
-            if (sdo.required === true) {return sdo.def}
+        if (value === undefined) {
+            if (sdo.required === true) { return sdo.def }
         }
-        else {return value}
+        else { return value }
     }
     schemaDefinitionToTS = (scm: I_schemaDefinition): { success: boolean, result: string } => {
         const { dif } = this.getSchemaByRefrence(scm);
@@ -1127,12 +1129,12 @@ export class AIOSchema {
         }
     }
     schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string): { success: boolean, result: string } => {
-        const { dif,ref } = this.getSchemaByRefrence(scm);
-        let res:{ success: boolean, result: string };
-        if(ref){res =  {success:true,result:ref}}
+        const { dif, ref } = this.getSchemaByRefrence(scm);
+        let res: { success: boolean, result: string };
+        if (ref) { res = { success: true, result: ref } }
         else if (dif.type) { res = this.schemaDefinitionOptionToTS(scm as I_schemaDefinitionOption) }
         else { res = this.schemaDefinitionToTS(scm as I_schemaDefinition) }
-        if(res.success === true){
+        if (res.success === true) {
             res.result = res.result.replace(/'null'/g, 'null').replace(/"null"/g, 'null')
         }
         return res
@@ -1148,8 +1150,8 @@ export class AIOSchema {
             return { success: true, result: `(${result})[]` };
         }
         if (typeof sdo.type === 'object') {
-            if(sdo.type.type){
-                return {success:false,result:'invalid schema. schema.type.type detected'}
+            if (sdo.type.type) {
+                return { success: false, result: 'invalid schema. schema.type.type detected' }
             }
             return this.schemaDefinitionToTS(sdo.type);
         }
@@ -1166,17 +1168,17 @@ export class AIOSchema {
         }
         if (Array.isArray(sdo.enum)) {
             //notice enum can be schema
-            let errors:string[] = [];
+            let errors: string[] = [];
             const result = sdo.enum.map((value: any) => {
-                if(typeof value === 'string'){return `'${value}'`}
-                const {success,result} = this.schemaToTS(value);
-                if(success === false){errors.push(result)}
-                return result 
+                if (typeof value === 'string') { return `'${value}'` }
+                const { success, result } = this.schemaToTS(value);
+                if (success === false) { errors.push(result) }
+                return result
             }).join(' | ')
-            if(errors.length){
-                return {success:false,result:errors.toString()}
+            if (errors.length) {
+                return { success: false, result: errors.toString() }
             }
-            return {success: true,result}
+            return { success: true, result }
         }
         if (['string', 'number', 'boolean', 'date'].indexOf(sdo.type) !== -1) {
             return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
@@ -1189,22 +1191,22 @@ export class AIOSchema {
         let res: string = ''
         if (api.body) {
             let scm;
-            if(typeof api.body === 'string'){scm = this.schemas[api.body];}
-            else {scm = api.body}
+            if (typeof api.body === 'string') { scm = this.schemas[api.body]; }
+            else { scm = api.body }
             const { success, result } = this.schemaToTS(scm)
             if (!success) { return { success: false, result } }
-            res = `body:${typeof api.body === 'string'?api.body:result}`
+            res = `body:${typeof api.body === 'string' ? api.body : result}`
         }
         if (api.queryParam) { res += `${res ? ',' : ''}${api.queryParam}`; }
         return { success: true, result: res };
     }
     getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
         let scm;
-        if(typeof api.successResult === 'string'){scm = this.schemas[api.successResult]}
-        else {scm = api.successResult}
+        if (typeof api.successResult === 'string') { scm = this.schemas[api.successResult] }
+        else { scm = api.successResult }
         const { success, result } = this.schemaToTS(scm);
         if (!success) { return { success: false, result } }
-        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string'?api.successResult:result}>` }
+        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string' ? api.successResult : result}>` }
     }
     getMethodsString = (entities: I_entities): { success: boolean, result: string } => {
         let res = '';
