@@ -9,7 +9,7 @@ import {
     GetSvg,JSXToHTML
 } from './../../npm/aio-utils';
 import { divIcon, LeafletEvent } from 'leaflet';
-import { Circle, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
+import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import './index.css';
@@ -3943,7 +3943,7 @@ const MapBody: FC = () => {
     const defaultStyle = { width: '100%', height: '100%' }
     return (
         <MapContainer
-            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom.value} scrollWheelZoom={zoom.wheel ? 'center' : undefined} zoomControl={zoom.control !== false}
+            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom.value || 14} scrollWheelZoom={zoom.wheel ? 'center' : undefined} zoomControl={zoom.control !== false}
             attributionControl={true} dragging={dragging} ref={setMap} whenReady={whenReady}
         >
             <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
@@ -4004,8 +4004,14 @@ const MapLayers: FC = () => {
                     const { shapes = [], markers = [], active = true } = o;
                     return (
                         <LayersControl.Overlay name={o.name} checked={active} key={i}>
-                            {!!markers.length ? markers.map((marker: I_marker, j: number) => <MapMarker key={j} pos={marker.pos} html={marker.html} />) : null}
-                            {!!shapes.length ? shapes.map((shape: I_shape, i: number) => <MapShape key={'shape' + i} shape={shape} />) : null}
+                            <FeatureGroup>
+                                {markers.map((marker: I_marker, j: number) => 
+                                    <MapMarker key={j} pos={marker.pos} html={marker.html} />
+                                )}
+                                {shapes.map((shape: I_shape, k: number) => 
+                                    <MapShape key={k} shape={shape} />
+                                )}
+                            </FeatureGroup>
                         </LayersControl.Overlay>
                     )
                 })

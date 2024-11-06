@@ -3070,3 +3070,18 @@ pre[class*="language-"]>code[class*="language-"] {
     justify-content: center;
     height:36px;
 }
+.leaflet-container{
+    font-family:inherit !important;
+}
+.leaflet-control-layers-list{
+    background:var(--brm-color-1);
+    color:#fff;
+    padding:12px;
+    border-radius:6px;
+    
+}
+.leaflet-control-layers-overlays{
+    display: flex;
+    flex-direction: column;
+    gap:12px !important;
+}
