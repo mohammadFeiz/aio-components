@@ -2575,110 +2575,108 @@ export function ExcelToJSON(file: any, successCallback: (json: any) => void, err
         return;
     }
     import('xlsx')
-    .then((XLSX) => {
-        const reader = new FileReader();
-        reader.onload = function (e: any) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const res: { [key: string]: any } = {}
-            for (let i = 0; i < workbook.SheetNames.length; i++) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const res: { [key: string]: any } = {};
-                    workbook.SheetNames.forEach((sheetName:string) => {
-                      const sheet = workbook.Sheets[sheetName];
-                      const json = XLSX.utils.sheet_to_json(sheet);
-                      res[sheetName] = json;
-                    });
-                    successCallback(res);
-                  } 
-                  catch (error:any) {errorCallback('Error processing the file: ' + error.message);}
-            }
-            successCallback(res)
-        };
-        reader.onerror = () => errorCallback('Failed to read the file.');
-        reader.readAsArrayBuffer(file);
-    })
-    .catch((error) => {
-      // مدیریت خطا در صورت بارگذاری ناموفق ماژول xlsx
-      errorCallback('Failed to load xlsx module: ' + error.message);
-    });   
+        .then((XLSX) => {
+            const reader = new FileReader();
+            reader.onload = function (e: any) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const res: { [key: string]: any } = {}
+                for (let i = 0; i < workbook.SheetNames.length; i++) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        workbook.SheetNames.forEach((sheetName: string) => {
+                            const sheet = workbook.Sheets[sheetName];
+                            const json = XLSX.utils.sheet_to_json(sheet);
+                            res[sheetName] = json;
+                        });
+                    }
+                    catch (error: any) { errorCallback('Error processing the file: ' + error.message); }
+                }
+                successCallback(res)
+            };
+            reader.onerror = () => errorCallback('Failed to read the file.');
+            reader.readAsArrayBuffer(file);
+        })
+        .catch((error) => {
+            // مدیریت خطا در صورت بارگذاری ناموفق ماژول xlsx
+            errorCallback('Failed to load xlsx module: ' + error.message);
+        });
 }
-export function FakeName(p:{type:'firstname' | 'lastname' | 'fullname',gender?:'male' | 'female',lang:'en' | 'fa'}){
+export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gender?: 'male' | 'female', lang: 'en' | 'fa' }) {
     const names = {
-        firstname_male_fa:[
-            'آرمان','آرمین','آراد','آریا','ایمان','احمد','امیر علی','امیر','اسفندیار','اردلان','اکبر','اسماعیل','ابراهیم','احسان','بهمن','باقر','بردیا','برنا','باراد','بهروز','بیژن','پویا','پیمان','پدرام','پارسا','پرهام','پویان','حسن','حسین','حامد','حمید','حافظ','حسام',
-            'خشایار','داریوش','داوود','دانیال','رضا','رامین','رحمت','رحمان','رحیم','رایبد','رادمان','رادین','رضوان','ساسان','سامان','سینا','سعید','سپهر','سجاد','سورنا','سیروس','سالار','شریف','شهاب','شاهین','شایان','شاهد','شهریار','صادق','عادل','علی','عباس','عماد','عرفان','علی رضا','علی محمد',
-            'فرخ','فرهاد','فرشاد','فرشید','فرید','فربد','فرامرز','فرزین','فراز','فاضل','کاظم','کوروش','کریم','مجید','محمد','محمود','مصطفی','محسن','مهران','مهدی','مهبد','ماهور','ماهان','محمد رضا','محمد مهدی','مجید رضا','محمد حسین',
-            'نیما','وحید','هادی','هامون','یوسف'
+        firstname_male_fa: [
+            'آرمان', 'آرمین', 'آراد', 'آریا', 'ایمان', 'احمد', 'امیر علی', 'امیر', 'اسفندیار', 'اردلان', 'اکبر', 'اسماعیل', 'ابراهیم', 'احسان', 'بهمن', 'باقر', 'بردیا', 'برنا', 'باراد', 'بهروز', 'بیژن', 'پویا', 'پیمان', 'پدرام', 'پارسا', 'پرهام', 'پویان', 'حسن', 'حسین', 'حامد', 'حمید', 'حافظ', 'حسام',
+            'خشایار', 'داریوش', 'داوود', 'دانیال', 'رضا', 'رامین', 'رحمت', 'رحمان', 'رحیم', 'رایبد', 'رادمان', 'رادین', 'رضوان', 'ساسان', 'سامان', 'سینا', 'سعید', 'سپهر', 'سجاد', 'سورنا', 'سیروس', 'سالار', 'شریف', 'شهاب', 'شاهین', 'شایان', 'شاهد', 'شهریار', 'صادق', 'عادل', 'علی', 'عباس', 'عماد', 'عرفان', 'علی رضا', 'علی محمد',
+            'فرخ', 'فرهاد', 'فرشاد', 'فرشید', 'فرید', 'فربد', 'فرامرز', 'فرزین', 'فراز', 'فاضل', 'کاظم', 'کوروش', 'کریم', 'مجید', 'محمد', 'محمود', 'مصطفی', 'محسن', 'مهران', 'مهدی', 'مهبد', 'ماهور', 'ماهان', 'محمد رضا', 'محمد مهدی', 'مجید رضا', 'محمد حسین',
+            'نیما', 'وحید', 'هادی', 'هامون', 'یوسف'
         ],
-        firstname_female_fa:[
-            'الناز','المیرا','الهام','السا','احترام','بهار','باران','بیتا','بهناز','بهاره','بنفشه','بهاره','پارمیدا','پانته آ','پریا','پروین','پرستو','پرنیا','پریماه','پریناز','پریسا','تهمینه','تارا','تینا','ترنم','ترمه','جمیله','جیران','جانان',
-            'حمیده','حسنی','حسنا','حمیرا','دینا','دلارام','رها','رویا','ریما','ریحانه','راضیه','ژیلا','ژینا','ژاله','سمانه','ساحل','سمیرا','سارا','سوسن','ساناز','سیما','سهیلا','سحر','شیما','شهلا','شهره','شهرزاد','شیلا',
-            'عاطفه','عطیه','غزل','غزاله','فرهناز','فریده','فروزنده','فرزانه','فرگل','فهیمه','فرناز','فرنگیس','فاطمه','فرخنده','فریماه','فرشته','کتایون','کیمیا','کیانا','مهنوش','مهسا','مهناز','مهشاد','مهشید','مینا','منا','مهرنوش'
+        firstname_female_fa: [
+            'الناز', 'المیرا', 'الهام', 'السا', 'احترام', 'بهار', 'باران', 'بیتا', 'بهناز', 'بهاره', 'بنفشه', 'بهاره', 'پارمیدا', 'پانته آ', 'پریا', 'پروین', 'پرستو', 'پرنیا', 'پریماه', 'پریناز', 'پریسا', 'تهمینه', 'تارا', 'تینا', 'ترنم', 'ترمه', 'جمیله', 'جیران', 'جانان',
+            'حمیده', 'حسنی', 'حسنا', 'حمیرا', 'دینا', 'دلارام', 'رها', 'رویا', 'ریما', 'ریحانه', 'راضیه', 'ژیلا', 'ژینا', 'ژاله', 'سمانه', 'ساحل', 'سمیرا', 'سارا', 'سوسن', 'ساناز', 'سیما', 'سهیلا', 'سحر', 'شیما', 'شهلا', 'شهره', 'شهرزاد', 'شیلا',
+            'عاطفه', 'عطیه', 'غزل', 'غزاله', 'فرهناز', 'فریده', 'فروزنده', 'فرزانه', 'فرگل', 'فهیمه', 'فرناز', 'فرنگیس', 'فاطمه', 'فرخنده', 'فریماه', 'فرشته', 'کتایون', 'کیمیا', 'کیانا', 'مهنوش', 'مهسا', 'مهناز', 'مهشاد', 'مهشید', 'مینا', 'منا', 'مهرنوش'
         ],
-        lastname_fa:[
-            'احمدی','اردستانی','امینی','الهی','احسانی','اشتیاق','ابوالحسنی','اسماعیلی','اختیاری','اشراقی','اثباتی','بقایی','براتی','بینا','باقری','بهرامی','پیروز','پرویزی','پهلوانی','پیروی','پور غلامی','پور صمیمی','پازوکی','پاشایی','ترابی','تیموری','تشکری','جمالی','جهرمی','جلالی','جبلی','جباری',
-            'چنگیزی','حمیدی','حسنی','حسینی','حبیبی','حیدری','خالقی','خندان','خسروی','خاقانی','خراسانی','دارابی','دهنوی','دشتی','دهستانی','زمانی','زواری','زرندی','زنگنه','سامانی','سلیمانی','سپهری','سزاوار','سرمد','سرافراز','رضایی','رمضانی','رحمانی','رحمتی','رضوانی','ربیعی','رادمهر','ریحانی','رستمی','رواقی','رشیدی','رشادی','رضوی','رفیعی',
-            'فقیهی','فریدونی','فردوسی','فرامرزی','فرید نیا','فرحی','فرهمند','فرهودی','فهیمی','فراهانی','فاضلی','قهرمانی','قریبی','قوامی','قاسمی','کاظمی','کلهر','کرمی','کریمی','کوچک زاده','کمالی','کیوانی','کلاهدوز','کاملی','کامیاب','گودرزی','گرشاسبی','گایینی','لسانی','لرستانی','لقمانی','لشکری',
-            'محمدی','مرندی','محسنی','مجیدی','میثاقی','مروتی','مردانی','محمودی','مسجد جامعی','مصطفوی','محلوجی','مرادی','مهستانی','مرودشتی','مشکاتی','مرتضوی','مسعودی','مقصودی','منافی','مطلق','منطقی','نریمانی','نیشابوری','نیستانی','نبوی','ناصری','نیمایی','ناسوتی','ناطقی','نشتارودی','نوری','نور محمدی','نوایی','نهری','نامی','نامدار','نایینی',
-            'وحیدی','واسقی','ورامینی','واصلی','واحدی','وحدت','ورعی','والایی','وزیری','هادیان','همراه','همایونی','هویدا','هدایتی','هاتفی','هشترودی','هاشمی','یحیوی','یاسری','یادگار','یثربی','یونسی','یوسفی','یارمحمدی','یداللهی',
+        lastname_fa: [
+            'احمدی', 'اردستانی', 'امینی', 'الهی', 'احسانی', 'اشتیاق', 'ابوالحسنی', 'اسماعیلی', 'اختیاری', 'اشراقی', 'اثباتی', 'بقایی', 'براتی', 'بینا', 'باقری', 'بهرامی', 'پیروز', 'پرویزی', 'پهلوانی', 'پیروی', 'پور غلامی', 'پور صمیمی', 'پازوکی', 'پاشایی', 'ترابی', 'تیموری', 'تشکری', 'جمالی', 'جهرمی', 'جلالی', 'جبلی', 'جباری',
+            'چنگیزی', 'حمیدی', 'حسنی', 'حسینی', 'حبیبی', 'حیدری', 'خالقی', 'خندان', 'خسروی', 'خاقانی', 'خراسانی', 'دارابی', 'دهنوی', 'دشتی', 'دهستانی', 'زمانی', 'زواری', 'زرندی', 'زنگنه', 'سامانی', 'سلیمانی', 'سپهری', 'سزاوار', 'سرمد', 'سرافراز', 'رضایی', 'رمضانی', 'رحمانی', 'رحمتی', 'رضوانی', 'ربیعی', 'رادمهر', 'ریحانی', 'رستمی', 'رواقی', 'رشیدی', 'رشادی', 'رضوی', 'رفیعی',
+            'فقیهی', 'فریدونی', 'فردوسی', 'فرامرزی', 'فرید نیا', 'فرحی', 'فرهمند', 'فرهودی', 'فهیمی', 'فراهانی', 'فاضلی', 'قهرمانی', 'قریبی', 'قوامی', 'قاسمی', 'کاظمی', 'کلهر', 'کرمی', 'کریمی', 'کوچک زاده', 'کمالی', 'کیوانی', 'کلاهدوز', 'کاملی', 'کامیاب', 'گودرزی', 'گرشاسبی', 'گایینی', 'لسانی', 'لرستانی', 'لقمانی', 'لشکری',
+            'محمدی', 'مرندی', 'محسنی', 'مجیدی', 'میثاقی', 'مروتی', 'مردانی', 'محمودی', 'مسجد جامعی', 'مصطفوی', 'محلوجی', 'مرادی', 'مهستانی', 'مرودشتی', 'مشکاتی', 'مرتضوی', 'مسعودی', 'مقصودی', 'منافی', 'مطلق', 'منطقی', 'نریمانی', 'نیشابوری', 'نیستانی', 'نبوی', 'ناصری', 'نیمایی', 'ناسوتی', 'ناطقی', 'نشتارودی', 'نوری', 'نور محمدی', 'نوایی', 'نهری', 'نامی', 'نامدار', 'نایینی',
+            'وحیدی', 'واسقی', 'ورامینی', 'واصلی', 'واحدی', 'وحدت', 'ورعی', 'والایی', 'وزیری', 'هادیان', 'همراه', 'همایونی', 'هویدا', 'هدایتی', 'هاتفی', 'هشترودی', 'هاشمی', 'یحیوی', 'یاسری', 'یادگار', 'یثربی', 'یونسی', 'یوسفی', 'یارمحمدی', 'یداللهی',
         ],
-        firstname_male_en:[],
-        firstname_female_en:[],
-        lastname_en:[] 
+        firstname_male_en: [],
+        firstname_female_en: [],
+        lastname_en: []
     }
-    const getfirstnames = ()=>{
-        if(p.gender === 'male'){return names[`firstname_male_${p.lang}`]}
-        else if(p.gender === 'female'){return names[`firstname_female_${p.lang}`]}
-        else {return [...names[`firstname_male_${p.lang}`],...names[`firstname_female_${p.lang}`]]}
+    const getfirstnames = () => {
+        if (p.gender === 'male') { return names[`firstname_male_${p.lang}`] }
+        else if (p.gender === 'female') { return names[`firstname_female_${p.lang}`] }
+        else { return [...names[`firstname_male_${p.lang}`], ...names[`firstname_female_${p.lang}`]] }
     }
-    const getfirstname = ()=>{
+    const getfirstname = () => {
         const firstnames = getfirstnames()
-        const index = GetRandomNumber(0,firstnames.length - 1);
+        const index = GetRandomNumber(0, firstnames.length - 1);
         return firstnames[index];
     }
-    const getlastname = ()=>{return names[`lastname_${p.lang}`]}
-    if(p.type === "firstname"){return getfirstname()}
-    if(p.type === "lastname"){return getlastname()}
+    const getlastname = () => { return names[`lastname_${p.lang}`] }
+    if (p.type === "firstname") { return getfirstname() }
+    if (p.type === "lastname") { return getlastname() }
     return `${getfirstname()} ${getlastname()}`
 }
 export function StylingExcel(p: { jsonData: any, search: { rowIndex: number, field: string }[], getStyle: (cell: any) => any, successCallback: () => void }) {
     // یک تابع برای یافتن اندیس ستون مربوط به هر فیلد
     function getFieldColumnIndex(jsonRow: any, field: string) {
-      return Object.keys(jsonRow).indexOf(field);
+        return Object.keys(jsonRow).indexOf(field);
     }
-  
+
     // ایجاد یک workbook جدید با استفاده از exceljs
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
-  
+
     // تبدیل داده‌ها به فرمت exceljs و اضافه کردن آن‌ها به worksheet
     worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: key, key }));
     p.jsonData.forEach((row: any) => {
-      worksheet.addRow(row);
+        worksheet.addRow(row);
     });
-  
+
     // اعمال استایل به سلول‌ها بر اساس جستجوی `p.search`
     p.search.forEach(({ rowIndex, field }) => {
-      const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
-      const cell = worksheet.getRow(rowIndex + 1).getCell(columnIndex);
-      const style = p.getStyle(cell);
-      
-      if (style) {
-        cell.fill = style.fill;
-        cell.font = style.font;
-      }
+        const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
+        const cell = worksheet.getRow(rowIndex + 1).getCell(columnIndex);
+        const style = p.getStyle(cell);
+
+        if (style) {
+            cell.fill = style.fill;
+            cell.font = style.font;
+        }
     });
-  
+
     // ذخیره فایل به‌صورت باینری و دانلود آن
-    workbook.xlsx.writeBuffer().then((buffer:any) => {
-      const blob = new Blob([buffer], { type: 'application/octet-stream' });
-      const fileName = window.prompt('نام فایل جدید را وارد کنید');
-      if (fileName && fileName !== null) {
-        saveAs(blob, `${fileName}.xlsx`);
-        p.successCallback();
-      }
+    workbook.xlsx.writeBuffer().then((buffer: any) => {
+        const blob = new Blob([buffer], { type: 'application/octet-stream' });
+        const fileName = window.prompt('نام فایل جدید را وارد کنید');
+        if (fileName && fileName !== null) {
+            saveAs(blob, `${fileName}.xlsx`);
+            p.successCallback();
+        }
     });
-  }
+}
