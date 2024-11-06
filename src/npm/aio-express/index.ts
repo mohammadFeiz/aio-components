@@ -24,7 +24,7 @@ export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
     body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
-    checkAccess?:(reqUser:any,body:any)=>Promise<void | string>
+    checkAccess?:(reqUser:any,body:any)=>Promise<void | string | {[key:string]:any}>
     fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => any
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
@@ -291,7 +291,7 @@ class AIOExpress<I_User> {
                     try {
                         const reqUser = await this.getUserByReq(req);
                         if (reqUser === null) { return this.setResult({ res, success: false, message: 'req user not found', status: 401 }) }
-                        let body: any = req.body;
+                        let body: any = {...(req.body || {})};
                         if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         if (api.body) {
                             let scm;
@@ -305,8 +305,11 @@ class AIOExpress<I_User> {
                         }
                         if (typeof reqUser === 'string') { return { success: false, message: reqUser, status: 403 } }
                         if(api.checkAccess){
-                            const result = await api.checkAccess(reqUser,body);
+                            let result = await api.checkAccess(reqUser,body);
                             if(typeof result === 'string'){return res.status(403).json({ message: result, success: false });}
+                            else if(typeof result === 'object'){
+                                for(let prop in result){body[prop] = result}
+                            }
                         }
                         const result = await fn({ req, res, reqUser, body })
                         return this.setResult({ ...result, res })
