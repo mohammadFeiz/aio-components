@@ -251,14 +251,16 @@ function TimePopover(props: { onClose: () => void }) {
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         //@ts-nocheck
         let { year, month, day } = value;
-        if (type === 'year' && startYear && endYear) { return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear })) }
+        if (type === 'year' && startYear && endYear) { 
+            return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear }),rootProps.timeStep?.year) 
+        }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
-            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 } })
+            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 } },rootProps.timeStep?.day)
         }
-        if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 })) }
-        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }))
+        if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 }),rootProps.timeStep?.month) }
+        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }),rootProps.timeStep?rootProps.timeStep[type]:undefined)
     }
     function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ReactNode {
         if (typeof value[type] !== 'number') { return null }
@@ -3439,6 +3441,7 @@ type AI_isDate = {
     theme?: string[],
     translate?: (text: string) => string,
     unit?: AI_date_unit | AI_time_unit,
+    timeStep?:{year?:number,month?:number,day?:number,hour?:number,minute?:number,second?:number},
     text?: ReactNode | (() => ReactNode),
 }
 type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }

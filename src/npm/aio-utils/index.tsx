@@ -1680,9 +1680,18 @@ export function setValueByField(data: any = {}, field: string, value: any) {
     node[fields[fields.length - 1]] = value;
     return data;
 }
-export function GetArray(count: number, fn?: (index: number) => any) {
+export function GetArray(count: number, fn?: (index: number) => any,step?:number) {
     fn = fn || ((index) => index)
-    return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
+    if(step){
+        const arr = new Array(count).fill(0);
+        const res = [];
+        for(let i = 0; i < arr.length; i++){
+            if(i % step !== 0){continue}
+            res.push(fn(i))
+        }
+        return res
+    }
+    return new Array(count).fill(0).map((o, i) => fn(i))
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
 type I_storage_model = { [key: string]: any }
