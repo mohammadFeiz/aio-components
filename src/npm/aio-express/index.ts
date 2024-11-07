@@ -25,7 +25,7 @@ export type I_api = {
     method: 'post' | 'get' | 'put' | 'delete',
     body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: string, getResult: string,
     checkAccess?:(reqUser:any,body:any)=>Promise<void | string | {[key:string]:any}>
-    fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => {status:number,success:boolean,message:string,value:any}
+    fn: (p: { req: Request, res: Response, reqUser: any, body: any }) => Promise<{status:number,success:boolean,message?:string,value?:any}>
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 type I_schemas = { [key: string]: (I_schemaDefinition | I_schemaDefinitionOption) }
@@ -312,7 +312,7 @@ class AIOExpress<I_User> {
                             }
                         }
                         const result = await fn({ req, res, reqUser, body })
-                        return this.setResult({ ...result, res })
+                        return this.setResult({ ...result, res,message:result.message || '' })
                     }
                     catch (err: any) { return res.status(500).json({ message: err.message, success: false }); }
                 });
