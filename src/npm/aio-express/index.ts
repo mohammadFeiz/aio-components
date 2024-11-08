@@ -1175,14 +1175,18 @@ export class AIOSchema {
         if (Array.isArray(sdo.enum)) {
             //notice enum can be schema
             let errors: string[] = [];
-            const result = sdo.enum.map((value: any) => {
+            let result = sdo.enum.map((value: any) => {
                 if (typeof value === 'string') { return `'${value}'` }
+                if (typeof value === 'number') { return `${value}` }
                 const { success, result } = this.schemaToTS(value);
                 if (success === false) { errors.push(result) }
                 return result
             }).join(' | ')
             if (errors.length) {
                 return { success: false, result: errors.toString() }
+            }
+            if(!sdo.required){
+                result = `(${result}) | undefined`
             }
             return { success: true, result }
         }
