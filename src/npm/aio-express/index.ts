@@ -90,7 +90,10 @@ class AIOExpress<I_User> {
         }
         this.addUser = async (p) => {
             if (!this.AuthModel) { return 'auth model is not set' }
-            const res = await this.addRow({ model: this.AuthModel, newValue: p.newValue as I_row })
+            const newValue:any = p.newValue;
+            const hashedPassword = await bcrypt.hash(newValue.password , 10);
+            newValue.password = hashedPassword;
+            const res = await this.addRow({ model: this.AuthModel, newValue })
             return typeof res === 'string' ? res : res as I_User
         }
         this.editUser = async (p) => {
