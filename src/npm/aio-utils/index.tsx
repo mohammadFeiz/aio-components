@@ -60,6 +60,17 @@ export function HandleBackButton(callback: () => void = () => { }) {
         callback()
     };
 }
+export function SortArray(arr: any[], sorts: { getValue: (v: any) => any, inc?: boolean }[]) {
+    return arr.slice().sort((a, b) => {
+        for (const sort of sorts) {
+            const valueA = sort.getValue(a);
+            const valueB = sort.getValue(b);         
+            const comparison = sort.inc !== false ? valueA - valueB : valueB - valueA;
+            if (comparison !== 0) {return comparison;}
+        }
+        return 0;
+    });
+}
 export function ParseString(str: string): any {
     // Check if the string starts and ends with a quote character
     try {
