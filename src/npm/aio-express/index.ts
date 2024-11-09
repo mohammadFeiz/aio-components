@@ -58,6 +58,7 @@ class AIOExpress<I_User> {
     editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User> }) => Promise<string | number>
     removeUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<I_User | string>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<number | string>
+    changeUserPassword:(p: { userPassword: string, oldPassword: string, newPassword: string,userId:string })=> Promise<true | string>
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
         this.p = p;
@@ -113,6 +114,17 @@ class AIOExpress<I_User> {
         this.removeUsers = async (p) => {
             if (!this.AuthModel) { return 'auth model is not set' }
             return await this.removeRows({ model: this.AuthModel, ...p })
+        }
+        this.changeUserPassword = async (p)=>{
+            try{
+                const newPasswrod = await this.getNewPassword(p);
+                if(newPasswrod === false){return 'old password is not match'}
+                const newValue:any = {password:newPasswrod}
+                const res = await this.editUser({id:p.userId,newValue})
+                if(typeof res === 'string'){return res}
+                else {return true}
+            }
+            catch(err:any){return err.message}
         }
     }
     log = (message: string, color?: 'green' | 'red' | 'yellow') => {
