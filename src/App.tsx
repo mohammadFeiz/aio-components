@@ -26,6 +26,7 @@ import BeenetDoc from "./documents/beenet";
 import DOC_Login from './documents/login'
 import DOC_AIOCss from './documents/aio-css';
 import DOC_AIOSchema from './documents/aio-schema';
+import DOC_AIODashboard from './documents/aio-dashboard/doc-aio-dashboard.tsx';
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -50,6 +51,7 @@ export default function AIOComponents(){
     'Login':DOC_Login,
     'aio-css':DOC_AIOCss,
     'aio-schema':DOC_AIOSchema,
+    'aio-dashboard':DOC_AIODashboard,
     'test':Test
   })
   function goToHome(){

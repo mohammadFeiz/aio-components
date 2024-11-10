@@ -1,0 +1,32 @@
+.aio-chart{
+    width:100%;
+    height:600px;
+    border:1px solid;
+    display: flex;
+    flex-direction: column;
+}
+.aio-chart-top{
+    flex:1;
+    display:flex;
+}
+.aio-chart-vertical-axis{
+    background:orange;
+}
+.aio-chart-bottom{
+    background:yellow;
+    display:flex;
+}
+.aio-chart-canvas{
+    flex:1;
+    position:relative;
+}
+.aio-chart-canvas canvas{
+    position: absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+}
+.aio-chart-corner{
+    background:pink;
+}
