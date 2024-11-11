@@ -139,6 +139,7 @@ const Chart:FC<I_Chart> = (props)=>{
         const canvasElement = parentElement.find('canvas');
         const size:I_chart_size = {x:canvasElement.width(),y:canvasElement.height()}
         const dataDetails = getDataDetails(props.datas,size);
+        xLabelsRef.current = getXLabels(props.keys,size)
         dataDetailsRef.current = dataDetails;
         const items = getElements(dataDetails,size);
         setCanvasItems(items)
@@ -155,17 +156,25 @@ const Chart:FC<I_Chart> = (props)=>{
             <div className="aio-chart-bottom">
                 <div className="aio-chart-corner" style={getCornerStyle()}></div>
                 <div className="aio-chart-axis aio-chart-horizontal-axis" style={getHorizontalAxisStyle()}>
-                    <XLabels dataDetails={dataDetailsRef.current}/>
+                    <XLabels xLabels={xLabelsRef.current}/>
                 </div>
             </div>
         </div>
     )
 }
 export {Chart}
-const XLabels:FC<{dataDetails:I_chart_data_detail[]}> = ({dataDetails})=>{
+const XLabels:FC<{xLabels:I_chart_label_detail[]}> = ({xLabels})=>{
     return (
         <div className="aio-chart-labels-horizontal">
-            
+           {
+            xLabels.map((o)=>{
+                return (
+                    <div className="aio-chart-x-label" style={{left:o.offset}}>
+                        {o.text}
+                    </div>
+                )
+            })
+           } 
         </div>
     )
 }

@@ -19,6 +19,14 @@
     background:yellow;
     display:flex;
 }
+.aio-chart-horizontal-axis{
+    position: absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    position: relative;
+}
 .aio-chart-canvas{
     flex:1;
     position:relative;
@@ -32,4 +40,19 @@
 }
 .aio-chart-corner{
     background:pink;
+}
+.aio-chart-labels-horizontal{
+    position: absolute;
+    height:100%;
+    width:100%;
+    left:0;
+    top:0;
+}
+.aio-chart-x-label{
+    position: absolute;
+    height:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+
 }
