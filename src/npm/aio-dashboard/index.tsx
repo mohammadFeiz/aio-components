@@ -1,26 +1,25 @@
-import { createRef, FC, ReactNode, useEffect, useState } from "react";
+import { createRef, FC, MutableRefObject, ReactNode, useEffect, useRef, useState } from "react";
 import { GetPercentByValue } from "../aio-utils";
 import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
 import $ from 'jquery';
 import './index.css';
-type I_chart_size = {width:number,height:number}
+type I_chart_size = {x:number,y:number}
 type I_chart_axis = {start:number,end:number,size:number,padding?:number}
 type I_chart_data_axis = {
     getValue:(point:any)=>number,
     getLabel:(v:number)=>ReactNode
 }
+type I_chart_label_detail = {text:string,offset:number}
 type I_getPointStyle = (data:I_chart_data,point:any)=>I_chart_point_style;
 type I_getLineStyle = (data:I_chart_data)=>I_chart_line_style
 type I_chart_point_style = {lineWidth?:number,r?:number,dash?:number[],stroke?:string,fill?:string}
 type I_chart_line_style = {lineWidth?:number,dash?:number[],stroke?:string}
 type I_chart_data_detail = {points:I_chart_point_detail[],type:'line' | 'bar',lineStyle:I_chart_line_style}
+type I_chart_keys = {start:number,step:number,end:number}
 type I_chart_point_detail = {
-    x:number,y:number,
-    xp:number,yp:number,
-    xc:number,yc:number,
-    w:number,h:number,
-    xLabel:ReactNode,yLabel:ReactNode,
+    x:{value:number,percent:number,offset:number,label:ReactNode,size:number},
+    y:{value:number,percent:number,offset:number,label:ReactNode,size:number},
     pointStyle:I_chart_point_style,
 }
 type I_chart_data = {
@@ -32,13 +31,16 @@ type I_chart_data = {
 export type I_Chart = {
     datas:I_chart_data[],
     xAxis:I_chart_axis,
-    yAxis:I_chart_axis
+    yAxis:I_chart_axis,
+    keys:I_chart_keys,
+    getKeyLabel:(x:number)=>string
 }
 const Chart:FC<I_Chart> = (props)=>{
     const [dom] = useState<any>(createRef())
     const [canvas] = useState<Canvas>(new Canvas())
     const [canvasItems,setCanvasItems] = useState<I_canvas_item[]>([])
-    
+    const dataDetailsRef = useRef<I_chart_data_detail[]>([])
+    const xLabelsRef = useRef<I_chart_label_detail[]>([])
     function getDefaultPointStyle(data:I_chart_data,point:any):I_chart_point_style{
         const {getPointStyle = (()=>({}))} = data; 
         const pointStyle:I_chart_point_style = getPointStyle(data,point) || {};
@@ -54,7 +56,7 @@ const Chart:FC<I_Chart> = (props)=>{
     function getBarWidth(data:I_chart_data,size:I_chart_size){
         const {padding:xPadding = 36} = props.xAxis,{padding:yPadding = 0} = props.yAxis;
         const pointsLength = data.points.length;
-        let avilableWidth = size.width - (xPadding * 2);
+        let avilableWidth = size.x - (xPadding * 2);
         const gap = avilableWidth / pointsLength / 2;
         avilableWidth -= (pointsLength - 1) * gap;
         return avilableWidth / pointsLength
@@ -65,15 +67,13 @@ const Chart:FC<I_Chart> = (props)=>{
             const data = datas[i];
             let dataDetail:I_chart_data_detail = {points:[],type:data.type,lineStyle:getDefaultLineStyle(data)}
             for(let j = 0; j < data.points.length; j++){
-                const {padding:xPadding = 36} = props.xAxis,{padding:yPadding = 0} = props.yAxis;
                 const point = data.points[j];
                 const x = data.xAxis.getValue(point),y = data.yAxis.getValue(point);
-                const xp = GetPercentByValue(props.xAxis.start,props.xAxis.end,x),yp = GetPercentByValue(props.yAxis.start,props.yAxis.end,y);
-                const xc = xPadding + ((size.width - xPadding * 2) * xp / 100),yc = yPadding + ((size.height - yPadding * 2) * yp / 100);
+                const xOffset = getOffsetByValue('x',x,size)
+                const yOffset = getOffsetByValue('y',y,size)
                 const pointDetail:I_chart_point_detail = {
-                    x,y,xp,yp,xc,yc,
-                    w:getBarWidth(data,size),h:-yc,
-                    xLabel:data.xAxis.getLabel(x),yLabel:data.yAxis.getLabel(y),
+                    x:{...xOffset,label:data.xAxis.getLabel(x),size:getBarWidth(data,size),value:x},
+                    y:{...yOffset,label:data.yAxis.getLabel(y),size:-yOffset.offset,value:y},
                     pointStyle:getDefaultPointStyle(data,point)
                 }
                 dataDetail.points.push(pointDetail)
@@ -82,8 +82,21 @@ const Chart:FC<I_Chart> = (props)=>{
         }
         return dataDetails    
     }
-    function getElements(size:I_chart_size){
-        const dataDetails = getDataDetails(props.datas,size);
+    function getOffsetByValue(axis:'x' | 'y',value:number,size:I_chart_size):{percent:number,offset:number}{
+        const {padding = axis === 'x'?36:0,start,end} = props[`${axis}Axis`];
+        const p = GetPercentByValue(start,end,value);
+        const v = padding + ((size[axis] - padding * 2) * p / 100);
+        return {percent:p,offset:v}
+    }
+    function getXLabels(keys:I_chart_keys,size:I_chart_size):I_chart_label_detail[]{
+        const res:I_chart_label_detail[] = [];
+        for(let key = keys.start; key <= keys.end; key+=keys.step){
+            const {offset} = getOffsetByValue('x',key,size)
+            res.push({offset,text:props.getKeyLabel(key)})
+        }
+        return res
+    }
+    function getElements(dataDetails:I_chart_data_detail[],size:I_chart_size){
         let lines:I_canvas_item[] = [],points:I_canvas_item[] = [],rects:I_canvas_item[] = [];
         for(let i = 0; i < dataDetails.length; i++){
             const detail = dataDetails[i];
@@ -104,8 +117,8 @@ const Chart:FC<I_Chart> = (props)=>{
         const lineElement:I_canvas_item = {points:[],type:"Line",lineWidth,dash,stroke};
         for(let i = 0; i < detail.points.length; i++){
             const p = detail.points[i];
-            (lineElement.points as any).push([p.xc,p.yc])
-            pointElements.push({type:'Arc',x:p.xc,y:p.yc,...p.pointStyle})
+            (lineElement.points as any).push([p.x.offset,p.y.offset])
+            pointElements.push({type:'Arc',x:p.x.offset,y:p.y.offset,...p.pointStyle})
         }
         return {pointElements,lineElement}
     }
@@ -114,22 +127,23 @@ const Chart:FC<I_Chart> = (props)=>{
         const rectElements:I_canvas_item[] = []
         for(let i = 0; i < detail.points.length; i++){
             const p = detail.points[i];
-            rectElements.push({type:'Rectangle',x:p.xc,y:p.yc,pivot:[p.w / 2,0],width:p.w,height:p.h,...p.pointStyle})
+            rectElements.push({type:'Rectangle',x:p.x.offset,y:p.y.offset,pivot:[p.x.size / 2,0],width:p.x.size,height:p.y.size,...p.pointStyle})
         }
         return rectElements
-    }
-    function getCanvasItems(){
-        const parentElement = $(dom.current);
-        const canvasElement = parentElement.find('canvas');
-        const width = canvasElement.width();
-        const height = canvasElement.height();
-        const items = getElements({width,height});
-        setCanvasItems(items)
     }
     function getVerticalAxisStyle(){return {width:props.yAxis.size}}
     function getHorizontalAxisStyle(){return {height:props.xAxis.size}}
     function getCornerStyle(){return {width:props.yAxis.size,height:props.xAxis.size}}
-    useEffect(()=>{getCanvasItems()},[])
+    function update(){
+        const parentElement = $(dom.current);
+        const canvasElement = parentElement.find('canvas');
+        const size:I_chart_size = {x:canvasElement.width(),y:canvasElement.height()}
+        const dataDetails = getDataDetails(props.datas,size);
+        dataDetailsRef.current = dataDetails;
+        const items = getElements(dataDetails,size);
+        setCanvasItems(items)
+    }
+    useEffect(()=>{update()},[])
     return (
         <div className="aio-chart" ref={dom}>
             <div className="aio-chart-top">
@@ -140,9 +154,18 @@ const Chart:FC<I_Chart> = (props)=>{
             </div>
             <div className="aio-chart-bottom">
                 <div className="aio-chart-corner" style={getCornerStyle()}></div>
-                <div className="aio-chart-axis aio-chart-horizontal-axis" style={getHorizontalAxisStyle()}></div>
+                <div className="aio-chart-axis aio-chart-horizontal-axis" style={getHorizontalAxisStyle()}>
+                    <XLabels dataDetails={dataDetailsRef.current}/>
+                </div>
             </div>
         </div>
     )
 }
 export {Chart}
+const XLabels:FC<{dataDetails:I_chart_data_detail[]}> = ({dataDetails})=>{
+    return (
+        <div className="aio-chart-labels-horizontal">
+            
+        </div>
+    )
+}

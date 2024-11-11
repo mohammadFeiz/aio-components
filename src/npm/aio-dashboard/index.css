@@ -9,6 +9,9 @@
     flex:1;
     display:flex;
 }
+.aio-chart-axis{
+    position:relative;
+}
 .aio-chart-vertical-axis{
     background:orange;
 }

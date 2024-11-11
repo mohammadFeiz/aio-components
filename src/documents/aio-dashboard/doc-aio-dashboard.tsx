@@ -23,6 +23,8 @@ const LineChart: FC = () => {
         <Chart
             xAxis={{start:0,end:9,size:36}}
             yAxis={{start:0,end:100,size:60}}
+            keys={{start:0,step:1,end:9}}
+            getKeyLabel={(x)=>x.toString()}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }],
@@ -47,6 +49,8 @@ const BarChart: FC = () => {
         <Chart
             xAxis={{start:0,end:9,size:36}}
             yAxis={{start:0,end:100,size:60}}
+            keys={{start:0,step:1,end:9}}
+            getKeyLabel={(x)=>x.toString()}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }],
@@ -71,6 +75,8 @@ const ComboChart: FC = () => {
         <Chart
             xAxis={{start:0,end:9,size:36}}
             yAxis={{start:0,end:100,size:60}}
+            keys={{start:0,step:1,end:9}}
+            getKeyLabel={(x)=>x.toString()}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }],
