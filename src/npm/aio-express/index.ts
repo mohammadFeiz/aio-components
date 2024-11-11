@@ -241,7 +241,11 @@ class AIOExpress<I_User> {
                     const exep = await loginExeption({ user, token });
                     if (exep) {
                         if (exep.status) { return res.status(exep.status).json({ message: exep.message, success: false }); }
-                        if (exep.user) { user = exep.user }
+                        if (exep.user) { 
+                            let newUser = user.toObject()
+                            for(let prop in exep.user){newUser[prop] = exep.user[prop]}
+                            return res.status(200).json({ message: 'Login successful', token, user:newUser });
+                        }
                     }
                 }
                 return res.status(200).json({ message: 'Login successful', token, user });
