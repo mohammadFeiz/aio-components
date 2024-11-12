@@ -14,22 +14,22 @@
 }
 .aio-chart-vertical-axis{
     background:orange;
+    flex-shrink:0;
+    width:100%;
 }
 .aio-chart-bottom{
     background:yellow;
     display:flex;
 }
 .aio-chart-horizontal-axis{
-    position: absolute;
-    left:0;
-    top:0;
-    width:100%;
+    flex:1;
     height:100%;
-    position: relative;
+    flex-shrink:0;
 }
 .aio-chart-canvas{
     flex:1;
     position:relative;
+    flex-shrink:0;
 }
 .aio-chart-canvas canvas{
     position: absolute;
@@ -41,18 +41,34 @@
 .aio-chart-corner{
     background:pink;
 }
-.aio-chart-labels-horizontal{
+.aio-chart-horizontal-labels{
     position: absolute;
     height:100%;
     width:100%;
     left:0;
     top:0;
 }
-.aio-chart-x-label{
+.aio-chart-horizontal-label{
     position: absolute;
     height:100%;
     display:flex;
     align-items: center;
     justify-content: center;
-
+    width:0px;
+}
+.aio-chart-vertical-labels{
+    position: absolute;
+    height:100%;
+    width:100%;
+    left:0;
+    top:0;
+}
+.aio-chart-vertical-label{
+    position: absolute;
+    display:flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    right:6px;
+    height:0;
 }
