@@ -1,10 +1,7 @@
 import React, { Component, createRef, useEffect, useState, FC, createContext, useContext, useRef, forwardRef, useImperativeHandle, ReactNode } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import { Icon } from '@mdi/react';
-import { mdiClose } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
-import { AddToAttrs } from './../../npm/aio-utils';
 import anime from "animejs/lib/anime.es.js";
 export type AP_props = { rtl?: boolean, id?: string }
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
@@ -400,7 +397,7 @@ const ModalHeader: FC<{ modal: AP_modal }> = (props) => {
       {before !== undefined && <div className={`${cls}-before`} onClick={(e) => close(e)}>{before}</div>}
       {!!title && title_node()}
       {after !== undefined && <div className={`${cls}-after`} onClick={(e) => close(e)}>{after}</div>}
-      {onClose !== false && <div className={`${cls}-close-button`} onClick={(e) => close(e)}><Icon path={mdiClose} size={0.8} /></div>}
+      {onClose !== false && <div className={`${cls}-close-button`} onClick={(e) => close(e)}><CloseIcon/></div>}
     </div>
   )
 }
@@ -878,3 +875,18 @@ const Highlight: FC<AP_Highlight> = forwardRef((props, ref) => {
     </div>
   )
 })
+const CloseIcon: FC = () => {
+  return (
+    <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={{fill: 'currentcolor'}}></path></svg>
+  )
+}
+function AddToAttrs(attrs: any, p: any) {
+  attrs = attrs || {};
+  let { style } = p;
+  let attrClassName = attrs.className ? attrs.className.split(' ') : [];
+  let className = p.className ? (Array.isArray(p.className) ? p.className : p.className.split(' ')) : [];
+  let classNames = [...attrClassName, ...className.filter((o: any) => !!o)];
+  let newClassName = classNames.length ? classNames.join(' ') : undefined
+  let newStyle = { ...attrs.style, ...style };
+  return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
+}
