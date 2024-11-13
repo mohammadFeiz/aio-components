@@ -1,8 +1,6 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import { ReactNode } from 'react';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
 
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
@@ -1863,106 +1861,6 @@ export class Storage {
         this.init()
     }
 }
-type I_dd_dateArray = number[]
-export type I_dd_data = {
-    [year: string]: I_dd_year
-}
-type I_dd_year = {
-    [month: string]: I_dd_month
-}
-type I_dd_month = {
-    [day: string]: I_dd_day
-}
-type I_dd_day = any
-type I_list_item = { date: I_dd_dateArray, value: any }
-export default class DateData {
-    data: I_dd_data;
-    getToday: () => number[];
-    setDayValue: (dateArray: I_dd_dateArray, data: { [key: string]: any }) => void;
-    getYearDic: (dateArray: I_dd_dateArray) => I_dd_year
-    getMonthDic: (dateArray: I_dd_dateArray) => I_dd_month
-    getDayDic: (dateArray: I_dd_dateArray) => I_dd_day
-    getDayValue: (dateArray: I_dd_dateArray, field?: string, def?: any) => any;
-    getMonthList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
-    getYearList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
-    getWeekList: (dateArray: I_dd_dateArray, field: string, def?: any) => I_list_item[];
-    getData: () => I_dd_data;
-    d: AIODate;
-    constructor(data: I_dd_data) {
-        this.data = data
-        this.d = new AIODate()
-        this.getToday = () => this.d.convertToArray(this.d.getTime(this.d.getToday()) - (12 * 60 * 60 * 1000), true)
-        this.getData = () => this.data
-        this.getYearDic = ([Year]) => {
-            let year: I_dd_year = this.data[Year.toString()]
-            if (!year) {
-                this.data[Year.toString()] = {}
-                year = this.data[Year.toString()];
-            }
-            return year
-        }
-        this.getMonthDic = ([Year, Month]) => {
-            let year = this.getYearDic([Year])
-            let month: I_dd_month = year[Month.toString()];
-            if (!month) {
-                year[Month.toString()] = {}
-                month = year[Month.toString()];
-            }
-            return month
-        }
-        this.getDayDic = ([Year, Month, Day]) => {
-            let month = this.getMonthDic([Year, Month])
-            let day: I_dd_day = month[Day.toString()];
-            if (!day) {
-                month[Day.toString()] = {}
-                day = month[Day.toString()];
-            }
-            return day
-        }
-        this.getDayValue = ([Year, Month, Day], field, def) => {
-            let dayData = this.getDayDic([Year, Month, Day])
-            if (field) { return getValueByField(dayData, field, def) }
-            return dayData === undefined ? def : dayData
-        }
-        this.setDayValue = (dateArray, data) => {
-            let day = this.getDayDic(dateArray)
-            for (let prop in data) {
-                day[prop] = data[prop]
-            }
-        }
-        this.getMonthList = ([Year, Month], field, def) => {
-            const daysLength = this.d.getMonthDaysLength([Year, Month])
-            let list = [];
-            for (let i = 1; i <= daysLength; i++) {
-                let date = [Year, Month, i];
-                let dayRes = this.getDayValue(date, field, def);
-                if (dayRes !== undefined) {
-                    list.push({ date, value: dayRes });
-                }
-            }
-            return list
-        }
-        this.getWeekList = ([Year, Month, Day], field, def) => {
-            let days = this.d.getDaysOfWeek([Year, Month, Day]);
-            let list = [];
-            for (let i = 0; i < days.length; i++) {
-                let date = days[i]
-                let dayRes = this.getDayValue(date, field, def);
-                if (dayRes !== undefined) {
-                    list.push({ date, value: dayRes });
-                }
-            }
-            return JSON.parse(JSON.stringify(list))
-        }
-        this.getYearList = ([Year], field, def) => {
-            let list: { date: I_dd_dateArray, value: any }[] = [];
-            for (let i = 1; i <= 12; i++) {
-                list = list.concat(this.getMonthList([Year, i], field, def))
-            }
-            return list
-        }
-    }
-}
 export function DisabledContextMenu() { window.addEventListener(`contextmenu`, (e) => e.preventDefault()); }
 export type AV_operator = 'contain' | 'required' | '=' | '>' | '>=' | '<' | '<=' | 'startBy' | '<>' | '<=>'
 export type AV_props = { lang?: 'fa' | 'en', title?: string, value: any, validations: AV_item[] }
@@ -2588,42 +2486,6 @@ export class getRandomByPriority {
         return item;
     }
 }
-
-export function ExcelToJSON(file: any, successCallback: (json: any) => void, errorCallback: (message: string) => void) {
-    if (!file) { successCallback('Please select a file!'); return; }
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-        errorCallback('Invalid file type. Please select an Excel file.');
-        return;
-    }
-    import('xlsx')
-        .then((XLSX) => {
-            const reader = new FileReader();
-            reader.onload = function (e: any) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const res: { [key: string]: any } = {}
-                for (let i = 0; i < workbook.SheetNames.length; i++) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        workbook.SheetNames.forEach((sheetName: string) => {
-                            const sheet = workbook.Sheets[sheetName];
-                            const json = XLSX.utils.sheet_to_json(sheet);
-                            res[sheetName] = json;
-                        });
-                    }
-                    catch (error: any) { errorCallback('Error processing the file: ' + error.message); }
-                }
-                successCallback(res)
-            };
-            reader.onerror = () => errorCallback('Failed to read the file.');
-            reader.readAsArrayBuffer(file);
-        })
-        .catch((error) => {
-            // مدیریت خطا در صورت بارگذاری ناموفق ماژول xlsx
-            errorCallback('Failed to load xlsx module: ' + error.message);
-        });
-}
 export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gender?: 'male' | 'female', lang: 'en' | 'fa' }) {
     const names = {
         firstname_male_fa: [
@@ -2662,42 +2524,4 @@ export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gende
     if (p.type === "firstname") { return getfirstname() }
     if (p.type === "lastname") { return getlastname() }
     return `${getfirstname()} ${getlastname()}`
-}
-export function StylingExcel(p: { jsonData: any, search: { rowIndex: number, field: string }[], getStyle: (cell: any) => any, successCallback: () => void }) {
-    // یک تابع برای یافتن اندیس ستون مربوط به هر فیلد
-    function getFieldColumnIndex(jsonRow: any, field: string) {
-        return Object.keys(jsonRow).indexOf(field);
-    }
-
-    // ایجاد یک workbook جدید با استفاده از exceljs
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Sheet1');
-
-    // تبدیل داده‌ها به فرمت exceljs و اضافه کردن آن‌ها به worksheet
-    worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: key, key }));
-    p.jsonData.forEach((row: any) => {
-        worksheet.addRow(row);
-    });
-
-    // اعمال استایل به سلول‌ها بر اساس جستجوی `p.search`
-    p.search.forEach(({ rowIndex, field }) => {
-        const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
-        const cell = worksheet.getRow(rowIndex + 1).getCell(columnIndex);
-        const style = p.getStyle(cell);
-
-        if (style) {
-            cell.fill = style.fill;
-            cell.font = style.font;
-        }
-    });
-
-    // ذخیره فایل به‌صورت باینری و دانلود آن
-    workbook.xlsx.writeBuffer().then((buffer: any) => {
-        const blob = new Blob([buffer], { type: 'application/octet-stream' });
-        const fileName = window.prompt('نام فایل جدید را وارد کنید');
-        if (fileName && fileName !== null) {
-            saveAs(blob, `${fileName}.xlsx`);
-            p.successCallback();
-        }
-    });
 }
