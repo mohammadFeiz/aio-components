@@ -1,7 +1,6 @@
 import React from 'react';
 import Axios from 'axios';
 import AIOPopup from './../../npm/aio-popup';
-import $ from 'jquery';
 import './index.css';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
 type AA_success_fn = (p: { result: any, appState: any, parameter: any }) => string | boolean
@@ -104,17 +103,16 @@ export default class AIOApis {
             `)
         }
         this.handleLoading = (state, apiName, config) => {
-            let { loading = true, loadingParent = 'body' } = config
-            if (!loading) { return }
+            let { loading = true, loadingParent = 'body' } = config;
+            if (!loading) { return; }
             if (state) {
                 let loadingStr = loader ? `<div class="aio-service-loading" id="aio-service-${apiName}">${loader()}</div>` : this.getLoading(apiName);
-                let parent = $(loadingParent);
-                parent.append(loadingStr);
-            }
-            else {
-                let loadingDom = $('#aio-service-' + apiName);
-                if (!loadingDom.length) { loadingDom = $('.aio-service-loading') }
-                loadingDom.remove()
+                let parent = document.querySelector(loadingParent);
+                if (parent) {parent.insertAdjacentHTML('beforeend', loadingStr);}
+            } else {
+                let loadingDom = document.getElementById('aio-service-' + apiName);
+                if (!loadingDom) {loadingDom = document.querySelector('.aio-service-loading');}
+                if (loadingDom) {loadingDom.remove();}
             }
         }
         this.handleCacheVersions = (cacheVersions: { [key: string]: number }) => {
@@ -220,10 +218,6 @@ class Storage {
     remove: (field: string, callback?: () => void) => I_storage_model
     load: (field: string, def?: any, time?: number) => any
     clear: () => void
-    download: (file: any, name: string) => void
-    export: () => void;
-    read: (file: any, callback: (model: any) => void) => void
-    import: (file: any, callback: () => void) => void
     getModel: () => I_storage_model
     constructor(id: string) {
         this.model = {}
@@ -317,48 +311,8 @@ class Storage {
             }
             return value;
         }
-        this.clear = () => {
-            this.model = {};
-            this.time = {};
-            this.saveStorage(this.model, this.time)
-        }
-        this.download = (file, name) => {
-            if (!name || name === null) { return }
-            let text = JSON.stringify(file)
-            let element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', name);
-            element.style.display = 'none';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-        this.export = () => {
-            let name = window.prompt('Please Inter File Name');
-            if (name === null || !name) { return; }
-            this.download({ model: this.model, time: this.time }, name)
-        }
-        this.read = (file, callback = () => { }) => {
-            var fr = new FileReader();
-            fr.onload = () => { try { callback(JSON.parse((fr as any).result)); } catch { return; } }
-            fr.readAsText(file);
-        }
-        this.import = (file, callback = () => { }) => {
-            this.read(
-                file,
-                (obj) => {
-                    if (obj === undefined) { return; }
-                    let { model, time } = obj;
-                    this.model = model;
-                    this.time = time;
-                    this.saveStorage(this.model, this.time);
-                    callback()
-                }
-            )
-        }
-        this.getModel = () => {
-            return JSON.parse(JSON.stringify(this.model))
-        }
+        this.clear = () => {this.model = {}; this.time = {}; this.saveStorage(this.model, this.time)}
+        this.getModel = () => JSON.parse(JSON.stringify(this.model))
         this.init()
     }
 }

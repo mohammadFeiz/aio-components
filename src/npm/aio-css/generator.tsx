@@ -184,11 +184,12 @@ function getColorsCss() {
     return res
 }
 function getBordersCss() {
-    const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16']
+    const numbers = ['0', '8', '16', '28', '44', '64', '84', '104', '128', '152', '172', '188', '208', '224', '238', '246', '255']
     let res = ''
-    for (let n of numbers) {
+    for (let i = 0; i < numbers.length; i++) {
+        const n = numbers[i];
         const val = n === 'none' ? 'none' : `1px solid rgb(${n},${n},${n})`;
-        res += `.brd-c-${n}-{border:${val} !important;}`;
+        res += `.brd-c-${i}-{border:${val} !important;}`;
     }
     const withes = ['0', '1', '2', '3', '4', '5', '6', '8', '10', '12']
     for (let n of withes) {
