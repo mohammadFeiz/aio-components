@@ -1,12 +1,14 @@
 import React, { FC, createRef, useEffect, useRef, useState } from "react";
 import { Geo, EventHandler, GetClient } from '../aio-utils/index'
 import $ from "jquery";
-import { I_Canvas_temp, I_canvas_canvasToClient, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_items, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
+import { I_Canvas_temp, I_canvas_canvasSizeToClientSize, I_canvas_canvasToClient, I_canvas_clientSizeToCanvasSize, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_items, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
 export default class Canvas {
   mousePosition: I_canvas_mousePosition
   listenToMousePosition: (mp: I_canvas_mousePosition) => void
   canvasToClient: I_canvas_canvasToClient
   clientToCanvas: I_canvas_clientToCanvas
+  canvasSizeToClientSize:I_canvas_canvasSizeToClientSize
+  clientSizeToCanvasSize:I_canvas_clientSizeToCanvasSize
   getActions: I_canvas_getActions
   render: (props: I_canvas_props) => React.ReactNode;
   width: number;
@@ -18,10 +20,14 @@ export default class Canvas {
     this.listenToMousePosition = (mp) => this.mousePosition = mp
     this.canvasToClient = () => { return [0, 0, 0, 0] }
     this.clientToCanvas = () => { return [0, 0] }
+    this.clientSizeToCanvasSize = () => 0
+    this.canvasSizeToClientSize = () => 0
     this.getActions = (p) => {
-      let { clientToCanvas, canvasToClient } = p;
+      let { clientToCanvas, canvasToClient,clientSizeToCanvasSize,canvasSizeToClientSize } = p;
       this.clientToCanvas = clientToCanvas;
       this.canvasToClient = canvasToClient;
+      this.clientSizeToCanvasSize = clientSizeToCanvasSize
+      this.canvasSizeToClientSize = canvasSizeToClientSize
     }
     this.render = (props) => {
       return (
@@ -205,6 +211,12 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     ];
     return res
   }
+  function clientSizeToCanvasSize(clientSize:number){
+    return Math.floor((clientSize) / zoom)
+  }
+  function canvasSizeToClientSize(canvasSize:number){
+    return Math.round(canvasSize * zoom)
+  }
   useEffect(() => { update() })
   useEffect(() => {
     if (typeof props.onPan === 'function') {
@@ -224,7 +236,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.ctx = temp.ctx || temp.dom.current.getContext("2d");
     update();
     onMount();
-    if(getActions){getActions({ canvasToClient, clientToCanvas })}
+    if(getActions){getActions({ canvasToClient, clientToCanvas,canvasSizeToClientSize,clientSizeToCanvasSize })}
   }, [])
   function getRandomColor(range?: number) {
     range = (range || 60) as number;

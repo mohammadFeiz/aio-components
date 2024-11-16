@@ -6,7 +6,7 @@ import $ from 'jquery';
 import './index.css';
 const ChartCtx = createContext({} as any)
 type I_chart_size = { x: number, y: number }
-type I_chart_axis = { start: number, step: number, end: number, size: number, padding?: number, getLabel: (v: number) => string, rotate?: number }
+type I_chart_axis = { start: number, step: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number,gridLineColor?:string }
 type I_chart_label_detail = { label: ReactNode, offset: number }
 type I_getPointStyle = (data: I_chart_data, point: any) => I_chart_point_style;
 type I_getLineStyle = (data: I_chart_data) => I_chart_line_style
@@ -49,9 +49,9 @@ const Chart: FC<I_Chart> = (props) => {
         return { lineWidth, dash, stroke }
     }
     function getBarWidth(data: I_chart_data, size: I_chart_size) {
-        const { padding: xPadding = 36 } = props.xAxis, { padding: yPadding = 0 } = props.yAxis;
+        const { padding: xPadding = [36,36] } = props.xAxis;
         const pointsLength = data.points.length;
-        let avilableWidth = size.x - (xPadding * 2);
+        let avilableWidth = size.x - (xPadding[0] + xPadding[1]);
         const gap = avilableWidth / pointsLength / 2;
         avilableWidth -= (pointsLength - 1) * gap;
         return avilableWidth / pointsLength
@@ -78,9 +78,9 @@ const Chart: FC<I_Chart> = (props) => {
         return dataDetails
     }
     function getPointDetail(axis: 'x' | 'y', value: number, size: I_chart_size): { percent: number, offset: number, label: string } {
-        const { padding = axis === 'x' ? 36 : 0, start, end } = props[`${axis}Axis`];
+        const { padding = axis === 'x' ? [36,36] : [0,0], start, end } = props[`${axis}Axis`];
         const percent = GetPercentByValue(start, end, value);
-        const offset = padding + ((size[axis] - padding * 2) * percent / 100);
+        const offset = padding[0] + ((size[axis] - (padding[0] + padding[1])) * percent / 100);
         return { percent, offset, label: props[`${axis}Axis`].getLabel(value) }
     }
     function getXLabels(size: I_chart_size): I_chart_label_detail[] {
@@ -90,6 +90,37 @@ const Chart: FC<I_Chart> = (props) => {
             res.push({ offset, label })
         }
         return res
+    }
+    function clientSizeToCanvasSize(axis:'x' | 'y',size:I_chart_size){
+        if(axis === 'x'){
+            const bottom = canvas.clientToCanvas([0,0])[1];
+            const top = canvas.clientToCanvas([0,size[axis as any === 'x'?'y':'x']])[1]
+            return top - bottom
+        }
+        else {
+            const left = canvas.clientToCanvas([0,0])[0];
+            const right = canvas.clientToCanvas([size[axis as any === 'x'?'y':'x'],0])[0]
+            return right - left
+        }
+    }
+    function getGridLines(axis:'x' | 'y',size:I_chart_size):I_canvas_item[] {
+        const {gridLineColor} = props[`${axis}Axis`]
+        if(!gridLineColor){return []}
+        const csize:number = clientSizeToCanvasSize(axis,size)
+        const color = 'red';
+        if (!color) { return [] }
+        const labels = axis === 'x'?xLabelsRef.current:yLabelsRef.current
+        const gridLines:I_canvas_item[] = [];
+        for(let i = 0; i < labels.length; i++){
+            const {offset} = labels[i];
+            if(axis === 'y'){
+                gridLines.push({type:'Line',points:[[0,offset],[csize,offset]],stroke:gridLineColor})
+            }
+            else {
+                gridLines.push({type:'Line',points:[[offset,0],[offset,csize]],stroke:gridLineColor})
+            }
+        }
+        return gridLines;
     }
     function getYLabels(size: I_chart_size) {
         const { start, end } = props.yAxis;
@@ -118,7 +149,8 @@ const Chart: FC<I_Chart> = (props) => {
                 rects = [...rects, ...getBarChartElements(detail, size)]
             }
         }
-        return [...rects, ...lines, ...points]
+        const gridLines = getGridLines('y',size)
+        return [...gridLines,...rects, ...lines, ...points]
     }
     function getLineChartElements(detail: I_chart_data_detail, size: I_chart_size): { pointElements: I_canvas_item[], lineElement: I_canvas_item } {
         const { lineWidth, dash, stroke } = detail.lineStyle;
@@ -159,7 +191,11 @@ const Chart: FC<I_Chart> = (props) => {
                 <div className="aio-chart-top">
                     <YLabels yLabels={yLabelsRef.current}/>
                     <div className="aio-chart-canvas">
-                        {canvas.render({ items: canvasItems, grid: [10, 10, '#eee'], screenPosition: ['50%', '50%'] })}
+                        {canvas.render({ 
+                            items: canvasItems, 
+                            //grid: [10, 10, '#eee'], 
+                            screenPosition: ['50%', '50%'] 
+                        })}
                     </div>
                 </div>
                 <div className="aio-chart-bottom">
