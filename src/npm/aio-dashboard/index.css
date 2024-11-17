@@ -72,3 +72,15 @@
     right:6px;
     height:0;
 }
+.aio-chart .ai-range-point{
+    background:#fff !important;
+    color:#333;
+    border:1px solid #333;
+    
+}
+.aio-chart-horizontal-filter-value{
+    position: absolute;
+    top:-16px;
+    font-size:10px;
+    background:#ffffff40;
+}

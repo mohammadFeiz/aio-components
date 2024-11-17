@@ -4,6 +4,7 @@ import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
 import $ from 'jquery';
 import './index.css';
+import { AI_point, AISlider } from "../aio-input";
 const ChartCtx = createContext({} as any)
 type I_chart_size = { x: number, y: number }
 type I_chart_axis = { start: number, step: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number,gridLineColor?:string }
@@ -29,6 +30,12 @@ export type I_Chart = {
     xAxis: I_chart_axis,
     yAxis: I_chart_axis,
 }
+type I_filter = {x:number[],y:number[]}
+type I_ctx = {
+    rootProps:I_Chart,
+    changeFilter:(axis:'x' | 'y',newFilter:number[])=>void,
+    filter:I_filter
+}
 const Chart: FC<I_Chart> = (props) => {
     const [dom] = useState<any>(createRef())
     const [canvas] = useState<Canvas>(new Canvas())
@@ -36,6 +43,10 @@ const Chart: FC<I_Chart> = (props) => {
     const dataDetailsRef = useRef<I_chart_data_detail[]>([])
     const xLabelsRef = useRef<I_chart_label_detail[]>([])
     const yLabelsRef = useRef<I_chart_label_detail[]>([])
+    const [filter,setFilter] = useState<I_filter>({x:[props.xAxis.start,props.xAxis.end],y:[props.yAxis.start,props.yAxis.end]})
+    function changeFilter(axis:'x' | 'y',newFilter:number[]){
+        setFilter({...filter,[axis]:newFilter})
+    }
     function getDefaultPointStyle(data: I_chart_data, point: any): I_chart_point_style {
         const { getPointStyle = (() => ({})) } = data;
         const pointStyle: I_chart_point_style = getPointStyle(data, point) || {};
@@ -78,14 +89,19 @@ const Chart: FC<I_Chart> = (props) => {
         return dataDetails
     }
     function getPointDetail(axis: 'x' | 'y', value: number, size: I_chart_size): { percent: number, offset: number, label: string } {
-        const { padding = axis === 'x' ? [36,36] : [0,0], start, end } = props[`${axis}Axis`];
+        const { padding = axis === 'x' ? [36,36] : [0,0] } = props[`${axis}Axis`];
+        const f = filter[axis];
+        const start = f[0],end = f[1];
         const percent = GetPercentByValue(start, end, value);
         const offset = padding[0] + ((size[axis] - (padding[0] + padding[1])) * percent / 100);
         return { percent, offset, label: props[`${axis}Axis`].getLabel(value) }
     }
     function getXLabels(size: I_chart_size): I_chart_label_detail[] {
         const res: I_chart_label_detail[] = [];
-        for (let key = props.xAxis.start; key <= props.xAxis.end; key += props.xAxis.step) {
+        const f = filter.x;
+        const start = f[0],end = f[1]; 
+        
+        for (let key = start; key <= end; key += props.xAxis.step) {
             const { offset, label } = getPointDetail('x', key, size)
             res.push({ offset, label })
         }
@@ -123,7 +139,8 @@ const Chart: FC<I_Chart> = (props) => {
         return gridLines;
     }
     function getYLabels(size: I_chart_size) {
-        const { start, end } = props.yAxis;
+        const f = filter.y;
+        const start = f[0],end = f[1];
         let step = (end - start) / 10;
         const magnitude = Math.pow(10, Math.floor(Math.log10(step)));
         step = Math.round(step / magnitude) * magnitude;
@@ -185,8 +202,14 @@ const Chart: FC<I_Chart> = (props) => {
         setCanvasItems(items)
     }
     useEffect(() => { update() }, [])
+    function getContext():I_ctx{
+        return {
+            rootProps:props,
+            changeFilter,filter
+        }
+    }
     return (
-        <ChartCtx.Provider value={{ ...props }}>
+        <ChartCtx.Provider value={getContext()}>
             <div className="aio-chart" ref={dom}>
                 <div className="aio-chart-top">
                     <YLabels yLabels={yLabelsRef.current}/>
@@ -208,8 +231,9 @@ const Chart: FC<I_Chart> = (props) => {
 }
 export { Chart }
 const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
-    const { xAxis }: I_Chart = useContext(ChartCtx)
-    const { rotate, size } = xAxis;
+    const { rootProps,filter,changeFilter }: I_ctx = useContext(ChartCtx)
+    const { xAxis } = rootProps
+    const { rotate, size,getLabel = (v)=>v } = xAxis;
     function getAxisStyle() {
         let style: any = { height: size };
         return style
@@ -241,12 +265,29 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
                     })
                 }
             </div>
+            <AISlider
+                multiple={true} size={0}
+                style={{background:'none'}}
+                start={xAxis.start} end={xAxis.end}
+                value={[...filter.x]}
+                onChange={(v)=>changeFilter('x',v)}
+                point={(index,p)=>{
+                    const {value} = p;
+                    const label = getLabel(value)
+                    return {
+                        html:(
+                            <div className="aio-chart-horizontal-filter-value">{label}</div>
+                        )
+                    }
+                }}
+            />
         </div>
     )
 }
 
 const YLabels: FC<{ yLabels: I_chart_label_detail[] }> = ({ yLabels }) => {
-    const { yAxis }: I_Chart = useContext(ChartCtx)
+    const { rootProps }: I_ctx = useContext(ChartCtx)
+    const { yAxis } = rootProps
     const { size } = yAxis;
     function getAxisStyle() { return { width: size } }
     function getLabelsStyle() {
