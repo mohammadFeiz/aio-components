@@ -97,7 +97,7 @@ function getBorderRadiusCss() {
     for (let n of numbers) {
         res += `.br-${n}-{border-radius:${n}px !important;}`;
     }
-    res += `.br-100{border-radius:100% !important;}`;
+    res += `.br-100- {border-radius:100% !important;}`;
     res += `
         .br-b-0- {border-bottom-left-radius: 0;border-bottom-right-radius: 0;}
         .br-t-0- {border-top-left-radius: 0;border-top-right-radius: 0;}
