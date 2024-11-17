@@ -2898,7 +2898,7 @@ pre[class*="language-"]>code[class*="language-"] {
     align-items: center;
 }
 
-.leaflet-marker-icon {
+.ai-map .leaflet-marker-icon {
     width: 0px !important;
     height: 0px !important;
     margin: 0 !important;
@@ -2907,13 +2907,13 @@ pre[class*="language-"]>code[class*="language-"] {
     align-items: flex-end !important;
 }
 
-.marker-icon {
+.ai-map .marker-icon {
     position: relative;
     padding-bottom: 0.63em;
     font-size: 12px;
 }
 
-.marker-icon-circle {
+.ai-map .marker-icon-circle {
     width: 3em;
     height: 3em;
     border: 0.3em solid red;
@@ -2921,7 +2921,7 @@ pre[class*="language-"]>code[class*="language-"] {
     color: red;
 }
 
-.marker-icon-arrow {
+.ai-map .marker-icon-arrow {
     border-left: 1em solid transparent;
     border-right: 1em solid transparent;
     border-top: 1em solid red;
@@ -2956,6 +2956,7 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-app-body {
     flex: 1;
     padding: 12px;
+    padding-top: 0;
     flex: 1;
     overflow: hidden;
 }

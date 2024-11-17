@@ -1,6 +1,6 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
 import $ from 'jquery';
-import AIOPopup, { AP_position, AP_modal, AP_alert } from "./../../npm/aio-popup";
+import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
 import Prism from 'prismjs';
 import {
     Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,

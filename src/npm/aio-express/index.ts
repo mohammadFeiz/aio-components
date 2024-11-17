@@ -259,8 +259,13 @@ class AIOExpress<I_User> {
             if (!this.p.auth) { return }
             try {
                 const token = req.headers['authorization']?.split(' ')[1] || ''; // استخراج توکن از هدر
-                jwt.verify(token, this.env.secretKey as string, (err: any, decoded: any) => {
+                jwt.verify(token, this.env.secretKey as string, async (err: any, decoded: any) => {
                     if (err) { return this.setResult({ res, message: 'Token is invalid', success: false, status: 401 }) }
+                    if(this.AuthModel){
+                        const reqUser = await this.getUserByReq(req);
+                        if(reqUser === null){return this.setResult({ res, message: 'User Not Found', success: false, status: 401 })}
+                        if(typeof reqUser === 'string'){return this.setResult({ res, message: reqUser, success: false, status: 401 })}
+                    }
                     return this.setResult({ res, message: 'authorized', success: true, status: 201 })
                 });
             }
@@ -295,7 +300,10 @@ class AIOExpress<I_User> {
         this[dicName][name] = this.fixPath(entity.path || `/${name}`);
         if (schema) {
             try {
-                const entitySchema = this.AIOSchemaInstance.getSchema(this.getSchemaDefinition(schema, name));
+                const dif = this.getSchemaDefinition(schema, name);
+                const removedIdDif:any = {}
+                for(let prop in dif){if(prop !== 'id'){removedIdDif[prop] = dif[prop]}}
+                const entitySchema = this.AIOSchemaInstance.getSchema(removedIdDif);
                 const entityModel = mongoose.model(name, entitySchema);
                 this.models[name] = entityModel;
             }
@@ -573,7 +581,7 @@ export class AIOSchema {
         else if (type === 'date') return Date;
         else if (type === 'map') return Map;
         else if (typeof type === 'string') { return this.getSchemaType(this.schemas[type] as I_schemaDefinition) }
-        else if (Array.isArray(type)) return this.getSchemaType(type[0]);
+        else if (Array.isArray(type)) return [this.getSchemaType(type[0])] as any;
         else return this.getSchema(type);
     }
     getSchema = (scm: I_schemaDefinition): I_schema => {
@@ -816,7 +824,7 @@ export class AIOSchema {
     }
     getUrlString = (name:string,path:string,queryParam?:boolean)=>{
         if(!queryParam){return `const url = ${"`${this.base_url}"}${name}${path}${"`"}`}
-        return `const url = ${"`${this.base_url}"}${name}${path}${"`${this.getUrlQueryParam(queryParam)}`"}${"`"}`
+        return `const url = ${"`${this.base_url}"}${name}${path}${"${this.getUrlQueryParam(queryParam)}"}${"`"}`
     }
     getMethodsString = (entities: I_entities): { success: boolean, result: string } => {
         let res = '';
