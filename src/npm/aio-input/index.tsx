@@ -3604,7 +3604,7 @@ export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton
     'rePasswordMatch' | 'userNameRequired' | 'passwordRequired' | 'rePasswordRequired' |
     'otpNumberRequired' | 'otpCodeLength' |
     'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError'
-type I_login_model = { userName: string, password: string, rePassword: string, otpNumber: string, otpCode: string, register: any }
+type I_login_model = { userName: string, password: string, otpNumber: string, otpCode: string, register: any }
 type I_AILogin = {
     rtl?: boolean,
     checkToken: (token: string) => Promise<{ 
@@ -3627,7 +3627,7 @@ type I_AILogin = {
         onCatch: (response: any) => string
     }>
     label: (field: I_login_field) => string,
-    validation?: (field: I_login_field, v: any) => string | undefined,
+    validation?: (model: I_login_model) => string | undefined,
     otpLength?:number,
     otp?: boolean,
     userpass?:boolean
@@ -3681,15 +3681,16 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 res.registerInputs = ()=>{
                     const model = modelRef.current
                     return (<>
-                        <AIPassword {...input_props('rePassword')} preview={true} />
+                        <AIPassword {...{
+                            label: props.label('rePassword'),rtl: props.rtl,value: model.register.rePassword, preview:true,
+                            onChange: (v: any) => setModel({ ...model, register:{...model.register,rePassword: v} })}}
+                        />
                         {
                             inputs.map((input) => {
                                 const value = model.register[input.field]
                                 return (
                                     <AIOInput key={input.field}
                                         rtl={props.rtl} label={props.label(input.field)} {...input} 
-                                        validations={(v)=>{if(props.validation){return props.validation(input.field,v)}}} 
-                                        showErrors={false} reportError={(v) => reportError(input.field, v)}
                                         value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
                                     />
                                 )
@@ -3706,7 +3707,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
         return res
     }
     function getModel() {
-        let model = { userName: '', password: '', rePassword: '', otpNumber: '', otpCode: '', register: {} }
+        let model:I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: {} }
         if (!props.register) { return model }
         if (props.register?.defaultValue) {
             let register: any = {}
@@ -3717,12 +3718,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
         }
         return model
     }
-    let [errors, setErrors] = useState<{ [key: string]: string | undefined }>({})
     const [loading, setLoading] = useState<boolean>(true)
     const [splashing, setSplashing] = useState<boolean>(!!splash)
     const [popup] = useState<AIOPopup>(new AIOPopup())
     function trans(key: I_login_key) {
-        const { otp } = props;
         const dic: { [key in I_login_key]: { fa: string, en: string } } = {
             registerButton: { en: 'Register', fa: 'ثبت نام' },
             userpassButton: { en: 'Login', fa: 'ورود' },
@@ -3791,28 +3790,35 @@ export const AILogin: FC<I_AILogin> = (props) => {
             </div>
         )
     }
-    function reportError(key: string, value: string | undefined) { errors = { ...errors, [key]: value }; setErrors({ ...errors }) }
     function input_props(field: keyof I_login_model) {
         const model = modelRef.current
-        return {
-            label: props.label(field), validations: (v: any) => validate(field, v), showErrors: false, rtl: props.rtl,
-            reportError: (v: string | undefined) => reportError(field, v), value: model[field], onChange: (v: any) => setModel({ ...model, [field]: v })
-        }
+        return {label: props.label(field), rtl: props.rtl,value: model[field], onChange: (v: any) => setModel({ ...model, [field]: v })}
     }
-    function validate(field: keyof I_login_model, v: string) {
+    function validate() {
         const model = modelRef.current
-        const { otp } = props;
-        if(mode.key !=="register" && field === 'rePassword'){return}
-        if (!v) { return trans({ otpCode: '', register: '', otpNumber: 'otpNumberRequired', userName: 'userNameRequired', password: 'passwordRequired', rePassword: 'rePasswordRequired' }[field] as any) }
-        if (field === 'otpCode' && otp && (v || '').length < otpLength) { return trans('otpCodeLength') }
-        if (field === 'rePassword' && v !== model.register.password) { return trans('rePasswordMatch'); }
-        return validation(field, v)
+        if(mode.key === 'otpcode'){
+            if((model.otpCode || '').length !== otpLength){return trans('otpCodeLength')}
+        }
+        if(mode.key === 'otpnumber'){
+            if(!model.otpNumber){return trans('otpNumberRequired')}
+        }
+        if(mode.key === 'userpass'){
+            if(!model.userName){return trans('userNameRequired')}
+        }
+        if(mode.key === 'register'){
+            if(!model.register.password){return trans('passwordRequired')}
+            if(!model.register.rePassword){return trans('rePasswordRequired')}
+            if (model.register.password !== model.register.rePassword) { return trans('rePasswordMatch'); }
+        }
+        return validation(model)
     }
     function submit_layout() {
-        const messages = Object.keys(errors).filter((o) => errors[o] !== undefined).map((o) => errors[o])
+        const message = validate()
         return (<>
-            <div className="ai-login-errors">{messages.map((message, i) => <div key={i} className="ai-login-error">{message}</div>)}</div>
-            <button className='ai-login-submit' disabled={!!messages.length} onClick={() => submit()}>{mode.submitText}</button>
+            <div className="ai-login-errors">
+                {!!message && <div className="ai-login-error">{message}</div>}
+            </div>
+            <button className='ai-login-submit' disabled={!!message} onClick={() => submit()}>{mode.submitText}</button>
         </>)
     }
     function form_layout() {
@@ -3839,7 +3845,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 .then(response => {
                     let res;
                     try { res = onSuccess(response); }
-                    catch (err: any) { setAlert({ type: 'error', text: 'checkToken failed', subtext: errors.message }); return }
+                    catch (err: any) { setAlert({ type: 'error', text: 'checkToken failed', subtext: err.message }); return }
                     if (res === true) { setData({ user, token }) }
                     else if (res === false) { logout() }
                     else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
