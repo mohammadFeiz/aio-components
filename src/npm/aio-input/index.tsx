@@ -1495,6 +1495,7 @@ const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
 }
 type I_DPContext = {
     translate: (text: string) => string,
+    changePopup:(v:ReactNode)=>void,
     DATE: AIODate,
     rootProps: AITYPE,
     activeDate: I_DP_activeDate,
@@ -1511,12 +1512,13 @@ const DPContext = createContext({} as any);
 export function Calendar(props: { onClose?: () => void }) {
     let { rootProps, DATE }: AI_context = useContext(AICTX);
     let { onClose } = props;
-    let { multiple, unit = Def('date-unit'), jalali, value, disabled, size = 12, theme = Def('theme'), translate = (text: string) => text, onChange = () => { }, option = {} } = rootProps;
+    let { multiple, unit = Def('date-unit'), jalali, value, disabled, size = 12, theme = Def('theme'), translate, onChange = () => { }, option = {} } = rootProps;
     let [months] = useState(DATE.getMonths(jalali));
     let [today] = useState(DATE.getToday(jalali))
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>(getActiveDate);
+    const [popup,setPopup] = useState<ReactNode>(null)
     function getDate() {
         let date;
         if (multiple) { date = value.length ? value[value.length - 1] : undefined }
@@ -1532,6 +1534,10 @@ export function Calendar(props: { onClose?: () => void }) {
     let adRef = useRef(activeDate);
     adRef.current = activeDate
     function trans(text: string) {
+        if(translate){
+            const res = translate(text);
+            if(res){return res}
+        }
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
             else if (unit === 'hour') { text = 'This Hour' }
@@ -1539,7 +1545,10 @@ export function Calendar(props: { onClose?: () => void }) {
         let obj: any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری', 'Select Year': 'انتخاب سال', 'Close': 'بستن' }
         let res;
         if (jalali && obj[text]) { res = obj[text] }
-        return translate(text)
+        return res
+    }
+    function changePopup(popup:ReactNode){
+        setPopup(popup)
     }
     function changeActiveDate(obj: 'today' | { [key in 'year' | 'month' | 'day']?: number }) {
         let newActiveDate;
@@ -1562,7 +1571,7 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     function getContext() {
         let context: I_DPContext = {
-            changeActiveDate, DATE,
+            changeActiveDate, DATE,changePopup,
             translate: trans, rootProps, activeDate: adRef.current,
             today, todayWeekDay, thisMonthString, months,
             onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => {
@@ -1618,6 +1627,7 @@ export function Calendar(props: { onClose?: () => void }) {
         }
         return context
     }
+
     return (
         <DPContext.Provider value={getContext()}>
             <div className='aio-input-date-container' style={{ display: 'flex', fontSize: size }}>
@@ -1626,6 +1636,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 </div>
                 <DPToday />
             </div>
+            {popup}
         </DPContext.Provider>
     );
 }
@@ -1757,20 +1768,16 @@ function DPCell(props: { dateArray: number[] }) {
 }
 function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let { unit } = props;
-    let { rootProps, activeDate, months }: I_DPContext = useContext(DPContext);
+    let { rootProps, activeDate, months,changePopup }: I_DPContext = useContext(DPContext);
     let { theme = Def('theme'), jalali } = rootProps;
     if (!activeDate || !activeDate[unit]) { return null }
     let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0, jalali ? 10 : 3)
-    let p: AITYPE = {
-        type: 'button', text, justify: true, caret: false,
-        attrs: { className: 'aio-input-date-dropdown aio-input-theme-color0' },
-        popover: {
-            position: 'fullscreen',
-            setAttrs: (key) => { if (key === 'modal') { return { style: { background: theme[1], color: theme[0] } } } },
-            body: (o) => <DPHeaderPopup onClose={o.close} unit={unit} />
-        }
-    }
-    return (<AIOInput {...p} />)
+    return (
+        <button 
+            type='button' className="aio-input-date-dropdown aio-input-theme-color0"
+            onClick={()=>changePopup(<DPHeaderPopup onClose={()=>changePopup(null)} unit={unit} />)}
+        >{text}</button>
+    )
 }
 const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (props) => {
     let { onClose, unit } = props;
@@ -1831,11 +1838,11 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
     function footer_node() {
         return (
             <div className='aio-input-date-popup-footer'>
-                <button className='aio-input-theme-bg0 aio-input-theme-color0' onClick={() => onClose()}>{translate('Close')}</button>
+                <button className='aio-input-theme-bg0 aio-input-theme-color1' onClick={() => onClose()}>{translate('Close')}</button>
             </div>
         )
     }
-    return (<div className={'aio-input-date-popup' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
+    return (<div style={{background:theme[0],color:theme[1]}} className={'aio-input-date-popup' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
 }
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);

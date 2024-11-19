@@ -262,7 +262,8 @@ class AIOExpress<I_User> {
                 jwt.verify(token, this.env.secretKey as string, async (err: any, decoded: any) => {
                     if (err) { return this.setResult({ res, message: 'Token is invalid', success: false, status: 401 }) }
                     if(this.AuthModel){
-                        const reqUser = await this.getUserByReq(req);
+                        const reqUserId = decoded.id;
+                        const reqUser = await this.getUser({id:reqUserId});
                         if(reqUser === null){return this.setResult({ res, message: 'User Not Found', success: false, status: 401 })}
                         if(typeof reqUser === 'string'){return this.setResult({ res, message: reqUser, success: false, status: 401 })}
                     }
