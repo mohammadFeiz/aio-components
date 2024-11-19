@@ -43,9 +43,12 @@ const Chart: FC<I_Chart> = (props) => {
     const dataDetailsRef = useRef<I_chart_data_detail[]>([])
     const xLabelsRef = useRef<I_chart_label_detail[]>([])
     const yLabelsRef = useRef<I_chart_label_detail[]>([])
-    const [filter,setFilter] = useState<I_filter>({x:[props.xAxis.start,props.xAxis.end],y:[props.yAxis.start,props.yAxis.end]})
+    let [filter,setFilter] = useState<I_filter>({x:[3,11],y:[props.yAxis.start,props.yAxis.end]})
     function changeFilter(axis:'x' | 'y',newFilter:number[]){
-        setFilter({...filter,[axis]:newFilter})
+        const stateFilter = {...filter,[axis]:newFilter};
+        filter = stateFilter
+        setFilter(filter)
+        update();
     }
     function getDefaultPointStyle(data: I_chart_data, point: any): I_chart_point_style {
         const { getPointStyle = (() => ({})) } = data;
@@ -67,14 +70,28 @@ const Chart: FC<I_Chart> = (props) => {
         avilableWidth -= (pointsLength - 1) * gap;
         return avilableWidth / pointsLength
     }
+    function getFilteredPoints(data:I_chart_data){
+        const {points} = data;
+        const newPoints:any[] = []
+        for(let i = 0; i < points.length; i++){
+            const point = points[i]
+            const x = data.getX(point), y = data.getY(point);
+            if(x < filter.x[0]){continue}
+            if(x > filter.x[1]){continue}
+            if(y < filter.y[0]){continue}
+            if(y > filter.y[1]){continue}
+            newPoints.push({x,y,point})
+        }
+        return newPoints 
+    }
     function getDataDetails(datas: I_chart_data[], size: I_chart_size): I_chart_data_detail[] {
         let dataDetails: I_chart_data_detail[] = []
         for (let i = 0; i < datas.length; i++) {
             const data = datas[i];
             let dataDetail: I_chart_data_detail = { points: [], type: data.type, lineStyle: getDefaultLineStyle(data) }
-            for (let j = 0; j < data.points.length; j++) {
-                const point = data.points[j];
-                const x = data.getX(point), y = data.getY(point);
+            const filteredPoints = getFilteredPoints(data)
+            for (let j = 0; j < filteredPoints.length; j++) {
+                const {point,x,y} = filteredPoints[j];
                 const xOffset = getPointDetail('x', x, size)
                 const yOffset = getPointDetail('y', y, size)
                 const pointDetail: I_chart_point_detail = {
@@ -93,7 +110,8 @@ const Chart: FC<I_Chart> = (props) => {
         const f = filter[axis];
         const start = f[0],end = f[1];
         const percent = GetPercentByValue(start, end, value);
-        const offset = padding[0] + ((size[axis] - (padding[0] + padding[1])) * percent / 100);
+        const avilSize = size[axis] - (padding[0] + padding[1])
+        const offset = padding[0] + avilSize * percent / 100;
         return { percent, offset, label: props[`${axis}Axis`].getLabel(value) }
     }
     function getXLabels(size: I_chart_size): I_chart_label_detail[] {

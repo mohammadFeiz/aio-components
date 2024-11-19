@@ -198,7 +198,7 @@ export function getValueByStep(p: { value: number, start: number, step: number, 
     if (res > end) { res = end }
     return res;
 }
-export function GetPercentByValue(start:number,end:number,value:number):number{return ((100 * value) / (end - start)) + start}
+export function GetPercentByValue(start:number,end:number,value:number):number{return ((100 * (value - start)) / (end - start))}
 export function URLToJSON(url: string): { [key: string]: any } {
     try { return JSON.parse(`{"${decodeURI(url.split('?')[1]).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"')}"}`) }
     catch { return {} }
