@@ -1,5 +1,7 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+type I_key = { fa?: string, en?: string, defaultValue: any }
+type I_convertJsonParam = { jsonData: any, keys: I_key[], from: 'en' | 'fa', to: 'en' | 'fa', nullValue: any, extend?: (row: any, index: number) => any }
 type I_excelStyle = {
     background?: string,
     fontWeight?: 'bold',
@@ -16,8 +18,8 @@ type I_excelStyle = {
     flexWrap?: 'wrap',
     display?: 'none'
 }
-class AIOConvert {
-    excel2json = (file: any, successCallback: (jsonData: any) => void, errorCallback: (message: string) => void) => {
+export default class AIOConvert {
+    excel2json = (file: any, successCallback: (jsonData: any,columns:any[]) => void, errorCallback: (message: string) => void,getColumn?:(field:string)=>any) => {
         const reader = new FileReader();
         reader.onload = async function (e: any) {
             try {
@@ -25,8 +27,12 @@ class AIOConvert {
                 await workbook.xlsx.load(data);
                 const worksheet = workbook.getWorksheet(1), jsonData: any = [];
                 let headers: any = [];
+                let columns:any[] = [];
                 worksheet.eachRow((row: any, rowIndex: any) => {
-                    if (rowIndex === 1) { headers = row.values; }
+                    if (rowIndex === 1) { 
+                        headers = row.values; 
+                        if(getColumn){columns = row.values.map((field:string)=>getColumn(field))}
+                    }
                     else {
                         const rowData: any = {};
                         row.values.forEach((value: any, colIndex: any) => {
@@ -36,7 +42,7 @@ class AIOConvert {
                         jsonData.push(rowData);
                     }
                 });
-                successCallback(jsonData);
+                successCallback(jsonData,columns);
             }
             catch (error: any) { errorCallback(error); }
         };
@@ -49,18 +55,18 @@ class AIOConvert {
         if (px < 1) { px = 1 }
         else if (px > 3) { px = 3 }
         const sizeStr = ['thin', 'medium', 'thick'][px - 1] as 'thin' | 'medium' | 'thick'
-        return { style: sizeStr, color: { argb: borderColor } }
+        return { style: sizeStr, color: { argb: this.cssToARGB(borderColor) } }
     }
     setExcelCellStyle = (cell: any, style: I_excelStyle) => {
         if (style.background) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: style.background } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: this.cssToARGB(style.background) } };
         }
         let font: { bold?: boolean, name?: string, size?: number, color?: { argb: string } } = {}
         let hasFont = false;
         if (style.fontWeight === 'bold') { font.bold = true; hasFont = true; }
         if (style.fontFamily) { font.name = style.fontFamily; hasFont = true; }
         if (style.fontSize) { font.size = style.fontSize; hasFont = true; }
-        if (style.color) { font.color = { argb: style.color }; hasFont = true; }
+        if (style.color) { font.color = { argb: this.cssToARGB(style.color) }; hasFont = true; }
         if (hasFont) { cell.font = font }
 
         let border: {
@@ -85,25 +91,81 @@ class AIOConvert {
         if (style.display === 'none') { cell.hidden = true }
 
     }
-    downloadFile = (file: any,fileName?:string) => {
+    downloadFile = (file: any, fileName?: string) => {
         const blob = new Blob([file], { type: 'application/octet-stream' });
-        if(!fileName){
+        if (!fileName) {
             let pr = window.prompt('نام فایل جدید را وارد کنید')
-            pr = !pr || pr === null?'untitle':pr
-            fileName = pr    
+            pr = !pr || pr === null ? 'untitle' : pr
+            fileName = pr
         }
         saveAs(blob, `${fileName}.xlsx`);
     }
-    json2excel(p: { jsonData: any, styleList?: { rowIndex: number, field: string,style?:I_excelStyle }[], successCallback: (file:any) => void }) {
+    cssToARGB = (cssColor: string) => {
+        let alpha = 'FF';
+        if (cssColor.startsWith('#')) {
+            let hex = cssColor.replace('#', '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(ch => ch + ch).join('');
+            }
+            return alpha + hex.toUpperCase();
+        } else if (cssColor.startsWith('rgb')) {
+            const match = cssColor.match(/\d+/g);
+            if (match) {
+                const [r, g, b] = match.map(num => parseInt(num).toString(16).padStart(2, '0'));
+                return alpha + r.toUpperCase() + g.toUpperCase() + b.toUpperCase();
+            }
+        }
+        return ''
+    }
+    getTemplateByKeys = (p: { keys: I_key[], type: 'en' | 'fa', successCallback?: (file: any) => void }) => {
+        let jsonRow: any = {};
+        for (let key of p.keys) {
+            const v = key[p.type];
+            if(v !== undefined){jsonRow[v] = key.defaultValue === undefined ? '' : key.defaultValue}
+        }
+        this.json2excel({
+            jsonData: [jsonRow], successCallback: (file) => {
+                if (p.successCallback) { p.successCallback(file) }
+                else { this.downloadFile(file) }
+            }
+        })
+    }
+    fix = (key: string) => {
+        try { key = key.replace(/['"]/g, ''); } catch { }
+        try { key = key.trim(); } catch { }
+        return key
+    }
+    fixRowKeys = (row: any) => {
+        let res: any = {}
+        for (let prop in row) { res[this.fix(prop)] = row[prop] }
+        return res
+    }
+    convertJson = (p: I_convertJsonParam) => {
+        const { jsonData, keys, from, to, extend = (row) => row } = p;
+        return jsonData.map((row: any, i: number) => {
+            row = this.fixRowKeys(row)
+            let res: any = {}
+            for (let j = 0; j < keys.length; j++) {
+                const key = keys[j],f = key[from],t = key[to];
+                if(t === undefined || f === undefined){continue}
+                let cellValue = row[f];
+                cellValue = cellValue === undefined ? p.nullValue : cellValue
+                res[t] = cellValue
+            }
+            res = extend(res, i)
+            return res
+        })
+    }
+    json2excel(p: { jsonData: any, styleList?: { recordIndex: number, field: string, style?: I_excelStyle }[], successCallback: (file: any) => void }) {
         function getFieldColumnIndex(jsonRow: any, field: string) { return Object.keys(jsonRow).indexOf(field); }
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sheet1');
         worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: key, key }));
         p.jsonData.forEach((row: any) => worksheet.addRow(row));
-        (p.styleList || []).forEach(({ rowIndex, field,style }) => {
+        (p.styleList || []).forEach(({ recordIndex, field, style }) => {
             const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
-            const cell = worksheet.getRow(rowIndex + 1).getCell(columnIndex);
-            if (style) {this.setExcelCellStyle(cell,style)}
+            const cell = worksheet.getRow(recordIndex + 1).getCell(columnIndex);
+            if (style) { this.setExcelCellStyle(cell, style) }
         });
         workbook.xlsx.writeBuffer().then((buffer: any) => {
             p.successCallback(buffer);

@@ -44,6 +44,7 @@ export type AA_api = AA_apiSetting & {
     body?: any,
     parameter?:any,
     getResult?: (response: any) => any,
+    headers?:any
 };
 type AA_request_params = {
     body?: any,
@@ -51,7 +52,8 @@ type AA_request_params = {
     url: string,
     config?: AA_apiSetting,
     getResult: (response: any) => any,
-    parameter?: any
+    parameter?: any,
+    headers?:any
 };
 export default class AIOApis {
     storage: Storage;
@@ -147,10 +149,10 @@ export default class AIOApis {
             this.addAlert({ type: 'success', text: lang === 'fa' ? `${description} با موفقیت انجام شد` : `${description} was successfull`, subtext: subtext as string, time:message.time,alertType:message.type });
         }
         this.responseToResult = async (p) => {
-            let { url, method, body, getResult, config = {} } = p;
+            let { url, method, body, getResult, config = {},headers } = p;
             let { onCatch = props.onCatch, getError = props.getError } = config;
             try {
-                let response = await Axios[method](url, body !== undefined ? body : undefined)
+                let response = await Axios({method,url,data:body,headers})
                 if (response) {
                     let error = getError ? getError(response, config) : undefined;
                     if (typeof error === 'string') { return error }
@@ -191,13 +193,13 @@ export default class AIOApis {
             return result;
         };
         this.request = async (setting: AA_api) => {
-            let { url,body,description, message, loading, loadingParent, token, onError, onSuccess, errorResult, cache,parameter } = setting;
+            let { url,body,description, message, loading,headers, loadingParent, token, onError, onSuccess, errorResult, cache,parameter } = setting;
             let onCatch = setting.onCatch || props.onCatch; 
             let getError = setting.getError || props.getError; 
             let config = { description, message, loading, loadingParent, token, onError, onSuccess, onCatch, getError, errorResult, cache }
             let getResult = typeof setting.getResult === 'function' ? setting.getResult : () => { }
             return await this.requestFn({
-                parameter, config, method: !setting.method ? 'post' : setting.method, body, url, getResult
+                parameter, config, method: !setting.method ? 'post' : setting.method, body, url, getResult,headers
             })
         }
     }
