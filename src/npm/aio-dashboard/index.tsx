@@ -242,7 +242,7 @@ const Chart: FC<I_Chart> = (props) => {
             }
         }
         const gridLines = getGridLines('y', size)
-        return [...areas,...gridLines, ...rects, ...lines, ...points,...texts]
+        return [...gridLines,...areas, ...rects, ...lines, ...points,...texts]
     }
     function getLineChartElements(
         detail: I_chart_data_detail, 
