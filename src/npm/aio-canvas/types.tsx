@@ -61,7 +61,22 @@ export type I_canvas_props = {
   items:I_canvas_items,
   lineWidth?:number,
   rotateDirection?:'clock'|'clockwise',
-  attrs?:any,
+  attrs?:{
+    onMouseMove?:(
+      p:{ 
+        event: any, 
+        mousePosition: I_Canvas_temp['mousePosition'], 
+        item?: I_canvas_item 
+      }
+    )=>void,
+    onClick?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onMouseUp?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onMouseDown?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onTouchStart?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onTouchMove?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onTouchEnd?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
+    onMouseLeave?:(e:any)=>void,
+  },
   listenToMousePosition?:(mp:I_canvas_mousePosition)=>void
 }
 

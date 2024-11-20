@@ -14,11 +14,14 @@ export default function DOC_AIODashboard(props: any) {
                     { text: 'bar chart', id: 'barchart', render: () => <BarChart /> },
                     { text: 'multi bar chart', id: 'multibarchart', render: () => <MultiBarChart /> },
                     { text: 'combo chart', id: 'combochart', render: () => <ComboChart /> },
-                    { text: 'axis getLabel', id: 'axisgtlabel', render: () => <AxisGetLabel /> },
-                    { text: 'axis rotate', id: 'axisrotate', render: () => <AxisRotate /> },
-                    { text: 'axis rotate rtl', id: 'axisrotatertl', render: () => <AxisRotateRTL /> },
-                    { text: 'axis gridLineColor', id: 'axisgridlinecolor', render: () => <AxisGridLineColor /> },
-                    { text: 'axis zoom', id: 'axiszoom', render: () => <AxisZoom /> },
+                    { text: 'areaColors', id: 'areaColors', render: () => <AreaColors /> },
+                    { text: 'ranges', id: 'bar chart range', render: () => <GetRanges /> },
+                    { text: 'padding', id: 'axispadding', render: () => <AxisPadding /> },
+                    { text: 'getLabel', id: 'axisgtlabel', render: () => <AxisGetLabel /> },
+                    { text: 'rotate', id: 'axisrotate', render: () => <AxisRotate /> },
+                    { text: 'rotate rtl', id: 'axisrotatertl', render: () => <AxisRotateRTL /> },
+                    { text: 'gridLineColor', id: 'axisgridlinecolor', render: () => <AxisGridLineColor /> },
+                    { text: 'zoom', id: 'axiszoom', render: () => <AxisZoom /> },
                     { text: 'point style', id: 'pointstyle', render: () => <PointStyle /> },
                     { text: 'line style', id: 'linestyle', render: () => <LineStyle /> },
                     { text: 'point text', id: 'pointtext', render: () => <PointText /> },
@@ -31,8 +34,8 @@ export default function DOC_AIODashboard(props: any) {
 const LineChart: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -52,8 +55,8 @@ const LineChart: FC = () => {
 const BarChart: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -73,8 +76,8 @@ const BarChart: FC = () => {
 const MultiBarChart: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString(),zoom:true }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -113,11 +116,46 @@ const MultiBarChart: FC = () => {
         />
     )
 }
+const GetRanges: FC = () => {
+    return (
+        <Chart
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            datas={[
+                {
+                    points: [
+                        { a: 0, b: 24,ranges:[[8,'red'],[14,'orange'],[24,'yellow']] }, 
+                        { a: 1, b: 27,ranges:[[4,'red'],[18,'orange'],[27,'yellow']] }, 
+                        { a: 2, b: 78,ranges:[[28,'red'],[50,'orange'],[78,'yellow']] }, 
+                        { a: 3, b: 24,ranges:[[5,'red'],[10,'orange'],[24,'yellow']] }, 
+                        { a: 4, b: 0,ranges:[] }, 
+                        { a: 5, b: 90,ranges:[[80,'red'],[85,'orange'],[90,'yellow']] }, 
+                        { a: 6, b: 87,ranges:[[34,'red'],[60,'orange'],[87,'yellow']] }, 
+                        { a: 7, b: 34,ranges:[[6,'red'],[24,'orange'],[34,'yellow']] }, 
+                        { a: 8, b: 42,ranges:[[20,'red'],[30,'orange'],[42,'yellow']] }, 
+                        { a: 9, b: 70,ranges:[[45,'red'],[55,'orange'],[70,'yellow']] }, 
+                        { a: 10, b: 55,ranges:[[15,'red'],[30,'orange'],[55,'yellow']] }, 
+                        { a: 11, b: 13,ranges:[[8,'red'],[10,'orange'],[13,'yellow']] }
+                    ],
+                    getX: (point: any) => point.a,
+                    getY: (point: any) => point.b,
+                    getRanges:(point:any)=>point.ranges,
+                    getPointStyle: (point: any) => {
+                        return {
+                            fill:'red'
+                        }
+                    },
+                    type: 'bar'
+                }
+            ]}
+        />
+    )
+}
 const ComboChart: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -145,14 +183,57 @@ const ComboChart: FC = () => {
         />
     )
 }
+const AreaColors: FC = () => {
+    return (
+        <Chart
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            datas={[
+                {
+                    points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
+                    getX: (point: any) => point.a,
+                    getY: (point: any) => point.b,
+                    getLineStyle: () => {
+                        return {
+                            stroke:'#ffa500'
+                        }
+                    },
+                    type: 'line',
+                    areaColors:['transparent','#ffa500']
+                }
+            ]}
+        />
+    )
+}
+const AxisPadding: FC = () => {
+    return (
+        <Chart
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString(),padding:[24,48] }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),padding:[12,24] }}
+            datas={[
+                {
+                    points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
+                    getX: (point: any) => point.a,
+                    getY: (point: any) => point.b,
+                    getPointStyle: (point: any) => {
+                        return {
+
+                        }
+                    },
+                    type: 'line'
+                }
+            ]}
+        />
+    )
+}
 
 const AxisGetLabel: FC = () => {
     const DATE = new AIODate();
     const monthes = DATE.getMonths()
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => monthes[v] }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v] }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -174,8 +255,8 @@ const AxisRotate: FC = () => {
     const monthes = DATE.getMonths()
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => monthes[v],rotate:45 }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v],rotate:45 }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -197,8 +278,8 @@ const AxisRotateRTL: FC = () => {
     const monthes = DATE.getMonths(true)
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => monthes[v],rotate:-45 }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v],rotate:-45 }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -219,8 +300,8 @@ const AxisRotateRTL: FC = () => {
 const AxisGridLineColor: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -241,8 +322,8 @@ const AxisGridLineColor: FC = () => {
 const AxisZoom: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString(),zoom:true }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString(),zoom:true }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -262,8 +343,8 @@ const AxisZoom: FC = () => {
 const PointStyle: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -281,12 +362,10 @@ const PointStyle: FC = () => {
     )
 }
 const LineStyle: FC = () => {
-    const DATE = new AIODate();
-    const monthes = DATE.getMonths(true)
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -307,8 +386,8 @@ const LineStyle: FC = () => {
 const PointText: FC = () => {
     return (
         <Chart
-            xAxis={{ start: 0, step: 1, end: 11, size: 36, getLabel: (v) => v.toString() }}
-            yAxis={{ start: 0, step: 1, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
+            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],

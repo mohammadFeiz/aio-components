@@ -304,7 +304,7 @@ function Navigation(props:I_RSA_Navigation) {
     let { icon, id,disabled } = o;
     let active = id === navId;
     return (
-      <div className={'rsa-bottom-menu-item of-visible' + (active ? ' active' : '')} onClick={disabled?undefined:() => setNavId(id)}>
+      <div key={id} className={'rsa-bottom-menu-item of-visible' + (active ? ' active' : '')} onClick={disabled?undefined:() => setNavId(id)}>
         {!!icon && <div className="rsa-bottom-menu-item-icon">{typeof icon === 'function' ? icon() : icon}</div> }
         {text_node(o,'bottom')}
       </div>

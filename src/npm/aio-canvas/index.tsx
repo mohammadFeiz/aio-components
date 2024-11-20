@@ -512,7 +512,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     update();
     if (temp.item && temp.item.events && temp.item.events.onMouseDown) { temp.item.events.onMouseDown({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
     else if (temp.setScreenPosition) { panmousedown(e) }
-    else if (attrs.onMouseDown) { attrs.onMouseDown(e, temp.mousePosition) }
+    else if (attrs.onMouseDown) { attrs.onMouseDown({event:e, mousePosition:temp.mousePosition}) }
     temp.item = undefined; temp.eventMode = false;
   }
   function onMouseUp(e: any) {
@@ -520,7 +520,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.eventMode = "onMouseUp";
     update();
     if (temp.item && temp.item.events && temp.item.events.onMouseUp) { temp.item.events.onMouseUp({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
-    else if (attrs.onMouseUp) { attrs.onMouseUp(e, temp.mousePosition) }
+    else if (attrs.onMouseUp) { attrs.onMouseUp({event:e, mousePosition:temp.mousePosition}) }
     temp.item = undefined; temp.eventMode = false;
   }
   function onClick(e:Event) {
@@ -528,7 +528,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.eventMode = "onClick";
     update();
     if (temp.item && temp.item.events && temp.item.events.onClick) { temp.item.events.onClick({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
-    else if (attrs.onClick) { attrs.onClick(e, temp.mousePosition) }
+    else if (attrs.onClick) { attrs.onClick({event:e, mousePosition:temp.mousePosition}) }
     temp.item = undefined; temp.eventMode = false;
   }
   function onMouseMove(e: any) {
@@ -543,7 +543,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     let [cx, cy] = canvasToClient([x, y])
     return { x, y, px: (x * 100) / temp.width, py: (y * 100) / temp.height, cx, cy };
   }
-  let p = {
+  let p:any = {
     ...attrs, ref: temp.dom,
     onMouseDown: undefined, onMouseMove: undefined, onMouseUp: undefined,
     onTouchStart: undefined, onTouchMove: undefined, onTouchEnd: undefined
