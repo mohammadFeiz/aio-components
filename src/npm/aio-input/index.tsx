@@ -1,17 +1,18 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
+import Prism from 'prismjs';
+import axios from 'axios';
+import { divIcon, LeafletEvent } from 'leaflet';
+import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import $ from 'jquery';
 import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
-import Prism from 'prismjs';
 import {
-    Get2Digit, AIODate, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,
+    Get2Digit, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,
     getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount,
     GetArray, Validation,
     GetSvg,JSXToHTML
 } from './../../npm/aio-utils';
-import { divIcon, LeafletEvent } from 'leaflet';
-import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
+import AIODate from './../../npm/aio-date';
 import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
 import './index.css';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
@@ -1627,7 +1628,6 @@ export function Calendar(props: { onClose?: () => void }) {
         }
         return context
     }
-
     return (
         <DPContext.Provider value={getContext()}>
             <div className='aio-input-date-container' style={{ display: 'flex', fontSize: size }}>
@@ -3634,7 +3634,7 @@ type I_AILogin = {
         onCatch: (response: any) => string
     }>
     label: (field: I_login_field) => string,
-    validation?: (model: I_login_model) => string | undefined,
+    validation?: (model: I_login_model,mode:I_loginMode) => string | undefined,
     otpLength?:number,
     otp?: boolean,
     userpass?:boolean
@@ -3648,8 +3648,8 @@ type I_AILogin = {
     mock?:{user:any,token:string}
 }
 type I_login_modeState = {
-    key: I_loginMode, userNameInput:()=> ReactNode, passwordInput:()=> ReactNode, title: ReactNode,
-    submitText: string, registerInputs:()=> ReactNode, responseUserType: boolean
+    key: I_loginMode, inputs:()=> ReactNode, title: ReactNode,
+    submitText: string, responseUserType: boolean
 }
 export function AIOLogin_updateCatchedUser(loginId:string,newUser:any){
     const storage = new Storage('ai-login' + loginId);
@@ -3674,20 +3674,26 @@ export const AILogin: FC<I_AILogin> = (props) => {
         return 'userpass'
     }
     function getMode(mode?: I_loginMode): I_login_modeState {
-        let res: I_login_modeState = { userNameInput:()=> null, passwordInput: ()=>null, key: mode || getModeKey(), title: null, submitText: '', registerInputs:()=> null, responseUserType: false }
+        let res: I_login_modeState = { inputs:()=> null, key: mode || getModeKey(), title: null, submitText: '', responseUserType: false }
         if (res.key === 'userpass') {
-            res.userNameInput = ()=><AIText {...input_props('userName')} />
-            res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
+            res.inputs = ()=>{
+                return (
+                    <>
+                        <AIText {...input_props('userName')} />
+                        <AIPassword {...input_props('password')} preview={true} />
+                    </>
+                )
+            }
             res.responseUserType = true
         }
         else if (res.key === 'register') {
-            res.userNameInput = ()=><AIText {...input_props('userName')} />
-            res.passwordInput = ()=><AIPassword {...input_props('password')} preview={true} />
             if (props.register) {
                 const inputs = (props.register.inputs || (() => []))(modelRef.current) || []
-                res.registerInputs = ()=>{
+                res.inputs = ()=>{
                     const model = modelRef.current
                     return (<>
+                        <AIText {...input_props('userName',true)} />
+                        <AIPassword {...input_props('password',true)} preview={true} />
                         <AIPassword {...{
                             label: props.label('rePassword'),rtl: props.rtl,value: model.register.rePassword, preview:true,
                             onChange: (v: any) => setModel({ ...model, register:{...model.register,rePassword: v} })}}
@@ -3707,14 +3713,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 }
             }
         }
-        else if (res.key === 'otpnumber') { res.userNameInput = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
-        else if(res.key === 'otpcode'){ res.passwordInput = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
+        else if (res.key === 'otpnumber') { res.inputs = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
+        else if(res.key === 'otpcode'){ res.inputs = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
         res.submitText = trans(res.key + 'Button' as I_login_key)
         res.title = <div className="ai-login-title">{trans(res.key + 'Title' as I_login_key)}</div>
         return res
     }
     function getModel() {
-        let model:I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: {} }
+        let model:I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: {userName:'',password:'',rePassword:''} }
         if (!props.register) { return model }
         if (props.register?.defaultValue) {
             let register: any = {}
@@ -3797,9 +3803,12 @@ export const AILogin: FC<I_AILogin> = (props) => {
             </div>
         )
     }
-    function input_props(field: keyof I_login_model) {
+    function input_props(field: keyof I_login_model,isRegister?:boolean) {
         const model = modelRef.current
-        return {label: props.label(field), rtl: props.rtl,value: model[field], onChange: (v: any) => setModel({ ...model, [field]: v })}
+        return {label: props.label(field), rtl: props.rtl,value: model[field], onChange: (v: any) => {
+            if(isRegister){setModel({ ...model, register:{...model.register,[field]: v} })}
+            else {setModel({ ...model, [field]: v })}
+        }}
     }
     function validate() {
         const model = modelRef.current
@@ -3813,11 +3822,12 @@ export const AILogin: FC<I_AILogin> = (props) => {
             if(!model.userName){return trans('userNameRequired')}
         }
         if(mode.key === 'register'){
+            if(!model.register.userName){return trans('userNameRequired')}
             if(!model.register.password){return trans('passwordRequired')}
             if(!model.register.rePassword){return trans('rePasswordRequired')}
             if (model.register.password !== model.register.rePassword) { return trans('rePasswordMatch'); }
         }
-        return validation(model)
+        return validation(model,mode.key)
     }
     function submit_layout() {
         const message = validate()
@@ -3829,8 +3839,8 @@ export const AILogin: FC<I_AILogin> = (props) => {
         </>)
     }
     function form_layout() {
-        const { title: t, userNameInput: u, passwordInput: p, registerInputs: r } = mode;
-        return (<div className="ai-login-form">{t}{u()}{p()}{r()}{submit_layout()}{mode_layout()}</div>)
+        const { title, inputs } = mode;
+        return (<div className="ai-login-form">{title}{inputs()}{submit_layout()}{mode_layout()}</div>)
     }
     const bf_layout = (type: 'before' | 'after') => {
         const fn = props[type];
