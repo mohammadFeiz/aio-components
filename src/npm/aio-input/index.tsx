@@ -6,11 +6,10 @@ import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Re
 import $ from 'jquery';
 import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
 import {
-    Get2Digit, GetClient, EventHandler, Swip, DragClass, I_Swip_parameter, AddToAttrs, Storage, ExportToExcel, I_Swip_mousePosition,
-    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount,
-    GetArray, Validation,
-    GetSvg,JSXToHTML
+    Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
+    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount,GetArray, Validation,GetSvg,JSXToHTML
 } from './../../npm/aio-utils';
+import Swip,{I_Swip_parameter, I_Swip_mousePosition} from './../../npm/aio-swip';
 import AIODate from './../../npm/aio-date';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -2397,7 +2396,7 @@ type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number
 type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number }
 type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number }
 
-type I_rangeConfig = {thickness:number,offset:number,color:string,roundCap:boolean,full?:boolean}
+type I_rangeConfig = {thickness:number,offset:number,color:string,roundCap?:boolean,full?:boolean}
 export type I_RangeContext = {
     getXPByValue: (value: number) => number,
     fixAngle: (angle: number) => number,

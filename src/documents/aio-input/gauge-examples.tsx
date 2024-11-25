@@ -1,4 +1,4 @@
-import { FC, createContext, useContext, useState } from "react"
+import { FC, useContext, useState } from "react"
 import AIOInput from "../../npm/aio-input";
 import Example, { ExampleContext, I_ExampleContext } from "./example";
 const GaugeExamples: FC = () => {
@@ -56,8 +56,8 @@ const Example1: FC = () => {
                     }
                 ]}
                 ranges={[
-                    [value, `20 0 rgb(140,198,64)`],
-                    [100, `20 0 #eee`]
+                    [value, {thickness:20,offset:0,color:'#eee'}],
+                    [100, {thickness:20,offset:0,color:'#eee'}]
                 ]}
                 text={() => {
                     return (
@@ -134,8 +134,8 @@ const Example2: FC = () => {
                 handle={false}
                 point={false}
                 ranges={[
-                    [value, '20 0 #EE5723'],
-                    [100, '20 0 #eee']
+                    [value, {thickness:20,offset:0,color:'#EE5723'}],
+                    [100, {thickness:20,offset:0,color:'#eee'}]
                 ]}
                 labels={[
                     {
@@ -247,12 +247,12 @@ const Example3: FC = () => {
                     }
                 }}
                 ranges={[
-                    [150, `10 8 green`],
-                    [200, `10 8 orange`]
+                    [150, {thickness:10,offset:8,color:'green'}],
+                    [200, {thickness:10,offset:8,color:'orange'}]
                 ]}
                 circles={[
-                    '1 100 #ccc',
-                    '3 5 red 0 1'
+                    {thickness:1,offset:100,color:'#ccc'},
+                    {thickness:3,offset:5,color:'red',full:true}
                 ]}
                 labels={[
                     {
@@ -343,10 +343,10 @@ const Example4: FC = () => {
                 point={false}
                 handle={false}
                 ranges={[
-                    [value, '8 0 #1367bb 1']
+                    [value, {thickness:8,offset:0,color:'#1367bb',roundCap:true}]
                 ]}
                 circles={[
-                    '8 80 #ddd 0 1',
+                    {thickness:8,offset:80,color:'#ddd',full:true},
                 ]}
                 rotate={180}
                 reverse={true}
@@ -451,7 +451,7 @@ const Example5: FC = () => {
                 start={0} end={100} step={1}
                 round={0.75}
                 onChange={(newValue) => setValue(newValue)}
-                circles={['1 60 #ccc']}
+                circles={[{thickness:1,offset:60,color:'#ccc'}]}
                 handle={() => {
                     return {
                         thickness: 10,
@@ -567,15 +567,15 @@ const Example6: FC = () => {
                     }
                 }}
                 circles={[
-                    '1 9 #444 1 1',
-                    '6 2 #444 1 1'
+                    {thickness:1,offset:9,color:'#444',roundCap:true,full:true},
+                    {thickness:6,offset:2,color:'#444',roundCap:true,full:true}
                 ]}
                 point={false}
                 ranges={[
-                    [70, '3 0 green'],
-                    [100, '3 0 yellow'],
-                    [140, '3 0 orange'],
-                    [180, '3 0 red']
+                    [70, {thickness:3,offset:0,color:'green'}],
+                    [100, {thickness:3,offset:0,color:'yellow'}],
+                    [140, {thickness:3,offset:0,color:'orange'}],
+                    [180, {thickness:3,offset:0,color:'red'}]
                 ]}
                 labels={[
                     {
@@ -719,9 +719,8 @@ const Example7: FC = () => {
                     }
                 }}
                 circles={[
-                    '6 60 #222 0 0',
-                    '8 4 #222 0 1',
-                    
+                    {thickness:6,offset:60,color:'#222'},
+                    {thickness:8,offset:4,color:'#222',full:true} 
                 ]}
                 point={false}
                 labels={[
@@ -795,7 +794,7 @@ const Example8: FC = () => {
                 onChange={(newValue) => setValue(newValue)}
                 handle={false}
                 circles={[
-                    '4 40 #333 1 1',
+                    {thickness:4,offset:40,color:'#333',roundCap:true,full:true},
                 ]}
                 point={()=>{
                     return {

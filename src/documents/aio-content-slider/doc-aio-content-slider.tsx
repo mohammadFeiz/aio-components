@@ -2,7 +2,7 @@ import React,{Component, useState} from "react";
 import DOC from '../../resuse-components/doc.tsx';
 import ACS from '../../npm/aio-content-slider/index.tsx';
 import Code from '../../npm/code/index';
-import AIOInput,{ AI } from './../../npm/aio-input/index.tsx';
+import AIOInput,{ AI, AITYPE } from './../../npm/aio-input/index.tsx';
 export default function DOC_AIOContentSlider(props:any){
   return (
     <DOC
@@ -19,7 +19,7 @@ export default function DOC_AIOContentSlider(props:any){
 function Preview(){
     let [setting,setSetting] = useState<{speed:number,autoSlide:number}>({speed:80,autoSlide:4000});
     function setting_node(){
-      let p:AI = {
+      let p:AITYPE = {
         type:'form',style:{marginBottom:12},
         value:{...setting},
         onChange:(setting)=>{

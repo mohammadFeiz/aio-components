@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { I_Swip, Swip } from '../../npm/aio-utils/index.tsx';
+import Swip,{ I_Swip } from './../../npm/aio-swip';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
 import $ from 'jquery';

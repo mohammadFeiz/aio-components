@@ -4,8 +4,8 @@ export type I_dline = [number, number, number]//x,y,dip
 export type I_dip = number
 export type I_arc = { x: number, y: number, r: number, slice?: number[] }
 export type I_rect = [I_point, I_point]
-
-export class Geo {
+//dline => [x,y,dip]
+export default class Geo {
     getAngle: (l: I_line | I_dline) => number
     getDipAngle: (dip: I_dip) => number
     getLength: (p: I_line) => number

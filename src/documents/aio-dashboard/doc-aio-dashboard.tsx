@@ -2,7 +2,7 @@ import React, { Component, FC, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
 import { Chart } from '../../npm/aio-dashboard';
-import { AIODate } from '../../npm/aio-utils/index.tsx';
+import AIODate from './../../npm/aio-date';
 export default function DOC_AIODashboard(props: any) {
     return (
         <DOC

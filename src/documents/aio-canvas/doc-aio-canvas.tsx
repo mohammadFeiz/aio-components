@@ -2,7 +2,7 @@ import React,{useReducer,createContext,useContext,useState,createRef,useEffect, 
 import RVD from '../../npm/react-virtual-dom/index.tsx';
 import AIOInput from "../../npm/aio-input/index.tsx";
 import AIOCanvas from './../../npm/aio-canvas/index.tsx';
-import {Swip} from '../../npm/aio-utils/index.tsx';
+import Swip from './../../npm/aio-swip';
 import {Icon} from '@mdi/react';
 import Code from '../../npm/code/index';
 import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCircle, mdiCircleMedium, mdiCircleSmall, mdiClose, mdiCodeJson, mdiContentCopy, mdiDelete, mdiEye, mdiEyeOff, mdiPlusThick } from "@mdi/js";
@@ -12,7 +12,7 @@ import { Component } from "react";
 import { I_canvas_item, I_canvas_mousePosition, I_canvas_type } from "../../npm/aio-canvas/types.tsx";
 import Canvas from "./../../npm/aio-canvas/index.tsx";
 const CTX = createContext({} as any)
-function Reducer(state,action){
+function Reducer(state:any,action:any){
     return {...state,[action.key]:action.value}
 }
 export type I_context = {
@@ -42,7 +42,7 @@ export type I_state = {
     activePointIndex:false | number,
     mounted:boolean
 }
-export default function DOC_AIO_Canvas({goToHome}){
+export default function DOC_AIO_Canvas(props:any){
     let initialValue:I_state = {
         mounted:false,
         items:[],
@@ -52,19 +52,19 @@ export default function DOC_AIO_Canvas({goToHome}){
         activePointIndex:false
     }
     let [state,dispatch]:[I_state,any] = useReducer(Reducer,initialValue)
-    let startDragId;
+    let startDragId:string;
     function getNewId():string{return 'aa' + Math.round(Math.random() * 10000000);}
     function getItemById(ids:string[] | false):I_canvas_item | undefined{
         let {items} = state;
         ids = ids || [];
-        let result:I_canvas_item;
+        let result:I_canvas_item | undefined;
         for(let i = 0; i < ids.length; i++){
             result = items.find((o)=>o.data.id[i] === ids[i]);
             if(result){items = result.items as I_canvas_item[];}
         }
         return result
     }
-    function addPoint(p){
+    function addPoint(p:any){
 
     } 
     function getParentById(id:string[]){

@@ -11,7 +11,6 @@ import Puzzle from './documents/puzzle/index';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup.tsx';
 import DOC_AIOCanvas from './documents/aio-canvas/doc-aio-canvas.tsx';
 import DOC_AIOShop from './documents/aio-shop/doc-aio-shop.tsx';
-import DOC_ReactVirtualDom from './documents/react-virtual-dom/doc-react-virtual-dom.tsx';
 import UIKit from './documents/aio-input/ui-kit/ui-kit.tsx';
 import Test from './test.tsx';
 import Layout1 from "./documents/aio-input/ui-kit/layout1.tsx";
@@ -40,7 +39,6 @@ export default function AIOComponents(){
     'aio-popup':DOC_AIOPopup,
     'aio-canvas':DOC_AIOCanvas,
     'aio-shop':DOC_AIOShop,
-    'react-virtual-dom':DOC_ReactVirtualDom,
     'flip':DOC_Flip,
     'kit':UIKit,
     'Layout1':Layout1,

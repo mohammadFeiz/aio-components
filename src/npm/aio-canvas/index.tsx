@@ -1,5 +1,6 @@
 import React, { FC, createRef, useEffect, useRef, useState } from "react";
-import { Geo, EventHandler, GetClient } from '../aio-utils/index'
+import { EventHandler, GetClient } from '../aio-utils/index'
+import Geo from './../../npm/aio-geo';
 import $ from "jquery";
 import { I_Canvas_temp, I_canvas_canvasSizeToClientSize, I_canvas_canvasToClient, I_canvas_clientSizeToCanvasSize, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_items, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
 export default class Canvas {

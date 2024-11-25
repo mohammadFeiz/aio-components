@@ -1,4 +1,4 @@
-import { Geo } from "../aio-utils"
+import Geo from "./../../npm/aio-geo"
 export type I_canvas_type = 'Line'|'Image'|'Arc'|'Group'|'Text'|'Rectangle'|'NGon'|'Triangle'
 export type I_canvas_eventProps = {event:any, mousePosition:I_canvas_mousePosition,item:I_canvas_item}
 export type I_canvas_item = {
