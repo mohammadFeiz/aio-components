@@ -4,7 +4,7 @@ import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
 import $ from 'jquery';
 import './index.css';
-import { AI_point, AISlider } from "../aio-input";
+import { AI_point, AISlider, AISpinner, I_rangeConfig } from "../aio-input";
 const ChartCtx = createContext({} as any)
 type I_chart_range = [number,string][]
 type I_chart_size = { x: number, y: number }
@@ -494,4 +494,22 @@ const YLabels: FC<{ yLabels: I_chart_label_detail[],curhl:any }> = ({ yLabels,cu
         </div>
     )
 }
-
+type I_pieRange_style = {thickness?:number,offset?:number,roundCap?:boolean,color:string}
+type I_pieRange = {
+    value:number,
+    style?:I_pieRange_style
+}
+export const Pie:FC<{start:number,end:number,ranges:I_pieRange[],rangeStyle?:Omit<I_pieRange_style,'color'>}> = ({start,end,ranges,rangeStyle = {}})=>{
+    function getRange(r:I_pieRange):[value:number,config:I_rangeConfig]{
+        const {value,style} = r;
+        const {thickness = 12,offset = 0,roundCap = false,color = '#000'} = {...rangeStyle,...style};
+        return [value,{thickness,offset,roundCap,color}]
+    }
+    return (
+        <AISpinner
+            start={start}
+            end={end}
+            ranges={ranges.map((o)=>getRange(o))}
+        />    
+    )
+}
