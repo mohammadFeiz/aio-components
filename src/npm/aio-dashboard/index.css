@@ -135,6 +135,10 @@
     width:100%;
     justify-content: flex-end;
 }
-.aio-chart-tooltip{
+.aio-chart-tooltip-container{
     position: absolute;
+    border:1px solid;
+    width:2px;
+    height:2px;
+    background:green;
 }

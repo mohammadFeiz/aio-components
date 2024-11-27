@@ -317,14 +317,17 @@ const Chart: FC<I_Chart> = (props) => {
         return { type: 'Line', points: areaPoints, fill: [0, 0, 0, -size.y, ['0 ' + areaColor[0], '1 ' + areaColor[1]]] as any };
     }
     function getXLabelByValue(value:number,size:number):{label:ReactNode,offset:number}{
-        const {padding = [36,36]} = props.xAxis;
+        const {padding = [36,36],getLabel = (v)=>v} = props.xAxis;
         const start = filter.x[0]
         const end = filter.x[1];
         const step:number = (size - (padding[0] + padding[1])) / (end - start)
         if(value < padding[0]){return getXLabelsDetailRef.current[start]}
         if(value > size - padding[1]){return getXLabelsDetailRef.current[end]}
         const index = Math.round((value - padding[0]) / step);
-        return getXLabelsDetailRef.current[index];
+        const label = getLabel(index);
+        const offset = getXLabelsDetailRef.current[index].offset
+        console.log('offset',offset)
+        return {label,offset}
     }
     function getYLabelByValue(value:number,size:number):{label:ReactNode,offset:number}{
         const {start,end,padding = [0,0],getLabel = (v)=>v} = props.yAxis;
@@ -332,7 +335,12 @@ const Chart: FC<I_Chart> = (props) => {
         if(value < padding[0]){return getYLabelsDetailRef.current[start]}
         if(value > size - padding[1]){return getYLabelsDetailRef.current[end]}
         const index = Math.round((value - padding[0]) / step);
-        return getYLabelsDetailRef.current[index]
+        const label = getLabel(index);
+        const offset = value
+        return {label,offset}
+    }
+    function getLabelIndex(pos:number,size:number,padding:number[],length:number){
+        return Math.round((pos - padding[0]) * (length - 1) / (size - padding[0] - padding[1]))
     }
     useEffect(() => { update() }, [])
     function getContext(): I_ctx {
@@ -368,7 +376,6 @@ const Chart: FC<I_Chart> = (props) => {
                                     if(sizeRef.current === undefined){return}
                                     const {x,y} = mousePosition
                                     const w = sizeRef.current.x,h = sizeRef.current.y
-                                    debugger
                                     const {label:xLabel,offset:xOffset} = getXLabelByValue(x,w);
                                     const {label:yLabel,offset:yOffset} = getYLabelByValue(y,h);
                                     const vlc = $(curvl.current)
@@ -377,7 +384,7 @@ const Chart: FC<I_Chart> = (props) => {
                                     vlc.find('.aio-chart-cursor-label-v').html(xLabel)
                                     hlc.find('.aio-chart-cursor-label-h').html(yLabel)
                                     console.log(xOffset,yOffset)
-                                    tooltipElement.css({left:xOffset,top:yOffset})
+                                    tooltipElement.css({left:xOffset,bottom:yOffset})
                                     vlc.css({left:x,display:'flex'});
                                     hlc.css({bottom:y,display:'flex'});
                                     $(curh.current).css({bottom:y,display:'block'})
@@ -394,7 +401,11 @@ const Chart: FC<I_Chart> = (props) => {
                         })}
                         <div className="aio-chart-cursor-line aio-chart-cursor-line-h" ref={curh}></div>
                         <div className="aio-chart-cursor-line aio-chart-cursor-line-v" ref={curv}></div>
-                        <div className="aio-chart-tooltip" ref={tooltip}>msf</div>
+                        <div className="aio-chart-tooltip-container" ref={tooltip}>
+                            <div className="aio-chart-tooltip">
+
+                            </div>
+                        </div>
                         
                     </div>
                 </div>
