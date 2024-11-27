@@ -27,13 +27,14 @@ const AIOInput: FC<AITYPE> = (props) => {
     else if (type === 'range') { return null; }
     const defaultProps = new Storage('aio-input-storage').getModel() || {}
     let rootProps: AITYPE = { ...props, type, round, value, ...defaultProps }
-    if (type === 'text' && rootProps.fetchOptions) {
+    if (type === 'text' && rootProps.getOptions) {
         return <SuggestionInput {...rootProps} />
     }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
 const SuggestionInput: FC<AITYPE> = (props) => {
+    const {getOptions,option,onChange} = props;
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
     async function setSearchResult(newValue: any) {
@@ -42,7 +43,7 @@ const SuggestionInput: FC<AITYPE> = (props) => {
             SetSearchResult([])
             return
         }
-        const res: any[] = props.fetchOptions ? await props.fetchOptions(newValue) : [];
+        const res: any[] = getOptions ? await getOptions(newValue) : [];
         SetSearchResult(res)
     }
     return (
@@ -51,17 +52,17 @@ const SuggestionInput: FC<AITYPE> = (props) => {
             value={value}
             options={searchResult}
             option={{
-                ...props.option,
+                ...option,
                 onClick: (optionDetails) => {
                     const text = GetOptionProps({ rootProps: props, key: 'text', optionDetails })
                     setSearchResult(text);
-                    if (props.onChange) { props.onChange(text, optionDetails.option); }
+                    if (onChange) { onChange(text, optionDetails.option); }
                 }
             }}
-            fetchOptions={undefined}
+            getOptions={undefined}
             onChange={(newValue) => {
                 setSearchResult(newValue)
-                if (props.onChange) { props.onChange(newValue); }
+                if (onChange) { onChange(newValue); }
             }}
         />
     )
@@ -3343,7 +3344,7 @@ export type AITYPE =
         body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: AI_checkIcon,//select,checkbox,radio
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
-        fetchOptions?: (text: string) => Promise<any[]>,//text,textarea
+        getOptions?: (text: string) => Promise<any[]>,//text,textarea
         hideTags?: boolean,//select
         onClick?: (e: Event) => void,//button
         onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
