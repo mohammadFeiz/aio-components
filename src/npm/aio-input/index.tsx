@@ -7,9 +7,9 @@ import $ from 'jquery';
 import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
-    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount,GetArray, Validation,GetSvg,JSXToHTML
+    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation, GetSvg, JSXToHTML
 } from './../../npm/aio-utils';
-import Swip,{I_Swip_parameter, I_Swip_mousePosition} from './../../npm/aio-swip';
+import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../../npm/aio-swip';
 import AIODate from './../../npm/aio-date';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
@@ -34,7 +34,7 @@ const AIOInput: FC<AITYPE> = (props) => {
 }
 export default AIOInput
 const SuggestionInput: FC<AITYPE> = (props) => {
-    const {getOptions,option,onChange} = props;
+    const { getOptions, option, onChange } = props;
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
     async function setSearchResult(newValue: any) {
@@ -74,7 +74,6 @@ function AIOINPUT(props: AITYPE) {
     let { type, value, onChange, attrs = {}, rtl } = props;
     let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
-    let [openPopover] = useState<any>(getOpenPopover);
     let [error, setError] = useState<string>()
     useEffect(() => {
         validate()
@@ -88,46 +87,10 @@ function AIOINPUT(props: AITYPE) {
         reportError(res)
         setError(res)
     }
-    function getOpenPopover() {
-        if (!types.isDropdown) { return false }
-        let className = 'aio-input-popover';
-        className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
-        if (types.hasOption) { className += ' aio-input-dropdown' }
-        if (type === 'time') { className += ' aio-input-time-popover' }
-        return (dom: any) => {
-            let popover: AP_modal = { ...(props.popover || {}) }
-            let { type, multiple } = props;
-            let { body, limitTo, header, setAttrs = () => { return {} }, position = 'popover' } = popover;
-            let target: ReactNode = $(dom.current)
-            let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!multiple) || !!popover.fitHorizontal
-            let config: AP_modal = {
-                //props that have default but can change by user
-                position, fitHorizontal,
-                //props that havent default but can define by user(header,footer,fixStyle)
-                limitTo, header,
-                //props that cannot change by user
-                onClose: () => toggle(false),
-                body: (o) => {
-                    if (body) { return body(o) }
-                    else if (type === 'date') { return <Calendar onClose={o.close} /> }
-                    else if (type === 'time') { return <TimePopover onClose={o.close} /> }
-                    else { return <Options /> }
-                },
-                pageSelector: '.aio-input-backdrop.' + datauniqid, getTarget: () => target,
-                setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
-                    let attrs = setAttrs(key);
-                    if (key === 'modal') { return AddToAttrs(attrs, { className }) }
-                    if (key === 'backdrop') { return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
-                }
-            }
-            return config;
-        }
-    }
-    let [popup] = useState(getPopup(AIOPopup))
+    let [popup, setPopup] = useState(getPopup(AIOPopup))
     function getPopup(ctor: { new(p?: { rtl?: boolean }): AIOPopup }): AIOPopup {
         return new ctor({ rtl: props.rtl })
     }
-    let [open, setOpen] = useState<boolean>(!!props.open);
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
     let [DragOptions] = useState<DragClass>(
@@ -142,19 +105,48 @@ function AIOINPUT(props: AITYPE) {
             }
         })
     )
-    function toggle(popover: any) {
-        let open = !!popup.getModals().length
-        if (!!popover === !!open) { return }
-        setOpen(!!popover)
-        if (popover) { popup.addModal(popover); }
-        else {
-            popup.removeModal();
-            setTimeout(() => $(parentDom.current).focus(), 0)
+    function getPopover(dom: any) {
+        let className = 'aio-input-popover';
+        className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
+        if (types.hasOption) { className += ' aio-input-dropdown' }
+        if (props.type === 'time') { className += ' aio-input-time-popover' }
+        let popover: AP_modal = { ...(props.popover || {}) }
+        let { body, limitTo, header, setAttrs = () => { return {} }, position = 'popover' } = popover;
+        let target: ReactNode = $(dom.current)
+        let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!props.multiple) || !!popover.fitHorizontal
+        let config: AP_modal = {
+            //props that have default but can change by user
+            position, fitHorizontal,
+            //props that havent default but can define by user(header,footer,fixStyle)
+            limitTo, header,
+            //props that cannot change by user
+            onClose: () => closePopup(),
+            body: (o) => {
+                if (body) { return body(o) }
+                else if (type === 'date') { return <Calendar onClose={o.close} /> }
+                else if (type === 'time') { return <TimePopover onClose={o.close} /> }
+                else { return <Options /> }
+            },
+            pageSelector: '.aio-input-backdrop.' + datauniqid, getTarget: () => target,
+            setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
+                let attrs = setAttrs(key);
+                if (key === 'modal') { return AddToAttrs(attrs, { className }) }
+                if (key === 'backdrop') { return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
+            }
         }
+        return config;
+    }
+    function closePopup() {
+        popup.removeModal();
+        setTimeout(() => $(parentDom.current).focus(), 0)
     }
     function click(e: Event, dom: any) {
         if (type === 'checkbox') { if (onChange) { onChange(!value, e) } }
-        else if (openPopover !== false) { toggle(openPopover(dom)) }
+        else if (types.isDropdown) {
+            let open = !!popup.getModals().length
+            if (open) { return }
+            popup.addModal(getPopover(dom));
+        }
         else if (typeof props.onClick === 'function') { props.onClick(e) }
         else if (attrs.onClick) { attrs.onClick(); }
     }
@@ -181,7 +173,7 @@ function AIOINPUT(props: AITYPE) {
                 else if (typeof props.deSelect === 'function') { props.deSelect() }
             }
         }
-        if (close) { toggle(false) }
+        if (close) { closePopup() }
     }
     function getOptions(): { optionsList: any[], optionsDic: { [key: string]: any } } {
         let options: any[] = [];
@@ -196,9 +188,9 @@ function AIOINPUT(props: AITYPE) {
     }
     function getContext(): AI_context {
         let context: AI_context = {
-            error, options: getOptions(),
+            error, options: getOptions(), popup,
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
-            DragOptions, open, click, optionClick, types, showPassword, setShowPassword, DATE
+            DragOptions, click, optionClick, types, showPassword, setShowPassword, DATE
         }
         return context
     }
@@ -252,16 +244,16 @@ function TimePopover(props: { onClose: () => void }) {
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         //@ts-nocheck
         let { year, month, day } = value;
-        if (type === 'year' && startYear && endYear) { 
-            return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear }),rootProps.timeStep?.year) 
+        if (type === 'year' && startYear && endYear) {
+            return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear }), rootProps.timeStep?.year)
         }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
-            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 } },rootProps.timeStep?.day)
+            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 } }, rootProps.timeStep?.day)
         }
-        if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 }),rootProps.timeStep?.month) }
-        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }),rootProps.timeStep?rootProps.timeStep[type]:undefined)
+        if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 }), rootProps.timeStep?.month) }
+        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }), rootProps.timeStep ? rootProps.timeStep[type] : undefined)
     }
     function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ReactNode {
         if (typeof value[type] !== 'number') { return null }
@@ -275,7 +267,11 @@ function TimePopover(props: { onClose: () => void }) {
             </div>
         )
     }
-    function submit() { if (onChange) { onChange(value); } onClose(); }
+    function setValueByTimeStep(value: type_time_value) {
+        debugger
+        return value
+    }
+    function submit() { if (onChange) { onChange(setValueByTimeStep(value)); } onClose(); }
     function now() { setValue(getTimeByUnit(rootProps, true)) }
     return (
         <div className='aio-input-time-popover-content aio-input-theme-bg1 aio-input-theme-color0' style={{ fontSize: size }}>
@@ -508,7 +504,7 @@ function DateInput() {
             let [year, month = 1, day = 1, hour = 0] = list;
             list = [year, month, day, hour];
             let splitter = DATE.getSplitter(value)
-            let content:ReactNode = '';
+            let content: ReactNode = '';
             if (text && text !== null) { content = text as ReactNode }
             else {
                 let pattern: string = '{}';
@@ -517,7 +513,7 @@ function DateInput() {
                 else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
                 content = DATE.getDateByPattern(list, pattern)
             }
-            return <div style={{ direction: 'ltr',width:'100%' }}>{content}</div>
+            return <div style={{ direction: 'ltr', width: '100%' }}>{content}</div>
         }
         return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
     }
@@ -785,7 +781,7 @@ export type AI_Layout = {
     toggle?: { state: I_openState, action: () => void },
 }
 const Layout: FC<AI_Layout> = (props) => {
-    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, open, showPassword, setShowPassword, error }: AI_context = useContext(AICTX)
+    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, error, popup }: AI_context = useContext(AICTX)
     let { option, index, toggle, indent } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
@@ -796,23 +792,23 @@ const Layout: FC<AI_Layout> = (props) => {
         if (!voice || !onChange || !types.hasKeyboard) { return }
         // @ts-ignore
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {return}
+        if (!SpeechRecognition) { return }
         const recognition = new SpeechRecognition();
         recognition.lang = { en: 'en-US', fa: 'fa-IR' }[lang];
         recognition.continuous = true;
         recognition.interimResults = false;
-        recognition.onresult = (event:any) => {
+        recognition.onresult = (event: any) => {
             const result = event.results[0][0].transcript;
-            if(onChange)onChange(result);
+            if (onChange) onChange(result);
         };
-        recognition.onerror = (event:any) => {
+        recognition.onerror = (event: any) => {
             console.error('خطا در تشخیص گفتار: ', event.error);
         };
         recognition.onend = () => {
             console.log('تشخیص گفتار پایان یافت.');
         };
         setRecognition(recognition)
-        return () => {recognition.stop();};
+        return () => { recognition.stop(); };
     }, []);
     function getClassName() {
         let cls;
@@ -931,7 +927,7 @@ const Layout: FC<AI_Layout> = (props) => {
     function getProps() {
         let { attrs, disabled, draggable, style } = properties;
         let zIndex;
-        if (open && !option && ['text', 'number', 'textarea'].indexOf(type) !== -1) {
+        if (!!popup.getModals().length && !option && ['text', 'number', 'textarea'].indexOf(type) !== -1) {
             zIndex = 100000
         }
         let onClick;
@@ -1496,7 +1492,7 @@ const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
 }
 type I_DPContext = {
     translate: (text: string) => string,
-    changePopup:(v:ReactNode)=>void,
+    changePopup: (v: ReactNode) => void,
     DATE: AIODate,
     rootProps: AITYPE,
     activeDate: I_DP_activeDate,
@@ -1519,7 +1515,7 @@ export function Calendar(props: { onClose?: () => void }) {
     let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay)
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>(getActiveDate);
-    const [popup,setPopup] = useState<ReactNode>(null)
+    const [popup, setPopup] = useState<ReactNode>(null)
     function getDate() {
         let date;
         if (multiple) { date = value.length ? value[value.length - 1] : undefined }
@@ -1535,9 +1531,9 @@ export function Calendar(props: { onClose?: () => void }) {
     let adRef = useRef(activeDate);
     adRef.current = activeDate
     function trans(text: string) {
-        if(translate){
+        if (translate) {
             const res = translate(text);
-            if(res){return res}
+            if (res) { return res }
         }
         if (text === 'Today') {
             if (unit === 'month') { text = 'This Month' }
@@ -1548,7 +1544,7 @@ export function Calendar(props: { onClose?: () => void }) {
         if (jalali && obj[text]) { res = obj[text] }
         return res
     }
-    function changePopup(popup:ReactNode){
+    function changePopup(popup: ReactNode) {
         setPopup(popup)
     }
     function changeActiveDate(obj: 'today' | { [key in 'year' | 'month' | 'day']?: number }) {
@@ -1572,7 +1568,7 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     function getContext() {
         let context: I_DPContext = {
-            changeActiveDate, DATE,changePopup,
+            changeActiveDate, DATE, changePopup,
             translate: trans, rootProps, activeDate: adRef.current,
             today, todayWeekDay, thisMonthString, months,
             onChange: (p: { year?: number, month?: number, day?: number, hour?: number }) => {
@@ -1734,16 +1730,16 @@ function DPCell(props: { dateArray: number[] }) {
     let isFuture = DATE.isGreater(dateArray, DATE.getToday(jalali))
     let Attrs: any = {}
     if (dateAttrs) {
-        let weekDay = null,weekDayIndex = null,monthString = ''
-        if(rootProps.unit === 'day'){
+        let weekDay = null, weekDayIndex = null, monthString = ''
+        if (rootProps.unit === 'day') {
             const a = DATE.getWeekDay(dateArray)
             weekDay = a.weekDay; weekDayIndex = a.index;
         }
-        else if(rootProps.unit === 'month'){
+        else if (rootProps.unit === 'month') {
             const months = DATE.getMonths(jalali)
             monthString = months[dateArray[1] - 1];
         }
-        Attrs = dateAttrs({ dateArray, isToday, isActive,isFuture,weekDayIndex,weekDay,monthString })
+        Attrs = dateAttrs({ dateArray, isToday, isActive, isFuture, weekDayIndex, weekDay, monthString })
         Attrs = Attrs || {}
     }
     let isDisabled = disabled === true || Attrs.disabled === true;
@@ -1768,14 +1764,14 @@ function DPCell(props: { dateArray: number[] }) {
 }
 function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let { unit } = props;
-    let { rootProps, activeDate, months,changePopup }: I_DPContext = useContext(DPContext);
+    let { rootProps, activeDate, months, changePopup }: I_DPContext = useContext(DPContext);
     let { theme = Def('theme'), jalali } = rootProps;
     if (!activeDate || !activeDate[unit]) { return null }
     let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0, jalali ? 10 : 3)
     return (
-        <button 
+        <button
             type='button' className="aio-input-date-dropdown aio-input-theme-color0"
-            onClick={()=>changePopup(<DPHeaderPopup onClose={()=>changePopup(null)} unit={unit} />)}
+            onClick={() => changePopup(<DPHeaderPopup onClose={() => changePopup(null)} unit={unit} />)}
         >{text}</button>
     )
 }
@@ -1842,7 +1838,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
             </div>
         )
     }
-    return (<div style={{background:theme[0],color:theme[1]}} className={'aio-input-date-popup' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
+    return (<div style={{ background: theme[0], color: theme[1] }} className={'aio-input-date-popup' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
 }
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);
@@ -2369,7 +2365,7 @@ function TableCellContent(props: AI_TableCellContent) {
     if (template !== undefined) { return template }
     let input: AITYPE = getDynamics({ value: column.input, row, rowIndex, column });
     let value = getDynamics({ value: column.value, row, rowIndex, column })
-    if (!input) { return value }
+    if (!input) {return typeof value === 'object'?'':value}
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
     let convertedInput: any = { type: 'text' }
@@ -2396,8 +2392,7 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
 type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number, range?: number }) => number;
 type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number }
 type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number }
-
-export type I_rangeConfig = {thickness:number,offset:number,color:string,roundCap?:boolean,full?:boolean}
+export type I_rangeConfig = { thickness: number, offset: number, color: string, roundCap?: boolean, full?: boolean }
 export type I_RangeContext = {
     getXPByValue: (value: number) => number,
     fixAngle: (angle: number) => number,
@@ -2511,7 +2506,7 @@ const Range: FC = () => {
         return res
     }
     const getCircleByStr: AI_cbs = (rc: I_rangeConfig, type) => {
-        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false,full = rc.full || false,offset = rc.offset, color = rc.color || '#000';
+        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000';
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -2529,7 +2524,7 @@ const Range: FC = () => {
         return { thickness, radius, color, roundCap, full }
     }
     const getRectByStr: AI_rbs = (range) => {
-        let {thickness = 1, offset = 0, color = '#000', roundCap = false} = range;
+        let { thickness = 1, offset = 0, color = '#000', roundCap = false } = range;
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -3291,6 +3286,8 @@ function getTimeByUnit(rootProps: AITYPE, justToday?: boolean) {
                 alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`)
             }
             let res: number = v === undefined || justToday ? today[u] : v;
+            const step = rootProps.timeStep && rootProps.timeStep[u] ? rootProps.timeStep[u] : undefined
+            if (step) { res = Math.round(res / step) * step }
             newValue[u] = res;
         }
     }
@@ -3393,12 +3390,12 @@ export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
 export type AI_context = {
     rootProps: AITYPE,
+    popup: AIOPopup,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
     DragOptions: DragClass,
     datauniqid: string,
     touch: boolean,
-    open: boolean,
     click: (e: any, dom: any) => void,
     optionClick: (option: AI_option, p?: any) => void,
     types: AI_types,
@@ -3438,9 +3435,9 @@ type AI_hasOption = {
     option?: AI_optionProp, options?: any[] | ((p?: any) => any[]), search?: string,
 }
 type AI_isDate = {
-    dateAttrs?: (p: { 
-        dateArray: number[], isToday: boolean, isActive: boolean,isFuture:boolean, 
-        weekDayIndex:number | null,weekDay:string | null,monthString:string,
+    dateAttrs?: (p: {
+        dateArray: number[], isToday: boolean, isActive: boolean, isFuture: boolean,
+        weekDayIndex: number | null, weekDay: string | null, monthString: string,
     }) => any,
     jalali?: boolean,
     now?: boolean,
@@ -3448,7 +3445,7 @@ type AI_isDate = {
     theme?: string[],
     translate?: (text: string) => string,
     unit?: AI_date_unit | AI_time_unit,
-    timeStep?:{year?:number,month?:number,day?:number,hour?:number,minute?:number,second?:number},
+    timeStep?: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number },
     text?: ReactNode | (() => ReactNode),
 }
 type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
@@ -3614,12 +3611,12 @@ export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton
 type I_login_model = { userName: string, password: string, otpNumber: string, otpCode: string, register: any }
 type I_AILogin = {
     rtl?: boolean,
-    checkToken: (token: string) => Promise<{ 
-        method: 'post' | 'get',url: string,body?: any
-        onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false 
+    checkToken: (token: string) => Promise<{
+        method: 'post' | 'get', url: string, body?: any
+        onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false
     }>,
-    before?: (mode:I_loginMode)=>ReactNode,
-    after?: (mode:I_loginMode)=>ReactNode,
+    before?: (mode: I_loginMode) => ReactNode,
+    after?: (mode: I_loginMode) => ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
     translate?: 'fa' | ((key: I_login_key) => string | undefined),
     rememberTime: number,
@@ -3628,38 +3625,38 @@ type I_AILogin = {
         html: ReactNode,
         time: number
     },
-    getRequestOptions: (model: I_login_model,mode:I_loginMode) => Promise<{
-        method: 'post' | 'get',url: string,body?: any,
+    getRequestOptions: (model: I_login_model, mode: I_loginMode) => Promise<{
+        method: 'post' | 'get', url: string, body?: any,
         onSuccess: (response: any) => any,
         onCatch: (response: any) => string
     }>
     label: (field: I_login_field) => string,
-    validation?: (model: I_login_model,mode:I_loginMode) => string | undefined,
-    otpLength?:number,
+    validation?: (model: I_login_model, mode: I_loginMode) => string | undefined,
+    otpLength?: number,
     otp?: boolean,
-    userpass?:boolean
-    register?:{
-        defaultValue?:{[field:string]:any}
+    userpass?: boolean
+    register?: {
+        defaultValue?: { [field: string]: any }
         inputs?: (model: I_login_model) => (AITYPE & { field: string })[]
     },
     mode?: I_loginMode,
     attrs?: any,
     setAttrs?: (key: I_login_key) => any,
-    mock?:{user:any,token:string}
+    mock?: { user: any, token: string }
 }
 type I_login_modeState = {
-    key: I_loginMode, inputs:()=> ReactNode, title: ReactNode,
+    key: I_loginMode, inputs: () => ReactNode, title: ReactNode,
     submitText: string, responseUserType: boolean
 }
-export function AIOLogin_updateCatchedUser(loginId:string,newUser:any){
+export function AIOLogin_updateCatchedUser(loginId: string, newUser: any) {
     const storage = new Storage('ai-login' + loginId);
     const storedData = storage.load('data');
-    if(!storedData){return newUser}
-    const newStoredData = {...storedData,user:newUser}
-    return storage.save('data',newStoredData)
+    if (!storedData) { return newUser }
+    const newStoredData = { ...storedData, user: newUser }
+    return storage.save('data', newStoredData)
 }
 export const AILogin: FC<I_AILogin> = (props) => {
-    const { renderApp, translate = () => { }, id, rememberTime, checkToken, splash,otpLength = 4 } = props;
+    const { renderApp, translate = () => { }, id, rememberTime, checkToken, splash, otpLength = 4 } = props;
     const { validation = () => { return undefined } } = props;
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + id))
@@ -3667,16 +3664,16 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const modelRef = useRef(model)
     modelRef.current = model;
     const [mode, setMode] = useState<I_login_modeState>(getMode())
-    function getModeKey():I_loginMode{
-        if(props.mode){return props.mode}
-        if(props.userpass){return 'userpass'}
-        if(props.otp){return 'otpnumber'}
+    function getModeKey(): I_loginMode {
+        if (props.mode) { return props.mode }
+        if (props.userpass) { return 'userpass' }
+        if (props.otp) { return 'otpnumber' }
         return 'userpass'
     }
     function getMode(mode?: I_loginMode): I_login_modeState {
-        let res: I_login_modeState = { inputs:()=> null, key: mode || getModeKey(), title: null, submitText: '', responseUserType: false }
+        let res: I_login_modeState = { inputs: () => null, key: mode || getModeKey(), title: null, submitText: '', responseUserType: false }
         if (res.key === 'userpass') {
-            res.inputs = ()=>{
+            res.inputs = () => {
                 return (
                     <>
                         <AIText {...input_props('userName')} />
@@ -3689,21 +3686,22 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else if (res.key === 'register') {
             if (props.register) {
                 const inputs = (props.register.inputs || (() => []))(modelRef.current) || []
-                res.inputs = ()=>{
+                res.inputs = () => {
                     const model = modelRef.current
                     return (<>
-                        <AIText {...input_props('userName',true)} />
-                        <AIPassword {...input_props('password',true)} preview={true} />
+                        <AIText {...input_props('userName', true)} />
+                        <AIPassword {...input_props('password', true)} preview={true} />
                         <AIPassword {...{
-                            label: props.label('rePassword'),rtl: props.rtl,value: model.register.rePassword, preview:true,
-                            onChange: (v: any) => setModel({ ...model, register:{...model.register,rePassword: v} })}}
+                            label: props.label('rePassword'), rtl: props.rtl, value: model.register.rePassword, preview: true,
+                            onChange: (v: any) => setModel({ ...model, register: { ...model.register, rePassword: v } })
+                        }}
                         />
                         {
                             inputs.map((input) => {
                                 const value = model.register[input.field]
                                 return (
                                     <AIOInput key={input.field}
-                                        rtl={props.rtl} label={props.label(input.field)} {...input} 
+                                        rtl={props.rtl} label={props.label(input.field)} {...input}
                                         value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
                                     />
                                 )
@@ -3713,18 +3711,18 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 }
             }
         }
-        else if (res.key === 'otpnumber') { res.inputs = ()=><AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
-        else if(res.key === 'otpcode'){ res.inputs = ()=><AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
+        else if (res.key === 'otpnumber') { res.inputs = () => <AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
+        else if (res.key === 'otpcode') { res.inputs = () => <AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
         res.submitText = trans(res.key + 'Button' as I_login_key)
         res.title = <div className="ai-login-title">{trans(res.key + 'Title' as I_login_key)}</div>
         return res
     }
     function getModel() {
-        let model:I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: {userName:'',password:'',rePassword:''} }
+        let model: I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: { userName: '', password: '', rePassword: '' } }
         if (!props.register) { return model }
         if (props.register?.defaultValue) {
             let register: any = {}
-            for (let prop in props.register.defaultValue) { 
+            for (let prop in props.register.defaultValue) {
                 register[prop] = props.register.defaultValue[prop]
             }
             model.register = register
@@ -3767,7 +3765,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     async function success(response: any) {
         const modeKey = mode.key
         let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
-        const { onSuccess } = await props.getRequestOptions(modelRef.current,mode.key)
+        const { onSuccess } = await props.getRequestOptions(modelRef.current, mode.key)
         let message, res;
         try { res = await onSuccess(response) }
         catch (err: any) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return }
@@ -3786,10 +3784,10 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else { callback(res) }
     }
     async function submit() {
-        const { url, method, body, onCatch } = await props.getRequestOptions(modelRef.current,mode.key)
+        const { url, method, body, onCatch } = await props.getRequestOptions(modelRef.current, mode.key)
         axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
-            if(onCatch){setAlert({type:'error',text:'Error',subtext:onCatch(response)})}
-            else if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
+            if (onCatch) { setAlert({ type: 'error', text: 'Error', subtext: onCatch(response) }) }
+            else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
         });
     }
     function changeMode(mode: I_loginMode) { setModel(getModel()); setMode(getMode(mode)) }
@@ -3803,31 +3801,33 @@ export const AILogin: FC<I_AILogin> = (props) => {
             </div>
         )
     }
-    function input_props(field: keyof I_login_model,isRegister?:boolean) {
+    function input_props(field: keyof I_login_model, isRegister?: boolean) {
         const model = modelRef.current
-        return {label: props.label(field), rtl: props.rtl,value: model[field], onChange: (v: any) => {
-            if(isRegister){setModel({ ...model, register:{...model.register,[field]: v} })}
-            else {setModel({ ...model, [field]: v })}
-        }}
+        return {
+            label: props.label(field), rtl: props.rtl, value: model[field], onChange: (v: any) => {
+                if (isRegister) { setModel({ ...model, register: { ...model.register, [field]: v } }) }
+                else { setModel({ ...model, [field]: v }) }
+            }
+        }
     }
     function validate() {
         const model = modelRef.current
-        if(mode.key === 'otpcode'){
-            if((model.otpCode || '').length !== otpLength){return trans('otpCodeLength')}
+        if (mode.key === 'otpcode') {
+            if ((model.otpCode || '').length !== otpLength) { return trans('otpCodeLength') }
         }
-        if(mode.key === 'otpnumber'){
-            if(!model.otpNumber){return trans('otpNumberRequired')}
+        if (mode.key === 'otpnumber') {
+            if (!model.otpNumber) { return trans('otpNumberRequired') }
         }
-        if(mode.key === 'userpass'){
-            if(!model.userName){return trans('userNameRequired')}
+        if (mode.key === 'userpass') {
+            if (!model.userName) { return trans('userNameRequired') }
         }
-        if(mode.key === 'register'){
-            if(!model.register.userName){return trans('userNameRequired')}
-            if(!model.register.password){return trans('passwordRequired')}
-            if(!model.register.rePassword){return trans('rePasswordRequired')}
+        if (mode.key === 'register') {
+            if (!model.register.userName) { return trans('userNameRequired') }
+            if (!model.register.password) { return trans('passwordRequired') }
+            if (!model.register.rePassword) { return trans('rePasswordRequired') }
             if (model.register.password !== model.register.rePassword) { return trans('rePasswordMatch'); }
         }
-        return validation(model,mode.key)
+        return validation(model, mode.key)
     }
     function submit_layout() {
         const message = validate()
@@ -3845,14 +3845,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const bf_layout = (type: 'before' | 'after') => {
         const fn = props[type];
         let content = null;
-        if(fn){content = fn(mode.key)}
+        if (fn) { content = fn(mode.key) }
         return (<div className={`ai-login-${type}`}>{content}</div>)
     }
     function logout() { storage.remove('data'); window.location.reload(); }
     async function CheckToken() {
         if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
-        if(props.mock){
-            setData({ user:props.mock.user, token:props.mock.token }) 
+        if (props.mock) {
+            setData({ user: props.mock.user, token: props.mock.token })
             return
         }
         const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
@@ -3868,7 +3868,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
                     else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
                 })
                 .catch(response => {
-                    if(response.message){setAlert({type:'error',text:'Error',subtext:response.message})}
+                    if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
                     else {
                         let res, message: string = '';
                         try { res = onCatch(response) }
@@ -3895,7 +3895,6 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     return (<>{getContent()} {popup.render()}</>)
 }
-
 type I_pos = [number, number]
 export type I_marker = { pos: [number, number], html?: ReactNode }
 export type I_shapeStyle = {
@@ -3925,8 +3924,8 @@ type I_Map = {
     getSearchResult?: (searchValue: string) => Promise<I_searchResult[]>,
     onSearch?: (searchResult: I_searchResult) => void,
     mapRef?: any,
-    whenReady?:()=>void,
-    onMoveEnd?:(e:LeafletEvent)=>void
+    whenReady?: () => void,
+    onMoveEnd?: (e: LeafletEvent) => void
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
@@ -3965,7 +3964,7 @@ export const AIMap: FC<I_Map> = (props) => {
 };
 const MapBody: FC = () => {
     const { rootProps, pos, setMap, getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
-    const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [],whenReady } = rootProps
+    const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
         <MapContainer
@@ -4031,10 +4030,10 @@ const MapLayers: FC = () => {
                     return (
                         <LayersControl.Overlay name={o.name} checked={active} key={i}>
                             <FeatureGroup>
-                                {markers.map((marker: I_marker, j: number) => 
+                                {markers.map((marker: I_marker, j: number) =>
                                     <MapMarker key={j} pos={marker.pos} html={marker.html} />
                                 )}
-                                {shapes.map((shape: I_shape, k: number) => 
+                                {shapes.map((shape: I_shape, k: number) =>
                                     <MapShape key={k} shape={shape} />
                                 )}
                             </FeatureGroup>
@@ -4069,7 +4068,6 @@ const MapFooter: FC = () => {
         </div>
     )
 }
-
 const MapMarker: FC<{ pos: I_pos, html?: ReactNode }> = ({ pos, html }) => {
     const { getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
     function getHtmlIcon(html: ReactNode) {
@@ -4100,8 +4098,8 @@ function MapEvents() {
         locationfound: (location: any) => {
             console.log('location found:', location)
         },
-        moveend:(e)=>{
-            if(rootProps.onMoveEnd){rootProps.onMoveEnd(e)}
+        moveend: (e) => {
+            if (rootProps.onMoveEnd) { rootProps.onMoveEnd(e) }
         }
     })
     return null
@@ -4109,49 +4107,30 @@ function MapEvents() {
 type I_AIApp = {
     attrs?: any,
     bottomMenu: {
-        options: I_AIApp_bottomMenu_option[],
-        value?: string,
-        onChange?: (v: string) => void
+        options: AI_bottomMenuOption[],
+        onChange: (v: string) => void
     }
-    body: (p: I_AIApp_param) => ReactNode,
-    header?: (p: I_AIApp_param) => ReactNode | false,
+    body: () => ReactNode,
+    header?: () => ReactNode | false,
     children?: ReactNode
 }
-type I_AIApp_param = {
-    bottomMenuValue: string
-}
-type I_AIApp_bottomMenu_option = {
-    text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, show?: boolean, value: string
-}
+type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
 export const AIApp: FC<I_AIApp> = (props) => {
-    const [bm, SetBm] = useState<string>()
-    function setBm() {
-        if (props.bottomMenu.value) {
-            const res = props.bottomMenu.options.find((o) => o.show !== false && o.value === props.bottomMenu.value);
-            if (res) (SetBm(res.value))
-        }
-        const visibles = props.bottomMenu.options.filter((o) => o.show !== false);
-        if (visibles.length) { SetBm(visibles[0].value) }
-    }
-    useEffect(() => { setBm() }, [props.bottomMenu.value])
-    function getParam(): I_AIApp_param {
-        return { bottomMenuValue: bm || '' }
-    }
     function header_layout() {
         if (!props.header) { return null }
-        const header = props.header(getParam())
+        const header = props.header()
         if (header === false) { return null }
         return (<div className="ai-app-header">{header}</div>)
     }
     function body_layout() {
         return (
             <div className="ai-app-body">
-                {props.body({ bottomMenuValue: bm || '' })}
+                {props.body()}
             </div>
         )
     }
     function bottomMenu_layout() {
-        return (<AIBottomMenu options={props.bottomMenu.options} value={bm || ''} onChange={(tab) => SetBm(tab)} />)
+        return (<AIBottomMenu bottomMenu={props.bottomMenu} />)
     }
     const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
     return (
@@ -4163,16 +4142,13 @@ export const AIApp: FC<I_AIApp> = (props) => {
         </div>
     )
 }
-
-
-type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean }
-type AI_BottomMenu = { options: AI_bottomMenuOption[], value: string, onChange: (v: string) => void }
-const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange }) => {
+type AI_BottomMenu = { bottomMenu: I_AIApp["bottomMenu"] }
+const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
+    const { options, onChange } = bottomMenu
     function item_layout(item: AI_bottomMenuOption) {
         if (item.show === false) { return null }
-        const active = item.value === value
         return (
-            <div key={item.value} className={`ai-app-bottom-menu-option${active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
+            <div key={item.value} className={`ai-app-bottom-menu-option${item.active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
                 {!!item.before && item.before}
                 <div className="ai-app-bottom-menu-option-body">
                     {item.text !== undefined && item.text}
@@ -4195,9 +4171,8 @@ const AIBottomMenu: FC<AI_BottomMenu> = ({ options, value, onChange }) => {
         </div>
     )
 }
-
-export type I_mask_pattern = ['number' | 'text' | 'select' | ReactNode,number,(string[] | ReactNode)?][]
-export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=>void}> = (props) => {
+export type I_mask_pattern = ['number' | 'text' | 'select' | ReactNode, number, (string[] | ReactNode)?][]
+export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: string) => void }> = (props) => {
     const [dom] = useState(createRef())
     // let pattern:I_mask_pattern = [
     //     ['number',4],
@@ -4212,99 +4187,99 @@ export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=
     //     ['-',1,<div style={{width:12,height:12,borderRadius:'100%',background:'red',marginRight:6}}></div>],
     //     ['text',3],
     // ]
-    const [value,setValue] = useState<string>(props.value || '')
+    const [value, setValue] = useState<string>(props.value || '')
     const [values, setValues] = useState<string[]>(getValues(props.value || ''))
     const valuesRef = useRef(values)
     valuesRef.current = values
-    useEffect(()=>{
+    useEffect(() => {
         setValue(props.value || '');
         setValues(getValues(props.value || ''))
-    },[props.value])
-    function getValues(value:string){
+    }, [props.value])
+    function getValues(value: string) {
         let values = [];
         let temp = value
         for (let o of props.pattern) {
-            if(o[0] === 'number' || o[0] === 'text' || o[0] === 'select'){
-                let length:number = +o[1];
-                let value = temp.slice(0,length)
+            if (o[0] === 'number' || o[0] === 'text' || o[0] === 'select') {
+                let length: number = +o[1];
+                let value = temp.slice(0, length)
                 values.push(value);
-                temp = temp.slice(length,temp.length)
+                temp = temp.slice(length, temp.length)
             }
-            else {temp = temp.slice(o[1],temp.length)}
+            else { temp = temp.slice(o[1], temp.length) }
         }
         return values
     }
-    function SetValue(values:any,inputIndex:number,patternIndex:number){
+    function SetValue(values: any, inputIndex: number, patternIndex: number) {
         let tempInputIndex = -1
         console.log(values)
         let temp = ''
         for (let i = 0; i < props.pattern.length; i++) {
             let o = props.pattern[i];
-            if(o[0] === 'number' || o[0] === 'text' || o[0] === 'select'){
+            if (o[0] === 'number' || o[0] === 'text' || o[0] === 'select') {
                 tempInputIndex++;
-                let length:number = +o[1];
+                let length: number = +o[1];
                 let res = values[tempInputIndex]
                 let delta = length - res.length;
-                if(delta){
-                    const emp = o[0] === 'number'?'0':'x'
-                    for (let j = 0; j < delta; j++){
+                if (delta) {
+                    const emp = o[0] === 'number' ? '0' : 'x'
+                    for (let j = 0; j < delta; j++) {
                         res = emp + res
                     }
                     values[tempInputIndex] = res
                 }
-                else if(patternIndex === i) {
+                else if (patternIndex === i) {
                     const inputs = $(dom.current as any).find('.aio-input');
                     let length = inputs.length;
                     inputIndex++;
-                    if(inputIndex > length){inputIndex = 0;}
+                    if (inputIndex > length) { inputIndex = 0; }
                     let input = inputs.eq(inputIndex).find('input');
-                    if(input.length){
+                    if (input.length) {
                         input.focus().select();
                     }
-                    
+
                 }
                 temp += res;
             }
-            else {temp += o[0]}
+            else { temp += o[0] }
         }
         setValue(temp);
         props.onChange(temp)
         setValues(values)
     }
-    function changeValue(value:any,inputIndex:number,patternIndex:number){
-        let newValues = valuesRef.current.map((o,j)=>inputIndex === j?value:o);
-        SetValue(newValues,inputIndex,patternIndex)
+    function changeValue(value: any, inputIndex: number, patternIndex: number) {
+        let newValues = valuesRef.current.map((o, j) => inputIndex === j ? value : o);
+        SetValue(newValues, inputIndex, patternIndex)
 
     }
-    function getList(){
+    function getList() {
         let temp = 0;
-        return props.pattern.map((o:any,patternIndex)=>{
+        return props.pattern.map((o: any, patternIndex) => {
             let type = o[0];
             let inputIndex = temp;
-            if(type === 'text' || type === 'number'){
+            if (type === 'text' || type === 'number') {
                 let length = +o[1];
                 temp++;
                 return (
-                    <AIText 
-                        style={{width:length * 10}}
+                    <AIText
+                        style={{ width: length * 10 }}
                         placeholder={new Array(length).fill('x').join('')}
                         maxLength={length}
                         justNumber={type === 'number'}
                         value={valuesRef.current[inputIndex]}
-                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                        onChange={(v: string) => changeValue(v, inputIndex, patternIndex)}
                     />
                 )
             }
-            else if(type === 'select'){
+            else if (type === 'select') {
                 let options = o[2] as any[];
                 temp++;
                 return (
                     <AISelect
-                        style={{width:'fit-content'}}
+                        style={{ width: 'fit-content' }}
                         options={options}
-                        option={{text:'option',value:'option'}}
+                        option={{ text: 'option', value: 'option' }}
                         value={valuesRef.current[inputIndex]}
-                        onChange={(v:string)=>changeValue(v,inputIndex,patternIndex)}
+                        onChange={(v: string) => changeValue(v, inputIndex, patternIndex)}
                     />
                 )
             }
@@ -4321,12 +4296,11 @@ export const Mask: FC<{value?:string,pattern:I_mask_pattern,onChange:(v:string)=
         </div>
     )
 }
-
 export type I_MonthCells = {
-    year: number, month: number, cellContent: (date: number[],weekDayIndex:number) => ReactNode,weekDayContent?:(v:number)=>ReactNode,
+    year: number, month: number, cellContent: (date: number[], weekDayIndex: number) => ReactNode, weekDayContent?: (v: number) => ReactNode,
     changeMonth: (month: number) => void
 }
-export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent,weekDayContent }) => {
+export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDayContent }) => {
     const [DATE] = useState<AIODate>(new AIODate())
     const [monthes] = useState<string[]>(DATE.getMonths(true))
     function getDateInfo() {
@@ -4340,20 +4314,20 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent,weekDayC
     }
     const gtc = Math.floor(100 / 7);
     const gridTemplateColumns: string = `${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}%`;
-    function weekDays_layout() { 
-        if(!weekDayContent){return null}
+    function weekDays_layout() {
+        if (!weekDayContent) { return null }
         return (
             <div className="month-cells-grid" style={{ gridTemplateColumns }}>
-                {DATE.getWeekDays(true).map((o: string, i: number) => <div key={o} className={`month-cells-weekday`}>{weekDayContent(i)}</div>) }
+                {DATE.getWeekDays(true).map((o: string, i: number) => <div key={o} className={`month-cells-weekday`}>{weekDayContent(i)}</div>)}
             </div>
         )
     }
-    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o,i) => <div key={i} className=""></div>) }
+    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o, i) => <div key={i} className=""></div>) }
     function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
     function cell_layout(day: number) {
         const date = [year, month, day];
-        const weekDayIndex:number = DATE.getWeekDay(date).index;
-        return (<div key={day} className="month-cells-cell">{cellContent(date,weekDayIndex)}</div>)
+        const weekDayIndex: number = DATE.getWeekDay(date).index;
+        return (<div key={day} className="month-cells-cell">{cellContent(date, weekDayIndex)}</div>)
     }
     const dateInfo = getDateInfo()
     return (

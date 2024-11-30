@@ -156,11 +156,12 @@ export default class AIOConvert {
             return res
         })
     }
-    json2excel(p: { jsonData: any, styleList?: { recordIndex: number, field: string, style?: I_excelStyle }[], successCallback: (file: any) => void }) {
+    json2excel(p: { jsonData: any,trans?:(v:string)=>string, styleList?: { recordIndex: number, field: string, style?: I_excelStyle }[], successCallback: (file: any) => void }) {
+        const {trans = (v)=>v} = p;
         function getFieldColumnIndex(jsonRow: any, field: string) { return Object.keys(jsonRow).indexOf(field); }
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sheet1');
-        worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: key, key }));
+        worksheet.columns = Object.keys(p.jsonData[0]).map((key) => ({ header: trans(key), key }));
         p.jsonData.forEach((row: any) => worksheet.addRow(row));
         (p.styleList || []).forEach(({ recordIndex, field, style }) => {
             const columnIndex = getFieldColumnIndex(p.jsonData[0], field) + 1;
