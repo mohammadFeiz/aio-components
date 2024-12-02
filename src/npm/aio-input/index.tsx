@@ -268,7 +268,6 @@ function TimePopover(props: { onClose: () => void }) {
         )
     }
     function setValueByTimeStep(value: type_time_value) {
-        debugger
         return value
     }
     function submit() { if (onChange) { onChange(setValueByTimeStep(value)); } onClose(); }
