@@ -1,7 +1,7 @@
 import express, { NextFunction, Router, RequestHandler, Request, Response } from 'express';
 import type { Express } from 'express';
 //@ts-ignore
-import mongoose, { Model, Schema } from 'mongoose';
+import mongoose, { ClientSession, Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
@@ -16,7 +16,7 @@ export type I_auth = {
     registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, userProps?: any } | void>,
     loginExeption?: (p: { user: any, token: string }) => Promise<{ status?: number, message?: string, user?: any } | void>
 };
-type I_transaction = (callback: (session: mongoose.ClientSession) => Promise<true | string>) => Promise<true | string>
+type I_transaction = (callback: (session: ClientSession) => Promise<true | string>) => Promise<true | string>
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
 export type I_entity = { schema?: I_schemaDefinition | string, path?: string, requiredToken?: boolean, apis: I_api[] };
@@ -55,11 +55,11 @@ class AIOExpress<I_User> {
     removeRows: I_removeRows;
     getUser: (p: { id?: any, search?: I_row, req?: Request }) => Promise<null | I_User | string>;
     getUsers: (p: { ids?: any[], search?: I_row }) => Promise<I_User[] | string>;
-    addUser: (p: { newValue: I_User }) => Promise<I_User | string>
-    editUser: (p: { id: any, newValue: Partial<I_User> }) => Promise<I_User | string>
-    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User> }) => Promise<string | number>
-    removeUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<I_User | string>
-    removeUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<number | string>
+    addUser: (p: { newValue: I_User,session?:ClientSession }) => Promise<I_User | string>
+    editUser: (p: { id: any, newValue: Partial<I_User>,session?:ClientSession }) => Promise<I_User | string>
+    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User>,session?:ClientSession }) => Promise<string | number>
+    removeUser: (p: { id?: any, search?: Partial<I_User>,session?:ClientSession }) => Promise<I_User | string>
+    removeUsers: (p: { ids?: any[], search?: Partial<I_User>,session?:ClientSession }) => Promise<number | string>
     changeUserPassword: (p: { userPassword: string, oldPassword: string, newPassword: string, userId: string }) => Promise<true | string>
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
@@ -394,12 +394,12 @@ type I_GCRUD = {
 }
 type I_getRow = (p: { entityName: string | 'auth', search?: I_row, id?: any }) => Promise<null | I_row | string>
 type I_getRows = (p: { entityName: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
-type I_addRow = (p: { entityName: string | 'auth', newValue: I_row,session?:mongoose.ClientSession }) => Promise<I_row | string>
-type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { entityName: string | 'auth',id?: any, search?: I_row, newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | I_row>
-type I_editRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[]; newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | number>
-type I_removeRow = (p: { entityName: string | 'auth',search?: I_row; id?: string,session?:mongoose.ClientSession }) => Promise<string | I_row>
-type I_removeRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[],session?:mongoose.ClientSession }) => Promise<string | number>
+type I_addRow = (p: { entityName: string | 'auth', newValue: I_row,session?:ClientSession }) => Promise<I_row | string>
+type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row,session?:ClientSession }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { entityName: string | 'auth',id?: any, search?: I_row, newValue: I_row,session?:ClientSession }) => Promise<string | I_row>
+type I_editRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[]; newValue: I_row,session?:ClientSession }) => Promise<string | number>
+type I_removeRow = (p: { entityName: string | 'auth',search?: I_row; id?: string,session?:ClientSession }) => Promise<string | I_row>
+type I_removeRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[],session?:ClientSession }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
     getAuthModel:()=>Model<any>
