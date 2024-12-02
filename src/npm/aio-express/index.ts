@@ -16,15 +16,16 @@ export type I_auth = {
     registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, userProps?: any } | void>,
     loginExeption?: (p: { user: any, token: string }) => Promise<{ status?: number, message?: string, user?: any } | void>
 };
+type I_transaction = (callback: (session: mongoose.ClientSession) => Promise<true | string>) => Promise<true | string>
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
 export type I_entity = { schema?: I_schemaDefinition | string, path?: string, requiredToken?: boolean, apis: I_api[] };
 export type I_entities = { [entityName: string]: I_entity }
-export type I_queryParam = null | string | { [key: string]: any }
+export type I_queryParam = { [key: string]: any }
 export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
-    body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryParam?: boolean, getResult: string,
+    body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryString?: string, getResult: string,
     checkAccess?: (p: { reqUser: any, body: any, queryParam: I_queryParam }) => Promise<void | string | { [key: string]: any }>
     fn: (p: { req: Request, res: Response, reqUser: any, body: any, accessBody: any, queryParam: I_queryParam }) => Promise<{ status: number, success: boolean, message?: string, value?: any }>
 };
@@ -70,7 +71,7 @@ class AIOExpress<I_User> {
         this.AuthRouter = express.Router();
         this.jwt = this.initJwt;
         if (p.auth) { this.handleAuth(); }
-        this.gcrud = new GCRUD({ getModel: this.getModel })
+        this.gcrud = new GCRUD({ getModel: this.getModel,getAuthModel:()=>this.AuthModel as Model<any> })
         this.getRow = this.gcrud.getRow;
         this.getRows = this.gcrud.getRows;
         this.addRow = this.gcrud.addRow;
@@ -80,41 +81,34 @@ class AIOExpress<I_User> {
         this.removeRow = this.gcrud.removeRow;
         this.removeRows = this.gcrud.removeRows;
         this.getUser = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
             if (p.req) { return await this.getUserByReq(p.req) }
-            const res = await this.getRow({ model: this.AuthModel, ...p })
+            const res = await this.getRow({ ...p,entityName:'auth' })
             return res === null || typeof res === 'string' ? res : res as I_User
         }
         this.getUsers = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
-            const res = await this.getRows({ model: this.AuthModel, ...p })
+            const res = await this.getRows({ ...p,entityName:'auth' })
             return typeof res === 'string' ? res : res as I_User[]
         }
         this.addUser = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
             const newValue: any = p.newValue;
             const hashedPassword = await bcrypt.hash(newValue.password, 10);
             newValue.password = hashedPassword;
-            const res = await this.addRow({ model: this.AuthModel, newValue })
+            const res = await this.addRow({ newValue,entityName:'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.editUser = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
-            const res = await this.editRow({ model: this.AuthModel, newValue: p.newValue as I_row, id: p.id })
+            const res = await this.editRow({ newValue: p.newValue as I_row, id: p.id,entityName:'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.editUsers = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
-            return await this.editRows({ model: this.AuthModel, ...p, newValue: p.newValue as I_row })
+            return await this.editRows({ ...p, newValue: p.newValue as I_row,entityName:'auth' })
         }
         this.removeUser = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
-            const res = await this.removeRow({ model: this.AuthModel, ...p })
+            const res = await this.removeRow({ ...p,entityName:'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.removeUsers = async (p) => {
-            if (!this.AuthModel) { return 'auth model is not set' }
-            return await this.removeRows({ model: this.AuthModel, ...p })
+            return await this.removeRows({ ...p,entityName:'auth' })
         }
         this.changeUserPassword = async (p) => {
             try {
@@ -128,14 +122,13 @@ class AIOExpress<I_User> {
             catch (err: any) { return err.message }
         }
     }
+    getModel: I_getModel = (key) => this.models[key]
     log = (message: string, color?: 'green' | 'red' | 'yellow') => {
         if (color === "green") { console.log('\x1b[32m%s\x1b[0m', message) }
         else if (color === "yellow") { console.log('\x1b[33m%s\x1b[0m', message) }
         else if (color === "red") { console.log('\x1b[31m%s\x1b[0m', message) }
         else { console.log(message) }
     }
-    getModel: I_getModel = (key) => this.models[key]
-    fixPath = (path: string) => path[0] !== '/' ? `/${path}` : path
     start = () => {
         this.app.use(cors());
         this.app.use(bodyParser.json());
@@ -155,7 +148,27 @@ class AIOExpress<I_User> {
         }
         this.app.listen(this.env.port, () => { console.log(`Server running on port ${this.env.port}`) });
     };
-
+    transaction:I_transaction = async (callback): Promise<true | string> => {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const result = await callback(session);
+            if (typeof result === "string") {
+                await session.abortTransaction();
+                session.endSession();
+                console.error("Callback error:", result);
+                return result;
+            }
+            await session.commitTransaction();
+            session.endSession();
+            return true;
+        } catch (error:any) {
+            await session.abortTransaction();
+            session.endSession();
+            console.error("Transaction failed:", error.message);
+            return error.message;
+        }
+    };
     connectToMongoose = () => {
         const url: string = this.env.mongoUrl;
         mongoose
@@ -261,11 +274,11 @@ class AIOExpress<I_User> {
                 const token = req.headers['authorization']?.split(' ')[1] || ''; // استخراج توکن از هدر
                 jwt.verify(token, this.env.secretKey as string, async (err: any, decoded: any) => {
                     if (err) { return this.setResult({ res, message: 'Token is invalid', success: false, status: 401 }) }
-                    if(this.AuthModel){
+                    if (this.AuthModel) {
                         const reqUserId = decoded.id;
-                        const reqUser = await this.getUser({id:reqUserId});
-                        if(reqUser === null){return this.setResult({ res, message: 'User Not Found', success: false, status: 401 })}
-                        if(typeof reqUser === 'string'){return this.setResult({ res, message: reqUser, success: false, status: 401 })}
+                        const reqUser = await this.getUser({ id: reqUserId });
+                        if (reqUser === null) { return this.setResult({ res, message: 'User Not Found', success: false, status: 401 }) }
+                        if (typeof reqUser === 'string') { return this.setResult({ res, message: reqUser, success: false, status: 401 }) }
                     }
                     return this.setResult({ res, message: 'authorized', success: true, status: 201 })
                 });
@@ -295,6 +308,7 @@ class AIOExpress<I_User> {
         }
         for (let prop in entities) { this.addEntity(entities[prop], prop) }
     }
+    fixPath = (path: string, queryString?: string) => (path[0] !== '/' ? `/${path}` : path) + (queryString || '')
     private addEntity = (entity: I_entity, name: string) => {
         const { schema, apis, requiredToken = true } = entity;
         const dicName = requiredToken ? 'tokenBaseDic' : 'tokenLessDic';
@@ -302,8 +316,8 @@ class AIOExpress<I_User> {
         if (schema) {
             try {
                 const dif = this.getSchemaDefinition(schema, name);
-                const removedIdDif:any = {}
-                for(let prop in dif){if(prop !== 'id'){removedIdDif[prop] = dif[prop]}}
+                const removedIdDif: any = {}
+                for (let prop in dif) { if (prop !== 'id') { removedIdDif[prop] = dif[prop] } }
                 const entitySchema = this.AIOSchemaInstance.getSchema(removedIdDif);
                 const entityModel = mongoose.model(name, entitySchema);
                 this.models[name] = entityModel;
@@ -315,8 +329,9 @@ class AIOExpress<I_User> {
         try {
             this.routers[name] = express.Router();
             for (let api of apis) {
-                const { path, method, fn } = api;
-                this.routers[name][method](this.fixPath(path), async (req: Request, res: Response) => {
+                const { path, method, fn, queryString } = api;
+                const url = this.fixPath(path, queryString);
+                this.routers[name][method](url, async (req: Request, res: Response) => {
                     try {
                         const reqUser = await this.getUserByReq(req);
                         if (reqUser === null) { return this.setResult({ res, success: false, message: 'req user not found', status: 401 }) }
@@ -353,12 +368,10 @@ class AIOExpress<I_User> {
             console.error(`Error creating router for entity ${name}:`, err.message);
         }
     };
-    processUrl = (req: Request) => {
-        const urlPath = req.params[0];
-        const queryParam = req.query;
-        if (Object.keys(queryParam).length > 0) { return queryParam; }
-        else if (urlPath) { return urlPath; }
-        return null;
+    processUrl = (req: Request): { [key: string]: any } => {
+        if (Object.keys(req.params).length > 0) { return req.params }
+        if (Object.keys(req.query).length > 0) { return req.query; }
+        return {};
     }
     setResult: I_setResult = (p) => {
         return p.res.status(p.status).json({ message: p.message, success: p.success, value: p.value });
@@ -376,20 +389,22 @@ class AIOExpress<I_User> {
 
 export default AIOExpress;
 type I_GCRUD = {
-    getModel: I_getModel
+    getModel: I_getModel,
+    getAuthModel:()=>Model<any>
 }
-type I_getRow = (p: { model?: Model<any>, entityName?: string, search?: I_row, id?: any }) => Promise<null | I_row | string>
-type I_getRows = (p: { model?: Model<any>, entityName?: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
-type I_addRow = (p: { model?: Model<any>, entityName?: string, newValue: I_row }) => Promise<I_row | string>
-type I_editRow = (p: { model?: Model<any>, entityName?: string, id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { model?: Model<any>, entityName?: string; id?: any, search?: I_row, newValue: I_row }) => Promise<string | I_row>
-type I_editRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[]; newValue: I_row }) => Promise<string | number>
-type I_removeRow = (p: { model?: Model<any>, entityName?: string; search?: I_row; id?: string }) => Promise<string | I_row>
-type I_removeRows = (p: { model?: Model<any>, entityName?: string; search?: I_row; ids?: any[] }) => Promise<string | number>
+type I_getRow = (p: { entityName: string | 'auth', search?: I_row, id?: any }) => Promise<null | I_row | string>
+type I_getRows = (p: { entityName: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
+type I_addRow = (p: { entityName: string | 'auth', newValue: I_row,session?:mongoose.ClientSession }) => Promise<I_row | string>
+type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { entityName: string | 'auth',id?: any, search?: I_row, newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | I_row>
+type I_editRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[]; newValue: I_row,session?:mongoose.ClientSession }) => Promise<string | number>
+type I_removeRow = (p: { entityName: string | 'auth',search?: I_row; id?: string,session?:mongoose.ClientSession }) => Promise<string | I_row>
+type I_removeRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[],session?:mongoose.ClientSession }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
-    constructor(p: I_GCRUD) { this.getModel = p.getModel }
-    getModelByP = async (p: any) => p.model ? p.model : await this.getModel(p.entityName)
+    getAuthModel:()=>Model<any>
+    constructor(p: I_GCRUD) { this.getModel = p.getModel; this.getAuthModel = p.getAuthModel }
+    getModelByP = async (p: any) => p.entityName === 'auth' ? this.getAuthModel() : await this.getModel(p.entityName)
     fixId = (row: any) => {
         if (typeof row === 'object' && !Array.isArray(row) && row !== null) { row.id = row._id; }
         return row
@@ -420,7 +435,8 @@ class GCRUD {
             let model, newRecord;
             try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
             catch (err: any) { return err.message }
-            const res = await newRecord.save().catch((err: any) => `Error in adding row : ${err}`);
+            const param = p.session?{session:p.session}:undefined
+            const res = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
             const result = this.fixId(res)
             return result
         }
@@ -436,7 +452,7 @@ class GCRUD {
                 if (prop === 'id' || prop === '_id') { continue }
                 exist[prop] = p.newValue[prop]
             }
-            const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true });
+            const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true,session:p.session });
             if (!updatedRecord) { return 'Record not found'; }
             return this.fixId(updatedRecord);
         }
@@ -450,7 +466,7 @@ class GCRUD {
             else if (p.search) { existingRecord = await model.findOne(p.search); }
             else { return 'addOrEditRow should get id our search object as parameter' }
             if (existingRecord !== null) {
-                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true });
+                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true,session:p.session });
                 return this.fixId(updatedRecord);
             }
             else {
@@ -467,7 +483,7 @@ class GCRUD {
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
-            const result = await model.updateMany(query, { $set: p.newValue });
+            const result = await model.updateMany(query, { $set: p.newValue },{session:p.session});
             if (result.modifiedCount === 0) { return 'No records found to update'; }
             return result.modifiedCount; // تعداد رکوردهای ویرایش شده
         }
@@ -480,7 +496,7 @@ class GCRUD {
             if (p.id) { query = { _id: p.id }; }
             else if (p.search) { query = p.search; }
             else { return 'No criteria provided for deletion'; }
-            const deletedRecord = await await model.findOneAndDelete(query);
+            const deletedRecord = await await model.findOneAndDelete(query,{session:p.session});
             if (!deletedRecord) { return 'Record not found'; }
             return this.fixId(deletedRecord);
         }
@@ -492,7 +508,7 @@ class GCRUD {
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
-            const result = await model.deleteMany(query);
+            const result = await model.deleteMany(query,{session:p.session});
             if (result.deletedCount === 0) { return 'No records found to delete'; }
             return result.deletedCount;
         }
@@ -812,7 +828,7 @@ export class AIOSchema {
             if (!success) { return { success: false, result } }
             res = `body:${typeof api.body === 'string' ? api.body : result}`
         }
-        if (api.queryParam) { res += `${res ? ',' : ''}queryParam:{[key:string]:string} | string`; }
+        if (api.queryString) { res += `${res ? ',' : ''}queryParam:{[key:string]:string} | string`; }
         return { success: true, result: res };
     }
     getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
@@ -823,8 +839,8 @@ export class AIOSchema {
         if (!success) { return { success: false, result } }
         return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string' ? api.successResult : result}>` }
     }
-    getUrlString = (name:string,path:string,queryParam?:boolean)=>{
-        if(!queryParam){return `const url = ${"`${this.base_url}"}${name}${path}${"`"}`}
+    getUrlString = (name: string, path: string, queryString?: string) => {
+        if (!queryString) { return `const url = ${"`${this.base_url}"}${name}${path}${"`"}` }
         return `const url = ${"`${this.base_url}"}${name}${path}${"${this.getUrlQueryParam(queryParam)}"}${"`"}`
     }
     getMethodsString = (entities: I_entities): { success: boolean, result: string } => {
@@ -832,7 +848,7 @@ export class AIOSchema {
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
-                const { method, errorResult, description, queryParam, getResult } = api;
+                const { method, errorResult, description, queryString, getResult } = api;
                 const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 const bodyParamString = this.bodyParamToString(api);
@@ -841,7 +857,7 @@ export class AIOSchema {
                 if (!returnTypeString.success) { return { success: false, result: returnTypeString.result } }
                 res += `
     ${apiName} = async (${bodyParamString.result})${returnTypeString.result}=>{
-        ${this.getUrlString(name,path,queryParam)}
+        ${this.getUrlString(name, path, queryString)}
         return await this.request({
             url,description:"${description}",method:"${method}",errorResult:${JSON.stringify(errorResult)},
             getResult:${getResult},${!api.body ? '' : `\n            body`}
