@@ -1515,6 +1515,7 @@ export function Calendar(props: { onClose?: () => void }) {
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>(getActiveDate);
     const [popup, setPopup] = useState<ReactNode>(null)
+    let [popupMounted,setPopupMounted] = useState<boolean>(false)
     function getDate() {
         let date;
         if (multiple) { date = value.length ? value[value.length - 1] : undefined }
@@ -1539,12 +1540,20 @@ export function Calendar(props: { onClose?: () => void }) {
             else if (unit === 'hour') { text = 'This Hour' }
         }
         let obj: any = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری', 'Select Year': 'انتخاب سال', 'Close': 'بستن' }
-        let res;
+        let res = text;
         if (jalali && obj[text]) { res = obj[text] }
         return res
     }
     function changePopup(popup: ReactNode) {
-        setPopup(popup)
+        popupMounted = false;
+        if(popup === null){
+            setPopupMounted(false)
+            setTimeout(()=>setPopup(null),300)
+        }
+        else {
+            setPopup(popup)
+            setTimeout(()=>setPopupMounted(true),0)
+        }
     }
     function changeActiveDate(obj: 'today' | { [key in 'year' | 'month' | 'day']?: number }) {
         let newActiveDate;
@@ -1631,7 +1640,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 </div>
                 <DPToday />
             </div>
-            {popup}
+            <div className={`aio-input-date-popup-container ${popupMounted?'mounted':'not-mounted'}`}>{popup}</div>
         </DPContext.Provider>
     );
 }
@@ -1653,7 +1662,7 @@ function DPFooter() {
     let { rootProps, changeActiveDate, translate }: I_DPContext = useContext(DPContext);
     let { disabled, onChange = () => { }, deSelect, multiple, now = true } = rootProps;
     if (disabled) { return null }
-    const buttonClassName = 'aio-input-theme-color0'
+    const buttonClassName = 'aio-input-theme-color0 aio-input-theme-text'
     function clear() {
         if (typeof deSelect === 'function') { deSelect() }
         else { onChange(multiple ? [] : undefined) }
@@ -1716,7 +1725,7 @@ function DPCell(props: { dateArray: number[] }) {
         else { return !value ? false : DATE.isEqual(dateArray, value); }
     }
     function getClassName(isActive: boolean, isToday: boolean, isDisabled: boolean, className?: string) {
-        var str = 'aio-input-date-cell';
+        var str = 'aio-input-date-cell aio-input-theme-text';
         if (isDisabled) { str += ' aio-input-date-disabled' }
         if (isActive) { str += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1'; }
         else { str += ' aio-input-theme-bg1 aio-input-theme-color0'; }
@@ -1769,7 +1778,7 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0, jalali ? 10 : 3)
     return (
         <button
-            type='button' className="aio-input-date-dropdown aio-input-theme-color0"
+            type='button' className="aio-input-date-dropdown aio-input-theme-color0 aio-input-theme-text"
             onClick={() => changePopup(<DPHeaderPopup onClose={() => changePopup(null)} unit={unit} />)}
         >{text}</button>
     )
@@ -1797,24 +1806,26 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
     }
     function getCells() {
         let cells = [];
+        const getCls = (active:boolean)=>{
+            let className = 'aio-input-date-cell'
+            if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1 aio-input-theme-text' }
+            else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
+            return className
+        }
         if (unit === 'year') {
             for (let i = start; i < start + 10; i++) {
                 let active = i === year;
-                let className = 'aio-input-date-cell'
-                if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1' }
-                else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
-                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className, onClick: () => changeValue(i) }
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className:getCls(active), onClick: () => changeValue(i) }
                 cells.push(<div {...p} key={i}>{i}</div>)
             }
         }
         else {
             for (let i = 1; i <= 12; i++) {
                 let active = i === month;
-                let className = 'aio-input-date-cell'
-                if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1' }
-                else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
-                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className, onClick: () => changeValue(i) }
-                cells.push(<div {...p} key={i}>{months[i - 1]}</div>)
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className:getCls(active), onClick: () => changeValue(i) }
+                let text = months[i - 1]
+                if(!jalali){text = `${text.slice(0,3)} (${i})`}
+                cells.push(<div {...p} key={i}>{text}</div>)
             }
         }
         return cells
@@ -1831,9 +1842,10 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
     }
     function body_node() { return <div className='aio-input-date-popup-body'>{getCells()}</div> }
     function footer_node() {
+        const closeText = translate('Close')
         return (
             <div className='aio-input-date-popup-footer'>
-                <button className='aio-input-theme-bg0 aio-input-theme-color1' onClick={() => onClose()}>{translate('Close')}</button>
+                <button className='aio-input-theme-bg1 aio-input-theme-color0' onClick={() => onClose()}>{closeText}</button>
             </div>
         )
     }
