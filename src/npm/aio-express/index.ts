@@ -5,6 +5,7 @@ import mongoose, { ClientSession, Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
+import Agenda from 'agenda';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean };
@@ -55,12 +56,13 @@ class AIOExpress<I_User> {
     removeRows: I_removeRows;
     getUser: (p: { id?: any, search?: I_row, req?: Request }) => Promise<null | I_User | string>;
     getUsers: (p: { ids?: any[], search?: I_row }) => Promise<I_User[] | string>;
-    addUser: (p: { newValue: I_User,session?:ClientSession }) => Promise<I_User | string>
-    editUser: (p: { id: any, newValue: Partial<I_User>,session?:ClientSession }) => Promise<I_User | string>
-    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User>,session?:ClientSession }) => Promise<string | number>
-    removeUser: (p: { id?: any, search?: Partial<I_User>,session?:ClientSession }) => Promise<I_User | string>
-    removeUsers: (p: { ids?: any[], search?: Partial<I_User>,session?:ClientSession }) => Promise<number | string>
+    addUser: (p: { newValue: I_User, session?: ClientSession }) => Promise<I_User | string>
+    editUser: (p: { id: any, newValue: Partial<I_User>, session?: ClientSession }) => Promise<I_User | string>
+    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User>, session?: ClientSession }) => Promise<string | number>
+    removeUser: (p: { id?: any, search?: Partial<I_User>, session?: ClientSession }) => Promise<I_User | string>
+    removeUsers: (p: { ids?: any[], search?: Partial<I_User>, session?: ClientSession }) => Promise<number | string>
     changeUserPassword: (p: { userPassword: string, oldPassword: string, newPassword: string, userId: string }) => Promise<true | string>
+    agenda:Agenda;
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
         this.p = p;
@@ -71,7 +73,7 @@ class AIOExpress<I_User> {
         this.AuthRouter = express.Router();
         this.jwt = this.initJwt;
         if (p.auth) { this.handleAuth(); }
-        this.gcrud = new GCRUD({ getModel: this.getModel,getAuthModel:()=>this.AuthModel as Model<any> })
+        this.gcrud = new GCRUD({ getModel: this.getModel, getAuthModel: () => this.AuthModel as Model<any> })
         this.getRow = this.gcrud.getRow;
         this.getRows = this.gcrud.getRows;
         this.addRow = this.gcrud.addRow;
@@ -82,33 +84,33 @@ class AIOExpress<I_User> {
         this.removeRows = this.gcrud.removeRows;
         this.getUser = async (p) => {
             if (p.req) { return await this.getUserByReq(p.req) }
-            const res = await this.getRow({ ...p,entityName:'auth' })
+            const res = await this.getRow({ ...p, entityName: 'auth' })
             return res === null || typeof res === 'string' ? res : res as I_User
         }
         this.getUsers = async (p) => {
-            const res = await this.getRows({ ...p,entityName:'auth' })
+            const res = await this.getRows({ ...p, entityName: 'auth' })
             return typeof res === 'string' ? res : res as I_User[]
         }
         this.addUser = async (p) => {
             const newValue: any = p.newValue;
             const hashedPassword = await bcrypt.hash(newValue.password, 10);
             newValue.password = hashedPassword;
-            const res = await this.addRow({ newValue,entityName:'auth' })
+            const res = await this.addRow({ newValue, entityName: 'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.editUser = async (p) => {
-            const res = await this.editRow({ newValue: p.newValue as I_row, id: p.id,entityName:'auth' })
+            const res = await this.editRow({ newValue: p.newValue as I_row, id: p.id, entityName: 'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.editUsers = async (p) => {
-            return await this.editRows({ ...p, newValue: p.newValue as I_row,entityName:'auth' })
+            return await this.editRows({ ...p, newValue: p.newValue as I_row, entityName: 'auth' })
         }
         this.removeUser = async (p) => {
-            const res = await this.removeRow({ ...p,entityName:'auth' })
+            const res = await this.removeRow({ ...p, entityName: 'auth' })
             return typeof res === 'string' ? res : res as I_User
         }
         this.removeUsers = async (p) => {
-            return await this.removeRows({ ...p,entityName:'auth' })
+            return await this.removeRows({ ...p, entityName: 'auth' })
         }
         this.changeUserPassword = async (p) => {
             try {
@@ -121,6 +123,8 @@ class AIOExpress<I_User> {
             }
             catch (err: any) { return err.message }
         }
+        const agenda = new Agenda({ db: { address: this.env.mongoUrl } });
+        this.agenda = agenda
     }
     getModel: I_getModel = (key) => this.models[key]
     log = (message: string, color?: 'green' | 'red' | 'yellow') => {
@@ -129,7 +133,7 @@ class AIOExpress<I_User> {
         else if (color === "red") { console.log('\x1b[31m%s\x1b[0m', message) }
         else { console.log(message) }
     }
-    start = () => {
+    start = async () => {
         this.app.use(cors());
         this.app.use(bodyParser.json());
         this.app.use(cookieParser() as RequestHandler);
@@ -146,9 +150,10 @@ class AIOExpress<I_User> {
             const router = this.routers[name];
             this.app.use(path, router)
         }
+        await this.agenda.start();
         this.app.listen(this.env.port, () => { console.log(`Server running on port ${this.env.port}`) });
     };
-    transaction:I_transaction = async (callback): Promise<true | string> => {
+    transaction: I_transaction = async (callback): Promise<true | string> => {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
@@ -162,12 +167,40 @@ class AIOExpress<I_User> {
             await session.commitTransaction();
             session.endSession();
             return true;
-        } catch (error:any) {
+        } catch (error: any) {
             await session.abortTransaction();
             session.endSession();
             console.error("Transaction failed:", error.message);
             return error.message;
         }
+    };
+    schedule = async (p: {callAt: number,callback: () => Promise<void>,jobName: string,version: string}) => {
+        try {
+            const existingJobs = await this.agenda.jobs({ name: p.jobName });
+            if (existingJobs.length > 0) {
+                const job = existingJobs[0];
+                if (job.attrs.data.version === p.version) {
+                    console.log(`شغل با نام ${p.jobName} و ورژن ${p.version} قبلاً زمان‌بندی شده است.`);
+                    return;
+                } else {
+                    await this.agenda.cancel({ name: p.jobName });
+                    console.log(`شغل با نام ${p.jobName} و ورژن قبلی حذف شد.`);
+                }
+            }
+            this.agenda.define(p.jobName, async (job: any) => await p.callback()); 
+            const executionDate = new Date(p.callAt);
+            await this.agenda.schedule(executionDate, p.jobName, { version: p.version });
+            console.log(`وظیفه ${p.jobName} برای زمان ${executionDate} و ورژن ${p.version} زمان‌بندی شد.`);
+        } 
+        catch (error:any) {console.error(`خطا در زمان‌بندی شغل: ${error.message}`)}
+    }
+    stopSchedule = async (name:string) => {
+        try {
+            const result = await this.agenda.cancel({ name });
+            if (result) {console.log(`شغل با نام ${name} با موفقیت حذف شد.`)} 
+            else {console.log(`شغلی با نام ${name} پیدا نشد.`)}
+        } 
+        catch (error:any) {console.error(`خطا در حذف شغل: ${error.message}`)}
     };
     connectToMongoose = () => {
         const url: string = this.env.mongoUrl;
@@ -390,19 +423,19 @@ class AIOExpress<I_User> {
 export default AIOExpress;
 type I_GCRUD = {
     getModel: I_getModel,
-    getAuthModel:()=>Model<any>
+    getAuthModel: () => Model<any>
 }
 type I_getRow = (p: { entityName: string | 'auth', search?: I_row, id?: any }) => Promise<null | I_row | string>
 type I_getRows = (p: { entityName: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
-type I_addRow = (p: { entityName: string | 'auth', newValue: I_row,session?:ClientSession }) => Promise<I_row | string>
-type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row,session?:ClientSession }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { entityName: string | 'auth',id?: any, search?: I_row, newValue: I_row,session?:ClientSession }) => Promise<string | I_row>
-type I_editRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[]; newValue: I_row,session?:ClientSession }) => Promise<string | number>
-type I_removeRow = (p: { entityName: string | 'auth',search?: I_row; id?: string,session?:ClientSession }) => Promise<string | I_row>
-type I_removeRows = (p: { entityName: string | 'auth',search?: I_row; ids?: any[],session?:ClientSession }) => Promise<string | number>
+type I_addRow = (p: { entityName: string | 'auth', newValue: I_row, session?: ClientSession }) => Promise<I_row | string>
+type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row, session?: ClientSession }) => Promise<string | I_row>
+type I_addOrEditRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row, session?: ClientSession }) => Promise<string | I_row>
+type I_editRows = (p: { entityName: string | 'auth', search?: I_row; ids?: any[]; newValue: I_row, session?: ClientSession }) => Promise<string | number>
+type I_removeRow = (p: { entityName: string | 'auth', search?: I_row; id?: string, session?: ClientSession }) => Promise<string | I_row>
+type I_removeRows = (p: { entityName: string | 'auth', search?: I_row; ids?: any[], session?: ClientSession }) => Promise<string | number>
 class GCRUD {
     getModel: I_getModel;
-    getAuthModel:()=>Model<any>
+    getAuthModel: () => Model<any>
     constructor(p: I_GCRUD) { this.getModel = p.getModel; this.getAuthModel = p.getAuthModel }
     getModelByP = async (p: any) => p.entityName === 'auth' ? this.getAuthModel() : await this.getModel(p.entityName)
     fixId = (row: any) => {
@@ -435,7 +468,7 @@ class GCRUD {
             let model, newRecord;
             try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
             catch (err: any) { return err.message }
-            const param = p.session?{session:p.session}:undefined
+            const param = p.session ? { session: p.session } : undefined
             const res = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
             const result = this.fixId(res)
             return result
@@ -452,7 +485,7 @@ class GCRUD {
                 if (prop === 'id' || prop === '_id') { continue }
                 exist[prop] = p.newValue[prop]
             }
-            const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true,session:p.session });
+            const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true, session: p.session });
             if (!updatedRecord) { return 'Record not found'; }
             return this.fixId(updatedRecord);
         }
@@ -466,7 +499,7 @@ class GCRUD {
             else if (p.search) { existingRecord = await model.findOne(p.search); }
             else { return 'addOrEditRow should get id our search object as parameter' }
             if (existingRecord !== null) {
-                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true,session:p.session });
+                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true, session: p.session });
                 return this.fixId(updatedRecord);
             }
             else {
@@ -483,7 +516,7 @@ class GCRUD {
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
-            const result = await model.updateMany(query, { $set: p.newValue },{session:p.session});
+            const result = await model.updateMany(query, { $set: p.newValue }, { session: p.session });
             if (result.modifiedCount === 0) { return 'No records found to update'; }
             return result.modifiedCount; // تعداد رکوردهای ویرایش شده
         }
@@ -496,7 +529,7 @@ class GCRUD {
             if (p.id) { query = { _id: p.id }; }
             else if (p.search) { query = p.search; }
             else { return 'No criteria provided for deletion'; }
-            const deletedRecord = await await model.findOneAndDelete(query,{session:p.session});
+            const deletedRecord = await await model.findOneAndDelete(query, { session: p.session });
             if (!deletedRecord) { return 'Record not found'; }
             return this.fixId(deletedRecord);
         }
@@ -508,7 +541,7 @@ class GCRUD {
             let query;
             if (p.ids && p.ids.length > 0) { query = { _id: { $in: p.ids } }; }
             else { query = p.search; }
-            const result = await model.deleteMany(query,{session:p.session});
+            const result = await model.deleteMany(query, { session: p.session });
             if (result.deletedCount === 0) { return 'No records found to delete'; }
             return result.deletedCount;
         }
