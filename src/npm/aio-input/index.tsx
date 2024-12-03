@@ -2833,17 +2833,18 @@ const RangePoint: FC<I_RangeValue> = (props) => {
     let { round, size = Def('range-size') } = rootProps;
     let point = (rootProps.point || (() => { }))(value, { disabled, angle, value, index }) || {}
     let { attrs = {}, html = value, offset = 0 } = point;
-    let zIndexAttrs = getEventAttrs('onMouseDown', () => {
-        let containers = $(parentDom.current).find('ai-range-value-container');
-        containers.css({ zIndex: 10 });
-        containers.eq(index).css({ zIndex: 100 })
-    })
     let containerStyle, pointStyle = { ...attrs.style }
     if (round) { containerStyle = { left: size / 2 + offset, transform: `rotate(${-angle}deg)` } }
     else { containerStyle = { [getOffset()]: offset } }
     let containerProps = { ref: temp.dom, className: 'ai-range-point-container', style: containerStyle, draggable: false }
-    let pointProps = AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index, ...zIndexAttrs } })
-    return (<div {...containerProps} key={'rangepoint' + index}><div {...pointProps}>{html}</div></div>)
+    let pointProps = AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index } })
+    pointProps.onMouseDown = (e:any) => {
+        let containers = $(parentDom.current).find('ai-range-value-container');
+        containers.css({ zIndex: 10 });
+        containers.eq(index).css({ zIndex: 100 })
+        if(attrs.onMouseDown){attrs.onMouseDown(e)}
+    }
+    return (<div {...containerProps} key={'rangepoint' + index}><div {...pointProps} >{html}</div></div>)
 }
 const RangeHandle: FC<I_RangeValue> = (props) => {
     let { rootProps, sbp }: I_RangeContext = useContext(RangeContext);

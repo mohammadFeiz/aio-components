@@ -203,7 +203,7 @@ export default class Swip {
             selectRect.remove();
         }
         this.mouseDown = (e) => {
-            e.stopPropagation();
+            //e.stopPropagation();
             this.isMoving = false;
             this.domLimit = this.getDOMLimit('dom');
             this.parentLimit = p.parent ? this.getDOMLimit('parent') : this.defaultLimit;

@@ -3,6 +3,7 @@ import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
 import { Chart } from '../../npm/aio-dashboard';
 import AIODate from './../../npm/aio-date';
+import { GetRandomNumber } from '../../npm/aio-utils/index.tsx';
 export default function DOC_AIODashboard(props: any) {
     return (
         <DOC
@@ -320,20 +321,19 @@ const AxisGridLineColor: FC = () => {
 }
 
 const AxisZoom: FC = () => {
+    const points = []
+    for (let i = 0; i < 100; i++){
+        points.push({a:i,b:GetRandomNumber(60,70)})
+    }
     return (
         <Chart
-            xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString(),zoom:true }}
+            xAxis={{ start: 0, end: 100, size: 36, getLabel: (v) => v.toString(),zoom:true }}
             yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#ddd' }}
             datas={[
                 {
-                    points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
+                    points,
                     getX: (point: any) => point.a,
                     getY: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
