@@ -180,17 +180,17 @@ class AIOExpress<I_User> {
             if (existingJobs.length > 0) {
                 const job = existingJobs[0];
                 if (job.attrs.data.version === p.version) {
-                    console.log(`شغل با نام ${p.jobName} و ورژن ${p.version} قبلاً زمان‌بندی شده است.`);
+                    console.log(`job with name ${p.jobName} and version ${p.version} is already exist.`);
                     return;
                 } else {
                     await this.agenda.cancel({ name: p.jobName });
-                    console.log(`شغل با نام ${p.jobName} و ورژن قبلی حذف شد.`);
+                    console.log(`job with name ${p.jobName} and last version removed.`);
                 }
             }
             this.agenda.define(p.jobName, async (job: any) => await p.callback()); 
             const executionDate = new Date(p.callAt);
             await this.agenda.schedule(executionDate, p.jobName, { version: p.version });
-            console.log(`وظیفه ${p.jobName} برای زمان ${executionDate} و ورژن ${p.version} زمان‌بندی شد.`);
+            console.log(`job ${p.jobName} for time ${executionDate} and version ${p.version} scheduled.`);
         } 
         catch (error:any) {console.error(`خطا در زمان‌بندی شغل: ${error.message}`)}
     }
