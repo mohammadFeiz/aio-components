@@ -1,0 +1,12 @@
+.chart-sample-1{
+    background:linear-gradient(4deg, #36d7c8, #23a79b);
+    height:144px;
+    width: 360px;
+    border:none;
+    color:#fff;
+    font-size:10px !important;
+}
+.chart-sample-1 .aio-chart-canvas{
+    box-shadow:none !important;
+    border-radius:0;
+}

@@ -1,5 +1,5 @@
 import { createContext, createRef, FC, MutableRefObject, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import { GetArray, GetPercentByValue } from "../aio-utils";
+import { AddToAttrs, GetArray, GetPercentByValue } from "../aio-utils";
 import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
 import $ from 'jquery';
@@ -8,7 +8,7 @@ import { AI_point, AISlider, AISpinner, I_rangeConfig } from "../aio-input";
 const ChartCtx = createContext({} as any)
 type I_chart_range = [number, string][]
 type I_chart_size = { x: number, y: number }
-type I_chart_axis = { start: number, end: number, size: number, fontSize?: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
+type I_chart_axis = { start: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
 type I_chart_label_detail = { label: ReactNode, offset: number }
 type I_getPointStyle = (point: any) => I_chart_point_style;
 type I_getLineStyle = () => I_chart_line_style
@@ -45,6 +45,7 @@ export type I_Chart = {
     datas: I_chart_data[],
     xAxis: I_chart_axis,
     yAxis: I_chart_axis,
+    attrs?:any
 }
 type I_filter = { x: number[], y: number[] }
 type I_ctx = {
@@ -158,6 +159,7 @@ const Chart: FC<I_Chart> = (props) => {
         let step = (end - start) / 10;
         const magnitude = Math.pow(10, Math.floor(Math.log10(step)));
         step = Math.round(step / magnitude) * magnitude;
+        if(size.y < 240){step *= 2}
         const labels: I_chart_label_detail[] = [];
         for (let i = start; i <= end; i += step) {
             const { offset, label } = chartClass.getPointDetail({axis:'y', value:+i.toFixed(3), size})
@@ -317,9 +319,10 @@ const Chart: FC<I_Chart> = (props) => {
             `
         )
     }
+    const attrs = AddToAttrs(props.attrs,{className:'aio-chart',attrs:{ref:dom}})
     return (
         <ChartCtx.Provider value={getContext()}>
-            <div className="aio-chart" ref={dom}>
+            <div {...attrs}>
                 <div className="aio-chart-top">
                     <YLabels yLabels={getYLabelsDetailRef.current} curhl={curhl} />
                     <div className="aio-chart-canvas">
@@ -376,7 +379,7 @@ export { Chart }
 const XLabels: FC<{ xLabels: I_chart_label_detail[], curvl: any }> = ({ xLabels, curvl }) => {
     const { rootProps, filter, changeFilter, setFilterMouseDownRef }: I_ctx = useContext(ChartCtx)
     const { xAxis } = rootProps
-    const { rotate, size, getLabel = (v) => v, zoom, fontSize = 12 } = xAxis;
+    const { rotate, size, getLabel = (v) => v, zoom } = xAxis;
     function getAxisStyle() {
         let style: any = { height: size };
         return style
@@ -398,14 +401,14 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[], curvl: any }> = ({ xLabels,
     return (
         <div className="aio-chart-axis aio-chart-horizontal-axis" style={getAxisStyle()}>
             <div className="aio-chart-cursor-label-container aio-chart-cursor-label-container-v" ref={curvl}>
-                <div className="aio-chart-cursor-label aio-chart-cursor-label-v" style={{ fontSize }}></div>
+                <div className="aio-chart-cursor-label aio-chart-cursor-label-v"></div>
             </div>
             <div className="aio-chart-horizontal-labels" style={getLabelsStyle()}>
                 {
                     xLabels.map((o, i) => {
                         return (
                             <div key={i} className="aio-chart-horizontal-label" style={getLabelStyle(o)}>
-                                <div className="aio-chart-horizontal-label-text" data-rotated={rotate ? 'yes' : 'no'} style={{ fontSize }}>{o.label}</div>
+                                <div className="aio-chart-horizontal-label-text" data-rotated={rotate ? 'yes' : 'no'}>{o.label}</div>
                             </div>
                         )
                     })
@@ -448,20 +451,20 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[], curvl: any }> = ({ xLabels,
 const YLabels: FC<{ yLabels: I_chart_label_detail[], curhl: any }> = ({ yLabels, curhl }) => {
     const { rootProps }: I_ctx = useContext(ChartCtx)
     const { yAxis } = rootProps
-    const { size, fontSize = 12 } = yAxis;
+    const { size } = yAxis;
     function getAxisStyle() { return { width: size } }
     function getLabelsStyle() {
         let style: any = {}
         return style
     }
     function getLabelStyle(labelDetail: I_chart_label_detail) {
-        let style: any = { bottom: labelDetail.offset, fontSize }
+        let style: any = { bottom: labelDetail.offset }
         return style
     }
     return (
         <div className="aio-chart-axis aio-chart-vertical-axis" style={getAxisStyle()}>
             <div className="aio-chart-cursor-label-container aio-chart-cursor-label-container-h" ref={curhl}>
-                <div className="aio-chart-cursor-label aio-chart-cursor-label-h" style={{ fontSize }}></div>
+                <div className="aio-chart-cursor-label aio-chart-cursor-label-h"></div>
             </div>
             <div className="aio-chart-vertical-labels" style={getLabelsStyle()}>
                 {
