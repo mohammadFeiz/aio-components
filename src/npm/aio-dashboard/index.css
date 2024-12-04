@@ -138,7 +138,41 @@
 .aio-chart-tooltip-container{
     position: absolute;
     border:1px solid;
-    width:2px;
-    height:2px;
-    background:green;
+    width:0px;
+    height:0px;
+    display:flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+    transition: 0.08s;
+    opacity:0.7;
+}
+.aio-chart-tooltip{
+    display:flex;
+    flex-direction: column;
+    background:#fff;
+    border-radius:6px;
+    padding:6px;
+    transform:translateY(-8px);
+    box-shadow: 0 3px 8px 0 rgba(0,0,0,0.3);
+
+}
+.aio-chart-tooltip-arrow{
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+    border-top:6px solid #fff;
+    position: absolute;
+    top:100%;
+    left:calc(50% - 10px);
+    
+}
+.aio-chart-tooltip-title{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-chart-tooltip-item{
+    display: flex;
+    align-items: center;
+    gap:6px;
 }

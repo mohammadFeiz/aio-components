@@ -1,5 +1,5 @@
 import { createContext, createRef, FC, MutableRefObject, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import { GetPercentByValue } from "../aio-utils";
+import { GetArray, GetPercentByValue } from "../aio-utils";
 import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
 import $ from 'jquery';
@@ -29,6 +29,8 @@ type I_getPointText = (point: I_chart_point_detail) => {
     style?: { fontSize?: number, rotate?: number, fill?: string, offset?: number }
 } | undefined
 type I_chart_data = {
+    color?:string,
+    title?:string,
     points: any[],
     getX: (point: any) => number,
     getY: (point: any) => number,
@@ -58,7 +60,7 @@ const Chart: FC<I_Chart> = (props) => {
     const [curv] = useState<any>(createRef())
     const [curhl] = useState<any>(createRef())
     const [curvl] = useState<any>(createRef())
-    const [tooltip] = useState<any>(createRef())
+    const [tooltipRef] = useState<any>(createRef())
     const [canvas] = useState<Canvas>(new Canvas())
     const [canvasItems, setCanvasItems] = useState<I_canvas_item[]>([])
     const dataDetailsRef = useRef<I_chart_data_detail[]>([])
@@ -293,6 +295,28 @@ const Chart: FC<I_Chart> = (props) => {
     //         return search(list.slice(halfIndex,list.length),getValue,result)
     //     }
     // }
+    function getTooltip(xLabel:ReactNode,labels:{color:string,label:ReactNode}[]){
+        return (
+            `
+                <div class="aio-chart-tooltip">
+                    <div class="aio-chart-tooltip-title">${xLabel}</div>
+                    ${
+                        labels.map(({label,color})=>{
+                            return (
+                                `
+                                    <div class='aio-chart-tooltip-item'>
+                                        <div style="width:10px;height:10px;background:${color}"></div>
+                                        <div>${label}</div>
+                                    </div>
+                                `
+                            )
+                        })
+                    }
+                    <div class="aio-chart-tooltip-arrow"></div>
+                </div>
+            `
+        )
+    }
     return (
         <ChartCtx.Provider value={getContext()}>
             <div className="aio-chart" ref={dom}>
@@ -312,13 +336,14 @@ const Chart: FC<I_Chart> = (props) => {
                                     const { label: yLabel, offset: yOffset } = getYLabelByValue(y, h);
                                     const vlc = $(curvl.current)
                                     const hlc = $(curhl.current)
-                                    const tooltipElement = $(tooltip.current)
+                                    const tooltipElement = $(tooltipRef.current)
                                     vlc.find('.aio-chart-cursor-label-v').html(xLabel)
                                     hlc.find('.aio-chart-cursor-label-h').html(yLabel)
                                     console.log(xOffset, yOffset)
-                                    const a = chartClass.xDic[xOffset]
-                                    console.log('a',a)
-                                    tooltipElement.css({ left: xOffset, bottom: a })
+                                    const {y:ty,labels} = chartClass.getTooltip(xOffset,yOffset)
+                                    const tooltip = getTooltip(xLabel,labels)
+                                    tooltipElement.css({ left: xOffset, bottom: ty,display:'flex' })
+                                    tooltipElement.html(tooltip)
                                     vlc.css({ left: x, display: 'flex' });
                                     hlc.css({ bottom: y, display: 'flex' });
                                     $(curh.current).css({ bottom: y, display: 'block' })
@@ -330,17 +355,13 @@ const Chart: FC<I_Chart> = (props) => {
                                     $(curv.current).css({ display: 'none' })
                                     $(curhl.current).css({ display: 'none' })
                                     $(curvl.current).css({ display: 'none' })
+                                    $(tooltipRef.current).css({ display: 'none' })
                                 }
                             }
                         })}
                         <div className="aio-chart-cursor-line aio-chart-cursor-line-h" ref={curh}></div>
                         <div className="aio-chart-cursor-line aio-chart-cursor-line-v" ref={curv}></div>
-                        <div className="aio-chart-tooltip-container" ref={tooltip}>
-                            <div className="aio-chart-tooltip">
-
-                            </div>
-                        </div>
-
+                        <div className="aio-chart-tooltip-container" ref={tooltipRef}></div>
                     </div>
                 </div>
                 <div className="aio-chart-bottom">
@@ -478,7 +499,7 @@ export const Pie: FC<{ start: number, end: number, ranges: I_pieRange[], rangeSt
 type I_ChartData = { getFilter: () => I_filter, getProps: () => I_Chart }
 class ChartData {
     p: I_ChartData
-    xDic:any = [];
+    xDic:{[key:string]:{ys:number[],labels:{color:string,label:ReactNode}[]}} = {};
     constructor(p: I_ChartData) {
         this.p = p
     }
@@ -486,10 +507,10 @@ class ChartData {
         let dataDetails: I_chart_data_detail[] = []
         const barCount = datas.filter((data) => data.type === 'bar').length;
         let barIndex = -1;
-        this.xDic = []
+        this.xDic = {}
         for (let i = 0; i < datas.length; i++) {
             const data = datas[i];
-            const { type, getPointText, getRanges = () => { return undefined }, areaColors } = data;
+            const { type, getPointText, getRanges = () => { return undefined }, areaColors,color:dataColor = '#000' } = data;
             if (type === 'bar') { barIndex++; }
             let dataDetail: I_chart_data_detail = { points: [], type, lineStyle: this.getDefaultLineStyle(data), getPointText, barCount, barIndex, areaPoints: [], areaColors }
             const filteredPoints = this.getFilteredPoints(data)
@@ -497,13 +518,13 @@ class ChartData {
                 const { point, x, y } = filteredPoints[j];
                 const xDetail = this.getPointDetail({axis:'x',data, value:x, size})
                 const yDetail = this.getPointDetail({axis:'y',data, value:y, size})
-                this.xDic[xDetail.offset] = yDetail.offset
                 const pointDetail: I_chart_point_detail = {
                     x: { ...xDetail},
                     y: { ...yDetail},
                     pointStyle: this.getDefaultPointStyle(data, point),
                     rangeDetails: this.getRanges(data,getRanges,point,size),
                 }
+                this.addPosition(pointDetail,dataColor)
                 if (areaColors) { dataDetail.areaPoints.push([pointDetail.x.offset, pointDetail.y.offset]) }
                 dataDetail.points.push(pointDetail)
             }
@@ -512,6 +533,26 @@ class ChartData {
         }
         console.log(this.xDic)
         return dataDetails
+    }
+    addPosition = (pointDetail:I_chart_point_detail,color:string)=>{
+        const {offset:x} = pointDetail.x;
+        const {offset:y,label} = pointDetail.y;
+        const key = x.toString();
+        this.xDic[key] = this.xDic[key] || {ys:[],labels:[]}
+        this.xDic[key].ys.push(y);
+        this.xDic[key].labels.push({color,label});                
+    }
+    getTooltip = (x:number,y:number):{y:number,labels:{color:string,label:ReactNode}[]}=>{
+        const det = this.xDic[x.toString()]
+        if(!det){return {y:0,labels:[]}}
+        let res = {y:0,labels:det.labels},min = Infinity;
+        for(let i = 0; i < det.ys.length; i++){
+            if(Math.abs(det.ys[i] - y) < min){
+                res.y = det.ys[i];
+                min = det.ys[i];
+            }
+        }
+        return res
     }
     getRanges = (data:I_chart_data,getRanges:any,point:any,size:I_chart_size) => {
         const ranges = getRanges(point);
