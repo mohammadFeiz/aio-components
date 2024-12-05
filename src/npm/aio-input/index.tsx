@@ -4,13 +4,13 @@ import axios from 'axios';
 import { divIcon, LeafletEvent } from 'leaflet';
 import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
 import $ from 'jquery';
-import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
+import AIOPopup, { AP_modal, AP_alert } from "./../aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
     svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation, GetSvg, JSXToHTML,
-} from './../../npm/aio-utils';
-import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../../npm/aio-swip';
-import AIODate from './../../npm/aio-date';
+} from './../aio-utils';
+import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../aio-swip';
+import AIODate from './../aio-date';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
 import AIOLoading from './../aio-loading';
@@ -1516,7 +1516,7 @@ export function Calendar(props: { onClose?: () => void }) {
     let [thisMonthString] = useState(months[today[1] - 1])
     let [activeDate, setActiveDate] = useState<I_DP_activeDate>(getActiveDate);
     const [popup, setPopup] = useState<ReactNode>(null)
-    let [popupMounted,setPopupMounted] = useState<boolean>(false)
+    let [popupMounted, setPopupMounted] = useState<boolean>(false)
     function getDate() {
         let date;
         if (multiple) { date = value.length ? value[value.length - 1] : undefined }
@@ -1547,13 +1547,13 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     function changePopup(popup: ReactNode) {
         popupMounted = false;
-        if(popup === null){
+        if (popup === null) {
             setPopupMounted(false)
-            setTimeout(()=>setPopup(null),300)
+            setTimeout(() => setPopup(null), 300)
         }
         else {
             setPopup(popup)
-            setTimeout(()=>setPopupMounted(true),0)
+            setTimeout(() => setPopupMounted(true), 0)
         }
     }
     function changeActiveDate(obj: 'today' | { [key in 'year' | 'month' | 'day']?: number }) {
@@ -1641,7 +1641,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 </div>
                 <DPToday />
             </div>
-            <div className={`aio-input-date-popup-container ${popupMounted?'mounted':'not-mounted'}`}>{popup}</div>
+            <div className={`aio-input-date-popup-container ${popupMounted ? 'mounted' : 'not-mounted'}`}>{popup}</div>
         </DPContext.Provider>
     );
 }
@@ -1807,7 +1807,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
     }
     function getCells() {
         let cells = [];
-        const getCls = (active:boolean)=>{
+        const getCls = (active: boolean) => {
             let className = 'aio-input-date-cell'
             if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1 aio-input-theme-text' }
             else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
@@ -1816,16 +1816,16 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
         if (unit === 'year') {
             for (let i = start; i < start + 10; i++) {
                 let active = i === year;
-                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className:getCls(active), onClick: () => changeValue(i) }
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className: getCls(active), onClick: () => changeValue(i) }
                 cells.push(<div {...p} key={i}>{i}</div>)
             }
         }
         else {
             for (let i = 1; i <= 12; i++) {
                 let active = i === month;
-                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className:getCls(active), onClick: () => changeValue(i) }
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className: getCls(active), onClick: () => changeValue(i) }
                 let text = months[i - 1]
-                if(!jalali){text = `${text.slice(0,3)} (${i})`}
+                if (!jalali) { text = `${text.slice(0, 3)} (${i})` }
                 cells.push(<div {...p} key={i}>{text}</div>)
             }
         }
@@ -2377,7 +2377,7 @@ function TableCellContent(props: AI_TableCellContent) {
     if (template !== undefined) { return template }
     let input: AITYPE = getDynamics({ value: column.input, row, rowIndex, column });
     let value = getDynamics({ value: column.value, row, rowIndex, column })
-    if (!input) {return typeof value === 'object'?'':value}
+    if (!input) { return typeof value === 'object' ? '' : value }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
     let convertedInput: any = { type: 'text' }
@@ -2839,11 +2839,11 @@ const RangePoint: FC<I_RangeValue> = (props) => {
     else { containerStyle = { [getOffset()]: offset } }
     let containerProps = { ref: temp.dom, className: 'ai-range-point-container', style: containerStyle, draggable: false }
     let pointProps = AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index } })
-    pointProps.onMouseDown = (e:any) => {
+    pointProps.onMouseDown = (e: any) => {
         let containers = $(parentDom.current).find('ai-range-value-container');
         containers.css({ zIndex: 10 });
         containers.eq(index).css({ zIndex: 100 })
-        if(attrs.onMouseDown){attrs.onMouseDown(e)}
+        if (attrs.onMouseDown) { attrs.onMouseDown(e) }
     }
     return (<div {...containerProps} key={'rangepoint' + index}><div {...pointProps} >{html}</div></div>)
 }
@@ -3669,13 +3669,13 @@ export function AIOLogin_updateCatchedUser(loginId: string, newUser: any) {
     return storage.save('data', newStoredData)
 }
 export const AILogin: FC<I_AILogin> = (props) => {
-    const { renderApp, translate = () => { }, id, rememberTime, checkToken, splash, otpLength = 4 } = props;
+    const { translate = () => { }, otpLength = 4 } = props;
     const { validation = () => { return undefined } } = props;
     const [data, setData] = useState<{ token: string, user: any }>()
-    const [storage] = useState<Storage>(new Storage('ai-login' + id))
+    const [storage] = useState<Storage>(new Storage('ai-login' + props.id))
     const [model, setModel] = useState<I_login_model>(getModel)
     const [loading] = useState<AIOLoading>(new AIOLoading())
-    const [submitDisabled,setSubmitDisabled] = useState<boolean>(false)
+    const [submitDisabled, setSubmitDisabled] = useState<boolean>(false)
     const modelRef = useRef(model)
     modelRef.current = model;
     const [mode, setMode] = useState<I_login_modeState>(getMode())
@@ -3745,7 +3745,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
         return model
     }
     const [waitingCheckToken, setWeightingCheckToken] = useState<boolean>(true)
-    const [splashing, setSplashing] = useState<boolean>(!!splash)
+    const [splashing, setSplashing] = useState<boolean>(!!props.splash)
     const [popup] = useState<AIOPopup>(new AIOPopup())
     function trans(key: I_login_key) {
         const dic: { [key in I_login_key]: { fa: string, en: string } } = {
@@ -3783,14 +3783,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
         loading.show('login0')
         const { onSuccess } = await props.getRequestOptions(modelRef.current, mode.key)
         let message, res;
-        try { 
+        try {
             loading.show('login0')
-            res = await onSuccess(response) 
+            res = await onSuccess(response)
             loading.hide('login0')
         }
-        catch (err: any) { 
+        catch (err: any) {
             loading.hide('login0')
-            setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return 
+            setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return
         }
         if (typeof res === 'string') { message = res }
         let defaultMessage: string = {
@@ -3862,7 +3862,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
             </div>
             <button className='ai-login-submit' disabled={!!message || !!submitDisabled} onClick={() => {
                 setSubmitDisabled(true)
-                setTimeout(()=>setSubmitDisabled(false),3000)
+                setTimeout(() => setSubmitDisabled(false), 3000)
                 submit()
             }}>{mode.submitText}</button>
         </>)
@@ -3879,14 +3879,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     function logout() { storage.remove('data'); window.location.reload(); }
     async function CheckToken() {
-        if (splash) { setTimeout(() => { setSplashing(false) }, splash.time); }
+        if (props.splash) { setTimeout(() => { setSplashing(false) }, props.splash.time); }
         if (props.mock) {
             setData({ user: props.mock.user, token: props.mock.token })
             return
         }
-        const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
+        const storedData = storage.load('data', {}, props.rememberTime), { user, token } = storedData;
         loading.show('login0')
-        const { url, method, onSuccess, onCatch } = await checkToken(token || '');
+        const { url, method, onSuccess, onCatch } = await props.checkToken(token || '');
         loading.hide('login0')
         if (user && token) {
             axios[method](url, { headers: { authorization: `Bearer ${token}` } })
@@ -3899,30 +3899,29 @@ export const AILogin: FC<I_AILogin> = (props) => {
                     else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
                 })
                 .catch(response => {
-                    if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
-                    else {
-                        let res, message: string = '';
-                        try { res = onCatch(response) }
-                        catch (err: any) { message = err.message }
-                        if (typeof res === 'string') { message = res }
-                        else if (res === false) { logout() }
-                        else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
-                        if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
-                    }
+                    let res, message: string = '';
+                    try { res = onCatch(response) }
+                    catch (err: any) { message = err.message }
+                    if (typeof res === 'string') { message = res }
+                    else if (res === false) { logout() }
+                    else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
+                    if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
+                    else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
+                    
                 })
 
         }
         setWeightingCheckToken(false)
     }
     useEffect(() => { CheckToken() }, [])
-    function setAlert(p: AP_alert) { popup.addAlert(p) }
+    function setAlert(p: AP_alert) {popup.addAlert(p)}
     function getContent() {
-        if (waitingCheckToken || splashing) { return splash ? splash.html : null }
+        if (waitingCheckToken || splashing) { return props.splash ? props.splash.html : null }
         if (!data) {
             const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: props.rtl ? 'rtl' : undefined } })
             return (<div {...attrs}>{bf_layout('before')} {form_layout()} {bf_layout('after')}</div>)
         }
-        return renderApp({ token: data.token, user: data.user, logout })
+        return props.renderApp({ token: data.token, user: data.user, logout })
     }
     return (<>{getContent()} {popup.render()}</>)
 }

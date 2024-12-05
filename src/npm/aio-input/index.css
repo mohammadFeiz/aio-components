@@ -2246,11 +2246,11 @@
 }
 
 .aio-input-ltr .aio-input-label {
-    left: 12px;
+    left: 6px;
 }
 
 .aio-input-rtl .aio-input-label {
-    right: 12px;
+    right: 6px;
 }
 
 .aio-input-label-required:after {
@@ -2763,9 +2763,7 @@ pre[class*="language-"]>code[class*="language-"] {
     left: 0;
     top: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
     overflow-y:auto;
 }
 
@@ -2790,6 +2788,7 @@ pre[class*="language-"]>code[class*="language-"] {
     max-width: 300px;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 
 .ai-login-title {
@@ -2842,6 +2841,7 @@ pre[class*="language-"]>code[class*="language-"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .ai-login-after {
@@ -2849,6 +2849,7 @@ pre[class*="language-"]>code[class*="language-"] {
     align-items: center;
     justify-content: center;
     display: flex;
+    flex-shrink: 0;
 }
 
 .ai-login .aio-input-label {
