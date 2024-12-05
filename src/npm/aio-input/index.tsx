@@ -7,12 +7,13 @@ import $ from 'jquery';
 import AIOPopup, { AP_modal, AP_alert } from "./../../npm/aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
-    getEventAttrs, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation, GetSvg, JSXToHTML
+    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation, GetSvg, JSXToHTML,
 } from './../../npm/aio-utils';
 import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../../npm/aio-swip';
 import AIODate from './../../npm/aio-date';
 import 'leaflet/dist/leaflet.css';
 import './index.css';
+import AIOLoading from './../aio-loading';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
@@ -3673,6 +3674,8 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + id))
     const [model, setModel] = useState<I_login_model>(getModel)
+    const [loading] = useState<AIOLoading>(new AIOLoading())
+    const [submitDisabled,setSubmitDisabled] = useState<boolean>(false)
     const modelRef = useRef(model)
     modelRef.current = model;
     const [mode, setMode] = useState<I_login_modeState>(getMode())
@@ -3741,7 +3744,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
         }
         return model
     }
-    const [loading, setLoading] = useState<boolean>(true)
+    const [waitingCheckToken, setWeightingCheckToken] = useState<boolean>(true)
     const [splashing, setSplashing] = useState<boolean>(!!splash)
     const [popup] = useState<AIOPopup>(new AIOPopup())
     function trans(key: I_login_key) {
@@ -3777,10 +3780,18 @@ export const AILogin: FC<I_AILogin> = (props) => {
     async function success(response: any) {
         const modeKey = mode.key
         let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
+        loading.show('login0')
         const { onSuccess } = await props.getRequestOptions(modelRef.current, mode.key)
         let message, res;
-        try { res = await onSuccess(response) }
-        catch (err: any) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return }
+        try { 
+            loading.show('login0')
+            res = await onSuccess(response) 
+            loading.hide('login0')
+        }
+        catch (err: any) { 
+            loading.hide('login0')
+            setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return 
+        }
         if (typeof res === 'string') { message = res }
         let defaultMessage: string = {
             userpass: 'modes.userpass onSuccess props should returns string as error or {user:any,token:string} as success',
@@ -3796,7 +3807,9 @@ export const AILogin: FC<I_AILogin> = (props) => {
         else { callback(res) }
     }
     async function submit() {
+        loading.show('login0')
         const { url, method, body, onCatch } = await props.getRequestOptions(modelRef.current, mode.key)
+        loading.hide('login0')
         axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
             if (onCatch) { setAlert({ type: 'error', text: 'Error', subtext: onCatch(response) }) }
             else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
@@ -3847,7 +3860,11 @@ export const AILogin: FC<I_AILogin> = (props) => {
             <div className="ai-login-errors">
                 {!!message && <div className="ai-login-error">{message}</div>}
             </div>
-            <button className='ai-login-submit' disabled={!!message} onClick={() => submit()}>{mode.submitText}</button>
+            <button className='ai-login-submit' disabled={!!message || !!submitDisabled} onClick={() => {
+                setSubmitDisabled(true)
+                setTimeout(()=>setSubmitDisabled(false),3000)
+                submit()
+            }}>{mode.submitText}</button>
         </>)
     }
     function form_layout() {
@@ -3868,7 +3885,9 @@ export const AILogin: FC<I_AILogin> = (props) => {
             return
         }
         const storedData = storage.load('data', {}, rememberTime), { user, token } = storedData;
+        loading.show('login0')
         const { url, method, onSuccess, onCatch } = await checkToken(token || '');
+        loading.hide('login0')
         if (user && token) {
             axios[method](url, { headers: { authorization: `Bearer ${token}` } })
                 .then(response => {
@@ -3893,12 +3912,12 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 })
 
         }
-        setLoading(false)
+        setWeightingCheckToken(false)
     }
     useEffect(() => { CheckToken() }, [])
     function setAlert(p: AP_alert) { popup.addAlert(p) }
     function getContent() {
-        if (loading || splashing) { return splash ? splash.html : null }
+        if (waitingCheckToken || splashing) { return splash ? splash.html : null }
         if (!data) {
             const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: props.rtl ? 'rtl' : undefined } })
             return (<div {...attrs}>{bf_layout('before')} {form_layout()} {bf_layout('after')}</div>)
