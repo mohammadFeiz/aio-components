@@ -3623,7 +3623,6 @@ export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton
     'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError'
 type I_login_model = { userName: string, password: string, otpNumber: string, otpCode: string, register: any }
 type I_AILogin = {
-    rtl?: boolean,
     checkToken: (token: string) => Promise<{
         method: 'post' | 'get', url: string, body?: any
         onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false
@@ -3631,7 +3630,8 @@ type I_AILogin = {
     before?: (mode: I_loginMode) => ReactNode,
     after?: (mode: I_loginMode) => ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
-    translate?: 'fa' | ((key: I_login_key) => string | undefined),
+    translate?: (key: I_login_key) => string | undefined,
+    fa?:boolean,
     rememberTime: number,
     id: string,
     splash?: {
@@ -3707,7 +3707,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
                         <AIText {...input_props('userName', true)} />
                         <AIPassword {...input_props('password', true)} preview={true} />
                         <AIPassword {...{
-                            label: props.label('rePassword'), rtl: props.rtl, value: model.register.rePassword, preview: true,
+                            label: props.label('rePassword'), rtl: !!props.fa, value: model.register.rePassword, preview: true,
                             onChange: (v: any) => setModel({ ...model, register: { ...model.register, rePassword: v } })
                         }}
                         />
@@ -3716,7 +3716,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
                                 const value = model.register[input.field]
                                 return (
                                     <AIOInput key={input.field}
-                                        rtl={props.rtl} label={props.label(input.field)} {...input}
+                                        rtl={!!props.fa} label={props.label(input.field)} {...input}
                                         value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
                                     />
                                 )
@@ -3771,7 +3771,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
             otpcodeError: { en: 'login by otp failed', fa: 'ورود با کد یکبار مصرف با خطا روبرو شد' },
             otpnumberError: { en: 'send otp number for receive otp code failed', fa: 'ارسال شماره همراه برای دریافت کد یکبار مصرف با خطا روبرو شد' },
         }
-        return translate === 'fa' ? dic[key].fa : translate(key) || dic[key].en
+        return props.fa ? dic[key].fa : translate(key) || dic[key].en
     }
     function userpassCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
     function registerCallback() { window.location.reload() }
@@ -3829,7 +3829,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function input_props(field: keyof I_login_model, isRegister?: boolean) {
         const model = modelRef.current
         return {
-            label: props.label(field), rtl: props.rtl, value: model[field], onChange: (v: any) => {
+            label: props.label(field), rtl: !!props.fa, value: model[field], onChange: (v: any) => {
                 if (isRegister) { setModel({ ...model, register: { ...model.register, [field]: v } }) }
                 else { setModel({ ...model, [field]: v }) }
             }
@@ -3918,7 +3918,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     function getContent() {
         if (waitingCheckToken || splashing) { return props.splash ? props.splash.html : null }
         if (!data) {
-            const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: props.rtl ? 'rtl' : undefined } })
+            const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: !!props.fa ? 'rtl' : undefined } })
             return (<div {...attrs}>{bf_layout('before')} {form_layout()} {bf_layout('after')}</div>)
         }
         return props.renderApp({ token: data.token, user: data.user, logout })
