@@ -5,7 +5,6 @@ import DOC_AIOInput from './documents/aio-input/doc-aio-input.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider.tsx';
 import DOC_AIOSwip from './documents/aio-swip/doc-aio-swip.tsx';
-import DOC_AIOChart from './documents/aio-chart/doc-aio-chart.tsx';
 import DOC_AIOFloater from './documents/aio-floater/doc-aio-floater.js';
 import Puzzle from './documents/puzzle/index';
 import DOC_AIOPopup from './documents/aio-popup/doc-aio-popup.tsx';
@@ -33,7 +32,6 @@ export default function AIOComponents(){
     'aio-validation':DOC_AIOValidation,
     'aio-content-slider':DOC_AIOContentSlider,
     'aio-swip':DOC_AIOSwip,
-    'aio-chart':DOC_AIOChart,
     'aio-floater':DOC_AIOFloater,
     'puzzle':Puzzle,
     'aio-popup':DOC_AIOPopup,
