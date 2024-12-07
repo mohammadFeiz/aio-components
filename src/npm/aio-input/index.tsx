@@ -3926,7 +3926,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     return (<>{getContent()} {popup.render()}</>)
 }
 type I_pos = [number, number]
-export type I_marker = { pos: [number, number], html?: ReactNode }
+export type I_marker = { pos: [number, number], html?: ReactNode,eventHandlers?:any }
 export type I_shapeStyle = {
     stroke?: { color?: string, width?: number, dash?: string },
     fill?: { color?: string, opacity?: number }
@@ -4010,7 +4010,7 @@ const MapBody: FC = () => {
             {/* http://leaflet-extras.github.io/leaflet-providers/preview/ */}
             <MapEvents />
             {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker) ? marker : getDefaultMarkerIcon()} />}
-            {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html} />)}
+            {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers} />)}
             {shapes.map((o: I_shape, i: number) => <MapShape key={i} shape={o} />)}
             <MapLayers />
             {children}
@@ -4061,7 +4061,7 @@ const MapLayers: FC = () => {
                         <LayersControl.Overlay name={o.name} checked={active} key={i}>
                             <FeatureGroup>
                                 {markers.map((marker: I_marker, j: number) =>
-                                    <MapMarker key={j} pos={marker.pos} html={marker.html} />
+                                    <MapMarker key={j} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers}/>
                                 )}
                                 {shapes.map((shape: I_shape, k: number) =>
                                     <MapShape key={k} shape={shape} />
@@ -4098,7 +4098,7 @@ const MapFooter: FC = () => {
         </div>
     )
 }
-const MapMarker: FC<{ pos: I_pos, html?: ReactNode }> = ({ pos, html }) => {
+const MapMarker: FC<{ pos: I_pos, html?: ReactNode,eventHandlers?:any }> = ({ pos, html,eventHandlers }) => {
     const { getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
     function getHtmlIcon(html: ReactNode) {
         return divIcon({
@@ -4111,7 +4111,7 @@ const MapMarker: FC<{ pos: I_pos, html?: ReactNode }> = ({ pos, html }) => {
     html = html || getDefaultMarkerIcon()
     let props: any = { position: pos }
     if (html) { props.icon = getHtmlIcon(html) }
-    return <Marker {...props} animate={false} />
+    return <Marker {...props} animate={false} eventHandlers={eventHandlers}/>
 }
 function MapEvents() {
     const { rootProps, move }: I_mapctx = useContext(MAPCTX)
