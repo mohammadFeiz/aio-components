@@ -3938,8 +3938,7 @@ export type I_shape = I_circle | I_rect | I_polyline
 type I_Map = {
     children?: React.ReactNode,
     onChange?: (coords: I_pos) => void,
-    zoom?: { value?: number, wheel?: boolean, control?: boolean },
-    onChangeZoom?: (zoom: number) => void,
+    zoom?: { value?: number, wheel?: boolean, control?: boolean,onChange?:(zoom:number)=>void },
     markers?: I_marker[]
     value?: I_pos,
     marker?: ReactNode | false,
@@ -3955,7 +3954,8 @@ type I_Map = {
     onSearch?: (searchResult: I_searchResult) => void,
     mapRef?: any,
     whenReady?: () => void,
-    onMoveEnd?: (e: LeafletEvent) => void
+    onMoveEnd?: (e: LeafletEvent) => void,
+    actionsRef?:any
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
@@ -3965,6 +3965,15 @@ export const AIMap: FC<I_Map> = (props) => {
     const { zoom = { value: 14 }, value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
     const [map, setMap] = useState<any>(null)
     if (mapRef) { mapRef.current = map; }
+    if(props.actionsRef){
+        props.actionsRef.current = {
+            flyTo:(p: { lat: number, lng: number, zoom: number, callback: () => void }) => {
+                map.flyTo([p.lat, p.lng], p.zoom)
+                const onMoveEnd = () => {map.off("moveend", onMoveEnd); p.callback();}
+                map.on("moveend", onMoveEnd);
+            }
+        }
+    }
     const [pos, setPos] = useState<I_pos>(value)
     const moveTimeout = useRef<any>(undefined)
     function move(pos: I_pos) {
@@ -4123,7 +4132,7 @@ function MapEvents() {
             move([lat, lng])
         },
         zoom: (e: any) => {
-            if (rootProps.onChangeZoom) { rootProps.onChangeZoom(e.target._zoom) }
+            if (rootProps.zoom && rootProps.zoom.onChange) { rootProps.zoom.onChange(e.target._zoom) }
         },
         locationfound: (location: any) => {
             console.log('location found:', location)

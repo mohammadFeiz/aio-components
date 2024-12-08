@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
-import { AISelect, AITabs,AIMap } from '../../npm/aio-input';
+import { AISelect, AITabs, AIMap } from '../../npm/aio-input';
 import { Map } from 'leaflet';
 import { animate } from '../../npm/react-virtual-dom/index.tsx';
 type I_show_item = 'preview' | 'code' | 'both'
@@ -180,7 +180,7 @@ const Marker: FC = () => {
                             </div>
                         )
                     },
-                    code:(
+                    code: (
                         `
 marker: (
     <div className='flex-col fd-column align-h w-24'>
@@ -199,13 +199,13 @@ const Markers: FC = () => {
     return (
         <Comp
             tabs={{
-                basic:{
-                    preview:{
-                        markers:[
+                basic: {
+                    preview: {
+                        markers: [
                             {
                                 pos: [35.699, 51.338],
                                 html: (
-                                    <div className='flex-col fd-column align-h w-24' onClick={()=>alert()}>
+                                    <div className='flex-col fd-column align-h w-24' onClick={() => alert()}>
                                         <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
                                         <div className='w-2 h-16 bg-0'></div>
                                     </div>
@@ -216,7 +216,7 @@ const Markers: FC = () => {
                             },
                         ]
                     },
-                    code:(
+                    code: (
                         `
 markers:[
     {
@@ -548,32 +548,54 @@ const Comp: FC<{ tabs: I_tabs }> = (props) => {
 }
 const FlyTo: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
-    let mapRef = useRef<Map>()
+    const [zoom, setZoom] = useState<number>(14)
+    const actionsRef = useRef<any>()
     return (
         <div className="example">
-            <AIMap 
-                value={value} onChange={(newValue: [number, number]) => setValue(newValue)} mapRef={mapRef}/>
-            <button onClick={()=>{
-                let b = mapRef.current;
-                if(b){b.flyTo([35.69,51.33],14)}
+            <AIMap
+                value={value}
+                zoom={{ value: zoom, wheel: true,onChange:(zoom)=>setZoom(zoom) }}
+                onChange={(newValue: [number, number]) => setValue(newValue)}
+                actionsRef={actionsRef}
+            />
+            <button onClick={() => {
+                const newZoom = 18;
+                const newLat = 35.69;
+                const newLng = 51.33;
+                actionsRef.current.flyTo({
+                    lat: newLat, lng: newLng, zoom: newZoom,
+                    callback: () => {
+                        setValue([newLat, newLng])
+                        setZoom(newZoom)
+                    }
+                })
             }}>Fly To 35.69,51.33</button>
             {
                 Code(`
 const FlyTo: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
-    let mapRef = useRef<Map>()
-    function flyTo(){
-        let b = mapRef.current;
-        if(b){b.flyTo([35.69,51.33],14)}
-    }
+    const [zoom, setZoom] = useState<number>(14)
+    const actionsRef = useRef<any>()
     return (
         <div className="example">
-            <AIMap 
-                value={value} 
-                onChange={(newValue: [number, number]) => setValue(newValue)} 
-                mapRef={mapRef}
+            <AIMap
+                value={value}
+                zoom={{ value: zoom, wheel: true }}
+                onChange={(newValue: [number, number]) => setValue(newValue)}
+                actionsRef={actionsRef}
             />
-            <button onClick={()=>flyTo()}>Fly To 35.69,51.33</button>
+            <button onClick={() => {
+                const newZoom = 18;
+                const newLat = 35.69;
+                const newLng = 51.33;
+                actionsRef.current.flyTo({
+                    lat: newLat, lng: newLng, zoom: newZoom,
+                    callback: () => {
+                        setValue([newLat, newLng])
+                        setZoom(newZoom)
+                    }
+                })
+            }}>Fly To 35.69,51.33</button>
         </div>
     )
 }`
@@ -582,5 +604,3 @@ const FlyTo: FC = () => {
         </div>
     )
 }
-
-
