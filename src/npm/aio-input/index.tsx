@@ -3631,7 +3631,7 @@ type I_AILogin = {
     after?: (mode: I_loginMode) => ReactNode,
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
     translate?: (key: I_login_key) => string | undefined,
-    fa?:boolean,
+    fa?: boolean,
     rememberTime: number,
     id: string,
     splash?: {
@@ -3907,14 +3907,14 @@ export const AILogin: FC<I_AILogin> = (props) => {
                     else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
                     if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
                     else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
-                    
+
                 })
 
         }
         setWeightingCheckToken(false)
     }
     useEffect(() => { CheckToken() }, [])
-    function setAlert(p: AP_alert) {popup.addAlert(p)}
+    function setAlert(p: AP_alert) { popup.addAlert(p) }
     function getContent() {
         if (waitingCheckToken || splashing) { return props.splash ? props.splash.html : null }
         if (!data) {
@@ -3926,7 +3926,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     return (<>{getContent()} {popup.render()}</>)
 }
 type I_pos = [number, number]
-export type I_marker = { pos: [number, number], html?: ReactNode,eventHandlers?:any }
+export type I_marker = { pos: [number, number], html?: ReactNode, eventHandlers?: any }
 export type I_shapeStyle = {
     stroke?: { color?: string, width?: number, dash?: string },
     fill?: { color?: string, opacity?: number }
@@ -3938,7 +3938,7 @@ export type I_shape = I_circle | I_rect | I_polyline
 type I_Map = {
     children?: React.ReactNode,
     onChange?: (coords: I_pos) => void,
-    zoom?: { value?: number, wheel?: boolean, control?: boolean,onChange?:(zoom:number)=>void },
+    zoom?: { value?: number, wheel?: boolean, control?: boolean, onChange?: (zoom: number) => void },
     markers?: I_marker[]
     value?: I_pos,
     marker?: ReactNode | false,
@@ -3955,29 +3955,29 @@ type I_Map = {
     mapRef?: any,
     whenReady?: () => void,
     onMoveEnd?: (e: LeafletEvent) => void,
-    actionsRef?:any
+    actionsRef?: any
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
-type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode,changeZoom:(zoom:number)=>void,zoom:number }
+type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode, changeZoom: (zoom: number) => void, zoom: number }
 const MAPCTX = createContext({} as any)
 export const AIMap: FC<I_Map> = (props) => {
     const { value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
     const [map, setMap] = useState<any>(null)
-    const [zoom,setZoom] = useState<number>(props.zoom?.value || 14)
+    const [zoom, setZoom] = useState<number>(props.zoom?.value || 14)
     const lockChangeZoomState = useRef(false)
-    function changeZoom(zoom:number){
-        if(lockChangeZoomState.current === true){return}
+    function changeZoom(zoom: number) {
+        if (lockChangeZoomState.current === true) { return }
         setZoom(zoom)
     }
     if (mapRef) { mapRef.current = map; }
-    if(props.actionsRef){
+    if (props.actionsRef) {
         props.actionsRef.current = {
-            flyTo:(p: { lat: number, lng: number, zoom: number, callback: () => void }) => {
+            flyTo: (p: { lat: number, lng: number, zoom: number, callback: () => void }) => {
                 lockChangeZoomState.current = true
                 map.flyTo([p.lat, p.lng], p.zoom)
                 const onMoveEnd = () => {
-                    map.off("moveend", onMoveEnd); 
+                    map.off("moveend", onMoveEnd);
                     lockChangeZoomState.current = false;
                     changeZoom(p.zoom)
                     p.callback();
@@ -3998,7 +3998,7 @@ export const AIMap: FC<I_Map> = (props) => {
     function getDefaultMarkerIcon() {
         return <div className='marker-icon'><div className='marker-icon-circle'></div><div className='marker-icon-arrow'></div></div>
     }
-    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon,changeZoom,zoom } }
+    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon, changeZoom, zoom } }
     useEffect(() => {
         if (map !== null) { map.setView(value, zoom, { animate: false }) }
         setPos(value)
@@ -4014,7 +4014,7 @@ export const AIMap: FC<I_Map> = (props) => {
     );
 };
 const MapBody: FC = () => {
-    const { rootProps, pos, setMap, getDefaultMarkerIcon,zoom }: I_mapctx = useContext(MAPCTX)
+    const { rootProps, pos, setMap, getDefaultMarkerIcon, zoom }: I_mapctx = useContext(MAPCTX)
     const { style, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
@@ -4082,7 +4082,7 @@ const MapLayers: FC = () => {
                         <LayersControl.Overlay name={o.name} checked={active} key={i}>
                             <FeatureGroup>
                                 {markers.map((marker: I_marker, j: number) =>
-                                    <MapMarker key={j} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers}/>
+                                    <MapMarker key={j} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers} />
                                 )}
                                 {shapes.map((shape: I_shape, k: number) =>
                                     <MapShape key={k} shape={shape} />
@@ -4119,7 +4119,7 @@ const MapFooter: FC = () => {
         </div>
     )
 }
-const MapMarker: FC<{ pos: I_pos, html?: ReactNode,eventHandlers?:any }> = ({ pos, html,eventHandlers }) => {
+const MapMarker: FC<{ pos: I_pos, html?: ReactNode, eventHandlers?: any }> = ({ pos, html, eventHandlers }) => {
     const { getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
     function getHtmlIcon(html: ReactNode) {
         return divIcon({
@@ -4132,10 +4132,10 @@ const MapMarker: FC<{ pos: I_pos, html?: ReactNode,eventHandlers?:any }> = ({ po
     html = html || getDefaultMarkerIcon()
     let props: any = { position: pos }
     if (html) { props.icon = getHtmlIcon(html) }
-    return <Marker {...props} animate={false} eventHandlers={eventHandlers}/>
+    return <Marker {...props} animate={false} eventHandlers={eventHandlers} />
 }
 function MapEvents() {
-    const { rootProps, move,changeZoom }: I_mapctx = useContext(MAPCTX)
+    const { rootProps, move, changeZoom }: I_mapctx = useContext(MAPCTX)
     const map = useMapEvents({
         click: () => rootProps.onClick ? rootProps.onClick() : undefined,
         move: (e: any) => {
@@ -4152,7 +4152,7 @@ function MapEvents() {
         moveend: (e) => {
             if (rootProps.onMoveEnd) { rootProps.onMoveEnd(e) }
         },
-        movestart:(e)=>{
+        movestart: (e) => {
         }
     })
     return null
@@ -4389,6 +4389,98 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDay
                 {weekDays_layout()}
                 <div className="month-cells-grid" style={{ gridTemplateColumns }}>{spaces_layout()} {cells_layout()}</div>
             </div>
+        </div>
+    )
+}
+type I_richTextItem = { tag: string, items?: I_richTextItem[],html?:ReactNode, attrs?: any,align?:'align-v-' | 'align-h-' | 'align-vh-',w?:string,h?:string,flex?:number }
+export const RichText: FC = () => {
+    const [popup] = useState<AIOPopup>(new AIOPopup())
+    const nestedIndexRef = useRef<number[]>([])
+    const items: I_richTextItem = {
+        tag: 'div', items: [
+            { tag: 'h1', html: 'this is my h1' },
+            {
+                tag: 'ul',
+                items: [
+                    { tag: 'li', html: 'item1' },
+                    { tag: 'li', html: 'item2' }
+                ]
+            }
+        ]
+    }
+    function inter(e:any){
+        $('.rich-text-item').removeClass('rich-text-item-hover')
+        const target = $(e.target)
+        target.addClass('rich-text-item-hover');
+        const index = target.attr('data-index')
+        const nestedIndex = index?index.split('-'):[]
+        nestedIndexRef.current = nestedIndex
+    }
+    function itemToHtml(item: I_richTextItem,nestedIndex:number[]): ReactNode {
+        const Tag = item.tag as any;
+        const content = item.html !== undefined?item.html:(item.items || []).map((h,i) => itemToHtml(h,[...nestedIndex,i]))
+        const attrs = AddToAttrs(item.attrs,{className:'rich-text-item',attrs:{'data-index':nestedIndex.join('-')}})
+        return (<Tag {...attrs} onMouseOver={(e:any)=>inter(e)} onClick={(e:any)=>{openModal(nestedIndex)}}>{content}</Tag>)
+    }
+    function getItemByNestedIndex(){
+        let res:any = items;
+        for(let i = 0; i < nestedIndexRef.current.length; i++){
+            const index = nestedIndexRef.current[i]
+            res = res.items[index]
+        }
+        return res
+    }
+    function openModal(nestedIndex:number[]){
+        if(nestedIndex.toString() !== nestedIndexRef.current.toString()){return }
+        const item = getItemByNestedIndex()
+        popup.addModal({
+            position:'center',
+            body:()=>{
+                return (
+                    <div className="rich-text-options">
+                        <div className="rich-text-option-title">{item.tag}</div>
+                        <div className="rich-text-option">Add Child</div>
+                        <div className="rich-text-option">Remove</div>
+                        <div className="rich-text-option">Move Up</div>
+                        <div className="rich-text-option">Move Down</div>
+                    </div>
+                )
+            }
+        })
+    }
+    return (
+        <div className="msf">
+            <div className="msf"></div>
+            <div className="msf">
+                {itemToHtml(items,[])}
+            </div>
+            <RichModal item={items}/>
+            {popup.render()}
+        </div>
+    )
+}
+
+const RichModal:FC<{item:I_richTextItem}> = (props)=>{
+    const [item,setItem] = useState<I_richTextItem>(props.item)
+    return (
+        <div className="rich-text-options">
+            <div className="rich-text-option-title">{item.tag}</div>
+            <AIButtons
+                label='Align' justify={true}
+                style={{border:'1px solid #ddd'}}
+                options={[
+                    {text:'none',value:undefined,},
+                    {text:'v',value:'align-v-'},
+                    {text:'h',value:'align-h-'},
+                    {text:'vh',value:'align-vh-'}
+                ]}
+                option={{
+                    text:'none'
+                }}
+                value={item.align}
+                onChange={(align)=>setItem({...item,align})}
+            />
+            
         </div>
     )
 }

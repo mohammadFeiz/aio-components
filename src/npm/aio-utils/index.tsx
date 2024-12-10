@@ -62,9 +62,9 @@ export function SortArray(arr: any[], sorts: { getValue: (v: any) => any, inc?: 
     return arr.slice().sort((a, b) => {
         for (const sort of sorts) {
             const valueA = sort.getValue(a);
-            const valueB = sort.getValue(b);         
+            const valueB = sort.getValue(b);
             const comparison = sort.inc !== false ? valueA - valueB : valueB - valueA;
-            if (comparison !== 0) {return comparison;}
+            if (comparison !== 0) { return comparison; }
         }
         return 0;
     });
@@ -198,7 +198,7 @@ export function getValueByStep(p: { value: number, start: number, step: number, 
     if (res > end) { res = end }
     return res;
 }
-export function GetPercentByValue(start:number,end:number,value:number):number{return ((100 * (value - start)) / (end - start))}
+export function GetPercentByValue(start: number, end: number, value: number): number { return ((100 * (value - start)) / (end - start)) }
 export function URLToJSON(url: string): { [key: string]: any } {
     try { return JSON.parse(`{"${decodeURI(url.split('?')[1]).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"')}"}`) }
     catch { return {} }
@@ -213,7 +213,7 @@ export function FileSize(number: number) {
     }
 }
 function IsFileTypeValid(file: any): boolean {
-    const fileTypes = ["image/apng","image/bmp","image/gif","image/jpeg","image/pjpeg","image/png","image/svg+xml","image/tiff","image/webp","image/x-icon"];
+    const fileTypes = ["image/apng", "image/bmp", "image/gif", "image/jpeg", "image/pjpeg", "image/png", "image/svg+xml", "image/tiff", "image/webp", "image/x-icon"];
     return fileTypes.includes(file.type);
 }
 export function FilePreview(file: any, attrs?: any): React.ReactNode {
@@ -262,7 +262,7 @@ export function GenerateComponsition(p: { level?: number, length?: number, child
                     id: 'aa' + Math.round(Math.random() * 10000),
                     [childsField]: $$.generate(level + 1, newIndex)
                 }
-                for (let prop in fields) { newItem[prop] = fields[prop] + index }
+                for (let prop in fields) { newItem[prop] = fields[prop] + newIndex }
                 res.push(newItem)
             }
             return res
@@ -282,6 +282,31 @@ export function CalculateDistance(lat1: number, lon1: number, lat2: number, lon2
     const distance = R * c;
     return distance;
 }
+export const FilterTree = (p: {data: { [key: string]: any },checkNode: (node: { [key: string]: any }) => boolean,childsField: string}) => {
+    const { childsField, checkNode, data } = p;
+    const visibilityMap = new WeakMap();
+    function isMatch(node: any, parents: any[] = []): boolean {
+        const matched = checkNode(node);
+        const childs = node[childsField] || [];
+        let childMatched = false;
+        for (let child of childs) {
+            if (isMatch(child, [...parents, node])) {childMatched = true;}
+        }
+        const isVisible = matched || childMatched;
+        visibilityMap.set(node, isVisible);
+        if (isVisible) {parents.forEach((parent) => visibilityMap.set(parent, true));}
+        return isVisible;
+    }
+    function filterTree(node: any): any {
+        if (!visibilityMap.get(node)) {return null;}
+        const filteredNode = { ...node };
+        const childs = node[childsField] || [];
+        filteredNode[childsField] = childs.map(filterTree).filter((child:any) => child !== null); 
+        return filteredNode;
+    }
+    isMatch(data);
+    return filterTree(data);
+};
 export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback: (e: any) => void) {
     let touch = IsTouch()
     let fixedEvent: string;
@@ -468,13 +493,13 @@ export function setValueByField(data: any = {}, field: string, value: any) {
     node[fields[fields.length - 1]] = value;
     return data;
 }
-export function GetArray(count: number, fn?: (index: number) => any,step?:number) {
+export function GetArray(count: number, fn?: (index: number) => any, step?: number) {
     fn = fn || ((index) => index)
-    if(step){
+    if (step) {
         const arr = new Array(count).fill(0);
         const res = [];
-        for(let i = 0; i < arr.length; i++){
-            if(i % step !== 0){continue}
+        for (let i = 0; i < arr.length; i++) {
+            if (i % step !== 0) { continue }
             res.push(fn(i))
         }
         return res
