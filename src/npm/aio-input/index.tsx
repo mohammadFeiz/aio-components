@@ -3959,17 +3959,29 @@ type I_Map = {
 }
 export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
 export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
-type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode }
+type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode,changeZoom:(zoom:number)=>void,zoom:number }
 const MAPCTX = createContext({} as any)
 export const AIMap: FC<I_Map> = (props) => {
-    const { zoom = { value: 14 }, value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
+    const { value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
     const [map, setMap] = useState<any>(null)
+    const [zoom,setZoom] = useState<number>(props.zoom?.value || 14)
+    const lockChangeZoomState = useRef(false)
+    function changeZoom(zoom:number){
+        if(lockChangeZoomState.current === true){return}
+        setZoom(zoom)
+    }
     if (mapRef) { mapRef.current = map; }
     if(props.actionsRef){
         props.actionsRef.current = {
             flyTo:(p: { lat: number, lng: number, zoom: number, callback: () => void }) => {
+                lockChangeZoomState.current = true
                 map.flyTo([p.lat, p.lng], p.zoom)
-                const onMoveEnd = () => {map.off("moveend", onMoveEnd); p.callback();}
+                const onMoveEnd = () => {
+                    map.off("moveend", onMoveEnd); 
+                    lockChangeZoomState.current = false;
+                    changeZoom(p.zoom)
+                    p.callback();
+                }
                 map.on("moveend", onMoveEnd);
             }
         }
@@ -3986,11 +3998,11 @@ export const AIMap: FC<I_Map> = (props) => {
     function getDefaultMarkerIcon() {
         return <div className='marker-icon'><div className='marker-icon-circle'></div><div className='marker-icon-arrow'></div></div>
     }
-    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon } }
+    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon,changeZoom,zoom } }
     useEffect(() => {
-        if (map !== null) { map.setView(value, zoom.value, { animate: false }) }
+        if (map !== null) { map.setView(value, zoom, { animate: false }) }
         setPos(value)
-    }, [value[0] + '-' + value[1] + '-' + zoom.value])
+    }, [value[0] + '-' + value[1] + '-' + zoom])
     return (
         <MAPCTX.Provider value={getContext()}>
             <div className="ai-map">
@@ -4002,12 +4014,12 @@ export const AIMap: FC<I_Map> = (props) => {
     );
 };
 const MapBody: FC = () => {
-    const { rootProps, pos, setMap, getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
-    const { style, zoom = { value: 14 }, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
+    const { rootProps, pos, setMap, getDefaultMarkerIcon,zoom }: I_mapctx = useContext(MAPCTX)
+    const { style, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
         <MapContainer
-            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom.value || 14} scrollWheelZoom={zoom.wheel ? 'center' : undefined} zoomControl={zoom.control !== false}
+            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom} scrollWheelZoom={rootProps.zoom?.wheel ? 'center' : undefined} zoomControl={rootProps.zoom?.control !== false}
             attributionControl={true} dragging={dragging} ref={setMap} whenReady={whenReady}
         >
             <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
@@ -4123,7 +4135,7 @@ const MapMarker: FC<{ pos: I_pos, html?: ReactNode,eventHandlers?:any }> = ({ po
     return <Marker {...props} animate={false} eventHandlers={eventHandlers}/>
 }
 function MapEvents() {
-    const { rootProps, move }: I_mapctx = useContext(MAPCTX)
+    const { rootProps, move,changeZoom }: I_mapctx = useContext(MAPCTX)
     const map = useMapEvents({
         click: () => rootProps.onClick ? rootProps.onClick() : undefined,
         move: (e: any) => {
@@ -4132,13 +4144,15 @@ function MapEvents() {
             move([lat, lng])
         },
         zoom: (e: any) => {
-            if (rootProps.zoom && rootProps.zoom.onChange) { rootProps.zoom.onChange(e.target._zoom) }
+            changeZoom(e.target._zoom)
         },
         locationfound: (location: any) => {
             console.log('location found:', location)
         },
         moveend: (e) => {
             if (rootProps.onMoveEnd) { rootProps.onMoveEnd(e) }
+        },
+        movestart:(e)=>{
         }
     })
     return null

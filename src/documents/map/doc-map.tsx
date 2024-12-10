@@ -548,13 +548,12 @@ const Comp: FC<{ tabs: I_tabs }> = (props) => {
 }
 const FlyTo: FC = () => {
     const [value, setValue] = useState<[number, number]>([35.699939, 51.338497])
-    const [zoom, setZoom] = useState<number>(14)
     const actionsRef = useRef<any>()
     return (
         <div className="example">
             <AIMap
                 value={value}
-                zoom={{ value: zoom, wheel: true,onChange:(zoom)=>setZoom(zoom) }}
+                zoom={{ wheel: true }}
                 onChange={(newValue: [number, number]) => setValue(newValue)}
                 actionsRef={actionsRef}
             />
@@ -566,7 +565,6 @@ const FlyTo: FC = () => {
                     lat: newLat, lng: newLng, zoom: newZoom,
                     callback: () => {
                         setValue([newLat, newLng])
-                        setZoom(newZoom)
                     }
                 })
             }}>Fly To 35.69,51.33</button>
