@@ -433,19 +433,50 @@ const CursorLines:FC = ()=>{
 type I_pieRange_style = { thickness?: number, offset?: number, roundCap?: boolean, color: string }
 type I_pieRange = {
     value: number,
-    style?: I_pieRange_style
+    thickness?:number,
+    offset?:number,
+    roundCap?:boolean,
+    color:string
 }
-export const Pie: FC<{ start: number, end: number, ranges: I_pieRange[], rangeStyle?: Omit<I_pieRange_style, 'color'> }> = ({ start, end, ranges, rangeStyle = {} }) => {
+type I_Pie = { 
+    start: number, 
+    size?:number,
+    end: number, 
+    ranges: I_pieRange[],
+    empty?:Omit<I_pieRange,'value'>,
+    thickness?:number,
+    offset?:number,
+    roundCap?:boolean,
+    rangeStyle?: I_pieRange_style 
+}
+export const Pie: FC<I_Pie> = (props) => {
     function getRange(r: I_pieRange): [value: number, config: I_rangeConfig] {
-        const { value, style } = r;
-        const { thickness = 12, offset = 0, roundCap = false, color = '#000' } = { ...rangeStyle, ...style };
+        const { 
+            value,
+            thickness = props.thickness || 12, 
+            offset = props.offset || 0, 
+            roundCap = props.roundCap || false, 
+            color 
+        } = r;
         return [value, { thickness, offset, roundCap, color }]
+    }
+    function getRanges(){
+        const {end,ranges} = props;
+        const res = ranges.map((o) => getRange(o))
+        if(props.empty && ranges[ranges.length - 1].value < end){
+            res.push(getRange({...props.empty,value:end}))
+        }
+        return res
     }
     return (
         <AISpinner
-            start={start}
-            end={end}
-            ranges={ranges.map((o) => getRange(o))}
+            size={props.size}
+            start={props.start}
+            end={props.end}
+            ranges={getRanges()}
+            handle={false}
+            point={false}
+            style={{border:'none'}}
         />
     )
 }

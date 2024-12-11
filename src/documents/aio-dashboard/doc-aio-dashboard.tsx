@@ -1,10 +1,11 @@
 import React, { Component, FC, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
-import { Chart } from '../../npm/aio-dashboard';
+import { Chart, Pie } from '../../npm/aio-dashboard';
 import AIODate from './../../npm/aio-date';
 import { GetRandomNumber } from '../../npm/aio-utils/index.tsx';
 import './index.css';
+import { AISlider } from '../../npm/aio-input/index.tsx';
 export default function DOC_AIODashboard(props: any) {
     return (
         <DOC
@@ -28,6 +29,11 @@ export default function DOC_AIODashboard(props: any) {
                     { text: 'line style', id: 'linestyle', render: () => <LineStyle /> },
                     { text: 'point text', id: 'pointtext', render: () => <PointText /> },
                     { text: 'sample 1', id: 'sample1', render: () => <Sample1 /> },
+                    { text: 'Basic Pie Chart', id: 'basicpie', render: () => <BasicPie /> },
+                    { text: 'Pie Empty', id: 'pieempty', render: () => <PieEmpty /> },
+                    { text: 'Pie Size', id: 'piesize', render: () => <PieSize /> },
+                    { text: 'Pie Thickness', id: 'piethickness', render: () => <PieThickness /> },
+                    { text: 'Pie Generator', id: 'piegenerator', render: () => <PieGenerator /> },
                 ]
             }}
         />
@@ -412,9 +418,9 @@ const Sample1: FC = () => {
     return (
         <div className="msf">
             <Chart
-                attrs={{className:'chart-sample-1'}}
+                attrs={{ className: 'chart-sample-1' }}
                 xAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
-                yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(),gridLineColor:'#8ae7df' }}
+                yAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#8ae7df' }}
                 datas={[
                     {
                         points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
@@ -422,12 +428,111 @@ const Sample1: FC = () => {
                         getY: (point: any) => point.b,
                         getPointStyle: (point: any) => {
                             return {
-                                fill:'#fff'
+                                fill: '#fff'
                             }
                         },
                         type: 'bar'
                     }
                 ]}
+            />
+        </div>
+    )
+}
+const BasicPie: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={100}
+            ranges={[
+                { value: 20, color: 'red' },
+                { value: 40, color: 'orange' },
+                { value: 50, color: 'yellow' },
+                { value: 90, color: 'green' },
+            ]}
+        />
+    )
+}
+const PieEmpty: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={100}
+            ranges={[
+                { value: 20, color: 'red' },
+                { value: 40, color: 'orange' },
+                { value: 50, color: 'yellow' },
+                { value: 90, color: 'green' },
+            ]}
+            empty={{ color: '#eee' }}
+        />
+    )
+}
+const PieSize: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={100}
+            ranges={[
+                { value: 20, color: 'red' },
+                { value: 40, color: 'orange' },
+                { value: 50, color: 'yellow' },
+                { value: 90, color: 'green' },
+            ]}
+            size={120}
+        />
+    )
+}
+const PieThickness: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={100}
+            thickness={120}
+            roundCap={true}
+            ranges={[
+                { value: 20, color: 'red' },
+                { value: 40, color: 'orange' },
+                { value: 50, color: 'yellow', roundCap: true },
+                { value: 90, color: 'green' },
+                { value: 100, color: 'blue' },
+            ]}
+            size={240}
+        />
+    )
+}
+const PieGenerator: FC = () => {
+    const [config, setConfig] = useState<any>({
+        thickness: 10,
+        offset: 0,
+        size: 120,
+    })
+    return (
+        <div className='p-24'>
+            <div className="msf">
+                <AISlider
+                    label='thickness' start={1} end={150} value={config.thickness} onChange={(thickness)=>setConfig({...config,thickness})}
+                />
+                <AISlider
+                    label='offset' start={-120} end={120} value={config.offset} onChange={(offset)=>setConfig({...config,offset})}
+                />
+                <AISlider
+                    label='size' start={36} end={300} value={config.size} onChange={(size)=>setConfig({...config,size})}
+                />
+            </div>
+            <Pie
+                start={0}
+                end={100}
+                thickness={config.thickness}
+                offset={config.offset}
+                roundCap={true}
+                ranges={[
+                    { value: 20, color: 'red' },
+                    { value: 40, color: 'orange' },
+                    { value: 50, color: 'yellow', roundCap: true },
+                    { value: 90, color: 'green' },
+                    { value: 100, color: 'blue' },
+                ]}
+                size={config.size}
             />
         </div>
     )

@@ -1,6 +1,5 @@
-import React,{FC, useState} from "react";
+import {FC, useState} from "react";
 import './App.css'
-import { AIOInput_defaultProps } from "./npm/aio-input/index.tsx";
 import DOC_AIOInput from './documents/aio-input/doc-aio-input.tsx';
 import DOC_AIOValidation from "./documents/aio-validation/doc-aio-validation.tsx";
 import DOC_AIOContentSlider from './documents/aio-content-slider/doc-aio-content-slider.tsx';
