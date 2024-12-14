@@ -21,8 +21,9 @@ type I_chart_data_detail = {
 }
 type I_rangeDetail = { offset: number, height: number, color: string }
 type I_chart_point_detail = {
-    x: { value: number, percent: number, offset: number, text: ReactNode, barSize: number },
-    y: { value: number, percent: number, offset: number, text: ReactNode, barSize: number },
+    key:number,value:number,
+    x: { percent: number, offset: number, text: ReactNode, barSize: number },
+    y: { percent: number, offset: number, text: ReactNode, barSize: number },
     pointStyle?: I_chart_point_style, rangeDetails: I_rangeDetail[]
 }
 type I_getPointText = (point: I_chart_point_detail) => {
@@ -52,7 +53,7 @@ export type I_Chart = {
 type I_filter = number[]
 type I_ctx = {
     rootProps: I_Chart,dic:I_dic,
-    changeFilter: (axis: 'x' | 'y', newFilter: number[]) => void,
+    changeFilter: (newFilter: number[]) => void,
     filter: I_filter, setFilterMouseDownRef: (v: boolean) => void, getFilterMouseDownRef: () => boolean
 }
 type I_dic = {x:'key' | 'value',y:'key' | 'value',key:'x' | 'y',value:'x' | 'y'}
@@ -89,10 +90,9 @@ const Chart: FC<I_Chart> = (props) => {
     function getFilterMouseDownRef() {
         return filterMouseDownRef.current
     }
-    function changeFilter(axis: 'x' | 'y', newFilter: number[]) {
-        const stateFilter = { ...filter, [axis]: newFilter };
-        filter = stateFilter
-        setFilter(filter)
+    function changeFilter(newFilter: number[]) {
+        filter = newFilter
+        setFilter(newFilter)
         update();
     }
     function updateLabels() {
@@ -150,7 +150,7 @@ const Chart: FC<I_Chart> = (props) => {
         const res: I_chart_label_detail[] = [];
         const start = filter[0], end = filter[1];
         for (let key = start; key <= end; key++) {
-            const { offset, text } = chartClass.getPointDetail({ axis: 'x', value: key })
+            const { offset, text } = chartClass.getPointDetail({ d: 'key', value: key })
             res.push({ offset, text })
         }
         return res
@@ -163,7 +163,7 @@ const Chart: FC<I_Chart> = (props) => {
         if (size.y < 240) { step *= 2 }
         const labels: I_chart_label_detail[] = [];
         for (let i = start; i <= end; i += step) {
-            const { offset, text } = chartClass.getPointDetail({ axis: 'y', value: +i.toFixed(3) })
+            const { offset, text } = chartClass.getPointDetail({ d: 'value', value: +i.toFixed(3) })
             labels.push({ offset, text });
         }
         return labels;
@@ -364,7 +364,7 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
                     style={{ background: 'none' }}
                     start={Axis.start} end={Axis.end}
                     value={[...filter]}
-                    onChange={(v) => changeFilter('x', v)}
+                    onChange={(v) => changeFilter(v)}
                     fill={() => {
                         return {
                             thickness: 16,
@@ -507,9 +507,10 @@ class ChartData {
             const filteredPoints = this.getFilteredPoints(data)
             for (let j = 0; j < filteredPoints.length; j++) {
                 const fp = filteredPoints[j];
-                const xDetail = this.getPointDetail({ axis: 'x', data, value: fp[this.p.dic.x] })
-                const yDetail = this.getPointDetail({ axis: 'y', data, value: fp[this.p.dic.y] })
+                const xDetail = this.getPointDetail({ d: 'key', data, value: fp[this.p.dic.x] })
+                const yDetail = this.getPointDetail({ d: 'value', data, value: fp[this.p.dic.y] })
                 const pointDetail: I_chart_point_detail = {
+                    key:fp.key,value:fp.value,
                     x: { ...xDetail },
                     y: { ...yDetail },
                     pointStyle: this.getDefaultPointStyle(data, fp.point),
@@ -591,8 +592,8 @@ class ChartData {
             let lastValue = 0;
             for (let k = 0; k < ranges.length; k++) {
                 let [value, color] = ranges[k];
-                const { offset: startOffset } = this.getPointDetail({ axis: 'y', value: lastValue })
-                const { offset: endOffset } = this.getPointDetail({ axis: 'y', value })
+                const { offset: startOffset } = this.getPointDetail({ d: 'value', value: lastValue })
+                const { offset: endOffset } = this.getPointDetail({ d: 'value', value })
                 res.push({ offset: startOffset, height: endOffset - startOffset, color });
                 lastValue = value;
             }
@@ -625,33 +626,34 @@ class ChartData {
         }
         return newPoints
     }
-    getPointDetail = (p: { axis: 'x' | 'y', data?: I_chart_data, value: number }): { percent: number, offset: number, text: ReactNode, value: number, barSize: number } => {
+    getPointDetail = (p: { d: 'key' | 'value', data?: I_chart_data, value: number }): { percent: number, offset: number, text: ReactNode, barSize: number } => {
         const filter = this.p.getFilter()
         const props = this.p.getProps();
-        const d = this.p.dic[p.axis]
-        const Axis = props[`${d}Axis`]
-        const { padding = p.axis === 'x' ? [36, 36] : [0, 0] } = Axis;
-        const f = d === 'key'?filter:[Axis.start,Axis.end];
+        const Axis = props[`${p.d}Axis`]
+        const dir = this.p.dic[p.d]
+        const { padding = dir === 'x' ? [36, 36] : [0, 0] } = Axis;
+        const f = p.d === 'key'?filter:[Axis.start,Axis.end];
         const start = f[0], end = f[1];
         const percent = GetPercentByValue(start, end, p.value);
-        const avilSize = this.p.getChartSize()[p.axis] - (padding[0] + padding[1])
+        const avilSize = this.p.getChartSize()[dir] - (padding[0] + padding[1])
         const offset = padding[0] + avilSize * percent / 100;
         let barSize = 0;
-        if (p.axis === 'x') {
+        if (dir === 'x') {
             barSize = p.data && p.data.type === 'bar' ? this.getBarWidth(p.data) : 0
         }
         else {
             barSize = -offset
         }
-        return { percent, offset, text: Axis.getLabel(p.value), value: p.value, barSize }
+        return { percent, offset, text: Axis.getLabel(p.value), barSize }
     }
     getBarWidth = (data: I_chart_data) => {
         const props = this.p.getProps()
         const { datas } = this.p.getProps()
-        const { padding: xPadding = [36, 36] } = props.keyAxis;
+        const Axis = props.keyAxis
+        const { padding = [36, 36] } = Axis;
         const barCount = datas.filter((data) => data.type === 'bar').length
         const pointsLength = data.points.length;
-        let avilableWidth = this.p.getChartSize().x - (xPadding[0] + xPadding[1]);
+        let avilableWidth = this.p.getChartSize().x - (padding[0] + padding[1]);
         const gap = avilableWidth / pointsLength / 2;
         avilableWidth -= (pointsLength - 1) * gap;
         return avilableWidth / pointsLength / barCount
