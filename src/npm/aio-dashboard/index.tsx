@@ -33,8 +33,8 @@ type I_chart_data = {
     color?: string,
     title?: string,
     points: any[],
-    getX: (point: any) => number,
-    getY: (point: any) => number,
+    getKey: (point: any) => number,
+    getValue: (point: any) => number,
     getRanges?: (point: any) => I_chart_range | undefined,
     getPointStyle?: I_getPointStyle,
     getLineStyle?: I_getLineStyle,
@@ -44,16 +44,18 @@ type I_chart_data = {
 }
 export type I_Chart = {
     datas: I_chart_data[],
-    xAxis: I_chart_axis,
-    yAxis: I_chart_axis,
-    attrs?: any
+    keyAxis: I_chart_axis,
+    valueAxis: I_chart_axis,
+    attrs?: any,
+    reverse?:boolean
 }
-type I_filter = { x: number[], y: number[] }
+type I_filter = number[]
 type I_ctx = {
-    rootProps: I_Chart,
+    rootProps: I_Chart,dic:I_dic,
     changeFilter: (axis: 'x' | 'y', newFilter: number[]) => void,
     filter: I_filter, setFilterMouseDownRef: (v: boolean) => void, getFilterMouseDownRef: () => boolean
 }
+type I_dic = {x:'key' | 'value',y:'key' | 'value',key:'x' | 'y',value:'x' | 'y'}
 const Chart: FC<I_Chart> = (props) => {
     const propsRef = useRef(props)
     propsRef.current = props;
@@ -63,13 +65,19 @@ const Chart: FC<I_Chart> = (props) => {
     const dataDetailsRef = useRef<I_chart_data_detail[]>([])
     const labelDetailsRef = useRef<{ x: I_chart_label_detail[], y: I_chart_label_detail[] }>({ x: [], y: [] })
     const chartSizeRef = useRef<any>()
-    let [filter, setFilter] = useState<I_filter>({ x: [props.xAxis.start, props.xAxis.end], y: [props.yAxis.start, props.yAxis.end] })
+    let [filter, setFilter] = useState<I_filter>([props.keyAxis.start, props.keyAxis.end])
     const filterRef = useRef(filter)
     filterRef.current = filter
+    const [dic] = useState<I_dic>(getDic)
+    function getDic():I_dic{
+        if(props.reverse){return {x:'value',y:'key',key:'y',value:'x'}}
+        else {return {x:'key',y:'value',key:'x',value:'y'}}
+    }
     const [chartClass] = useState<ChartData>(new ChartData({
         getFilter: () => filterRef.current,
         getProps: () => propsRef.current,
-        getChartSize: () => chartSizeRef.current
+        getChartSize: () => chartSizeRef.current,
+        dic
     }))
     let [timeout] = useState<any>()
     let [timeout1] = useState<any>()
@@ -120,7 +128,7 @@ const Chart: FC<I_Chart> = (props) => {
         }
     }
     function getGridLines(axis: 'x' | 'y'): I_canvas_item[] {
-        const { gridLineColor = axis === 'y' ? '#ddd' : undefined } = props[`${axis}Axis`]
+        const { gridLineColor = axis === 'y' ? '#ddd' : undefined } = props[`${dic[axis]}Axis`]
         if (!gridLineColor) { return [] }
         const csize: number = clientSizeToCanvasSize(axis)
         const color = 'red';
@@ -140,8 +148,7 @@ const Chart: FC<I_Chart> = (props) => {
     }
     function getXLabelsDetail(size: I_chart_size): I_chart_label_detail[] {
         const res: I_chart_label_detail[] = [];
-        const f = filter.x;
-        const start = f[0], end = f[1];
+        const start = filter[0], end = filter[1];
         for (let key = start; key <= end; key++) {
             const { offset, text } = chartClass.getPointDetail({ axis: 'x', value: key })
             res.push({ offset, text })
@@ -149,8 +156,7 @@ const Chart: FC<I_Chart> = (props) => {
         return res
     }
     function getYLabelsDetail(size: I_chart_size) {
-        const f = filter.y;
-        const start = f[0], end = f[1];
+        const {start,end} = props[`${dic.y}Axis`];
         let step = (end - start) / 10;
         const magnitude = Math.pow(10, Math.floor(Math.log10(step)));
         step = Math.round(step / magnitude) * magnitude;
@@ -230,7 +236,7 @@ const Chart: FC<I_Chart> = (props) => {
             update()
         }, 350)
     }
-    function getCornerStyle() { return { width: props.yAxis.size, height: props.xAxis.size } }
+    function getCornerStyle() { return { width: props[`${dic.y}Axis`].size, height: props[`${dic.x}Axis`].size } }
     function update() {
         const aio_chart = $(aio_chart_ref.current);
         const canvasElement = aio_chart.find('canvas');
@@ -248,10 +254,10 @@ const Chart: FC<I_Chart> = (props) => {
     }
     function getLabelByCanvasPosition_axis(axis: 'x' | 'y', value: number): I_chart_label {
         const chartSize = chartSizeRef.current[axis];
-        const Axis = props[`${axis}Axis`];
+        const Axis = props[`${dic[axis]}Axis`];
         const { padding = axis === 'x' ? [36, 36] : [0, 0], getLabel = (v) => v } = Axis;
-        const start = axis === 'x' ? filter.x[0] : Axis.start
-        const end = axis === 'x' ? filter.x[1] : Axis.end
+        const start = dic[axis] === 'key' ? filter[0] : Axis.start
+        const end = dic[axis] === 'key' ? filter[1] : Axis.end
         if (value < padding[0]) { return labelDetailsRef.current[axis][start] }
         if (value > chartSize - padding[1]) { return labelDetailsRef.current[axis][end] }
         const step: number = (chartSize - (padding[0] + padding[1])) / (end - start)
@@ -269,7 +275,7 @@ const Chart: FC<I_Chart> = (props) => {
     useEffect(() => { update() }, [])
     function getContext(): I_ctx {
         return {
-            rootProps: props,
+            rootProps: props,dic,
             changeFilter, filter, setFilterMouseDownRef, getFilterMouseDownRef
         }
     }
@@ -316,9 +322,9 @@ const Chart: FC<I_Chart> = (props) => {
 }
 export { Chart }
 const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
-    const { rootProps, filter, changeFilter, setFilterMouseDownRef }: I_ctx = useContext(ChartCtx)
-    const { xAxis } = rootProps
-    const { rotate, size, getLabel = (v) => v, zoom } = xAxis;
+    const { rootProps, filter, changeFilter, setFilterMouseDownRef,dic }: I_ctx = useContext(ChartCtx)
+    const Axis = rootProps[`${dic.x}Axis`]
+    const { rotate, size, getLabel = (v) => v, zoom } = Axis;
     function getAxisStyle() {
         let style: any = { height: size };
         return style
@@ -352,12 +358,12 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
                 }
             </div>
             {
-                !!zoom &&
+                !!zoom && dic.key === 'x' &&
                 <AISlider
                     multiple={true} size={0}
                     style={{ background: 'none' }}
-                    start={xAxis.start} end={xAxis.end}
-                    value={[...filter.x]}
+                    start={Axis.start} end={Axis.end}
+                    value={[...filter]}
                     onChange={(v) => changeFilter('x', v)}
                     fill={() => {
                         return {
@@ -386,9 +392,9 @@ const XLabels: FC<{ xLabels: I_chart_label_detail[] }> = ({ xLabels }) => {
 }
 
 const YLabels: FC<{ yLabels: I_chart_label_detail[] }> = ({ yLabels }) => {
-    const { rootProps }: I_ctx = useContext(ChartCtx)
-    const { yAxis } = rootProps
-    const { size } = yAxis;
+    const { rootProps,dic }: I_ctx = useContext(ChartCtx)
+    const Axis = rootProps[`${dic.y}Axis`]
+    const { size } = Axis;
     function getAxisStyle() { return { width: size } }
     function getLabelsStyle() {
         let style: any = {}
@@ -481,7 +487,7 @@ export const Pie: FC<I_Pie> = (props) => {
     )
 }
 type I_chart_tooltip = { tooltipY: number, tooltipPoints: { color: string, text: ReactNode }[] }
-type I_ChartData = { getFilter: () => I_filter, getProps: () => I_Chart, getChartSize: () => { x: number, y: number } }
+type I_ChartData = { getFilter: () => I_filter, getProps: () => I_Chart, getChartSize: () => { x: number, y: number },dic:I_dic }
 class ChartData {
     p: I_ChartData
     tooltipDic: { [key: string]: { ys: number[], labels: { color: string, text: ReactNode }[] } } = {};
@@ -500,14 +506,14 @@ class ChartData {
             let dataDetail: I_chart_data_detail = { points: [], type, lineStyle: this.getDefaultLineStyle(data), getPointText, barCount, barIndex, areaPoints: [], areaColors }
             const filteredPoints = this.getFilteredPoints(data)
             for (let j = 0; j < filteredPoints.length; j++) {
-                const { point, x, y } = filteredPoints[j];
-                const xDetail = this.getPointDetail({ axis: 'x', data, value: x })
-                const yDetail = this.getPointDetail({ axis: 'y', data, value: y })
+                const fp = filteredPoints[j];
+                const xDetail = this.getPointDetail({ axis: 'x', data, value: fp[this.p.dic.x] })
+                const yDetail = this.getPointDetail({ axis: 'y', data, value: fp[this.p.dic.y] })
                 const pointDetail: I_chart_point_detail = {
                     x: { ...xDetail },
                     y: { ...yDetail },
-                    pointStyle: this.getDefaultPointStyle(data, point),
-                    rangeDetails: this.getRanges(data, getRanges, point),
+                    pointStyle: this.getDefaultPointStyle(data, fp.point),
+                    rangeDetails: this.getRanges(data, getRanges, fp.point),
                 }
                 this.addPosition(pointDetail, dataColor)
                 if (areaColors) { dataDetail.areaPoints.push([pointDetail.x.offset, pointDetail.y.offset]) }
@@ -606,26 +612,26 @@ class ChartData {
         const { lineWidth = 1, r = 4, dash, stroke = data.type === 'line' ? '#333' : undefined, fill = data.type === 'line' ? '#fff' : '#333' } = pointStyle
         return { lineWidth, r, dash, stroke, fill }
     }
-    getFilteredPoints = (data: I_chart_data) => {
+    getFilteredPoints = (data: I_chart_data):{key:number,value:number,point:any}[] => {
         const { points } = data;
         const filter = this.p.getFilter()
-        const newPoints: any[] = []
+        const newPoints = []
         for (let i = 0; i < points.length; i++) {
             const point = points[i]
-            const x = data.getX(point), y = data.getY(point);
-            if (x < filter.x[0]) { continue }
-            if (x > filter.x[1]) { continue }
-            if (y < filter.y[0]) { continue }
-            if (y > filter.y[1]) { continue }
-            newPoints.push({ x, y, point })
+            const key = data.getKey(point), value = data.getValue(point);
+            if (key < filter[0]) { continue }
+            if (key > filter[1]) { continue }
+            newPoints.push({ key, value, point })
         }
         return newPoints
     }
     getPointDetail = (p: { axis: 'x' | 'y', data?: I_chart_data, value: number }): { percent: number, offset: number, text: ReactNode, value: number, barSize: number } => {
         const filter = this.p.getFilter()
         const props = this.p.getProps();
-        const { padding = p.axis === 'x' ? [36, 36] : [0, 0] } = props[`${p.axis}Axis`];
-        const f = filter[p.axis];
+        const d = this.p.dic[p.axis]
+        const Axis = props[`${d}Axis`]
+        const { padding = p.axis === 'x' ? [36, 36] : [0, 0] } = Axis;
+        const f = d === 'key'?filter:[Axis.start,Axis.end];
         const start = f[0], end = f[1];
         const percent = GetPercentByValue(start, end, p.value);
         const avilSize = this.p.getChartSize()[p.axis] - (padding[0] + padding[1])
@@ -637,12 +643,12 @@ class ChartData {
         else {
             barSize = -offset
         }
-        return { percent, offset, text: props[`${p.axis}Axis`].getLabel(p.value), value: p.value, barSize }
+        return { percent, offset, text: Axis.getLabel(p.value), value: p.value, barSize }
     }
     getBarWidth = (data: I_chart_data) => {
         const props = this.p.getProps()
         const { datas } = this.p.getProps()
-        const { padding: xPadding = [36, 36] } = props.xAxis;
+        const { padding: xPadding = [36, 36] } = props.keyAxis;
         const barCount = datas.filter((data) => data.type === 'bar').length
         const pointsLength = data.points.length;
         let avilableWidth = this.p.getChartSize().x - (xPadding[0] + xPadding[1]);

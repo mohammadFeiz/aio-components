@@ -1,12 +1,16 @@
-.chart-sample-1{
+.chart-sample-1-container{
     background:linear-gradient(4deg, #36d7c8, #23a79b);
+    padding:36px;
+}
+.chart-sample-1{
     height:144px;
     width: 360px;
     border:none;
     color:#fff;
     font-size:10px !important;
 }
-.chart-sample-1 .aio-chart-canvas{
-    box-shadow:none !important;
+.chart-sample-1 .aio-chart-canvas-container{
     border-radius:0;
+    box-shadow:inset 0 0 6px 0 rgba(0,0,0,0.4);
+    background:#23a79b;
 }

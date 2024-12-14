@@ -1,9 +1,11 @@
+:root{
+    --op-color:#00000090;
+}
 .aio-chart{
     width:100%;
     height:600px;
     display: flex;
     flex-direction: column;
-    padding:12px;
     direction:ltr;
 }
 .aio-chart-top{
@@ -29,9 +31,8 @@
     flex:1;
     position:relative;
     flex-shrink:0;
-    box-shadow: 0 0 0 1px #ddd;
-    border-radius:12px;
     overflow:hidden;
+    box-shadow:inset 0 0 8px 0 rgba(0,0,0,0.4);
 }
 .aio-chart-canvas-container canvas{
     position: absolute;
@@ -86,19 +87,18 @@
 
 .aio-chart-cursor-line{
     position:absolute;
-    background:#ccc;
-    width:1px;
     pointer-events: none;
+    opacity:0.5;
 }
 .aio-chart-cursor-line-y{
     height:100%;
     top:0;
-    width:1px;
+    border-right:1px dashed var(--op-color);
 }
 .aio-chart-cursor-line-x{
-    height:1px;
     left:0;
     width:100%;
+    border-bottom:1px dashed var(--op-color);
 }
 .aio-chart-cursor-label-container{
     position:absolute;
@@ -118,7 +118,7 @@
 }
 .aio-chart-cursor-label{
     position:absolute;
-    background:#02429cad;
+    background:var(--op-color);
     color:#fff;
     border-radius:4px;
     display:flex;
@@ -145,16 +145,17 @@
     align-items: flex-end;
     justify-content: center;
     pointer-events: none;
-    transition: 0.1s;
-    opacity:0.7;
+    transition: 0.05s;
     font-size:12px;
 }
 .aio-chart-tooltip{
     display:flex;
     flex-direction: column;
-    background:#fff;
+    background:var(--op-color);
     border-radius:6px;
-    padding:6px;
+    color:#fff;
+    padding:0 6px;
+    padding-bottom:3px;
     transform:translateY(-8px);
     box-shadow: 0 3px 8px 0 rgba(0,0,0,0.3);
 
@@ -162,7 +163,7 @@
 .aio-chart-tooltip-arrow{
     border-left:10px solid transparent;
     border-right:10px solid transparent;
-    border-top:6px solid #fff;
+    border-top:6px solid var(--op-color);
     position: absolute;
     top:100%;
     left:calc(50% - 10px);
