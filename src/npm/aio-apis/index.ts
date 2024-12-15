@@ -1,6 +1,6 @@
 import Axios from 'axios';
-import AIOPopup from '../aio-popup';
-import AIOLoading from '../aio-loading';
+import AIOPopup from './../../npm/aio-popup';
+import AIOLoading from './../../npm/aio-loading';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
 type AA_onCatch = (err: any, config: AA_api) => string;
 type AA_isSuccess = (response: any, confing: AA_api) => string | true;
@@ -12,7 +12,7 @@ export type AA_props = {
     token: string, 
     loader?: string,
     onCatch: AA_onCatch, 
-    isSuccess: AA_isSuccess,
+    isSuccess?: AA_isSuccess,
     lang: 'en' | 'fa',
     messageTime?:number,
     messageType?:'alert' | 'snackebar'
@@ -55,7 +55,7 @@ export default class AIOApis {
     addAlert = (p:{ type: AA_alertType, text: string, subtext?: string, time?: number,messageType:'alert' | 'snackebar' }) => {
         let { type, text, subtext, time } = p;
         const {messageType = 'alert'} = this.props;
-        if (messageType === 'alert') { this.popup.addAlert({ type, text, subtext, time,className:'aio-apis-popup' }) }
+        if (messageType === 'alert') { this.popup.addAlert({ type, text, subtext, time,className:'aio-apis-popup',closeText:this.props.lang === 'fa'?'بستن':'Close' }) }
         else { this.popup.addSnackebar({ type, text, subtext, time }) }
     }
     renderPopup = ()=>this.popup.render()
@@ -96,7 +96,7 @@ export default class AIOApis {
         if (getErrorMessage === false) { return }
         let text: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
         let subtext = getErrorMessage(response)
-        this.addAlert({ type: 'error', text, subtext, time:messageTime,messageType });
+        this.addAlert({ type: 'error', text, subtext, time:messageTime,messageType});
     }
     showSuccessMessage = (response:any,result:any,api:AA_api) => {
         if (!api.getSuccessMessage) { return }
@@ -108,7 +108,7 @@ export default class AIOApis {
     request = async (api:AA_api):Promise<any> => {
         const {
             onCatch = this.props.onCatch,
-            isSuccess = this.props.isSuccess,
+            isSuccess = this.props.isSuccess || (()=>true),
             loading = true
         } = api;
         if (api.cache) { 
