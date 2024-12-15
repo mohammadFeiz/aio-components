@@ -1,7 +1,8 @@
-import  { Component, createRef, useState } from 'react';
+import { Component, createRef, FC, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
-import AIOPopup, { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
+import AIOPopup, { AP_modal, AP_snackebar, Snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import { Icon } from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
@@ -15,19 +16,20 @@ export default function DOC_AIOForm(props: any) {
         <DOC
             name={props.name} goToHome={props.goToHome}
             nav={{
-                nested:true,
+                nested: true,
                 items: () => [
                     { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
                     { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
                     { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
                     { text: 'alert', id: 'alert', render: () => <Alert /> },
-                    { text: 'snackebar', id: 'snackebar', render: () => <Snackebar /> },
+                    { text: 'snackebar', id: 'snackebar', render: () => <SnackebarExample /> },
+                    { text: 'snackebar to body', id: 'snackebartobody', render: () => <SnackebarToBody /> },
                     { text: 'confirm', id: 'confirm', render: () => <Confirm /> },
                     { text: 'prompt', id: 'prompt', render: () => <Prompt /> },
                     { text: 'popover', id: 'popover', render: () => <Popover /> },
-                    { 
+                    {
                         text: 'highlight', id: 'highlight',
-                        items:[
+                        items: [
                             { text: 'Basic Highlight', id: 'basichighlight', render: () => <BasicHighlight /> },
                             { text: 'mouseAccess', id: 'mouseAccess', render: () => <MouseAccess /> },
                             { text: 'Scroll Focus', id: 'testfocus', render: () => <TestFocus /> },
@@ -412,9 +414,9 @@ function AddModal() {
         }
     }
 })`,
-                    props: { 
+                    props: {
                         header: { title: 'my modal' }, body: () => content,
-                        setAttrs:(key)=>{if(key === 'body'){return {style:{padding:12}}}} 
+                        setAttrs: (key) => { if (key === 'body') { return { style: { padding: 12 } } } }
                     }
                 })
             }
@@ -422,7 +424,7 @@ function AddModal() {
                 example({
                     title: 'Modal header',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header: {
         title: 'my modal',
         subtitle: 'my modal subtitle',
@@ -441,11 +443,11 @@ function AddModal() {
                         header: {
                             title: 'my modal',
                             subtitle: 'my modal subtitle',
-                            after:(
+                            after: (
                                 <div className='modal-header-after'>
                                     <button onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
                                     <button onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
-                                    <button onClick={() => alert()}>My Button</button> 
+                                    <button onClick={() => alert()}>My Button</button>
                                 </div>
                             )
                         },
@@ -457,7 +459,7 @@ function AddModal() {
                 example({
                     title: 'Modal header (onClose:false)',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header: {
         title: 'my modal',
         onClose: false
@@ -470,7 +472,7 @@ function AddModal() {
                             title: 'my modal',
                             onClose: false
                         },
-                        body: ()=>content
+                        body: () => content
                     }
                 })
             }
@@ -478,7 +480,7 @@ function AddModal() {
                 example({
                     title: 'Modal header (onClose:custom function)',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     header: {
         title: 'my modal',
         onClose: () => {
@@ -505,7 +507,7 @@ function AddModal() {
                 example({
                     title: 'Modal prevent backdrop close',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position: 'top',
     body: ({ close }) => (
         <RVD
@@ -544,10 +546,10 @@ function AddModal() {
                                 }}
                             />
                         ),
-                        setAttrs:(key)=>{
-                            if(key === 'backdrop'){
+                        setAttrs: (key) => {
+                            if (key === 'backdrop') {
                                 return {
-                                    onClick:()=>false
+                                    onClick: () => false
                                 }
                             }
                         }
@@ -558,7 +560,7 @@ function AddModal() {
                 example({
                     title: 'open many modal',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position:'top',
     id:'one',
     body:({close})=><MyComponent onClose={close}/>
@@ -570,8 +572,8 @@ instance.addModal({
 })`
                     ,
                     props: [
-                        { position: 'top', id: 'one', body: ({ close }) => <Popup1 close={close} />  },
-                        { position: 'bottom', id: 'two', body: ({ close }) => <Popup1 />  }
+                        { position: 'top', id: 'one', body: ({ close }) => <Popup1 close={close} /> },
+                        { position: 'bottom', id: 'two', body: ({ close }) => <Popup1 /> }
                     ]
                 })
             }
@@ -579,7 +581,7 @@ instance.addModal({
                 example({
                     title: 'use as confirm',
                     code:
-`instance.addModal({
+                        `instance.addModal({
     position: 'center',
     header: { title: 'my confirm title' },
     body: () => (
@@ -669,11 +671,11 @@ instance.addModal({
                                 />
                             )
                         },
-                        footer:({close,state})=>{
+                        footer: ({ close, state }) => {
                             return (
                                 <>
-                                    <button className='ex-button-1' onClick={()=>{close()}}>No</button>
-                                    <button className='ex-button-2' onClick={()=>{console.log(state.temp); close()}}>Yes</button>
+                                    <button className='ex-button-1' onClick={() => { close() }}>No</button>
+                                    <button className='ex-button-2' onClick={() => { console.log(state.temp); close() }}>Yes</button>
                                 </>
                             )
                         }
@@ -709,7 +711,7 @@ function Popup1(props: any) {
 }
 function ModalPosition() {
     let [popup] = useState(new AIOPopup())
-    function v_layout(close:()=>void) {
+    function v_layout(close: () => void) {
         return (
             <RVD
                 rootNode={{
@@ -721,7 +723,7 @@ function ModalPosition() {
             />
         )
     }
-    function h_layout(close:()=>void) {
+    function h_layout(close: () => void) {
         return (
             <RVD
                 rootNode={{
@@ -743,39 +745,39 @@ function ModalPosition() {
             />
         )
     }
-    function openModal(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
-        let p:AP_modal = {
-            body:()=>null,
-            header:undefined,
+    function openModal(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
+        let p: AP_modal = {
+            body: () => null,
+            header: undefined,
             position
         }
-        if (position === 'top' || position === 'bottom') { 
-            p.body = ({ close }) => v_layout(close) 
+        if (position === 'top' || position === 'bottom') {
+            p.body = ({ close }) => v_layout(close)
         }
-        else if (position === 'left' || position === 'right') { 
-            p.body = ({ close }) => h_layout(close); 
-            p.setAttrs = (key)=>{
-                if(key==='modal'){
-                    return {style:{ width: 360 }}
+        else if (position === 'left' || position === 'right') {
+            p.body = ({ close }) => h_layout(close);
+            p.setAttrs = (key) => {
+                if (key === 'modal') {
+                    return { style: { width: 360 } }
                 }
-            } 
-        }
-        else if (position === 'center') { 
-            p.body = () => content; 
-            p.setAttrs = (key)=>{
-                if(key === 'modal'){
-                    return {style:{ maxHeight: '90vh' }}
-                } 
             }
-            p.header = { title: 'My Modal' } 
         }
-        else if (position === 'fullscreen') { 
-            p.body = () => content; 
-            p.header = { title: 'My Modal' } 
+        else if (position === 'center') {
+            p.body = () => content;
+            p.setAttrs = (key) => {
+                if (key === 'modal') {
+                    return { style: { maxHeight: '90vh' } }
+                }
+            }
+            p.header = { title: 'My Modal' }
+        }
+        else if (position === 'fullscreen') {
+            p.body = () => content;
+            p.header = { title: 'My Modal' }
         }
         popup.addModal(p)
     }
-    function getCode(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
+    function getCode(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
         let body;
         if (position === 'top' || position === 'bottom') {
             body =
@@ -808,7 +810,7 @@ instance.addModal({
 })
 `)
     }
-    function getItem(position:'top'|'bottom'|'right'|'left'|'center'|'fullscreen') {
+    function getItem(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
         return (
             <>
                 <h3>{`Modal position ${position}`}</h3>
@@ -833,7 +835,7 @@ instance.addModal({
 
 function Alert() {
     let [popup] = useState(new AIOPopup())
-    function addAlert(obj:any) {
+    function addAlert(obj: any) {
         popup.addAlert({
             text: 'my alert text',
             time: 10,
@@ -965,15 +967,15 @@ closeText:'بستن'
 }
 function Confirm() {
     let [popup] = useState(new AIOPopup())
-    function addConfirm(){
+    function addConfirm() {
         popup.addConfirm({
-            text:'Confirm text',
-            title:'My Title',
-            onSubmit:async ()=>{
+            text: 'Confirm text',
+            title: 'My Title',
+            onSubmit: async () => {
                 alert('yes')
                 return true
             },
-            onCansel:async ()=>{
+            onCansel: async () => {
                 alert('no')
                 return true
             },
@@ -1001,15 +1003,15 @@ closeText:'بستن'
 }
 function Prompt() {
     let [popup] = useState(new AIOPopup())
-    function addPrompt(){
+    function addPrompt() {
         popup.addPrompt({
-            text:'Confirm text',
-            title:'My Title',
-            onSubmit:async ()=>{
+            text: 'Confirm text',
+            title: 'My Title',
+            onSubmit: async () => {
                 alert('yes')
                 return true
             },
-            onCansel:async ()=>{
+            onCansel: async () => {
                 alert('no')
                 return true
             },
@@ -1035,7 +1037,7 @@ closeText:'بستن'
         </div>
     )
 }
-function Snackebar() {
+function SnackebarExample() {
     let [popup] = useState(new AIOPopup())
     let [rtlPopup] = useState(new AIOPopup({ rtl: true }))
     function addSnackebar(obj?: { [key in keyof AP_snackebar]?: any }, rtl?: boolean) {
@@ -1522,9 +1524,9 @@ function Popover() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom4.current as any),
-            body: () => content ,
-            setAttrs:(key)=>{
-                if(key === 'modal'){
+            body: () => content,
+            setAttrs: (key) => {
+                if (key === 'modal') {
                     return {
                         style: {
                             height: 360,
@@ -1541,13 +1543,13 @@ function Popover() {
             fitHorizontal: true,
             position: 'popover',
             body: () => content,
-            setAttrs:(key)=>{
-                if(key === 'backdrop'){
+            setAttrs: (key) => {
+                if (key === 'backdrop') {
                     return {
-                        style:{pointerEvents:'none'}
+                        style: { pointerEvents: 'none' }
                     }
                 }
-                if(key === 'modal'){
+                if (key === 'modal') {
                     return {
                         onClick: () => {
                             popup.removeModal()
@@ -1658,21 +1660,21 @@ popupInstance.addModal({
 }
 function BasicHighlight() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
-    function start(index:number){
-        let dom,html;
-        if(index === 0){
+    function start(index: number) {
+        let dom, html;
+        if (index === 0) {
             dom = $('.rsa-navigation-item').eq(0);
             html = 'this tab show basic usage of aio-highlighter component'
         }
-        else if(index === 1){
+        else if (index === 1) {
             dom = $('.rsa-navigation-item').eq(1);
             html = 'this tab show usage of aio-highlighter mouseAccess Props';
         }
-        else if(index === 2){
+        else if (index === 2) {
             dom = $('.rsa-header-title');
             html = 'this is title of page';
         }
-        else if(index === 3){
+        else if (index === 3) {
             dom = $('#go-to-home');
             html = 'this button is for exit to home page';
         }
@@ -1680,7 +1682,7 @@ function BasicHighlight() {
             popup.removeHighlight();
             return;
         }
-        popup.addHighlight({dom,html,onClick:()=>start(index + 1)})
+        popup.addHighlight({ dom, html, onClick: () => start(index + 1) })
     }
     function showCode() {
         popup.addModal({
@@ -1688,7 +1690,7 @@ function BasicHighlight() {
             header: { title: 'code' },
             body: () => {
                 return Code(
-`import AIOPopup from 'aio-popup';
+                    `import AIOPopup from 'aio-popup';
 function BasicHighlight() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
     function start(index:number){
@@ -1725,8 +1727,8 @@ function BasicHighlight() {
         </div>
     )
 }`
-                        )
-                
+                )
+
             }
         })
     }
@@ -1742,34 +1744,34 @@ function BasicHighlight() {
 }
 function MouseAccess() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
-    function start(){
+    function start() {
         popup.addHighlight({
-            dom:$('#button1'),
-            html:'click here to show code',
-            mouseAccess:true
+            dom: $('#button1'),
+            html: 'click here to show code',
+            mouseAccess: true
         })
     }
-    function button1(){
+    function button1() {
         popup.addHighlight({
-            dom:$('#button2'),
-            html:(
-                <div 
+            dom: $('#button2'),
+            html: (
+                <div
                     style={{ background: 'dodgerblue', padding: 12, color: '#fff' }}
                 >click here to show preview</div>
             ),
-            mouseAccess:true
+            mouseAccess: true
         })
     }
-    function button2(){
+    function button2() {
         popup.removeHighlight()
     }
     function showCode() {
         popup.addModal({
             id: 'code',
             header: { title: 'code' },
-            body: ()=>{
+            body: () => {
                 return Code(
-`import AIOPopup from 'aio-popup';
+                    `import AIOPopup from 'aio-popup';
 function MouseAccess() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
     function start(){
@@ -1805,7 +1807,7 @@ function MouseAccess() {
         </div>
     )
 }`
-            )
+                )
             }
         })
     }
@@ -1813,8 +1815,8 @@ function MouseAccess() {
         <div className='example'>
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => start()}>start</button>
             <div style={{ display: 'flex', gap: 12, padding: 12 }}>
-                <button type='button' id='button1' onClick={(e)=>button1()}>Button 1</button>
-                <button type='button' id='button2' onClick={(e)=>button2()}>Button 2</button>
+                <button type='button' id='button1' onClick={(e) => button1()}>Button 1</button>
+                <button type='button' id='button2' onClick={(e) => button2()}>Button 2</button>
                 <button style={{ height: 36, padding: '0 24px' }} onClick={() => showCode()}>Code</button>
             </div>
             {popup.render()}
@@ -1823,19 +1825,19 @@ function MouseAccess() {
 }
 function TestFocus() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
-    function start(index:number){
-        if(index === 0){
+    function start(index: number) {
+        if (index === 0) {
             popup.addHighlight({
-                dom:$('.my-test').eq(0),
-                html:'test0',
-                onClick:()=>start(1)
+                dom: $('.my-test').eq(0),
+                html: 'test0',
+                onClick: () => start(1)
             })
         }
-        else if(index === 1){
+        else if (index === 1) {
             popup.addHighlight({
-                dom:$('.my-test').eq(11),
-                html:'test11',
-                onClick:()=>popup.removeHighlight()
+                dom: $('.my-test').eq(11),
+                html: 'test11',
+                onClick: () => popup.removeHighlight()
             })
         }
 
@@ -1858,30 +1860,30 @@ function TestFocus() {
 }
 function Theme1() {
     let [popup] = useState(new AIOPopup())
-    
+
     return (
         <div className='example'>
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
                 popup.addModal({
-                    position:'center',
-                    setAttrs:(key)=>{
-                        if(key === 'modal'){
-                            return {className:'aio-popup-theme1'}
+                    position: 'center',
+                    setAttrs: (key) => {
+                        if (key === 'modal') {
+                            return { className: 'aio-popup-theme1' }
                         }
                     },
-                    header:{
-                        title:'Theme1',
-                        
+                    header: {
+                        title: 'Theme1',
+
                     },
-                    body:()=>{
+                    body: () => {
                         return (
-                            <div className='h-300 p-12' style={{width:320}}>
+                            <div className='h-300 p-12' style={{ width: 320 }}>
                                 <div className="flex-row gap-6">
                                     <button className='active'>My Active Button</button>
                                     <button>My Button</button>
                                 </div>
                                 <p>
-                                this is my sample text
+                                    this is my sample text
                                 </p>
                             </div>
                         )
@@ -1890,5 +1892,24 @@ function Theme1() {
             }}>Open Modal</button>
             {popup.render()}
         </div>
+    )
+}
+
+
+
+
+const SnackebarToBody: FC = () => {
+    const addRef = useRef<any>()
+    return (
+        <>
+            <div className="msf">
+                <button onClick={()=>addRef.current({type:'error',text:'my text',subtext:'my subtext'})}>Add Snackebar</button>
+            </div>
+            {ReactDOM.createPortal(<Snackebar
+                getActions={({ add }) => addRef.current = add}
+                rtl={false}
+            />, document.body)}
+            
+        </>
     )
 }

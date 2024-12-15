@@ -3,6 +3,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import './index.css';
 import anime from "animejs/lib/anime.es.js";
+import { GetRandomNumber, StyleObjectToString } from '../aio-utils';
 export type AP_props = { rtl?: boolean, id?: string }
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export type AP_attrsKey = 'backdrop' | 'modal' | 'header' | 'body' | 'footer';
@@ -47,7 +48,6 @@ export type AP_alert = {
   animate?: boolean,
   onClose?: boolean | (() => void),
 }
-
 export type AP_snackebar = {
   id?: string,
   text: string,
@@ -397,7 +397,7 @@ const ModalHeader: FC<{ modal: AP_modal }> = (props) => {
       {before !== undefined && <div className={`${cls}-before`} onClick={(e) => close(e)}>{before}</div>}
       {!!title && title_node()}
       {after !== undefined && <div className={`${cls}-after`} onClick={(e) => close(e)}>{after}</div>}
-      {onClose !== false && <div className={`${cls}-close-button`} onClick={(e) => close(e)}><CloseIcon/></div>}
+      {onClose !== false && <div className={`${cls}-close-button`} onClick={(e) => close(e)}><CloseIcon /></div>}
     </div>
   )
 }
@@ -485,7 +485,7 @@ function Alert(props: AP_alert) {
   $$.render();
   if (time) { $$.startTimer(); }
 }
-class Snackebar extends Component<AP_Snackebar, { items: AP_snackebar[] }> {
+export class Snackebar extends Component<AP_Snackebar, { items: AP_snackebar[] }> {
   constructor(props: AP_Snackebar) {
     super(props);
     this.state = { items: [] }
@@ -520,9 +520,9 @@ class Snackebar extends Component<AP_Snackebar, { items: AP_snackebar[] }> {
     )
   }
 }
-function SnackebarItem(props: AP_SnackebarItem) {
+export const SnackebarItem: FC<AP_SnackebarItem> = (props) => {
   let { item, onRemove, index, rtl } = props;
-  let { time = 8, id, text, type, subtext, action, onClose, verticalAlign = 'end', horizontalAlign = 'center', icon, attrs = {} } = item;
+  let { time = 8, id, verticalAlign = 'end', horizontalAlign = 'center' } = item;
   if (verticalAlign !== 'start' && verticalAlign !== 'end') {
     verticalAlign = 'end';
     console.error('aio-popup error => snackebar item .verticalAlign should be "start" or "end"')
@@ -538,13 +538,11 @@ function SnackebarItem(props: AP_SnackebarItem) {
   }, [])
   function remove() {
     setMounted(false)
-    setTimeout(() => {
-      onRemove(id as string);
-    }, 200)
+    setTimeout(() => onRemove(id as string), 200)
   }
-  function info_svg() { return (<svg viewBox="0 0 24 24" role="presentation" style={{ width: '1.2rem', height: '1.2rem' }}><path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" style={{ fill: 'currentcolor' }}></path></svg>) }
-  function success_svg() { return (<svg viewBox="0 0 24 24" role="presentation" style={{ width: '1.2rem', height: '1.2rem' }}><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z" style={{ fill: 'currentcolor' }}></path></svg>) }
-  function getSvg(type: 'error' | 'warning' | 'info' | 'success') { return type === 'error' || type === 'warning' || type === 'info' ? info_svg() : success_svg() }
+  return <SnackebarContainer item={item} rtl={rtl} mounted={mounted} index={index} onRemove={remove} />
+}
+const SnackebarContainer: FC<{ item: AP_snackebar, rtl: boolean, mounted: boolean, index: number, onRemove: () => void }> = ({ item, rtl, mounted, index, onRemove }) => {
   function getOffsetStyle(index: number) {
     let els = $('.aio-popup-snackebar-item-container'), sum = { start: 12, end: 12 };
     for (let i = 0; i < index; i++) {
@@ -557,41 +555,70 @@ function SnackebarItem(props: AP_SnackebarItem) {
       [verticalAlign === 'start' ? 'top' : 'bottom']: sum[verticalAlign]
     }
   }
-  function text_node() {
-    return (
-      <div className='aio-popup-snackebar-item-text'>
-        <div className='aio-popup-snackebar-item-uptext'>{text}</div>
-        {!!subtext && <div className='aio-popup-snackebar-item-subtext'>{subtext}</div>}
-      </div>
-    )
+  let { onClose, verticalAlign = 'end', horizontalAlign = 'center' } = item;
+  let className = 'aio-popup-snackebar-item-container';
+  className += ` aio-popup-snackebar-item-container-horizontal-align-${horizontalAlign}`
+  if (mounted) { className += ' mounted'; }
+  if (rtl) { className += ' rtl'; }
+  let style = getOffsetStyle(index);
+  let p = { 'data-vertical-align': verticalAlign, className, style, onClick: onClose === false ? undefined : () => onRemove() }
+  return <div {...p}><SnackebarCard item={item} onRemove={onRemove} /></div>
+}
+const SnackebarCard: FC<{ item: AP_snackebar, onRemove: () => void }> = ({ item, onRemove }) => {
+  let { time = 8, type, attrs = {} } = item;
+  let className = 'aio-popup-snackebar-item';
+  className += ` aio-popup-snackebar-item-${type}`
+  if (attrs.className) { className += ` ${attrs.className}` }
+  let p = { ...attrs, className, style: attrs.style }
+  return (
+    <div {...p}>
+      <SnackebarIcon item={item} />
+      <SnackebarText item={item} />
+      <SnackebarAction onRemove={onRemove} item={item} />
+      <SnackebarBar time={time} />
+    </div>
+  )
+}
+const SnackebarText: FC<{ item: AP_snackebar }> = ({ item }) => {
+  return (
+    <div className='aio-popup-snackebar-item-text'>
+      <div className='aio-popup-snackebar-item-uptext'>{item.text}</div>
+      {!!item.subtext && <div className='aio-popup-snackebar-item-subtext'>{item.subtext}</div>}
+    </div>
+  )
+}
+const SnackebarBar: FC<{ time: number }> = ({ time }) => {
+  return <div className='aio-popup-snackebar-bar' style={{ transition: `${time}s linear` }}></div>
+}
+const SnackebarAction: FC<{ item: AP_snackebar, onRemove: () => void }> = ({ item, onRemove }) => {
+  const { action } = item;
+  if (!action || !action.text) { return null }
+  let p = {
+    className: 'aio-popup-snackebar-item-action',
+    onClick: (e: any) => { e.stopPropagation(); if (action) { action.onClick() } onRemove() }
   }
-  function container_node() {
-    let className = 'aio-popup-snackebar-item-container';
-    className += ` aio-popup-snackebar-item-container-horizontal-align-${horizontalAlign}`
-    if (mounted) { className += ' mounted'; }
-    if (rtl) { className += ' rtl'; }
-    let style = getOffsetStyle(index);
-    let p = { 'data-vertical-align': verticalAlign, className, style, onClick: onClose === false ? undefined : () => remove() }
-    return (<div {...p}>{item_node()}</div>)
-  }
-  function item_node() {
-    let className = 'aio-popup-snackebar-item';
-    className += ` aio-popup-snackebar-item-${type}`
-    if (attrs.className) { className += ` ${attrs.className}` }
-    let p = { ...attrs, className, style: attrs.style }
-    return (<div {...p}>{icon_node()} {text_node()} {action_node()} {bar_node()}  </div>)
-  }
-  function bar_node() { return (<div className='aio-popup-snackebar-bar' style={{ transition: `${time}s linear` }}></div>) }
-  function action_node() {
-    if (!action || !action.text) { return null }
-    let p = {
-      className: 'aio-popup-snackebar-item-action',
-      onClick: (e: any) => { e.stopPropagation(); if (action) { action.onClick() } remove() }
-    }
-    return (<button {...p}>{action.text}</button>)
-  }
-  function icon_node() { return <div className={`aio-popup-snackebar-item-icon`}>{!!icon ? icon : getSvg(type)}</div> }
-  return container_node()
+  return (<button {...p}>{action.text}</button>)
+}
+const SnackebarIcon: FC<{ item: AP_snackebar }> = ({ item }) => {
+  function getSvg(type: 'error' | 'warning' | 'info' | 'success') { return type === 'error' || type === 'warning' || type === 'info' ? <InfoSvg /> : <SuccessSvg /> }
+  return <div className={`aio-popup-snackebar-item-icon`}>{!!item.icon ? item.icon : getSvg(item.type)}</div>
+}
+
+const InfoSvg: FC = () => {
+  const d = "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+  return (
+    <svg viewBox="0 0 24 24" role="presentation" style={{ width: '1.2rem', height: '1.2rem' }}>
+      <path d={d} style={{ fill: 'currentcolor' }}></path>
+    </svg>
+  )
+}
+const SuccessSvg: FC = () => {
+  const d = "M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z"
+  return (
+    <svg viewBox="0 0 24 24" role="presentation" style={{ width: '1.2rem', height: '1.2rem' }}>
+      <path d={d} style={{ fill: 'currentcolor' }}></path>
+    </svg>
+  )
 }
 //id,onClose,backdrop,getTarget,position,fixStyle,attrs,fitHorizontal,pageSelector,rtl,body
 type AP_align = {
@@ -713,6 +740,7 @@ type AP_Highlight = {
   ref: any,
 }
 type AP_limit = { Left: number, Top: number, Width: number, Height: number, TopSpace: number, BottomSpace: number }
+
 const Highlight: FC<AP_Highlight> = forwardRef((props, ref) => {
   let [open, setOpen] = useState<boolean>(false)
   let [limit, setLimit] = useState<AP_limit>({ Left: 0, Top: 0, Width: 0, Height: 0, TopSpace: 0, BottomSpace: 0 })
@@ -877,7 +905,7 @@ const Highlight: FC<AP_Highlight> = forwardRef((props, ref) => {
 })
 const CloseIcon: FC = () => {
   return (
-    <svg viewBox="0 0 24 24" role="presentation" style={{width: '1.2rem',height: '1.2rem'}}><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={{fill: 'currentcolor'}}></path></svg>
+    <svg viewBox="0 0 24 24" role="presentation" style={{ width: '1.2rem', height: '1.2rem' }}><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={{ fill: 'currentcolor' }}></path></svg>
   )
 }
 function AddToAttrs(attrs: any, p: any) {
@@ -890,3 +918,5 @@ function AddToAttrs(attrs: any, p: any) {
   let newStyle = { ...attrs.style, ...style };
   return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
 }
+
+

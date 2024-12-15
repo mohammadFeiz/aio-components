@@ -1328,3 +1328,12 @@ export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gende
     if (p.type === "lastname") { return getlastname() }
     return `${getfirstname()} ${getlastname()}`
 }
+export function StyleObjectToString(styleObject:any) {
+    return Object.entries(styleObject)
+        .map(([key, value]) => {
+            // تبدیل camelCase به kebab-case
+            const kebabKey = key.replace(/[A-Z]/g, match => `-${match.toLowerCase()}`);
+            return `${kebabKey}:${value}`;
+        })
+        .join(';');
+}
