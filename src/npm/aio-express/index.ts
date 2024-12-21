@@ -9,6 +9,7 @@ import Agenda from 'agenda';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean };
+export type I_response<T> = { status: number, success: boolean, message?: string, value?: T }
 export type I_auth = {
     schema?: I_schemaDefinition,
     name: string,
@@ -17,7 +18,7 @@ export type I_auth = {
     registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, userProps?: any } | void>,
     loginExeption?: (p: { user: any, token: string }) => Promise<{ status?: number, message?: string, user?: any } | void>
 };
-type I_transaction = (callback: (session: ClientSession) => Promise<true | string>) => Promise<true | string>
+type I_transaction = <T>(callback: (session: ClientSession) => Promise<T | string>) => Promise<T | string>
 type I_row = { [key: string]: any }
 type I_getModel = (key: string) => Model<any>
 export type I_entity = { schema?: I_schemaDefinition | string, path?: string, requiredToken?: boolean, apis: I_api[] };
@@ -26,12 +27,18 @@ export type I_queryParam = { [key: string]: any }
 export type I_api = {
     path: string,
     method: 'post' | 'get' | 'put' | 'delete',
-    body?: I_schemaDefinition | I_schemaDefinitionOption | string, errorResult: any, successResult: string | I_schemaDefinition | I_schemaDefinitionOption, description: string, queryString?: string, getResult: string,
+    body?: string,
+    successResultType: string,
+    errorResultType: string,
+    configStr: string,
+    description: string,
+    queryString?: string,
     checkAccess?: (p: { reqUser: any, body: any, queryParam: I_queryParam }) => Promise<void | string | { [key: string]: any }>
-    fn: (p: { req: Request, res: Response, reqUser: any, body: any, accessBody: any, queryParam: I_queryParam }) => Promise<{ status: number, success: boolean, message?: string, value?: any }>
+    fn: (p: { req: Request, res: Response, reqUser: any, body: any, accessBody: any, queryParam: I_queryParam }) => Promise<I_response<any>>
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 type I_schemas = { [key: string]: (I_schemaDefinition | I_schemaDefinitionOption) }
+type I_record<T> = T & {id:string} & Document
 class AIOExpress<I_User> {
     private app: Express;
     private p: I_AIOExpress;
@@ -46,23 +53,23 @@ class AIOExpress<I_User> {
     schemas: I_schemas = {}
     env: { mongoUrl: string, port: string, secretKey: string };
     gcrud: GCRUD;
-    getRow: I_getRow;
-    getRows: I_getRows;
-    addRow: I_addRow;
-    editRow: I_editRow;
-    addOrEditRow: I_addOrEditRow;
-    editRows: I_editRows;
-    removeRow: I_removeRow;
-    removeRows: I_removeRows;
-    getUser: (p: { id?: any, search?: I_row, req?: Request }) => Promise<null | I_User | string>;
-    getUsers: (p: { ids?: any[], search?: I_row }) => Promise<I_User[] | string>;
-    addUser: (p: { newValue: I_User, session?: ClientSession }) => Promise<I_User | string>
-    editUser: (p: { id: any, newValue: Partial<I_User>, session?: ClientSession }) => Promise<I_User | string>
-    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue?: Partial<I_User>, session?: ClientSession }) => Promise<string | number>
-    removeUser: (p: { id?: any, search?: Partial<I_User>, session?: ClientSession }) => Promise<I_User | string>
+    getRow: GCRUD["getRow"];
+    getRows: GCRUD["getRows"];
+    addRow: GCRUD["addRow"];
+    editRow: GCRUD["editRow"];
+    addOrEditRow: GCRUD["addOrEditRow"];
+    editRows: GCRUD["editRows"];
+    removeRow: GCRUD["removeRow"];
+    removeRows: GCRUD["removeRows"];
+    getUser: (p: { id?: any, search?: Partial<I_User> }) => Promise<null | I_record<I_User> | string>;
+    getUsers: (p: { ids?: any[], search?: Partial<I_User> }) => Promise<I_record<I_User>[] | string>;
+    addUser: (p: { newValue: I_User, session?: ClientSession }) => Promise<I_record<I_User> | string>
+    editUser: (p: { id: any, newValue: Partial<I_User>, session?: ClientSession }) => Promise<I_record<I_User> | string>
+    editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue: Partial<I_User>, session?: ClientSession }) => Promise<string | number>
+    removeUser: (p: { id?: any, search?: Partial<I_User>, session?: ClientSession }) => Promise<I_record<I_User> | string | null>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User>, session?: ClientSession }) => Promise<number | string>
     changeUserPassword: (p: { userPassword: string, oldPassword: string, newPassword: string, userId: string }) => Promise<true | string>
-    agenda:Agenda;
+    agenda: Agenda;
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
         this.p = p;
@@ -82,36 +89,19 @@ class AIOExpress<I_User> {
         this.editRows = this.gcrud.editRows;
         this.removeRow = this.gcrud.removeRow;
         this.removeRows = this.gcrud.removeRows;
-        this.getUser = async (p) => {
-            if (p.req) { return await this.getUserByReq(p.req) }
-            const res = await this.getRow({ ...p, entityName: 'auth' })
-            return res === null || typeof res === 'string' ? res : res as I_User
-        }
-        this.getUsers = async (p) => {
-            const res = await this.getRows({ ...p, entityName: 'auth' })
-            return typeof res === 'string' ? res : res as I_User[]
-        }
+        this.getUser = async (p) => await this.getRow<I_User>({ ...p, entityName: 'auth' })
+        this.getUsers = async (p) => await this.getRows<I_User>({ ...p, entityName: 'auth' })
         this.addUser = async (p) => {
             const newValue: any = p.newValue;
             const hashedPassword = await bcrypt.hash(newValue.password, 10);
             newValue.password = hashedPassword;
-            const res = await this.addRow({ newValue, entityName: 'auth' })
-            return typeof res === 'string' ? res : res as I_User
+            const res = await this.addRow<I_User>({ ...p,newValue, entityName: 'auth' })
+            return typeof res === 'string' ? res : res
         }
-        this.editUser = async (p) => {
-            const res = await this.editRow({ newValue: p.newValue as I_row, id: p.id, entityName: 'auth' })
-            return typeof res === 'string' ? res : res as I_User
-        }
-        this.editUsers = async (p) => {
-            return await this.editRows({ ...p, newValue: p.newValue as I_row, entityName: 'auth' })
-        }
-        this.removeUser = async (p) => {
-            const res = await this.removeRow({ ...p, entityName: 'auth' })
-            return typeof res === 'string' ? res : res as I_User
-        }
-        this.removeUsers = async (p) => {
-            return await this.removeRows({ ...p, entityName: 'auth' })
-        }
+        this.editUser = async (p) => await this.editRow<I_User>({ ...p, entityName: 'auth' })
+        this.editUsers = async (p) => await this.editRows<I_User>({ ...p, newValue: p.newValue, entityName: 'auth' })
+        this.removeUser = async (p) =>await this.removeRow<I_User>({ ...p, entityName: 'auth' })
+        this.removeUsers = async (p) => await this.removeRows<I_User>({ ...p, entityName: 'auth' })
         this.changeUserPassword = async (p) => {
             try {
                 const newPasswrod = await this.getNewPassword(p);
@@ -127,10 +117,11 @@ class AIOExpress<I_User> {
         this.agenda = agenda
     }
     getModel: I_getModel = (key) => this.models[key]
-    log = (message: string, color?: 'green' | 'red' | 'yellow') => {
+    log = (message: string, color?: 'green' | 'red' | 'yellow' | 'orange') => {
         if (color === "green") { console.log('\x1b[32m%s\x1b[0m', message) }
         else if (color === "yellow") { console.log('\x1b[33m%s\x1b[0m', message) }
         else if (color === "red") { console.log('\x1b[31m%s\x1b[0m', message) }
+        else if (color === "orange") { console.log('\x1b[38;5;208m%s\x1b[0m', message) }        
         else { console.log(message) }
     }
     start = async () => {
@@ -153,7 +144,7 @@ class AIOExpress<I_User> {
         await this.agenda.start();
         this.app.listen(this.env.port, () => { console.log(`Server running on port ${this.env.port}`) });
     };
-    transaction: I_transaction = async (callback): Promise<true | string> => {
+    transaction: I_transaction = async (callback) => {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
@@ -166,7 +157,7 @@ class AIOExpress<I_User> {
             }
             await session.commitTransaction();
             session.endSession();
-            return true;
+            return result;
         } catch (error: any) {
             await session.abortTransaction();
             session.endSession();
@@ -174,7 +165,7 @@ class AIOExpress<I_User> {
             return error.message;
         }
     };
-    schedule = async (p: {callAt: number,callback: () => Promise<void>,jobName: string,version: string}) => {
+    schedule = async (p: { callAt: number, callback: () => Promise<void>, jobName: string, version: string }) => {
         try {
             const existingJobs = await this.agenda.jobs({ name: p.jobName });
             if (existingJobs.length > 0) {
@@ -187,20 +178,20 @@ class AIOExpress<I_User> {
                     console.log(`job with name ${p.jobName} and last version removed.`);
                 }
             }
-            this.agenda.define(p.jobName, async (job: any) => await p.callback()); 
+            this.agenda.define(p.jobName, async (job: any) => await p.callback());
             const executionDate = new Date(p.callAt);
             await this.agenda.schedule(executionDate, p.jobName, { version: p.version });
             console.log(`job ${p.jobName} for time ${executionDate} and version ${p.version} scheduled.`);
-        } 
-        catch (error:any) {console.error(`خطا در زمان‌بندی شغل: ${error.message}`)}
+        }
+        catch (error: any) { console.error(`خطا در زمان‌بندی شغل: ${error.message}`) }
     }
-    stopSchedule = async (name:string) => {
+    stopSchedule = async (name: string) => {
         try {
             const result = await this.agenda.cancel({ name });
-            if (result) {console.log(`شغل با نام ${name} با موفقیت حذف شد.`)} 
-            else {console.log(`شغلی با نام ${name} پیدا نشد.`)}
-        } 
-        catch (error:any) {console.error(`خطا در حذف شغل: ${error.message}`)}
+            if (result) { console.log(`شغل با نام ${name} با موفقیت حذف شد.`) }
+            else { console.log(`شغلی با نام ${name} پیدا نشد.`) }
+        }
+        catch (error: any) { console.error(`خطا در حذف شغل: ${error.message}`) }
     };
     connectToMongoose = () => {
         const url: string = this.env.mongoUrl;
@@ -339,6 +330,7 @@ class AIOExpress<I_User> {
             this.log(message, color);
             this.log(result, 'yellow');
         }
+        this.log(this.AIOSchemaInstance.getApiTypes(entities), 'orange');
         for (let prop in entities) { this.addEntity(entities[prop], prop) }
     }
     fixPath = (path: string, queryString?: string) => (path[0] !== '/' ? `/${path}` : path) + (queryString || '')
@@ -372,9 +364,8 @@ class AIOExpress<I_User> {
                         if (method === 'post' && !api.body) { return this.setResult({ status: 403, success: false, message: 'missing api.body in backend app', res }) }
                         const queryParam = this.processUrl(req);
                         if (api.body) {
-                            let scm;
-                            if (typeof api.body === 'string') { scm = this.schemas[api.body] }
-                            else { scm = api.body }
+                            let scm = this.schemas[api.body];
+                            if (!scm) {console.log(`${api.body} in not defined by addSchema`)}
                             let message = this.AIOSchemaInstance.validateObjectBySchema(scm, '', req.body);
                             if (typeof message === 'string') {
                                 message = `in request body : ${message}`
@@ -421,18 +412,7 @@ class AIOExpress<I_User> {
 }
 
 export default AIOExpress;
-type I_GCRUD = {
-    getModel: I_getModel,
-    getAuthModel: () => Model<any>
-}
-type I_getRow = (p: { entityName: string | 'auth', search?: I_row, id?: any }) => Promise<null | I_row | string>
-type I_getRows = (p: { entityName: string, search?: I_row, ids?: any[] }) => Promise<I_row[] | string>
-type I_addRow = (p: { entityName: string | 'auth', newValue: I_row, session?: ClientSession }) => Promise<I_row | string>
-type I_editRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row, session?: ClientSession }) => Promise<string | I_row>
-type I_addOrEditRow = (p: { entityName: string | 'auth', id?: any, search?: I_row, newValue: I_row, session?: ClientSession }) => Promise<string | I_row>
-type I_editRows = (p: { entityName: string | 'auth', search?: I_row; ids?: any[]; newValue: I_row, session?: ClientSession }) => Promise<string | number>
-type I_removeRow = (p: { entityName: string | 'auth', search?: I_row; id?: string, session?: ClientSession }) => Promise<string | I_row>
-type I_removeRows = (p: { entityName: string | 'auth', search?: I_row; ids?: any[], session?: ClientSession }) => Promise<string | number>
+type I_GCRUD = {getModel: I_getModel,getAuthModel: () => Model<any>}
 class GCRUD {
     getModel: I_getModel;
     getAuthModel: () => Model<any>
@@ -442,40 +422,40 @@ class GCRUD {
         if (typeof row === 'object' && !Array.isArray(row) && row !== null) { row.id = row._id; }
         return row
     }
-    getRow: I_getRow = async (p) => {
+    getRow = async <T>(p:{ entityName: string | 'auth', search?: Partial<T>, id?: any }):Promise<null | I_record<T> | string> => {
         try {
             const model = await this.getModelByP(p);
-            if (p.id) { const res: I_row | null = await model.findById(p.id); return this.fixId(res) }
-            else if (p.search) { const res: I_row | null = await model.findOne(p.search); return this.fixId(res) }
+            if (p.id) { const res: I_record<T> | null = await model.findById(p.id); return this.fixId(res) }
+            else if (p.search) { const res: I_record<T> | null = await model.findOne(p.search); return this.fixId(res) }
             else { return `Error in get row: please send search object or id for search` }
         }
         catch (error: any) { return `Error in get row: ${error.message}`; }
     }
-    getRows: I_getRows = async (p) => {
+    getRows = async <T>(p:{ entityName: string, search?: Partial<T>, ids?: any[] }):Promise<I_record<T>[] | string> => {
         try {
             const model = await this.getModelByP(p);
             if (p.ids && p.ids.length > 0) { return await model.find({ _id: { $in: p.ids } }); }
             if (p.search) {
-                const res = await model.find(p.search);
-                return res.map((o: I_row) => this.fixId(o))
+                const res:I_record<T>[] = await model.find(p.search);
+                return res.map((o: (T & {id:string})) => this.fixId(o))
             }
             return [];
         }
         catch (error: any) { return `Error in getRows: ${error.message}`; }
     }
-    addRow: I_addRow = async (p) => {
+    addRow = async <T>(p:{ entityName: string | 'auth', newValue: T, session?: ClientSession }):Promise<I_record<T>  | string> => {
         try {
             let model, newRecord;
             try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
             catch (err: any) { return err.message }
             const param = p.session ? { session: p.session } : undefined
-            const res = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
-            const result = this.fixId(res)
+            const res:T = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
+            const result:I_record<T> = this.fixId(res)
             return result
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
     }
-    editRow: I_editRow = async (p) => {
+    editRow = async <T>(p:{ entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: I_row, session?: ClientSession }):Promise<string | I_record<T>> => {
         try {
             const model = await this.getModelByP(p);
             const exist = await this.getRow(p);
@@ -483,7 +463,7 @@ class GCRUD {
             if (typeof exist === 'string') { return exist }
             for (let prop in p.newValue) {
                 if (prop === 'id' || prop === '_id') { continue }
-                exist[prop] = p.newValue[prop]
+                exist[prop as keyof I_record<T>] = p.newValue[prop]
             }
             const updatedRecord = await model.findByIdAndUpdate(exist.id, exist, { new: true, session: p.session });
             if (!updatedRecord) { return 'Record not found'; }
@@ -491,15 +471,13 @@ class GCRUD {
         }
         catch (error: any) { throw new Error(`Error updating record: ${error.message}`); }
     }
-    addOrEditRow: I_addOrEditRow = async (p) => {
+    addOrEditRow = async <T>(p: { entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: T, session?: ClientSession }):Promise<string | I_record<T>> => {
         try {
             const model = await this.getModelByP(p);
-            let existingRecord;
-            if (p.id !== undefined) { existingRecord = await model.findById(p.id); }
-            else if (p.search) { existingRecord = await model.findOne(p.search); }
-            else { return 'addOrEditRow should get id our search object as parameter' }
+            let existingRecord = await this.getRow({entityName:p.entityName,search:p.search,id:p.id});
+            if(typeof existingRecord === 'string'){return existingRecord}
             if (existingRecord !== null) {
-                const updatedRecord = await model.findByIdAndUpdate(existingRecord._id, p.newValue, { new: true, session: p.session });
+                const updatedRecord = await model.findByIdAndUpdate(existingRecord.id, p.newValue as any, { new: true, session: p.session });
                 return this.fixId(updatedRecord);
             }
             else {
@@ -510,7 +488,7 @@ class GCRUD {
         }
         catch (error: any) { return `Error adding or updating record: ${error.message}` }
     }
-    editRows: I_editRows = async (p) => {
+    editRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[]; newValue: Partial<T>, session?: ClientSession }):Promise<string | number> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -522,7 +500,7 @@ class GCRUD {
         }
         catch (error: any) { throw new Error(`Error updating records: ${error.message}`); }
     }
-    removeRow: I_removeRow = async (p) => {
+    removeRow = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; id?: string, session?: ClientSession }):Promise<string | I_record<T> | null> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -530,12 +508,12 @@ class GCRUD {
             else if (p.search) { query = p.search; }
             else { return 'No criteria provided for deletion'; }
             const deletedRecord = await await model.findOneAndDelete(query, { session: p.session });
-            if (!deletedRecord) { return 'Record not found'; }
+            if (!deletedRecord) { return null; }
             return this.fixId(deletedRecord);
         }
         catch (error: any) { throw new Error(`Error deleting record: ${error.message}`); }
     }
-    removeRows: I_removeRows = async (p) => {
+    removeRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[], session?: ClientSession }):Promise<string | number> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -548,48 +526,6 @@ class GCRUD {
         catch (error: any) { throw new Error(`Error deleting records: ${error.message}`); }
     }
 }
-export function SplitNumber(price: number, count?: number, splitter?: string): string {
-    if (!price) { return '' }
-    count = count || 3;
-    splitter = splitter || ',';
-    let str = price.toString()
-    let dotIndex = str.indexOf('.');
-    if (dotIndex !== -1) {
-        str = str.slice(0, dotIndex)
-    }
-    let res = ''
-    let index = 0;
-    for (let i = str.length - 1; i >= 0; i--) {
-        res = str[i] + res;
-        if (index === count - 1) {
-            index = 0;
-            if (i > 0) { res = splitter + res; }
-        }
-        else { index++ }
-    }
-    return res
-}
-function toRadians(degree: number) {
-    return degree * (Math.PI / 180);
-}
-export function CalculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
-}
-export function GetArray(count: number, fn?: (index: number) => any) {
-    fn = fn || ((index) => index)
-    return new Array(count).fill(0).map((o, i) => { if (fn) return fn(i) })
-}
-export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
-
 export type I_schemaDefinition = { [field: string]: I_schemaDefinitionOption | string }
 export type I_schema = Schema;
 export type I_schemaType = I_schemaDefinition | string | I_schemaType[]
@@ -624,15 +560,26 @@ export class AIOSchema {
         const { dif } = this.getSchemaByRefrence(schemaDefinitionOption)
         return !!dif.of
     };
-    getSchemaType = (type: I_schemaType): I_getSchemaType => {
+    getSchemaType = (type: I_schemaType): I_getSchemaType | undefined => {
         if (type === 'string') return String;
         else if (type === 'number') return Number;
         else if (type === 'boolean') return Boolean;
+        else if (type === 'null') return;
+        else if (type === 'true') return Boolean;
+        else if (type === 'false') return Boolean;
         else if (type === 'date') return Date;
         else if (type === 'map') return Map;
-        else if (typeof type === 'string') { return this.getSchemaType(this.schemas[type] as I_schemaDefinition) }
-        else if (Array.isArray(type)) return [this.getSchemaType(type[0])] as any;
-        else return this.getSchema(type);
+        else if (typeof type === 'string') { 
+            const schema = this.schemas[type];
+            if(!schema){
+                return 
+            }
+            return this.getSchemaType(schema as I_schemaDefinition) 
+        }
+        else if (Array.isArray(type)) {
+            return [this.getSchemaType(type[0])] as any;
+        }
+        else {return this.getSchema(type)};
     }
     getSchema = (scm: I_schemaDefinition): I_schema => {
         const { dif } = this.getSchemaByRefrence(scm);
@@ -642,11 +589,17 @@ export class AIOSchema {
             Object.keys(schemaDefinition).forEach(fieldKey => {
                 let h = this.getSchemaByRefrence(schemaDefinition[fieldKey]);
                 const dif = h.dif as I_schemaDefinitionOption;
-                let mongooseSchema: any = {
-                    type: this.getSchemaType(dif.type),
-                    required: !!dif.required,
-                    unique: !!dif.unique,
-                };
+                if(!dif.type){
+                    console.error(`missing schemaDefinitionOption.type`)
+                    console.error('schemaDefinition is:',scm)
+                    console.error('field is:',fieldKey)
+                }
+                const type = this.getSchemaType(dif.type)
+                if(type === undefined){
+                    console.log(`schema.type:'${dif.type}' is not valid for mongooseSchema`)
+                    return
+                }
+                let mongooseSchema: any = {type,required: !!dif.required,unique: !!dif.unique};
                 if (dif.def !== undefined) mongooseSchema.default = dif.def;
                 if (dif.ref) mongooseSchema.ref = dif.ref;
                 if (dif.enum) mongooseSchema.enum = dif.enum;
@@ -670,7 +623,9 @@ export class AIOSchema {
             });
             return schema;
         } catch (err: any) {
-            console.error(`generate schema error by schemaDefinition =>`, schemaDefinition);
+            console.error(`generate schema error by schemaDefinition =>`, err.message);
+            console.error(`schemaDefinition is => ${schemaDefinition}`)
+            console.error(`defined schema is => ${scm}`)
             return new mongoose.Schema({}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
         }
     }
@@ -722,15 +677,18 @@ export class AIOSchema {
             }
             return this.validateObjectBySchema(sdo.type, `${key}.type`, value || {});
         }
-        if (value !== undefined && !this.isValidType(value, sdo.type as 'string' | 'number' | 'boolean' | 'date')) {
+        if (value !== undefined && !this.isValidType(value, sdo.type as 'string' | 'number' | 'boolean' | 'date' | 'false' | 'true' | 'null')) {
             return `property "${key}" is not of type ${sdo.type}, value is ${JSON.stringify(value, null, 3)}`;
         }
     }
-    isValidType = (value: any, schemaType: 'string' | 'number' | 'boolean' | 'date'): boolean => {
+    isValidType = (value: any, schemaType: 'string' | 'number' | 'boolean' | 'date' | 'false' | 'true' | 'null'): boolean => {
         switch (schemaType) {
             case 'string': return typeof value === 'string';
             case 'number': return typeof value === 'number';
             case 'boolean': return typeof value === 'boolean';
+            case 'false': return value === false;
+            case 'null': return value === null;
+            case 'true': return value === true;
             case 'date': return value instanceof Date;
             default: return true; // انواع دیگر داده‌ها (مثل any) را قبول می‌کنیم
         }
@@ -779,13 +737,17 @@ export class AIOSchema {
         res += `}`;
         return { success: true, result: res };
     }
-    simpleTypeToTS = (type: 'string' | 'number' | 'boolean' | 'date', required: boolean): { success: boolean, result: string } => {
+    simpleTypeToTS = (type: 'string' | 'number' | 'boolean' | 'date' | 'true' | 'false' | 'null', required: boolean): { success: boolean, result: string } => {
+        const getRes = (result: string) => ({ success: true, result: `${result}${required ? '' : ' | undefined'}` })
         switch (type) {
-            case 'string': return { success: true, result: 'string' + (required ? '' : ' | undefined') };
-            case 'number': return { success: true, result: 'number' + (required ? '' : ' | undefined') };
-            case 'boolean': return { success: true, result: 'boolean' + (required ? '' : ' | undefined') };
-            case 'date': return { success: true, result: 'Date' + (required ? '' : ' | undefined') };
-            default: return { success: true, result: 'any' + (required ? '' : ' | undefined') };
+            case 'string': return getRes('string');
+            case 'number': return getRes('number');
+            case 'boolean': return getRes('boolean');
+            case 'null': return getRes('null');
+            case 'true': return getRes('true');
+            case 'false': return getRes('false');
+            case 'date': return getRes('Date');
+            default: return getRes('any');
         }
     }
     schemaToTS = (scm: I_schemaDefinition | I_schemaDefinitionOption | string): { success: boolean, result: string } => {
@@ -844,7 +806,7 @@ export class AIOSchema {
             }
             return { success: true, result }
         }
-        if (['string', 'number', 'boolean', 'date'].indexOf(sdo.type) !== -1) {
+        if (['string', 'number', 'boolean', 'date', 'true', 'false','null'].indexOf(sdo.type) !== -1) {
             return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
         }
         else {
@@ -854,23 +816,15 @@ export class AIOSchema {
     bodyParamToString = (api: I_api): { success: boolean, result: string } => {
         let res: string = ''
         if (api.body) {
-            let scm;
-            if (typeof api.body === 'string') { scm = this.schemas[api.body]; }
-            else { scm = api.body }
-            const { success, result } = this.schemaToTS(scm)
-            if (!success) { return { success: false, result } }
-            res = `body:${typeof api.body === 'string' ? api.body : result}`
+            let scm = this.schemas[api.body];
+            if (!scm) { return {result:`${api.body} is not defined by addSchema`,success:false}}
+            res = `body:${api.body}`
         }
         if (api.queryString) { res += `${res ? ',' : ''}queryParam:{[key:string]:string} | string`; }
         return { success: true, result: res };
     }
     getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
-        let scm;
-        if (typeof api.successResult === 'string') { scm = this.schemas[api.successResult] }
-        else { scm = api.successResult }
-        const { success, result } = this.schemaToTS(scm);
-        if (!success) { return { success: false, result } }
-        return { success: true, result: `:Promise<${JSON.stringify(api.errorResult)} | ${typeof api.successResult === 'string' ? api.successResult : result}>` }
+        return { success: true, result: `:Promise<(${api.successResultType}) | (${api.errorResultType})>` }
     }
     getUrlString = (name: string, path: string, queryString?: string) => {
         if (!queryString) { return `const url = ${"`${this.base_url}"}${name}${path}${"`"}` }
@@ -881,7 +835,7 @@ export class AIOSchema {
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
-                const { method, errorResult, description, queryString, getResult } = api;
+                const { method, configStr, description, queryString } = api;
                 const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 const bodyParamString = this.bodyParamToString(api);
@@ -892,8 +846,8 @@ export class AIOSchema {
     ${apiName} = async (${bodyParamString.result})${returnTypeString.result}=>{
         ${this.getUrlString(name, path, queryString)}
         return await this.request({
-            url,description:"${description}",method:"${method}",errorResult:${JSON.stringify(errorResult)},
-            getResult:${getResult},${!api.body ? '' : `\n            body`}
+            url,description:"${description}",method:"${method}",${!api.body ? '' : `body,`}\n
+            ${configStr}
         })
     }
                 `
@@ -912,7 +866,31 @@ export class AIOSchema {
 export type ${prop} = ${result};
             `
         }
+        
         return { success: true, result: res }
+    }
+    getApiTypes = (entities:I_entities): string => {
+        let res: string = ''
+        res += `
+express app api types:
+
+
+        `
+        res += `
+type I_response<T> = { status: number, success: boolean, message?: string, value: T }
+            `
+        for (let name in entities) {
+            const {apis,path} = entities[name]
+            for(let api of apis){
+                let {path,successResultType,errorResultType} = api;
+                if(path[0] === '/'){path = path.slice(1,path.length)}
+                res += `
+export type API_${name}_${path} = I_response<(${successResultType}) | (${errorResultType})>;
+            `
+            }
+        }
+        
+        return res
     }
     generateUIDoc = (entities: I_entities): { success: boolean, result: string } => {
         const methodsString = this.getMethodsString(entities)
@@ -934,7 +912,7 @@ export default class APIS {
                 try{return response.response.data.message}
                 catch{return response.messge}
             },
-            getError: (response) => {
+            isSuccess: (response) => {
                 if(response.status === 401 || response.data.status === 401){p.logout()}
                 else if (response.data.success === false) { return response.data.message }
             }
@@ -957,3 +935,18 @@ ${methodsString.result}
         return { success: true, result }
     }
 }
+
+//tanzimate replica set
+//1- tavaghofe mongodb => power shel as administrator => net stop MongoDB
+//2- dar mahale path\to\mongodb\Server\7.0\bin\mongod.cfg khotoote zir ro zafe kon
+//replication:
+//replSetName: "rs0"
+//3- agar error cannot open file daryaft shod bayad 
+//rooye folder rightclick=>properties=>security=>full controll tik bezani rooye hame ye halat ha
+//4- power shell as administrator => net start MongoDB
+//5- mongod --config "C:\Program Files\MongoDB\Server\7.0\bin\mongod.cfg"
+//6- dar terminale vscode varede mohite mongosh sho => mongosh
+//7- dar mongosh => mongod --replSet "rs0"
+//8- dar mongosh => rs.initiate()
+
+
