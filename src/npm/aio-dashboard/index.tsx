@@ -118,30 +118,30 @@ const Chart: FC<I_Chart> = (props) => {
             }
         }, 100)
     }
-    function clientSizeToCanvasSize(axis: 'x' | 'y') {
-        if (axis === 'x') {
+    function clientSizeToCanvasSize(dir: 'x' | 'y') {
+        if (dir === 'x') {
             const bottom = canvas.clientToCanvas([0, 0])[1];
-            const top = canvas.clientToCanvas([0, chartSizeRef.current[axis as any === 'x' ? 'y' : 'x']])[1]
+            const top = canvas.clientToCanvas([0, chartSizeRef.current[dir as any === 'x' ? 'y' : 'x']])[1]
             return top - bottom
         }
         else {
             const left = canvas.clientToCanvas([0, 0])[0];
-            const right = canvas.clientToCanvas([chartSizeRef.current[axis as any === 'x' ? 'y' : 'x'], 0])[0]
+            const right = canvas.clientToCanvas([chartSizeRef.current[dir as any === 'x' ? 'y' : 'x'], 0])[0]
             return right - left
         }
     }
-    function getGridLines(axis: 'x' | 'y'): I_canvas_item[] {
-        const { gridLineColor = axis === 'y' ? '#ddd' : undefined } = props[`${dic[axis]}Axis`]
+    function getGridLines(dir: 'x' | 'y'): I_canvas_item[] {
+        const { gridLineColor = dir === 'y' ? '#ddd' : undefined } = props[`${dic[dir]}Axis`]
         if (!gridLineColor) { return [] }
-        const csize: number = clientSizeToCanvasSize(axis)
+        const csize: number = clientSizeToCanvasSize(dir)
         const color = 'red';
         if (!color) { return [] }
-        const d = dic[axis];
+        const d = dic[dir];
         const labels = labelDetailsRef.current[d];
         const gridLines: I_canvas_item[] = [];
         for (let i = 0; i < labels.length; i++) {
             const { offset } = labels[i];
-            if (axis === 'y') {
+            if (dir === 'y') {
                 gridLines.push({ type: 'Line', points: [[0, offset], [csize, offset]], stroke: gridLineColor })
             }
             else {
@@ -220,15 +220,16 @@ const Chart: FC<I_Chart> = (props) => {
             const p = detail.points[i];
             const step = (p.keyBarSize * detail.barCount) / (detail.barCount * 2);
             const start = p.keyOffset - (p.keyBarSize * detail.barCount / 2);
-            const offsetX = start + (step * detail.barIndex * 2)
+            const keyOffset = start + (step * detail.barIndex * 2)
             if (p.rangeDetails.length) {
                 for (let i = 0; i < p.rangeDetails.length; i++) {
                     const { offset, height, color } = p.rangeDetails[i];
-                    rectElements.push({ type: 'Rectangle', x: offsetX, y: offset, width: p.keyBarSize, height, ...{ ...p.pointStyle, fill: color } })
+                    rectElements.push({ type: 'Rectangle', x: keyOffset, y: offset, width: p.keyBarSize, height, ...{ ...p.pointStyle, fill: color } })
                 }
             }
             else {
-                rectElements.push({ type: 'Rectangle', x: offsetX, y: p.valueOffset, width: p.keyBarSize, height: p.valueBarSize, ...p.pointStyle })
+                const obj:any = { type: 'Rectangle', [props.reverse?'y':'x']: keyOffset, [props.reverse?'x':'y']: p.valueOffset, [props.reverse?'height':'width']: p.keyBarSize, [props.reverse?'width':'height']: p.valueBarSize, ...p.pointStyle }
+                rectElements.push(obj)
             }
         }
         return rectElements
@@ -258,13 +259,13 @@ const Chart: FC<I_Chart> = (props) => {
     function getArea(areaPoints: number[][], areaColor: [string, string]): I_canvas_item {
         return { type: 'Line', points: areaPoints, fill: [0, 0, 0, -chartSizeRef.current.y, ['0 ' + areaColor[0], '1 ' + areaColor[1]]] as any };
     }
-    function getLabelByCanvasPosition_axis(axis: 'x' | 'y', value: number): I_chart_label {
-        const chartSize = chartSizeRef.current[axis];
-        const Axis = props[`${dic[axis]}Axis`];
-        const d = dic[axis];
-        const { padding = axis === 'x' ? [36, 36] : [0, 0], getLabel = (v) => v } = Axis;
-        const start = dic[axis] === 'key' ? filter[0] : Axis.start
-        const end = dic[axis] === 'key' ? filter[1] : Axis.end
+    function getLabelByCanvasPosition_axis(dir: 'x' | 'y', value: number): I_chart_label {
+        const chartSize = chartSizeRef.current[dir];
+        const Axis = props[`${dic[dir]}Axis`];
+        const d = dic[dir];
+        const { padding = dir === 'x' ? [36, 36] : [0, 0], getLabel = (v) => v } = Axis;
+        const start = dic[dir] === 'key' ? filter[0] : Axis.start
+        const end = dic[dir] === 'key' ? filter[1] : Axis.end
         if (value < padding[0]) { return labelDetailsRef.current[d][start] }
         if (value > chartSize - padding[1]) { return labelDetailsRef.current[d][end] }
         const step: number = (chartSize - (padding[0] + padding[1])) / (end - start)
@@ -515,8 +516,8 @@ class ChartData {
             const filteredPoints = this.getFilteredPoints(data)
             for (let j = 0; j < filteredPoints.length; j++) {
                 const fp = filteredPoints[j];
-                const {percent:keyPercent,offset:keyOffset,text:keyText,barSize:keyBarSize} = this.getPointDetail({ d: 'key', data, value: fp[this.p.dic.x] })
-                const {percent:valuePercent,offset:valueOffset,text:valueText,barSize:valueBarSize} = this.getPointDetail({ d: 'value', data, value: fp[this.p.dic.y] })
+                const {percent:keyPercent,offset:keyOffset,text:keyText,barSize:keyBarSize} = this.getPointDetail({ d: 'key', data, value: fp.key })
+                const {percent:valuePercent,offset:valueOffset,text:valueText,barSize:valueBarSize} = this.getPointDetail({ d: 'value', data, value: fp.value })
                 const pointDetail: I_chart_point_detail = {
                     key:fp.key,value:fp.value,
                     keyPercent,valuePercent,
@@ -640,14 +641,14 @@ class ChartData {
         const props = this.p.getProps();
         const Axis = props[`${p.d}Axis`]
         const dir = this.p.dic[p.d]
-        const { padding = dir === 'x' ? [36, 36] : [0, 0] } = Axis;
+        const { padding = p.d === 'key' ? [36, 36] : [0, 0] } = Axis;
         const f = p.d === 'key'?filter:[Axis.start,Axis.end];
         const start = f[0], end = f[1];
         const percent = GetPercentByValue(start, end, p.value);
         const avilSize = this.p.getChartSize()[dir] - (padding[0] + padding[1])
         const offset = padding[0] + avilSize * percent / 100;
         let barSize = 0;
-        if (dir === 'x') {
+        if (p.d === 'key') {
             barSize = p.data && p.data.type === 'bar' ? this.getBarWidth(p.data) : 0
         }
         else {
@@ -656,13 +657,14 @@ class ChartData {
         return { percent, offset, text: Axis.getLabel(p.value), barSize }
     }
     getBarWidth = (data: I_chart_data) => {
+        const dir = this.p.dic.key
         const props = this.p.getProps()
         const { datas } = this.p.getProps()
         const Axis = props.keyAxis
         const { padding = [36, 36] } = Axis;
         const barCount = datas.filter((data) => data.type === 'bar').length
         const pointsLength = data.points.length;
-        let avilableWidth = this.p.getChartSize().x - (padding[0] + padding[1]);
+        let avilableWidth = this.p.getChartSize()[dir] - (padding[0] + padding[1]);
         const gap = avilableWidth / pointsLength / 2;
         avilableWidth -= (pointsLength - 1) * gap;
         return avilableWidth / pointsLength / barCount
