@@ -5,7 +5,8 @@ export type I_pair = {
     fa: string,
     id:string,
     topicIds?:string[],
-    score:number
+    score:number,
+    lastTime?:number
 }
 export type I_topic = {
     title: string,
@@ -13,4 +14,9 @@ export type I_topic = {
     content: ReactNode
 }
 export type I_tab = 'topics' | 'questions'
-export type I_ENCTX = {tab:I_tab,setTab:(tab:I_tab)=>void,topics:I_topic[],openTopic:(topic:I_topic)=>void}
+export type I_ENCTX = {
+    tab:I_tab,setTab:(tab:I_tab)=>void,
+    topics:I_topic[],openTopic:(topic:I_topic)=>void,
+    getPair:(id:string)=>I_pair,pairs:I_pair[],
+    getSortedPairs:()=>I_pair[]
+}

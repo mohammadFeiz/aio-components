@@ -654,31 +654,52 @@ const allPairs: I_pair[] = [
     },
     {
         "score":0,
-        "fa": "",
-        "en": "",
-        "id": "",
-        "topicIds":["so,such"]
+        "fa": "اگر باران ببارد، زمین خیس می‌شود",
+        "en": "if it rains, the ground gets wet",
+        "id": "934625678",
+        "topicIds":["Conditionals"]
     },
     {
         "score":0,
-        "fa": "",
-        "en": "",
-        "id": "",
-        "topicIds":["so,such"]
+        "fa": "اگر درس بخوانم، امتحان را قبول می‌شوم",
+        "en": "if i study, i will pass the exam",
+        "id": "863464746",
+        "topicIds":["Conditionals"]
     },
-
-    
-
-    
-
-    
-
-    // {
-    //     "score":0,
-    //     "fa": "",
-    //     "en": "",
-    //     "id": ""
-    // },
+    {
+        "score":0,
+        "fa": "اگر پول زیادی داشتم، یک خانه بزرگ می‌خریدم",
+        "en": "if i had a lot of money, i would buy a big house",
+        "id": "942473333",
+        "topicIds":["Conditionals"]
+    },
+    {
+        "score":0,
+        "fa": "اگر درس خوانده بودم، امتحان را قبول می‌شدم",
+        "en": "if i had studied, i would have passed the exam",
+        "id": "260542356",
+        "topicIds":["Conditionals"]
+    },
+    {
+        "score":0,
+        "fa": "اگر درس خوانده بودم، الان دکتر بودم",
+        "en": "if i had studied, i would be a doctor now",
+        "id": "893452543",
+        "topicIds":["Conditionals"]
+    },
+    {
+        "score":0,
+        "fa": "اگر باهوش‌تر بودم، آن مشکل را حل کرده بودم",
+        "en": "if i were smarter, i would have solved that problem",
+        "id": "754357325",
+        "topicIds":["Conditionals"]
+    },
+    {
+        "score":0,
+        "fa": "اگر اینجا بود، به پارک می‌رفتیم",
+        "en": "if she were here, we would go to the park",
+        "id": "893357357"
+    },
 
 
 ]

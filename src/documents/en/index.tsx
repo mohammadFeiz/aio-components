@@ -1,24 +1,33 @@
-import { createContext, FC, ReactNode, useContext, useState } from "react";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import './index.css';
-import { GetRandomNumber, Storage } from "../../npm/aio-utils";
+import { GetRandomNumber, SortArray, Storage } from "../../npm/aio-utils";
 import allPairs from "./pairs";
 import { I_ENCTX, I_pair, I_tab, I_topic } from "./types";
 import getAllTopics from "./getAllTopics";
-import { AITabs } from "../../npm/aio-input";
+import { AITabs, AIText } from "../../npm/aio-input";
 import AIOPopup from "../../npm/aio-popup";
-const ENCTX = createContext({} as any)
+import ENCTX from "./context";
 const EN: FC = () => {
     const [tab,setTab] = useState<I_tab>('topics')
     const [popup] = useState<AIOPopup>(new AIOPopup())
     const [storage] = useState<Storage>(new Storage('enlearning'))
     
-    const [pairs] = useState<I_pair[]>(allPairs)
+    const [pairs,setPairs] = useState<I_pair[]>(allPairs)
     const getPair = (id:string) => {
         return pairs.find((o)=>o.id === id) as I_pair
     }
+    const getSortedPairs = ()=>{
+        let sortedPairs = SortArray(pairs,[
+            {getValue:(o)=>o.lastTime || 0,inc:true},
+            {getValue:(o)=>o.score,inc:true}, 
+        ])
+        sortedPairs[0].lastTime = new Date().getTime()
+        setPairs(sortedPairs)
+        return sortedPairs
+    }
     const [topics, setTopics] = useState<I_topic[]>(getAllTopics(getPair))
     const getContext = ():I_ENCTX=>{
-        return {tab,setTab,topics,openTopic}
+        return {tab,setTab,topics,openTopic,getPair,pairs,getSortedPairs}
     }
     const openTopic = (topic:I_topic)=>{
         popup.addModal({
@@ -52,6 +61,9 @@ const Home:FC = ()=>{
         if(tab === 'topics'){
             return <TopicButtons/>
         }
+        if(tab === "questions"){
+            return <Question/>
+        }
     }
     return (
         <div className="en-home">
@@ -72,6 +84,39 @@ const TitleContent: FC<{ title: string, content: ReactNode }> = ({ title, conten
         <div className="flex-col p-24">
             <h1>{title}</h1>
             {content}
+        </div>
+    )
+}
+
+const Question:FC = ()=>{
+    const {getSortedPairs}:I_ENCTX = useContext(ENCTX);
+    const [pair,setPair] = useState<I_pair>()
+    const [en,setEn] = useState<string>('')
+    const [success,setSuccess] = useState<boolean>()
+    useEffect(()=>{
+        const sortedPairs = getSortedPairs();
+        setPair(sortedPairs[0])
+    },[])
+    if(!pair){return null}
+    const change = (value:string)=>{
+        setEn(value);
+        setSuccess(value === pair.en)
+    }
+    const getResult = ()=>{
+        if(success){return (<div className="en-result en-success">جواب صحیح است</div>)}
+        if(!en){return (<div className="en-result en-warning">جواب را وارد کنید</div>)}
+        return (<div className="en-result en-error">جواب صحیح نیست</div>)
+    }
+    return (
+        <div className="en-question">
+            <div className="en-question-en">{pair.fa}</div>
+            <div className="msf">
+                <AIText
+                    value={en}
+                    onChange={(value)=>change(value)}
+                />
+            </div>
+            {getResult()}
         </div>
     )
 }
