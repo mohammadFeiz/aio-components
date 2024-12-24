@@ -12,7 +12,7 @@ const EN: FC = () => {
     const [popup] = useState<AIOPopup>(new AIOPopup())
     const [storage] = useState<Storage>(new Storage('enlearning'))
     
-    const [pairs] = useState<I_pair[]>(storage.load('pairs',allPairs))
+    const [pairs] = useState<I_pair[]>(allPairs)
     const getPair = (id:string) => {
         return pairs.find((o)=>o.id === id) as I_pair
     }

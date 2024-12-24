@@ -37,6 +37,7 @@
     display:flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
 }
 .en-home{
     position: fixed;
@@ -46,4 +47,26 @@
     height:100%;
     display:flex;
     flex-direction: column;
+}
+.en-notice{
+    background:#ff9900;
+    color:#fff;
+    margin:6px;
+    border-radius:6px;
+    padding:12px;
+    direction: rtl;
+    font-size: 12px;
+}
+.en-strong{
+    background:rgba(0,0,0,0.2);
+    padding:0 3px;
+    border-radius:3px;
+}
+.en-table{
+    border:1px solid;
+    width: 100%;
+    border-collapse: collapse;
+}
+.en-table td{
+    padding:6px;
 }
