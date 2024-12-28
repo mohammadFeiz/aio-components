@@ -4,67 +4,72 @@ const allPairs: I_pair[] = [
     {
         "score": 0,
         "fa": "من هنوز اون فیلم رو ندیدم",
-        "en": "I havent seen that movie yet",
-        "id": "383333963"
+        "en": "i have not seen that movie yet",
+        "id": "383333963",
+        "hints":['movie','yet','not','seen','have']
     },
     {
         "score": 0,
         "fa": "من هنوز اون فیلم رو ندیده بودم",
-        "en": "I had not seen that movie yet",
+        "en": "i had not seen that movie yet",
         "id": "178574809"
     },
     {
         "score": 0,
         "fa": "من از ماه قبل تا الان هر روز این سریال رو می بینم",
-        "en": "I have been watching this series every day since last month",
+        "en": "i have been watching this series every day since last month",
         "id": "735508114"
     },
     {
         "score": 0,
         "fa": "اونقدر این فیلم ترسناک بود که من نمیدیدم",
-        "en": "The movie was so scary that I couldnt watch it",
-        "id": "268856491"
+        "en": "the movie was so scary that i couldnt watch it",
+        "id": "268856491",
+        "hints":[
+            'scary-ترسناک',
+
+        ]
     },
     {
         "score": 0,
         "fa": "تا حالا همچین فیلمی ندیده بودم",
-        "en": "I had never seen such a movie before",
+        "en": "i had never seen such a movie before",
         "id": "299265678"
     },
     {
         "score": 0,
         "fa": "فیلمی که دیدم آنچنان فیلم جذابی نبود",
-        "en": "The movie I watched wasnt that interesting",
+        "en": "the movie i watched wasnt that interesting",
         "id": "828241717"
     },
     {
         "score": 0,
         "fa": "اگر آلپاچینو توی این فیلم نبود، فیلم چندان جذابی نبود",
-        "en": "If Alpacino hadnt been in the movie, it wouldnt have been that interesting",
+        "en": "if alpacino hadnt been in the movie, it wouldnt have been that interesting",
         "id": "469641835"
     },
     {
         "score": 0,
         "fa": "من هر روز این فیلم رو می دیدم و می خندیدم",
-        "en": "I was watching this film every day and laughing",
+        "en": "i was watching this film every day and laughing",
         "id": "409295708"
     },
     {
         "score": 0,
         "fa": "وقتی من رسیدم اون رفته بود",
-        "en": "when I arrived, he had gone",
+        "en": "when i arrived, he had gone",
         "id": "797208901"
     },
     {
         "score": 0,
         "fa": "وقتی من رسیدم اون هم رسید",
-        "en": "when I arrived, he arrived too",
+        "en": "when i arrived, he arrived too",
         "id": "104948522"
     },
     {
         "score": 0,
         "fa": "درست زمانی که من داشتم میرسیدم اون رفت",
-        "en": "Just as I was arriving, he had left",
+        "en": "Just as i was arriving, he had left",
         "id": "417149609"
     },
     {
@@ -88,79 +93,79 @@ const allPairs: I_pair[] = [
     {
         "score": 0,
         "fa": "من می تونستم زود تر بیام",
-        "en": "I could have arrived earlier",
+        "en": "i could have arrived earlier",
         "id": "777326808"
     },
     {
         "score": 0,
         "fa": "من زودتر اومدم",
-        "en": "I arrived earlier",
+        "en": "i arrived earlier",
         "id": "765531995"
     },
     {
         "score": 0,
         "fa": "من زود تر میومدم",
-        "en": "I used to arrive earlier",
+        "en": "i used to arrive earlier",
         "id": "258778653"
     },
     {
         "score": 0,
         "fa": "من زود تر اومدم چون می تونستم زود تر بیام",
-        "en": "I arrived earlier because I could have arrived earlier",
+        "en": "i arrived earlier because i could have arrived earlier",
         "id": "459757073"
     },
     {
         "score": 0,
         "fa": "تونستم زود تر بیام",
-        "en": "I could arrive earlier",
+        "en": "i could arrive earlier",
         "id": "843804947"
     },
     {
         "score": 0,
         "fa": "می تونستم زود تر بیام",
-        "en": "I could have arrived earlier",
+        "en": "i could have arrived earlier",
         "id": "986840898"
     },
     {
         "score": 0,
         "fa": "می خواستم زود تر بیام",
-        "en": "I wanted to arrive earlier",
+        "en": "i wanted to arrive earlier",
         "id": "759596671"
     },
     {
         "score": 0,
         "fa": "من زود تر اومده بودم",
-        "en": "I had arrived earlier",
+        "en": "i had arrived earlier",
         "id": "212369896"
     },
     {
         "score": 0,
         "fa": "نمی خواستم اون موقع بیام",
-        "en": "I didnt want to arrive at that time",
+        "en": "i didnt want to arrive at that time",
         "id": "774786722"
     },
     {
         "score": 0,
         "fa": "اگر می تونستم هم نمی اومدم",
-        "en": "Even if I could, I wouldnt have come",
+        "en": "even if i could, i wouldnt have come",
         "id": "679498447"
     },
     {
         "score": 0,
         "fa": "آیا اگر می تونستی میومدی ؟",
-        "en": "Would you have come if you could?",
+        "en": "would you have come if you could?",
         "id": "358916138"
     },
     {
         "score": 0,
         "fa": "آیا اگر می تونستی میومدی ؟",
-        "en": "If I had known you were coming, I would have told you",
+        "en": "if i had known you were coming, i would have told you",
         "id": "874674340"
     },
     {
         "score": 0,
         "fa": "اگر من می خواستم تو الان اینجا بودی",
-        "en": "If I had wanted, you would be here now",
+        "en": "if i had wanted, you would be here now",
         "id": "777279376"
     },
     {
@@ -700,7 +705,216 @@ const allPairs: I_pair[] = [
         "en": "if she were here, we would go to the park",
         "id": "893357357"
     },
+    {
+        "score":0,
+        "fa": "این اتاق خیلی سرد است",
+        "en": "this room is too cold",
+        "id": "754436435"
+    },
+    {
+        "score":0,
+        "fa": "این اتاق به اندازه کافی گرم است",
+        "en": "this room is warm enough",
+        "id": "643568643"
+    },
+    {
+        "score":0,
+        "fa": "مگر اینکه عجله کنی قطار را از دست خواهی داد",
+        "en": "unless you hurry, you will miss the train",
+        "id": "6463456457",
+        "topicIds":["Conditional"]
+    },
+    {
+        "score":0,
+        "fa": "مگر اینکه وقت بیشتری داشته باشم، سفر نمی‌کنم",
+        "en": "unless i had more time, i wouldnt travel",
+        "id": "863633223",
+        "topicIds":["Conditional"]
+    },
+    {
+        "score":0,
+        "fa": "پسری که گیتار می‌زند برادرم است",
+        "en": "the boy who is playing the guitar is my brother",
+        "id": "642800665",
+        "topicIds":["Adjective Clauses"]
+    },
+    {
+        "score":0,
+        "fa": "معلمی که دیروز ملاقات کردی بسیار مهربان است",
+        "en": "the teacher whom you met yesterday is very kind",
+        "id": "756390876",
+        "topicIds":["Adjective Clauses"]
+    },
+    {
+        "score":0,
+        "fa": "دختری که کتابش روی میز است، دوست من است",
+        "en": "the girl whose book is on the table is my friend",
+        "id": "996664435",
+        "topicIds":["Adjective Clauses"]
+    },
+    {
+        "score":0,
+        "fa": "ماشینی که هفته پیش خریدم بسیار سریع است",
+        "en": "the car which i bought last week is very fast",
+        "id": "991212344",
+        "topicIds":["Adjective Clauses"]
+    },
+    {
+        "score":0,
+        "fa": "خانه‌ای که از آن بازدید کردیم زیبا بود",
+        "en": "the house that we visited was beautiful",
+        "id": "754334354",
+        "topicIds":["Adjective Clauses"]
+    },
+    {
+        "score":0,
+        "fa": "ماشین من در راه به محل کار خراب شد",
+        "en": "my car broke down on the way to work",
+        "id": "943434523",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "او یک موضوع مهم را در جلسه مطرح کرد",
+        "en": "he brought up an important issue during the meeting",
+        "id": "338734567",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "آن‌ها خیلی خوب با هم کنار می‌آیند",
+        "en": "they get along very well",
+        "id": "645634575",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "او از برادر کوچک‌ترش مراقبت می‌کند",
+        "en": "she looks after her younger brother",
+        "id": "499965654",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "من هیچ‌وقت از رویاهایم دست نمی‌کشم",
+        "en": "i will never give up on my dreams",
+        "id": "984523345",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "من به طور تصادفی در سوپرمارکت با دوستم ملاقات کردم",
+        "en": "i ran into my old friend at the supermarket",
+        "id": "765334346",
+        "topicIds":["Phrasal Verbs"]
+    },
+    {
+        "score":0,
+        "fa": "این یک اپلیکیشن یادگیری زبان انگلیسی است که توسط من نوشته شده است",
+        "en": "this is a learning English app written by me",
+        "id": "864632559",
+        "topicIds":["active,passive"]
+    },
+    {
+        "score":0,
+        "fa": "او در یک بانک کار می‌کند",
+        "en": "she works at a bank",
+        "id": "753456454",
+        "topicIds":["times"],
+        "hints":["a","she","bank","at","works"]
+    },
+    {
+        "score":0,
+        "fa": "او در حال کار روی یک پروژه است",
+        "en": "she is working on a project",
+        "id": "954547333",
+        "topicIds":["times"],
+        "hints":["project","she","on","is","working"]
+    },
+    {
+        "score":0,
+        "fa": "او تکالیفش را تمام کرده است",
+        "en": "she has finished her homework",
+        "id": "6265734743",
+        "topicIds":["times"],
+        "hints":["homework","she","her","finished","has"]
+    },
+    {
+        "score":0,
+        "fa": "او از سال ۲۰۱۵ اینجا کار می‌کند",
+        "en": "he has been working here since 2015",
+        "id": "7834733445",
+        "topicIds":["times"],
+        "hints":["he","here","2015","has","been"]
+    },
+    {
+        "score":0,
+        "fa": "او به پارک رفت",
+        "en": "she went to the park",
+        "id": "942653644",
+        "topicIds":["times"],
+        "hints":["park","she","to","went","the"]
+    },
+    {
+        "score":0,
+        "fa": "او در حال پختن شام بود",
+        "en": "she was cooking dinner",
+        "id": "863466343",
+        "topicIds":["times"],
+        "hints":["dinner","she","was","cooking"]
+    },
+    {
+        "score":0,
+        "fa": "او هرگز اقیانوس را قبل از تابستان گذشته ندیده بود",
+        "en": "she had never seen the ocean before last summer",
+        "id": "454743544",
+        "topicIds":["times"],
+        "hints":["ocean","summer","last","never","had"]
+    },
+    {
+        "score":0,
+        "fa": "آن‌ها به مدت ۳۰ دقیقه منتظر اتوبوس بودند",
+        "en": "they had been waiting for the bus for 30 minutes",
+        "id": "786346436",
+        "topicIds":["times"],
+        "hints":["minutes","the","for","been","had"]
+    },
+    {
+        "score":0,
+        "fa": "او ماه آینده به ایتالیا سفر خواهد کرد",
+        "en": "she will travel to italy next month",
+        "id": "485646453",
+        "topicIds":["times"],
+        "hints":["month","to","italy","travel","will"]
+    },
+    {
+        "score":0,
+        "fa": "او در حال منتظر ماندن برای تو خواهد بود",
+        "en": "she will be waiting for you",
+        "id": "7534786886",
+        "topicIds":["times"],
+        "hints":["she","you","be","waiting","will"]
+    },
+    {
+        "score":0,
+        "fa": "او تا زمانی که تو برسی، رفته خواهد بود",
+        "en": "she will have left by the time you arrive",
+        "id": "800904456",
+        "topicIds":["times"],
+        "hints":["she","arrive","left","the","by","time","have","will"]
+    },
+    {
+        "score":0,
+        "fa": "او تا آن موقع برای ساعت‌ها در حال مطالعه خواهد بود",
+        "en": "she will have been studying for hours by then",
+        "id": "2742354325",
+        "topicIds":["times"],
+        "hints":["","","","",""]
+    },
 
 
+
+
+    
 ]
 export default allPairs

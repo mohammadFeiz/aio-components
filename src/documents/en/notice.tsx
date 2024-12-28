@@ -1,5 +1,4 @@
 import { FC, ReactNode } from "react"
-import { I_pair } from "./types"
 
 const Notice: FC<{ text: ReactNode }> = ({ text }) => {
     return (

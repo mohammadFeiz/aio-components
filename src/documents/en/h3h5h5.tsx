@@ -10,7 +10,6 @@ const H3H5H5: FC<{ title: string, pairId?: string, desc?: ReactNode }> = ({ titl
         <div className="en-panel fafont">
             <div className='en-header'>{title}</div>
             <div className="en-body">
-                {!!desc && <div className="rtl">{desc}</div>}
                 <div className="flex-col">
                     {
                         pairsResult.map((pair: I_pair) => {
@@ -23,7 +22,7 @@ const H3H5H5: FC<{ title: string, pairId?: string, desc?: ReactNode }> = ({ titl
                         })
                     }
                 </div>
-
+                {!!desc && <div className="rtl">{desc}</div>}
             </div>
         </div>
     )

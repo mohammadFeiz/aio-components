@@ -1,8 +1,8 @@
 import H3H5H5 from "./h3h5h5"
 import Notice from "./notice"
-import { I_pair, I_topic } from "./types"
+import { I_topic } from "./types"
 
-const getAllTopics = (getPair: (id: string) => I_pair): I_topic[] => {
+const getAllTopics = (): I_topic[] => {
     return [
         {
             title: 'would', id: 'would',
@@ -57,15 +57,35 @@ const getAllTopics = (getPair: (id: string) => I_pair): I_topic[] => {
             )
         },
         {
-            title: 'active,passive', id: 'active,passive',
+            title: 'معلوم ، مجهول', id: 'active,passive',
             content: (
                 <>
-                    <H3H5H5 title='Active Voice' pairId='555777234' />
-                    <H3H5H5 title='Passive Voice' pairId='111209567' />
-                    <H3H5H5 title='Passive Voice' pairId='854634754' />
-                    <H3H5H5 title='Passive Voice' pairId='864368534' />
-                    <H3H5H5 title='Passive Voice' pairId='945372355' />
-                    <H3H5H5 title='Passive Voice' pairId='998345555' />
+                    <H3H5H5 title='معلوم' pairId='555777234' />
+                    <H3H5H5 title='مجهول گذشته ساده' pairId='111209567' desc={(<>
+                        <Notice
+                            text={(
+                                <ul>
+                                    <li>معادل</li>
+                                    <li>this is a learning English app written by me</li>
+                                    <li>این یک اپلیکیشن یادگیری زبان انگلیسی است که توسط من نوشته شده است</li>
+                                </ul>
+                            )}
+                        />
+                    </>)} />
+                    <H3H5H5 title='مجهول حال' pairId='854634754' desc={(<>
+                        <Notice
+                            text={(
+                                <ul>
+                                    <li>حالت معلوم این جمله</li>
+                                    <li>I am doing a big task</li>
+                                    <li>من در حال انجام یک کار بزرگ هستم</li>
+                                </ul>
+                            )}
+                        />
+                    </>)} />
+                    <H3H5H5 title='مجهول آینده' pairId='864368534' />
+                    <H3H5H5 title='مجهول گذشته ساده' pairId='945372355' />
+                    <H3H5H5 title='مجهول گذشته استمراری' pairId='998345555' />
                     <H3H5H5 title='Passive Voice' pairId='900006566' />
                     <H3H5H5 title='Passive Voice' pairId='502320990' />
                     <H3H5H5 title='Passive Voice' pairId='222323243' />
@@ -262,7 +282,7 @@ const getAllTopics = (getPair: (id: string) => I_pair): I_topic[] => {
             </>)
         },
         {
-            title: 'Conditionals', id: 'Conditionals',
+            title: 'شرطی', id: 'Conditionals',
             content: (<>
                 <H3H5H5 title='شرطی نوع صفر (If + Present Simple, Present Simple)' desc={(<>
                     <Notice
@@ -299,6 +319,145 @@ const getAllTopics = (getPair: (id: string) => I_pair): I_topic[] => {
                 <H3H5H5 title='نشان دادن تأثیر یک شرط حال روی گذشته (If + Past Simple, Would have + Past Participle)' desc={(<>
                     برای نشان دادن تأثیر یک شرط <strong className="en-strong">حال</strong> روی <strong className="en-strong">گذشته</strong>
                 </>)} pairId='754357325' />
+                <H3H5H5 title='unless' pairId='6463456457' />
+                <H3H5H5 title='unless' pairId='863633223' />
+            </>)
+        },
+        {
+            title: 'too,enough', id: 'too,enough',
+            content: (<>
+                <H3H5H5 title='too' pairId='754436435' />
+                <H3H5H5 title='enough' pairId='643568643' />
+            </>)
+        },
+        {
+            title: 'عبارات وصفی', id: 'Adjective Clauses',
+            content: (<>
+                <H3H5H5 title='Who (برای توصیف افراد (فاعل' pairId='642800665' />
+                <H3H5H5 title='Whom (برای توصیف افراد (مفعول' pairId='756390876' />
+                <H3H5H5 title='Whose برای مالکیت' pairId='996664435' />
+                <H3H5H5 title='Which برای توصیف اشیا یا حیوانات' pairId='991212344' />
+                <H3H5H5 title='That برای افراد، اشیا، یا حیوانات' pairId='754334354' />
+                <Notice
+                    text={(<>
+                        <ul>
+                            <li>اگر کلمه ربط مفعولی باشد، می‌توان آن را حذف کرد</li>
+                            <li>The book that I read was amazing. → The book I read was amazing</li>
+                        </ul>
+                    </>)}
+                />
+            </>)
+        },
+        {
+            title: 'افعال عبارتی', id: 'Phrasal Verbs',
+            content: (<>
+                <H3H5H5 title='Break down (خراب شدن، از کار افتادن)' pairId='943434523' />
+                <H3H5H5 title='Bring up (مطرح کردن، شروع کردن بحث)' pairId='338734567' />
+                <H3H5H5 title='Get along (خوب بودن با کسی، روابط خوب داشتن)' pairId='645634575' />
+                <H3H5H5 title='Look after (مراقبت کردن از)' pairId='499965654' />
+                <H3H5H5 title='Give up (تسلیم شدن، دست کشیدن از کاری)' pairId='984523345' />
+                <H3H5H5 title='Run into (به طور تصادفی دیدن یا ملاقات کردن)' pairId='765334346' />
+            </>)
+        },
+        {
+            title:'زمان ها',id:'times',
+            content:(<>
+                <H3H5H5 title='حال ساده' pairId='753456454' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان حقایق عمومی، عادات، و برنامه‌های ثابت</li>
+                            <li>Subject + base verb (برای سوم شخص مفرد: +s/es)</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='حال استمراری' pairId='954547333' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که دقیقاً در حال وقوع هستند یا در دوره زمانی نزدیک در حال انجام‌اند</li>
+                            <li>Subject + am/is/are + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='حال کامل' pairId='6265734743' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در گذشته اتفاق افتاده‌اند و اثر آن‌ها در حال حاضر باقی است</li>
+                            <li>Subject + have/has + past participle</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='حال کامل استمراری' pairId='7834733445' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در گذشته شروع شده‌اند و هنوز ادامه دارند</li>
+                            <li>Subject + have/has been + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='گذشته ساده' pairId='942653644' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در گذشته اتفاق افتاده و تمام شده‌اند</li>
+                            <li>Subject + past verb</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='گذشته استمراری' pairId='863466343' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در گذشته در حال انجام بوده‌اند</li>
+                            <li>Subject + was/were + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='گذشته کامل' pairId='454743544' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که قبل از کار دیگری در گذشته اتفاق افتاده‌اند</li>
+                            <li>Subject + had + past participle</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='گذشته کامل استمراری' pairId='786346436' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در گذشته برای مدتی ادامه داشته‌اند و قبل از یک کار دیگر تمام شده‌اند</li>
+                            <li>Subject + had been + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='آینده ساده' pairId='485646453' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان پیش‌بینی‌ها، تصمیمات لحظه‌ای، یا وعده‌ها</li>
+                            <li>Subject + will + base verb</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='آینده استمراری' pairId='7534786886' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در آینده در حال انجام خواهند بود</li>
+                            <li>Subject + will be + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='آینده کامل' pairId='800904456' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که قبل از یک زمان مشخص در آینده تمام خواهند شد</li>
+                            <li>Subject + will have + past participle</li>
+                        </ul>
+                    </>)}
+                />
+                <H3H5H5 title='آینده کامل استمراری' pairId='2742354325' 
+                    desc={(<>
+                        <ul>
+                            <li>برای بیان کارهایی که در آینده برای مدتی ادامه خواهند داشت</li>
+                            <li>Subject + will have been + verb-ing</li>
+                        </ul>
+                    </>)}
+                />
             </>)
         }
     ]

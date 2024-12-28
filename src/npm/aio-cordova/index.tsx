@@ -191,15 +191,15 @@ export class BGL {
     }
 }
 
-type I_tableColumns = { [column: string]: 'TEXT' | 'INTEGER' | 'REAL' | 'BLOB' }
-type I_tableRow = { [column: string]: any }
-type I_table = { name: string, columns: I_tableColumns, primaryKey: string }
-type I_SQL = {
+export type I_tableColumns = { [column: string]: 'TEXT' | 'INTEGER' | 'REAL' | 'BLOB' }
+export type I_tableRow = { [column: string]: any }
+export type I_table = { name: string, columns: I_tableColumns, primaryKey: string }
+export type I_SQL = {
     dbName: string,
     tables: I_table[]
     onError: (error: string) => void
 }
-interface I_sqlRows {
+export interface I_sqlRows {
     length: number;
     item(index: number): any;
 }
