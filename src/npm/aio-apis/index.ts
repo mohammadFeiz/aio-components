@@ -2,45 +2,48 @@ import Axios from 'axios';
 import AIOPopup from './../../npm/aio-popup';
 import AIOLoading from './../../npm/aio-loading';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
-type AA_onCatch = (err: any, config: AA_api) => string;
+type I_getErrorMessage = (err: any, config: AA_api) => string;
 type AA_isSuccess = (response: any, confing: AA_api) => string | true;
 type AA_cache = { name: string, time: number };
-type AA_successMessage = true | ((response:any,result:any)=>string | undefined)
-type AA_errorMessage = false | ((response:any)=>string | undefined)
+type I_getSuccessMessage = true | ((response: any, result: any) => string | undefined)
+type I_messageType = 'alert' | 'snackebar' | 'console' | 'none'
 export type AA_props = {
-    id: string, 
-    token: string, 
+    id: string,
+    token: string,
     loader?: string,
-    onCatch: AA_onCatch, 
+    getErrorMessage?: I_getErrorMessage,
+    getSuccessMessage?:I_getSuccessMessage,
     isSuccess?: AA_isSuccess,
+    getSuccessResult?: (response: any) => any,
+    getErrorResult?: (response: any) => any,
     lang: 'en' | 'fa',
-    messageTime?:number,
-    messageType?:'alert' | 'snackebar'
+    messageTime?: number,
+    errorMessageType?: I_messageType
 }
 export type AA_api = {
     description: string,
     method: AA_method,
     url: string,
-    getSuccessResult: (response: any) => any,
-    getErrorResult:(response: any) => any,
-    getSuccessMessage?:AA_successMessage,
-    getErrorMessage?:AA_errorMessage,
+    getSuccessResult?: (response: any) => any,
+    getErrorResult?: (response: any) => any,
+    getSuccessMessage?: I_getSuccessMessage,
+    errorMessageType?: I_messageType,
+    successMessageType?: I_messageType,
     body?: any,
-    onCatch?: AA_onCatch,
-    isSuccess?:AA_isSuccess,
+    getErrorMessage?: I_getErrorMessage,
+    isSuccess?: AA_isSuccess,
     cache?: AA_cache,
     loading?: boolean,
     loadingParent?: string,
-    headers?:any,
-    messageTime?:number,
-    messageType?:'alert' | 'snackebar'
+    headers?: any,
+    messageTime?: number,
 }
 type AA_alertType = 'success' | 'error' | 'warning' | 'info'
 export default class AIOApis {
-    props:AA_props;
+    props: AA_props;
     storage: Storage;
-    aioLoading:AIOLoading;
-    popup:AIOPopup;
+    aioLoading: AIOLoading;
+    popup: AIOPopup;
     constructor(props: AA_props) {
         this.props = props
         this.aioLoading = new AIOLoading(props.loader)
@@ -52,17 +55,17 @@ export default class AIOApis {
         let res = token || this.props.token;
         if (res) { Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`; }
     }
-    addAlert = (p:{ type: AA_alertType, text: string, subtext?: string, time?: number,messageType:'alert' | 'snackebar' }) => {
+    addAlert = (p: { type: AA_alertType, text: string, subtext?: string, time?: number, messageType: I_messageType }) => {
         let { type, text, subtext, time } = p;
-        const {messageType = 'alert'} = this.props;
-        if (messageType === 'alert') { this.popup.addAlert({ type, text, subtext, time,className:'aio-apis-popup',closeText:this.props.lang === 'fa'?'بستن':'Close' }) }
+        if (p.messageType === 'console') { console.log(text, subtext) }
+        else if (p.messageType === 'alert') { this.popup.addAlert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' }) }
         else { this.popup.addSnackebar({ type, text, subtext, time }) }
     }
-    renderPopup = ()=>this.popup.render()
+    renderPopup = () => this.popup.render()
     setStorage = (name: string, value: any) => this.storage.save(name, value)
-    getStorage = (name:string, def?:any) => this.storage.load(name, def);
-    removeStorage = (name:string) => this.storage.remove(name)
-    handleCacheVersions = (cacheVersions: { [key: string]: number }):{ [key: string]: boolean } => {
+    getStorage = (name: string, def?: any) => this.storage.load(name, def);
+    removeStorage = (name: string) => this.storage.remove(name)
+    handleCacheVersions = (cacheVersions: { [key: string]: number }): { [key: string]: boolean } => {
         let def: any = {};
         for (let prop in cacheVersions) { def[prop] = 0 }
         let storedCacheVersions = this.getStorage('storedCacheVersions', def);
@@ -78,53 +81,79 @@ export default class AIOApis {
         this.setStorage('storedCacheVersions', cacheVersions);
         return diffrences;
     }
-    responseToResult = async (api: AA_api):Promise<{success:boolean,result:any,response:any}> => {
+    responseToResult = async (api: AA_api): Promise<{ success: boolean, result: any, response: any }> => {
+        const { getSuccessResult = this.props.getSuccessResult,getErrorMessage = this.props.getErrorMessage } = api;
+        if (!getErrorMessage) {
+            const message = `
+                missing getErrorMessage in api: ${api.description},
+                you should set getErrorMessage in api or in props of AIOApis    
+            `
+            alert(message)
+            return { success: false, result: message, response: {} }
+        }
+        if (!getSuccessResult) {
+            const message = `
+                missing getSuccessResult in api: ${api.description},
+                you should set getSuccessResult in api or in props of AIOApis    
+            `
+            alert(message)
+            return { success: false, result: message, response: {} }
+        }
         try {
-            let response = await Axios({method:api.method,url:api.url,data:api.body,headers:api.headers})
+            let response = await Axios({ method: api.method, url: api.url, data: api.body, headers: api.headers })
             let success = (api.isSuccess as AA_isSuccess)(response, api);
-            if (typeof success === 'string') { return {success:false,result:success,response} }
-            return {success:true,result:api.getSuccessResult(response),response};
+            if (typeof success === 'string') { return { success: false, result: success, response } }
+            return { success: true, result: getSuccessResult(response), response };
         }
         catch (response: any) {
-            let message = (api.onCatch as AA_onCatch)(response,api);
-            if(!message){message = response.message}
-            return {success:false,result:message,response}
+            let message = getErrorMessage(response, api);
+            if (!message) { message = response.message }
+            return { success: false, result: message, response }
         }
     }
-    showErrorMessage = (response:any,message:string,api:AA_api) => {
-        const {getErrorMessage = ()=>message,messageTime = this.props.messageTime,messageType = this.props.messageType || 'alert'} = api;
-        if (getErrorMessage === false) { return }
+    showErrorMessage = (message: string, api: AA_api) => {
+        const { errorMessageType = this.props.errorMessageType || 'alert',messageTime = this.props.messageTime } = api;
+        if (errorMessageType === 'none') { return }
         let text: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-        let subtext = getErrorMessage(response)
-        this.addAlert({ type: 'error', text, subtext, time:messageTime,messageType});
+        let subtext = message
+        this.addAlert({ type: 'error', text, subtext, time: messageTime, messageType:errorMessageType });
     }
-    showSuccessMessage = (response:any,result:any,api:AA_api) => {
-        if (!api.getSuccessMessage) { return }
-        const {messageTime = this.props.messageTime,messageType = this.props.messageType || 'alert'} = api;
+    showSuccessMessage = (response: any, result: any, api: AA_api) => {
+        const {getSuccessMessage  = this.props.getSuccessMessage} = api;
+        if (!getSuccessMessage) { return }
+        const { messageTime = this.props.messageTime, successMessageType = 'alert' } = api;
         const text = this.props.lang === 'fa' ? `${api.description} با موفقیت انجام شد` : `${api.description} was successfull`
-        let subtext:string = api.getSuccessMessage === true?'':api.getSuccessMessage(response,result) || '';
-        this.addAlert({ type: 'success', text, subtext: subtext as string, time:messageTime,messageType });
+        let subtext: string = getSuccessMessage === true ? '' : getSuccessMessage(response, result) || '';
+        this.addAlert({ type: 'success', text, subtext: subtext as string, time: messageTime, messageType:successMessageType });
     }
-    request = async (api:AA_api):Promise<any> => {
+    request = async (api: AA_api): Promise<any> => {
         const {
-            onCatch = this.props.onCatch,
-            isSuccess = this.props.isSuccess || (()=>true),
-            loading = true
+            isSuccess = this.props.isSuccess || (() => true),
+            loading = true,
+            getErrorResult = this.props.getErrorResult
         } = api;
-        if (api.cache) { 
-            let res = this.storage.load(api.cache.name, undefined, api.cache.time); 
-            if (res !== undefined) { return res } 
+        if (api.cache) {
+            let res = this.storage.load(api.cache.name, undefined, api.cache.time);
+            if (res !== undefined) { return res }
         }
         const id: string = 'aa' + Math.round(Math.random() * 100000)
-        if(api.loading){this.aioLoading.show(id, api.loadingParent);}
-        let {success,result,response} = await this.responseToResult({...api,onCatch,isSuccess})
-        if(!success){
-            this.showErrorMessage(response,result,api);
-            return api.getErrorResult(response)
+        if (api.loading) { this.aioLoading.show(id, api.loadingParent); }
+        let { success, result, response } = await this.responseToResult({ ...api, isSuccess })
+        if (!success) {
+            if (!getErrorResult) {
+                const message = `
+                missing getErrorResult in api: ${api.description},
+                you should set getErrorResult in api or in props of AIOApis    
+            `
+                alert(message)
+                return 
+            }
+            this.showErrorMessage(result, api);
+            return getErrorResult(response)
         }
-        this.showSuccessMessage(response,result,api);
+        this.showSuccessMessage(response, result, api);
         if (api.cache) { this.storage.save(api.cache.name, result) }
-        if(loading){this.aioLoading.hide(id)}
+        if (loading) { this.aioLoading.hide(id) }
         return result;
     };
 }
@@ -237,7 +266,7 @@ class Storage {
             }
             return value;
         }
-        this.clear = () => {this.model = {}; this.time = {}; this.saveStorage(this.model, this.time)}
+        this.clear = () => { this.model = {}; this.time = {}; this.saveStorage(this.model, this.time) }
         this.getModel = () => JSON.parse(JSON.stringify(this.model))
         this.init()
     }
