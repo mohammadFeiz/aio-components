@@ -1,7 +1,6 @@
 import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import { ReactNode } from 'react';
-import AIODate from './../../npm/aio-date';
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
 export type I_point = number[]
@@ -683,6 +682,8 @@ export class Validation {
     getValidation: () => string | undefined;
     validate: () => string | undefined;
     boolKey: (key: 'more' | 'less') => string;
+    getDateArray:(str:string)=>number[];
+    compaireDates:(str1:string,str2:string)=>'less' | 'greater' | 'equal';
     boolDic: any;
     getUnit: (value: any) => string;
     constructor(props: AV_props) {
@@ -690,7 +691,6 @@ export class Validation {
         let isDate = typeof value === 'string' && value.indexOf('/') !== -1;
         this.boolDic = isDate ? { more: { en: 'after', fa: 'بعد از' }, less: { en: 'before', fa: 'قبل از' } } : { more: { en: 'more', fa: 'بیشتر' }, less: { en: 'less', fa: 'کمتر' } }
         this.boolKey = (key) => this.boolDic[key][lang]
-        let DATE = new AIODate();
         this.contain = (target, value) => {
             let result
             if (Array.isArray(value)) { result = value.indexOf(target) !== -1 }
@@ -703,12 +703,26 @@ export class Validation {
             else { result = value.indexOf(target) !== -1; }
             return { result, unit: '' }
         }
+        this.getDateArray = (date)=>{
+            const l = date.split('/');
+            return l.map((o)=>+o)
+        }   
+        this.compaireDates = (date1,date2)=>{
+            const l1 = this.getDateArray(date1);
+            const l2 = this.getDateArray(date2);
+            const length = Math.min(l1.length,l2.length)
+            for(let i = 0; i < length; i++){
+                if(l1[i] < l2[i]){return 'less'}
+                if(l1[i] > l2[i]){return 'greater'}
+            }
+            return 'equal'
+        }
         this.startBy = (target, value) => ({ result: value.indexOf(target) === 0, unit: '' })
         this.equal = (target, value) => {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
             let result, unit;
-            if (isDate) { result = DATE.isEqual(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            if (isDate) { result = this.compaireDates(value, typeof target === 'number' ? target.toString() : target) === 'equal'; unit = '' }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length === target; unit = this.getUnit(value) }
             else { result = JSON.stringify(value) === JSON.stringify(target); unit = '' }
             return { result, unit }
@@ -717,7 +731,7 @@ export class Validation {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
             let result, unit = '';
-            if (isDate) { result = DATE.isLess(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            if (isDate) { result = this.compaireDates(value, typeof target === 'number' ? target.toString() : target) === 'less'; unit = '' }
             else if (targetType === 'number' && valueType === 'number') { result = value < target; unit = '' }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length < target; unit = this.getUnit(value) }
             else { result = false; unit = ''; }
@@ -727,7 +741,7 @@ export class Validation {
             let valueType = Array.isArray(value) ? 'array' : typeof value;
             let targetType = typeof target;
             let result, unit;
-            if (isDate) { result = DATE.isGreater(value, typeof target === 'number' ? target.toString() : target); unit = '' }
+            if (isDate) { result = this.compaireDates(value, typeof target === 'number' ? target.toString() : target) === 'greater'; unit = '' }
             else if (targetType === 'number' && valueType === 'number') { result = value > target; unit = '' }
             else if ((valueType === 'array' || valueType === 'string') && targetType === 'number') { result = value.length > target; unit = this.getUnit(value) }
             else { result = false; unit = '' }
@@ -1336,4 +1350,7 @@ export function StyleObjectToString(styleObject:any) {
             return `${kebabKey}:${value}`;
         })
         .join(';');
+}
+export function Normalize(str:string){
+    return str.replace(/\u200C/g, '').normalize()
 }
