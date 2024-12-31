@@ -26,7 +26,6 @@ import DOC_AIOSchema from './documents/aio-schema';
 import DOC_AIODashboard from './documents/aio-dashboard/doc-aio-dashboard.tsx';
 import DOC_RichText from './documents/rich-text';
 import DOC_TreeSearch from './documents/tree-search';
-import EN from "./documents/en";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -51,7 +50,6 @@ export default function AIOComponents(){
     'aio-schema':DOC_AIOSchema,
     'aio-dashboard':DOC_AIODashboard,
     'richtext':DOC_RichText,
-    'EN':EN,
     'test':Test,
     'tree-search':DOC_TreeSearch
   })

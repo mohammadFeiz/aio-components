@@ -1,5 +1,12 @@
 declare var BackgroundGeolocation: any;
 declare var cordova: any;
+declare var TTS: { speak: (arg0: { text: string; locale: "fa-IR" | "en-US"; rate: number; }) => void; };
+//cordova plugin add cordova-plugin-tts@latest
+//cordova plugin add cordova-sqlite-storage
+//cordova plugin add cordova-plugin-camera
+//cordova plugin add cordova-plugin-mlkit
+
+
 export type I_location = {
     latitude: number,    // عرض جغرافیایی
     longitude: number,   // طول جغرافیایی
@@ -203,9 +210,11 @@ export interface I_sqlRows {
     length: number;
     item(index: number): any;
 }
+type I_result<T> = { success: boolean, result: string | T }
 export class SQL {
     parameter: I_SQL;
     db: any;
+    pkDic: { [tableName: string]: string } = {}
     constructor(p: I_SQL) {
         this.parameter = p;
         if (this.openDb()) { this.createTables(); }
@@ -215,43 +224,48 @@ export class SQL {
         try { this.db = window.sqlitePlugin.openDatabase({ name: this.parameter.dbName, location: 'default' }); return true }
         catch (err: any) { this.parameter.onError(`error in openDb : ${err.message}`); return false }
     }
-    private createTableQuery = (table: I_table) => {
-        let query = `CREATE TABLE IF NOT EXISTS ${table.name} (`;
-        const columnsArray = Object.keys(table.columns).map(column => {
-            return `${column} ${table.columns[column]}${column === table.primaryKey ? ' PRIMARY KEY' : ''}`;
-        });
-        query += columnsArray.join(', ') + ');';
-        return query
-    }
     private createTables = () => {
-        for (let i = 0; i < this.parameter.tables.length; i++) { this.createTable(this.parameter.tables[i]) }
-    }
-    private createTable = (table: I_table) => {
-        this.db.transaction((tx: any) => {
-            tx.executeSql(this.createTableQuery(table), [], (tx: any, res: any) => { }, (error: Error) => { this.parameter.onError(`Error creating table ${table.name}: ${error.message}`) });
-        });
-    }
-    private getQString = (columns: I_tableColumns) => Object.keys(columns).map(() => '?').join(',')
-    private getRowFn = (p: { tableName: string, searchObj: { [key: string]: string | number }, successCallback: (rows: I_sqlRows) => void, errorCallback: (err: string) => void }) => {
-        try {
-            const keys = Object.keys(p.searchObj);
-            let whereClause = keys.length ? `WHERE ${keys.map(key => `${key} = ?`).join(' AND ')}` : 'LIMIT 1';
+        for (let i = 0; i < this.parameter.tables.length; i++) {
+            const table = this.parameter.tables[i]
+            this.pkDic[table.name] = table.primaryKey;
+            let query = `CREATE TABLE IF NOT EXISTS ${table.name} (`;
+            const columnsArray = Object.keys(table.columns).map(column => {
+                return `${column} ${table.columns[column]}${column === table.primaryKey ? ' PRIMARY KEY' : ''}`;
+            });
+            query += columnsArray.join(', ') + ');';
             this.db.transaction((tx: any) => {
                 tx.executeSql(
-                    `SELECT * FROM ${p.tableName} ${whereClause}`,
-                    keys.map(key => p.searchObj[key]),
-                    (tx: any, res: any) => p.successCallback(res.rows),
-                    (error: Error) => p.errorCallback(`Error fetching row: ${error.message}`)
-                );
+                    query, [], (tx: any, res: any) => { },
+                    (error: Error) => {
+                        this.parameter.onError(`Error creating table ${table.name}: ${error.message}`)
+                    });
             });
         }
-        catch (err: any) { p.errorCallback(`AIOSql error in getRowFn => ${err.message}`) }
     }
-    private getKeyValues = (table: I_table, row: I_tableRow, type: 'insert' | 'update', caller: string): { keys: string, values: any } | string => {
+    private getQString = (columns: I_tableColumns) => Object.keys(columns).map(() => '?').join(',')
+    private getRowFn = async (tableName: string, searchObj: { [key: string]: string | number }): Promise<I_result<I_sqlRows>> => {
+        const keys = Object.keys(searchObj);
+        let whereClause = keys.length ? `WHERE ${keys.map(key => `${key} = ?`).join(' AND ')}` : 'LIMIT 1';
+        try {
+            const result = await new Promise<I_sqlRows>((resolve, reject) => {
+                this.db.transaction((tx: any) => {
+                    tx.executeSql(
+                        `SELECT * FROM ${tableName} ${whereClause}`, keys.map(key => searchObj[key]),
+                        (tx: any, res: any) => resolve(res.rows),
+                        (error: Error) => reject(`Error fetching row: ${error.message}`)
+                    );
+                });
+            });
+            return { success: true, result };
+        } catch (err: any) {
+            return { success: false, result: `AIOSql error in getRowFn: ${err.message}` }
+        }
+    }
+    private getKeyValues = (table: I_table, row: I_tableRow, type: 'insert' | 'update', caller: string): { success: boolean, result: { keys: string, values: any } | string } => {
         try {
             const columnKeys = Object.keys(table.columns);
             const rowKeys = Object.keys(row);
-            let keys = [], values = [];
+            let keys: any[] = [], values: any = [];
             for (let rowKey of rowKeys) {
                 if (columnKeys.indexOf(rowKey) === -1) { continue }
                 if (type === 'update' && rowKey === table.primaryKey) { continue }
@@ -259,193 +273,202 @@ export class SQL {
                 values.push(row[rowKey]);
             }
             const formattedKeys = type === 'update' ? keys.map(key => `${key} = ?`).join(',') : keys.join(',');
-            return { keys: formattedKeys, values };
+            return { success: true, result: { keys: formattedKeys, values } };
         }
-        catch (err: any) { return `${caller} : err.message` }
+        catch (err: any) { return { success: false, result: `${caller} : err.message` } }
     }
-    private insert = (p: { table: I_table, row: I_tableRow, successCallback: () => void, errorCallback: (error: string) => void }) => {
-        const kv = this.getKeyValues(p.table, p.row, 'insert', 'inster');
-        if (typeof kv === 'string') { p.errorCallback(kv); return }
-        const { keys, values } = kv;
-        const placeholders = this.getQString(p.table.columns);
-        this.db.transaction(
-            (tx: any) => {
-                tx.executeSql(
-                    `INSERT INTO ${p.table.name} (${keys}) VALUES (${placeholders})`, values, (tx: any, res: any) => { p.successCallback() },
-                    (error: Error) => p.errorCallback(`Error saving row to SQLite: ${error.message}`)
-                );
-            },
-            (error: Error) => p.errorCallback(`Transaction error in insert: ${error.message}`));
+    private insert = async (tableName: string, row: I_tableRow): Promise<I_result<true>> => {
+        const table = this.getTableByName(tableName);
+        if (table === undefined) { return { success: false, result: `AIOSql error => there no table by name (${tableName})` } }
+        const kv = this.getKeyValues(table, row, 'insert', 'inster');
+        if (kv.success === false) { return { success: false, result: kv.result as string } }
+        const { keys, values } = kv.result as { keys: string, values: any };
+        const placeholders = this.getQString(table.columns);
+        return new Promise((resolve, reject) => {
+            this.db.transaction(
+                (tx: any) => {
+                    tx.executeSql(
+                        `INSERT INTO ${table.name} (${keys}) VALUES (${placeholders})`, values, (tx: any, res: any) => resolve({ success: true, result: true }),
+                        (error: Error) => resolve({ success: false, result: `Error saving row to SQLite: ${error.message}` })
+                    );
+                },
+                (error: Error) => resolve({ success: false, result: `Transaction error in insert: ${error.message}` }));
+        })
     }
-    private update = (p: { table: I_table, row: I_tableRow, successCallback: () => void, errorCallback: (error: string) => void }) => {
-        const primaryKeyValue = this.getPKValue(p.table, p.row, 'update');
-        const kv = this.getKeyValues(p.table, p.row, 'update', 'update');
-        if (typeof kv === 'string') { p.errorCallback(kv); return }
-        const { keys, values } = kv;
-        this.db.transaction(
-            (tx: any) => {
-                tx.executeSql(
-                    `UPDATE ${p.table.name} SET ${keys} WHERE ${p.table.primaryKey} = ?`,
-                    [...values, primaryKeyValue], // مقدار کلید اصلی برای شرط WHERE
-                    (tx: any, res: any) => p.successCallback(),
-                    (error: Error) => p.errorCallback(`Error updating row in SQLite: ${error.message}`)
-                );
-            },
-            (error: Error) => p.errorCallback(`Transaction error in update: ${error.message}`)
-        );
+    private update = async (tableName: string, row: I_tableRow): Promise<I_result<true>> => {
+        const table = this.getTableByName(tableName);
+        if (table === undefined) { return { success: false, result: `AIOSql error => there no table by name (${tableName})` } }
+        const pk = this.getPKValue(tableName, row, 'update');
+        if (pk.success === false) { return { success: false, result: pk.result } }
+        const primaryKeyValue = pk.result;
+        const kv = this.getKeyValues(table, row, 'update', 'update');
+        if (kv.success === false) { return { success: false, result: kv.result as string } }
+        const { keys, values } = kv.result as { keys: string, values: any };
+        return new Promise((resolve, reject) => {
+            this.db.transaction(
+                (tx: any) => {
+                    tx.executeSql(
+                        `UPDATE ${table.name} SET ${keys} WHERE ${table.primaryKey} = ?`,
+                        [...values, primaryKeyValue],
+                        (tx: any, res: any) => resolve({ success: true, result: true }),
+                        (error: Error) => resolve({ success: false, result: `Error updating row in SQLite: ${error.message}` })
+                    );
+                },
+                (error: Error) => resolve({ success: false, result: `Transaction error in update: ${error.message}` })
+            );
+        })
     }
     private getTableByName = (name: string): I_table | undefined => { return this.parameter.tables.find((o: I_table) => o.name === name) }
-    private getPKValue = (table: I_table, row: I_tableRow, caller: string): ({ message?: string, primaryKeyValue?: any }) => {
+    private getPKValue = (tableName: string, row: I_tableRow, caller: string): { success: boolean, result: any } => {
+        const table = this.getTableByName(tableName);
+        if (table === undefined) { return { success: false, result: `AIOSql error => there no table by name (${tableName})` } }
         const { primaryKey } = table;
         const primaryKeyValue = row[primaryKey];
-        if (primaryKeyValue === undefined) { return { message: `AIOSql error => ${caller} missing row primary value in table(${table.name})` } }
-        return { primaryKeyValue }
+        if (primaryKeyValue === undefined) { return { success: false, result: `AIOSql error => ${caller} missing row primary value in table(${table.name})` } }
+        return { success: true, result: primaryKeyValue }
     }
-    getRow = (p: { tableName: string, searchObj: { [key: string]: string | number }, successCallback: (result: I_tableRow | null) => void, errorCallback: (error: string) => void }) => {
-        this.getRowFn({
-            ...p, successCallback: (rows: I_sqlRows) => {
-                try { if (rows.length > 0) { p.successCallback(rows.item(0)); } else { p.successCallback(null) } }
-                catch (err: any) { p.errorCallback(`Error processing result: ${err.message}`); }
-            }
-        })
+    getRow = async (tableName: string, searchObj: { [key: string]: string | number }, addObj?: I_tableRow): Promise<I_result<I_tableRow | null>> => {
+        if (addObj) {
+            const { success, result } = await this.addIfNotExist(tableName, searchObj, addObj)
+            if (success === false) { return { success, result: result as string } }
+        }
+        const obj = await this.getRowFn(tableName, searchObj);
+        if (obj.success === false) { return { success: false, result: obj.result } }
+        const rows: I_sqlRows = obj.result as I_sqlRows;
+        const result = rows.length > 0 ? rows.item(0) : null;
+        return { success: true, result }
     };
-    getRows = (p: { tableName: string, searchObj: { [key: string]: string | number }, successCallback: (result: I_tableRow[]) => void, errorCallback: (error: string) => void }) => {
-        this.getRowFn({
-            ...p, successCallback: (rows: I_sqlRows) => {
-                try {
-                    if (rows.length > 0) { const res = []; for (let i = 0; i < rows.length; i++) { res.push(rows.item(i)); } p.successCallback(res); }
-                    else { p.successCallback([]) }
-                }
-                catch (err: any) { p.errorCallback(`getRows error : ${err.message}`) }
-            }
-        })
+    getRows = async (tableName: string, searchObj: { [key: string]: string | number }): Promise<I_result<I_tableRow[]>> => {
+        const obj = await this.getRowFn(tableName, searchObj);
+        if (obj.success === false) { return { success: false, result: obj.result as string } }
+        const rows = obj.result as I_sqlRows
+        try {
+            const result: I_tableRow[] = [];
+            for (let i = 0; i < rows.length || 0; i++) { result.push(rows.item(i)); }
+            return { success: true, result }
+        }
+        catch (err: any) { return { success: false, result: `getRows error : ${err.message}` } }
     };
-    getAllRows = (p: { tableName: string, successCallback: (rows: I_sqlRows) => void, errorCallback: (err: string) => void }) => {
-        this.db.transaction(
-            (tx: any) => {
+    getAllRows = async (tableName: string): Promise<I_result<I_sqlRows>> => {
+        return new Promise((resolve, reject) => {
+            this.db.transaction(
+                (tx: any) => {
+                    tx.executeSql(
+                        `SELECT * FROM ${tableName}`, [],
+                        (tx: any, res: any) => resolve({ success: true, result: res.rows }),
+                        (error: Error) => resolve({ success: false, result: `Error fetching rows: ${error.message}` })
+                    );
+                },
+                (err: any) => resolve({ success: false, result: `AIOSql error in getAllRowsFn => ${err.message}` }));
+        })
+    }
+    addRow = async (tableName: string, row: I_tableRow): Promise<I_result<true>> => {
+        const pk = this.getPKValue(tableName, row, 'addRow');
+        if (pk.success === false) { return { success: false, result: pk.result } }
+        const primaryKeyValue = pk.result;
+        const obj = await this.getRow(tableName, { [this.pkDic[tableName]]: primaryKeyValue });
+        if (obj.success === false) { return { success: false, result: obj.result as string } }
+        if (obj.result === null) { return await this.insert(tableName, row); }
+        return { success: false, result: `Error: Duplicate primaryKey value '${primaryKeyValue}' in table '${tableName}'` }
+    };
+    private addIfNotExist = async (tableName: string, searchObj: I_tableRow, addObj: I_tableRow): Promise<I_result<true>> => {
+        const { success, result } = await this.getRow(tableName, searchObj);
+        if (!success) { return { success, result: result as string } }
+        if (result === null) {
+            const obj = await this.addRow(tableName, addObj);
+            if (!obj.success) { return { success, result: obj.result as string } }
+        }
+        return { success: true, result: true }
+    }
+    editRow = async (tableName: string, row: I_tableRow, addObj?: I_tableRow): Promise<I_result<true>> => {
+        if (addObj) {
+            const res = await this.addIfNotExist(tableName, row, addObj)
+            if (res.success === false) { return res }
+        }
+        const pk = this.getPKValue(tableName, row, 'editRow');
+        if (pk.success === false) { return { success: false, result: pk.result } }
+        const primaryKeyValue = pk.result;
+        const { success, result } = await this.getRow(tableName, { [this.pkDic[tableName]]: primaryKeyValue })
+        if (success === false) { return { success: false, result: result as string } }
+        if (result === null) { return { success: false, result: `Error: No record found with primaryKey value '${primaryKeyValue}' in table '${tableName}'` } }
+        return await this.update(tableName, row)
+    };
+    searchRows = async (tableName: string, searchFn: (row: I_tableRow) => boolean): Promise<I_result<I_tableRow[]>> => {
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx: any) => {
                 tx.executeSql(
-                    `SELECT * FROM ${p.tableName}`,  // کوئری برای انتخاب همه رکوردها
-                    [],
-                    (tx: any, res: any) => p.successCallback(res.rows),  // فراخوانی موفقیت
-                    (error: Error) => p.errorCallback(`Error fetching rows: ${error.message}`)  // فراخوانی خطا
+                    `SELECT * FROM ${tableName}`, [],
+                    (tx: any, res: any) => {
+                        const results: I_tableRow[] = [];
+                        for (let i = 0; i < res.rows.length; i++) {
+                            let row: I_tableRow;
+                            try { row = res.rows.item(i); if (searchFn(row)) { results.push(row); } }
+                            catch (err: any) { resolve({ success: false, result: err.message }) }
+                        }
+                        resolve({ success: true, result: results })
+                    },
+                    (error: Error) => resolve({ success: false, result: `Error fetching rows from SQLite: ${error.message}` })
                 );
-            },
-            (err: any) => p.errorCallback(`AIOSql error in getAllRowsFn => ${err.message}`));
-    }
-    addRow = (p: { tableName: string, row: I_tableRow, successCallback: () => void, errorCallback: (error: string) => void }) => {
-        const table = this.getTableByName(p.tableName);
-        if (table === undefined) { p.errorCallback(`AIOSql error => there no table by name (${p.tableName})`); return }
-        const { primaryKeyValue, message } = this.getPKValue(table, p.row, 'addRow');
-        if (message) { p.errorCallback(message); return }
-        this.getRow({
-            tableName: p.tableName, searchObj: { [table.primaryKey]: primaryKeyValue },
-            successCallback: (res) => {
-                if (res === null) { this.insert({ table, row: p.row, successCallback: p.successCallback, errorCallback: p.errorCallback }) }
-                else { p.errorCallback(`Error: Duplicate primaryKey value '${primaryKeyValue}' in table '${p.tableName}'`) }
-            },
-            errorCallback: p.errorCallback
+            });
         })
-    };
-    editRow = (p: { tableName: string, row: I_tableRow, successCallback: () => void, errorCallback: (error: string) => void }) => {
-        const table = this.getTableByName(p.tableName);
-        if (table === undefined) { p.errorCallback(`AIOSql error => there no table by name (${p.tableName})`); return }
-        const { primaryKeyValue, message } = this.getPKValue(table, p.row, 'addRow');
-        if (message) { p.errorCallback(message); return }
-        this.getRow({
-            tableName: p.tableName, searchObj: { [table.primaryKey]: primaryKeyValue }, errorCallback: p.errorCallback,
-            successCallback: (res) => {
-                if (res === null) { p.errorCallback(`Error: No record found with primaryKey value '${primaryKeyValue}' in table '${p.tableName}'`) }
-                else { this.update({ table, row: p.row, successCallback: p.successCallback, errorCallback: p.errorCallback }) }
-            }
-        })
-    };
-
-    addOrEditRow = (p: { tableName: string, row: I_tableRow, successCallback: () => void, errorCallback: (error: string) => void }) => {
-        const table = this.getTableByName(p.tableName);
-        if (table === undefined) { p.errorCallback(`AIOSql error => there no table by name (${p.tableName})`); return }
-        const { primaryKeyValue, message } = this.getPKValue(table, p.row, 'addRow');
-        if (message) { p.errorCallback(message); return }
-        this.db.transaction((tx: any) => {
-            tx.executeSql(
-                `SELECT * FROM ${table.name} WHERE ${table.primaryKey} = ?`,
-                [primaryKeyValue],
-                (tx: any, res: any) => {
-                    if (res.rows.length > 0) { this.editRow(p); }
-                    else { this.addRow(p); }
-                },
-                (error: Error) => p.errorCallback(`Error checking primaryKey: ${error.message}`)
-            );
-        });
-    };
-    searchRows = (p: { tableName: string, searchFn: (row: I_tableRow) => boolean, successCallback: (results: I_tableRow[]) => void, errorCallback: (error: string) => void }) => {
-        this.db.transaction((tx: any) => {
-            tx.executeSql(
-                `SELECT * FROM ${p.tableName}`,
-                [],
-                (tx: any, res: any) => {
-                    const results: I_tableRow[] = [];
-                    for (let i = 0; i < res.rows.length; i++) {
-                        let row;
-                        try { row = res.rows.item(i); if (p.searchFn(row)) { results.push(row); } }
-                        catch (err: any) { p.errorCallback(err.message); }
-                    }
-                    p.successCallback(results);
-                },
-                (error: Error) => p.errorCallback(`Error fetching rows from SQLite: ${error.message}`)
-            );
-        });
     };
 }
 declare var navigator: any;
 declare var Camera: any;
-declare var MLKit:any;
-type I_FNS = {backButton?:(e:any)=>void}
-type I_FNS_capture = (p:{
-    onSuccess:(imageData:string)=>void,
-    onError:(error:string)=>void,
-    quality:number,
-    returnType:'base64' | 'uri',
-    sourceType:'camera' | 'library'
-})=>void
-type I_FNS_ocr = (p:{
-    imageURI:string,
-    onSuccess:(text:string)=>void,
-    onError:(error:string)=>void
-})=>void
-export class FNS {
-    p?:I_FNS;
-    constructor(p?:I_FNS){
+declare var MLKit: any;
+type I_AIOCordova = {
+    backButton?: (e: any, self: AIOCordova) => void
+}
+type I_AIOCordova_capture = (p: {
+    onSuccess: (imageData: string) => void,
+    onError: (error: string) => void,
+    quality: number,
+    returnType: 'base64' | 'uri',
+    sourceType: 'camera' | 'library'
+}) => void
+type I_AIOCordova_ocr = (p: {
+    imageURI: string,
+    onSuccess: (text: string) => void,
+    onError: (error: string) => void
+}) => void
+export class AIOCordova {
+    p?: I_AIOCordova;
+    storageSql: SQL = new SQL({ dbName: 'aiocordovadb', onError: (err) => alert(err), tables: [{ name: 'aiocordovatable', primaryKey: 'id', columns: { id: 'TEXT', str: 'TEXT' } }] })
+    constructor(p?: I_AIOCordova) {
         this.p = p;
-        document.addEventListener('backbutton', (e:any)=>this.backButton(e), false);
+        document.addEventListener('backbutton', (e: any) => this.backButton(e), false);
     }
-    backButton = (e:any)=>{
-        if(this.p?.backButton){this.p.backButton(e)}
+    backButton = (e: any) => {
+        if (this.p?.backButton) {
+            e.preventDefalut();
+            this.p.backButton(e, this)
+        }
     }
-    exitApp = ()=>navigator.app.exitApp()
-    vibrate = (times:number[])=>{
-        if (typeof navigator.vibrate === 'function') {navigator.vibrate(times);} 
-        else {alert('cordova-plugin-vibration is NOT installed or available.');}
+    exitApp = () => navigator.app.exitApp()
+    vibrate = (times: number[]) => {
+        if (typeof navigator.vibrate === 'function') { navigator.vibrate(times); }
+        else { alert('cordova-plugin-vibration is NOT installed or available.'); }
     }
-    capture:I_FNS_capture = (p) => {
-        if (!navigator.camera) {alert("cordova-plugin-camera is not installed."); return; }
+    capture: I_AIOCordova_capture = (p) => {
+        if (!navigator.camera) { alert("cordova-plugin-camera is not installed."); return; }
         navigator.camera.getPicture(p.onSuccess, p.onError, {
             quality: p.quality || 50,
-            destinationType: p.returnType === 'base64'?Camera.DestinationType.DATA_URL:Camera.DestinationType.FILE_URI,
-            sourceType: p.sourceType === 'camera'?Camera.PictureSourceType.CAMERA:Camera.PictureSourceType.PHOTOLIBRARY,
+            destinationType: p.returnType === 'base64' ? Camera.DestinationType.DATA_URL : Camera.DestinationType.FILE_URI,
+            sourceType: p.sourceType === 'camera' ? Camera.PictureSourceType.CAMERA : Camera.PictureSourceType.PHOTOLIBRARY,
         });
     }
-    ocr:I_FNS_ocr = (p)=>{
+    ocr: I_AIOCordova_ocr = (p) => {
         if (MLKit && MLKit.textRecognition) {
             MLKit.textRecognition({
                 imagePath: p.imageURI
             }).then(
-                function(result:any) {p.onSuccess(result)}, 
-                function(error:string) {p.onError(`OCR Error: ${error}`)}
+                function (result: any) { p.onSuccess(result) },
+                function (error: string) { p.onError(`OCR Error: ${error}`) }
             );
-        } 
-        else {p.onError('cordova-plugin-mlkit not installed');}
+        }
+        else { p.onError('cordova-plugin-mlkit not installed'); }
     }
-    base64ToBlob = (p:{base64:string, mime:string}) => {
+    base64ToBlob = (p: { base64: string, mime: string }) => {
         const byteString = atob(p.base64.split(',')[1]);
         const ab = new ArrayBuffer(byteString.length);
         const ia = new Uint8Array(ab);
@@ -454,14 +477,14 @@ export class FNS {
         }
         return new Blob([ab], { type: p.mime });
     }
-    saveBase64ToFile = (p:{base64:string, fileName:string,onSuccess:()=>void,onError:(error:string)=>void}) => {
-        const blob = this.base64ToBlob({base64:p.base64, mime:'image/jpeg'});
+    saveBase64ToFile = (p: { base64: string, fileName: string, onSuccess: () => void, onError: (error: string) => void }) => {
+        const blob = this.base64ToBlob({ base64: p.base64, mime: 'image/jpeg' });
         //@ts-ignore
-        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(dir:any) {
-            dir.getFile(p.fileName, { create: true }, function(file:any) {
-                file.createWriter(function(fileWriter:any) {
+        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dir: any) {
+            dir.getFile(p.fileName, { create: true }, function (file: any) {
+                file.createWriter(function (fileWriter: any) {
                     fileWriter.onwriteend = () => p.onSuccess()
-                    fileWriter.onerror = (e:any) =>p.onError(`Failed to write the file: ${e.toString()}`)
+                    fileWriter.onerror = (e: any) => p.onError(`Failed to write the file: ${e.toString()}`)
                     fileWriter.write(blob);
                 });
             });
@@ -525,5 +548,23 @@ export class FNS {
                 onError(error)
             }
         );
+    }
+    speak = (text: string, lang: 'fa-IR' | 'en-US') => {
+        try {TTS.speak({text,locale: lang,rate: 1})} catch (err: any) { alert(err.message) }
+    }
+    handleStorageRes = (res:{success:boolean,result:any})=>{
+        if (res.success) {
+            try{return {success:true,result:JSON.parse(res.result.str).result}}
+            catch(err:any){return {success:false,result:err.message}}
+        }
+        else { return {success:false,result:res.result} }
+    }
+    storageLoad:(name:string,def:any)=>Promise<{success:boolean,result:any}> = async (name, def) => {
+        const res = await this.storageSql.getRow('aiocordovatable', { id: name }, { id: name, str: JSON.stringify(def) })
+        return this.handleStorageRes(res)
+    }
+    storageSave:(name:string,value:any) => Promise<{success:boolean,result:any}> = async (name,value)=>{
+        const res = await this.storageSql.editRow('aiocordovatable', { id: name }, { id: name, str: JSON.stringify(value) })
+        return this.handleStorageRes(res)
     }
 }
