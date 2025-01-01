@@ -26,6 +26,7 @@ import DOC_AIOSchema from './documents/aio-schema';
 import DOC_AIODashboard from './documents/aio-dashboard/doc-aio-dashboard.tsx';
 import DOC_RichText from './documents/rich-text';
 import DOC_TreeSearch from './documents/tree-search';
+import DOC_AIOCordova from "./documents/aio-cordova/doc-aio-cordova.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -50,6 +51,7 @@ export default function AIOComponents(){
     'aio-schema':DOC_AIOSchema,
     'aio-dashboard':DOC_AIODashboard,
     'richtext':DOC_RichText,
+    'cordova':DOC_AIOCordova,
     'test':Test,
     'tree-search':DOC_TreeSearch
   })
