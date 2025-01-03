@@ -32,11 +32,11 @@ function Basic() {
     })
     return (
         <>
-            <div className='p-12 flex-row'>
+            <div className='p-12- flex-row-'>
                 <Flip value={hour} fontSize={36} double={true}/>
-                <div className="w-16 fs-18 align-vh">:</div>
+                <div className="w-16- fs-18- align-vh-">:</div>
                 <Flip value={minute} fontSize={36} double={true}/>
-                <div className="w-16 fs-18 align-vh">:</div>
+                <div className="w-16- fs-18- align-vh-">:</div>
                 <Flip value={second} fontSize={30} double={true}/>
             </div>
             {
@@ -58,11 +58,11 @@ function Example(){
         },1000)
     })
     return (
-        <div className='p-12 flex-row'>
+        <div className='p-12 flex-row-'>
             <Flip value={hour} fontSize={36} double={true}/>
-            <div className="w-16 fs-18 align-vh">:</div>
+            <div className="w-16- fs-18- align-vh-">:</div>
             <Flip value={minute} fontSize={36} double={true}/>
-            <div className="w-16 fs-18 align-vh">:</div>
+            <div className="w-16- fs-18- align-vh-">:</div>
             <Flip value={second} fontSize={30} double={true}/>
         </div>
     )

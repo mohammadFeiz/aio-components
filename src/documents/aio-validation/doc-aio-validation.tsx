@@ -447,15 +447,15 @@ const TryIt: FC = () => {
     let { message, code,result } = getResult(model)
     return (
         <div className="example">
-            <div className="flex-row">
-                <div className="flex-row align-v gap-12">
+            <div className="flex-row-">
+                <div className="flex-row- align-v- gap-12-">
                     <AIText label='title' value={model.title} onChange={(title)=>changeModelByField('title',title)}/>
                     <AIRadio 
                         label='lang' options={['en', 'fa']} option={{ text: 'option', value: 'option' } }
                         value={model.lang} onChange={(lang)=>changeModelByField('lang',lang)} 
                     />
                 </div>
-                <div className="flex-row align-v gap-12">
+                <div className="flex-row- align-v- gap-12-">
                     <AIText label='value' value={model.value} onChange={(value)=>changeModelByField('value',value)}/>
                     <AISelect
                         label='operator' options={ops} option={{ text: 'option', value: 'option' }} 
@@ -464,12 +464,12 @@ const TryIt: FC = () => {
                     <AIText label='target' value={model.target} onChange={(target)=>changeModelByField('target',target)}/>
                 </div>
             </div>
-            <div className="flex-col gap-12">
-                <div className="flex-col p-24 brd-c-20 m-12">
+            <div className="flex-col- gap-12-">
+                <div className="flex-col- p-24- brd-c-20- m-12-">
                     <div className="">Config</div>
                     <pre>{code}</pre>
                 </div>
-                <div className="flex-col p-24 brd-c-20 m-12">
+                <div className="flex-col- p-24- brd-c-20- m-12-">
                     <div className="">Result Message</div>
                     <div style={{ color: result ? 'green' : 'red', direction: model.lang === 'fa' ? 'rtl' : 'ltr' }}>{message}</div>
                 </div>

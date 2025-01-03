@@ -1,10 +1,6 @@
 import { FC, useState } from "react"
-import AIOInput,{ AI, AIList, AISlider } from "../../npm/aio-input"
+import { AIList, AISlider } from "../../npm/aio-input"
 import Code from '../../npm/code/index';
-import RVD from './../../npm/react-virtual-dom/index.tsx';
-import { mdiMinusThick, mdiPlusThick } from "@mdi/js"
-import { Storage } from "../../npm/aio-utils/index.tsx";
-import Icon from '@mdi/react';
 import Example from "./example.tsx";
 const ListExamples:FC = ()=>{
     let [examples] = useState<any>([
@@ -29,10 +25,10 @@ function Basic() {
     }
     function renderSetting(){
         return (
-            <div className="flex-row gap-3">
-                <AISlider className='flex-1' start={24} end={72} before='size' value={model.size} onChange={(size)=>changeModel('size',size)}/>
-                <AISlider className='flex-1' start={0} end={40} before='decay' value={model.decay} onChange={(decay)=>changeModel('decay',decay)}/>
-                <AISlider className='flex-1' start={0} end={9} before='stop' value={model.stop} onChange={(stop)=>changeModel('stop',stop)}/>
+            <div className="flex-row- gap-3-">
+                <AISlider className='flex-1-' start={24} end={72} before='size' value={model.size} onChange={(size)=>changeModel('size',size)}/>
+                <AISlider className='flex-1-' start={0} end={40} before='decay' value={model.decay} onChange={(decay)=>changeModel('decay',decay)}/>
+                <AISlider className='flex-1-' start={0} end={9} before='stop' value={model.stop} onChange={(stop)=>changeModel('stop',stop)}/>
             </div>
         )
     }

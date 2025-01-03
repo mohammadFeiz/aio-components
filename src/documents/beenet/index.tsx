@@ -27,7 +27,7 @@ const BeenetDoc: FC<{goToHome:()=>void}> = ({goToHome}) => {
                 }
                 if (className === 'beenet-item-6-1') {
                     return (
-                        <button className='brd-none w-72 h-48 fs-36 bg-none c-16' onClick={()=>goToHome()}>Exit</button>
+                        <button className='brd-none w-72 h-48 fs-36- bg-none c-16' onClick={()=>goToHome()}>Exit</button>
                     )
                 }
             }}

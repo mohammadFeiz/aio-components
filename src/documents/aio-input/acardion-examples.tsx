@@ -1,7 +1,6 @@
 import { FC, useState } from "react"
 import AIOInput, { AI_option, AI_optionDetails, AIAcardion } from "../../npm/aio-input"
 import Code from '../../npm/code/index';
-import RVD from './../../npm/react-virtual-dom/index.tsx';
 import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
@@ -55,7 +54,7 @@ function Basic(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
                     subtext:()=>'this is my subtext'
                 }}
             />
@@ -98,7 +97,7 @@ function Basic(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option,details)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
+        before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
         subtext:()=>'this is my subtext'
     }}
 />`
@@ -168,7 +167,7 @@ function Vertical(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
                     style:()=>({width:200}),
                     subtext:()=>'this is my subtext',
                 }}
@@ -218,7 +217,7 @@ function Vertical(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option:any,details:any)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
+        before:(option:any,details:any)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
         subtext:()=>'this is my subtext',
     }}
 />`
@@ -268,7 +267,7 @@ function Multiple(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
                     subtext:()=>'this is my subtext',
                 }}
             />
@@ -309,7 +308,7 @@ function Multiple(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option)=><div className='align-vh fs-16 bold w-30 h-30 bg-32 br-6' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+        before:(option)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
         subtext:()=>'this is my subtext',
     }}
 />`

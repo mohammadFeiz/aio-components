@@ -1,0 +1,46 @@
+.das-card-container{
+    width:246px;
+    height:480px;
+    background:#000;
+    border-radius:12px;
+    padding:1.4rem;
+    display:flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap:0.8rem;
+    font-size:12px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+.das-card-button{
+    border:1px solid #ddd;
+    border-radius:24px;
+    height:2rem;
+    z-index: 10;
+    width:fit-content;
+    padding:0 1rem;
+    font-size:1.0rem;
+}
+.das-card-title{
+    font-size:1.2rem;
+    color:#bbb;
+    z-index: 10;
+}
+.das-card-subtitle{
+    font-size:1.2rem;
+    color:#bbb;
+    z-index: 10;
+}
+.das-card-description{
+    font-size:0.8rem;
+    opacity:0.6;
+    color:#aaa;
+    z-index: 10;
+}
+.das-card-image{
+    position: absolute;
+    left:0;
+    top:0;
+    opacity:0.7;
+}

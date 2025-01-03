@@ -783,7 +783,7 @@ const Example8: FC = () => {
     const [value, setValue] = useState<number>(12)
     return (
         <div style={{ fontFamily: 'Arial' }}>
-            <div className="p-36 bg-0">
+            <div className="p-36- bg-0-">
             <AIOInput
                 type='spinner'
                 style={{ border: 'none',background:'#000',borderRadius:0 }}
@@ -838,9 +838,9 @@ const Example8: FC = () => {
                 ]}
                 text={()=>{
                     return (
-                        <div className="flex-col relative fs-24 bold c-16 w-72 h-72 br-100 align-vh" style={{background:'radial-gradient(#333, #0c0c0c)'}}>
+                        <div className="flex-col- relative- fs-24- bold- c-16- w-72- h-72- br-100- align-vh-" style={{background:'radial-gradient(#333, #0c0c0c)'}}>
                             {value}
-                            <div className="absolute fs-12" style={{top:90}}>TREBLE</div>
+                            <div className="absolute- fs-12-" style={{top:90}}>TREBLE</div>
                         </div>
                     )
                 }}

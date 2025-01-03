@@ -66,7 +66,7 @@ export default class TreeCategories extends Component{
     child_layout(name,index){return {className:`tree-category-button`,html:name,onClick:()=>this.addLevel(index)}}
     path_layout(){
         let {path} = this.state;
-        let gap = {gap:{size:16},gapHtml:()=>this.chevron(),gapAttrs:{className:'align-vh'}}
+        let gap = {gap:{size:16},gapHtml:()=>this.chevron(),gapAttrs:{className:'align-vh-'}}
         return {className:'tree-category-row',...gap,row:path.map((o,i)=>this.pathItem_layout(o,i))}
     }
     pathItem_layout(pathItem,pathIndex){

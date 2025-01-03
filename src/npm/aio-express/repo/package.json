@@ -1,0 +1,28 @@
+{
+  "name": "aio-express",
+  "version": "3.6.0",
+  "description": "" ,
+  "main": "index.js",
+  "types":"index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohammadFeiz/aio-express.git"
+  },
+  "author": "mohammad sharif feiz feiz.ms@gmail.com",
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0",
+    "agenda": "^5.0.0"
+  }
+}

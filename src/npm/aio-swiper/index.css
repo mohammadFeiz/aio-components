@@ -1,0 +1,47 @@
+.aio-swiper-out {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.aio-swiper-in {
+    box-shadow: 1px -3px 20px 0px rgb(170 129 45 / 30%);
+    display: flex;
+    overflow: hidden;
+    border: 1px solid #222;
+    border-radius: 12px;
+    background:#111;
+}
+
+.aio-swiper-slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:#111;
+    overflow: hidden;
+    flex-shrink:0;
+}
+
+.aio-swiper-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.1;
+}
+.aio-swiper-button:hover{
+    opacity:1;
+}
+.aio-swiper-prev-button{
+    left: 10px;
+}
+.aio-swiper-next-button{
+    right: 10px;
+}

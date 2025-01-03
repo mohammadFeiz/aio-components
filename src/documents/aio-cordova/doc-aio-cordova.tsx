@@ -29,6 +29,7 @@ export default function DOC_AIOCordova(props: any) {
                     { text: 'react App.tsx', id: 'rat', render: () => <ReactAppTsx /> },
                     { text: 'Environment Variables', id: 'enva', render: () => <EnvVar /> },
                     { text: 'Cordova Plugins', id: 'cp', render: () => <CordovaPlugins /> },
+                    { text: '.gitignore', id: 'gi', render: () => <GitIgnore /> },
                 ]
             }}
         />
@@ -75,7 +76,7 @@ const RootPackageJson: FC = () => {
 const CreateCordova: FC = () => {
     return (
         <div className="example">
-            <div className="fs-16 bold">In cordova folder terminal</div>
+            <div className="fs-16- bold">In cordova folder terminal</div>
             <div className="h-60">
                 {Code(`cordova create myApp com.example.myapp MyApp`)}
             </div>
@@ -89,7 +90,7 @@ const CreateCordova: FC = () => {
 const CreateReact: FC = () => {
     return (
         <div className="example">
-            <div className="fs-16 bold">In react folder terminal</div>
+            <div className="fs-16- bold">In react folder terminal</div>
             <div className="h-60">
                 {Code(`npx create-react-app myapp --template typescript`)}
             </div>
@@ -99,7 +100,7 @@ const CreateReact: FC = () => {
 const ReactIndexHtml: FC = () => {
     return (
         <div className="example">
-            <div className="fs-16 bold">In react/public/index.html</div>
+            <div className="fs-16- bold">In react/public/index.html</div>
             <div>
                 {Code(`
 <body>
@@ -117,7 +118,7 @@ const ReactIndexHtml: FC = () => {
 const ReactAppTsx: FC = () => {
     return (
         <div className="example">
-            <div className="fs-16 bold">In react/public/index.html</div>
+            <div className="fs-16- bold">In react/public/index.html</div>
             <div className="msf">
                 {Code(`
 type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown'
@@ -183,13 +184,43 @@ const EnvVar: FC = () => {
 const CordovaPlugins: FC = () => {
     return (
         <div className="example">
-            <div className="fs-16 bold">In cordova folder terminal</div>
+            <div className="fs-16- bold">In cordova folder terminal</div>
             <div className="">
                 {Code(`
 cordova plugin add cordova-plugin-tts@latest
 cordova plugin add cordova-sqlite-storage
 cordova plugin add cordova-plugin-camera
 cordova plugin add cordova-plugin-mlkit
+                `)}
+            </div>
+        </div>
+    )
+}
+
+const GitIgnore: FC = () => {
+    return (
+        <div className="example">
+            <div className="fs-16- bold">.gitignore in root</div>
+            <div className="">
+                {Code(`
+# فایل‌های Node.js
+node_modules/
+npm-debug.log
+yarn.lock
+
+# فایل‌های React بیلد شده
+react/build/
+react/node_modules/
+
+# فایل‌های Cordova
+cordova/platforms/
+
+# سایر موارد غیرضروری
+.DS_Store
+*.log
+*.env
+.idea/
+.vscode/
                 `)}
             </div>
         </div>

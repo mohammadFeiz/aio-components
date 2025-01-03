@@ -94,7 +94,7 @@ export default class AIOJson extends Component {
   getAddButton(onClick,init){
     let {space} = this.state;
     return {
-      size:space,className:'align-vh',
+      size:space,className:'align-vh-',
       html:(
         <AIOInput 
           caret={false} type='select' className='json-builder-add' text={<Icon path={mdiPlusThick} size={0.5}/>}
@@ -113,7 +113,7 @@ export default class AIOJson extends Component {
   getRemoveButton(o,index,isRoot){
     let {variables,space} = this.state;
     return { 
-      size:space,className:'align-vh',
+      size:space,className:'align-vh-',
       html:(
         <AIOInput 
           type='button' caret={false} className='json-builder-button' text={<Icon path={mdiClose} size={0.6}/>}
@@ -128,7 +128,7 @@ export default class AIOJson extends Component {
   getCloneButton(parent,index,o){
     let {variables,space} = this.state;
     return { 
-      size:space,className:'align-vh',
+      size:space,className:'align-vh-',
       html:(
         <AIOInput 
           type='button' caret={false} className='json-builder-button' text={<Icon path={mdiContentCopy} size={0.5}/>}
@@ -143,7 +143,7 @@ export default class AIOJson extends Component {
   getToggleButton(o){
     let {_open = true} = o;
     let {space} = this.state;
-    return {size:space,className:'align-vh',html:(
+    return {size:space,className:'align-vh-',html:(
       <AIOInput 
         type='button' caret={false} className='json-builder-button'
         text={<Icon path={!_open?mdiChevronRight:mdiChevronDown} size={0.5}/>}
@@ -153,7 +153,7 @@ export default class AIOJson extends Component {
   }
   getSettingButton(){
     let {indent,height,fontSize,space} = this.state;
-    return {size:space,classNAme:'align-vh',html:(
+    return {size:space,classNAme:'align-vh-',html:(
       <AIOInput 
         type='button' caret={false} className='json-builder-button' text={<Icon path={mdiCog} size={0.5}/>} style={{padding:0}}
         popOver={()=>{
@@ -166,7 +166,7 @@ export default class AIOJson extends Component {
                     size:24,
                     row:[
                       {size:12},
-                      {size:60,html:'Indent',className:'align-v'},
+                      {size:60,html:'Indent',className:'align-v-'},
                       {
                         size:160,
                         html:(
@@ -178,14 +178,14 @@ export default class AIOJson extends Component {
                           />
                         )
                       },
-                      {size:48,html:indent,classNAme:'align-vh'}
+                      {size:48,html:indent,classNAme:'align-vh-'}
                     ]
                   },
                   {
                     size:24,
                     row:[
                       {size:12},
-                      {size:60,html:'Height',className:'align-v'},
+                      {size:60,html:'Height',className:'align-v-'},
                       {
                         size:160,
                         html:(
@@ -197,14 +197,14 @@ export default class AIOJson extends Component {
                           />
                         )
                       },
-                      {size:48,html:height,classNAme:'align-vh'}
+                      {size:48,html:height,classNAme:'align-vh-'}
                     ]
                   },
                   {
                     size:24,
                     row:[
                       {size:12},
-                      {size:60,html:'FontSize',className:'align-v'},
+                      {size:60,html:'FontSize',className:'align-v-'},
                       {
                         size:160,
                         html:(
@@ -213,7 +213,7 @@ export default class AIOJson extends Component {
                           />
                         )
                       },
-                      {size:48,html:fontSize,className:'align-vh'}
+                      {size:48,html:fontSize,className:'align-vh-'}
                     ]
                   }
                 ]
@@ -241,7 +241,7 @@ export default class AIOJson extends Component {
     let color = type === 'text'?textColor:numberColor;
     return {
       attrs:{style:{borderBottom:`1px solid ${border}`}},size:height,
-      childsProps:{className:'align-v'},
+      childsProps:{className:'align-v-'},
       row:[
         this.getSpace(),
         {size:level * indent},
@@ -264,7 +264,7 @@ export default class AIOJson extends Component {
     let {name,value} = o,{variables,indent,height,variableColor,booleanColor,border} = this.state;
     return {
       attrs:{style:{borderBottom:`1px solid ${border}`,padding:0}},size:height,
-      childsProps:{classNAme:'align-v'},
+      childsProps:{classNAme:'align-v-'},
       row:[
         this.getSpace(),
         {size:level * indent},
@@ -289,7 +289,7 @@ export default class AIOJson extends Component {
     column.push(
       {
         attrs:{style:{borderBottom:`1px solid ${border}`}},size:height,
-        childsProps:{className:'align-v'},
+        childsProps:{className:'align-v-'},
         row:[
           level === 0?this.getSettingButton():this.getToggleButton(o),
           {size:level * indent},
@@ -306,7 +306,7 @@ export default class AIOJson extends Component {
     if(_open){for(let i = 0; i < value.length; i++){column.push(this.getColumn(value[i],level + 1,i,value))}}
     column.push({
       attrs:{style:{borderBottom:`1px solid ${border}`}},size:height,
-      childsProps:{className:'align-v'},
+      childsProps:{className:'align-v-'},
       row:[
         this.getSpace(),
         {size:level * indent},
@@ -344,7 +344,7 @@ export default class AIOJson extends Component {
     let {onSubmit,onClose} = this.props;
     if(_open){column.push(this.getColumn({type:'object',value:variables},0,0,variables))}
     return {
-      size:36,className:'json-builder-header align-v',
+      size:36,className:'json-builder-header align-v-',
       row:[
         {
           flex:1,html:(
@@ -368,7 +368,7 @@ export default class AIOJson extends Component {
         },
         {
           show:onClose !== undefined,size:48,
-          className:'align-vh',html:<button className='json-builder-close' onClick={()=>this.onClose()}>
+          className:'align-vh-',html:<button className='json-builder-close' onClick={()=>this.onClose()}>
             <Icon path={mdiClose} size={1.5}/>
           </button>
         },
@@ -411,9 +411,9 @@ export default class AIOJson extends Component {
             this.getHeader(mode),
             {
               flex:1,show:mode === 'builder',attrs:{style:{padding:12}},
-              html:<RVD rootNode={{style:{fontSize},className:'ofy-auto',column}}/>
+              html:<RVD rootNode={{style:{fontSize},className:'ofy-auto-',column}}/>
             },
-            {show:mode === 'preview',flex:1,className:'ofy-auto',html:<pre>{generated}</pre>,style:{padding:12}}
+            {show:mode === 'preview',flex:1,className:'ofy-auto-',html:<pre>{generated}</pre>,style:{padding:12}}
           ]
         }}
       />

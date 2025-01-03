@@ -4392,7 +4392,7 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDay
         </div>
     )
 }
-type I_richTextItem = { tag: string, items?: I_richTextItem[],html?:ReactNode, attrs?: any,align?:'align-v-' | 'align-h-' | 'align-vh-',w?:string,h?:string,flex?:number }
+type I_richTextItem = { tag: string, items?: I_richTextItem[], html?: ReactNode, attrs?: any, align?: 'align-v-' | 'align-h-' | 'align-vh-', w?: string, h?: string, flex?: number }
 export const RichText: FC = () => {
     const [popup] = useState<AIOPopup>(new AIOPopup())
     const nestedIndexRef = useRef<number[]>([])
@@ -4408,34 +4408,34 @@ export const RichText: FC = () => {
             }
         ]
     }
-    function inter(e:any){
+    function inter(e: any) {
         $('.rich-text-item').removeClass('rich-text-item-hover')
         const target = $(e.target)
         target.addClass('rich-text-item-hover');
         const index = target.attr('data-index')
-        const nestedIndex = index?index.split('-'):[]
+        const nestedIndex = index ? index.split('-') : []
         nestedIndexRef.current = nestedIndex
     }
-    function itemToHtml(item: I_richTextItem,nestedIndex:number[]): ReactNode {
+    function itemToHtml(item: I_richTextItem, nestedIndex: number[]): ReactNode {
         const Tag = item.tag as any;
-        const content = item.html !== undefined?item.html:(item.items || []).map((h,i) => itemToHtml(h,[...nestedIndex,i]))
-        const attrs = AddToAttrs(item.attrs,{className:'rich-text-item',attrs:{'data-index':nestedIndex.join('-')}})
-        return (<Tag {...attrs} onMouseOver={(e:any)=>inter(e)} onClick={(e:any)=>{openModal(nestedIndex)}}>{content}</Tag>)
+        const content = item.html !== undefined ? item.html : (item.items || []).map((h, i) => itemToHtml(h, [...nestedIndex, i]))
+        const attrs = AddToAttrs(item.attrs, { className: 'rich-text-item', attrs: { 'data-index': nestedIndex.join('-') } })
+        return (<Tag {...attrs} onMouseOver={(e: any) => inter(e)} onClick={(e: any) => { openModal(nestedIndex) }}>{content}</Tag>)
     }
-    function getItemByNestedIndex(){
-        let res:any = items;
-        for(let i = 0; i < nestedIndexRef.current.length; i++){
+    function getItemByNestedIndex() {
+        let res: any = items;
+        for (let i = 0; i < nestedIndexRef.current.length; i++) {
             const index = nestedIndexRef.current[i]
             res = res.items[index]
         }
         return res
     }
-    function openModal(nestedIndex:number[]){
-        if(nestedIndex.toString() !== nestedIndexRef.current.toString()){return }
+    function openModal(nestedIndex: number[]) {
+        if (nestedIndex.toString() !== nestedIndexRef.current.toString()) { return }
         const item = getItemByNestedIndex()
         popup.addModal({
-            position:'center',
-            body:()=>{
+            position: 'center',
+            body: () => {
                 return (
                     <div className="rich-text-options">
                         <div className="rich-text-option-title">{item.tag}</div>
@@ -4452,35 +4452,79 @@ export const RichText: FC = () => {
         <div className="msf">
             <div className="msf"></div>
             <div className="msf">
-                {itemToHtml(items,[])}
+                {itemToHtml(items, [])}
             </div>
-            <RichModal item={items}/>
+            <RichModal item={items} />
             {popup.render()}
         </div>
     )
 }
 
-const RichModal:FC<{item:I_richTextItem}> = (props)=>{
-    const [item,setItem] = useState<I_richTextItem>(props.item)
+const RichModal: FC<{ item: I_richTextItem }> = (props) => {
+    const [item, setItem] = useState<I_richTextItem>(props.item)
     return (
         <div className="rich-text-options">
             <div className="rich-text-option-title">{item.tag}</div>
             <AIButtons
                 label='Align' justify={true}
-                style={{border:'1px solid #ddd'}}
+                style={{ border: '1px solid #ddd' }}
                 options={[
-                    {text:'none',value:undefined,},
-                    {text:'v',value:'align-v-'},
-                    {text:'h',value:'align-h-'},
-                    {text:'vh',value:'align-vh-'}
+                    { text: 'none', value: undefined, },
+                    { text: 'v', value: 'align-v-' },
+                    { text: 'h', value: 'align-h-' },
+                    { text: 'vh', value: 'align-vh-' }
                 ]}
                 option={{
-                    text:'none'
+                    text: 'none'
                 }}
                 value={item.align}
-                onChange={(align)=>setItem({...item,align})}
+                onChange={(align) => setItem({ ...item, align })}
             />
-            
+
+        </div>
+    )
+}
+
+type AI_FormItem = {
+    label?: string,
+    input: ReactNode,
+    action?: { text: ReactNode, fn?: () => void },
+    error?: () => string | undefined | void
+}
+export const FormItem: FC<AI_FormItem> = ({ label, input, action, error = () => '' }) => {
+    const Error = error()
+    const hasHeader = !!label || !!action
+    return (
+        <div className="ai-form-item">
+            {
+                hasHeader === true &&
+                <div className="ai-form-item-header">
+                    {!!label && <div className="ai-form-item-label">{label}</div>}
+                    {!!action && <div className="ai-form-item-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
+                </div>
+            }
+            <div className="ai-form-item-body">{input}</div>
+            {!!Error && <div className="ai-form-item-error">{Error}</div>}
+        </div>
+    )
+}
+type AI_FormContainer = { body: ReactNode, buttons?: { text: ReactNode, active?: boolean, disabled?: boolean, onClick: () => void }[] }
+export const FormContainer: FC<AI_FormContainer> = (props) => {
+    const { body, buttons = [] } = props;
+    return (
+        <div className="ai-form-container">
+            <div className="ai-form-container-body">{body}</div>
+            {
+                !!buttons.length &&
+                <div className="ai-form-container-footer">
+                    {buttons.map((o) => {
+                        const { text, disabled, onClick, active } = o;
+                        return (
+                            <button disabled={disabled} className={`ai-form-container-button${active ? ' active' : ''}`} onClick={onClick}>{text}</button>
+                        )
+                    })}
+                </div>
+            }
         </div>
     )
 }

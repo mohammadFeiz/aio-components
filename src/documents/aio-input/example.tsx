@@ -39,15 +39,15 @@ const Example:FC<{ type: AI_type,examples:[string,()=>ReactNode,boolean?][] }> =
     function setting_node() {
         let btnstyle = { background: 'none', border: 'none' }
         return (
-            <div className="p-12">
-                <div className="flex-row">
-                    <div className="flex-1"></div>
+            <div className="p-12-">
+                <div className="flex-row-">
+                    <div className="flex-1-"></div>
                     <AICheckbox text='Show Code' value={!!setting.showCode} onChange={(showCode)=>setSetting(showCode,'showCode')}/>
                     <AISelect
                         options={titles} before='Show' option={{text: 'option',value: 'option'}}
-                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit"
+                        value={setting.show} onChange={(show)=>setSetting(show,'show')} className="w-fit-"
                     />
-                    <div className="flex-row align-v">
+                    <div className="flex-row- align-v-">
                         <button type='button' style={btnstyle} onClick={()=>changeShow(-1)}><Icon path={mdiMinusThick} size={1}/></button>
                         <button type='button' style={btnstyle} onClick={()=>changeShow(1)}><Icon path={mdiPlusThick} size={1}/></button>
                     </div>
@@ -57,14 +57,14 @@ const Example:FC<{ type: AI_type,examples:[string,()=>ReactNode,boolean?][] }> =
     }
     function render_node():ReactNode {
         return (
-            <div key={JSON.stringify(setting)} className="flex-col ofy-auto flex-1 p-12">
+            <div key={JSON.stringify(setting)} className="flex-col- ofy-auto- flex-1- p-12-">
                 {
                     examples.map((o: any, i: number):ReactNode => {
                         let [title, COMP, cond, description] = o;
                         if (cond === false) { return null }
                         if (setting.show !== 'all' && setting.show !== title) { return null }
                         return (
-                            <div className='w-100' style={{ fontFamily: 'Arial' }}>
+                            <div className='w-100-' style={{ fontFamily: 'Arial' }}>
                                 <h3>{`${i} - ${title}`}</h3>
                                 {description && <h5>{description}</h5>}
                                 {COMP()}
@@ -82,7 +82,7 @@ const Example:FC<{ type: AI_type,examples:[string,()=>ReactNode,boolean?][] }> =
     function getContext():I_ExampleContext {return { setting, type, code }}
     return (
         <ExampleContext.Provider value={getContext()}>
-            <div className="flex-col h-100">{setting_node()} {render_node()}</div>
+            <div className="flex-col- h-100-">{setting_node()} {render_node()}</div>
         </ExampleContext.Provider>
     )
 }

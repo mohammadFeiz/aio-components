@@ -530,7 +530,7 @@ const PieGenerator: FC = () => {
         size: 120,
     })
     return (
-        <div className='p-24'>
+        <div className='p-24-'>
             <div className="msf">
                 <AISlider
                     label='thickness' start={1} end={150} value={config.thickness} onChange={(thickness)=>setConfig({...config,thickness})}

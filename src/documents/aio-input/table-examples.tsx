@@ -1,9 +1,6 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react"
 import AIOInput,{ AI, AI_table_column, AI_table_paging, AITYPE } from "../../npm/aio-input"
-import Code from '../../npm/code/index';
-import RVD from './../../npm/react-virtual-dom/index.tsx';
 import { mdiFile, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
-import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
 import model from './table-model.js';
 import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
@@ -996,12 +993,11 @@ return (
 function Card(p:any){
     let {row} = p;
     return (
-        <RVD
-            rootNode={{
-                style:{width:'50%',maxWidth:160,minWidth:120,border:'1px solid #ddd',height:240,padding:12},
-                column:[{html:row.name},{html:row.gender},{html:row.age,className:'align-vh fs-24 flex-1'}]
-            }}
-        />
+        <div className="flex-col-" style={{width:'50%',maxWidth:160,minWidth:120,border:'1px solid #ddd',height:240,padding:12}}>
+            <div className="msf">{row.name}</div>
+            <div className="msf">{row.gender}</div>
+            <div className="align-vh- fs-24- flex-1-">{row.age}</div>
+        </div>
     )
 }
 function RowAfter() {

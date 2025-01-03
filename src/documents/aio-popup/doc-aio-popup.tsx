@@ -6,7 +6,6 @@ import AIOPopup, { AP_modal, AP_snackebar, Snackebar } from '../../npm/aio-popup
 import content from './content.js';
 import { Icon } from '@mdi/react';
 import { mdiAttachment, mdiContentSave } from '@mdi/js';
-import RVD from '../../npm/react-virtual-dom/index.tsx';
 import $ from 'jquery';
 import './index.css';
 import './../../npm/aio-popup/alert2.css';
@@ -513,7 +512,7 @@ function AddModal() {
         <RVD
             rootNode={{
                 row: [
-                    { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
+                    { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v- flex-1- ofy-auto-' },
                     {
                         gap: { size: 6 },
                         column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
@@ -534,17 +533,13 @@ function AddModal() {
                     props: {
                         position: 'top',
                         body: ({ close }) => (
-                            <RVD
-                                rootNode={{
-                                    row: [
-                                        { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v flex-1 ofy-auto' },
-                                        {
-                                            gap: { size: 6 },
-                                            column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
-                                        }
-                                    ]
-                                }}
-                            />
+                            <div className="flex-row-">
+                                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                                <div className="gap-6-">
+                                    <button className='btn-123'>Approve</button>
+                                    <button className='btn-123' onClick={close}>Close</button>
+                                </div>
+                            </div>
                         ),
                         setAttrs: (key) => {
                             if (key === 'backdrop') {
@@ -689,60 +684,37 @@ instance.addModal({
 function Popup1(props: any) {
     let { close } = props || {};
     return (
-        <RVD
-            rootNode={{
-                row: [
-                    {
-                        style: { maxHeight: 400, overflowY: 'auto' },
-                        html: 'my sample text in modal',
-                        className: 'align-v flex-1'
-                    },
-                    {
-                        gap: { size: 6 },
-                        column: [
-                            { html: (<button className='btn-123'>Approve</button>) },
-                            { html: (<button className='btn-123' onClick={close}>Close</button>) }
-                        ]
-                    }
-                ]
-            }}
-        />
+        <div className="flex-row-">
+            <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+            <div className="gap-6-">
+                <button className='btn-123'>Approve</button>
+                <button className='btn-123' onClick={close}>Close</button>
+            </div>
+        </div>
     )
 }
 function ModalPosition() {
     let [popup] = useState(new AIOPopup())
     function v_layout(close: () => void) {
         return (
-            <RVD
-                rootNode={{
-                    row: [
-                        { style: { maxHeight: 400, overflowY: 'auto' }, html: 'my sample text in modal', className: 'align-v flex-1' },
-                        { gap: { size: 6 }, column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }] }
-                    ]
-                }}
-            />
+            <div className="flex-row-">
+                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                <div className="gap-6-">
+                    <button className='btn-123'>Approve</button>
+                    <button className='btn-123' onClick={close}>Close</button>
+                </div>
+            </div>
         )
     }
     function h_layout(close: () => void) {
         return (
-            <RVD
-                rootNode={{
-                    style: { height: '100%' },
-                    column: [
-                        {
-                            flex: 1, className: 'ofy-auto',
-                            html: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet? Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit soluta magnam, iure nobis pariatur dignissimos provident dicta ipsum perferendis! Sunt ea illum numquam cumque, eaque inventore dolore amet?'
-                        },
-                        {
-                            gap: { size: 6 },
-                            row: [
-                                { html: (<button className='btn-123 w-100'>Approve</button>), className: 'align-vh flex-1' },
-                                { html: (<button className='btn-123 w-100' onClick={close}>Close</button>), className: 'align-vh flex-1' }
-                            ]
-                        }
-                    ]
-                }}
-            />
+            <div className="flex-row-">
+                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                <div className="gap-6-">
+                    <button className='btn-123'>Approve</button>
+                    <button className='btn-123' onClick={close}>Close</button>
+                </div>
+            </div>
         )
     }
     function openModal(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
@@ -1485,16 +1457,13 @@ function Popover() {
     let [popup] = useState(new AIOPopup())
     function v_layout(close?: any) {
         return (
-            <RVD
-                rootNode={{
-                    className: 'p-6',
-                    row: [
-                        { style: { maxHeight: 400, overflowY: 'auto' }, html: 'my sample text in modal', className: 'align-v flex-1' },
-                        { size: 12 },
-                        { gap: { size: 6 }, column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }] }
-                    ]
-                }}
-            />
+            <div className="flex-row-">
+                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                <div className="gap-6-">
+                    <button className='btn-123'>Approve</button>
+                    <button className='btn-123' onClick={close}>Close</button>
+                </div>
+            </div>
         )
     }
     function addPopover() {
@@ -1845,7 +1814,7 @@ function TestFocus() {
     return (
         <div className='example'>
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => start(0)}>start</button>
-            <div className='ofy-auto w-100'>
+            <div className='ofy-auto- w-100-'>
                 {
                     new Array(12).fill(0).map((o, i) => {
                         return (
@@ -1877,8 +1846,8 @@ function Theme1() {
                     },
                     body: () => {
                         return (
-                            <div className='h-300 p-12' style={{ width: 320 }}>
-                                <div className="flex-row gap-6">
+                            <div className='h-300- p-12-' style={{ width: 320 }}>
+                                <div className="flex-row- gap-6-">
                                     <button className='active'>My Active Button</button>
                                     <button>My Button</button>
                                 </div>
@@ -1903,13 +1872,13 @@ const SnackebarToBody: FC = () => {
     return (
         <>
             <div className="msf">
-                <button onClick={()=>addRef.current({type:'error',text:'my text',subtext:'my subtext'})}>Add Snackebar</button>
+                <button onClick={() => addRef.current({ type: 'error', text: 'my text', subtext: 'my subtext' })}>Add Snackebar</button>
             </div>
             {ReactDOM.createPortal(<Snackebar
                 getActions={({ add }) => addRef.current = add}
                 rtl={false}
             />, document.body)}
-            
+
         </>
     )
 }

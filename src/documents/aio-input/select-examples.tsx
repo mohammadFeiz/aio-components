@@ -2,8 +2,6 @@ import { createContext, FC, ReactNode, useContext, useRef, useState } from "reac
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput, { AI, AI_type, AITYPE } from "../../npm/aio-input";
-import Code from '../../npm/code';
-import { Storage } from "../../npm/aio-utils";
 import Example, { ExampleContext, I_ExampleContext } from "./example";
 
 const textOptions = [

@@ -2,8 +2,6 @@ import { FC, ReactNode, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
 import Code from '../../npm/code/index';
 import { AISelect, AITabs, AIMap } from '../../npm/aio-input';
-import { Map } from 'leaflet';
-import { animate } from '../../npm/react-virtual-dom/index.tsx';
 type I_show_item = 'preview' | 'code' | 'both'
 type I_Map = React.ComponentProps<typeof AIMap>;
 const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {
@@ -174,18 +172,18 @@ const Marker: FC = () => {
                 'html': {
                     preview: {
                         marker: (
-                            <div className='flex-col fd-column align-h w-24'>
-                                <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                                <div className='w-2 h-16 bg-0'></div>
+                            <div className='flex-col- align-h- w-24-'>
+                                <div className='w-10- h-10- br-100-' style={{ background: '#4AA45D' }}></div>
+                                <div className='w-2- h-16- bg-0-'></div>
                             </div>
                         )
                     },
                     code: (
                         `
 marker: (
-    <div className='flex-col fd-column align-h w-24'>
-        <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-        <div className='w-2 h-16 bg-0'></div>
+    <div className='flex-col- align-h- w-24-'>
+        <div className='w-10- h-10- br-100-' style={{ background: '#4AA45D' }}></div>
+        <div className='w-2- h-16- bg-0-'></div>
     </div>
 )
                         `
@@ -205,9 +203,9 @@ const Markers: FC = () => {
                             {
                                 pos: [35.699, 51.338],
                                 html: (
-                                    <div className='flex-col fd-column align-h w-24' onClick={() => alert()}>
-                                        <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                                        <div className='w-2 h-16 bg-0'></div>
+                                    <div className='flex-col- align-h- w-24-' onClick={() => alert()}>
+                                        <div className='w-10- h-10- br-100-' style={{ background: '#4AA45D' }}></div>
+                                        <div className='w-2- h-16- bg-0-'></div>
                                     </div>
                                 )
                             },
@@ -222,9 +220,9 @@ markers:[
     {
         pos: [35.699, 51.338],
         html: (
-            <div className='flex-col fd-column align-h w-24'>
-                <div className='w-10 h-10 br-100' style={{ background: '#4AA45D' }}></div>
-                <div className='w-2 h-16 bg-0'></div>
+            <div className='flex-col- fd-column- align-h- w-24-'>
+                <div className='w-10- h-10- br-100-' style={{ background: '#4AA45D' }}></div>
+                <div className='w-2- h-16- bg-0-'></div>
             </div>
         )
     },
