@@ -3196,6 +3196,7 @@ pre[class*="language-"]>code[class*="language-"] {
     display:flex;
     flex-direction: column;
     padding:6px 12px;
+    width:100%;
 }
 .ai-form-item-header{
     display:flex;

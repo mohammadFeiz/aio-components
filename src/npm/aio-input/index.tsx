@@ -633,6 +633,8 @@ function Input() {
         return value
     }
     function change(value: any, onChange?: (value: any) => void) {
+        if(typeof filter === 'string'){filter = filter.split('')}
+        if(!Array.isArray(filter)){filter = []}
         if (types.hasKeyboard) {
             if (value) {
                 value = convertPersianDigits(value);
@@ -640,7 +642,7 @@ function Input() {
                     value = value.toString();
                     let lastChar = value[value.length - 1];
                     if (lastChar === ' ' || isNaN(+lastChar)) {
-                        if (Array.isArray(justNumber)) {
+                        if (typeof justNumber === 'string' && justNumber.length) {
                             if (justNumber.indexOf(lastChar) === -1) { value = value.slice(0, value.length - 1) }
                         }
                         else { value = value.slice(0, value.length - 1) }
@@ -650,7 +652,9 @@ function Input() {
                     value = value.toString();
                     let lastChar = value[value.length - 1];
                     for (let i = 0; i < filter.length; i++) {
-                        let char = filter[i].toString();
+                        let char = '';
+                        try{char = filter[i].toString()}
+                        catch{continue}
                         if (char === 'symbol') {
                             if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)) { value = value.slice(0, value.length - 1); break }
                         }
@@ -708,7 +712,7 @@ function Input() {
             onBlur: () => blur(onChange)
         }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
-        if (justNumber === true) {
+        if (typeof justNumber === 'string') {
             p.pattern = "\d*";
             p.inputMode = "numeric";
         }
@@ -3464,7 +3468,7 @@ type AI_isDate = {
 type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
 type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
 type AI_hasKeyboard = {
-    blurChange?: boolean, filter?: string[], inputAttrs?: any, justNumber?: boolean | (string[]),
+    blurChange?: boolean, filter?: string[] | string, inputAttrs?: any, justNumber?: string,
     maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
 }
 type AI_isTable = {
@@ -3726,8 +3730,8 @@ export const AILogin: FC<I_AILogin> = (props) => {
                 }
             }
         }
-        else if (res.key === 'otpnumber') { res.inputs = () => <AIText {...input_props('otpNumber')} justNumber={true} maxLength={11} /> }
-        else if (res.key === 'otpcode') { res.inputs = () => <AIText {...input_props('otpCode')} justNumber={true} maxLength={otpLength} />; res.responseUserType = true }
+        else if (res.key === 'otpnumber') { res.inputs = () => <AIText {...input_props('otpNumber')} justNumber={''} maxLength={11} /> }
+        else if (res.key === 'otpcode') { res.inputs = () => <AIText {...input_props('otpCode')} justNumber={''} maxLength={otpLength} />; res.responseUserType = true }
         res.submitText = trans(res.key + 'Button' as I_login_key)
         res.title = <div className="ai-login-title">{trans(res.key + 'Title' as I_login_key)}</div>
         return res
@@ -4317,7 +4321,7 @@ export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: s
                         style={{ width: length * 10 }}
                         placeholder={new Array(length).fill('x').join('')}
                         maxLength={length}
-                        justNumber={type === 'number'}
+                        justNumber={type === 'number'?'':undefined}
                         value={valuesRef.current[inputIndex]}
                         onChange={(v: string) => changeValue(v, inputIndex, patternIndex)}
                     />

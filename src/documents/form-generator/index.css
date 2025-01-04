@@ -1,0 +1,38 @@
+:root{
+    --fg-color-1:#9166a9;
+    --fg-color-2:#442e5d;
+    --fg-color-3:#9c7ebf;
+    --fg-color-4:#5c4478;
+}
+.fg-side-item{
+    background:#9166a9;
+    border-bottom:1px solid var(--fg-color-3);
+    color:#fff;
+    font-size:12px;
+}
+.fg-bg-1{
+    background:var(--fg-color-1);
+    color:#fff;
+}
+.fg-bg-2{
+    background:var(--fg-color-2);
+    color:#fff;
+}
+.fg-bg-4{
+    background:var(--fg-color-4);
+    color:#fff;
+}
+.form-generator .aio-input-tabs{
+    padding-top:12px;
+}
+.form-generator .aio-input-tabs-option{
+    padding-left:24px;
+    padding-right:24px;
+}
+.form-generator .aio-input-tabs-option.active{
+    background:#fff;
+    color:var(--fg-color-2);
+}
+.form-generator .aio-input-tabs-option-bar{
+    border-bottom:1px solid #fff;
+}
