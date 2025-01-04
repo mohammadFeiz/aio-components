@@ -1,0 +1,26 @@
+{
+  "name": "aio-dashboard",
+  "version": "1.0.0",
+  "description": "all in one dashboard elements",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "index.d.ts",
+  "keywords": [
+    "chat",
+    "pie"
+  ],
+  "dependencies": {
+    "aio-input": "latest",
+    "aio-canvas":"latest",
+    "aio-utils":"latest",
+    "jquery": "^3.6.1"
+  },
+  "author": "mohammad sharif feiz feiz.ms@gmail.com",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohammadFeiz/aio-dashboard.git"
+  }
+}
