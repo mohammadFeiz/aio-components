@@ -312,3 +312,4 @@ export declare function StyleObjectToString(styleObject: any): string;
 export declare function Normalize(str: string): string;
 type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown';
 export declare const DetectOS: () => I_os;
+export declare function ArrayToObject<T>(keys: T[], fn: (key: T) => any): any;

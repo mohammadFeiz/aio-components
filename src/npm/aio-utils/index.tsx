@@ -281,7 +281,7 @@ export function CalculateDistance(lat1: number, lon1: number, lat2: number, lon2
     const distance = R * c;
     return distance;
 }
-export const FilterTree = (p: {data: { [key: string]: any },checkNode: (node: { [key: string]: any }) => boolean,childsField: string}) => {
+export const FilterTree = (p: { data: { [key: string]: any }, checkNode: (node: { [key: string]: any }) => boolean, childsField: string }) => {
     const { childsField, checkNode, data } = p;
     const visibilityMap = new WeakMap();
     function isMatch(node: any, parents: any[] = []): boolean {
@@ -289,18 +289,18 @@ export const FilterTree = (p: {data: { [key: string]: any },checkNode: (node: { 
         const childs = node[childsField] || [];
         let childMatched = false;
         for (let child of childs) {
-            if (isMatch(child, [...parents, node])) {childMatched = true;}
+            if (isMatch(child, [...parents, node])) { childMatched = true; }
         }
         const isVisible = matched || childMatched;
         visibilityMap.set(node, isVisible);
-        if (isVisible) {parents.forEach((parent) => visibilityMap.set(parent, true));}
+        if (isVisible) { parents.forEach((parent) => visibilityMap.set(parent, true)); }
         return isVisible;
     }
     function filterTree(node: any): any {
-        if (!visibilityMap.get(node)) {return null;}
+        if (!visibilityMap.get(node)) { return null; }
         const filteredNode = { ...node };
         const childs = node[childsField] || [];
-        filteredNode[childsField] = childs.map(filterTree).filter((child:any) => child !== null); 
+        filteredNode[childsField] = childs.map(filterTree).filter((child: any) => child !== null);
         return filteredNode;
     }
     isMatch(data);
@@ -682,8 +682,8 @@ export class Validation {
     getValidation: () => string | undefined;
     validate: () => string | undefined;
     boolKey: (key: 'more' | 'less') => string;
-    getDateArray:(str:string)=>number[];
-    compaireDates:(str1:string,str2:string)=>'less' | 'greater' | 'equal';
+    getDateArray: (str: string) => number[];
+    compaireDates: (str1: string, str2: string) => 'less' | 'greater' | 'equal';
     boolDic: any;
     getUnit: (value: any) => string;
     constructor(props: AV_props) {
@@ -703,17 +703,17 @@ export class Validation {
             else { result = value.indexOf(target) !== -1; }
             return { result, unit: '' }
         }
-        this.getDateArray = (date)=>{
+        this.getDateArray = (date) => {
             const l = date.split('/');
-            return l.map((o)=>+o)
-        }   
-        this.compaireDates = (date1,date2)=>{
+            return l.map((o) => +o)
+        }
+        this.compaireDates = (date1, date2) => {
             const l1 = this.getDateArray(date1);
             const l2 = this.getDateArray(date2);
-            const length = Math.min(l1.length,l2.length)
-            for(let i = 0; i < length; i++){
-                if(l1[i] < l2[i]){return 'less'}
-                if(l1[i] > l2[i]){return 'greater'}
+            const length = Math.min(l1.length, l2.length)
+            for (let i = 0; i < length; i++) {
+                if (l1[i] < l2[i]) { return 'less' }
+                if (l1[i] > l2[i]) { return 'greater' }
             }
             return 'equal'
         }
@@ -1342,7 +1342,7 @@ export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gende
     if (p.type === "lastname") { return getlastname() }
     return `${getfirstname()} ${getlastname()}`
 }
-export function StyleObjectToString(styleObject:any) {
+export function StyleObjectToString(styleObject: any) {
     return Object.entries(styleObject)
         .map(([key, value]) => {
             // تبدیل camelCase به kebab-case
@@ -1351,11 +1351,11 @@ export function StyleObjectToString(styleObject:any) {
         })
         .join(';');
 }
-export function Normalize(str:string){
+export function Normalize(str: string) {
     return str.replace(/\u200C/g, '').normalize()
 }
 type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown'
-export const DetectOS = ():I_os => {
+export const DetectOS = (): I_os => {
     const userAgent = window.navigator.userAgent;
     const platform = window.navigator.platform;
     const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
@@ -1369,4 +1369,7 @@ export const DetectOS = ():I_os => {
     else if (/Linux/.test(platform)) { os = 'Linux'; }
     else { os = 'Unknown'; }
     return os;
-  }
+}
+export function ArrayToObject<T>(keys: T[], fn: (key: T) => any) {
+    return Object.assign({}, ...keys.map((key: T) => ({ [key as string]: fn(key) })))
+}
