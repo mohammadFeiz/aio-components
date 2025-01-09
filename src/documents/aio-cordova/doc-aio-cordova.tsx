@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import Code from '../../code/index.js';
+import {Code} from './../../npm/aio-components';
 //@ts-ignore
 import src0 from './images/0.png';
 //@ts-ignore

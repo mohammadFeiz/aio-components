@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import Code from './../../npm/code';
+import {Code} from './../../npm/aio-components';
 import { AITextarea } from "../../npm/aio-input";
 import { ConvertTextToFilters } from "../../npm/aio-utils";
 const columns = [

@@ -1,7 +1,7 @@
 import { FC, ReactNode,  useContext,useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDoubleDown } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput,{ AI, AI_type, AIFile, AINumber, AIText, AITYPE, Mask } from "../../npm/aio-input";
+import AIOInput,{ AI, AI_date_cell_param, AI_type, AIFile, AINumber, AIText, AITYPE, Mask } from "../../npm/aio-input";
 import Example, { ExampleContext, I_ExampleContext } from "./example";
 const textOptions = [
     { name: 'john', id: '1', gender: 'male', color: '#ff0000' },
@@ -48,8 +48,6 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
         ['loading', () => <Loading />],
         ['justify', () => <Justify />],
         ['inputAttrs', () => <InputAttrs />, ['text', 'number', 'textarea', 'password', 'file'].indexOf(type) !== -1],
-        ['justNumber (boolean)', () => <JustNumber />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
-        ['justNumber (array)', () => <JustNumberArray />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
         ['filter', () => <Filter />, ['text', 'textarea', 'password'].indexOf(type) !== -1],
         ['maxLength', () => <MaxLength />, ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1],
         ['min', () => <Min />, ['number'].indexOf(type) !== -1],
@@ -602,48 +600,6 @@ const InputAttrs: FC = () => {
         </div>
     )
 }
-const JustNumber: FC = () => {
-    const { type, code }: I_ExampleContext = useContext(ExampleContext);
-    const [value, setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value}
-                onChange={(newValue) => setValue(newValue)}
-                justNumber={true}
-            />
-            {code(`
-<AIOInput
-    type='${type}' 
-    value='${value}'
-    onChange={(newValue)=>setValue(newValue)}
-    justNumber={true}
-/>
-        `)}
-        </div>
-    )
-}
-const JustNumberArray: FC = () => {
-    const { type, code }: I_ExampleContext = useContext(ExampleContext);
-    const [value, setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value}
-                onChange={(newValue) => setValue(newValue)}
-                justNumber={['-']}
-            />
-            {code(`
-<AIOInput
-    type='${type}' 
-    value='${value}'
-    onChange={(newValue)=>setValue(newValue)}
-    justNumber={['-']}
-/>
-        `)}
-        </div>
-    )
-}
 const Filter: FC = () => {
     const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
@@ -652,14 +608,14 @@ const Filter: FC = () => {
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                filter={['a', 'b', 'c']}
+                filter={['!a', '!b', '!c']}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    filter={['a','b','c']}
+    filter={['!a', '!b', '!c']}
 />
         `)}
         </div>
@@ -1354,23 +1310,55 @@ const DateAndTimePopover: FC = () => {
         </div>
     )
 }
+type I_dalist = [
+    (p:AI_date_cell_param)=>any,
+    string,string
+]
 function getDateAttrsExamples(type: AI_type) {
     if (type !== 'date') { return [] }
-    let list = [
-        ["<>,2022,2024", 'disabled all dates between 2022 and 2024'],
-        ["<=>,2022,2024", 'disabled all dates between and equal 2022 and 2024'],
-        ["!<>,2022,2024", 'disabled all dates that is not between 2022 and 2024'],
-        ["!<=>,2022,2024", 'disabled all dates that is not between and equal 2022 and 2024'],
-        ["=,2022/4/5,2022/6/7,2022/8/12", 'disabled this dates => 2022/4/5,2022/6/7,2022/8/12'],
-        ["!=,2022/4/5", 'disabled all dates exept 2022/4/5'],
-        [">,2022/4/5", 'disabled all dates after 2022/4/5'],
-        [">=,2022/4/5", 'disabled 2022/4/5 and all dates after 2022/4/5'],
-        ["<,2022/4/5", 'disabled all dates before 2022/4/5'],
-        ["<=,2022/4/5", 'disabled 2022/4/5 and all dates before 2022/4/5'],
-        ["w,6,4", 'disabled all 4th and 6th weekdays (index from 0)'],
-        ["!w,6", 'disabled all days that is not 6th weekdays (index from 0)'],
+    let list:I_dalist[] = [
+        [
+            (p)=>{
+                const [year,month,day] = p.dateArray;
+                let disabled = false;
+                if(year < 2022){disabled = true}
+                else if(year === 2022){
+                    if(month < 4){disabled = true}
+                    else if(month === 4){
+                        if(day < 5){disabled = true}
+                    }
+                }
+                if(disabled){
+                    return {disabled:true}
+                }
+            },
+`(p)=>{
+    const [year,month,day] = p.dateArray;
+    let disabled = false;
+    if(year < 2022){disabled = true}
+    else if(year === 2022){
+        if(month < 4){disabled = true}
+        else if(month === 4){
+            if(day < 5){disabled = true}
+        }
+    }
+    if(disabled){
+        return {disabled:true}
+    }
+}`, 
+            'disabled all dates before 2022/4/5'
+        ],
+        [
+            (p)=>{
+                if(p.weekDayIndex === 3 || p.weekDayIndex === 5){
+                    return {disabled:true}
+                }
+            },
+            "w,6,4", 
+            'disabled all 4th and 6th weekdays (index from 0)'
+        ],
     ];
-    let res = list.map(([selector, description]) => [`dateAttrs (selector:'${selector}')`, () => <DateAttrs selector={selector} />, true, description])
+    let res = list.map(([fn, fnCode,description]) => [`dateAttrs`, () => <DateAttrs fn={fn} fnCode={fnCode}/>, true, description])
     return [
         [
             'dateAttrs (isToday)',
@@ -1389,7 +1377,7 @@ function getDateAttrsExamples(type: AI_type) {
     ]
 }
 
-const DateAttrs: FC<{ selector: string }> = ({ selector }) => {
+const DateAttrs: FC<{ fn: any,fnCode:string }> = ({ fn,fnCode }) => {
     const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
@@ -1397,21 +1385,15 @@ const DateAttrs: FC<{ selector: string }> = ({ selector }) => {
             <AIOInput
                 type='date' value={value}
                 onChange={(newValue) => setValue(newValue)}
-                dateAttrs={({ dateArray, isMatch }) => {
-                    if (isMatch([selector])) {
-                        return { disabled: true }
-                    }
-                }}
+                dateAttrs={(p) => fn(p)}
             />
             {code(`
 <AIOInput
     type='date' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    dateAttrs={({isMatch})=>{
-        if(isMatch([${selector}])){
-            return {disabled:true}
-        }
+    dateAttrs={(p)=>{
+        ${fnCode}
     }}
 />
         `)}

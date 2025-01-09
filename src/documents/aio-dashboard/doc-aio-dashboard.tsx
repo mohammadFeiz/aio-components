@@ -1,6 +1,6 @@
 import React, { Component, FC, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import Code from '../../npm/code/index';
+import {Code} from './../../npm/aio-components';
 import { Chart, Pie } from '../../npm/aio-dashboard';
 import AIODate from './../../npm/aio-date';
 import { GetRandomNumber } from '../../npm/aio-utils/index.tsx';

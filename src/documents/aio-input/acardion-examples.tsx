@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 import AIOInput, { AI_option, AI_optionDetails, AIAcardion } from "../../npm/aio-input"
-import Code from '../../npm/code/index';
+import {Code} from './../../npm/aio-components';
 import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';

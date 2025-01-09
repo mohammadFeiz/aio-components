@@ -1,7 +1,8 @@
-import { FC, ReactNode, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import Code from '../../npm/code/index';
-import { AISelect, AITabs, AIMap } from '../../npm/aio-input';
+import {Code} from './../../npm/aio-components';
+import { AISelect, AITabs } from '../../npm/aio-input';
+import AIMap from '../../npm/aio-map/index.tsx';
 type I_show_item = 'preview' | 'code' | 'both'
 type I_Map = React.ComponentProps<typeof AIMap>;
 const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {

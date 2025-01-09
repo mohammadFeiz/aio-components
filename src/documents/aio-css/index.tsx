@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import DOC from '../../resuse-components/doc.tsx';
-import Code from '../../code/index.js';
+import {Code} from './../../npm/aio-components';
 import { CssGenerator } from './../../npm/aio-css/generator.tsx';
 import { Copy } from '../../npm/aio-utils/index.tsx';
 import AIOPopup from '../../npm/aio-popup/index.tsx';

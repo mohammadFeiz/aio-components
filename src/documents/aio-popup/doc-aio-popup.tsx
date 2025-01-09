@@ -1,7 +1,7 @@
 import { Component, createRef, FC, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import DOC from '../../resuse-components/doc.tsx';
-import Code from '../../npm/code/index';
+import {Code} from './../../npm/aio-components';
 import AIOPopup, { AP_modal, AP_snackebar, Snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import { Icon } from '@mdi/react';

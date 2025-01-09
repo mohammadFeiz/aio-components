@@ -1373,3 +1373,34 @@ export const DetectOS = (): I_os => {
 export function ArrayToObject<T>(keys: T[], fn: (key: T) => any) {
     return Object.assign({}, ...keys.map((key: T) => ({ [key as string]: fn(key) })))
 }
+export function keyboard_filter(value: string | number, p: { filter?: (string | 'symbol' | 'string' | 'number')[], maxLength?: number, toPersian?: boolean }): string {
+    value = value.toString();
+    if (!value) { return '' }
+    if (p.toPersian) {
+        let res: string = '';
+        let dic: any = { "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9", 'ي': 'ی', 'ك': 'ک', 'ة': 'ه', 'ى': 'ی' }
+        for (let i = 0; i < value.length; i++) {
+            res += dic[value[i]] || value[i];
+        }
+        value = res;
+    }
+    const { maxLength = Infinity } = p;
+    if (value.length > maxLength) { return value.slice(0, maxLength) }
+    if (!Array.isArray(p.filter) || !p.filter.length) { return value }
+    let lastChar = value[value.length - 1];
+    const isNumber = !isNaN(+lastChar);
+    let isOk = false;
+    for (let i = 0; i < p.filter.length; i++) {
+        let char = '';
+        try { char = p.filter[i].toString() } catch { continue }
+        if(char.length > 1 && char[0] === '!'){
+            if(char[1] === lastChar){isOk = false; break;}
+        }
+        if (char === 'symbol') { if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)) { isOk = true; } }
+        else if (char === 'number') { if (isNumber) { isOk = true } }
+        else if (char === 'string') { if (!isNumber) { isOk = true } }
+        else { if (char === lastChar) { isOk = true } }
+    }
+    if (!isOk) { value = value.slice(0, value.length - 1) }
+    return value
+}

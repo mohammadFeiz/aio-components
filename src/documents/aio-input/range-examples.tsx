@@ -2,7 +2,7 @@ import React, { FC, createContext, useContext, useState } from "react"
 import { mdiAccount, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput, { AICheckbox, AIRadio, AISelect, AISlider } from "../../npm/aio-input";
-import Code from '../../npm/code';
+import {Code} from './../../npm/aio-components';
 import { Storage } from "../../npm/aio-utils";
 type I_exampleType = 'slider' | 'spinner'
 type I_setting = { show: number, showCode: boolean, round: number, reverse: boolean, vertical: boolean }

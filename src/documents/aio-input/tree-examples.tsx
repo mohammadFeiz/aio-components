@@ -1,8 +1,7 @@
-import React, { FC, ReactNode, createContext, useContext, useRef, useState } from "react"
+import React, { FC, useContext, useRef, useState } from "react"
 import AIOInput, { AITree } from "../../npm/aio-input"
-import Code from '../../npm/code/index';
+import {Code} from './../../npm/aio-components';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiCircleOutline, mdiDiamond, mdiEmoticonHappyOutline, mdiEye, mdiFolder, mdiGauge, mdiHeart, mdiMinusBoxMultiple, mdiMinusBoxOutline, mdiMinusThick, mdiPlusBoxOutline, mdiPlusThick } from "@mdi/js"
-import { Storage } from "../../npm/aio-utils/index.tsx";
 import Icon from '@mdi/react';
 import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
 const TreeExamples:FC = ()=>{
@@ -87,7 +86,7 @@ function Basic(){
     return (
         <div>
             <AIOInput 
-                type='tree'
+                type='tree' rtl={true}
                 value={[...value]}
                 option={{text:'option.name',value:'option.id'}}
             />
@@ -375,10 +374,10 @@ function ClickAndToggleIcon(){
                 value={[...value]}
                 toggleRef={toggleRef}
                 onToggle={(openDic)=>setOpenDic(openDic)}
+                toggleIcon={()=>false}
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    toggleIcon:()=>false,
                     onClick:({option})=>{
                         toggleRef.current(option.id)
                     },
@@ -429,16 +428,15 @@ function CustomizeToggleIcon(){
                 type='tree'
                 style={{width:240,background:'#F8F8F8'}}
                 value={[...value]}
+                toggleIcon={({open})=>{
+                    if(open === undefined){return <Icon path={mdiCircleOutline} size={0.3}/>}
+                    if(open === true){return <Icon path={mdiPlusBoxOutline} size={0.8}/>}
+                    return <Icon path={mdiMinusBoxOutline} size={0.8}/>
+                }}
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    toggleIcon:()=>{
-                        return [
-                            <Icon path={mdiPlusBoxOutline} size={0.8}/>,
-                            <Icon path={mdiMinusBoxOutline} size={0.8}/>,
-                            <Icon path={mdiCircleOutline} size={0.3}/>,
-                        ]
-                    },
+                    
                 }}
             />
             {
@@ -698,10 +696,10 @@ function SideMenu(){
                 size={48}
                 value={[...value]}
                 toggleRef={toggleRef}
+                toggleIcon={()=>false}
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    toggleIcon:()=>false,
                     after:({option,active = false})=>getAfter(option,active),
                     before:({option,level = 0})=>getBefore(option,level),
                     onClick:({option})=>toggleRef.current(option.id),

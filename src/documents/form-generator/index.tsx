@@ -1,9 +1,8 @@
 import { createContext, FC, ReactNode, useContext, useRef, useState } from "react";
 import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, FormContainer, FormItem } from "../../npm/aio-input";
 import AIOPopup from "../../npm/aio-popup";
-import { GetRandomNumber } from "../../npm/aio-utils";
 import './index.css';
-import Code from "../../code";
+import {Code} from './../../npm/aio-components';
 const CTX = createContext({} as any)
 type I_CTX = {
     popup: AIOPopup,

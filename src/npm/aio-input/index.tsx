@@ -1,19 +1,15 @@
-import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
-import Prism from 'prismjs';
-import axios from 'axios';
-import { divIcon, LeafletEvent } from 'leaflet';
-import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from 'react-leaflet';
+import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
 import $ from 'jquery';
-import AIOPopup, { AP_modal, AP_alert } from "./../aio-popup";
+import AIOPopup, { AP_modal } from "./../aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
-    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation, GetSvg, JSXToHTML,
+    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation,
+    keyboard_filter,
 } from './../aio-utils';
 import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../aio-swip';
 import AIODate from './../aio-date';
-import 'leaflet/dist/leaflet.css';
 import './index.css';
-import AIOLoading from './../aio-loading';
+import { Indent,GetSvg } from '../aio-components';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
@@ -274,7 +270,7 @@ function TimePopover(props: { onClose: () => void }) {
     function submit() { if (onChange) { onChange(setValueByTimeStep(value)); } onClose(); }
     function now() { setValue(getTimeByUnit(rootProps, true)) }
     return (
-        <div className='aio-input-time-popover-content aio-input-theme-bg1 aio-input-theme-color0' style={{ fontSize: size }}>
+        <div className='aio-input-time-popover-content aio-input-time-theme-color aio-input-time-theme-bg' style={{ fontSize: size }}>
             <div className="aio-input-time-popover-body">
                 {layout('year')} {layout('month')} {layout('day')} {layout('hour')} {layout('minute')} {layout('second')}
             </div>
@@ -566,7 +562,7 @@ function Input() {
     let { rootProps, types, showPassword, options }: AI_context = useContext(AICTX)
     let { type, delay = 500 } = rootProps;
     let {
-        min, max, swip, onChange, blurChange, maxLength = Infinity, justNumber, filter = [], disabled, placeholder,
+        min, max, swip, onChange, blurChange, maxLength = Infinity, filter = [], disabled, placeholder,
         inputAttrs, spin = true, justify
     } = rootProps;
     let [dom] = useState<any>(createRef())
@@ -614,75 +610,13 @@ function Input() {
             if (v !== value) { setValue(v) }
         }, delay);
     }
-    useEffect(() => {
-        update()
-    }, [rootProps.value])
-    function convertPersianDigits(value: string) {
-        try {
-            value = value.toString();
-            let res: string = '';
-            for (let i = 0; i < value.length; i++) {
-                let dic: any = {
-                    "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9"
-                }
-                res += dic[value[i]] || value[i];
-            }
-            value = res;
-        }
-        catch { }
-        return value
-    }
+    useEffect(() => { update() }, [rootProps.value])
     function change(value: any, onChange?: (value: any) => void) {
-        if(typeof filter === 'string'){filter = filter.split('')}
-        if(!Array.isArray(filter)){filter = []}
-        if (types.hasKeyboard) {
-            if (value) {
-                value = convertPersianDigits(value);
-                if ((type === 'text' || type === 'textarea' || type === 'password') && justNumber) {
-                    value = value.toString();
-                    let lastChar = value[value.length - 1];
-                    if (lastChar === ' ' || isNaN(+lastChar)) {
-                        if (typeof justNumber === 'string' && justNumber.length) {
-                            if (justNumber.indexOf(lastChar) === -1) { value = value.slice(0, value.length - 1) }
-                        }
-                        else { value = value.slice(0, value.length - 1) }
-                    }
-                }
-                if ((type === 'text' || type === 'textarea' || type === 'password') && filter.length) {
-                    value = value.toString();
-                    let lastChar = value[value.length - 1];
-                    for (let i = 0; i < filter.length; i++) {
-                        let char = '';
-                        try{char = filter[i].toString()}
-                        catch{continue}
-                        if (char === 'symbol') {
-                            if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)) { value = value.slice(0, value.length - 1); break }
-                        }
-                        else if (char === 'number') {
-                            if (!isNaN(+lastChar)) { value = value.slice(0, value.length - 1); break }
-                        }
-                        else if (char === 'string') {
-                            if (isNaN(+lastChar)) { value = value.slice(0, value.length - 1); break }
-                        }
-                        else {
-                            if (char === lastChar) { value = value.slice(0, value.length - 1); break }
-                        }
-                    }
-                }
-                if ((type === 'text' || type === 'textarea' || type === 'password') && value.toString().length > maxLength) {
-                    value = value.toString().slice(0, maxLength);
-                }
-                try {
-                    if (type === 'number' && value.toString().length > maxLength) {
-                        value = +value.toString().slice(0, maxLength);
-                    }
-                }
-                catch { }
-            }
-        }
+        if (!Array.isArray(filter)) { filter = [] }
+        if (types.hasKeyboard) { value = keyboard_filter(value, { maxLength, filter, toPersian: true }) }
         if (rootProps.type === 'number') {
-            if (value !== '') { value = +value }
-            else { value = undefined }
+            if (value === '') {value = undefined}
+            else { value = +value }
         }
         setValue(value);
         if (!blurChange && onChange) {
@@ -712,7 +646,7 @@ function Input() {
             onBlur: () => blur(onChange)
         }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
-        if (typeof justNumber === 'string') {
+        if (filter.length === 1 && filter[0] === 'number') {
             p.pattern = "\d*";
             p.inputMode = "numeric";
         }
@@ -781,12 +715,27 @@ function Options() {
 export type I_openState = boolean | undefined
 export type AI_Layout = {
     option?: AI_option, text?: ReactNode, index?: number,
-    properties?: any, indent?: AI_indent,
-    toggle?: { state: I_openState, action: () => void },
+    properties?: any
+}
+const CheckIcon: FC<{ checkIcon: AI_checkIcon, checked?: boolean, round?: boolean }> = (props) => {
+    if (props.checked === undefined) { return null }
+    if (Array.isArray(props.checkIcon)) { return <>{props.checkIcon[props.checked ? 1 : 0]}</> }
+    if (props.round) {
+        return (
+            <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ ...props.checkIcon, background: 'none' }}>
+                {props.checked && <div className={'aio-input-check-in aio-input-main-bg'} style={{ background: props.checkIcon.background }}></div>}
+            </div>
+        );
+    }
+    return (
+        <div className={'aio-input-check-0 aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ ...props.checkIcon, background: 'none' }}>
+            {props.checked && <div className='aio-input-main-bg'></div>}
+        </div>
+    );
 }
 const Layout: FC<AI_Layout> = (props) => {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, error, popup }: AI_context = useContext(AICTX)
-    let { option, index, toggle, indent } = props;
+    let { option, index } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     const [recognition, setRecognition] = useState<any>()
@@ -833,7 +782,6 @@ const Layout: FC<AI_Layout> = (props) => {
             if (error) { cls += ' has-error' }
             cls += rtl ? ' aio-input-rtl' : ' aio-input-ltr'
         }
-        if (indent) { cls += ` aio-input-indent-${indent.size}` }
         if (type === 'tree') {
             let size = rootProps.size || Def('tree-size');
             size = Math.round(size / 12) * 12;
@@ -892,24 +840,6 @@ const Layout: FC<AI_Layout> = (props) => {
         let { caret } = rootProps;
         if (caret === false) { return null }
         return <div className='aio-input-caret'>{caret === undefined ? I('mdiChevronDown', .8) : caret}</div>
-    }
-    function CheckIcon() {
-        let { checkIcon, checked } = properties;
-        if (checked === undefined) { return null }
-        let { multiple } = rootProps;
-        if (Array.isArray(checkIcon)) { return checkIcon[checked ? 1 : 0] }
-        if (!multiple && type === 'radio') {
-            return (
-                <div className={'aio-input-check-out aio-input-main-color' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
-                    {checked && <div className={'aio-input-check-in aio-input-main-bg'} style={{ background: checkIcon.background }}></div>}
-                </div>
-            );
-        }
-        return (
-            <div className={'aio-input-check-0 aio-input-main-color' + (checked ? ' checked' : '')} style={{ ...checkIcon, background: 'none' }}>
-                {checked && <div className='aio-input-main-bg'></div>}
-            </div>
-        );
     }
     function BeforeAfter(mode: 'before' | 'after') {
         let res: ReactNode;
@@ -984,60 +914,6 @@ const Layout: FC<AI_Layout> = (props) => {
         let className = classNames.length ? classNames.join(' ') : undefined;
         return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className, footer }
     }
-    function getToggleIcon(open: I_openState) {
-        if (toggle === undefined) { return null }
-        if (option && Array.isArray(option.toggleIcon)) {
-            if (open === false && !!option.toggleIcon[0]) { return option.toggleIcon[0] }
-            if (open === true && !!option.toggleIcon[1]) { return option.toggleIcon[1] }
-            if (open === undefined && !!option.toggleIcon[2]) { return option.toggleIcon[2] }
-        }
-        let path;
-        if (open === undefined) { path = 'mdiCircleSmall' }
-        else if (open === true) { path = 'mdiChevronDown' }
-        else { path = 'mdiChevronRight' }
-        return <div style={{ transform: rootProps.rtl ? `scaleX(-1)` : undefined }}>{I(path, 1)}</div>
-    }
-    function Toggle(indent: AI_indent) {
-        if (!option || option.toggleIcon === false) { return null }
-        if (toggle === undefined) { return null }
-        return (<div className="aio-input-toggle" onClick={(e) => { e.stopPropagation(); toggle?.action() }}>
-            <div className='aio-input-toggle-icon'>{getToggleIcon(toggle.state)}</div>
-            {
-                toggle.state === true &&
-                <svg className='aio-input-toggle-line aio-input-indent-line'>
-                    <path d={`M${indent.size / 2} ${0} L${indent.size / 2} ${indent.height / 2 - 12} Z`}></path>
-                </svg>
-            }
-        </div>)
-    }
-    function indentIcon(indent: AI_indent, order: number) {
-        let { parentIndent, size, level, isLastChild, height } = indent;
-        if (!level) { return false }
-        let x0 = size / 2, x1 = size, y0 = 0, y1 = height / 2, y2 = height, pathes = [];
-        if (order === level - 1) {
-            //horizontal line
-            pathes.push(<path key={'hl' + order} d={`M${x0} ${y1} L${x1 * (rootProps.rtl ? -1 : 1)} ${y1} Z`}></path>)
-            //vertical direct line
-            pathes.push(<path key={'vdl' + order} d={`M${x0} ${y0} L${x0} ${isLastChild ? y1 : y2} Z`}></path>)
-        }
-        else {
-            //vertical connet line
-            if (!parentIndent || !parentIndent.isLastChild) {
-                pathes.push(<path key={'vl' + order} d={`M${x0} ${y0} L${x0} ${y2} Z`}></path>)
-            }
-        }
-        return (<svg className='aio-input-indent-line'>{pathes}</svg>)
-    }
-    function Indent() {
-        if (!indent) { return null }
-        let { level } = indent;
-        return (
-            <div className="aio-input-indents">
-                {GetArray(level, (i) => <div key={i} className={`aio-input-indent`}>{indentIcon(indent as AI_indent, i)}</div>)}
-                {!!toggle && Toggle(indent)}
-            </div>
-        )
-    }
     function Label() {
         if (option) { return null }
         const { label } = rootProps
@@ -1064,9 +940,8 @@ const Layout: FC<AI_Layout> = (props) => {
     }
     let properties = getProperties();
     let content = (<>
-        {Indent()}
         {DragIcon()}
-        {CheckIcon()}
+        {typeof properties.checked === 'boolean' && <CheckIcon round={!rootProps.multiple && type === 'radio'} checked={properties.checked} checkIcon={properties.checkIcon} />}
         {Label()}
         {BeforeAfter('before')}
         {Text()}
@@ -1085,6 +960,7 @@ const Layout: FC<AI_Layout> = (props) => {
         </div>
     )
 }
+
 function List() {
     let { rootProps, options }: AI_context = useContext(AICTX);
     let { attrs = {}, size = 36, listOptions = { count: 3, editable: true, stop: 3, decay: 8 }, onChange = () => { } } = rootProps;
@@ -1395,7 +1271,7 @@ const Tree: FC = () => {
         if (onChange) { onChange(value) }
     }
     function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent, size, change, getChilds } }
-    let Attrs = AddToAttrs(attrs, { className: ['aio-input-tree', rootProps.className], style: rootProps.style })
+    let Attrs = AddToAttrs(attrs, { className: ['aio-input-tree', rootProps.className, rootProps.rtl ? 'aio-input-tree-rtl' : undefined], style: rootProps.style })
     return (
         <TreeContext.Provider value={getContext()}>
             <div {...Attrs}><TreeHeader /><TreeBody rows={value} level={0} /></div>
@@ -1477,15 +1353,25 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     )
 }
 const TreeRow: FC<{ item: I_treeItem }> = (props) => {
-    let { openDic, getChilds, toggle }: I_TreeContext = useContext(TreeContext);
+    let { openDic, getChilds, toggle, rootProps }: I_TreeContext = useContext(TreeContext);
     let { item } = props;
     let childs = getChilds(item);
     let open: I_openState = !childs.length ? undefined : (!!openDic[item.id] ? true : false);
-    let p: AI_Layout = {
-        indent: item.indent,
-        option: item.option,
-        toggle: { state: open, action: () => toggle(item.id) }
-    };
+    const { row, indent, option } = item;
+    const { level, size, height } = indent;
+    const { checked, checkIcon } = option;
+    const getBefore = (): ReactNode => {
+        return [
+            <Indent
+                row={row} width={size} height={height} level={level} isLastChild={item.indent.isLastChild}
+                isParentLastChild={!!item.indent.parentIndent?.isLastChild} rtl={!!rootProps.rtl}
+                toggleIcon={rootProps.toggleIcon} open={open} onToggle={() => toggle(item.id)}
+            />,
+            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={checkIcon} />}</>,
+            <>{(item.option.before as any) || null}</>
+        ]
+    }
+    let p: AI_Layout = { option: { ...item.option, before: getBefore(), checked: undefined } };
     return <Layout {...p} />;
 }
 const TreeChilds: FC<{ item: I_treeItem }> = (props) => {
@@ -1639,8 +1525,8 @@ export function Calendar(props: { onClose?: () => void }) {
     }
     return (
         <DPContext.Provider value={getContext()}>
-            <div className='aio-input-date-container' style={{ display: 'flex', fontSize: size }}>
-                <div className='aio-input-date-calendar aio-input-theme-bg1 aio-input-theme-color0 aio-input-theme-stroke0' style={getPopupStyle()}>
+            <div className='aio-input-date-container aio-input-date-theme-bg' style={{ display: 'flex', fontSize: size }}>
+                <div className='aio-input-date-calendar' style={getPopupStyle()}>
                     <DPHeader /><DPBody /><DPFooter />
                 </div>
                 <DPToday />
@@ -1653,7 +1539,7 @@ function DPToday() {
     let { rootProps, translate, today, todayWeekDay, thisMonthString }: I_DPContext = useContext(DPContext);
     let { theme = Def('theme'), jalali, unit = Def('date-unit') } = rootProps;
     return (
-        <div className='aio-input-date-today aio-input-theme-color1 aio-input-theme-bg0' style={{ color: theme[1], background: theme[0] }}>
+        <div className='aio-input-date-today aio-input-date-theme-active' style={{ color: theme[1], background: theme[0] }}>
             <div className='aio-input-date-today-label'>{translate('Today')}</div>
             {unit !== 'month' && <div className='aio-input-date-today-weekday'>{!jalali ? todayWeekDay.slice(0, 3) : todayWeekDay}</div>}
             {unit !== 'month' && <div className='aio-input-date-today-day'>{today[2]}</div>}
@@ -1667,7 +1553,7 @@ function DPFooter() {
     let { rootProps, changeActiveDate, translate }: I_DPContext = useContext(DPContext);
     let { disabled, onChange = () => { }, deSelect, multiple, now = true } = rootProps;
     if (disabled) { return null }
-    const buttonClassName = 'aio-input-theme-color0 aio-input-theme-text'
+    const buttonClassName = 'aio-input-date-theme-color'
     function clear() {
         if (typeof deSelect === 'function') { deSelect() }
         else { onChange(multiple ? [] : undefined) }
@@ -1706,9 +1592,9 @@ function DPBodyDay() {
     let weekDays = DATE.getWeekDays(jalali);
     return (<>
         {weekDays.map((weekDay: string, i: number) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-        {GetArray(firstDayWeekDayIndex, (i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell aio-input-theme-bg1' style={{ background: theme[1] }}></div>)}
+        {GetArray(firstDayWeekDayIndex, (i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
         {GetArray(daysLength, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
-        {GetArray(42 - (firstDayWeekDayIndex + daysLength), (i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell aio-input-theme-bg1' style={{ background: theme[1] }}></div>)}
+        {GetArray(42 - (firstDayWeekDayIndex + daysLength), (i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
     </>)
 }
 const DPCellWeekday: FC<{ weekDay: string }> = (props) => {
@@ -1716,7 +1602,7 @@ const DPCellWeekday: FC<{ weekDay: string }> = (props) => {
     let { theme = Def('theme'), jalali } = rootProps;
     let { weekDay } = props;
     return (
-        <div className='aio-input-date-weekday aio-input-date-cell aio-input-theme-bg1 aio-input-theme-color0' style={{ background: theme[1], color: theme[0] }}>
+        <div className='aio-input-date-weekday aio-input-date-cell aio-input-date-theme-color' style={{ background: theme[1], color: theme[0] }}>
             <span>{translate(weekDay.slice(0, !jalali ? 2 : 1))}</span>
         </div>
     )
@@ -1730,12 +1616,12 @@ function DPCell(props: { dateArray: number[] }) {
         else { return !value ? false : DATE.isEqual(dateArray, value); }
     }
     function getClassName(isActive: boolean, isToday: boolean, isDisabled: boolean, className?: string) {
-        var str = 'aio-input-date-cell aio-input-theme-text';
+        var str = 'aio-input-date-cell';
         if (isDisabled) { str += ' aio-input-date-disabled' }
-        if (isActive) { str += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1'; }
-        else { str += ' aio-input-theme-bg1 aio-input-theme-color0'; }
-        if (isToday) { str += ' today aio-input-theme-border0'; }
-        if (className) { str += ' className'; }
+        if (isActive) { str += ' aio-input-date-active aio-input-date-theme-active'; }
+        else { str += ' aio-input-date-theme-color'; }
+        if (isToday) { str += ' today aio-input-date-theme-border'; }
+        if (className) { str += ` ${className}`; }
         return str;
     }
     let isActive = IsActive();
@@ -1743,12 +1629,13 @@ function DPCell(props: { dateArray: number[] }) {
     let isFuture = DATE.isGreater(dateArray, DATE.getToday(jalali))
     let Attrs: any = {}
     if (dateAttrs) {
+        const {unit = 'day'} = rootProps;
         let weekDay = null, weekDayIndex = null, monthString = ''
-        if (rootProps.unit === 'day') {
+        if (unit === 'day') {
             const a = DATE.getWeekDay(dateArray)
             weekDay = a.weekDay; weekDayIndex = a.index;
         }
-        else if (rootProps.unit === 'month') {
+        else if (unit === 'month') {
             const months = DATE.getMonths(jalali)
             monthString = months[dateArray[1] - 1];
         }
@@ -1759,7 +1646,10 @@ function DPCell(props: { dateArray: number[] }) {
     let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
     let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }) };
     let style: any = {}
-    if (!isDisabled) { style.background = theme[1]; }
+    if (!isDisabled) { 
+        style.background = theme[1];
+        style.color = theme[0] 
+    }
     if (className.indexOf('aio-input-date-active') !== -1) {
         style.background = theme[0];
         style.color = theme[1];
@@ -1783,7 +1673,8 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     let text = unit === 'year' ? activeDate.year : months[(activeDate[unit] as number) - 1].substring(0, jalali ? 10 : 3)
     return (
         <button
-            type='button' className="aio-input-date-dropdown aio-input-theme-color0 aio-input-theme-text"
+            type='button' className="aio-input-date-dropdown aio-input-date-theme-color"
+            style={{color:theme[0],background:theme[1]}}
             onClick={() => changePopup(<DPHeaderPopup onClose={() => changePopup(null)} unit={unit} />)}
         >{text}</button>
     )
@@ -1813,8 +1704,8 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
         let cells = [];
         const getCls = (active: boolean) => {
             let className = 'aio-input-date-cell'
-            if (active) { className += ' aio-input-date-active aio-input-theme-bg0 aio-input-theme-color1 aio-input-theme-text' }
-            else { className += ' aio-input-theme-bg1 aio-input-theme-color0' }
+            if (active) { className += ' aio-input-date-active aio-input-date-theme-active' }
+            else {className += ' aio-input-date-theme-color'}
             return className
         }
         if (unit === 'year') {
@@ -1850,11 +1741,15 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
         const closeText = translate('Close')
         return (
             <div className='aio-input-date-popup-footer'>
-                <button className='aio-input-theme-bg1 aio-input-theme-color0' onClick={() => onClose()}>{closeText}</button>
+                <button className='aio-input-date-theme-color' onClick={() => onClose()}>{closeText}</button>
             </div>
         )
     }
-    return (<div style={{ background: theme[0], color: theme[1] }} className={'aio-input-date-popup' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}>{header_node()}{body_node()}{footer_node()}</div>)
+    return (
+        <div 
+            style={{ background: theme[0], color: theme[1] }} 
+            className={'aio-input-date-popup aio-input-date-theme-bg' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}
+        >{header_node()}{body_node()}{footer_node()}</div>)
 }
 function DPHeader() {
     let { rootProps, activeDate, changeActiveDate, DATE }: I_DPContext = useContext(DPContext);
@@ -1885,7 +1780,7 @@ function DPHeaderDropdown(props: I_DPHeaderDropdown) {
     let { theme = Def('theme') } = rootProps;
     let p: AITYPE = {
         value, options, onChange, caret: false, type: 'select',
-        attrs: { className: 'aio-input-date-dropdown aio-input-theme-bg1 aio-input-theme-color0' },
+        attrs: { className: 'aio-input-date-dropdown aio-input-date-theme-color' },
         option: { style: () => { return { background: theme[1], color: theme[0] } } },
     }
     return (<AIOInput {...p} />)
@@ -1911,8 +1806,8 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] })
         }
     }
-    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1, { color: theme[0], className: 'aio-input-theme-color0' }) }
-    return (<div className='aio-input-date-arrow' onClick={() => change()}>{getIcon()}</div>)
+    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1,{color:theme[0]}) }
+    return (<div className='aio-input-date-arrow aio-input-date-theme-color' onClick={() => change()}>{getIcon()}</div>)
 }
 const AITableContext = createContext({} as any);
 function Table() {
@@ -3027,7 +2922,6 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
     const defaultOption: AI_optionProp = {
         text: 'option.text',
         value: 'option.value',
-        toggleIcon: () => false,
         after: ({ option, active }) => getAfter(option, !!active),
         before: ({ option }) => getBefore(option),
         onClick: ({ option }) => {
@@ -3063,36 +2957,6 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
             indent={0}
         />
     )
-}
-type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick: () => void, before?: ReactNode, after?: ReactNode }
-export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) => {
-    return (
-        <div className="aio-input-card">
-            {before !== undefined && <div className="aio-input-card-before" onClick={(e) => e.stopPropagation()}>{before}</div>}
-            <div className="aio-input-card-body" onClick={onClick}>
-                <div className="aio-input-card-text">{text}</div>
-                {subtext !== undefined && <div className="aio-input-card-subtext">{subtext}</div>}
-            </div>
-            {after !== undefined && <div className="aio-input-card-after" onClick={(e) => e.stopPropagation()}>{after}</div>}
-        </div>
-    )
-}
-type I_AIPanel = { text: string, subtext?: ReactNode, before?: ReactNode, after?: ReactNode, body: ReactNode }
-export const AIPanel: FC<I_AIPanel> = ({ text, subtext, before, after, body }) => {
-    function header_layout() {
-        return (
-            <div className="aio-input-panel-header">
-                <div className="aio-input-panel-before">{!!before && before}</div>
-                <div className="aio-input-panel-texts">
-                    <div className="aio-input-panel-text">{text}</div>
-                    {subtext !== undefined && <div className="aio-input-panel-subtext">{subtext}</div>}
-                </div>
-                <div className="aio-input-panel-after">{!!after && after}</div>
-            </div>
-        )
-    }
-    function body_layout() { return (<div className="aio-input-panel-body">{body}</div>) }
-    return (<div className="aio-input-panel">{header_layout()} {body_layout()}</div>)
 }
 export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: boolean) => void, colors?: string[] }> = ({ colors = ['#555', 'orange'], size = [16, 2, 3, 48], value, onChange = () => { } }) => {
     function getContainerStyle() {
@@ -3237,7 +3101,6 @@ function GetOptions(p: I_GetOptions): AI_options {
             attrs, text, value: optionValue, disabled, draggable,
             checkIcon: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'checkIcon' }) || rootProps.checkIcon,
             checked,
-            toggleIcon: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, def: true, key: 'toggleIcon' }),
             before: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'before' }),
             after: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'after' }),
             justify: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'justify' }),
@@ -3331,256 +3194,6 @@ function getTimeText(rootProps: AITYPE) {
     if (timeArray.length) { text.push(timeArray.join(':')) }
     return text.join(' ');
 }
-export type AITYPE =
-    AI_hasOption & AI_isDropdown & AI_isMultiple &
-    AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
-        after?: ReactNode | ((p?: any) => ReactNode),
-        attrs?: any,
-        before?: ReactNode | ((p?: any) => ReactNode),
-        className?: string,
-        disabled?: boolean | any[],
-        footer?: ReactNode,
-        imageAttrs?: any,
-        justify?: boolean,
-        label?: string,
-        lang?: 'fa' | 'en',
-        loading?: boolean | ReactNode,
-        onChange?: (newValue: any, p?: any) => undefined | boolean | void,
-        placeholder?: ReactNode,
-        reportError?: (errorMessage: string | undefined) => void,
-        rtl?: boolean,
-        showErrors?: boolean | string,
-        style?: any,
-        subtext?: ReactNode | (() => ReactNode),
-        type: AI_type,
-        validations?: (any[]) | ((v: any) => string | undefined),
-        value?: any,
-        body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
-        checkIcon?: AI_checkIcon,//select,checkbox,radio
-        listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
-        getOptions?: (text: string) => Promise<any[]>,//text,textarea
-        hideTags?: boolean,//select
-        onClick?: (e: Event) => void,//button
-        onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-        preview?: boolean,//password,image,file
-        text?: ReactNode | (() => ReactNode),//select,checkbox,button,
-    }
-
-export type AI_option = {
-    show: any, checked: boolean, checkIcon: AI_checkIcon, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
-    text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
-    tagAttrs: any, tagBefore: any, tagAfter: any, toggleIcon: boolean | ReactNode[], onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
-    details: AI_optionDetails
-}
-export type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
-export type AI_optionKey = (
-    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
-    'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show' | 'toggleIcon'
-)
-export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionDetails: AI_optionDetails) => any) }
-export type AI_optionDic = { [key: string]: AI_option }
-export type AI_options = { optionsList: AI_option[], optionsDic: AI_optionDic }
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
-export type AI_table_column = {
-    title?: any, value?: any, sort?: true | AI_table_sort, search?: boolean, id?: string, _id?: string, width?: any, minWidth?: any, input?: AITYPE,
-    onChange?: (newValue: any) => void, titleAttrs?: { [key: string]: any } | string, template?: string | ((p: { row: any, column: AI_table_column, rowIndex: number }) => ReactNode),
-    excel?: string | boolean, justify?: boolean, cellAttrs?: { [key: string]: any } | ((p: { row: any, rowIndex: number, column: AI_table_column }) => any) | string
-}
-export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
-export type AI_time_unit = { [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean }
-export type AI_table_param = { row: any, column: AI_table_column, rowIndex: number }
-export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
-export type AI_point = (index: number, p: any) => { offset?: number, html?: ReactNode, attrs?: any }
-export type AI_labels = AI_label[]
-export type AI_label = {
-    list?: number[], start?: number, end?: number, step?: number, dynamic?: boolean, autoHide?: boolean, zIndex?: number,
-    setting: (value: number, p: { angle: number, disabled: boolean }) => AI_labelItem
-}
-export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: ReactNode }
-export type AI_range_handle = ((value: number, p: any) => AI_range_handle_config) | false
-export type AI_range_handle_config = { thickness?: number, size?: number, color?: string, offset?: number, sharp?: boolean }
-export type AI_fill = { thickness?: number, color?: string, className?: string, style?: any }
-export type AI_checkIcon = Object | [ReactNode, ReactNode];
-export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
-export type AI_getProp = (p: AI_getProp_param) => any;
-export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
-export type AI_context = {
-    rootProps: AITYPE,
-    popup: AIOPopup,
-    showPassword: boolean,
-    setShowPassword: (v?: boolean) => void,
-    DragOptions: DragClass,
-    datauniqid: string,
-    touch: boolean,
-    click: (e: any, dom: any) => void,
-    optionClick: (option: AI_option, p?: any) => void,
-    types: AI_types,
-    DATE: AIODate,
-    options: AI_options,
-    error?: string
-}
-export type AI_types = { isMultiple: boolean, isInput: boolean, isDropdown: boolean, hasOption: boolean, hasPlaceholder: boolean, hasKeyboard: boolean, hasText: boolean, hasSearch: boolean }
-export type AI_table_sort = { active?: boolean, dir?: 'dec' | 'inc', title?: ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any }
-export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
-export type AI_table_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
-export type AI_table_rows = { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] }
-export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
-export type type_table_context = {
-    rootProps: AITYPE,
-    columns: AI_table_column[],
-    ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
-    add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
-    exportToExcel: () => void,
-    sorts: AI_table_sort[],
-    setSorts: (newSorts: AI_table_sort[]) => void,
-    sortRows: (rows: any[], sorts: AI_table_sort[]) => any[],
-    excelColumns: AI_table_column[],
-    getRowAttrs: (row: any, rowIndex: number) => any,
-    getCellAttrs: type_table_getCellAttrs,
-    getDynamics: any
-}
-export type AI_Popover_props = { getRootProps: () => AITYPE, id: string, toggle: (popover: any) => void, types: AI_types }
-export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
-export type AI_indent = { size: number, isLastChild: boolean, isFirstChild: boolean, childsLength: number, level: number, index: number, parentIndent?: AI_indent, height: number }
-export type I_list_temp = {
-    dom: any, activeIndex: number, interval: any, moved: boolean, lastY: number, deltaY: number,
-    so: { y: number, top: number, newTop?: number, limit: { top: number, bottom: number } }
-}
-type AI_hasOption = {
-    deSelect?: any, onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-    option?: AI_optionProp, options?: any[] | ((p?: any) => any[]), search?: string,
-}
-type AI_isDate = {
-    dateAttrs?: (p: {
-        dateArray: number[], isToday: boolean, isActive: boolean, isFuture: boolean,
-        weekDayIndex: number | null, weekDay: string | null, monthString: string,
-    }) => any,
-    jalali?: boolean,
-    now?: boolean,
-    pattern?: string,
-    theme?: string[],
-    translate?: (text: string) => string,
-    unit?: AI_date_unit | AI_time_unit,
-    timeStep?: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number },
-    text?: ReactNode | (() => ReactNode),
-}
-type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
-type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
-type AI_hasKeyboard = {
-    blurChange?: boolean, filter?: string[] | string, inputAttrs?: any, justNumber?: string,
-    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
-}
-type AI_isTable = {
-    addText?: ReactNode | ((value: any) => ReactNode),
-    columnGap?: number,
-    columns?: AI_table_column[] | ((p?: any) => AI_table_column[]),
-    excel?: string | ((value: any[]) => any[]),
-    getValue?: { [key: string]: (p: AI_table_param) => any },
-    headerAttrs?: any,
-    onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),
-    onChangePaging?: (newPaging: AI_table_paging) => void,
-    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
-    onSearch?: true | ((searchValue: string) => void),
-    paging?: AI_table_paging,
-    removeText?: string,
-    rowAfter?: (p: { row: any, rowIndex: number }) => ReactNode,
-    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
-    rowBefore?: (p: { row: any, rowIndex: number }) => ReactNode,
-    rowGap?: number,
-    rowsTemplate?: (rows: any[]) => ReactNode,
-    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => ReactNode,//table
-    toolbar?: ReactNode | (() => ReactNode),
-    toolbarAttrs?: any,
-    tabIndex?: number
-}
-type AI_isRange = {
-    end?: number,
-    fill?: false | AI_fill | ((index: number) => AI_fill),
-    grooveAttrs?: { [key: string]: any },
-    labels?: AI_labels,
-    max?: number,
-    min?: number,
-    point?: false | AI_point,
-    ranges?: [number, I_rangeConfig][],
-    reverse?: boolean,
-    size?: number,
-    start?: number,
-    step?: number,
-    vertical?: boolean,
-    circles?: I_rangeConfig[],
-    handle?: AI_range_handle,
-    rotate?: number,
-    round?: number,
-}
-type AI_isTree = {
-    actions?: ({ [key in keyof AI_option]?: any }[]) | ((row: any, parent: any) => { [key in keyof AI_option]?: any }[]),
-    addText?: ReactNode | ((value: any) => ReactNode),
-    checkIcon?: AI_checkIcon,
-    getChilds?: (p: { row: any, details: I_treeRowDetails }) => any[],
-    indent?: number,
-    onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),
-    onRemove?: true | ((p: { row: any, action?: Function, rowIndex?: number, parent?: any }) => Promise<boolean | void>),
-    onToggle?: (openDic: { [id: string]: boolean }) => void,
-    removeText?: string,
-    setChilds?: (p: { row: any, childs: any[], details: I_treeRowDetails }) => void,
-    toggleRef?: MutableRefObject<(id: any) => void>,
-}
-
-
-//onSearch on tree
-//rowOption on table
-//now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
-
-export type AI<AI_type> = Omit<AITYPE, 'onChange' | 'type'> & {
-    onChange?: AI_onChange<AI_type>,
-}
-type AI_onChange<AI_type> =
-    AI_type extends 'text' ? (v: string) => void :
-    AI_type extends 'number' ? (v: number | undefined) => void :
-    AI_type extends 'textarea' ? (v: string) => void :
-    AI_type extends 'password' ? (v: string) => void :
-    AI_type extends 'color' ? (v: string) => void :
-    AI_type extends 'select' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'radio' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'tabs' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'buttons' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'tags' ? (v: any[]) => void :
-    AI_type extends 'tree' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'image' ? (v: any) => void :
-    AI_type extends 'file' ? (v: any) => void :
-    AI_type extends 'checkbox' ? (v: any) => void :
-    AI_type extends 'date' ? (v: any, dateDetails: AI_dateDetails) => void :
-    AI_type extends 'time' ? (v: any) => void :
-    AI_type extends 'slider' ? (v: any) => void :
-    AI_type extends 'spinner' ? (v: any) => void :
-    AI_type extends 'acardion' ? (v: any) => void :
-    AI_type extends 'list' ? (v: any, optionDetails: AI_optionDetails) => void :
-    AI_type extends 'table' ? (v: any) => void :
-    never;
-export const AIText: FC<AI<'text'>> = (props) => <AIOInput {...props} type='text' />
-export const AINumber: FC<AI<'number'>> = (props) => <AIOInput {...props} type='number' />
-export const AITextarea: FC<AI<'textarea'>> = (props) => <AIOInput {...props} type='textarea' />
-export const AIPassword: FC<AI<'password'>> = (props) => <AIOInput {...props} type='password' />
-export const AIColor: FC<AI<'color'>> = (props) => <AIOInput {...props} type='color' />
-export const AISelect: FC<AI<'select'>> = (props) => <AIOInput {...props} type='select' />
-export const AIRadio: FC<AI<'radio'>> = (props) => <AIOInput {...props} type='radio' />
-export const AITabs: FC<AI<'tabs'>> = (props) => <AIOInput {...props} type='tabs' />
-export const AIButtons: FC<AI<'buttons'>> = (props) => <AIOInput {...props} type='buttons' />
-export const AITags: FC<AI<'tags'>> = (props) => <AIOInput {...props} type='tags' />
-export const AITree: FC<AI<'tree'>> = (props) => <AIOInput {...props} type='tree' />
-export const AIImage: FC<AI<'image'>> = (props) => <AIOInput {...props} type='image' />
-export const AIFile: FC<AI<'file'>> = (props) => <AIOInput {...props} type='file' />
-export const AICheckbox: FC<AI<'checkbox'>> = (props) => <AIOInput {...props} type='checkbox' />
-export const AIDate: FC<AI<'date'>> = (props) => <AIOInput {...props} type='date' />
-export const AITime: FC<AI<'time'>> = (props) => <AIOInput {...props} type='time' />
-export const AISlider: FC<AI<'slider'>> = (props) => <AIOInput {...props} type='slider' />
-export const AISpinner: FC<AI<'spinner'>> = (props) => <AIOInput {...props} type='spinner' />
-export const AIAcardion: FC<AI<'acardion'>> = (props) => <AIOInput {...props} type='acardion' />
-export const AIList: FC<AI<'list'>> = (props) => <AIOInput {...props} type='list' />
-export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='table' />
-
 export type I_MonthCalendar = { date: number[], onClick?: (date: number[]) => void, dateAttrs?: (date: number[]) => any }
 export const MonthCalendar: FC<I_MonthCalendar> = ({ date, onClick = () => { }, dateAttrs = () => ({}) }) => {
     const DATE = new AIODate();
@@ -3604,630 +3217,6 @@ export const MonthCalendar: FC<I_MonthCalendar> = ({ date, onClick = () => { }, 
     )
 }
 
-const PrismCode: FC<{ code: string, language?: 'js' | 'css', style?: any }> = ({ code, language = 'js', style = {} }) => {
-    useEffect(() => { Prism.highlightAll() }, [])
-    return (
-        <div className="aio-doc-code" style={style}>
-            <pre style={{ height: '100%', overflow: 'auto' }}>
-                <code className={`language-${language}`}>{code}</code>
-            </pre>
-        </div>
-    );
-}
-export function Code(code: string, language?: 'js' | 'css', style?: any) {
-    return <PrismCode code={code} language={language} style={style} />
-}
-type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber'
-type I_login_field = string
-export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton' | 'otpcodeButton' |
-    'registerTitle' | 'userpassTitle' | 'otpcodeTitle' | 'otpnumberTitle' |
-    'switchuserpass' | 'switchregister' | 'switchotp' |
-    'rePasswordMatch' | 'userNameRequired' | 'passwordRequired' | 'rePasswordRequired' |
-    'otpNumberRequired' | 'otpCodeLength' |
-    'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError'
-type I_login_model = { userName: string, password: string, otpNumber: string, otpCode: string, register: any }
-type I_AILogin = {
-    checkToken: (token: string) => Promise<{
-        method: 'post' | 'get', url: string, body?: any
-        onSuccess: (response: any) => string | boolean, onCatch: (response: any) => string | false
-    }>,
-    before?: (mode: I_loginMode) => ReactNode,
-    after?: (mode: I_loginMode) => ReactNode,
-    renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
-    translate?: (key: I_login_key) => string | undefined,
-    fa?: boolean,
-    rememberTime: number,
-    id: string,
-    splash?: {
-        html: ReactNode,
-        time: number
-    },
-    getRequestOptions: (model: I_login_model, mode: I_loginMode) => Promise<{
-        method: 'post' | 'get', url: string, body?: any,
-        onSuccess: (response: any) => any,
-        onCatch: (response: any) => string
-    }>
-    label: (field: I_login_field) => string,
-    validation?: (model: I_login_model, mode: I_loginMode) => string | undefined,
-    otpLength?: number,
-    otp?: boolean,
-    userpass?: boolean
-    register?: {
-        defaultValue?: { [field: string]: any }
-        inputs?: (model: I_login_model) => (AITYPE & { field: string })[]
-    },
-    mode?: I_loginMode,
-    attrs?: any,
-    setAttrs?: (key: I_login_key) => any,
-    mock?: { user: any, token: string }
-}
-type I_login_modeState = {
-    key: I_loginMode, inputs: () => ReactNode, title: ReactNode,
-    submitText: string, responseUserType: boolean
-}
-export function AIOLogin_updateCatchedUser(loginId: string, newUser: any) {
-    const storage = new Storage('ai-login' + loginId);
-    const storedData = storage.load('data');
-    if (!storedData) { return newUser }
-    const newStoredData = { ...storedData, user: newUser }
-    return storage.save('data', newStoredData)
-}
-export const AILogin: FC<I_AILogin> = (props) => {
-    const { translate = () => { }, otpLength = 4 } = props;
-    const { validation = () => { return undefined } } = props;
-    const [data, setData] = useState<{ token: string, user: any }>()
-    const [storage] = useState<Storage>(new Storage('ai-login' + props.id))
-    const [model, setModel] = useState<I_login_model>(getModel)
-    const [loading] = useState<AIOLoading>(new AIOLoading())
-    const [submitDisabled, setSubmitDisabled] = useState<boolean>(false)
-    const modelRef = useRef(model)
-    modelRef.current = model;
-    const [mode, setMode] = useState<I_login_modeState>(getMode())
-    function getModeKey(): I_loginMode {
-        if (props.mode) { return props.mode }
-        if (props.userpass) { return 'userpass' }
-        if (props.otp) { return 'otpnumber' }
-        return 'userpass'
-    }
-    function getMode(mode?: I_loginMode): I_login_modeState {
-        let res: I_login_modeState = { inputs: () => null, key: mode || getModeKey(), title: null, submitText: '', responseUserType: false }
-        if (res.key === 'userpass') {
-            res.inputs = () => {
-                return (
-                    <>
-                        <AIText {...input_props('userName')} />
-                        <AIPassword {...input_props('password')} preview={true} />
-                    </>
-                )
-            }
-            res.responseUserType = true
-        }
-        else if (res.key === 'register') {
-            if (props.register) {
-                const inputs = (props.register.inputs || (() => []))(modelRef.current) || []
-                res.inputs = () => {
-                    const model = modelRef.current
-                    return (<>
-                        <AIText {...input_props('userName', true)} />
-                        <AIPassword {...input_props('password', true)} preview={true} />
-                        <AIPassword {...{
-                            label: props.label('rePassword'), rtl: !!props.fa, value: model.register.rePassword, preview: true,
-                            onChange: (v: any) => setModel({ ...model, register: { ...model.register, rePassword: v } })
-                        }}
-                        />
-                        {
-                            inputs.map((input) => {
-                                const value = model.register[input.field]
-                                return (
-                                    <AIOInput key={input.field}
-                                        rtl={!!props.fa} label={props.label(input.field)} {...input}
-                                        value={value} onChange={(v) => setModel({ ...model, register: { ...model.register, [input.field]: v } })}
-                                    />
-                                )
-                            })
-                        }
-                    </>)
-                }
-            }
-        }
-        else if (res.key === 'otpnumber') { res.inputs = () => <AIText {...input_props('otpNumber')} justNumber={''} maxLength={11} /> }
-        else if (res.key === 'otpcode') { res.inputs = () => <AIText {...input_props('otpCode')} justNumber={''} maxLength={otpLength} />; res.responseUserType = true }
-        res.submitText = trans(res.key + 'Button' as I_login_key)
-        res.title = <div className="ai-login-title">{trans(res.key + 'Title' as I_login_key)}</div>
-        return res
-    }
-    function getModel() {
-        let model: I_login_model = { userName: '', password: '', otpNumber: '', otpCode: '', register: { userName: '', password: '', rePassword: '' } }
-        if (!props.register) { return model }
-        if (props.register?.defaultValue) {
-            let register: any = {}
-            for (let prop in props.register.defaultValue) {
-                register[prop] = props.register.defaultValue[prop]
-            }
-            model.register = register
-        }
-        return model
-    }
-    const [waitingCheckToken, setWeightingCheckToken] = useState<boolean>(true)
-    const [splashing, setSplashing] = useState<boolean>(!!props.splash)
-    const [popup] = useState<AIOPopup>(new AIOPopup())
-    function trans(key: I_login_key) {
-        const dic: { [key in I_login_key]: { fa: string, en: string } } = {
-            registerButton: { en: 'Register', fa: 'ثبت نام' },
-            userpassButton: { en: 'Login', fa: 'ورود' },
-            otpnumberButton: { en: 'Send Number', fa: 'ارسال شماره همراه' },
-            otpcodeButton: { en: 'Login', fa: 'ورود' },
-            registerTitle: { en: 'Register', fa: 'ثبت نام' },
-            userpassTitle: { en: 'Login', fa: 'ورود' },
-            otpcodeTitle: { en: 'OTP Code', fa: 'کد یکبار مصرف' },
-            otpnumberTitle: { en: 'Phone Number', fa: 'شماره همراه' },
-            switchuserpass: { en: 'login by user name', fa: 'ورود با نام کاربری' },
-            switchregister: { en: 'Go To Register', fa: 'ثبت نام' },
-            switchotp: { en: 'login by otp', fa: 'ورود با رمز یکبار مصرف' },
-            rePasswordMatch: { en: 'Password is not match with Re password', fa: 'رمز عبور با تکرار آن مطابقت ندارد' },
-            userNameRequired: { en: 'User Name is required', fa: 'نام کاربری ضروری است' },
-            passwordRequired: { en: 'password is required', fa: 'رمز عبور ضروری است' },
-            rePasswordRequired: { en: 'Re Password is required', fa: 'تکرار رمز عبور ضروری است' },
-            otpNumberRequired: { en: 'Phone Number is required', fa: 'شماره همراه ضروری است' },
-            otpCodeLength: { en: `otp code should be ${otpLength} digit`, fa: `کد یکبار مصرف باید ${otpLength} رقم باشد` },
-            registerError: { en: 'Registeration failed', fa: 'ثبت نام با خطا روبرو شد' },
-            userpassError: { en: 'login by userName failed', fa: 'ورود با نام کاربری با خطا روبرو شد' },
-            otpcodeError: { en: 'login by otp failed', fa: 'ورود با کد یکبار مصرف با خطا روبرو شد' },
-            otpnumberError: { en: 'send otp number for receive otp code failed', fa: 'ارسال شماره همراه برای دریافت کد یکبار مصرف با خطا روبرو شد' },
-        }
-        return props.fa ? dic[key].fa : translate(key) || dic[key].en
-    }
-    function userpassCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
-    function registerCallback() { window.location.reload() }
-    function otpNumberCallback() { setMode(getMode('otpcode')) }
-    function otpCodeCallback(p: { user: any, token: string }) { storage.save('data', p); setData(p) }
-    async function success(response: any) {
-        const modeKey = mode.key
-        let callback: any = { userpass: userpassCallback, register: registerCallback, otpnumber: otpNumberCallback, otpcode: otpCodeCallback }[modeKey]
-        loading.show('login0')
-        const { onSuccess } = await props.getRequestOptions(modelRef.current, mode.key)
-        let message, res;
-        try {
-            loading.show('login0')
-            res = await onSuccess(response)
-            loading.hide('login0')
-        }
-        catch (err: any) {
-            loading.hide('login0')
-            setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: err.message }); return
-        }
-        if (typeof res === 'string') { message = res }
-        let defaultMessage: string = {
-            userpass: 'modes.userpass onSuccess props should returns string as error or {user:any,token:string} as success',
-            register: 'modes.register onSuccess props should returns string as error or true as success',
-            otpnumber: 'modes.otp.onSubmitNumber onSuccess props should returns string as error or true as success',
-            otpcode: 'modes.otp.onSubmitCode onSuccess props should returns string as error or {user:any,token:string} as success'
-        }[modeKey] as string
-        if (mode.responseUserType) {
-            if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') { message = defaultMessage }
-        }
-        else if (res !== true) { message = defaultMessage }
-        if (message) { setAlert({ type: 'error', text: trans(modeKey + 'Error' as I_login_key), subtext: message }) }
-        else { callback(res) }
-    }
-    async function submit() {
-        loading.show('login0')
-        const { url, method, body, onCatch } = await props.getRequestOptions(modelRef.current, mode.key)
-        loading.hide('login0')
-        axios[method as 'post' | 'get'](url, body).then(success).catch(response => {
-            if (onCatch) { setAlert({ type: 'error', text: 'Error', subtext: onCatch(response) }) }
-            else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
-        });
-    }
-    function changeMode(mode: I_loginMode) { setModel(getModel()); setMode(getMode(mode)) }
-    function mode_props(key: I_loginMode) { return { className: 'ai-login-mode', onClick: () => changeMode(key) } }
-    function mode_layout() {
-        return (
-            <div className="ai-login-modes">
-                {props.userpass && mode.key !== 'userpass' && <button {...mode_props('userpass')}>{trans('switchuserpass')}</button>}
-                {props.register && mode.key !== 'register' && <button {...mode_props('register')}>{trans('switchregister')}</button>}
-                {props.otp && mode.key !== 'otpnumber' && <button {...mode_props('otpnumber')}>{trans('switchotp')}</button>}
-            </div>
-        )
-    }
-    function input_props(field: keyof I_login_model, isRegister?: boolean) {
-        const model = modelRef.current
-        return {
-            label: props.label(field), rtl: !!props.fa, value: model[field], onChange: (v: any) => {
-                if (isRegister) { setModel({ ...model, register: { ...model.register, [field]: v } }) }
-                else { setModel({ ...model, [field]: v }) }
-            }
-        }
-    }
-    function validate() {
-        const model = modelRef.current
-        if (mode.key === 'otpcode') {
-            if ((model.otpCode || '').length !== otpLength) { return trans('otpCodeLength') }
-        }
-        if (mode.key === 'otpnumber') {
-            if (!model.otpNumber) { return trans('otpNumberRequired') }
-        }
-        if (mode.key === 'userpass') {
-            if (!model.userName) { return trans('userNameRequired') }
-        }
-        if (mode.key === 'register') {
-            if (!model.register.userName) { return trans('userNameRequired') }
-            if (!model.register.password) { return trans('passwordRequired') }
-            if (!model.register.rePassword) { return trans('rePasswordRequired') }
-            if (model.register.password !== model.register.rePassword) { return trans('rePasswordMatch'); }
-        }
-        return validation(model, mode.key)
-    }
-    function submit_layout() {
-        const message = validate()
-        return (<>
-            <div className="ai-login-errors">
-                {!!message && <div className="ai-login-error">{message}</div>}
-            </div>
-            <button className='ai-login-submit' disabled={!!message || !!submitDisabled} onClick={() => {
-                setSubmitDisabled(true)
-                setTimeout(() => setSubmitDisabled(false), 3000)
-                submit()
-            }}>{mode.submitText}</button>
-        </>)
-    }
-    function form_layout() {
-        const { title, inputs } = mode;
-        return (<div className="ai-login-form">{title}{inputs()}{submit_layout()}{mode_layout()}</div>)
-    }
-    const bf_layout = (type: 'before' | 'after') => {
-        const fn = props[type];
-        let content = null;
-        if (fn) { content = fn(mode.key) }
-        return (<div className={`ai-login-${type}`}>{content}</div>)
-    }
-    function logout() { storage.remove('data'); window.location.reload(); }
-    async function CheckToken() {
-        if (props.splash) { setTimeout(() => { setSplashing(false) }, props.splash.time); }
-        if (props.mock) {
-            setData({ user: props.mock.user, token: props.mock.token })
-            return
-        }
-        const storedData = storage.load('data', {}, props.rememberTime), { user, token } = storedData;
-        loading.show('login0')
-        const { url, method, onSuccess, onCatch } = await props.checkToken(token || '');
-        loading.hide('login0')
-        if (user && token) {
-            axios[method](url, { headers: { authorization: `Bearer ${token}` } })
-                .then(response => {
-                    let res;
-                    try { res = onSuccess(response); }
-                    catch (err: any) { setAlert({ type: 'error', text: 'checkToken failed', subtext: err.message }); return }
-                    if (res === true) { setData({ user, token }) }
-                    else if (res === false) { logout() }
-                    else { setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' }) }
-                })
-                .catch(response => {
-                    let res, message: string = '';
-                    try { res = onCatch(response) }
-                    catch (err: any) { message = err.message }
-                    if (typeof res === 'string') { message = res }
-                    else if (res === false) { logout() }
-                    else { message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token' }
-                    if (message) { setAlert({ type: 'error', text: 'checkToken failed', subtext: message }) }
-                    else if (response.message) { setAlert({ type: 'error', text: 'Error', subtext: response.message }) }
-
-                })
-
-        }
-        setWeightingCheckToken(false)
-    }
-    useEffect(() => { CheckToken() }, [])
-    function setAlert(p: AP_alert) { popup.addAlert(p) }
-    function getContent() {
-        if (waitingCheckToken || splashing) { return props.splash ? props.splash.html : null }
-        if (!data) {
-            const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: !!props.fa ? 'rtl' : undefined } })
-            return (<div {...attrs}>{bf_layout('before')} {form_layout()} {bf_layout('after')}</div>)
-        }
-        return props.renderApp({ token: data.token, user: data.user, logout })
-    }
-    return (<>{getContent()} {popup.render()}</>)
-}
-type I_pos = [number, number]
-export type I_marker = { pos: [number, number], html?: ReactNode, eventHandlers?: any }
-export type I_shapeStyle = {
-    stroke?: { color?: string, width?: number, dash?: string },
-    fill?: { color?: string, opacity?: number }
-}
-export type I_circle = { type: 'circle', center: I_pos, radius?: number, style?: I_shapeStyle }
-export type I_rect = { type: 'rect', points: I_pos[], style?: I_shapeStyle }
-export type I_polyline = { type: 'polyline', points: I_pos[], style?: I_shapeStyle }
-export type I_shape = I_circle | I_rect | I_polyline
-type I_Map = {
-    children?: React.ReactNode,
-    onChange?: (coords: I_pos) => void,
-    zoom?: { value?: number, wheel?: boolean, control?: boolean, onChange?: (zoom: number) => void },
-    markers?: I_marker[]
-    value?: I_pos,
-    marker?: ReactNode | false,
-    style?: any,
-    onClick?: () => void,
-    dragging?: boolean,
-    submitText?: string,
-    onSubmit?: (pos: I_pos) => void,
-    shapes?: I_shape[],
-    footer?: ReactNode,
-    layers?: I_layers,
-    getSearchResult?: (searchValue: string) => Promise<I_searchResult[]>,
-    onSearch?: (searchResult: I_searchResult) => void,
-    mapRef?: any,
-    whenReady?: () => void,
-    onMoveEnd?: (e: LeafletEvent) => void,
-    actionsRef?: any
-}
-export type I_layers = { position: 'topright' | 'topleft', items: I_layerItem[] }
-export type I_layerItem = { name: string, markers?: I_marker[], shapes?: I_shape[], active?: boolean }
-type I_mapctx = { rootProps: I_Map, pos: I_pos, move: (pos: I_pos) => void, setMap: any, getDefaultMarkerIcon: () => ReactNode, changeZoom: (zoom: number) => void, zoom: number }
-const MAPCTX = createContext({} as any)
-export const AIMap: FC<I_Map> = (props) => {
-    const { value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
-    const [map, setMap] = useState<any>(null)
-    const [zoom, setZoom] = useState<number>(props.zoom?.value || 14)
-    const lockChangeZoomState = useRef(false)
-    function changeZoom(zoom: number) {
-        if (lockChangeZoomState.current === true) { return }
-        setZoom(zoom)
-    }
-    if (mapRef) { mapRef.current = map; }
-    if (props.actionsRef) {
-        props.actionsRef.current = {
-            flyTo: (p: { lat: number, lng: number, zoom: number, callback: () => void }) => {
-                lockChangeZoomState.current = true
-                map.flyTo([p.lat, p.lng], p.zoom)
-                const onMoveEnd = () => {
-                    map.off("moveend", onMoveEnd);
-                    lockChangeZoomState.current = false;
-                    changeZoom(p.zoom)
-                    p.callback();
-                }
-                map.on("moveend", onMoveEnd);
-            }
-        }
-    }
-    const [pos, setPos] = useState<I_pos>(value)
-    const moveTimeout = useRef<any>(undefined)
-    function move(pos: I_pos) {
-        setPos(pos)
-        if (props.onChange) {
-            clearTimeout(moveTimeout.current);
-            moveTimeout.current = setTimeout(() => { if (props.onChange) { props.onChange(pos) } }, 600)
-        }
-    }
-    function getDefaultMarkerIcon() {
-        return <div className='marker-icon'><div className='marker-icon-circle'></div><div className='marker-icon-arrow'></div></div>
-    }
-    function getContext(): I_mapctx { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon, changeZoom, zoom } }
-    useEffect(() => {
-        if (map !== null) { map.setView(value, zoom, { animate: false }) }
-        setPos(value)
-    }, [value[0] + '-' + value[1] + '-' + zoom])
-    return (
-        <MAPCTX.Provider value={getContext()}>
-            <div className="ai-map">
-                {!!getSearchResult && <MapHeader />}
-                <MapBody />
-                <MapFooter />
-            </div>
-        </MAPCTX.Provider>
-    );
-};
-const MapBody: FC = () => {
-    const { rootProps, pos, setMap, getDefaultMarkerIcon, zoom }: I_mapctx = useContext(MAPCTX)
-    const { style, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
-    const defaultStyle = { width: '100%', height: '100%' }
-    return (
-        <MapContainer
-            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom} scrollWheelZoom={rootProps.zoom?.wheel ? 'center' : undefined} zoomControl={rootProps.zoom?.control !== false}
-            attributionControl={true} dragging={dragging} ref={setMap} whenReady={whenReady}
-        >
-            <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />
-            {/* <TileLayer 
-              url="https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token={accessToken}" 
-              attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'     
-              accessToken='pk.eyJ1IjoibXNmMTM2NCIsImEiOiJjbTE1MnlpM20wNTJvMmtyNDhjYjIzMXRhIn0.zRM2a68bNyBsYSeIdV8a4A'
-            /> */}
-            {/* http://leaflet-extras.github.io/leaflet-providers/preview/ */}
-            <MapEvents />
-            {marker !== false && <MapMarker key='main-marker' pos={pos} html={isValidElement(marker) ? marker : getDefaultMarkerIcon()} />}
-            {markers.map((marker: I_marker, i: number) => <MapMarker key={`marker-${i}`} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers} />)}
-            {shapes.map((o: I_shape, i: number) => <MapShape key={i} shape={o} />)}
-            <MapLayers />
-            {children}
-        </MapContainer>
-    )
-}
-type I_searchResult = { text: string, value: string, pos: I_pos, subtext?: string, before?: ReactNode, after?: ReactNode }
-const MapHeader: FC = () => {
-    const { rootProps, move }: I_mapctx = useContext(MAPCTX);
-    const { getSearchResult, onSearch } = rootProps;
-    const [searchValue, setSearchValue] = useState<string>('')
-    const [searchResult, setSerachResult] = useState<I_searchResult[]>([])
-    const timeout = useRef<any>();
-    function changeSearch(searchValue: string) {
-        setSearchValue(searchValue);
-        clearTimeout(timeout.current);
-        timeout.current = setTimeout(async () => {
-            if (getSearchResult) {
-                const res: I_searchResult[] = await getSearchResult(searchValue)
-                if (Array.isArray(res)) { setSerachResult(res) }
-            }
-        }, 1200)
-    }
-    return (
-        <div className="ai-map-header">
-            <AIOInput
-                type='text' value={searchValue} options={(searchResult || [])}
-                before={I('mdiMagnify', 0.8)}
-                onChange={(searchValue) => changeSearch(searchValue)}
-                option={{
-                    onClick: ({ option }) => { if (onSearch) { onSearch(option as I_searchResult) } }
-                }}
-            />
-        </div>
-    )
-}
-const MapLayers: FC = () => {
-    const { rootProps }: I_mapctx = useContext(MAPCTX);
-    const { layers } = rootProps;
-    if (!layers) { return null }
-    const { position = 'topright', items = [] } = layers;
-    return (
-        <LayersControl position={position}>
-            {
-                items.map((o: I_layerItem, i: number) => {
-                    const { shapes = [], markers = [], active = true } = o;
-                    return (
-                        <LayersControl.Overlay name={o.name} checked={active} key={i}>
-                            <FeatureGroup>
-                                {markers.map((marker: I_marker, j: number) =>
-                                    <MapMarker key={j} pos={marker.pos} html={marker.html} eventHandlers={marker.eventHandlers} />
-                                )}
-                                {shapes.map((shape: I_shape, k: number) =>
-                                    <MapShape key={k} shape={shape} />
-                                )}
-                            </FeatureGroup>
-                        </LayersControl.Overlay>
-                    )
-                })
-            }
-        </LayersControl>
-    )
-}
-const MapShape: FC<{ shape: I_shape }> = ({ shape }) => {
-    const { style = {}, type } = shape, { stroke = {}, fill = {} } = style;
-    const { width = 4, dash, color: strokeColor = 'orange' } = stroke;
-    const { color: fillColor = 'orange', opacity = 0.3 } = fill;
-    const pathOptions = { fillColor: fillColor, color: strokeColor, fillOpacity: opacity, weight: width, dashArray: dash }
-    if (type === 'circle') {
-        const { center, radius = 100 } = shape;
-        return (<Circle center={center} pathOptions={pathOptions} radius={radius} />)
-    }
-    else if (type === 'rect') { return (<Rectangle bounds={shape.points} pathOptions={pathOptions} />) }
-    else if (type === 'polyline') { return (<Polyline positions={shape.points} pathOptions={pathOptions} />) }
-    return null
-}
-const MapFooter: FC = () => {
-    const { rootProps, pos }: I_mapctx = useContext(MAPCTX);
-    const { submitText = 'Submit', onSubmit, footer } = rootProps;
-    if (!onSubmit && !footer) { return null }
-    return (
-        <div className="ai-map-footer">
-            {!!onSubmit && <button type='button' onClick={() => onSubmit(pos)}>{submitText}</button>}
-            <div className="ai-map-footer-html">{footer || null}</div>
-        </div>
-    )
-}
-const MapMarker: FC<{ pos: I_pos, html?: ReactNode, eventHandlers?: any }> = ({ pos, html, eventHandlers }) => {
-    const { getDefaultMarkerIcon }: I_mapctx = useContext(MAPCTX)
-    function getHtmlIcon(html: ReactNode) {
-        return divIcon({
-            html: JSXToHTML(html),
-            className: '', // Optional, for adding custom styles
-            iconSize: [32, 32], // size of the icon
-            iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
-        });
-    }
-    html = html || getDefaultMarkerIcon()
-    let props: any = { position: pos }
-    if (html) { props.icon = getHtmlIcon(html) }
-    return <Marker {...props} animate={false} eventHandlers={eventHandlers} />
-}
-function MapEvents() {
-    const { rootProps, move, changeZoom }: I_mapctx = useContext(MAPCTX)
-    const map = useMapEvents({
-        click: () => rootProps.onClick ? rootProps.onClick() : undefined,
-        move: (e: any) => {
-            if (rootProps.dragging === false) { return }
-            let { lat, lng } = e.target.getCenter()
-            move([lat, lng])
-        },
-        zoom: (e: any) => {
-            changeZoom(e.target._zoom)
-        },
-        locationfound: (location: any) => {
-            console.log('location found:', location)
-        },
-        moveend: (e) => {
-            if (rootProps.onMoveEnd) { rootProps.onMoveEnd(e) }
-        },
-        movestart: (e) => {
-        }
-    })
-    return null
-}
-type I_AIApp = {
-    attrs?: any,
-    bottomMenu: {
-        options: AI_bottomMenuOption[],
-        onChange: (v: string) => void
-    }
-    body: () => ReactNode,
-    header?: () => ReactNode | false,
-    children?: ReactNode
-}
-type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
-export const AIApp: FC<I_AIApp> = (props) => {
-    function header_layout() {
-        if (!props.header) { return null }
-        const header = props.header()
-        if (header === false) { return null }
-        return (<div className="ai-app-header">{header}</div>)
-    }
-    function body_layout() {
-        return (
-            <div className="ai-app-body">
-                {props.body()}
-            </div>
-        )
-    }
-    function bottomMenu_layout() {
-        return (<AIBottomMenu bottomMenu={props.bottomMenu} />)
-    }
-    const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
-    return (
-        <div {...attrs}>
-            {header_layout()}
-            {body_layout()}
-            {bottomMenu_layout()}
-            {!!props.children && props.children}
-        </div>
-    )
-}
-type AI_BottomMenu = { bottomMenu: I_AIApp["bottomMenu"] }
-const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
-    const { options, onChange } = bottomMenu
-    function item_layout(item: AI_bottomMenuOption) {
-        if (item.show === false) { return null }
-        return (
-            <div key={item.value} className={`ai-app-bottom-menu-option${item.active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
-                {!!item.before && item.before}
-                <div className="ai-app-bottom-menu-option-body">
-                    {item.text !== undefined && item.text}
-                    {
-                        item.text === undefined &&
-                        <>
-                            <div className="ai-app-bottom-menu-uptext">{item.uptext}</div>
-                            <div className="ai-app-bottom-menu-subtext">{item.subtext}</div>
-                        </>
-                    }
-                </div>
-                {!!item.after && item.after}
-
-            </div>
-        )
-    }
-    return (
-        <div className="ai-app-bottom-menu">
-            {options.map((o, i) => item_layout(o))}
-        </div>
-    )
-}
 export type I_mask_pattern = ['number' | 'text' | 'select' | ReactNode, number, (string[] | ReactNode)?][]
 export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: string) => void }> = (props) => {
     const [dom] = useState(createRef())
@@ -4321,7 +3310,7 @@ export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: s
                         style={{ width: length * 10 }}
                         placeholder={new Array(length).fill('x').join('')}
                         maxLength={length}
-                        justNumber={type === 'number'?'':undefined}
+                        filter={type === 'number' ? ['number'] : undefined}
                         value={valuesRef.current[inputIndex]}
                         onChange={(v: string) => changeValue(v, inputIndex, patternIndex)}
                     />
@@ -4353,49 +3342,6 @@ export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: s
         </div>
     )
 }
-export type I_MonthCells = {
-    year: number, month: number, cellContent: (date: number[], weekDayIndex: number) => ReactNode, weekDayContent?: (v: number) => ReactNode,
-    changeMonth: (month: number) => void
-}
-export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDayContent }) => {
-    const [DATE] = useState<AIODate>(new AIODate())
-    const [monthes] = useState<string[]>(DATE.getMonths(true))
-    function getDateInfo() {
-        const res = {
-            monthDaysLength: DATE.getMonthDaysLength([year, month]),
-            firstDayIndex: DATE.getWeekDay([year, month, 1]).index,
-            monthString: DATE.getMonths(true)[month - 1]
-        }
-        console.log(res, year, month)
-        return res
-    }
-    const gtc = Math.floor(100 / 7);
-    const gridTemplateColumns: string = `${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}% ${gtc}%`;
-    function weekDays_layout() {
-        if (!weekDayContent) { return null }
-        return (
-            <div className="month-cells-grid" style={{ gridTemplateColumns }}>
-                {DATE.getWeekDays(true).map((o: string, i: number) => <div key={o} className={`month-cells-weekday`}>{weekDayContent(i)}</div>)}
-            </div>
-        )
-    }
-    function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o, i) => <div key={i} className=""></div>) }
-    function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
-    function cell_layout(day: number) {
-        const date = [year, month, day];
-        const weekDayIndex: number = DATE.getWeekDay(date).index;
-        return (<div key={day} className="month-cells-cell">{cellContent(date, weekDayIndex)}</div>)
-    }
-    const dateInfo = getDateInfo()
-    return (
-        <div className="month-cells">
-            <div className="month-cells-body">
-                {weekDays_layout()}
-                <div className="month-cells-grid" style={{ gridTemplateColumns }}>{spaces_layout()} {cells_layout()}</div>
-            </div>
-        </div>
-    )
-}
 type I_richTextItem = { tag: string, items?: I_richTextItem[], html?: ReactNode, attrs?: any, align?: 'align-v-' | 'align-h-' | 'align-vh-', w?: string, h?: string, flex?: number }
 export const RichText: FC = () => {
     const [popup] = useState<AIOPopup>(new AIOPopup())
@@ -4418,7 +3364,7 @@ export const RichText: FC = () => {
         target.addClass('rich-text-item-hover');
         const index = target.attr('data-index')
         const nestedIndex = index ? index.split('-') : []
-        nestedIndexRef.current = nestedIndex
+        nestedIndexRef.current = nestedIndex.map((o:string) => +o)
     }
     function itemToHtml(item: I_richTextItem, nestedIndex: number[]): ReactNode {
         const Tag = item.tag as any;
@@ -4532,3 +3478,255 @@ export const FormContainer: FC<AI_FormContainer> = (props) => {
         </div>
     )
 }
+export type AITYPE =
+    AI_hasOption & AI_isDropdown & AI_isMultiple &
+    AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
+        after?: ReactNode | ((p?: any) => ReactNode),
+        attrs?: any,
+        before?: ReactNode | ((p?: any) => ReactNode),
+        className?: string,
+        disabled?: boolean | any[],
+        footer?: ReactNode,
+        imageAttrs?: any,
+        justify?: boolean,
+        label?: string,
+        lang?: 'fa' | 'en',
+        loading?: boolean | ReactNode,
+        onChange?: (newValue: any, p?: any) => undefined | boolean | void,
+        placeholder?: ReactNode,
+        reportError?: (errorMessage: string | undefined) => void,
+        rtl?: boolean,
+        showErrors?: boolean | string,
+        style?: any,
+        subtext?: ReactNode | (() => ReactNode),
+        type: AI_type,
+        validations?: (any[]) | ((v: any) => string | undefined),
+        value?: any,
+        body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
+        checkIcon?: AI_checkIcon,//select,checkbox,radio
+        listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
+        getOptions?: (text: string) => Promise<any[]>,//text,textarea
+        hideTags?: boolean,//select
+        onClick?: (e: Event) => void,//button
+        onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+        preview?: boolean,//password,image,file
+        text?: ReactNode | (() => ReactNode),//select,checkbox,button,
+    }
+
+export type AI_option = {
+    show: any, checked?: boolean, checkIcon: AI_checkIcon, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
+    text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
+    tagAttrs: any, tagBefore: any, tagAfter: any, onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
+    details: AI_optionDetails
+}
+export type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
+export type AI_optionKey = (
+    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
+    'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
+)
+export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionDetails: AI_optionDetails) => any) }
+export type AI_optionDic = { [key: string]: AI_option }
+export type AI_options = { optionsList: AI_option[], optionsDic: AI_optionDic }
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' |
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
+export type AI_table_column = {
+    title?: any, value?: any, sort?: true | AI_table_sort, search?: boolean, id?: string, _id?: string, width?: any, minWidth?: any, input?: AITYPE,
+    onChange?: (newValue: any) => void, titleAttrs?: { [key: string]: any } | string, template?: string | ((p: { row: any, column: AI_table_column, rowIndex: number }) => ReactNode),
+    excel?: string | boolean, justify?: boolean, cellAttrs?: { [key: string]: any } | ((p: { row: any, rowIndex: number, column: AI_table_column }) => any) | string
+}
+export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
+export type AI_time_unit = { [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean }
+export type AI_table_param = { row: any, column: AI_table_column, rowIndex: number }
+export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
+export type AI_point = (index: number, p: any) => { offset?: number, html?: ReactNode, attrs?: any }
+export type AI_labels = AI_label[]
+export type AI_label = {
+    list?: number[], start?: number, end?: number, step?: number, dynamic?: boolean, autoHide?: boolean, zIndex?: number,
+    setting: (value: number, p: { angle: number, disabled: boolean }) => AI_labelItem
+}
+export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: ReactNode }
+export type AI_range_handle = ((value: number, p: any) => AI_range_handle_config) | false
+export type AI_range_handle_config = { thickness?: number, size?: number, color?: string, offset?: number, sharp?: boolean }
+export type AI_fill = { thickness?: number, color?: string, className?: string, style?: any }
+export type AI_checkIcon = { [key: string]: string | number } | [ReactNode, ReactNode];
+export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
+export type AI_getProp = (p: AI_getProp_param) => any;
+export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
+export type AI_context = {
+    rootProps: AITYPE,
+    popup: AIOPopup,
+    showPassword: boolean,
+    setShowPassword: (v?: boolean) => void,
+    DragOptions: DragClass,
+    datauniqid: string,
+    touch: boolean,
+    click: (e: any, dom: any) => void,
+    optionClick: (option: AI_option, p?: any) => void,
+    types: AI_types,
+    DATE: AIODate,
+    options: AI_options,
+    error?: string
+}
+export type AI_types = { isMultiple: boolean, isInput: boolean, isDropdown: boolean, hasOption: boolean, hasPlaceholder: boolean, hasKeyboard: boolean, hasText: boolean, hasSearch: boolean }
+export type AI_table_sort = { active?: boolean, dir?: 'dec' | 'inc', title?: ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any }
+export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
+export type AI_table_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
+export type AI_table_rows = { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] }
+export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
+export type type_table_context = {
+    rootProps: AITYPE,
+    columns: AI_table_column[],
+    ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
+    add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
+    exportToExcel: () => void,
+    sorts: AI_table_sort[],
+    setSorts: (newSorts: AI_table_sort[]) => void,
+    sortRows: (rows: any[], sorts: AI_table_sort[]) => any[],
+    excelColumns: AI_table_column[],
+    getRowAttrs: (row: any, rowIndex: number) => any,
+    getCellAttrs: type_table_getCellAttrs,
+    getDynamics: any
+}
+export type AI_Popover_props = { getRootProps: () => AITYPE, id: string, toggle: (popover: any) => void, types: AI_types }
+export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
+export type AI_indent = { size: number, isLastChild: boolean, isFirstChild: boolean, childsLength: number, level: number, index: number, parentIndent?: AI_indent, height: number }
+export type I_list_temp = {
+    dom: any, activeIndex: number, interval: any, moved: boolean, lastY: number, deltaY: number,
+    so: { y: number, top: number, newTop?: number, limit: { top: number, bottom: number } }
+}
+type AI_hasOption = {
+    deSelect?: any, onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    option?: AI_optionProp, options?: any[] | ((p?: any) => any[]), search?: string,
+}
+export type AI_date_cell_param = {
+    dateArray: number[], isToday: boolean, isActive: boolean, isFuture: boolean,
+    weekDayIndex: number | null, weekDay: string | null, monthString: string,
+}
+type AI_isDate = {
+    dateAttrs?: (p: AI_date_cell_param) => any,
+    jalali?: boolean,
+    now?: boolean,
+    pattern?: string,
+    theme?: string[],
+    translate?: (text: string) => string,
+    unit?: AI_date_unit | AI_time_unit,
+    timeStep?: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number },
+    text?: ReactNode | (() => ReactNode),
+}
+type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
+type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
+type AI_hasKeyboard = {
+    blurChange?: boolean, filter?: string[], inputAttrs?: any,
+    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
+}
+type AI_isTable = {
+    addText?: ReactNode | ((value: any) => ReactNode),
+    columnGap?: number,
+    columns?: AI_table_column[] | ((p?: any) => AI_table_column[]),
+    excel?: string | ((value: any[]) => any[]),
+    getValue?: { [key: string]: (p: AI_table_param) => any },
+    headerAttrs?: any,
+    onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),
+    onChangePaging?: (newPaging: AI_table_paging) => void,
+    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
+    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    onSearch?: true | ((searchValue: string) => void),
+    paging?: AI_table_paging,
+    removeText?: string,
+    rowAfter?: (p: { row: any, rowIndex: number }) => ReactNode,
+    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
+    rowBefore?: (p: { row: any, rowIndex: number }) => ReactNode,
+    rowGap?: number,
+    rowsTemplate?: (rows: any[]) => ReactNode,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => ReactNode,//table
+    toolbar?: ReactNode | (() => ReactNode),
+    toolbarAttrs?: any,
+    tabIndex?: number
+}
+type AI_isRange = {
+    end?: number,
+    fill?: false | AI_fill | ((index: number) => AI_fill),
+    grooveAttrs?: { [key: string]: any },
+    labels?: AI_labels,
+    max?: number,
+    min?: number,
+    point?: false | AI_point,
+    ranges?: [number, I_rangeConfig][],
+    reverse?: boolean,
+    size?: number,
+    start?: number,
+    step?: number,
+    vertical?: boolean,
+    circles?: I_rangeConfig[],
+    handle?: AI_range_handle,
+    rotate?: number,
+    round?: number,
+}
+type AI_isTree = {
+    actions?: ({ [key in keyof AI_option]?: any }[]) | ((row: any, parent: any) => { [key in keyof AI_option]?: any }[]),
+    addText?: ReactNode | ((value: any) => ReactNode),
+    checkIcon?: AI_checkIcon,
+    getChilds?: (p: { row: any, details: I_treeRowDetails }) => any[],
+    indent?: number,
+    onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),
+    onRemove?: true | ((p: { row: any, action?: Function, rowIndex?: number, parent?: any }) => Promise<boolean | void>),
+    onToggle?: (openDic: { [id: string]: boolean }) => void,
+    removeText?: string,
+    setChilds?: (p: { row: any, childs: any[], details: I_treeRowDetails }) => void,
+    toggleRef?: MutableRefObject<(id: any) => void>,
+    toggleIcon?: (p: { row: any, level: number, open?: boolean }) => ReactNode
+}
+
+
+//onSearch on tree
+//rowOption on table
+//now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
+
+export type AI<AI_type> = Omit<AITYPE, 'onChange' | 'type'> & {
+    onChange?: AI_onChange<AI_type>,
+}
+type AI_onChange<AI_type> =
+    AI_type extends 'text' ? (v: string) => void :
+    AI_type extends 'number' ? (v: number | undefined) => void :
+    AI_type extends 'textarea' ? (v: string) => void :
+    AI_type extends 'password' ? (v: string) => void :
+    AI_type extends 'color' ? (v: string) => void :
+    AI_type extends 'select' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'radio' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'tabs' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'buttons' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'tags' ? (v: any[]) => void :
+    AI_type extends 'tree' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'image' ? (v: any) => void :
+    AI_type extends 'file' ? (v: any) => void :
+    AI_type extends 'checkbox' ? (v: any) => void :
+    AI_type extends 'date' ? (v: any, dateDetails: AI_dateDetails) => void :
+    AI_type extends 'time' ? (v: any) => void :
+    AI_type extends 'slider' ? (v: any) => void :
+    AI_type extends 'spinner' ? (v: any) => void :
+    AI_type extends 'acardion' ? (v: any) => void :
+    AI_type extends 'list' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'table' ? (v: any) => void :
+    never;
+export const AIText: FC<AI<'text'>> = (props) => <AIOInput {...props} type='text' />
+export const AINumber: FC<AI<'number'>> = (props) => <AIOInput {...props} type='number' />
+export const AITextarea: FC<AI<'textarea'>> = (props) => <AIOInput {...props} type='textarea' />
+export const AIPassword: FC<AI<'password'>> = (props) => <AIOInput {...props} type='password' />
+export const AIColor: FC<AI<'color'>> = (props) => <AIOInput {...props} type='color' />
+export const AISelect: FC<AI<'select'>> = (props) => <AIOInput {...props} type='select' />
+export const AIRadio: FC<AI<'radio'>> = (props) => <AIOInput {...props} type='radio' />
+export const AITabs: FC<AI<'tabs'>> = (props) => <AIOInput {...props} type='tabs' />
+export const AIButtons: FC<AI<'buttons'>> = (props) => <AIOInput {...props} type='buttons' />
+export const AITags: FC<AI<'tags'>> = (props) => <AIOInput {...props} type='tags' />
+export const AITree: FC<AI<'tree'>> = (props) => <AIOInput {...props} type='tree' />
+export const AIImage: FC<AI<'image'>> = (props) => <AIOInput {...props} type='image' />
+export const AIFile: FC<AI<'file'>> = (props) => <AIOInput {...props} type='file' />
+export const AICheckbox: FC<AI<'checkbox'>> = (props) => <AIOInput {...props} type='checkbox' />
+export const AIDate: FC<AI<'date'>> = (props) => <AIOInput {...props} type='date' />
+export const AITime: FC<AI<'time'>> = (props) => <AIOInput {...props} type='time' />
+export const AISlider: FC<AI<'slider'>> = (props) => <AIOInput {...props} type='slider' />
+export const AISpinner: FC<AI<'spinner'>> = (props) => <AIOInput {...props} type='spinner' />
+export const AIAcardion: FC<AI<'acardion'>> = (props) => <AIOInput {...props} type='acardion' />
+export const AIList: FC<AI<'list'>> = (props) => <AIOInput {...props} type='list' />
+export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='table' />
+

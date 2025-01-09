@@ -1,7 +1,7 @@
 import { createContext, FC, ReactNode, useState } from "react"
 import { AI_type, AICheckbox, AISelect } from "../../npm/aio-input"
+import {Code} from './../../npm/aio-components';
 import { Storage } from "../../npm/aio-utils"
-import Code from "../../code"
 import { mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import {Icon} from "@mdi/react"
 export type I_setting = { show: string, showCode: boolean }
