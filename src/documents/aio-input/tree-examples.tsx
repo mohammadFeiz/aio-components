@@ -315,7 +315,7 @@ function Check(){
 />`
                 )
             }
-            <h3>option.checkIcon</h3>
+            <h3>checkIcon</h3>
             <AIOInput 
                 type='tree'
                 value={[...value]}
@@ -327,11 +327,11 @@ function Check(){
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
-                    },
-                    checkIcon:()=>[
-                        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-                        <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-                    ]
+                    }
+                }}
+                checkIcon={({checked})=>{
+                    return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
                 }}
             />
             {
@@ -348,11 +348,11 @@ function Check(){
             option.active = !option.active;
             //very important to use ... before value
             setValue([...value])
-        },
-        checkIcon:()=>[
-            <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-            <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-        ]
+        }
+    }}
+    checkIcon={({checked})=>{
+        return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
     }}
 />`
                 )
@@ -944,13 +944,17 @@ function Complete(){
                     },
                     subtext:({option})=>option.id,
                     before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
-                    checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>],
                     onClick:({option})=>{
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
                     }
                 }}
+                checkIcon={({checked})=>{
+                    return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
+                }}
+                    
             />
             {
                 code(
@@ -981,12 +985,15 @@ function Complete(){
         subtext:(row)=>row.id,
         before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
         after:(row)=>row.active?'active':'deactive',
-        checkIcon:()=>[<Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>],
         onClick:(row)=>{
             row.active = !row.active;
             //very important to use ... before value
             setValue([...value])
         }
+    }}
+    checkIcon={({checked})=>{
+        return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
     }}
 />`
                 )

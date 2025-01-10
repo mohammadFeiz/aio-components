@@ -9,7 +9,7 @@ import {
 import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../aio-swip';
 import AIODate from './../aio-date';
 import './index.css';
-import { Indent,GetSvg } from '../aio-components';
+import { Indent, GetSvg } from '../aio-components';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
@@ -615,7 +615,7 @@ function Input() {
         if (!Array.isArray(filter)) { filter = [] }
         if (types.hasKeyboard) { value = keyboard_filter(value, { maxLength, filter, toPersian: true }) }
         if (rootProps.type === 'number') {
-            if (value === '') {value = undefined}
+            if (value === '') { value = undefined }
             else { value = +value }
         }
         setValue(value);
@@ -717,18 +717,21 @@ export type AI_Layout = {
     option?: AI_option, text?: ReactNode, index?: number,
     properties?: any
 }
-const CheckIcon: FC<{ checkIcon: AI_checkIcon, checked?: boolean, round?: boolean }> = (props) => {
+const CheckIcon: FC<{ checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode, checked?: boolean, round?: boolean, row: any }> = (props) => {
     if (props.checked === undefined) { return null }
-    if (Array.isArray(props.checkIcon)) { return <>{props.checkIcon[props.checked ? 1 : 0]}</> }
+    if (props.checkIcon) {
+        const res = props.checkIcon({ checked: props.checked, row: props.row })
+        return res === false ? null : <>{res}</>
+    }
     if (props.round) {
         return (
-            <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ ...props.checkIcon, background: 'none' }}>
-                {props.checked && <div className={'aio-input-check-in aio-input-main-bg'} style={{ background: props.checkIcon.background }}></div>}
+            <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ background: 'none' }}>
+                {props.checked && <div className={'aio-input-check-in aio-input-main-bg'}></div>}
             </div>
         );
     }
     return (
-        <div className={'aio-input-check-0 aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ ...props.checkIcon, background: 'none' }}>
+        <div className={'aio-input-check-0 aio-input-main-color' + (props.checked ? ' checked' : '')} style={{ background: 'none' }}>
             {props.checked && <div className='aio-input-main-bg'></div>}
         </div>
     );
@@ -903,7 +906,6 @@ const Layout: FC<AI_Layout> = (props) => {
         let { text = obj.text } = p;
         let { subtext = obj.subtext } = p;
         let { justify = obj.justify } = p;
-        let { checkIcon = obj.checkIcon === undefined ? {} : obj.checkIcon } = p;
         let { loading = obj.loading } = p;
         let { attrs = obj.attrs || {} } = p;
         let style = { ...(obj.style || {}), ...p.style }
@@ -912,7 +914,7 @@ const Layout: FC<AI_Layout> = (props) => {
         let { footer = (obj as AITYPE).footer } = p;
         let classNames = [obj.className, p.className].filter((o) => !!o)
         let className = classNames.length ? classNames.join(' ') : undefined;
-        return { disabled, draggable, text, subtext, placeholder, justify, checked, checkIcon, loading, attrs, style, before, after, className, footer }
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, loading, attrs, style, before, after, className, footer }
     }
     function Label() {
         if (option) { return null }
@@ -941,7 +943,7 @@ const Layout: FC<AI_Layout> = (props) => {
     let properties = getProperties();
     let content = (<>
         {DragIcon()}
-        {typeof properties.checked === 'boolean' && <CheckIcon round={!rootProps.multiple && type === 'radio'} checked={properties.checked} checkIcon={properties.checkIcon} />}
+        {typeof properties.checked === 'boolean' && <CheckIcon round={!rootProps.multiple && type === 'radio'} checked={properties.checked} checkIcon={rootProps.checkIcon} row={option || {}} />}
         {Label()}
         {BeforeAfter('before')}
         {Text()}
@@ -1188,10 +1190,14 @@ const Tree: FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { onAdd, onRemove, value = [], onChange, size = Def('tree-size'), attrs } = rootProps;
     let [openDic, setOpenDic] = useState<any>({})
+    const openDicRef = useRef(openDic)
+    openDicRef.current = openDic
     let [mountedDic, setMountedDic] = useState<{ [id: string]: boolean }>({})
+    const mountedDicRef = useRef(mountedDic)
+    mountedDicRef.current = mountedDic
     let [indent] = useState<number>(getIndent)
-    function SetMounted(id: string) { setMountedDic({ ...mountedDic, [id]: !mountedDic[id] }) }
-    function SetOpen(id: string) { setOpenDic({ ...openDic, [id]: !openDic[id] }) }
+    function SetMounted(id: string) { setMountedDic({ ...mountedDicRef.current, [id]: !mountedDicRef.current[id] }) }
+    function SetOpen(id: string) { setOpenDic({ ...openDicRef.current, [id]: !openDicRef.current[id] }) }
     function getIndent() {
         let { indent = 24 } = rootProps;
         if (typeof indent !== 'number') { indent = 12 }
@@ -1359,7 +1365,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
     let open: I_openState = !childs.length ? undefined : (!!openDic[item.id] ? true : false);
     const { row, indent, option } = item;
     const { level, size, height } = indent;
-    const { checked, checkIcon } = option;
+    const { checked } = option;
     const getBefore = (): ReactNode => {
         return [
             <Indent
@@ -1367,7 +1373,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
                 isParentLastChild={!!item.indent.parentIndent?.isLastChild} rtl={!!rootProps.rtl}
                 toggleIcon={rootProps.toggleIcon} open={open} onToggle={() => toggle(item.id)}
             />,
-            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={checkIcon} />}</>,
+            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={rootProps.checkIcon} row={row} />}</>,
             <>{(item.option.before as any) || null}</>
         ]
     }
@@ -1629,7 +1635,7 @@ function DPCell(props: { dateArray: number[] }) {
     let isFuture = DATE.isGreater(dateArray, DATE.getToday(jalali))
     let Attrs: any = {}
     if (dateAttrs) {
-        const {unit = 'day'} = rootProps;
+        const { unit = 'day' } = rootProps;
         let weekDay = null, weekDayIndex = null, monthString = ''
         if (unit === 'day') {
             const a = DATE.getWeekDay(dateArray)
@@ -1646,9 +1652,9 @@ function DPCell(props: { dateArray: number[] }) {
     let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
     let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }) };
     let style: any = {}
-    if (!isDisabled) { 
+    if (!isDisabled) {
         style.background = theme[1];
-        style.color = theme[0] 
+        style.color = theme[0]
     }
     if (className.indexOf('aio-input-date-active') !== -1) {
         style.background = theme[0];
@@ -1674,7 +1680,7 @@ function DPHeaderItem(props: { unit: 'year' | 'month' }) {
     return (
         <button
             type='button' className="aio-input-date-dropdown aio-input-date-theme-color"
-            style={{color:theme[0],background:theme[1]}}
+            style={{ color: theme[0], background: theme[1] }}
             onClick={() => changePopup(<DPHeaderPopup onClose={() => changePopup(null)} unit={unit} />)}
         >{text}</button>
     )
@@ -1705,7 +1711,7 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
         const getCls = (active: boolean) => {
             let className = 'aio-input-date-cell'
             if (active) { className += ' aio-input-date-active aio-input-date-theme-active' }
-            else {className += ' aio-input-date-theme-color'}
+            else { className += ' aio-input-date-theme-color' }
             return className
         }
         if (unit === 'year') {
@@ -1746,8 +1752,8 @@ const DPHeaderPopup: FC<{ onClose: () => void, unit: 'year' | 'month' }> = (prop
         )
     }
     return (
-        <div 
-            style={{ background: theme[0], color: theme[1] }} 
+        <div
+            style={{ background: theme[0], color: theme[1] }}
             className={'aio-input-date-popup aio-input-date-theme-bg' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr')}
         >{header_node()}{body_node()}{footer_node()}</div>)
 }
@@ -1806,7 +1812,7 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
             changeActiveDate({ year: next[0], month: next[1], day: next[2] })
         }
     }
-    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1,{color:theme[0]}) }
+    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1, { color: theme[0] }) }
     return (<div className='aio-input-date-arrow aio-input-date-theme-color' onClick={() => change()}>{getIcon()}</div>)
 }
 const AITableContext = createContext({} as any);
@@ -2979,7 +2985,48 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
-
+type I_useFormProps<T> = {
+    initData: T;onSubmit:(data:T)=>void;
+    inputs: {[key in keyof T]?: {input: AITYPE; label: string; error: (v: any) => string | undefined; show?:boolean;};};
+};
+export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
+    const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
+    const [data, setData] = useState<T>(initData);
+    const dataRef = useRef(data);
+    dataRef.current = data;
+    const [errors, setErrors] = useState<{ [key in keyof T]?: string }>({});
+    const change = (field: keyof T, value: any) => setData({ ...dataRef.current, [field]: value });
+    const getError = (field: keyof T): string | undefined => errors[field];
+    const setError = (field: keyof T, err: string | undefined) => setErrors({ ...errors, [field]: err });
+    const getErrors = (): string[] => Object.values(errors).filter((err): err is string => !!err);
+    const getValueByField = (field: keyof T) => dataRef.current[field];
+    const hasError = () => getErrors().length > 0;
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    const changeInput = (field:keyof T,v:any,error:(v:any)=>string | undefined)=>{
+        change(field, v); setError(field, error(v));
+    }
+    const renderInput = (field: keyof T) => {
+        const o = p.inputs[field];
+        if(!o){return null}
+        const {show,input,label,error} = o;
+        if(show === false){return null}
+        const value = getValueByField(field);
+        return (
+            <FormItem key={field.toString()}
+                input={<AIOInput {...input} value={value} onChange={(v) => changeInput(field,v,error)} />}
+                label={label} error={() => error(getValueByField(field))}
+            />
+        );
+    };
+    const renderInputs = (fields:(keyof T)[])=><>{fields.map((f)=>renderInput(f))}</>;
+    const submit = ()=>p.onSubmit(dataRef.current)
+    const renderSubmitButton = (text:string,attrs:any)=>{
+        const disabled = isDataChanged() || hasError()
+        const allAttrs = {...attrs,disabled,onClick:()=>submit()}
+        return <button {...allAttrs}>{text}</button>
+    }
+    return { data:dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged,renderSubmitButton,renderInputs };
+};
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
 export function AIOInput_defaultProps(p: { [key in keyof AITYPE]?: any }) {
     let storage: Storage = new Storage('aio-input-storage');
@@ -3099,7 +3146,6 @@ function GetOptions(p: I_GetOptions): AI_options {
             show,
             loading: rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
-            checkIcon: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'checkIcon' }) || rootProps.checkIcon,
             checked,
             before: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'before' }),
             after: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'after' }),
@@ -3364,7 +3410,7 @@ export const RichText: FC = () => {
         target.addClass('rich-text-item-hover');
         const index = target.attr('data-index')
         const nestedIndex = index ? index.split('-') : []
-        nestedIndexRef.current = nestedIndex.map((o:string) => +o)
+        nestedIndexRef.current = nestedIndex.map((o: string) => +o)
     }
     function itemToHtml(item: I_richTextItem, nestedIndex: number[]): ReactNode {
         const Tag = item.tag as any;
@@ -3503,7 +3549,7 @@ export type AITYPE =
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
         body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
-        checkIcon?: AI_checkIcon,//select,checkbox,radio
+        checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
         hideTags?: boolean,//select
@@ -3511,17 +3557,18 @@ export type AITYPE =
         onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
         preview?: boolean,//password,image,file
         text?: ReactNode | (() => ReactNode),//select,checkbox,button,
+
     }
 
 export type AI_option = {
-    show: any, checked?: boolean, checkIcon: AI_checkIcon, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
+    show: any, checked?: boolean, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
     text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
     tagAttrs: any, tagBefore: any, tagAfter: any, onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
     details: AI_optionDetails
 }
 export type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
 export type AI_optionKey = (
-    'attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
+    'attrs' | 'text' | 'value' | 'disabled' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
     'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
 )
 export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionDetails: AI_optionDetails) => any) }
@@ -3548,7 +3595,6 @@ export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: ReactNo
 export type AI_range_handle = ((value: number, p: any) => AI_range_handle_config) | false
 export type AI_range_handle_config = { thickness?: number, size?: number, color?: string, offset?: number, sharp?: boolean }
 export type AI_fill = { thickness?: number, color?: string, className?: string, style?: any }
-export type AI_checkIcon = { [key: string]: string | number } | [ReactNode, ReactNode];
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
@@ -3665,7 +3711,6 @@ type AI_isRange = {
 type AI_isTree = {
     actions?: ({ [key in keyof AI_option]?: any }[]) | ((row: any, parent: any) => { [key in keyof AI_option]?: any }[]),
     addText?: ReactNode | ((value: any) => ReactNode),
-    checkIcon?: AI_checkIcon,
     getChilds?: (p: { row: any, details: I_treeRowDetails }) => any[],
     indent?: number,
     onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),

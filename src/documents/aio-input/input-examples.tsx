@@ -74,7 +74,7 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
         ['pattern', () => <Pattern />, ['date', 'time'].indexOf(type) !== -1],
         ['multiple', () => <Multiple />, ['date', 'file'].indexOf(type) !== -1],
         ['multiple (number)', () => <MultipleNumber />, ['date', 'file'].indexOf(type) !== -1],
-        ['checkIcon (array)', () => <CheckIconArray />, ['checkbox'].indexOf(type) !== -1],
+        ['checkIcon', () => <CheckIcon />, ['checkbox'].indexOf(type) !== -1],
         ['file value', () => <FileValue />, ['file'].indexOf(type) !== -1],
         ['file onRemove', () => <FileOnremove />, ['file'].indexOf(type) !== -1],
         ['voice', () => <Voice />, ['text','textarea'].indexOf(type) !== -1],
@@ -265,17 +265,9 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
                 <Options
                     option={{
                         checked: ({option,rootProps}) => (type === 'text' ? option.name : +option) === rootProps.value,
-                        checkIcon: () => [
-                            <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd' />,
-                            <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />
-                        ]
                     }}
                     optionCode={
-                        `checked:(option:any,details:any)=>${type === 'number' ? '+' : ''}option${type === 'text' ? '.name' : ''} === details.value
-        checkIcon:()=>[
-            <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-            <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-        ]`
+                        `checked:(option:any,details:any)=>${type === 'number' ? '+' : ''}option${type === 'text' ? '.name' : ''} === details.value`
                     }
                 />
             ),
@@ -1100,7 +1092,7 @@ const Pattern: FC = () => {
         </div>
     )
 }
-const CheckIconArray: FC = () => {
+const CheckIcon: FC = () => {
     const { type, code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
@@ -1108,41 +1100,20 @@ const CheckIconArray: FC = () => {
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                checkIcon={[
-                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd' />,
-                    <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />
-                ]}
+                checkIcon={({checked})=>{
+                    return !checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd' />:
+                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff' />
+                }}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    checkIcon={[
-        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-        <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-    ]}
-/>
-        `)}
-        </div>
-    )
-}
-const CheckIconObject: FC = () => {
-    const { type, code }: I_ExampleContext = useContext(ExampleContext);
-    const [value, setValue] = useState<number>()
-    return (
-        <div className='example'>
-            <AIOInput
-                type={type} value={value}
-                onChange={(newValue) => setValue(newValue)}
-                checkIcon={{ background: 'orange', borderRadius: 4, border: '1px solid orange', width: 16, height: 16, padding: 2 }}
-            />
-            {code(`
-<AIOInput
-    type='${type}' 
-    value='${value}'
-    onChange={(newValue)=>setValue(newValue)}
-    checkIcon={{background:'orange',borderRadius:4,border:'1px solid orange',width:16,height:16,padding:2}}
+    checkIcon={({checked})=>{
+        return !checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd' />:
+        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff' />
+    }}
 />
         `)}
         </div>

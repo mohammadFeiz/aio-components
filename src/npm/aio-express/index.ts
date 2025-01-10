@@ -68,7 +68,7 @@ class AIOExpress<I_User> {
     editUsers: (p: { ids?: any[], search?: Partial<I_User>, newValue: Partial<I_User>, session?: ClientSession }) => Promise<string | number>
     removeUser: (p: { id?: any, search?: Partial<I_User>, session?: ClientSession }) => Promise<I_record<I_User> | string | null>
     removeUsers: (p: { ids?: any[], search?: Partial<I_User>, session?: ClientSession }) => Promise<number | string>
-    changeUserPassword: (p: { userPassword: string, oldPassword: string, newPassword: string, userId: string }) => Promise<true | string>
+    changeUserPassword: (p: { oldPassword: string | false, newPassword: string, userId: string }) => Promise<true | string>
     agenda: Agenda;
     constructor(p: I_AIOExpress) {
         // mongoose.set('debug', true);
@@ -104,7 +104,10 @@ class AIOExpress<I_User> {
         this.removeUsers = async (p) => await this.removeRows<I_User>({ ...p, entityName: 'auth' })
         this.changeUserPassword = async (p) => {
             try {
-                const newPasswrod = await this.getNewPassword(p);
+                const user = await this.getUser({id:p.userId});
+                if(user === null){return 'user not found'}
+                if(typeof user === 'string'){return user}
+                const newPasswrod = await this.getNewPassword({userPassword:user.id,oldPassword:p.oldPassword,newPassword:p.newPassword});
                 if (newPasswrod === false) { return 'old password is not match' }
                 const newValue: any = { password: newPasswrod }
                 const res = await this.editUser({ id: p.userId, newValue })
@@ -201,9 +204,11 @@ class AIOExpress<I_User> {
             .catch((err: any) => console.log(err));
     };
     getTotal = async (name: string): Promise<number> => await this.getModel(name).countDocuments({})
-    getNewPassword = async (p: { userPassword: string, oldPassword: string, newPassword: string }): Promise<string | false> => {
-        const isMatch = await bcrypt.compare(p.oldPassword, p.userPassword);
-        if (!isMatch) { return false }
+    getNewPassword = async (p: { userPassword: string, oldPassword: string | false, newPassword: string }): Promise<string | false> => {
+        if(p.oldPassword !== false){
+            const isMatch = await bcrypt.compare(p.oldPassword, p.userPassword);
+            if (!isMatch) { return false }
+        }
         const hashedPassword: string = await bcrypt.hash(p.newPassword, 10);
         return hashedPassword
     }

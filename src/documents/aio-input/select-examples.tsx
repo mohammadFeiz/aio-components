@@ -1,4 +1,4 @@
-import { createContext, FC, ReactNode, useContext, useRef, useState } from "react"
+import { FC, useContext, useRef, useState } from "react"
 import { mdiAccount, mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDotsHorizontal, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
 import { Icon } from "@mdi/react"
 import AIOInput, { AI, AI_type, AITYPE } from "../../npm/aio-input";
@@ -50,8 +50,7 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
         ['text', () => <Text type={type} />, ['select'].indexOf(type) !== -1],
         ['multiple', () => <Multiple type={type} />, ['radio', 'buttons', 'select'].indexOf(type) !== -1],
         ['multiple (number)', () => <MultipleNumber type={type} />, ['radio', 'buttons', 'select'].indexOf(type) !== -1],
-        ['checkIcon (array)', () => <CheckIconArray type={type} />, ['radio', 'select'].indexOf(type) !== -1],
-        ['checkIcon (css object)', () => <CheckIconObject type={type} />, ['radio'].indexOf(type) !== -1],
+        ['checkIcon', () => <CheckIcon type={type} />, ['radio', 'select'].indexOf(type) !== -1],
         [
             'option.before',
             () => (
@@ -765,7 +764,7 @@ const MultipleNumber: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 
-const CheckIconArray: FC<{ type: AI_type }> = ({ type }) => {
+const CheckIcon: FC<{ type: AI_type }> = ({ type }) => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number[]>([])
     return (
@@ -780,43 +779,10 @@ const CheckIconArray: FC<{ type: AI_type }> = ({ type }) => {
                 }}
                 value={value}
                 onChange={(newValue) => setValue(newValue)}
-                checkIcon={[
-                    <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd' />,
-                    <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />
-                ]}
-            />
-            {code(`
-<AIOInput
-    type='${type}'
-    options={${optionsCode}} 
-    option={${optionCode}}
-    value={value}
-    onChange={(newValue)=>setValue(newValue)}
-    checkIcon={[
-        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#ddd'/>,
-        <Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>
-    ]}
-/>
-        `)}
-        </div>
-    )
-}
-const CheckIconObject: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
-    const [value, setValue] = useState<number[]>([])
-    return (
-        <div>
-            <AIOInput
-                type={type}
-                multiple={type === 'select'}
-                options={textOptions}
-                option={{
-                    text: 'option.name',
-                    value: 'option.id'
+                checkIcon={({checked})=>{
+                    return checked?<Icon path={mdiCheckboxMarked} size={0.9} color='#5400ff'/>:
+                    <Icon path={mdiCheckboxBlankOutline} size={0.9} color='#5400ff'/>
                 }}
-                value={value}
-                onChange={(newValue) => setValue(newValue)}
-                checkIcon={{ background: 'orange', border: '1px solid orange', width: 16, height: 16, padding: 4 }}
             />
             {code(`
 <AIOInput
@@ -825,7 +791,10 @@ const CheckIconObject: FC<{ type: AI_type }> = ({ type }) => {
     option={${optionCode}}
     value={value}
     onChange={(newValue)=>setValue(newValue)}
-    checkIcon={{background:'orange',border:'1px solid orange',width:16,height:16,padding:4}}
+    checkIcon={({checked})=>{
+        return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+        <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
+    }}
 />
         `)}
         </div>
