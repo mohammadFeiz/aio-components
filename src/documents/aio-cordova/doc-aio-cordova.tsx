@@ -141,26 +141,33 @@ export const DetectOS = ():I_os => {
             </div>
             <div>
                 {Code(`
-const App:FC = ()=>{
-    ...
-    const [aioCordova,setAioCordova] = useState<AIOCordova>()
-    const os = DetextOs()
-    function onDeviceReady() {
-        //first launch codes
-    }
-    useEffect(() => {
-        if (os === 'Windows') { onDeviceReady() }
-        else {
-            setAioCordova(new AIOCordova({
-                backButton:()=>{}
-            }))
-            document.addEventListener('deviceready', () => {
-                onDeviceReady()
-            }, false);
+const App: FC = () => {
+  const [os] = useState(DetectOS())
+  const [loading, setLoading] = useState<boolean>(true)
+  let [aioCordova] = useState<AIOCordova>()
+  const setAioCordova = () => {
+    if (os !== 'Android') { return }
+    aioCordova = new AIOCordova({
+      backButton: (e, self) => {
+        if (window.confirm("آیا می‌خواهید از برنامه خارج شوید؟")) {
+          self.exitApp();
         }
-    }, [])
-    ...
+      }
+    })
+  }
+  async function onDeviceReady() {
+    setAioCordova()
+    //delay for load cordova
+    setTimeout(() => setLoading(false), 3000)
+  }
+  useEffect(() => {
+    if (os === 'Android') { document.addEventListener('deviceready', onDeviceReady, false) }
+    else { onDeviceReady() }
+  }, [])
+  if (loading) {return <Loading />}
+  return os === 'Windows' ? <WindowsApp /> : <MobileApp aioCordova={aioCordova as AIOCordova} />
 }
+export default App
 
 
                 `)}

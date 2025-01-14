@@ -2791,3 +2791,10 @@ pre[class*="language-"]>code[class*="language-"] {
     color: red;
     font-size: 10px;
 }
+.ai-form-row{
+    display:flex;
+    gap:12px;
+}
+.ai-form-cell{
+    flex:1;
+}

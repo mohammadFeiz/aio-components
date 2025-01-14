@@ -23,6 +23,7 @@ import DOC_AIOCordova from "./documents/aio-cordova/doc-aio-cordova.tsx";
 import Resume from "./documents/resume/index.tsx";
 import DOC_AIOSwiper from "./documents/aio-swiper/index.tsx";
 import FG from "./documents/form-generator/index.tsx";
+import ThreeD from "./documents/three-d/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -45,6 +46,7 @@ export default function AIOComponents(){
     'aio-swiper':DOC_AIOSwiper,
     'Form Generator':FG,
     'test':Test,
+    'ThreeD':ThreeD,
     'tree-search':DOC_TreeSearch
   })
   function goToHome(){

@@ -1,0 +1,43 @@
+
+
+  /* .three-d-1::before {
+    content: "";
+    position: absolute;
+    height: 120px;
+    width: 120px;
+    border-radius: 50%;
+    box-shadow: -10px -10px 15px rgba(255, 255, 255, 1),
+      10px 10px 10px rgba(0, 0, 0, 0.1);
+  }
+  .three-d-1 span {
+    height: 100px;
+    width: 186px;
+    position: absolute;
+    animation: rotate 1s linear infinite;
+  }
+  @keyframes rotate {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes rotate1 {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .three-d-1 span::before {
+    content: "";
+    position: absolute;
+    height: 40px;
+    border-radius: 50%;
+    width: 40px;
+    background: #5dffe7;
+      box-shadow: inset -8px -5px 12px 2px rgb(0 0 0 / 30%);
+      animation: rotate1 1s linear infinite;
+  }
+  
+  @keyframes rotate1 {
+    100% {
+      transform: rotate(-360deg);
+    }
+  } */

@@ -5,6 +5,8 @@ import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
     svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation,
     keyboard_filter,
+    setValueByField,
+    getValueByField,
 } from './../aio-utils';
 import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../aio-swip';
 import AIODate from './../aio-date';
@@ -2986,46 +2988,87 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
     )
 }
 type I_useFormProps<T> = {
-    initData: T;onSubmit:(data:T)=>void;
-    inputs: {[key in keyof T]?: {input: AITYPE; label: string; error: (v: any) => string | undefined; show?:boolean;};};
+    initData: T; onSubmit?: (data: T) => void;
+    inputs: { [name in NestedKeys<T>]?: { input: AITYPE; label: string; error?: (v: any) => string | undefined; show?: boolean; field: NestedKeys<T> }; };
 };
+type NestedKeys<T> = {
+    [K in keyof T]: T[K] extends object
+    ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
+    : `${K & string}`;
+}[keyof T];
+type I_formRow = string[]
+type I_formCell = string
+type I_formRows = (I_formCell | I_formRow)[]
 export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
     const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
     const [data, setData] = useState<T>(initData);
     const dataRef = useRef(data);
     dataRef.current = data;
-    const [errors, setErrors] = useState<{ [key in keyof T]?: string }>({});
-    const change = (field: keyof T, value: any) => setData({ ...dataRef.current, [field]: value });
-    const getError = (field: keyof T): string | undefined => errors[field];
-    const setError = (field: keyof T, err: string | undefined) => setErrors({ ...errors, [field]: err });
+    const [errors, setErrors] = useState<{ [name: string]: string | undefined }>({});
+    const change = (name: NestedKeys<T>, value: any) => {
+        const inputObj = p.inputs[name];
+        if (!inputObj) { return }
+        const { field } = inputObj;
+        const newData = setValueByField(dataRef.current, field, value)
+        setData(newData)
+    }
+    const getError = (name: NestedKeys<T>): string | undefined => errors[name];
+    const setError = (name: NestedKeys<T>, err: string | undefined) => setErrors({ ...errors, [name]: err });
     const getErrors = (): string[] => Object.values(errors).filter((err): err is string => !!err);
-    const getValueByField = (field: keyof T) => dataRef.current[field];
+    const getValue = (name: NestedKeys<T>) => {
+        const inputObj = p.inputs[name]
+        if (!inputObj) { return }
+        const field = inputObj.field
+        const value = getValueByField(dataRef.current, field)
+        return value
+    };
     const hasError = () => getErrors().length > 0;
     const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    const changeInput = (field:keyof T,v:any,error:(v:any)=>string | undefined)=>{
-        change(field, v); setError(field, error(v));
+    const changeInput = (name: NestedKeys<T>, v: any) => {
+        const inputObj = p.inputs[name];
+        if (!inputObj) { return }
+        const error = inputObj.error || (() => { return undefined });
+        change(name, v);
+        setError(name, error(v));
     }
-    const renderInput = (field: keyof T) => {
-        const o = p.inputs[field];
-        if(!o){return null}
-        const {show,input,label,error} = o;
-        if(show === false){return null}
-        const value = getValueByField(field);
+    const renderInput = (name: NestedKeys<T>) => {
+        const inputObj = p.inputs[name];
+        if (!inputObj) { return null }
+        const { show, input, label, error } = inputObj;
+        if (show === false) { return null }
         return (
-            <FormItem key={field.toString()}
-                input={<AIOInput {...input} value={value} onChange={(v) => changeInput(field,v,error)} />}
-                label={label} error={() => error(getValueByField(field))}
+            <FormItem key={name}
+                input={<AIOInput {...input} value={getValue(name)} onChange={(v) => changeInput(name, v)} />}
+                label={label} error={error ? () => error(getValue(name)) : undefined}
             />
         );
     };
-    const renderInputs = (fields:(keyof T)[])=><>{fields.map((f)=>renderInput(f))}</>;
-    const submit = ()=>p.onSubmit(dataRef.current)
-    const renderSubmitButton = (text:string,attrs:any)=>{
+    const renderInputs = (p: { names?: I_formRows, content?: ReactNode }) => {
+        if (p.names) {
+            return (<>
+                {
+                    p.names.map((n) => {
+                        if (typeof n === 'string') { return renderInput(n as any) }
+                        if(Array.isArray(n)){
+                            return (<div className='ai-form-row'>{n.map((nn)=><div className="ai-form-cell">{renderInput(nn as any)}</div>)}</div>)
+                        }
+                        return null
+                    })
+                }
+            </>)
+        }
+        if (p.content) { return <>{p.content}</> }
+        return null
+    };
+    const submit = () => {
+        if (p.onSubmit) { p.onSubmit(dataRef.current) }
+    }
+    const renderSubmitButton = (text: string, attrs: any) => {
         const disabled = isDataChanged() || hasError()
-        const allAttrs = {...attrs,disabled,onClick:()=>submit()}
+        const allAttrs = { ...attrs, disabled, onClick: () => submit() }
         return <button {...allAttrs}>{text}</button>
     }
-    return { data:dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged,renderSubmitButton,renderInputs };
+    return { data: dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged, renderSubmitButton, renderInputs };
 };
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
 export function AIOInput_defaultProps(p: { [key in keyof AITYPE]?: any }) {
@@ -3557,7 +3600,6 @@ export type AITYPE =
         onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
         preview?: boolean,//password,image,file
         text?: ReactNode | (() => ReactNode),//select,checkbox,button,
-
     }
 
 export type AI_option = {
