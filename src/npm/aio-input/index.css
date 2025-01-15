@@ -2791,6 +2791,11 @@ pre[class*="language-"]>code[class*="language-"] {
     color: red;
     font-size: 10px;
 }
+.ai-form-rows{
+    display:flex;
+    flex-direction: column;
+    flex:1;
+}
 .ai-form-row{
     display:flex;
     gap:12px;

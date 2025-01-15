@@ -2987,76 +2987,79 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
+type I_formInput = { input: AITYPE, label: string, error?: (v: any) => string | undefined, show?: boolean, attrs?: any }
 type I_useFormProps<T> = {
     initData: T; onSubmit?: (data: T) => void;
-    inputs: { [name in NestedKeys<T>]?: { input: AITYPE; label: string; error?: (v: any) => string | undefined; show?: boolean; field: NestedKeys<T> }; };
+    inputs: { [name in NestedKeys<T>]?: I_formInput | ((data: T) => I_formInput) };
 };
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object
     ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
     : `${K & string}`;
 }[keyof T];
-type I_formRow = string[]
-type I_formCell = string
-type I_formRows = (I_formCell | I_formRow)[]
+type I_formCell<T> = NestedKeys<T> | I_formRow<T> | ((data: T) => ReactNode)
+type I_formRow<T> = I_formCell<T>[]
 export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
     const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
     const [data, setData] = useState<T>(initData);
     const dataRef = useRef(data);
     dataRef.current = data;
     const [errors, setErrors] = useState<{ [name: string]: string | undefined }>({});
-    const change = (name: NestedKeys<T>, value: any) => {
-        const inputObj = p.inputs[name];
-        if (!inputObj) { return }
-        const { field } = inputObj;
-        const newData = setValueByField(dataRef.current, field, value)
+    const change = (p:{field: NestedKeys<T>, value: any}[]) => {
+        let newData = {...dataRef.current}
+        for(let i = 0; i < p.length; i++){
+            const {field,value} = p[i]
+            newData = setValueByField(newData, field, value)
+        }
         setData(newData)
     }
     const getError = (name: NestedKeys<T>): string | undefined => errors[name];
     const setError = (name: NestedKeys<T>, err: string | undefined) => setErrors({ ...errors, [name]: err });
     const getErrors = (): string[] => Object.values(errors).filter((err): err is string => !!err);
-    const getValue = (name: NestedKeys<T>) => {
-        const inputObj = p.inputs[name]
-        if (!inputObj) { return }
-        const field = inputObj.field
+    const getValue = (field: NestedKeys<T>) => {
         const value = getValueByField(dataRef.current, field)
         return value
     };
     const hasError = () => getErrors().length > 0;
     const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    const changeInput = (name: NestedKeys<T>, v: any) => {
+    const getInputByField = (name: NestedKeys<T>): I_formInput => {
         const inputObj = p.inputs[name];
-        if (!inputObj) { return }
-        const error = inputObj.error || (() => { return undefined });
-        change(name, v);
+        if (typeof inputObj === 'function') { return inputObj(data) }
+        return inputObj as I_formInput
+    }
+    const changeInput = (name: NestedKeys<T>, v: any) => {
+        const { error = () => { return undefined } } = getInputByField(name);
+        change([{field:name, value:v}]);
         setError(name, error(v));
     }
     const renderInput = (name: NestedKeys<T>) => {
-        const inputObj = p.inputs[name];
-        if (!inputObj) { return null }
-        const { show, input, label, error } = inputObj;
+        const { show, input, label, error } = getInputByField(name);
         if (show === false) { return null }
         return (
             <FormItem key={name}
-                input={<AIOInput {...input} value={getValue(name)} onChange={(v) => changeInput(name, v)} />}
+                input={<AIOInput value={getValue(name)} onChange={(v) => changeInput(name, v)} {...input} />}
                 label={label} error={error ? () => error(getValue(name)) : undefined}
             />
         );
     };
-    const renderInputs = (p: { names?: I_formRows, content?: ReactNode }) => {
-        if (p.names) {
-            return (<>
-                {
-                    p.names.map((n) => {
-                        if (typeof n === 'string') { return renderInput(n as any) }
-                        if(Array.isArray(n)){
-                            return (<div className='ai-form-row'>{n.map((nn)=><div className="ai-form-cell">{renderInput(nn as any)}</div>)}</div>)
-                        }
-                        return null
-                    })
-                }
-            </>)
+    const renderCell = (cell: any) => {
+        if (Array.isArray(cell)) { return renderRows(cell) }
+        if (typeof cell === 'function') {return cell(data);}
+        else {
+            const { attrs } = getInputByField(cell as any);
+            const Attrs = AddToAttrs(attrs, { className: "ai-form-cell" })
+            return <div {...Attrs}>{renderInput(cell as any)}</div>
         }
+    }
+    const renderRow = (cells: any) => {
+        cells = !Array.isArray(cells) ? [cells] : cells
+        return (<div className='ai-form-row'>{cells.map((cell: any) => renderCell(cell as any))}</div>)
+    }
+    const renderRows = (rows: any) => {
+        return (<div className='ai-form-rows'>{rows.map((row: any) => renderRow(row))}</div>)
+    }
+    const renderInputs = (p: { names?: I_formRow<T>[], content?: ReactNode }) => {
+        if (p.names) { return renderRows(p.names) }
         if (p.content) { return <>{p.content}</> }
         return null
     };

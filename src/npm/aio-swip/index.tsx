@@ -1,7 +1,7 @@
-import Geo from './../../npm/aio-geo';
+import Geo,{I_line} from './../../npm/aio-geo';
 import { EventHandler,GetClient } from '../aio-utils';
 import $ from 'jquery';
-export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number };
+export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number,centerDistance:number };
 export type I_Swip_change = {
     x: number, y: number,
     dx: number, dy: number,
@@ -131,11 +131,10 @@ export default class Swip {
             let sl = page.scrollLeft();
             let client = GetClient(e), x = client.x - this.domLimit.left + sl, y = client.y - this.domLimit.top + st;
             let xp = this.getPercentByValue(x, 0, this.domLimit.width), yp = this.getPercentByValue(y, 0, this.domLimit.height);
-            let centerAngle = this.geo.getAngle([
-                [this.domLimit.centerX, this.domLimit.centerY],
-                [client.x, client.y]
-            ])
-            let res: I_Swip_mousePosition = { xp, yp, clientX: client.x, clientY: client.y, x, y, centerAngle }
+            const line:I_line = [[this.domLimit.centerX, this.domLimit.centerY],[client.x, client.y]]
+            let centerAngle = this.geo.getAngle(line)
+            const centerDistance = this.geo.getLength(line)
+            let res: I_Swip_mousePosition = { xp, yp, clientX: client.x, clientY: client.y, x, y, centerAngle,centerDistance }
             return res;
         }
         this.getDOMLimit = (type): I_Swip_domLimit => {
