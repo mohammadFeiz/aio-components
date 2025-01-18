@@ -20,7 +20,7 @@ export type I_Swip = {
     parent?: () => any,
     onClick?: (p: I_Swip_parameter) => void,
     page?: () => any,
-    start?: (p: I_Swip_parameter) => number[],
+    start?: (p: I_Swip_parameter) => number[] | false,
     move?: (p: I_Swip_parameter) => void,
     end?: (p: I_Swip_parameter) => void,
     selectRect?: I_Swip_selectRect_config,
@@ -156,6 +156,7 @@ export default class Swip {
         this.addSelectRect(mousePosition.x, mousePosition.y);
         let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e, change: this.defaultChange }
         let res = (this.p.start || (() => [0, 0]))(startParams);
+        if(res === false){return}
         if (!Array.isArray(res)) { return; }
         let x = res[0], y = res[1];
         this.so = { ...this.so, x, y }

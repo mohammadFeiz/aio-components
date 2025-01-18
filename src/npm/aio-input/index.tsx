@@ -2281,6 +2281,8 @@ export type I_RangeContext = {
 const RangeContext = createContext({} as any)
 const Range: FC = () => {
     let { rootProps }: AI_context = useContext(AICTX);
+    const rootPropsRef = useRef(rootProps)
+    rootPropsRef.current = rootProps;
     let {
         start = 0, end = 360, min = start, max = end, step = 1, reverse, round, vertical,
         multiple, text, onChange, size = Def('range-size'), disabled, className, labels = [], rotate = 0
@@ -2322,6 +2324,8 @@ const Range: FC = () => {
                 reverseY: !!reverse && !!vertical,
                 dom: () => $(temp.dom.current),
                 start: (p: { event: Event }) => {
+                    const {disabled} = rootPropsRef.current;
+                    if(disabled){return false}
                     let { event } = p;
                     if (event.target !== null) {
                         let target = $(event.target);
@@ -2340,7 +2344,11 @@ const Range: FC = () => {
                     let { change, mousePosition } = p;
                     if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
                 },
-                onClick: function (p: I_Swip_parameter) { click(p.mousePosition) }
+                onClick: function (p: I_Swip_parameter) { 
+                    const {disabled} = rootPropsRef.current;
+                    if(disabled){return}
+                    click(p.mousePosition) 
+                }
             })
         }, 100)
     }, [changeHandle])
@@ -3395,20 +3403,20 @@ const RichModal: FC<{ item: I_richTextItem }> = (props) => {
         </div>
     )
 }
-export type I_formInputs<T> = { [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) }
+export type I_formInputs<T> = { [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) | string }
 type I_formInput<T> = {
     input: AITYPE | string,
     field?: NestedKeys<T>,
     label?: string,
     error?: (data: T) => string | undefined,
-    attrs?: any, defaultProps?: any,
+    customProps?: any,
     value?: (data: T) => any,
     onChange?: (v: any) => any
 }
 type I_useFormProps<T> = {
     initData: T; onSubmit?: (data: T) => void;
     inputs: I_formInputs<T>;
-    inputTypes?: { [name: string]: (value: any, onChange: (v: any) => void, defaultProps: any) => ReactNode }
+    customTypes?: { [name: string]: (value: any, onChange: (v: any) => void, customProps: any) => ReactNode }
 };
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object
@@ -3458,21 +3466,21 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => 
     const hasError = () => getErrors().length > 0;
     const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
     function getInputByName(name: string): I_formInput<T> {
-        const inputObj = p.inputs[name];
+        let inputObj = p.inputs[name];
         if (typeof inputObj === 'function') { return inputObj(dataRef.current) }
+        if(typeof inputObj === 'string'){
+            eval(`inputObj = ${inputObj}`)
+        }
         return inputObj as I_formInput<T>
     }
-    const getValueAndOnChangeByName = (name: string): { value: any, onChange: (v: any) => void } | undefined => {
-        const { field, input, value, onChange } = getInputByName(name), data = dataRef.current
-        if (field) {
-            return { value: getValueByField(data, field), onChange: (v: any) => change([{ field, value: v }]) }
-        }
-        else if (typeof input === 'object' && value && onChange) {
-            return { value: value(data), onChange: (v: any) => onChange(v) }
-        }
+    const getValueAndOnChangeByName = (name: string): { value: any, onChange: (v: any) => void } => {
+        const { field, value, onChange } = getInputByName(name), data = dataRef.current
+        const valueResult = value?value(data):(field?getValueByField(data, field):undefined)
+        const onChangeResult = onChange?(v: any) => onChange(v):(field?(v: any) => change([{ field, value: v }]):()=>{})
+        return {value:valueResult,onChange:onChangeResult}
     }
-    const renderInput = (name: string) => {
-        const { input, label, error = () => { return undefined }, defaultProps, attrs } = getInputByName(name);
+    const renderInput = (name: string,attrs?:any) => {
+        const { input, label, error = () => { return undefined }, customProps } = getInputByName(name);
         const data = dataRef.current;
         const vo = getValueAndOnChangeByName(name)
         if (!vo) { return null }
@@ -3480,24 +3488,21 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => 
         const message = error(data);
         errors.current[name] = message;
         if (typeof input === 'string') {
-            const fn = (p.inputTypes || {})[input]
+            const fn = (p.customTypes || {})[input]
             if (!fn) { return null }
             return (
                 <FormItem key={name}
-                    input={fn(value, onChange, defaultProps)}
+                    input={fn(value, onChange, customProps)}
                     label={label} error={message} attrs={attrs}
                 />
             );
         }
-        else {
-            return (
-                <FormItem key={name}
-                    input={<AIOInput {...input} value={value} onChange={onChange} />}
-                    label={label} error={message} attrs={attrs}
-                />
-            );
-        }
-
+        return (
+            <FormItem key={name}
+                input={<AIOInput {...input} value={value} onChange={onChange} />}
+                label={label} error={message} attrs={attrs}
+            />
+        );
     };
     const renderGroup = (node:I_formNode,attrs:any,html:ReactNode)=>{
         const {tag = 'div',legend} = node;
@@ -3514,8 +3519,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => 
         if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
         if (node.input) {
             const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
-            const html = <>{renderInput(node.input)}</>
-            return renderGroup(node,attrs,html)
+            return <>{renderInput(node.input,attrs)}</>
         }
         if (node.v) {
             const attrs = AddToAttrs(node.attrs, { className: ["ai-form-v", node.className], style: { flex, height: size, ...node.style } })

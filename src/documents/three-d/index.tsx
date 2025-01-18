@@ -30,9 +30,9 @@ const S1: FC = () => {
             containerBg: '#f1f1f1', width: 200, height: 200, borderRadius: 120, shadowPos: [10, 10],
             darkShadow: 10, lightShadow: 15, darkContrast: 0.1, lightContrast: 1, shadowInset: true
         },
-        inputTypes: {
-            'joystick': (value: [number, number], onChange: (v: [number, number]) => void, defaultProps: { scale: number, size: number }) => {
-                return <JoyStick x={value[0]} y={value[1]} size={defaultProps.size} scale={defaultProps.scale} onChange={(p) => onChange([p.x, p.y])} />
+        customTypes: {
+            'joystick': (value: [number, number], onChange: (v: [number, number]) => void, customProps: { scale: number, size: number }) => {
+                return <JoyStick x={value[0]} y={value[1]} size={customProps.size} scale={customProps.scale} onChange={(p) => onChange([p.x, p.y])} />
             }
         },
         inputs: {
@@ -47,7 +47,7 @@ const S1: FC = () => {
             'width': { field: 'width', label: 'width', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
             'height': { field: 'height', label: 'height', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
             'borderRadius': { field: 'borderRadius', label: 'round', input: { type: 'slider', start: 0, end: 120, step: 1, size: 24 } },
-            'shadowPos': { field: 'shadowPos', input: 'joystick', defaultProps: { size: 72, scale: 1 } },
+            'shadowPos': { field: 'shadowPos', input: 'joystick', customProps: { size: 72, scale: 1 } },
             'darkContrast': { field: 'darkContrast', label: 'dark contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
             'lightContrast': { field: 'lightContrast', label: 'light contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
             'containerBg': { field: 'containerBg', label: 'background', input: { type: 'color' } },
