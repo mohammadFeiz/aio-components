@@ -8,7 +8,7 @@ import {
     setValueByField,
     getValueByField,
 } from './../aio-utils';
-import Swip, { I_Swip_parameter, I_Swip_mousePosition } from './../aio-swip';
+import Swip, { I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength } from './../aio-swip';
 import AIODate from './../aio-date';
 import './index.css';
 import { Indent, GetSvg } from '../aio-components';
@@ -73,20 +73,7 @@ function AIOINPUT(props: AITYPE) {
     let { type, value, onChange, attrs = {}, rtl } = props;
     let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
-    let [error, setError] = useState<string>()
-    useEffect(() => {
-        validate()
-    }, [props.value])
-    function validate() {
-        const { validations, lang = 'en', label, reportError = () => { } } = props;
-        if (!validations) { return }
-        let res: string | undefined;
-        if (typeof validations === 'function') { res = validations(value); }
-        else { res = new Validation({ value, title: (label || '').replace(/\*/g, ''), lang, validations }).validate() as string | undefined }
-        reportError(res)
-        setError(res)
-    }
-    let [popup, setPopup] = useState(getPopup(AIOPopup))
+    let [popup] = useState(getPopup(AIOPopup))
     function getPopup(ctor: { new(p?: { rtl?: boolean }): AIOPopup }): AIOPopup {
         return new ctor({ rtl: props.rtl })
     }
@@ -187,7 +174,7 @@ function AIOINPUT(props: AITYPE) {
     }
     function getContext(): AI_context {
         let context: AI_context = {
-            error, options: getOptions(), popup,
+            options: getOptions(), popup,
             rootProps: { ...props, value }, datauniqid, touch: 'ontouchstart' in document.documentElement,
             DragOptions, click, optionClick, types, showPassword, setShowPassword, DATE
         }
@@ -739,20 +726,20 @@ const CheckIcon: FC<{ checkIcon?: (p: { checked: boolean, row: any }) => false |
     );
 }
 const Layout: FC<AI_Layout> = (props) => {
-    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, error, popup }: AI_context = useContext(AICTX)
+    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, popup }: AI_context = useContext(AICTX)
     let { option, index } = props;
     let { type, rtl } = rootProps;
     let [dom] = useState(createRef())
     const [recognition, setRecognition] = useState<any>()
     useEffect(() => {
         if (!('webkitSpeechRecognition' in window)) { return }
-        let { lang = 'en', onChange, voice } = rootProps;
+        let { onChange, voice } = rootProps;
         if (!voice || !onChange || !types.hasKeyboard) { return }
         // @ts-ignore
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) { return }
         const recognition = new SpeechRecognition();
-        recognition.lang = { en: 'en-US', fa: 'fa-IR' }[lang];
+        recognition.lang = { en: 'en-US', fa: 'fa-IR' }[voice];
         recognition.continuous = true;
         recognition.interimResults = false;
         recognition.onresult = (event: any) => {
@@ -784,7 +771,6 @@ const Layout: FC<AI_Layout> = (props) => {
             cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
             if (types.isInput) { cls += ` aio-input-input` }
             if (rootProps.justify) { cls += ' aio-input-justify' }
-            if (error) { cls += ' has-error' }
             cls += rtl ? ' aio-input-rtl' : ' aio-input-ltr'
         }
         if (type === 'tree') {
@@ -799,31 +785,19 @@ const Layout: FC<AI_Layout> = (props) => {
         cls += ' ' + datauniqid;
         return cls;
     }
-    function cls(key: string) {
+    function cls(key: string,hasSubtext?:boolean) {
         let className = `aio-input-${key}`;
         if (option) { className += ` aio-input-${type}-option-${key}` }
         else { className += ` aio-input-${type}-${key}` }
+        if(hasSubtext) { className += ` aio-input-has-subtext` }
         return className;
     }
     function Text(): ReactNode {
         let { text, placeholder, subtext, justify } = properties;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text !== undefined) {
-            let p = (type: 'value' | 'subtext') => {
-                return {
-                    className: `${cls(type)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
-                } as any
-            }
-            if (subtext) {
-                return (
-                    <div className={`aio-input-content aio-input-${type}-content${justify && !types.isInput ? ' aio-input-content-justify' : ''}`}>
-                        <div {...p('value')}>{text}</div><div {...p('subtext')}>{subtext}</div>
-                    </div>
-                )
-            }
-            else {
-                return <div {...p('value')}>{text}</div>
-            }
+            const className = `${cls('value',!!subtext)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
+            return <div className={className} data-subtext={subtext}>{text}</div>
         }
         else { return <div style={{ flex: 1 }}></div> }
     }
@@ -913,27 +887,9 @@ const Layout: FC<AI_Layout> = (props) => {
         let style = { ...(obj.style || {}), ...p.style }
         let { before = obj.before } = p;
         let { after = obj.after } = p;
-        let { footer = (obj as AITYPE).footer } = p;
         let classNames = [obj.className, p.className].filter((o) => !!o)
         let className = classNames.length ? classNames.join(' ') : undefined;
-        return { disabled, draggable, text, subtext, placeholder, justify, checked, loading, attrs, style, before, after, className, footer }
-    }
-    function Label() {
-        if (option) { return null }
-        const { label } = rootProps
-        if (!label) { return null }
-        let className = 'aio-input-label'
-        const required = label[0] === '*'
-        if (required) { className += ' aio-input-label-required' }
-        const finalLabel = required ? label.slice(1, label.length) : label
-        return (<div className={className}>{finalLabel}</div>)
-    }
-    function getFooter() {
-        if (option) { return null }
-        let text: string = '';
-        if (properties.footer !== undefined) { text = properties.footer }
-        else if (error && rootProps.showErrors !== false) { text = error }
-        if (text !== undefined) { return (<div className='aio-input-footer'>{text}</div>) }
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, loading, attrs, style, before, after, className }
     }
     function startVoice() {
         recognition.start();
@@ -946,7 +902,6 @@ const Layout: FC<AI_Layout> = (props) => {
     let content = (<>
         {DragIcon()}
         {typeof properties.checked === 'boolean' && <CheckIcon round={!rootProps.multiple && type === 'radio'} checked={properties.checked} checkIcon={rootProps.checkIcon} row={option || {}} />}
-        {Label()}
         {BeforeAfter('before')}
         {Text()}
         {BeforeAfter('after')}
@@ -960,7 +915,6 @@ const Layout: FC<AI_Layout> = (props) => {
         <div {...p}>
             {content}
             {!!option && type === 'tabs' && <div className='aio-input-tabs-option-bar'></div>}
-            {getFooter()}
         </div>
     )
 }
@@ -2987,92 +2941,7 @@ export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: bool
         </div>
     )
 }
-type I_formInput = { input: AITYPE, label: string, error?: (v: any) => string | undefined, show?: boolean, attrs?: any }
-type I_useFormProps<T> = {
-    initData: T; onSubmit?: (data: T) => void;
-    inputs: { [name in NestedKeys<T>]?: I_formInput | ((data: T) => I_formInput) };
-};
-type NestedKeys<T> = {
-    [K in keyof T]: T[K] extends object
-    ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
-    : `${K & string}`;
-}[keyof T];
-type I_formCell<T> = NestedKeys<T> | I_formRow<T> | ((data: T) => ReactNode)
-type I_formRow<T> = I_formCell<T>[]
-export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
-    const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
-    const [data, setData] = useState<T>(initData);
-    const dataRef = useRef(data);
-    dataRef.current = data;
-    const [errors, setErrors] = useState<{ [name: string]: string | undefined }>({});
-    const change = (p:{field: NestedKeys<T>, value: any}[]) => {
-        let newData = {...dataRef.current}
-        for(let i = 0; i < p.length; i++){
-            const {field,value} = p[i]
-            newData = setValueByField(newData, field, value)
-        }
-        setData(newData)
-    }
-    const getError = (name: NestedKeys<T>): string | undefined => errors[name];
-    const setError = (name: NestedKeys<T>, err: string | undefined) => setErrors({ ...errors, [name]: err });
-    const getErrors = (): string[] => Object.values(errors).filter((err): err is string => !!err);
-    const getValue = (field: NestedKeys<T>) => {
-        const value = getValueByField(dataRef.current, field)
-        return value
-    };
-    const hasError = () => getErrors().length > 0;
-    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    const getInputByField = (name: NestedKeys<T>): I_formInput => {
-        const inputObj = p.inputs[name];
-        if (typeof inputObj === 'function') { return inputObj(data) }
-        return inputObj as I_formInput
-    }
-    const changeInput = (name: NestedKeys<T>, v: any) => {
-        const { error = () => { return undefined } } = getInputByField(name);
-        change([{field:name, value:v}]);
-        setError(name, error(v));
-    }
-    const renderInput = (name: NestedKeys<T>) => {
-        const { show, input, label, error } = getInputByField(name);
-        if (show === false) { return null }
-        return (
-            <FormItem key={name}
-                input={<AIOInput value={getValue(name)} onChange={(v) => changeInput(name, v)} {...input} />}
-                label={label} error={error ? () => error(getValue(name)) : undefined}
-            />
-        );
-    };
-    const renderCell = (cell: any) => {
-        if (Array.isArray(cell)) { return renderRows(cell) }
-        if (typeof cell === 'function') {return cell(data);}
-        else {
-            const { attrs } = getInputByField(cell as any);
-            const Attrs = AddToAttrs(attrs, { className: "ai-form-cell" })
-            return <div {...Attrs}>{renderInput(cell as any)}</div>
-        }
-    }
-    const renderRow = (cells: any) => {
-        cells = !Array.isArray(cells) ? [cells] : cells
-        return (<div className='ai-form-row'>{cells.map((cell: any) => renderCell(cell as any))}</div>)
-    }
-    const renderRows = (rows: any) => {
-        return (<div className='ai-form-rows'>{rows.map((row: any) => renderRow(row))}</div>)
-    }
-    const renderInputs = (p: { names?: I_formRow<T>[], content?: ReactNode }) => {
-        if (p.names) { return renderRows(p.names) }
-        if (p.content) { return <>{p.content}</> }
-        return null
-    };
-    const submit = () => {
-        if (p.onSubmit) { p.onSubmit(dataRef.current) }
-    }
-    const renderSubmitButton = (text: string, attrs: any) => {
-        const disabled = isDataChanged() || hasError()
-        const allAttrs = { ...attrs, disabled, onClick: () => submit() }
-        return <button {...allAttrs}>{text}</button>
-    }
-    return { data: dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged, renderSubmitButton, renderInputs };
-};
+
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
 export function AIOInput_defaultProps(p: { [key in keyof AITYPE]?: any }) {
     let storage: Storage = new Storage('aio-input-storage');
@@ -3508,7 +3377,7 @@ const RichModal: FC<{ item: I_richTextItem }> = (props) => {
         <div className="rich-text-options">
             <div className="rich-text-option-title">{item.tag}</div>
             <AIButtons
-                label='Align' justify={true}
+                justify={true}
                 style={{ border: '1px solid #ddd' }}
                 options={[
                     { text: 'none', value: undefined, },
@@ -3526,27 +3395,177 @@ const RichModal: FC<{ item: I_richTextItem }> = (props) => {
         </div>
     )
 }
+export type I_formInputs<T> = { [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) }
+type I_formInput<T> = {
+    input: AITYPE | string,
+    field?: NestedKeys<T>,
+    label?: string,
+    error?: (data: T) => string | undefined,
+    attrs?: any, defaultProps?: any,
+    value?: (data: T) => any,
+    onChange?: (v: any) => any
+}
+type I_useFormProps<T> = {
+    initData: T; onSubmit?: (data: T) => void;
+    inputs: I_formInputs<T>;
+    inputTypes?: { [name: string]: (value: any, onChange: (v: any) => void, defaultProps: any) => ReactNode }
+};
+type NestedKeys<T> = {
+    [K in keyof T]: T[K] extends object
+    ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
+    : `${K & string}`;
+}[keyof T];
+type I_formErrors = { [name: string]: string | undefined }
+type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
+type I_formNode = {
+    v?: I_formNode[],
+    h?: I_formNode[],
+    html?: ReactNode,
+    input?: string,
+    attrs?: any,
+    className?: string,
+    style?: any,
+    show?: boolean,
+    flex?: number,
+    size?: number,
+    tag?:I_formTag,
+    legend?:ReactNode
+}
+export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
+    const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
+    const [data, setData] = useState<T>(initData);
+    const dataRef = useRef(data);
+    dataRef.current = data;
+    const errors = useRef<I_formErrors>(getInitialErrors())
+    function getInitialErrors(): I_formErrors {
+        const data = dataRef.current, errors: I_formErrors = {}
+        for (let name in p.inputs) {
+            const { error = () => { return undefined } } = getInputByName(name);
+            errors[name] = error(data)
+        }
+        return errors
+    }
+    function change(p: { field: NestedKeys<T>, value: any }[]) {
+        let newData = { ...dataRef.current }
+        for (let i = 0; i < p.length; i++) {
+            const { field, value } = p[i]
+            newData = setValueByField(newData, field, value)
+        }
+        setData(newData)
+    }
+    const getError = (name: string): string | undefined => errors.current[name];
+    const getErrors = (): string[] => Object.values(errors.current).filter((err): err is string => !!err);
+    const hasError = () => getErrors().length > 0;
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    function getInputByName(name: string): I_formInput<T> {
+        const inputObj = p.inputs[name];
+        if (typeof inputObj === 'function') { return inputObj(dataRef.current) }
+        return inputObj as I_formInput<T>
+    }
+    const getValueAndOnChangeByName = (name: string): { value: any, onChange: (v: any) => void } | undefined => {
+        const { field, input, value, onChange } = getInputByName(name), data = dataRef.current
+        if (field) {
+            return { value: getValueByField(data, field), onChange: (v: any) => change([{ field, value: v }]) }
+        }
+        else if (typeof input === 'object' && value && onChange) {
+            return { value: value(data), onChange: (v: any) => onChange(v) }
+        }
+    }
+    const renderInput = (name: string) => {
+        const { input, label, error = () => { return undefined }, defaultProps, attrs } = getInputByName(name);
+        const data = dataRef.current;
+        const vo = getValueAndOnChangeByName(name)
+        if (!vo) { return null }
+        const { value, onChange } = vo;
+        const message = error(data);
+        errors.current[name] = message;
+        if (typeof input === 'string') {
+            const fn = (p.inputTypes || {})[input]
+            if (!fn) { return null }
+            return (
+                <FormItem key={name}
+                    input={fn(value, onChange, defaultProps)}
+                    label={label} error={message} attrs={attrs}
+                />
+            );
+        }
+        else {
+            return (
+                <FormItem key={name}
+                    input={<AIOInput {...input} value={value} onChange={onChange} />}
+                    label={label} error={message} attrs={attrs}
+                />
+            );
+        }
 
+    };
+    const renderGroup = (node:I_formNode,attrs:any,html:ReactNode)=>{
+        const {tag = 'div',legend} = node;
+        const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
+        if(tag === 'section'){return (<section {...attrs}>{content}</section>)}
+        if(tag === 'fieldset'){return (<fieldset {...attrs}>{content}</fieldset>)}
+        if(tag === 'p'){return (<p {...attrs}>{content}</p>)}
+        return (<div {...attrs}>{content}</div>)
+    }
+    const renderNode = (node: I_formNode):ReactNode => {
+        let { show = true, flex, size } = node;
+        if (!show) { return null }
+        if (node.html) { return node.html }
+        if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
+        if (node.input) {
+            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
+            const html = <>{renderInput(node.input)}</>
+            return renderGroup(node,attrs,html)
+        }
+        if (node.v) {
+            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-v", node.className], style: { flex, height: size, ...node.style } })
+            const html = <>{node.v.map((o) => renderNode(o))}</>
+            return renderGroup(node,attrs,html)
+        }
+        if (node.h) {
+            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-h", node.className], style: { flex, width: size, ...node.style } })
+            const html = <>{node.h.map((o) => renderNode(o))}</>
+            return renderGroup(node,attrs,html)
+        }
+    }
+    const renderInputs = (p: { node?: I_formNode, content?: ReactNode }) => {
+        if (p.node) { return renderNode(p.node) }
+        if (p.content) { return <>{p.content}</> }
+        return null
+    };
+    const submit = () => {
+        if (p.onSubmit) { p.onSubmit(dataRef.current) }
+    }
+    const renderSubmitButton = (text: string, attrs: any) => {
+        const disabled = isDataChanged() || hasError()
+        const allAttrs = { ...attrs, disabled, onClick: () => submit() }
+        return <button {...allAttrs}>{text}</button>
+    }
+    return { data: dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged, renderSubmitButton, renderInputs };
+};
 type AI_FormItem = {
     label?: string,
     input: ReactNode,
+    attrs?: any,
     action?: { text: ReactNode, fn?: () => void },
-    error?: () => string | undefined | void
+    error?: string,
+    id?:string
 }
-export const FormItem: FC<AI_FormItem> = ({ label, input, action, error = () => '' }) => {
-    const Error = error()
+export const FormItem: FC<AI_FormItem> = (props) => {
+    const { label, input, action, error, attrs,id } = props;
     const hasHeader = !!label || !!action
+    const Attrs = AddToAttrs(attrs, { className: "ai-form-item" })
     return (
-        <div className="ai-form-item">
+        <div {...Attrs}>
             {
                 hasHeader === true &&
-                <div className="ai-form-item-header">
+                <label className="ai-form-item-header" htmlFor={id}>
                     {!!label && <div className="ai-form-item-label">{label}</div>}
                     {!!action && <div className="ai-form-item-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
-                </div>
+                </label>
             }
             <div className="ai-form-item-body">{input}</div>
-            {!!Error && <div className="ai-form-item-error">{Error}</div>}
+            {!!error && <div className="ai-form-item-error">{error}</div>}
         </div>
     )
 }
@@ -3570,6 +3589,50 @@ export const FormContainer: FC<AI_FormContainer> = (props) => {
         </div>
     )
 }
+type I_JoyStick_data = { length: number, angle: number, x: number, y: number }
+type I_JoyStick = { x?: number, y?: number, angle?: number, length?: number, scale?: number, size: number, onChange: (v: I_JoyStick_data) => void, centerOriented?: boolean }
+export const JoyStick: FC<I_JoyStick> = (props) => {
+    const { scale = 1 } = props
+    const [data, setData] = useState<{ x: number, y: number }>()
+    useEffect(() => {
+        const { x, y, angle, length } = props;
+        if (x !== undefined && y !== undefined) { setData({ x, y }) }
+        if (angle !== undefined && length !== undefined) {
+            const { left, top } = getLeftAndTopByCenterAngleLength([props.size / 2, props.size / 2], angle, length);
+            setData({ x: left, y: top })
+        }
+    }, [])
+    if (!data) { return null }
+    function change(data: I_JoyStick_data) {
+        let { x, y, length, angle } = data;
+        x /= scale; y /= scale; length /= scale;
+        props.onChange({ x, y, length, angle })
+    }
+    return <JOYSTICK x={data.x * scale} y={data.y * scale} size={props.size} onChange={change} centerOriented={props.centerOriented} />
+}
+const JOYSTICK: FC<{ x: number, y: number, size: number, onChange: (v: I_JoyStick_data) => void, centerOriented?: boolean }> = ({ size, x, y, onChange, centerOriented }) => {
+    const [center] = useState<[number,number]>([size / 2, size / 2])
+    const [pos, setPos] = useState<[number,number]>([center[0] + x, center[0] + y])
+    const posRef = useRef(pos)
+    posRef.current = pos;
+    const [dom] = useState<any>(createRef())
+    useEffect(() => { new Swip({ dom: () => $(dom.current), start, move, end, maxCenterDistance: size / 2 }) }, [])
+    function start() { return posRef.current }
+    function end() { if (centerOriented) { onChange({ x: 0, y: 0, length: 0, angle: 0 }); setPos(center) } }
+    function move(p: I_Swip_parameter) {
+        let { x, y, centerAngle, centerDistance }: I_Swip_mousePosition = p.mousePosition;
+        setPos([x, y])
+        x -= center[0]; y -= center[1];
+        onChange({ x, y, length: centerDistance, angle: centerAngle })
+    }
+    return (
+        <div style={{ width: size, height: size }} className='joy-stick' ref={dom as any}>
+            <div style={{ left: posRef.current[0], top: posRef.current[1] }} className='joy-stick-button'>
+                <div></div>
+            </div>
+        </div>
+    )
+}
 export type AITYPE =
     AI_hasOption & AI_isDropdown & AI_isMultiple &
     AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
@@ -3578,17 +3641,12 @@ export type AITYPE =
         before?: ReactNode | ((p?: any) => ReactNode),
         className?: string,
         disabled?: boolean | any[],
-        footer?: ReactNode,
         imageAttrs?: any,
         justify?: boolean,
-        label?: string,
-        lang?: 'fa' | 'en',
         loading?: boolean | ReactNode,
         onChange?: (newValue: any, p?: any) => undefined | boolean | void,
         placeholder?: ReactNode,
-        reportError?: (errorMessage: string | undefined) => void,
         rtl?: boolean,
-        showErrors?: boolean | string,
         style?: any,
         subtext?: ReactNode | (() => ReactNode),
         type: AI_type,
@@ -3708,7 +3766,7 @@ type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: b
 type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
 type AI_hasKeyboard = {
     blurChange?: boolean, filter?: string[], inputAttrs?: any,
-    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: boolean
+    maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: 'en' | 'fa'
 }
 type AI_isTable = {
     addText?: ReactNode | ((value: any) => ReactNode),

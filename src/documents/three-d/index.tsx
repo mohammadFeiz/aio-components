@@ -1,11 +1,8 @@
-import { createRef, FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import DOC from "../../resuse-components/doc";
 import './three-d-1.css';
-import { useForm } from "../../npm/aio-input";
-import Swip, { I_Swip_mousePosition } from "../../npm/aio-swip";
-import { I_Swip_parameter } from "../../npm/aio-swip";
-import Geo from "../../npm/aio-geo";
-import { I_line, I_point } from "../../npm/aio-utils";
+import { JoyStick, useForm } from "../../npm/aio-input";
+import { Code } from "../../npm/aio-components";
 const ThreeD: FC<{ goToHome: () => void, name: string }> = ({ name, goToHome }) => {
     return (
         <DOC
@@ -20,60 +17,63 @@ const ThreeD: FC<{ goToHome: () => void, name: string }> = ({ name, goToHome }) 
     )
 }
 export default ThreeD
-type I_shadow = {
-    left: number,
-    top: number,
-    contrast: number,
-    value: number
-}
 type I_s1 = {
-    containerBg: string,
-    width: number,
-    height: number,
-    borderRadius: number,
-    darkShadow: I_shadow,
-    lightShadow: I_shadow
+    containerBg: string,width: number,height: number,borderRadius: number,
+    shadowPos: [number, number],darkContrast: number,lightContrast: number,darkShadow: number,lightShadow: number,shadowInset: boolean,
+    center?: {width: number,height: number,borderRadius: number,shadowInset: boolean,},
 }
 const S1: FC = () => {
+    const [defaultCenter] = useState<I_s1["center"]>({width: 120, height: 120, borderRadius: 120,shadowInset: false})
+    const [tab, setTab] = useState<'main' | 'center' | 'css'>('main')
     const form = useForm<I_s1>({
         initData: {
-            containerBg: '#f1f1f1',
-            width: 200,
-            height: 200,
-            borderRadius: 120,
-            darkShadow: {
-                left: 10,
-                top: 10,
-                contrast: 0.1,
-                value: 10
-            },
-            lightShadow: {
-                left: -10,
-                top: -10,
-                contrast: 1,
-                value: 15
+            containerBg: '#f1f1f1', width: 200, height: 200, borderRadius: 120, shadowPos: [10, 10],
+            darkShadow: 10, lightShadow: 15, darkContrast: 0.1, lightContrast: 1, shadowInset: true
+        },
+        inputTypes: {
+            'joystick': (value: [number, number], onChange: (v: [number, number]) => void, defaultProps: { scale: number, size: number }) => {
+                return <JoyStick x={value[0]} y={value[1]} size={defaultProps.size} scale={defaultProps.scale} onChange={(p) => onChange([p.x, p.y])} />
             }
         },
         inputs: {
-            'width': { label: 'width', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
-            'height': { label: 'height', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
-            'borderRadius': { label: 'round', input: { type: 'slider', start: 0, end: 120, step: 1, size: 24 } },
-            'darkShadow.contrast': { label: 'dark contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
-            'lightShadow.contrast': { label: 'light contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
-            'containerBg': { label: 'background', input: { type: 'color' } },
+            'tabs': {
+                input: {
+                    type: 'tabs',className:'bg-d-5-',options: ['main', 'center', 'css'],
+                    option: { text: 'option', value: 'option', onClick: ({ option }) => setTab(option), className: () => 'fs-16- bold-' },
+                },
+                value: (data) => tab,
+                onChange: (v) => form.change([{ field: 'center', value: v ? defaultCenter : undefined }])
+            },
+            'width': { field: 'width', label: 'width', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
+            'height': { field: 'height', label: 'height', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
+            'borderRadius': { field: 'borderRadius', label: 'round', input: { type: 'slider', start: 0, end: 120, step: 1, size: 24 } },
+            'shadowPos': { field: 'shadowPos', input: 'joystick', defaultProps: { size: 72, scale: 1 } },
+            'darkContrast': { field: 'darkContrast', label: 'dark contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
+            'lightContrast': { field: 'lightContrast', label: 'light contrast', input: { type: 'slider', start: 0, end: 1, step: 0.01, size: 24 } },
+            'containerBg': { field: 'containerBg', label: 'background', input: { type: 'color' } },
+            'shadowInset': { field: 'shadowInset', label: 'inset', input: { type: 'checkbox' } },
+            'activeCenter': {
+                label: 'center', input: { type: 'checkbox' },
+                value: (data) => !!data.center,
+                onChange: (v) => form.change([{ field: 'center', value: v ? defaultCenter : undefined }]),
+            },
+            'center.width': { field: 'center.width', label: 'width', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
+            'center.height': { field: 'center.height', label: 'height', input: { type: 'slider', start: 6, end: 480, step: 6, size: 24 } },
+            'center.borderRadius': { field: 'center.borderRadius', label: 'round', input: { type: 'slider', start: 0, end: 120, step: 1, size: 24 } },
+            'center.shadowInset': { field: 'center.shadowInset', label: 'inset', input: { type: 'checkbox' } },
         },
+
 
     })
     const generateStyle = () => {
-        const { data } = form
-        const { lightShadow: ls, darkShadow: ds } = data;
+        const { lightShadow: ls, darkShadow: ds, shadowPos: sp, darkContrast: dc, lightContrast: lc, containerBg: cb, width, height, shadowInset: si, center } = form.data;
         return (
             `
 .three-d-1-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: ${data.containerBg};
+    background-color: ${cb};
     height:500px;
     width:100%;
 }
@@ -82,11 +82,30 @@ const S1: FC = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: ${data.height}px;
-    width: ${data.width}px;
+    height: ${height}px;
+    width: ${width}px;
     border-radius: 50%;
-    box-shadow: inset ${ls.left}px ${ls.top}px ${ls.value}px rgba(255, 255, 255, ${ls.contrast}),
-        inset ${ds.left}px ${ds.top}px ${ds.value}px rgba(0, 0, 0, ${ds.contrast});
+    box-shadow: ${si ? 'inset ' : ''}${-sp[0]}px ${-sp[1]}px ${ls}px rgba(255, 255, 255, ${lc}),
+    ${si ? 'inset ' : ''}${sp[0]}px ${sp[1]}px ${ds}px rgba(0, 0, 0, ${dc});
+}
+${generateCenterStyle()}
+            `
+        )
+    }
+    const generateCenterStyle = () => {
+        if (!form.data.center) { return '' }
+        const { lightShadow: ls, darkShadow: ds, shadowPos: sp, darkContrast: dc, lightContrast: lc, center } = form.data;
+        const { shadowInset: si, width, height, borderRadius } = center || {};
+        return (
+            `
+.three-d-1:before {
+    content:'',
+    position: absolute;
+    height: ${height}px;
+    width: ${width}px;
+    border-radius: ${borderRadius};
+    box-shadow: ${si ? 'inset ' : ''}${-sp[0]}px ${-sp[1]}px ${ls}px rgba(255, 255, 255, ${lc}),
+    ${si ? 'inset ' : ''}${sp[0]}px ${sp[1]}px ${ds}px rgba(0, 0, 0, ${dc});
 }
             `
         )
@@ -103,96 +122,75 @@ const S1: FC = () => {
             width: '100%'
         }
     }
-    const getOutStyle = (): any => {
-        const { data } = form
-        const { lightShadow: ls, darkShadow: ds } = data;
+    const getOutStyle = (data: I_s1, isCenter?: boolean): any => {
+        const obj: I_s1 = isCenter ? data.center as I_s1 : data
+        const { lightShadow: ls, darkShadow: ds, shadowInset: si } = obj;
+        const { lightContrast: lc, darkContrast: dc } = data;
+        const sp = data.shadowPos;
         return {
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: data.height,
-            width: data.width,
-            borderRadius: data.borderRadius,
-            boxShadow: `inset ${ls.left}px ${ls.top}px ${ls.value}px rgba(255, 255, 255, ${ls.contrast}),
-                inset ${ds.left}px ${ds.top}px ${ds.value}px rgba(0, 0, 0, ${ds.contrast})`
+            height: obj.height,
+            width: obj.width,
+            borderRadius: obj.borderRadius,
+            boxShadow: `${si ? 'inset ' : ''}${-sp[0]}px ${-sp[1]}px ${ls}px rgba(255, 255, 255, ${lc}),
+            ${si ? 'inset ' : ''}${sp[0]}px ${sp[1]}px ${ds}px rgba(0, 0, 0, ${dc})`
         }
     }
-    const change = (p:I_dir_data)=>form.change([{field:'darkShadow.left',value:p.x},{field:'darkShadow.top',value:p.y}])
-    const {data} = form;
+    const mainConfig = ()=>{
+        return {
+            show: tab === 'main',
+            h: [
+                { v: [{ input: 'width' }, { input: 'darkContrast' }] },
+                { v: [{ input: 'height' }, { input: 'lightContrast' }] },
+                { v: [{ input: 'borderRadius' }, { h: [{ input: 'containerBg' }, { input: 'shadowInset' }] }] },
+                { input: 'shadowPos', size: 84 }
+            ]
+        }
+    }
+    const centerConfig = ()=>{
+        return {
+            show: tab === 'center',
+            h: [
+                { style: { width: 160 }, h: [{ input: 'activeCenter' }, { input: 'center.shadowInset' }] },
+                { show: !!form.data.center, h: [{ input: 'center.width' }, { input: 'center.height' }, { input: 'center.borderRadius' }] }
+            ]
+        }
+    }
+    const cssConfig = ()=>({show: tab === 'css',html: Code(generateStyle())})
+    const previewConfig = ()=>{
+        return {
+            show: tab !== 'css',
+            html: (
+                <div className='three-d-1-container' style={getContainerStyle()}>
+                    <div className="three-d-1" style={getOutStyle(form.data)}>
+                        {
+                            !!form.data.center &&
+                            <div className="three-d-1-center" style={getOutStyle(form.data, true)}></div>
+                        }
+                    </div>
+                </div>
+            )
+        }
+    }
     return (
         <div className="msf">
-            {
-                form.renderInputs({
-                    names: [
-                        [
-                            ['width', 'borderRadius', 'darkShadow.contrast'],
-                            ['height', 'containerBg', 'lightShadow.contrast'],
-                            () => <DirWrapper x={data.darkShadow.left} y={data.darkShadow.top} width={200} height={200} onChange={(p)=>change(p)}/>
-                        ]
-                    ]
-                })
-            }
-            <div className='three-d-1-container' style={getContainerStyle()}>
-                <div className="three-d-1" style={getOutStyle()}>
-                    <span></span>
-                </div>
-            </div>
+            <form className="p-12-">
+                {
+                    form.renderInputs({
+                        node: {
+                            className: 'brd-c-14- br-12- of-hidden-',
+                            v: [
+                                { input: 'tabs' },
+                                {className: 'p-h-12- p-b-12-',v: [mainConfig(),centerConfig(),cssConfig(),previewConfig()]}
+                            ]
+                        }
+                    })
+                }
+            </form>
         </div>
     )
 }
 
-type I_dir_data = {
-    length: number,
-    angle: number,
-    x: number,
-    y: number
-}
-const DirWrapper: FC<{ x?: number, y?: number, angle?: number, length?: number, width: number, height: number,onChange:(v:I_dir_data)=>void }> = (props) => {
-    const [geo] = useState<Geo>(new Geo())
-    const [data, setData] = useState<{ x: number, y: number }>()
-    function getLeftAndTopByAngleAndLength(angle: number, length: number): { left: number, top: number } {
-        const center: I_point = [props.width / 2, props.height / 2]
-        const line: I_line = geo.getLineBySLA(center, length, angle);
-        const [left, top] = line[1]
-        return { left, top }
-    }
-    // function getAngleAndLengthByLeftAndTop(left: number, top: number): { angle: number, length: number } {
-    //     const center: I_point = [props.width / 2, props.height / 2]
-    //     const line: I_line = [center, [left, top]]
-    //     const angle = geo.getAngle(line);
-    //     const length = geo.getLength(line)
-    //     return { angle, length }
-    // }
-    useEffect(() => {
-        const {x,y,angle,length} = props;
-        if (x !== undefined && y !== undefined) {setData({ x, y })}
-        if (angle !== undefined && length !== undefined) {
-            const { left, top } = getLeftAndTopByAngleAndLength(angle, length);
-            setData({ x:left, y:top })
-        }
-    }, [])
-    if (!data) { return null }
-    return <Dir x={data.x} y={data.y} width={props.width} height={props.height} onChange={props.onChange}/>
-}
-const Dir: FC<{ x: number, y: number, width: number, height: number,onChange:(v:I_dir_data)=>void }> = (props) => {
-    const dom = createRef()
-    const [swip] = useState<Swip>(
-        new Swip({
-            dom: () => dom,
-            move
-        })
-    )
-    function move(p: I_Swip_parameter) {
-        const { x, y, centerAngle, centerDistance }: I_Swip_mousePosition = p.mousePosition;
-        props.onChange({ x, y, length: centerDistance, angle: centerAngle })
-    }
-    const style2: any = { width: 0, height: 0, position: 'absolute', left: props.x, top: props.y, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-    return (
-        <div style={{ width: props.width, height: props.height, border: '1px solid #ddd', position: 'relative' }} ref={dom as any}>
-            <div style={style2}>
-                <div style={{ width: 24, height: 24, borderRadius: '100%', background: '#0069ff', position: 'absolute' }}></div>
-            </div>
-        </div>
-    )
-}

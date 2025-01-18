@@ -45,29 +45,13 @@
 .aio-input-popover-rtl {
     direction: rtl;
 }
-
-.aio-input-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    justify-content: center;
-}
-
-.aio-input-content>.aio-input-value {
-    overflow: visible;
-}
-
-.aio-input-content>.aio-input-subtext {
-    overflow: visible;
-}
-
-
 .aio-input-value {
     display: flex;
     width: 100%;
     position: relative;
     overflow: hidden;
     max-width: 100%;
+    flex-direction:column;
 }
 
 .aio-input-subtext {
@@ -1497,11 +1481,6 @@
 
 
 
-.aio-input-content-justify {
-    flex: none;
-    width: fit-content;
-}
-
 .aio-input-justify {
     justify-content: center;
 }
@@ -1636,7 +1615,6 @@
     height: 48px;
     align-items: center;
     width: 100%;
-    margin: 0 12px;
 }
 
 .ai-range-horizontal .ai-range-groove {
@@ -2763,11 +2741,9 @@ pre[class*="language-"]>code[class*="language-"] {
     opacity: 0.4;
     cursor: not-allowed;
 }
-
 .ai-form-item {
     display: flex;
     flex-direction: column;
-    padding: 6px 12px;
     width: 100%;
 }
 
@@ -2785,21 +2761,30 @@ pre[class*="language-"]>code[class*="language-"] {
 
 .ai-form-item-body {
     width: 100%;
+    position: relative;
 }
 
 .ai-form-item-error {
     color: red;
     font-size: 10px;
 }
-.ai-form-rows{
+.ai-form-v{
     display:flex;
     flex-direction: column;
     flex:1;
+    gap:6px;
 }
-.ai-form-row{
+.ai-form-h{
     display:flex;
     gap:12px;
 }
-.ai-form-cell{
-    flex:1;
+.ai-form-input-container{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-input-has-subtext:after{
+    content:attr(data-subtext);
+    font-size: 85%;
+    opacity: 0.7;
 }

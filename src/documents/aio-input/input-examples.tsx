@@ -459,7 +459,7 @@ const Subtext: FC = () => {
                 key={type}
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                style={type === 'textarea' ? undefined : { height: 60 }}
+                text='My Text'
                 subtext='My subtext'
             />
             {code(`
@@ -524,7 +524,7 @@ const Voice: FC = () => {
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                voice={true} lang='fa'
+                voice='fa'
             />
             {code(`
 <AIOInput
@@ -600,14 +600,14 @@ const Filter: FC = () => {
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
-                filter={['!a', '!b', '!c']}
+                filter={['string','!a', '!b', '!c']}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
     onChange={(newValue)=>setValue(newValue)}
-    filter={['!a', '!b', '!c']}
+    filter={['string','!a', '!b', '!c']}
 />
         `)}
         </div>
