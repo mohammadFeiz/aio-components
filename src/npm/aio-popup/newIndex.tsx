@@ -19,10 +19,7 @@ export type AP_footer = (p: { state: any, setState: (v: any) => void, removeModa
 type AP_setAttrs = (mode: AP_attrsKey) => any
 export type AP_modal = {
     getTarget?: () => any,
-    pageSelector?: string,
     limitTo?: string,
-    maxHeight?: number | 'string',
-    fixStyle?: (o: any, p: { targetLimit: any, pageLimit: any }) => any,
     rtl?: boolean,
     id?: string,
     onClose?: boolean | (() => void),
@@ -72,119 +69,68 @@ export type AP_highlight = {
 }
 export type AP_confirm = { title?: string, subtitle?: string, text?: ReactNode, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
 export type AP_prompt = { title?: string, subtitle?: string, text?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
-type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string, isDown: boolean, }
+type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string }
 const CTX = createContext({} as any)
 
 type AP_align = {
     dom: any,
     target: any,
     fitHorizontal?: boolean,
-    fixStyle?: (o: any, p: { targetLimit: any, pageLimit: any }) => any,
-    attrs?: any,
-    pageSelector?: string,
     limitTo?: string,
     rtl?: boolean,
 }
+type I_bound = { left: number, top: number, right: number, bottom: number, width: number, height: number }
 function Align(p: AP_align) {
-    let { dom, target, fitHorizontal, fixStyle = (o) => o, attrs = {}, pageSelector, rtl, limitTo } = p;
-    let $$ = {
-        getDomLimit(dom: any, type: 'popover' | 'page' | 'target') {
-            let offset = dom.offset();
-            let left = offset.left - window.pageXOffset;
-            let top = offset.top - window.pageYOffset;
-            if (pageSelector && type !== 'page') {
-                let page = $(pageSelector);
-                try {
-                    let { left: l, top: t } = page.offset() || { left: 0, top: 0 }
-                    l -= window.scrollX;
-                    t -= window.scrollY;
-                    left -= l;
-                    top -= t;
-                }
-                catch { }
-
-            }
-            let width = dom.outerWidth();
-            let height = dom.outerHeight();
-            let right = left + width;
-            let bottom = top + height;
-            return { left, top, right, bottom, width, height };
-        },
-        getPageLimit() {
-            let page = pageSelector ? $(pageSelector) : undefined;
-            page = Array.isArray(page) && page.length === 0 ? undefined : page;
-            let bodyWidth = window.innerWidth;
-            let bodyHeight = window.innerHeight;
-            let pageLimit = page ? $$.getDomLimit(page, 'page') : { left: 0, top: 0, right: bodyWidth, bottom: bodyHeight };
-            if (pageLimit.left < 0) { pageLimit.left = 0; }
-            if (pageLimit.right > bodyWidth) { pageLimit.right = bodyWidth; }
-            if (pageLimit.top < 0) { pageLimit.top = 0; }
-            if (pageLimit.bottom > bodyHeight) { pageLimit.bottom = bodyHeight; }
-            return pageLimit;
-        },
-        getRelatedToLmit() {
-            if (!limitTo) { return }
+    let { dom, target, fitHorizontal, rtl, limitTo } = p;
+    const bodyWidth = window.innerWidth, bodyHeight = window.innerHeight;
+    let pageLimit = { left: 0, top: 0, bottom: bodyHeight, right: bodyWidth, width: bodyWidth, height: bodyHeight }
+    let targetLimit = target[0].getBoundingClientRect()
+    let domLimit = dom[0].getBoundingClientRect();
+    let overflowY;
+    domLimit.top = targetLimit.bottom
+    domLimit.bottom = domLimit.top + domLimit.height;
+    if (fitHorizontal) {
+        domLimit.width = targetLimit.width;
+        domLimit.left = targetLimit.left;
+        domLimit.right = targetLimit.left + targetLimit.width
+    }
+    else {
+        if (limitTo) {
             let elem = dom.parents(limitTo);
-            if (!elem.length) { return }
-            let offset = elem.offset();
-            let left = offset.left - window.pageXOffset;
-            let top = offset.top - window.pageYOffset;
-            let width = elem.outerWidth();
-            let height = elem.outerHeight();
-            let right = left + width;
-            let bottom = top + height;
-            return { left, top, right, bottom, width, height }
-        },
-        align() {
-            let pageLimit = $$.getPageLimit();
-            let targetLimit = $$.getDomLimit(target, 'target');
-            let domLimit = $$.getDomLimit(dom, 'popover');
-            let overflowY;
-            domLimit.top = targetLimit.bottom
-            domLimit.bottom = domLimit.top + domLimit.height;
-            if (fitHorizontal) {
-                domLimit.width = targetLimit.width;
-                domLimit.left = targetLimit.left;
-                domLimit.right = targetLimit.left + targetLimit.width
+            if (elem.length) {
+                pageLimit = elem[0].getBoundingClientRect()
             }
-            else {
-                let relatedToLimit = $$.getRelatedToLmit()
-                let parentLimit = relatedToLimit || pageLimit;
-                //اگر راست به چپ باید باشد
-                if (rtl) {
-                    //راست المان را با راست هدف ست کن
-                    domLimit.right = targetLimit.right;
-                    //چپ المان را بروز رسانی کن
-                    domLimit.left = domLimit.right - domLimit.width;
-                    //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
-                    if (domLimit.left < parentLimit.left) { domLimit.left = parentLimit.left; }
-                }
-                else {
-                    //چپ المان را با چپ هدف ست کن
-                    domLimit.left = targetLimit.left;
-                    //راست المان را بروز رسانی کن
-                    domLimit.right = domLimit.left + domLimit.width;
-                    //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
-                    if (domLimit.right > parentLimit.right) { domLimit.left = parentLimit.right - domLimit.width; }
-                }
-            }
-            //اگر المان از سمت پایین صفحه بیرون زد
-            if (domLimit.bottom > pageLimit.bottom) {
-                if (domLimit.height > targetLimit.top - pageLimit.top) { domLimit.top = pageLimit.bottom - domLimit.height; }
-                else { domLimit.top = targetLimit.top - domLimit.height; }
-            }
-            else { domLimit.top = targetLimit.bottom; }
-            if (domLimit.height > pageLimit.bottom - pageLimit.top) {
-                domLimit.top = 6;
-                domLimit.bottom = undefined;
-                domLimit.height = pageLimit.bottom - pageLimit.top - 12;
-                overflowY = 'auto';
-            }
-            let finalStyle = { left: domLimit.left, top: domLimit.top, width: domLimit.width, overflowY, ...attrs.style }
-            return fixStyle(finalStyle, { targetLimit, pageLimit })
+        }
+        //اگر راست به چپ باید باشد
+        if (rtl) {
+            //راست المان را با راست هدف ست کن
+            domLimit.right = targetLimit.right;
+            //چپ المان را بروز رسانی کن
+            domLimit.left = domLimit.right - domLimit.width;
+            //اگر المان از سمت چپ از صفحه بیرون زد سمت چپ المان را با سمت چپ صفحه ست کن
+            if (domLimit.left < pageLimit.left) { domLimit.left = pageLimit.left; }
+        }
+        else {
+            //چپ المان را با چپ هدف ست کن
+            domLimit.left = targetLimit.left;
+            //راست المان را بروز رسانی کن
+            domLimit.right = domLimit.left + domLimit.width;
+            //اگر المان از سمت راست صفحه بیرون زد سمت چپ المان را با پهنای المان ست کن
+            if (domLimit.right > pageLimit.right) { domLimit.left = pageLimit.right - domLimit.width; }
         }
     }
-    return $$.align();
+    //اگر المان از سمت پایین صفحه بیرون زد
+    if (domLimit.bottom > pageLimit.bottom) {
+        if (domLimit.height > targetLimit.top - pageLimit.top) { domLimit.top = pageLimit.bottom - domLimit.height; }
+        else { domLimit.top = targetLimit.top - domLimit.height; }
+    }
+    else { domLimit.top = targetLimit.bottom; }
+    if (domLimit.height > pageLimit.height) {
+        domLimit.top = pageLimit.top;
+        domLimit.height = pageLimit.height;
+        overflowY = 'auto';
+    }
+    return { left: domLimit.left, top: domLimit.top, width: domLimit.width, overflowY, maxWidth: pageLimit.width }
 }
 
 const CloseIcon: FC = () => {
@@ -257,8 +203,8 @@ const usePopup = (props: AP_props) => {
         if (typeof item.onClose === 'function') { item.onClose() }
     }
     const addAlert: I_AddAlert = (obj) => Alert(obj)
-    function addHighlight(highlight: AP_highlight) {setHighlight(highlight)}
-    function removeHighlight() {setHighlight(undefined)}
+    function addHighlight(highlight: AP_highlight) { setHighlight(highlight) }
+    function removeHighlight() { setHighlight(undefined) }
     const addConfirm = (obj: AP_confirm) => {
         let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
         let config: AP_modal = {
@@ -347,7 +293,7 @@ const usePopup = (props: AP_props) => {
             </CTX.Provider>
         )
     }
-    return { addAlert, addSnackebar, removeModal, addModal, getModals,addHighlight,removeHighlight,render,addConfirm,addPrompt }
+    return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt }
 }
 export default usePopup;
 const POPUPCTX = createContext({} as any)
@@ -362,8 +308,8 @@ type I_POPUPCTX = {
 type AP_Popup = { modal: AP_modal, isLast: boolean }
 const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
     const mainContext: I_CTX = useContext(CTX);
-    let { setAttrs = () => { return {} }, id, position = 'fullscreen', getTarget, maxHeight, fixStyle = (o) => o } = modal;
-    let [temp] = useState<AP_Popup_temp>({ dom: createRef(), backdropDom: createRef(), dui: undefined, isDown: false })
+    let { setAttrs = () => { return {} }, id, position = 'fullscreen', getTarget } = modal;
+    let [temp] = useState<AP_Popup_temp>({ dom: createRef(), backdropDom: createRef(), dui: undefined })
     let [popoverStyle, setPopoverStyle] = useState({})
     let [state, setState] = useState(modal.state)
     let attrs = setAttrs('modal') || {}
@@ -406,10 +352,9 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         let target = getTarget();
         if (!target || !target.length) { return {} }
         let popup = $(temp.dom.current);
-        let p = { dom: popup, target, fitHorizontal: modal.fitHorizontal, fixStyle, pageSelector: modal.pageSelector, limitTo: modal.limitTo, attrs, rtl: mainContext.rtl }
+        let p = { dom: popup, target, fitHorizontal: modal.fitHorizontal, limitTo: modal.limitTo, attrs, rtl: mainContext.rtl }
         let style = Align(p)
         let res = { ...style, position: 'absolute' }
-        if (maxHeight) { res.maxHeight = maxHeight }
         return res
     }
     function onKeyDown(e: any) {
@@ -418,12 +363,11 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         if (code === 27) { mainContext.removeModal() }
     }
     function mouseUp() {
-        setTimeout(() => temp.isDown = false, 0);
+
     }
     function mouseDown(e: any) {
         $(window).unbind('mouseup', mouseUp);
         $(window).bind('mouseup', mouseUp);
-        temp.isDown = true
     }
     function getClassName() {
         let className = 'aio-popup';
@@ -437,17 +381,17 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         <POPUPCTX.Provider value={getContext()}>
             <ModalBackdrop
                 content={<div {...getModalProps()}><ModalHeader /><ModalBody /><ModalFooter /></div>}
-                firstMount={!!firstMount} ref={temp.backdropDom} isDown={temp.isDown}
+                firstMount={!!firstMount} ref={temp.backdropDom}
             />
         </POPUPCTX.Provider>
     )
 }
-const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, ref: any, isDown: boolean }> = ({ content, firstMount, ref, isDown }) => {
+const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, ref: any }> = ({ content, firstMount, ref }) => {
     let { mainContext, modal, onKeyDown }: I_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, id, position = 'fullscreen' } = modal;
     const [attrs] = useState<any>(setAttrs('backdrop') || {})
     function backClick(e: Event) {
-        if (isDown) { return }
+        if (e.target !== e.currentTarget) { return }
         e.stopPropagation();
         let target = $(e.target as any);
         if (!target.hasClass('aio-popup-backdrop')) { return }
@@ -703,7 +647,7 @@ const Highlight: FC<{ highlight: AP_highlight }> = ({ highlight }) => {
                 if (easing) { obj.easing = easing }
                 anime(obj);
             }
-            catch {alert(`aio-highlighter error => connot find dom`)}
+            catch { alert(`aio-highlighter error => connot find dom`) }
         }, 0)
     })
     function getArrowIcon(props: { [key: string]: any }): ReactNode {
