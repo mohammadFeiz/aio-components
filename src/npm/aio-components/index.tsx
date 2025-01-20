@@ -8,12 +8,12 @@ type AI_Indent = {
     open?: boolean, onToggle?: () => void, toggleIcon?: false | ((p: { row: any, open?: boolean, level: number }) => ReactNode)
 }
 export const Indent: FC<AI_Indent> = (props) => {
-    const {width,height,level,open,row,rtl,isLastChild,isParentLastChild} = props;
-    const [indentPathes,setIndentPathes] = useState<ReactNode>(null)
-    useEffect(()=>{setIndentPathes(getIndentIcons())},[level,isLastChild,isParentLastChild])
-    const [toggleIcon,setToggleIcon] = useState<ReactNode>(null)
-    useEffect(()=>{setToggleIcon(getToggleIcon())},[open])
-    function getIndentIcon(rowIndex: number){
+    const { width, height, level, open, row, rtl, isLastChild, isParentLastChild } = props;
+    const [indentPathes, setIndentPathes] = useState<ReactNode>(null)
+    useEffect(() => { setIndentPathes(getIndentIcons()) }, [level, isLastChild, isParentLastChild])
+    const [toggleIcon, setToggleIcon] = useState<ReactNode>(null)
+    useEffect(() => { setToggleIcon(getToggleIcon()) }, [open])
+    function getIndentIcon(rowIndex: number) {
         if (!level) { return null }
         let x0 = width / 2, x1 = width, y0 = 0, y1 = height / 2, y2 = height, pathes = [];
         if (rowIndex === level - 1) {
@@ -30,19 +30,19 @@ export const Indent: FC<AI_Indent> = (props) => {
         }
         return (<svg className='ai-indent-line' width={width} height={height}>{pathes}</svg>)
     }
-    
+
     const getToggleSvg = () => {
         if (props.toggleIcon) { return props.toggleIcon({ row, level, open }) }
         let path = open === undefined ? 'mdiCircleSmall' : (open ? 'mdiChevronDown' : 'mdiChevronRight');
         return new GetSvg().getIcon(path, 1)
     }
-    const getIndentIcons = ()=>{
+    const getIndentIcons = () => {
         const list = new Array(level).fill(0)
         return list.map((o, i) => <div key={i} className={`ai-indent`} style={{ width }}>{getIndentIcon(i)}</div>)
     }
     const getToggleIcon = () => {
         const toggleSvg = getToggleSvg();
-        if(toggleSvg === false){return null}
+        if (toggleSvg === false) { return null }
         return (
             <div className="ai-toggle" style={{ width }} onClick={(e) => { e.stopPropagation(); if (props.onToggle) { props.onToggle() } }}>
                 <div className='ai-toggle-icon'>{toggleSvg}</div>
@@ -62,7 +62,7 @@ export const Indent: FC<AI_Indent> = (props) => {
 export class GetSvg {
     getStyle = (color?: string) => {
         const fill = color || "currentcolor"
-        return { fill,stroke:fill }
+        return { fill, stroke: fill }
     }
     getSvgStyle = (size?: number) => {
         size = size || 1;
@@ -158,8 +158,11 @@ export const AIApp: FC<I_AIApp> = (props) => {
     }
     function body_layout() {
         return (
-            <div className="ai-app-body">
-                {props.body()}
+            <div className="msf">
+                <div className="ai-app-side"></div>
+                <div className="ai-app-body">
+                    {props.body()}
+                </div>
             </div>
         )
     }
@@ -175,6 +178,9 @@ export const AIApp: FC<I_AIApp> = (props) => {
             {!!props.children && props.children}
         </div>
     )
+}
+const AIAppSide:FC = ()=>{
+    return null
 }
 type AI_BottomMenu = { bottomMenu: I_AIApp["bottomMenu"] }
 const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {

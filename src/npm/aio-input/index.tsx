@@ -33,7 +33,7 @@ const AIOInput: FC<AITYPE> = (props) => {
 }
 export default AIOInput
 const SuggestionInput: FC<AITYPE> = (props) => {
-    const { getOptions, option, onChange } = props;
+    const { getOptions, option = {}, onChange } = props;
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
     async function setSearchResult(newValue: any) {
@@ -52,10 +52,10 @@ const SuggestionInput: FC<AITYPE> = (props) => {
             options={searchResult}
             option={{
                 ...option,
-                onClick: (optionDetails) => {
-                    const text = GetOptionProps({ rootProps: props, key: 'text', optionDetails })
+                onClick: (optionOrg,optionDetails) => {
+                    const text = GetOptionProps({ optionProp:option, key: 'text', optionDetails,optionOrg })
                     setSearchResult(text);
-                    if (onChange) { onChange(text, optionDetails.option); }
+                    if (onChange) { onChange(text, optionOrg); }
                 }
             }}
             getOptions={undefined}
@@ -170,7 +170,7 @@ function AIOINPUT(props: AITYPE) {
         else if (typeof props.options === 'function') { options = props.options() }
         else if (props.options) { options = props.options }
         else { options = []; }
-        return GetOptions({ rootProps: props, types, options })
+        return GetOptions({ rootProps: props, types, options,optionProp:props.option || {} })
     }
     function getContext(): AI_context {
         let context: AI_context = {
@@ -444,7 +444,8 @@ const FileItem: FC<AI_FileItem> = (props) => {
     let { optionsList } = GetOptions({
         rootProps, types,
         options: [{ minName, sizeString, index }],
-        defaultOptionProps: {
+        optionProp: {
+            ...rootProps.option,
             subtext: () => sizeString,
             text: () => minName,
             before: () => getIcon(),
@@ -1214,18 +1215,19 @@ const Tree: FC = () => {
         else { res = true }
         if (!res) { return }
         const details = { index, active: false, toggle: () => { } }
+        const {option:optionProp = {}} = rootProps;
         if (!p.parent) {
             value = value.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', rootProps, optionDetails: { ...details, option: p.row, rootProps } })
-                let oValue = GetOptionProps({ key: 'value', rootProps, optionDetails: { ...details, option: o, rootProps } })
+                let rowValue = GetOptionProps({ key: 'value', optionProp,optionOrg:p.row, optionDetails: { ...details, rootProps } })
+                let oValue = GetOptionProps({ key: 'value', optionProp,optionOrg:o, optionDetails: { ...details, rootProps } })
                 return rowValue !== oValue
             })
         }
         else {
             let parentChilds = getChilds({ row: p.parent, details: p.parentDetails });
             let newChilds: any[] = parentChilds.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', rootProps, optionDetails: { ...details, option: p.row, rootProps } })
-                let oValue = GetOptionProps({ key: 'value', rootProps, optionDetails: { ...details, option: o, rootProps } })
+                let rowValue = GetOptionProps({ key: 'value', optionProp,optionOrg:p.row, optionDetails: { ...details, rootProps } })
+                let oValue = GetOptionProps({ key: 'value', optionProp,optionOrg:o, optionDetails: { ...details, rootProps } })
                 return rowValue !== oValue
             });
             setChilds({ row: p.parent, details: p.parentDetails, childs: newChilds })
@@ -1276,15 +1278,15 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     let { onAdd, onRemove, actions } = rootProps;
     let { optionsList } = GetOptions({
         rootProps, types, options: rows, level, isOpen: (id: any) => !!openDic[id],
-        change: (row: any, newRow: any) => change(row, newRow),
+        change: (row: any, newRow: any) => change(row, newRow),optionProp:rootProps.option || {}
     })
     if (!!onAdd || !!onRemove || !!actions) {
         optionsList = optionsList.map((o) => {
-            let { index, level = 0, option } = o.details;
+            let { index, level = 0 } = o.details;
             let isFirstChild = index === 0;
             let isLastChild = index === rows.length - 1;
             let details: I_treeRowDetails = { index, level, isFirstChild, isLastChild }
-            let after = <TreeActions row={option} index={index} parent={parent} rowDetails={details} parentDetails={parentDetails} />
+            let after = <TreeActions row={o.optionOrg} index={index} parent={parent} rowDetails={details} parentDetails={parentDetails} />
             return { ...o, after }
         })
     }
@@ -1479,7 +1481,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 }
                 onChange(newValue, props);
                 if (onClose) {
-                    if (typeof option.close === 'function') { if (option.close({ option: undefined, index, rootProps })) { onClose() } }
+                    if (typeof option.close === 'function') { if (option.close(undefined,{ index, rootProps })) { onClose() } }
                 }
             }
         }
@@ -3027,11 +3029,11 @@ type I_GetOptions = {
     level?: number,
     change?: (row: any, newRow: any) => void,
     isOpen?: (id: any) => boolean | undefined,
-    defaultOptionProps?: AI_optionProp
+    optionProp:AI_optionProp
 }
 //isOpen ro baraye tashkhise active(open) boodane node haye tree mifrestim
 function GetOptions(p: I_GetOptions): AI_options {
-    let { options, rootProps, types, level, isOpen, change, defaultOptionProps = {} } = p;
+    let { options, rootProps, types, level, isOpen, change, optionProp } = p;
     let { deSelect } = rootProps;
     let result = [];
     let dic: AI_optionDic = {}
@@ -3049,38 +3051,37 @@ function GetOptions(p: I_GetOptions): AI_options {
     for (let i = 0; i < options.length; i++) {
         let option = options[i];
         let optionDetails: AI_optionDetails = {
-            option, index: i, active: false, level, rootProps,
+            index: i, active: false, level, rootProps,
             change: change ? (newRow: any) => { if (change) change(option, newRow) } : undefined,
         };
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'disabled' });
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'disabled' });
         //ghabl az har chiz sharte namayesh ro check kon
-        let show = GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'show' })
+        let show = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'show' })
         if (show === false) { continue }
-        let optionValue = GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'value' })
+        let optionValue = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'value' })
         let active = isActive(optionValue);
-        let text = GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'text' });
+        let text = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'text' });
         //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
         optionDetails.active = active;
-        let attrs = GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'attrs', def: {} });
+        let attrs = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'attrs', def: {} });
         let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'checked', def: defaultChecked })
+        let checked = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'checked', def: defaultChecked })
         //object:option => do not remove mutability to use original value of option in for example tree row
         let obj: AI_option = {
-            show,
-            loading: rootProps.loading,
+            optionOrg:option,show,loading: rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
             checked,
-            before: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'before' }),
-            after: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'after' }),
-            justify: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'justify' }),
-            subtext: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'subtext' }),
-            onClick: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'onClick', preventFunction: true }),
-            className: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'className' }),
-            style: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'style' }),
-            tagAttrs: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'tagAttrs' }),
-            tagBefore: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'tagBefore' }),
-            close: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'close', def: !types.isMultiple }),
-            tagAfter: GetOptionProps({ rootProps, optionDetails, defaultOptionProps, key: 'tagAfter' }),
+            before: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'before' }),
+            after: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'after' }),
+            justify: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'justify' }),
+            subtext: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'subtext' }),
+            onClick: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'onClick', preventFunction: true }),
+            className: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'className' }),
+            style: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'style' }),
+            tagAttrs: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagAttrs' }),
+            tagBefore: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagBefore' }),
+            close: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'close', def: !types.isMultiple }),
+            tagAfter: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagAfter' }),
             details: optionDetails
         }
         result.push(obj)
@@ -3089,20 +3090,18 @@ function GetOptions(p: I_GetOptions): AI_options {
     return { optionsList: result, optionsDic: dic };
 }
 type I_GetOptionProps = {
-    defaultOptionProps?: AI_optionProp,
-    rootProps: AITYPE,
     key: AI_optionKey,
     def?: any,
     preventFunction?: boolean,
-    optionDetails: AI_optionDetails
+    optionDetails: AI_optionDetails,
+    optionProp:AI_optionProp,
+    optionOrg:any
 }
 function GetOptionProps(p: I_GetOptionProps) {
-    let { rootProps, key, def, preventFunction, optionDetails, defaultOptionProps = {} } = p;
-    const { option } = optionDetails;
-    let optionResult = typeof option[key] === 'function' && !preventFunction ? option[key](optionDetails) : option[key]
+    let { optionProp, key, def, preventFunction, optionDetails, optionOrg } = p;
+    let optionResult = typeof optionOrg[key] === 'function' && !preventFunction ? optionOrg[key](optionOrg,optionDetails) : optionOrg[key]
     if (optionResult !== undefined) { return optionResult }
-    let prop = (rootProps.option || {})[key];
-    prop = prop === undefined ? defaultOptionProps[key] : prop
+    let prop = optionProp[key];
     if (typeof prop === 'string') {
         try {
             let value;
@@ -3112,7 +3111,7 @@ function GetOptionProps(p: I_GetOptionProps) {
         catch { }
     }
     if (typeof prop === 'function' && !preventFunction) {
-        let res = prop(optionDetails);
+        let res = prop(optionOrg,optionDetails);
         return res === undefined ? def : res;
     }
     return prop !== undefined ? prop : def;
@@ -3668,17 +3667,17 @@ export type AITYPE =
     }
 
 export type AI_option = {
-    show: any, checked?: boolean, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
+    optionOrg:any,show: any, checked?: boolean, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
     text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
     tagAttrs: any, tagBefore: any, tagAfter: any, onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
     details: AI_optionDetails
 }
-export type AI_optionDetails = { option: any, rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
+export type AI_optionDetails = { rootProps: AITYPE, index: number, level?: number, active?: boolean, change?: (v: any) => any }
 export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
     'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
 )
-export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionDetails: AI_optionDetails) => any) }
+export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionOrg:any,optionDetails: AI_optionDetails) => any) }
 export type AI_optionDic = { [key: string]: AI_option }
 export type AI_options = { optionsList: AI_option[], optionsDic: AI_optionDic }
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' |
