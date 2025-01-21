@@ -1,37 +1,6 @@
 // import axios from 'axios';
 // import MockAdapter from 'axios-mock-adapter';
 
-// // ایجاد یک Mock Adapter برای axios
-// const mock = new MockAdapter(axios);
-
-// // شبیه‌سازی درخواست با وضعیت 200 و تأخیر 2 ثانیه
-// mock.onGet('/data').reply(200, { message: 'Request Successful!' }, { delay: 2000 });
-
-// // شبیه‌سازی درخواست با وضعیت 400 و تأخیر 1 ثانیه
-// mock.onGet('/data').reply(400, { message: 'Bad Request' }, { delay: 1000 });
-
-// // شبیه‌سازی درخواست با وضعیت 404 و تأخیر 3 ثانیه
-// mock.onGet('/data').reply(404, { message: 'Not Found' }, { delay: 3000 });
-
-// // استفاده از axios
-// axios.get('/data')
-//     .then(response => {
-//         console.log('Success:', response.data); // در صورت موفقیت
-//     })
-//     .catch(error => {
-//         if (error.response) {
-//             console.error(`Error ${error.response.status}: ${error.response.data.message}`);
-//         } else {
-//             console.error('Unknown error:', error.message);
-//         }
-//     });
-// import axios from 'axios';
-// import MockAdapter from 'axios-mock-adapter';
-
-// // ایجاد یک Mock Adapter برای axios
-// const mock = new MockAdapter(axios);
-
-// // شبیه‌سازی درخواست POST بر اساس محتوای body
 // mock.onPost('/data').reply(config => {
 //     // تبدیل body به شیء جاوا اسکریپت
 //     const requestData = JSON.parse(config.data);
