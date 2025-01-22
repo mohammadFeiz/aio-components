@@ -46,6 +46,7 @@ export default class AIOApis {
         this.token = props.token;
         this.setToken(props.token);
         this.mock = new MockAdapter(Axios) 
+
     }
     setToken = (token: string) => {
         let res = token || this.props.token;

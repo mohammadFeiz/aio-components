@@ -94,98 +94,96 @@ const Example4: FC<{ mock: any }> = ({ mock }) => {
 }
 
 
-class APIS {
-    request: AIOApis["request"]
+class APIS extends AIOApis {
     constructor() {
-        const inst = new AIOApis({ 
-            token: '', id: 'testaioapis', lang: 'fa',
-            onCatch:(response)=>{
-                return {
-                    result:false,
-                    errorMessage:response.response.data.message
-                }
-            }
+        super({
+            token: '',
+            id: 'testaioapis',
+            lang: 'fa',
+            onCatch: (response) => ({
+                result: false,
+                errorMessage: response.response?.data?.message || 'Unknown error occurred',
+            }),
         });
-        this.request = inst.request;
     }
     getData1 = async () => {
         return await this.request({
-            mock:{
-                delay:2500,
-                result:()=>({status:400,data:{ message: 'you cannot do this action' }})
+            mock: {
+                delay: 2500,
+                result: () => ({ status: 400, data: { message: 'you cannot do this action' } })
             },
             description: 'get data',
             method: 'get',
             url: '/data1',
-            onCatch:(response)=>{
+            onCatch: (response) => {
                 return {
-                    result:false,
-                    errorMessage:response.response.data.message
+                    result: false,
+                    errorMessage: response.response.data.message
                 }
             },
             getResult: (response) => {
                 return {
-                    result:response.data
+                    result: response.data
                 }
             },
         })
     }
     getData2 = async () => {
         return await this.request({
-            mock:{
-                delay:2500,
-                result:()=>({status:200,data:{ name: 'moahmmad', family: 'feiz' }})
+            mock: {
+                delay: 2500,
+                result: () => ({ status: 200, data: { name: 'moahmmad', family: 'feiz' } })
             },
             description: 'get data',
             method: 'get',
             url: '/data1',
-            onCatch:(response)=>{
+            onCatch: (response) => {
                 return {
-                    result:false,
-                    errorMessage:response.response.data.message
+                    result: false,
+                    errorMessage: response.response.data.message
                 }
             },
             getResult: (response) => {
-                return {result:response.data}
+                return { result: response.data }
             }
         })
     }
     getData3 = async () => {
         return await this.request({
-            mock:{
-                delay:2500,
-                result:()=>({status:200,data:{ name: 'moahmmad', family: 'feiz' }})
+            mock: {
+                delay: 2500,
+                result: () => ({ status: 200, data: { name: 'moahmmad', family: 'feiz' } })
             },
             description: 'get data',
             method: 'get',
             url: '/data1',
-            onCatch:(response)=>{
+            onCatch: (response) => {
                 return {
-                    result:false,
-                    errorMessage:response.response.data.message
+                    result: false,
+                    errorMessage: response.response.data.message
                 }
             },
             getResult: (response) => {
                 return {
-                    result:response.data,
-                    successMessage:'عملیات با موفقیت انجام شد'
+                    result: response.data,
+                    successMessage: 'عملیات با موفقیت انجام شد'
                 }
             }
         })
     }
     getData4 = async () => {
         return await this.request({
-            mock:{
-                delay:2500,
-                result:()=>({status:400,data:{ message: 'you cannot do this action' }})
+            mock: {
+                delay: 2500,
+                result: () => ({ status: 400, data: { message: 'you cannot do this action' } })
             },
             description: 'get data',
             method: 'get',
             url: '/data3',
             getResult: (response) => {
                 return {
-                    result:response.data,
-                    successMessage:'عملیات با موفقیت انجام شد'
+                    result: response.data,
+                    successMessage: 'عملیات با موفقیت انجام شد'
                 }
             }
         })
