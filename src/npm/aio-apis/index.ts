@@ -4,7 +4,7 @@ import AIOPopup from './../../npm/aio-popup';
 import AIOLoading from './../../npm/aio-loading';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
 type I_onCatch = (err: any, config: AA_api) => {errorMessage:string,result:any};
-type AA_cache = { name: string, time: number };
+type AA_cache = { name: string, time: number,interval?:number };
 type I_messageType = 'alert' | 'snackebar' | 'console' | 'none'
 export type AA_props = {
     id: string,
@@ -16,6 +16,7 @@ export type AA_props = {
 }
 export type AA_api = {
     description: string,
+    id:string,
     method: AA_method,
     url: string,
     body?: any,
@@ -33,20 +34,55 @@ export type AA_api = {
     lang?: 'en' | 'fa',messageTime?: number,errorMessageType?: I_messageType,successMessageType?: I_messageType,
 }
 type AA_alertType = 'success' | 'error' | 'warning' | 'info'
+type I_cachedApi = {
+    cacheName:string,
+    cacheTime:number,
+    interval:number,
+    param:any,
+    apiName:string,
+}
+type I_cachedApis = {[key:string]:I_cachedApi}
 export default class AIOApis {
     props: AA_props;
     storage: Storage;
     popup: AIOPopup;
     mock:any;
     token:string;
+    intervals:{[key:string]:any} = {};
+
     constructor(props: AA_props) {
         this.props = props
         this.storage = new Storage(props.id);
         this.popup = new AIOPopup()
         this.token = props.token;
         this.setToken(props.token);
-        this.mock = new MockAdapter(Axios) 
-
+        this.mock = new MockAdapter(Axios);
+        this.handleIntervals()
+    }
+    handleIntervals = ()=>{
+        const cachedApis = this.storage.load('cachedApis',{}) as I_cachedApis;
+        for(let key in cachedApis){
+            this.handleInterval(cachedApis[key],key)
+        }
+    }
+    handleInterval = async (cachedApi:I_cachedApi,key:string)=>{ 
+        if(cachedApi.interval){
+            this.intervals[key] = setInterval(async()=>{
+                this.updateByCache(key)
+            },cachedApi.interval)
+        }
+    }
+    private updateByCache = async (key:string)=>{
+        const cachedApis = this.storage.load('cachedApis',{}) as I_cachedApis;
+        const cachedApi = cachedApis[key];
+        if(!cachedApi){return }
+        const {apiName,param} = cachedApi;
+        const res = await (this as any)[apiName](param);
+        this.setStorage(key,res);
+    }
+    reNewCache = (apiName:string,cacheName:string)=>{
+        const key = `${apiName}-${cacheName}`
+        this.updateByCache(key)    
     }
     setToken = (token: string) => {
         let res = token || this.props.token;
