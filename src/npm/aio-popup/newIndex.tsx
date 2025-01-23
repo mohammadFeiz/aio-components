@@ -3,7 +3,6 @@ import * as ReactDOMServer from 'react-dom/server';
 import $ from 'jquery';
 import './index.css';
 import anime from "animejs/lib/anime.es.js";
-export type AP_props = { rtl?: boolean, id?: string }
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export type AP_attrsKey = 'backdrop' | 'modal' | 'header' | 'body' | 'footer';
 export type AP_header = ((p: { removeModal: () => void, state: any, setState: any }) => ReactNode) | {
@@ -79,7 +78,6 @@ type AP_align = {
     limitTo?: string,
     rtl?: boolean,
 }
-type I_bound = { left: number, top: number, right: number, bottom: number, width: number, height: number }
 function Align(p: AP_align) {
     let { dom, target, fitHorizontal, rtl, limitTo } = p;
     const bodyWidth = window.innerWidth, bodyHeight = window.innerHeight;
@@ -160,7 +158,7 @@ type I_removeModal = (arg?: string) => void;
 type I_AddAlert = (p: AP_alert) => void
 type I_addModal = (o: AP_modal) => void
 type I_removeSnackebar = (id: string) => void
-const usePopup = (props: AP_props) => {
+const usePopup = (props?: { rtl?: boolean, id?: string }) => {
     let [modals, setModals] = useState<AP_modal[]>([]);
     let modalsRef = useRef(modals)
     modalsRef.current = modals;
@@ -275,7 +273,7 @@ const usePopup = (props: AP_props) => {
     }
     const getContext = (): I_CTX => {
         return {
-            rtl: !!props.rtl,
+            rtl: !!props && !!props.rtl,
             snackebarItems: snackebarItemsRef.current,
             removeSnackebar, removeModal
         }
