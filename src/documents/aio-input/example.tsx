@@ -44,7 +44,7 @@ const Example: FC<{ type: AI_type, examples: [string, () => ReactNode, boolean?]
                     {
                         type === 'spinner' &&
                         <AIRadio
-                            options={[0.25, 0.75, 1]}
+                            options={[0.25, 0.75, 1]} className="w-fit-"
                             option={{ text: 'option', value: 'option' }}
                             value={setting.round}
                             onChange={(round) => setSetting({ ...setting, round })}
