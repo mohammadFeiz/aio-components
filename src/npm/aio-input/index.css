@@ -36,6 +36,7 @@
 .aio-input-popover {
     font-size: 12px;
     background: #fff;
+    border:1px solid #ddd;
 }
 
 .aio-input-popover .aio-popup-body {
