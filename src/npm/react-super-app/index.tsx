@@ -1,10 +1,8 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState,ReactNode } from 'react';
 import {Storage} from '../aio-utils/index.tsx';
 import { Icon } from '@mdi/react';
 import { mdiMenu, mdiChevronRight, mdiChevronLeft, mdiChevronDown } from '@mdi/js';
-import AIOPopup, { AP_alert, AP_confirm, AP_modal, AP_prompt, AP_snackebar } from './../../npm/aio-popup/index.tsx';
 import './index.css';
-type RN = React.ReactNode
 export type I_RSA_props = {
   rtl?:boolean, 
   maxWidth?:number,
@@ -60,7 +58,6 @@ export type I_RSA_side = {
 export type I_ReactSuperApp = {
   rootProps:I_RSA_props,
   getActions:(p:any)=>void,
-  popup:AIOPopup
 }
 export type I_RSA_Navigation = {
   nav:I_RSA_nav,navId:string, setNavId:(navId:string)=>void,rtl:boolean,navItems:I_RSA_navItem[],type:'bottom'|'side'
@@ -72,58 +69,44 @@ export type I_RSA_SideMenu = {
 export default class RSA {
   backButtonCallBack:true | Function;
   rootProps:I_RSA_props;
-  popup:AIOPopup;
   getNavId:I_RSA_getNavId;
   setNavId:I_RSA_setNavId;
-  removeModal:(id?:string)=>void;
   openSide:I_RSA_openSide;
   closeSide:I_RSA_closeSide;
-  addModal:(p:AP_modal)=>void;
   setBackButtonCallBack:(fn:any)=>void;
   render:I_RSA_render;
-  addAlert:(p:AP_alert)=>void;
-  addSnackebar:(p:AP_snackebar)=>void;
-  addConfirm:(p:AP_confirm)=>void;
-  addPrompt:(p:AP_prompt)=>void;
   constructor(props:I_RSA_props) {
     let { rtl} = props;
     this.rootProps = props;
     this.backButtonCallBack = true;
-    this.popup = new AIOPopup({ rtl })
-    this.removeModal = (obj) => this.popup.removeModal(obj);
-    this.addModal = (obj:AP_modal) => this.popup.addModal(obj);
     this.setBackButtonCallBack = (backButtonCallBack)=>this.backButtonCallBack = backButtonCallBack;
     this.getNavId = ()=>''
     this.closeSide = ()=>{}
     this.setNavId = ()=>{}
     this.openSide = ()=>{}
-    this.render = () => <ReactSuperApp rootProps={this.rootProps} popup={this.popup} getActions={({getNavId,setNavId,openSide,closeSide})=>{
+    this.render = () => <ReactSuperApp rootProps={this.rootProps} getActions={({getNavId,setNavId,openSide,closeSide})=>{
       this.getNavId = getNavId;
       this.setNavId = setNavId;
       this.openSide = openSide;
       this.closeSide = closeSide;
     }}/>
-    this.addAlert = (obj) => this.popup.addAlert(obj);
-    this.addSnackebar = (obj:AP_snackebar) => this.popup.addSnackebar(obj);
-    this.addConfirm = (obj) => this.popup.addConfirm(obj);
-    this.addPrompt = (obj) => this.popup.addPrompt(obj);  
-    window.history.pushState({}, '')
-    window.onpopstate = () => {
-      setTimeout(()=>window.history.pushState({}, ''),100)
-      try{
-        if(this.backButtonCallBack === true){
-          this.removeModal()
-        }
-        else if(typeof this.backButtonCallBack === 'function'){
-          this.backButtonCallBack()
-        }
-      }
-      catch{}
-    };  
+    // window.history.pushState({}, '')
+    // window.onpopstate = () => {
+    //   setTimeout(()=>window.history.pushState({}, ''),100)
+    //   try{
+    //     if(this.backButtonCallBack === true){
+    //       this.removeModal()
+    //     }
+    //     else if(typeof this.backButtonCallBack === 'function'){
+    //       this.backButtonCallBack()
+    //     }
+    //   }
+    //   catch{}
+    // };  
   }
 }
 function ReactSuperApp(props:I_ReactSuperApp) {
-  let {rootProps,getActions,popup} = props
+  let {rootProps,getActions} = props
   let {splash,splashTime = 7000,id,nav,header,headerContent,side,title,subtitle = ()=>'',rtl, className: cls,body,maxWidth} = rootProps;
   let [showSplash,setShowSplash] = useState<boolean>(!!splash);
   let [storage] = useState<Storage>(new Storage('rsa-cache-' + id))
@@ -145,7 +128,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     if(nav.cache){storage.save('navId',navId)}
     SETNAVID(navId)
   }
-  function header_node(activeNav:I_RSA_navItem | false):RN {
+  function header_node(activeNav:I_RSA_navItem | false):ReactNode {
     let Header = typeof header === 'function'?header():header;
     if (Header === false) { return null }
     if(Header){<div className="rsa-header">{Header}</div>}
@@ -189,12 +172,12 @@ function ReactSuperApp(props:I_ReactSuperApp) {
       if (navItems) {getNavById_req(navItems, id);}
     }
   }
-  function navigation_node(type:'bottom' | 'side'):RN {
+  function navigation_node(type:'bottom' | 'side'):ReactNode {
     if (!nav || !navItems || !navItems.length || navId === false) { return null }
     let props:I_RSA_Navigation = { nav, navId, setNavId, type, rtl:!!rtl,navItems }
     return (<Navigation {...props} navItems={navItems}/>)
   }
-  function page_node(navItem:I_RSA_navItem | boolean):RN {
+  function page_node(navItem:I_RSA_navItem | boolean):ReactNode {
     let content = body(navItem as I_RSA_navItem);
     let activeNav:I_RSA_navItem | false = typeof navId === 'string'?getNavById(navId):false;
     return (
@@ -206,7 +189,7 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     )
   }
 
-  function renderMain():RN {
+  function renderMain():ReactNode {
     if(typeof navId !== 'string'){return null}
     let navItem = getNavById(navId);
     let className = 'rsa-main';
@@ -215,14 +198,9 @@ function ReactSuperApp(props:I_ReactSuperApp) {
     return <div className={className}>{navigation_node('side')} {page_node(navItem)}</div>
   }
   function openSide() {
-    popup.addModal({
-      position: rtl ? 'right' : 'left', id: 'rsadefaultsidemodal',
-      setAttrs:(key)=>{if(key === 'backdrop'){return {className:'rsa-sidemenu-backdrop'}}},
-      body: ({ close }) => renderSide(close),
-    })
   }
-  function closeSide(){popup.removeModal('rsadefaultsidemodal')}
-  function renderSide(close:()=>void):RN {
+  function closeSide(){}
+  function renderSide(close:()=>void):ReactNode {
     if(!side){return null}
     let items = typeof side.items === 'function'?side.items():side.items;
     let props:I_RSA_SideMenu = {...side,attrs:side.attrs,items,onClose:()=>close()}
@@ -231,7 +209,6 @@ function ReactSuperApp(props:I_ReactSuperApp) {
   return (
     <div className='rsa ai' style={{ maxWidth }}>
       {renderMain()}
-      {popup.render()}
       {showSplash && !!splash && splash()}
     </div>
   );
@@ -240,15 +217,15 @@ function Navigation(props:I_RSA_Navigation) {
   let {nav,navId, setNavId,rtl,navItems,type} = props;
     
   let [openDic,setOpenDic] = useState<{[key:string]:boolean}>({})
-  function header_node():RN {
+  function header_node():ReactNode {
     if (!nav.header) { return null }
     return nav.header()
   }
-  function footer_node():RN {
+  function footer_node():ReactNode {
     if (!nav.footer) { return null }
     return nav.footer()
   }
-  function items_node(navItems:I_RSA_navItem[], level:number):RN {
+  function items_node(navItems:I_RSA_navItem[], level:number):ReactNode {
     return (
       <div className={`rsa-navigation-items${level !== 0?' rsa-navigation-sub-items':''}`}>
         {
@@ -269,7 +246,7 @@ function Navigation(props:I_RSA_Navigation) {
     let open = openDic[id] === undefined ? true : openDic[id]
     setOpenDic({ ...openDic, [id]: !open })
   }
-  function text_node(navItem:I_RSA_navItem,type:'side'|'bottom'):RN {
+  function text_node(navItem:I_RSA_navItem,type:'side'|'bottom'):ReactNode {
     let {text,marquee} = navItem;
     text = typeof text === 'function' ? text() : text; 
     let html;
@@ -279,7 +256,7 @@ function Navigation(props:I_RSA_Navigation) {
     if(type === 'bottom'){return <div className="rsa-bottom-menu-item-text">{html}</div>}
     return null
   }
-  function item_node(o:I_RSA_navItem, level = 0):RN {
+  function item_node(o:I_RSA_navItem, level = 0):ReactNode {
     let { id, icon, items ,disabled} = o;
     let active = id === navId;
     let open = openDic[id] === undefined ? true : openDic[id]
@@ -300,7 +277,7 @@ function Navigation(props:I_RSA_Navigation) {
       </div>
     )
   }
-  function bottomMenu_node(o:I_RSA_navItem):RN {
+  function bottomMenu_node(o:I_RSA_navItem):ReactNode {
     let { icon, id,disabled } = o;
     let active = id === navId;
     return (
@@ -327,11 +304,11 @@ function Navigation(props:I_RSA_Navigation) {
 }
 function Side(props:I_RSA_SideMenu) {
   let { attrs = {},header,items, onClose,footer } = props;
-  function header_node():RN {
+  function header_node():ReactNode {
     if (!header) { return null }
     return (<div className="rsa-sidemenu-header">{header()}</div>)
   }
-  function items_node():RN {
+  function items_node():ReactNode {
     return (
       <div className="rsa-sidemenu-items">
         {
@@ -350,7 +327,7 @@ function Side(props:I_RSA_SideMenu) {
       </div>
     )
   }
-  function footer_node():RN {
+  function footer_node():ReactNode {
     if (!footer) { return null }
     return (
       <div className="rsa-sidemenu-footer">{footer()}</div>
