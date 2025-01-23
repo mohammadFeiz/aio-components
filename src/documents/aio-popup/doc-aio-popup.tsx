@@ -1,14 +1,14 @@
 import { Component, createRef, FC, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+
 import DOC from '../../resuse-components/doc.tsx';
-import {Code} from './../../npm/aio-components';
-import AIOPopup, { AP_modal, AP_snackebar, Snackebar } from '../../npm/aio-popup/index.tsx';
+import { Code } from './../../npm/aio-components';
+import { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import { Icon } from '@mdi/react';
-import { mdiAttachment, mdiContentSave } from '@mdi/js';
+import { mdiAttachment, mdiContentSave, mdiStar } from '@mdi/js';
 import $ from 'jquery';
 import './index.css';
-import './../../npm/aio-popup/alert2.css';
+import usePopup from '../../npm/aio-popup/index.tsx';
 //import './../../npm/aio-popup/alert1.css';
 export default function DOC_AIOForm(props: any) {
     return (
@@ -17,12 +17,11 @@ export default function DOC_AIOForm(props: any) {
             nav={{
                 nested: true,
                 items: () => [
-                    { text: 'aio-popup documentation', id: 'instance', render: () => <Instance /> },
                     { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
                     { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
                     { text: 'alert', id: 'alert', render: () => <Alert /> },
                     { text: 'snackebar', id: 'snackebar', render: () => <SnackebarExample /> },
-                    { text: 'snackebar to body', id: 'snackebartobody', render: () => <SnackebarToBody /> },
+                    //{ text: 'snackebar to body', id: 'snackebartobody', render: () => <SnackebarToBody /> },
                     { text: 'confirm', id: 'confirm', render: () => <Confirm /> },
                     { text: 'prompt', id: 'prompt', render: () => <Prompt /> },
                     { text: 'popover', id: 'popover', render: () => <Popover /> },
@@ -40,446 +39,123 @@ export default function DOC_AIOForm(props: any) {
         />
     )
 }
-class Instance extends Component {
-    popup: any;
-    constructor(props: any) {
-        super(props);
-        this.popup = new AIOPopup()
-    }
-    preview() {
-        return (
-            <div className='example'>
-                <h3>create aio-popup instance</h3>
-                {
-                    Code(`
-let instance = new AIOPopup()
-                    `)
-                }
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-                <h3>instance.render()</h3>
-                <h5>use instance.render() for rendering aio-popup in render method of parent component</h5>
-
-                {
-                    Code(`
-function MyCompoennt(){
-    //some codes...
+const Sample: FC<{ removeModal: any }> = ({ removeModal }) => {
     return (
-        <>
-            {/*component content*/}
-            {instance.render()}
-        </>
+        <div className="flex-row- p-12- align-v-" style={{ background: '#264065', color: '#fff' }}>
+            <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+            <div className="gap-6-">
+                <button className='btn-123'>Approve</button>
+                <button className='btn-123' onClick={removeModal}>Close</button>
+            </div>
+        </div>
     )
 }
-`)
-                }
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-                <h3>instance.addModal()</h3>
-                <h5>
-                    user instance.addModal() to show modal in your page. you can add more than one modal and dont need to handle any state of that
-                </h5>
-                {
-                    Code(`
-instance.addModal({
-    header:{
-        attrs:{className:'my-modal-header'},
-        title:'My Modal Title',
-        subtitle:'My Modal Subtitle',
-        onClose:undefined,
-        buttons:[
-            ['save',{onClick:()=>this.save(),className:'save-button'}]
-        ]
-    },
-    body:{
-        attrs:{className:'my-modal-body'},
-        render:({close})=><MyForm onClose={close}/>
-    }, 
-    footer:{
-        attrs:{className:'my-modal-footer'},
-        buttons:[
-            ['Save',{onClick:()=>this.save(),className:'save-button'}],
-            ['Cansel',{onClick:()=>this.cansel(),className:'cansel-button'}]
-        ],
-    }
-    backdrop:{
-        attrs:{style:{background:'rgba(0,0,0,0.4)'}},
-        close:true
-    },
-    id:'my-register-form',
-    position:'fullscreen', 
-    attrs:{
-        className:'my-modal'
-    },
-    animate:true
-})
-`)
-                }
-                <h5>header</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>configure modal header</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>header properties</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>attrs</td>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>set modal header attributes</td>
-                        </tr>
-                        <tr>
-                            <td>title</td>
-                            <td>string</td>
-                            <td>---</td>
-                            <td>title of modal</td>
-                        </tr>
-                        <tr>
-                            <td>subtitle</td>
-                            <td>string</td>
-                            <td>---</td>
-                            <td>subtitle of modal</td>
-                        </tr>
-                        <tr>
-                            <td>onClose</td>
-                            <td>undefined | false | function</td>
-                            <td>undefined</td>
-                            <td>
-                                set false to prevent show close button in header.
-                                set function to prevent close popup automatically and you can close it manually.
-                                and if undefined, the close button will appear and it will automatically close the modal
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>buttons</td>
-                            <td>array</td>
-                            <td>---</td>
-                            <td>use custom buttons in modal header. each member of buttons is an array width 2 members,first is button text and second is button attributes object</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>body</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>configure modal body</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>body properties</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>attrs</td>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>set modal body attributes</td>
-                        </tr>
-                        <tr>
-                            <td>render</td>
-                            <td>function</td>
-                            <td>---</td>
-                            <td>
-                                returns jsx or html for render content of modal body and get some functions as parameter object like close to handle close modal manualy by call it
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h5>footer</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>configure modal footer</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>footer properties</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr><td>attrs</td><td>object</td><td>---</td><td>set modal footer attributes</td></tr>
-                        <tr>
-                            <td>buttons</td><td>array</td><td>---</td>
-                            <td>use custom buttons in modal footer. each member of buttons is an array width 2 members,first is button text and second is button attributes object</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>backdrop</h5>
-                <table className='aio-component-table'>
-                    <thead><th>Type</th><th>Default</th><th>Description</th></thead>
-                    <tbody><tr><td>object</td><td>---</td><td>configure modal backdrop</td></tr></tbody>
-                </table>
-                <h5>backdrop properties</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Property</th><th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>attrs</td>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>set modal backdrop attributes</td>
-                        </tr>
-                        <tr>
-                            <td>close</td>
-                            <td>boolean</td>
-                            <td>true</td>
-                            <td>set true for handle close modal after click on backdrop</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>id</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>number or string</td>
-                            <td>---</td>
-                            <td>
-                                use for handle prevent open a uniq popup more than one time.
-                                if a popup with a specific id is open and you request to open a popup with the same id,
-                                the popup will be closed first and then it will be opened again on the top of list of popups.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>position</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>'fullscreen' | 'top' | 'right' | 'left' | 'bottom' | 'center' | 'popover'</td>
-                            <td>fullscreen</td>
-                            <td>set position of modal</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>popover (use in 'popover' position)</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>set modal as popover near of any html target</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>popover properties</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>property</th><th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>getTarget</td>
-                            <td>function</td>
-                            <td>---</td>
-                            <td>a function that returns an html tag for render modal as popover near it</td>
-                        </tr>
-                        <tr>
-                            <td>fixStyle</td>
-                            <td>function</td>
-                            <td>---</td>
-                            <td>a function that get computed style of popover and returns fixed style of computed popover style</td>
-                        </tr>
-                        <tr>
-                            <td>fitHorizontal</td>
-                            <td>boolean</td>
-                            <td>false</td>
-                            <td>set true for set width of modal equal to width of target html</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h5>attrs</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>object</td>
-                            <td>---</td>
-                            <td>set custom attributes on modal</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h5>animate</h5>
-                <table className='aio-component-table'>
-                    <thead>
-                        <th>Type</th><th>Default</th><th>Description</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>boolean</td>
-                            <td>true</td>
-                            <td>if true, The opening of the popup will be accompanied by animation</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-                <h3>instance.addAlert()</h3>
-                <h5>
-                    user instance.addAlert() to show alert box in your page. you can add more than one alert and dont need to handle any state of that
-                </h5>
-                {
-                    Code(`
-instance.addAlert(props)
-`)
-                }
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-                <h3>instance.addSnackebar()</h3>
-                <h5>
-                    user instance.addSnackebar() to show snackebar box in your page. you can add more than one snackebar and dont need to handle any state of that
-                </h5>
-                {
-                    Code(`
-instance.addSnackebar(props)
-`)
-                }
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-                {this.popup.render()}
+const Sample2:FC<{removeModal:any}> = ({removeModal})=>{
+    return (
+        <div className="flex-col- h-100-">
+            <div className="flex-row- h-72- align-v- p-h-24- fs-18-" style={{ background: '#264065', color: '#fff' }}>My Titles</div>
+            <div className="align-v- flex-1- ofy-auto- p-12-">
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil reprehenderit ab temporibus consequuntur consectetur velit, at natus numquam a, impedit eos voluptatum iusto, minus ea molestias dicta deserunt! Sequi, maxime.
+                Maxime numquam doloribus labore nostrum tempora aliquid, temporibus voluptatibus. Unde itaque eum atque laudantium ea, suscipit ad quae, eius rerum quas exercitationem doloribus placeat optio maxime non reiciendis deleniti aperiam.
+                Quos cupiditate consectetur eaque, velit ipsam quibusdam est reprehenderit repellendus ea autem enim culpa eum temporibus et voluptate! Excepturi rem et temporibus ratione voluptates blanditiis eum repellat vel atque rerum.
+                Provident, modi reprehenderit. Inventore asperiores quidem sunt officiis, repellat vel amet, reprehenderit numquam sequi quo quas temporibus. Nulla praesentium id quisquam at et? Alias quisquam repellat, blanditiis dicta doloribus quam.
+                Est totam laboriosam ullam earum eligendi a aliquam asperiores impedit necessitatibus atque, optio quo dignissimos, corporis aut dolor accusantium sed reiciendis quas magnam nam, voluptates ratione et sequi? Voluptas, laboriosam?
+                Aspernatur optio quisquam quis, sequi aliquid laboriosam id voluptatum ad doloremque saepe eum rem vitae nobis ea animi, molestias dolorem assumenda fugiat officia? Aliquam at dolore commodi. Doloribus, esse quae!
+                Ut quam labore, nostrum dolorem nam sed, quo non, soluta iure at accusamus fuga quae! Magnam, rem ullam? Veniam nemo soluta modi reiciendis obcaecati praesentium! Cupiditate pariatur quo debitis delectus!
+                Sunt obcaecati numquam laborum dolores error quis doloremque laboriosam. Officiis voluptatum corrupti tempore alias libero mollitia blanditiis deleniti. Atque suscipit aspernatur quidem porro quaerat nulla beatae dignissimos neque reprehenderit perferendis.
+                Corrupti ex consequatur laboriosam magnam accusamus quidem voluptatum reiciendis, amet placeat incidunt natus atque quisquam inventore excepturi ipsa doloribus error odit saepe aut delectus consequuntur eligendi, deleniti officiis deserunt? Maxime?
+                Incidunt impedit a aliquam itaque, voluptate ipsam assumenda ea labore voluptatum molestias fuga. Eius atque pariatur, ut minus at dolorem, praesentium temporibus placeat optio distinctio nobis nisi architecto fugiat quis.
             </div>
-        )
-    }
-    render() { return this.preview() }
+            <div className="flex-row- gap-24- h-60- align-vh-">
+                <button className='btn-123' style={{ background: '#264065', color: '#fff' }}>Approve</button>
+                <button className='btn-123' onClick={removeModal}>Close</button>
+            </div>
+        </div>
+    )
 }
-function AddModal() {
-    let [popup] = useState(new AIOPopup())
-    function example(p: { title: string, code: string, props: AP_modal | (AP_modal[]) }) {
-        let { title, code, props } = p;
-        return (
-            <>
-                <h3>{title}</h3>
-                {Code(code)}
-                <button style={{ height: 36, padding: '0 24px' }} onClick={() => {
-                    if (!Array.isArray(props)) { props = [props] }
-                    for (let i = 0; i < props.length; i++) {
-                        popup.addModal(props[i])
-                    }
-                }}>Open Modal</button>
-                <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-            </>
-        )
+const SampleCode = `
+    <div className="flex-row- p-12- align-v-" style={{ background: '#264065', color: '#fff' }}>
+        <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+        <div className="gap-6-">
+            <button className='btn-123'>Approve</button>
+            <button className='btn-123' onClick={removeModal}>Close</button>
+        </div>
+    </div>
+`
+const AddModal: FC = () => {
+    let popup = usePopup()
+    function click(props: AP_modal) {
+        popup.addModal(props)
     }
     return (
-        <div className='example'>
-            {
-                example({
-                    title: 'Basic Modal',
-                    code:
-                        `instance.addModal({
+        <div className="example">
+            <h3>Add Modal</h3>
+            {Code(
+                `popup.addModal({
     header:{title:'my modal'},
-    body:()=>content,
-    setAttrs:(key)=>{
-        if(key === 'body'){
-            return {
-                style:{padding:12}
-            }
-        }
-    }
-})`,
-                    props: {
-                        header: { title: 'my modal' }, body: () => content,
-                        setAttrs: (key) => { if (key === 'body') { return { style: { padding: 12 } } } }
-                    }
-                })
-            }
-            {
-                example({
-                    title: 'Modal header',
-                    code:
-                        `instance.addModal({
+    body: () => <div style={{padding:12}}>{content}</div>
+})`
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                header: { title: 'my modal' },
+                body: () => <div style={{ padding: 12 }}>{content}</div>
+            })}>OpenModal</button>
+
+            <h3>Modal header</h3>
+            {Code(
+                `poppup.addModal({
     header: {
         title: 'my modal',
         subtitle: 'my modal subtitle',
+        before: <Icon path={mdiStar} size={1} />,
         after:(
             <div className='modal-header-after'>
-                <button onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
-                <button onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
-                <button onClick={() => alert()}>My Button</button> 
+                <button className='align-vh-' onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
+                <button className='align-vh-' onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
+                <button className='align-vh-' onClick={() => alert()}>My Button</button> 
             </div>
         )
     },
-    body: () => content
+    body: () => <div style={{padding:12}}>{content}</div>
 })`
-                    ,
-                    props: {
-                        header: {
-                            title: 'my modal',
-                            subtitle: 'my modal subtitle',
-                            after: (
-                                <div className='modal-header-after'>
-                                    <button onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
-                                    <button onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
-                                    <button onClick={() => alert()}>My Button</button>
-                                </div>
-                            )
-                        },
-                        body: () => content
-                    }
-                })
-            }
-            {
-                example({
-                    title: 'Modal header (onClose:false)',
-                    code:
-                        `instance.addModal({
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                header: {
+                    title: 'my modal',
+                    subtitle: 'my modal subtitle',
+                    before: <Icon path={mdiStar} size={1} />,
+                    after: (
+                        <div className='modal-header-after'>
+                            <button className='align-vh-' onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
+                            <button className='align-vh-' onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
+                            <button className='align-vh-' onClick={() => alert()}>My Button</button>
+                        </div>
+                    )
+                },
+                body: () => <div style={{ padding: 12 }}>{content}</div>
+            })}>OpenModal</button>
+
+            <h3>Modal header (onClose:false)</h3>
+            {Code(
+                `instance.addModal({
     header: {
         title: 'my modal',
         onClose: false
     },
-    body: ()=>content
+    body: () => <div style={{padding:12}}>{content}</div>
 })`
-                    ,
-                    props: {
-                        header: {
-                            title: 'my modal',
-                            onClose: false
-                        },
-                        body: () => content
-                    }
-                })
-            }
-            {
-                example({
-                    title: 'Modal header (onClose:custom function)',
-                    code:
-                        `instance.addModal({
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                header: {
+                    title: 'my modal',
+                    onClose: false
+                },
+                body: () => <div style={{ padding: 12 }}>{content}</div>
+            })}>OpenModal</button>
+
+            <h3>Modal header (onClose:custom function)</h3>
+            {Code(
+                `instance.addModal({
     header: {
         title: 'my modal',
         onClose: () => {
@@ -487,236 +163,188 @@ function AddModal() {
             popup.removeModal()
         }
     },
-    body: () => content
+    body: () => <div style={{padding:12}}>{content}</div>
 })`
-                    ,
-                    props: {
-                        header: {
-                            title: 'my modal',
-                            onClose: () => {
-                                alert('close popup');
-                                popup.removeModal()
-                            }
-                        },
-                        body: () => content
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                header: {
+                    title: 'my modal',
+                    onClose: () => {
+                        alert('close popup');
+                        popup.removeModal()
                     }
-                })
-            }
-            {
-                example({
-                    title: 'Modal prevent backdrop close',
-                    code:
-                        `instance.addModal({
+                },
+                body: () => <div style={{ padding: 12 }}>{content}</div>
+            })}>OpenModal</button>
+
+            <h3>Modal header (function returns ReactNode)</h3>
+            {Code(
+                `instance.addModal({
+    header: ({removeModal})=>{
+        return (
+            ${SampleCode}
+        )
+    },
+    body: () => <div style={{ padding: 12 }}>{content}</div>
+})`
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                header: ({ removeModal }) => {
+                    return <Sample removeModal={removeModal} />
+                },
+                body: () => <div style={{ padding: 12 }}>{content}</div>
+            })}>OpenModal</button>
+
+            <h3>Modal prevent backdrop close</h3>
+            {Code(
+                `popup.addModal({
     position: 'top',
-    body: ({ close }) => (
-        <RVD
-            rootNode={{
-                row: [
-                    { style: { maxHeight: 400 }, html: 'my sample text in modal', className: 'align-v- flex-1- ofy-auto-' },
-                    {
-                        gap: { size: 6 },
-                        column: [{ html: (<button className='btn-123'>Approve</button>) }, { html: (<button className='btn-123' onClick={close}>Close</button>) }]
-                    }
-                ]
-            }}
-        />
+    body: ({ removeModal }) => (
+        <div className="flex-row- p-12- align-v-" style={{background:'#264065',color:'#fff'}}>
+            <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+            <div className="gap-6-">
+                <button className='btn-123'>Approve</button>
+                <button className='btn-123' onClick={removeModal}>Close</button>
+            </div>
+        </div>
     ),
-    setAttrs:(key)=>{
-        if(key === 'backdrop'){
+    setAttrs: (key) => {
+        if (key === 'backdrop') {
             return {
-                onClick:()=>false
+                onClick: () => false
             }
         }
     }
 })`
-                    ,
-                    props: {
-                        position: 'top',
-                        body: ({ close }) => (
-                            <div className="flex-row-">
-                                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
-                                <div className="gap-6-">
-                                    <button className='btn-123'>Approve</button>
-                                    <button className='btn-123' onClick={close}>Close</button>
-                                </div>
-                            </div>
-                        ),
-                        setAttrs: (key) => {
-                            if (key === 'backdrop') {
-                                return {
-                                    onClick: () => false
-                                }
-                            }
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                position: 'top',
+                body: ({ removeModal }) => (
+                    <div className="flex-row- p-12- align-v-" style={{ background: '#264065', color: '#fff' }}>
+                        <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                        <div className="gap-6-">
+                            <button className='btn-123'>Approve</button>
+                            <button className='btn-123' onClick={removeModal}>Close</button>
+                        </div>
+                    </div>
+                ),
+                setAttrs: (key) => {
+                    if (key === 'backdrop') {
+                        return {
+                            onClick: () => false
                         }
                     }
-                })
-            }
-            {
-                example({
-                    title: 'open many modal',
-                    code:
-                        `instance.addModal({
+                }
+            })}>OpenModal</button>
+            <h3>open multiple modal</h3>
+            {Code(
+                `instance.addModal({
     position:'top',
     id:'one',
-    body:({close})=><MyComponent onClose={close}/>
+    body:({removeModal})=><MyComponent onClose={removeModal}/>
 })
 instance.addModal({
     position:'bottom',
     id:'two',
-    body:({close})=><MyComponent onClose={close}/>
+    body:({removeModal})=><MyComponent onClose={removeModal}/>
 })`
-                    ,
-                    props: [
-                        { position: 'top', id: 'one', body: ({ close }) => <Popup1 close={close} /> },
-                        { position: 'bottom', id: 'two', body: ({ close }) => <Popup1 /> }
-                    ]
+            )}
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    position: 'top',
+                    id: 'one',
+                    body: ({ removeModal }) => <Sample removeModal={removeModal} />
                 })
-            }
-            {
-                example({
-                    title: 'use as confirm',
-                    code:
-                        `instance.addModal({
+                popup.addModal({
+                    position: 'bottom',
+                    id: 'two',
+                    body: ({ removeModal }) => <Sample removeModal={removeModal} />
+                })
+            }}>OpenModal</button>
+            <h3>Modal footer</h3>
+            {Code(
+                `popup.addModal({
     position: 'center',
     header: { title: 'my confirm title' },
     body: () => (
         <div style={{ padding: 12, width: 300 }}>
-            my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
         </div>
     ),
-    footer: ({ close }) => {
+    footer: ({ removeModal }) => {
         return (
             <>
-                <button className='ex-button-1' onClick={() => { console.log('yes'); close() }}>No</button>
-                <button className='ex-button-2' onClick={() => { console.log('no'); close() }}>Yes</button>
+                <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
+                <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
             </>
         )
     }
 })`
-                    ,
-                    props: {
-                        position: 'center',
-                        header: { title: 'my confirm title' },
-                        body: () => (
-                            <div style={{ padding: 12, width: 300 }}>
-                                my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text my confirm text
-                            </div>
-                        ),
-                        footer: ({ close }) => {
-                            return (
-                                <>
-                                    <button className='ex-button-1' onClick={() => { console.log('yes'); close() }}>No</button>
-                                    <button className='ex-button-2' onClick={() => { console.log('no'); close() }}>Yes</button>
-                                </>
-                            )
-                        }
-                    }
-                })
-            }
-            {
-                example({
-                    title: 'use as prompt',
-                    code:
-                        `instance.addModal({
-    position:'center',
-    header:{title:'my prompt title'},
-    state:{temp:''},
-    body:{
-        render:({state,setState})=>{
-            return (
-                <textarea
-                    value={state.temp} onChange={(e)=>setState({temp:e.target.value})}
-                    style={{resize:'vertical',border:'none',outline:'none',background:'rgba(0,0,0,0.05)',width:'100%'}}
-                />
-            )
-        }},
-    footer:{
-        buttons:[
-            [
-                'yes',
-                {
-                    onClick:({close,state})=>{
-                        console.log(state.temp); 
-                        close();
-                    }
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                position: 'center',
+                header: { title: 'my confirm title' },
+                body: () => (
+                    <div style={{ padding: 12, width: 300 }}>
+                        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
+                    </div>
+                ),
+                footer: ({ removeModal }) => {
+                    return (
+                        <>
+                            <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
+                            <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
+                        </>
+                    )
                 }
-            ],
-            [
-                'no',
-                {
-                    onClick:({close})=>{
-                        close()
-                    },
-                    style:{background:'#999'}
-                }
-            ]
-        ]
-    },
+            })}>OpenModal</button>
+            <h3>Modal state</h3>
+            {Code(
+                `popup.addModal({
+    position: 'center',
+    header: { title: 'my confirm title' },
+    body: () => (
+        <div style={{ padding: 12, width: 300 }}>
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
+        </div>
+    ),
+    footer: ({ removeModal }) => {
+        return (
+            <>
+                <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
+                <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
+            </>
+        )
+    }
 })`
-                    ,
-                    props: {
-                        position: 'center',
-                        header: { title: 'my prompt title' },
-                        state: { temp: '' },
-                        body: ({ state, setState }: any) => {
-                            return (
-                                <textarea
-                                    value={state.temp} onChange={(e) => setState({ ...state, temp: e.target.value })}
-                                    style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
-                                />
-                            )
-                        },
-                        footer: ({ close, state }) => {
-                            return (
-                                <>
-                                    <button className='ex-button-1' onClick={() => { close() }}>No</button>
-                                    <button className='ex-button-2' onClick={() => { console.log(state.temp); close() }}>Yes</button>
-                                </>
-                            )
-                        }
-                    }
-                })
-            }
+            )}
+            <button className='add-modal-button' onClick={() => click({
+                position: 'center',
+                header: { title: 'my prompt title' },
+                state: { temp: '' },
+                body: ({state,setState})=>{
+                    return (
+                        <textarea
+                            value={state.temp} onChange={(e) => setState({ temp: e.target.value })}
+                            style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
+                        />
+                    )
+                },
+                footer: ({ removeModal,state }) => {
+                    return (
+                        <>
+                            <button className='ex-button-1' onClick={() => { removeModal() }}>Cansel</button>
+                            <button className='ex-button-2' onClick={() => { alert(state.temp); removeModal() }}>Submit</button>
+                        </>
+                    )
+                }
+            })}>OpenModal</button>
             {popup.render()}
         </div>
     )
 }
-function Popup1(props: any) {
-    let { close } = props || {};
-    return (
-        <div className="flex-row-">
-            <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
-            <div className="gap-6-">
-                <button className='btn-123'>Approve</button>
-                <button className='btn-123' onClick={close}>Close</button>
-            </div>
-        </div>
-    )
-}
 function ModalPosition() {
-    let [popup] = useState(new AIOPopup())
-    function v_layout(close: () => void) {
-        return (
-            <div className="flex-row-">
-                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
-                <div className="gap-6-">
-                    <button className='btn-123'>Approve</button>
-                    <button className='btn-123' onClick={close}>Close</button>
-                </div>
-            </div>
-        )
-    }
-    function h_layout(close: () => void) {
-        return (
-            <div className="flex-row-">
-                <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
-                <div className="gap-6-">
-                    <button className='btn-123'>Approve</button>
-                    <button className='btn-123' onClick={close}>Close</button>
-                </div>
-            </div>
-        )
-    }
+    let popup = usePopup()
     function openModal(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
         let p: AP_modal = {
             body: () => null,
@@ -724,10 +352,10 @@ function ModalPosition() {
             position
         }
         if (position === 'top' || position === 'bottom') {
-            p.body = ({ close }) => v_layout(close)
+            p.body = ({ removeModal }) => <Sample removeModal={removeModal}/>
         }
         else if (position === 'left' || position === 'right') {
-            p.body = ({ close }) => h_layout(close);
+            p.body = ({ removeModal }) => <Sample2 removeModal={removeModal}/>
             p.setAttrs = (key) => {
                 if (key === 'modal') {
                     return { style: { width: 360 } }
@@ -754,25 +382,25 @@ function ModalPosition() {
         if (position === 'top' || position === 'bottom') {
             body =
                 `body:{
-        render:({close})=><MyComponent onClose={close}/>
+        render:({removeModal})=><MyComponent onClose={removeModal}/>
     }`
         }
         else if (position === 'left' || position === 'right') {
             body =
                 `body:{
-        render:({close})=><MyComponent onClose={close}/>
+        render:({removeModal})=><MyComponent onClose={removeModal}/>
     }`
         }
         else if (position === 'center') {
             body = `
     title:'My Modal',
-    body:{render:({close})=><MyComponent onClose={close}/>}
+    body:{render:({removeModal})=><MyComponent onClose={removeModal}/>}
 `
         }
         else if (position === 'fullscreen') {
             body = `
     title:'My Modal',
-    body:{render:({close})=><MyComponent onClose={close}/>} 
+    body:{render:({removeModal})=><MyComponent onClose={removeModal}/>} 
 `
         }
         return Code(`
@@ -806,11 +434,11 @@ instance.addModal({
 }
 
 function Alert() {
-    let [popup] = useState(new AIOPopup())
+    let popup = usePopup()
     function addAlert(obj: any) {
         popup.addAlert({
             text: 'my alert text',
-            time: 10,
+            time: 40,
             subtext: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatum consectetur, enim cum similique aperiam maiores! Natus, sapiente vero molestiae ad tenetur amet eligendi exercitationem eveniet, repellat deserunt aut! Tenetur corporis officia, obcaecati excepturi architecto maxime asperiores assumenda sit maiores esse fugit',
             closeText: 'بستن',
             ...obj
@@ -877,20 +505,6 @@ closeText:'بستن'
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error' })}>Open Alert</button>
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
 
-            <h3>alert type error</h3>
-            {
-                Code(`
-instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'warning',
-closeText:'بستن'
-})
-                `)
-            }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addAlert({ type: 'error' })}>Open Alert</button>
-            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>alert type warning</h3>
             {
                 Code(`
@@ -938,7 +552,7 @@ closeText:'بستن'
     )
 }
 function Confirm() {
-    let [popup] = useState(new AIOPopup())
+    let popup = usePopup()
     function addConfirm() {
         popup.addConfirm({
             text: 'Confirm text',
@@ -974,7 +588,7 @@ closeText:'بستن'
     )
 }
 function Prompt() {
-    let [popup] = useState(new AIOPopup())
+    let popup = usePopup()
     function addPrompt() {
         popup.addPrompt({
             text: 'Confirm text',
@@ -1010,24 +624,23 @@ closeText:'بستن'
     )
 }
 function SnackebarExample() {
-    let [popup] = useState(new AIOPopup())
-    let [rtlPopup] = useState(new AIOPopup({ rtl: true }))
+    let popup = usePopup()
+    let rtlPopup = usePopup({ rtl: true })
     function addSnackebar(obj?: { [key in keyof AP_snackebar]?: any }, rtl?: boolean) {
         let {
             text = 'my snackebar title',
             subtext = 'my subtext of my snackebar . please click on action',
-            time = 10000000,
+            time = 10,
             type = 'error',
-            verticalAlign = 'end',
-            horizontalAlign = 'center',
+            align = ['right','top'],
             icon,
             attrs
         } = obj || {}
         if (rtl) {
-            rtlPopup.addSnackebar({ text, subtext, time, type, verticalAlign, horizontalAlign, icon, attrs })
+            rtlPopup.addSnackebar({ text, subtext, time, type, align, icon, attrs })
         }
         else {
-            popup.addSnackebar({ text, subtext, time, type, verticalAlign, horizontalAlign, icon, attrs })
+            popup.addSnackebar({ text, subtext, time, type, align, icon, attrs })
         }
 
     }
@@ -1036,13 +649,13 @@ function SnackebarExample() {
             <h3>import</h3>
             {
                 Code(`
-import AIOPopup from 'aio-popup';
+import usePopup from 'aio-popup';
                 `)
             }
-            <h3>create instance</h3>
+            <h3>call hook</h3>
             {
                 Code(`
-const [popup] = useState(new AIOPopup())
+const popup = usePopup()
                 `)
             }
             <h3>snackebar type</h3>
@@ -1074,7 +687,7 @@ popup.addSnackebar(config:I_config)
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1124,7 +737,7 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1150,7 +763,7 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1174,7 +787,7 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1198,7 +811,7 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1222,7 +835,7 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
@@ -1247,13 +860,13 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
             subtext:'my subtext of my snackebar . please click on action',
             type:'error'
-            verticalAlign:'start'
+            align: ['right','bottom']
         })
     }
     return (
@@ -1265,20 +878,20 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ verticalAlign: 'start' })}>Add Snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ align: ['right','bottom'] })}>Add Snackebar</button>
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>icon</h3>
             {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
             subtext:'my subtext of my snackebar . please click on action',
-            type:'success'
-            verticalAlign:'start',
+            type:'success',
+            align:['right','top'],
             icon:(
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
@@ -1304,7 +917,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign: 'start', type: 'success',
+                align: ['right','top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -1325,13 +938,13 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
             subtext:'my subtext of my snackebar . please click on action',
             type:'success'
-            verticalAlign:'start',
+            align: ['right','top'],
             icon:(
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
@@ -1360,7 +973,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign: 'start', type: 'success',
+                align: ['right','top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -1384,14 +997,13 @@ const example = () => {
                 Code(`
 import AIOPopup from 'aio-popup';
 const example = () => {
-    const [popup] = useState(new AIOPopup())
+    const popup = usePopup()
     function addSnackebar(){
         popup.addSnackebar({
             text:'my snackebar title',
             subtext:'my subtext of my snackebar . please click on action',
             type:'success'
-            verticalAlign:'start',
-            horizontalAlign:'end',
+            align: ['right','top'],
             icon:(
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="20" cy="20" r="20" fill="#36CB8C"/>
@@ -1420,8 +1032,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                verticalAlign: 'start', type: 'success',
-                horizontalAlign: 'end',
+                align: ['right','top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -1454,14 +1065,14 @@ function Popover() {
         dom4: createRef(),
         dom5: createRef()
     })
-    let [popup] = useState(new AIOPopup())
-    function v_layout(close?: any) {
+    let popup = usePopup()
+    function v_layout(removeModal?: any) {
         return (
             <div className="flex-row-">
                 <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
                 <div className="gap-6-">
                     <button className='btn-123'>Approve</button>
-                    <button className='btn-123' onClick={close}>Close</button>
+                    <button className='btn-123' onClick={removeModal}>Close</button>
                 </div>
             </div>
         )
@@ -1470,15 +1081,7 @@ function Popover() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom1.current as any),
-            body: ({ close }) => v_layout(close)
-        })
-    }
-    function fixStyle() {
-        popup.addModal({
-            position: 'popover',
-            getTarget: () => $(temp.dom2.current as any),
-            fixStyle: (a, b) => { return { ...a, top: a.top + 36 } },
-            body: () => v_layout()
+            body: ({ removeModal }) => v_layout(removeModal)
         })
     }
     function fitHorizontal() {
@@ -1539,24 +1142,11 @@ function Popover() {
 popupInstance.addModal({
     position: 'popover',
     getTarget: () => $(temp.dom1.current as any),
-    body: ({ close }) => v_layout(close)
+    body: ({ removeModal }) => v_layout(removeModal)
 })
                 `)
             }
             <button ref={temp.dom1 as any} style={{ height: 36, padding: '0 24px' }} onClick={() => addPopover()}>Open Popover</button>
-            <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
-            <h3>popover fixStyle</h3>
-            {
-                Code(`
-popupInstance.addModal({
-    position: 'popover',
-    getTarget: () => $(temp.dom2.current as any),
-    fixStyle: (a, b) => { return { ...a, top: a.top + 36 } },
-    body: () => v_layout()
-})
-                `)
-            }
-            <button ref={temp.dom2 as any} style={{ height: 36, padding: '0 24px' }} onClick={() => fixStyle()}>Open Popover</button>
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>fitHorizontal</h3>
             {
@@ -1628,7 +1218,7 @@ popupInstance.addModal({
     )
 }
 function BasicHighlight() {
-    let [popup] = useState<AIOPopup>(new AIOPopup())
+    let popup = usePopup()
     function start(index: number) {
         let dom, html;
         if (index === 0) {
@@ -1712,7 +1302,7 @@ function BasicHighlight() {
     )
 }
 function MouseAccess() {
-    let [popup] = useState<AIOPopup>(new AIOPopup())
+    let popup = usePopup()
     function start() {
         popup.addHighlight({
             dom: $('#button1'),
@@ -1793,7 +1383,7 @@ function MouseAccess() {
     )
 }
 function TestFocus() {
-    let [popup] = useState<AIOPopup>(new AIOPopup())
+    let popup = usePopup()
     function start(index: number) {
         if (index === 0) {
             popup.addHighlight({
@@ -1828,7 +1418,7 @@ function TestFocus() {
     )
 }
 function Theme1() {
-    let [popup] = useState(new AIOPopup())
+    let popup = usePopup()
 
     return (
         <div className='example'>
@@ -1867,18 +1457,18 @@ function Theme1() {
 
 
 
-const SnackebarToBody: FC = () => {
-    const addRef = useRef<any>()
-    return (
-        <>
-            <div className="msf">
-                <button onClick={() => addRef.current({ type: 'error', text: 'my text', subtext: 'my subtext' })}>Add Snackebar</button>
-            </div>
-            {ReactDOM.createPortal(<Snackebar
-                getActions={({ add }) => addRef.current = add}
-                rtl={false}
-            />, document.body)}
+// const SnackebarToBody: FC = () => {
+//     const addRef = useRef<any>()
+//     return (
+//         <>
+//             <div className="msf">
+//                 <button onClick={() => addRef.current({ type: 'error', text: 'my text', subtext: 'my subtext' })}>Add Snackebar</button>
+//             </div>
+//             {ReactDOM.createPortal(<Snackebar
+//                 getActions={({ add }) => addRef.current = add}
+//                 rtl={false}
+//             />, document.body)}
 
-        </>
-    )
-}
+//         </>
+//     )
+// }
