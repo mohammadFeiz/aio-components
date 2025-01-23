@@ -1,6 +1,6 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
 import $ from 'jquery';
-import AIOPopup, { AP_modal } from "./../aio-popup";
+import usePopup, { AP_modal, AP_usePopup } from "./../aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
     svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation,
@@ -72,10 +72,7 @@ function AIOINPUT(props: AITYPE) {
     let { type, value, onChange, attrs = {}, rtl } = props;
     let [parentDom] = useState<any>(createRef())
     let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)))
-    let [popup] = useState(getPopup(AIOPopup))
-    function getPopup(ctor: { new(p?: { rtl?: boolean }): AIOPopup }): AIOPopup {
-        return new ctor({ rtl: props.rtl })
-    }
+    let popup = usePopup({ rtl: props.rtl })
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
     let [DragOptions] = useState<DragClass>(
@@ -108,15 +105,14 @@ function AIOINPUT(props: AITYPE) {
             onClose: () => closePopup(),
             body: (o) => {
                 if (body) { return body(o) }
-                else if (type === 'date') { return <Calendar onClose={o.close} /> }
-                else if (type === 'time') { return <TimePopover onClose={o.close} /> }
+                else if (type === 'date') { return <Calendar onClose={o.removeModal} /> }
+                else if (type === 'time') { return <TimePopover onClose={o.removeModal} /> }
                 else { return <Options /> }
             },
-            pageSelector: '.aio-input-backdrop.' + datauniqid, getTarget: () => target,
+            getTarget: () => target,
             setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
                 let attrs = setAttrs(key);
                 if (key === 'modal') { return AddToAttrs(attrs, { className }) }
-                if (key === 'backdrop') { return AddToAttrs(attrs, { className: 'aio-input-backdrop ' + datauniqid }) }
             }
         }
         return config;
@@ -270,8 +266,7 @@ function TimePopover(props: { onClose: () => void }) {
     )
 }
 function Image() {
-    let { rootProps }: AI_context = useContext(AICTX);
-    let [popup] = useState(new AIOPopup());
+    let { rootProps,popup }: AI_context = useContext(AICTX);
     let { value, attrs, onChange, disabled, placeholder, preview, deSelect, imageAttrs = {} } = rootProps;
     let [url, setUrl] = useState<string>();
     let dom: any = createRef()
@@ -2114,12 +2109,9 @@ function TableToolbar() {
         if (!sorts.length) { return null }
         let p: AITYPE = {
             popover: {
-                header: {
-                    attrs: { className: 'aio-input-table-toolbar-popover-header' },
-                    title: 'Sort',
-                    onClose: false
-                },
-                pageSelector: '.aio-input-table'
+                header: {title: 'Sort',onClose: false},
+                setAttrs:(key)=>{if(key === 'header'){return { className: 'aio-input-table-toolbar-popover-header' }}},
+                limitTo: '.aio-input-table'
             },
             caret: false, type: 'select', options: sorts,
             option: {
@@ -3311,7 +3303,7 @@ export const Mask: FC<{ value?: string, pattern: I_mask_pattern, onChange: (v: s
 }
 type I_richTextItem = { tag: string, items?: I_richTextItem[], html?: ReactNode, attrs?: any, align?: 'align-v-' | 'align-h-' | 'align-vh-', w?: string, h?: string, flex?: number }
 export const RichText: FC = () => {
-    const [popup] = useState<AIOPopup>(new AIOPopup())
+    const popup = usePopup()
     const nestedIndexRef = useRef<number[]>([])
     const items: I_richTextItem = {
         tag: 'div', items: [
@@ -3705,7 +3697,7 @@ export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
 export type AI_context = {
     rootProps: AITYPE,
-    popup: AIOPopup,
+    popup: AP_usePopup,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
     DragOptions: DragClass,
