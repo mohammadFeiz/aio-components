@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import AIOPopup from './../../npm/aio-popup';
+import {Alert} from './../../npm/aio-popup';
 import AIOLoading from './../../npm/aio-loading';
 type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
 type I_onCatch = (err: any, config: AA_api) => string;
@@ -37,7 +37,6 @@ type I_cachedApi = {
 }
 export default class AIOApis {
     props: AA_props;
-    popup: AIOPopup;
     token: string;
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
@@ -49,7 +48,6 @@ export default class AIOApis {
         console.log('aio-apis constructor')
         this.props = props
         const storage = new Storage(props.id);
-        this.popup = new AIOPopup()
         this.token = props.token;
         this.setToken(props.token);
         this.cache = new Cache(storage, async (cachedApi: I_cachedApi) => await this.request(cachedApi.api, true))
@@ -64,9 +62,8 @@ export default class AIOApis {
     }
     addAlert = (p: { type: AA_alertType, text: string, subtext?: string, time?: number }) => {
         let { type, text, subtext, time } = p;
-        this.popup.addAlert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
+        Alert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
-    renderPopup = () => this.popup.render()
     private responseToResult = async (api: AA_api): Promise<{ result: any, errorMessage?: string, success: boolean,response:any }> => {
         const { headers = this.props.headers, errorResult = this.props.errorResult } = api;
         const { onCatch, getResult } = this.props;

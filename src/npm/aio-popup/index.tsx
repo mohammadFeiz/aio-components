@@ -38,7 +38,6 @@ export type AP_modal = {
 }
 export type AP_alert = {
   icon?: false | ReactNode,
-  position?: AP_position,
   type: 'success' | 'error' | 'warning' | 'info',
   text?: ReactNode,
   subtext?: string,
@@ -411,8 +410,8 @@ const ModalBody: FC<{ modal: AP_modal }> = (props) => {
   if (!content || content === null) { return null }
   return (<div {...AddToAttrs(attrs, { className: 'aio-popup-body aio-popup-scroll' })}>{content}</div>)
 }
-function Alert(props: AP_alert) {
-  let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', position = 'center', onClose } = props;
+export function Alert(props: AP_alert) {
+  let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'بستن', onClose } = props;
   let $$ = {
     id: '',
     time: 0,
@@ -427,7 +426,7 @@ function Alert(props: AP_alert) {
     },
     getRender() {
       return (`
-      <div class='aio-popup-alert-container not-mounted ${$$.id} aio-popup-alert-container-${position}${!!className ? ` ${className}` : ''}'>
+      <div class='aio-popup-alert-container not-mounted ${$$.id} aio-popup-alert-container-center${!!className ? ` ${className}` : ''}'>
         <div class='aio-popup-alert aio-popup-alert-${type}'>
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
