@@ -22,7 +22,7 @@ function Basic(){
             <AIAcardion 
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
-                body={({option})=>{
+                body={(option)=>{
                     const {value} = option
                     if(value === '0'){
                         return {
@@ -54,7 +54,7 @@ function Basic(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
                     subtext:()=>'this is my subtext'
                 }}
             />
@@ -65,7 +65,7 @@ function Basic(){
     type='acardion'
     value={value}
     onChange={(newValue)=>setValue(newValue)}
-    body={({option})=>{
+    body={(option)=>{
         const {value} = option
         if(value === '0'){
             return {
@@ -130,7 +130,7 @@ function Vertical(){
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
                 vertical={false}
-                body={({option})=>{
+                body={(option)=>{
                     const {value} = option
                     let attrs = {style:{width:200}}
                     if(value === '0'){
@@ -167,7 +167,7 @@ function Vertical(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
                     style:()=>({width:200}),
                     subtext:()=>'this is my subtext',
                 }}
@@ -180,7 +180,7 @@ function Vertical(){
     value={value}
     onChange={(newValue)=>setValue(newValue)}
     vertical={false}
-    body={({option})=>{
+    body={(option)=>{
         const {value} = option
         let attrs = {style:{width:200}}
         if(value === '0'){
@@ -217,7 +217,8 @@ function Vertical(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option:any,details:any)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
+        before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
+        style:()=>({width:200}),
         subtext:()=>'this is my subtext',
     }}
 />`
@@ -235,7 +236,7 @@ function Multiple(){
                 value={value}
                 onChange={(newValue)=>setValue(newValue)}
                 multiple={true}
-                body={({option})=>{
+                body={(option)=>{
                     const {value} = option
                     if(value === '0'){
                         return {
@@ -267,7 +268,7 @@ function Multiple(){
                 ]}
                 option={{
                     after:()=><Icon path={mdiAccount} size={0.7}/>,
-                    before:(obj)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{obj.index + 1}</div>,
+                    before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
                     subtext:()=>'this is my subtext',
                 }}
             />
@@ -276,7 +277,7 @@ function Multiple(){
 `<AIOInput
     type={'acardion'}
     multiple={true}
-    body={({option})=>{
+    body={(option)=>{
         const {value} = option
         if(value === '0'){
             return {
@@ -308,7 +309,7 @@ function Multiple(){
     ]}
     option={{
         after:()=><Icon path={mdiAccount} size={0.7}/>,
-        before:(option)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{option.renderIndex + 1}</div>,
+        before:(option,details)=><div className='align-vh- fs-16- bold- w-30- h-30- bg-32- br-6-' style={{color:'dodgerblue'}}>{details.index + 1}</div>,
         subtext:()=>'this is my subtext',
     }}
 />`

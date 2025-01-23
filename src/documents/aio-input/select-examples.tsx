@@ -102,10 +102,10 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                 <Options
                     type={type}
                     option={{
-                        checked: ({option,rootProps}) => option.id === rootProps.value
+                        checked: (option,{rootProps}) => option.id === rootProps.value
                     }}
                     optionCode={
-                        `checked: ({option,rootProps}) => option.id === rootProps.value`
+                        `checked: (option,{rootProps}) => option.id === rootProps.value`
                     }
                 />
             ),
@@ -236,10 +236,10 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                 <Options
                     type={type}
                     option={{
-                        onClick: ({option}) => alert(option.name)
+                        onClick: (option) => alert(option.name)
                     }}
                     optionCode={
-                        `onClick:(option:any)=>alert(JSON.stringify(option))`
+                        `onClick:(option)=>alert(JSON.stringify(option))`
                     }
                 />
             ),
@@ -312,7 +312,7 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                         `multiple={true}`
                     }
                     option={{
-                        tagAttrs: (option: any) => {
+                        tagAttrs: (option) => {
                             return {
                                 style: {
                                     background: option.gender === 'male' ? 'dodgerblue' : 'pink'
@@ -321,7 +321,7 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                         }
                     }}
                     optionCode={
-                        `tagAttrs:(option:any)=>{
+                        `tagAttrs:(option)=>{
             return {
                 style:{
                     background:option.gender === 'male'?'dodgerblue':'pink'
@@ -347,12 +347,12 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                     }
 
                     option={{
-                        tagBefore: (option: any) => {
+                        tagBefore: (option) => {
                             return <Icon path={option.gender === 'male' ? mdiHumanMale : mdiHumanFemale} size={0.8} />
                         }
                     }}
                     optionCode={
-                        `tagBefore:(option:any)=>{
+                        `tagBefore:(option)=>{
             return <Icon path={option.gender === 'male'?mdiHumanMale:mdiHumanFemale} size={0.8}/>
         }`
                     }
@@ -374,12 +374,12 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                     }
 
                     option={{
-                        tagAfter: (option: any) => {
+                        tagAfter: (option) => {
                             return option.gender
                         }
                     }}
                     optionCode={
-                        `tagAfter:(option:any)=>{
+                        `tagAfter:(option)=>{
             return option.gender
         }`
                     }

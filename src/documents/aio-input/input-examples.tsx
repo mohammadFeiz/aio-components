@@ -236,10 +236,10 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        show: ({option}) => option.gender !== 'male'
+                        show: (option) => option.gender !== 'male'
                     }}
                     optionCode={
-                        `show:(option:any)=>option.gender !== 'male'`
+                        `show:(option)=>option.gender !== 'male'`
                     }
                 />
             ),
@@ -250,10 +250,10 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        show: ({option}) => option !== '3453463453'
+                        show: (option) => option !== '3453463453'
                     }}
                     optionCode={
-                        `show:(option:any)=>option !== '3453463453'`
+                        `show:(option)=>option !== '3453463453'`
                     }
                 />
             ),
@@ -264,10 +264,10 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        checked: ({option,rootProps}) => (type === 'text' ? option.name : +option) === rootProps.value,
+                        checked: (option,{rootProps}) => (type === 'text' ? option.name : +option) === rootProps.value,
                     }}
                     optionCode={
-                        `checked:(option:any,details:any)=>${type === 'number' ? '+' : ''}option${type === 'text' ? '.name' : ''} === details.value`
+                        `checked:(option,{rootProps})=>${type === 'number' ? '+' : ''}option${type === 'text' ? '.name' : ''} === rootProps.value`
                     }
                 />
             ),
@@ -278,10 +278,10 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        disabled: ({option}) => type === 'text' ? option.gender === 'male' : +option < 100000000
+                        disabled: (option) => type === 'text' ? option.gender === 'male' : +option < 100000000
                     }}
                     optionCode={
-                        `disabled:(option:any)=>${type === 'text' ? "option.gender === 'male'" : "+option < 100000000"}`
+                        `disabled:(option)=>${type === 'text' ? "option.gender === 'male'" : "+option < 100000000"}`
                     }
                 />
             ),
@@ -292,10 +292,10 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
             () => (
                 <Options
                     option={{
-                        onClick: ({option}) => alert(JSON.stringify(option))
+                        onClick: (option) => alert(JSON.stringify(option))
                     }}
                     optionCode={
-                        `onClick:(option:any)=>alert(JSON.stringify(option))`
+                        `onClick:(option)=>alert(JSON.stringify(option))`
                     }
                 />
             ),
@@ -1152,7 +1152,7 @@ const OptionsText: FC<{ option?: any, optionCode?: string, props?: any, propsCod
     option={{
         text:'option.name',
         value:'option.id',
-        onClick:(option:any)=>setValue(option.name),
+        onClick:(option)=>setValue(option.name),
         ${optionCode || ''}
     }}
     ${propsCode || ''}
@@ -1187,7 +1187,7 @@ const OptionsNumber: FC<{ option?: any, optionCode?: string, props?: any, propsC
     option={{
         text:'option',
         value:'option',
-        onClick:(option:any)=>setValue(+option),
+        onClick:(option)=>setValue(+option),
         ${optionCode || ''}
     }}
     ${propsCode || ''}

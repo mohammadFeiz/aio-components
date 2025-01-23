@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { AIRadio, AISelect, AIText } from '../../npm/aio-input/index.tsx';
+import { AIRadio, AISelect, AIText, FormItem } from '../../npm/aio-input/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
 import { AV_operator,Validation } from '../../npm/aio-utils';
 import { ParseString } from '../../npm/aio-utils/index.tsx';
@@ -449,19 +449,34 @@ const TryIt: FC = () => {
         <div className="example">
             <div className="flex-row-">
                 <div className="flex-row- align-v- gap-12-">
-                    <AIText label='title' value={model.title} onChange={(title)=>changeModelByField('title',title)}/>
-                    <AIRadio 
-                        label='lang' options={['en', 'fa']} option={{ text: 'option', value: 'option' } }
-                        value={model.lang} onChange={(lang)=>changeModelByField('lang',lang)} 
+                    <FormItem
+                        input={<AIText value={model.title} onChange={(title)=>changeModelByField('title',title)}/>}
+                        label='title'
+                    />
+                    <FormItem
+                        input={<AIRadio 
+                            options={['en', 'fa']} option={{ text: 'option', value: 'option' } }
+                            value={model.lang} onChange={(lang)=>changeModelByField('lang',lang)} 
+                        />}
+                        label='lang'
                     />
                 </div>
                 <div className="flex-row- align-v- gap-12-">
-                    <AIText label='value' value={model.value} onChange={(value)=>changeModelByField('value',value)}/>
-                    <AISelect
-                        label='operator' options={ops} option={{ text: 'option', value: 'option' }} 
-                        value={model.operator} onChange={(operator)=>changeModelByField('operator',operator)}
+                    <FormItem
+                        input={<AIText value={model.value} onChange={(value)=>changeModelByField('value',value)}/>}
+                        label='value' 
                     />
-                    <AIText label='target' value={model.target} onChange={(target)=>changeModelByField('target',target)}/>
+                    <FormItem
+                        input={<AISelect
+                            options={ops} option={{ text: 'option', value: 'option' }} 
+                            value={model.operator} onChange={(operator)=>changeModelByField('operator',operator)}
+                        />}
+                        label='operator' 
+                    />
+                    <FormItem
+                        input={<AIText value={model.target} onChange={(target)=>changeModelByField('target',target)}/>}
+                        label='target' 
+                    />
                 </div>
             </div>
             <div className="flex-col- gap-12-">

@@ -1,11 +1,11 @@
 import { createContext, FC, ReactNode, useContext, useRef, useState } from "react";
 import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, FormContainer, FormItem } from "../../npm/aio-input";
-import AIOPopup from "../../npm/aio-popup";
+import usePopup, { I_usePopup } from "../../npm/aio-popup";
 import './index.css';
 import {Code} from './../../npm/aio-components';
 const CTX = createContext({} as any)
 type I_CTX = {
-    popup: AIOPopup,
+    popup: I_usePopup,
     getItems: () => I_item[],
     addItem: I_addItem,
     editItem: I_editItem,
@@ -68,7 +68,7 @@ const FG: FC = () => {
     const itemsRef = useRef(items)
     itemsRef.current = items
     const getItems = () => itemsRef.current
-    const [popup] = useState<AIOPopup>(new AIOPopup())
+    const popup = usePopup()
     const addItem: I_addItem = (type) => {
         popup.addModal({
             header: { title: 'Add Item', subtitle: type },
@@ -162,9 +162,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
             <FormItem
                 label={field}
                 input={<AIText value={item[field]} onChange={(value) => changeItem(field, value)} filter={field === 'field'?[' ']:undefined}/>}
-                error={required ? () => {
-                    if (!item[field]) { return `${field} is required` }
-                } : undefined}
+                error={required && !item[field] ? `${field} is required` : undefined}
             />
         )
     }
@@ -173,9 +171,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
             <FormItem
                 label={field}
                 input={<AINumber value={item[field]} onChange={(value) => changeItem(field, value)} />}
-                error={required ? () => {
-                    if (!item[field]) { return `${field} is required` }
-                } : undefined}
+                error={required && !item[field]? `${field} is required` : undefined}
             />
         )
     }
@@ -231,9 +227,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
                         value={item[field]} onChange={(v) => changeItem(field, v)}
                     />
                 )}
-                error={required ? () => {
-                    if (!item[field]) { return `${field} is required` }
-                } : undefined}
+                error={required && !item[field] ? `${field} is required` : undefined}
             />
         )
     }
@@ -291,12 +285,12 @@ const AddOptionModal: FC<{ onSubmit: (v: { text: ReactNode, value: string }) => 
                     <FormItem
                         label='text'
                         input={<AIText value={option.text} onChange={(text) => setOption({ ...option, text })} />}
-                        error={() => !option.text ? 'text is required' : ''}
+                        error={!option.text ? 'text is required' : ''}
                     />
                     <FormItem
                         label='value'
                         input={<AIText value={option.value} onChange={(value) => setOption({ ...option, value })} />}
-                        error={() => !option.value ? 'value is required' : ''}
+                        error={!option.value ? 'value is required' : ''}
                     />
                 </div>
             )}
@@ -316,7 +310,7 @@ const SettingOptions: FC<{ options: I_option[], onChange: (options: I_option[]) 
     }
     function input_layout(option: I_option, field: 'text' | 'value', index: number) {
         const p: any = { className: 'w-100- brd-none-', value: option[field], onChange: (value: any) => changeOption(index, field, value) }
-        return (<FormItem input={(<AIText {...p} />)} error={() => !option[field] ? `${field} is required` : ''} />)
+        return (<FormItem input={(<AIText {...p} />)} error={!option[field] ? `${field} is required` : ''} />)
     }
     function option_layout(option: I_option, index: number) {
         return (
@@ -370,7 +364,7 @@ const Side: FC = () => {
                 options={Object.keys(propDic)}
                 option={{
                     text: 'option', value: 'option',
-                    onClick: ({ option }) => addItem(option)
+                    onClick: (option) => addItem(option)
                 }}
                 popover={{fitHorizontal:true}}
             />
@@ -422,7 +416,7 @@ const Preview: FC = () => {
                 className="fg-bg-2 br-0-"
                 options={tabs}
                 option={{
-                    text:({option})=>{
+                    text:(option)=>{
                         return option[0].toUpperCase() + option.slice(1) 
                     },
                     value:'option'

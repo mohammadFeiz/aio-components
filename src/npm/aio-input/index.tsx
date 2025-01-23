@@ -1113,7 +1113,7 @@ type I_AcardionBody = { option: AI_option }
 const AcardionBody: FC<I_AcardionBody> = ({ option }) => {
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
     let { body = () => { } } = rootProps;
-    let { html, attrs } = body(option.details) || { html: '' }
+    let { html, attrs } = body(option.optionOrg,option.details) || { html: '' }
     let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`] })
     return <div {...Attrs}>{html}</div>
 }
@@ -2119,7 +2119,7 @@ function TableToolbar() {
                 checked: '!!option.active',
                 close: () => false,
                 value: 'option.sortId',
-                after: ({ option }) => {
+                after: (option) => {
                     let { dir = 'dec', sortId } = option;
                     return (
                         <div onClick={(e) => {
@@ -3094,6 +3094,7 @@ function GetOptionProps(p: I_GetOptionProps) {
     if (optionResult !== undefined) { return optionResult }
     let prop = optionProp[key];
     if (typeof prop === 'string') {
+        debugger
         try {
             let value;
             eval('value = ' + prop);
@@ -3646,7 +3647,7 @@ export type AITYPE =
         type: AI_type,
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
-        body?: (value: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
+        body?: (option:any,details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea

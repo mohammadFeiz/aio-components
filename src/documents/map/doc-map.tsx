@@ -15,7 +15,7 @@ const Show: FC<{ onChange: (v: I_show_item) => void }> = ({ onChange }) => {
     return (
         <AISelect
             value={value} onChange={(value) => change(value)} options={options}
-            option={{ text: ({ option }) => option, value: ({ option }) => option }}
+            option={{ text: (option) => option, value: (option) => option }}
         />
     )
 }
@@ -57,7 +57,7 @@ const Zoom: FC = () => {
     const [tab, setTab] = useState<I_Zoom_tab>('value')
     return (
         <div className="example">
-            <AITabs options={tabs} option={{ text: ({ option }) => option, value: ({ option }) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0' />
+            <AITabs options={tabs} option={{ text: (option) => option, value: (option) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0' />
             {
                 tab === 'control' &&
                 <>
@@ -529,7 +529,7 @@ const Comp: FC<{ tabs: I_tabs }> = (props) => {
     return (
         <div className="example">
             <AITabs
-                options={tabs} option={{ text: ({ option }) => option, value: ({ option }) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0'
+                options={tabs} option={{ text: (option) => option, value: (option) => option }} value={tab} onChange={(tab) => setTab(tab)} className='c-0'
                 after={(<Show onChange={(v) => setShow(v)} />)}
             />
             {

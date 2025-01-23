@@ -115,7 +115,7 @@ function Before(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    before:(details)=>{
+                    before:(option,details)=>{
                         let color = ['#ffee17','#ddaa28','#bb88aa'][details.level || 0]
                         return <Icon path={mdiFolder} size={0.6} color={color}/>
                     }
@@ -130,7 +130,7 @@ function Before(){
     option={{
         text:'option.name',
         value:'option.id',
-        before:(details)=>{
+        before:(option,details)=>{
             let color = ['#ffee17','#ddaa28','#bb88aa'][details.level || 0]
             return <Icon path={mdiFolder} size={0.6} color={color}/>
         }
@@ -153,7 +153,7 @@ function Subtext(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    subtext:(details)=>details.option.id,
+                    subtext:(option)=>option.id,
                 }}
             />
             {
@@ -165,7 +165,7 @@ function Subtext(){
     option={{
         text:'option.name',
         value:'option.id',
-        subtext:(details)=>details.option.id,
+        subtext:(option)=>option.id,
     }}
 />`
                 )
@@ -256,7 +256,7 @@ function Check(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    checked:({option})=>{
+                    checked:(option)=>{
                         return !!option.active
                     }
                 }}
@@ -270,7 +270,7 @@ function Check(){
     option={{
         text:'option.name',
         value:'option.id',
-        checked:({option})=>{
+        checked:(option)=>{
             return !!option.active
         }
     }}
@@ -284,10 +284,10 @@ function Check(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    checked:({option})=>{
+                    checked:(option)=>{
                         return !!option.active
                     },
-                    onClick:({option})=>{
+                    onClick:(option)=>{
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
@@ -303,10 +303,10 @@ function Check(){
     option={{
         text:'option.name',
         value:'option.id',
-        checked:({option})=>{
+        checked:(option)=>{
             return !!option.active
         },
-        onClick:({option})=>{
+        onClick:(option)=>{
             option.active = !option.active;
             //very important to use ... before value
             setValue([...value])
@@ -322,8 +322,8 @@ function Check(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    checked:({option})=>!!option.active,
-                    onClick:({option})=>{
+                    checked:(option)=>!!option.active,
+                    onClick:(option)=>{
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
@@ -343,8 +343,8 @@ function Check(){
     option={{
         text:'option.name',
         value:'option.id',
-        checked:({option})=>!!option.active,
-        onClick:({option})=>{
+        checked:(option)=>!!option.active,
+        onClick:(option)=>{
             option.active = !option.active;
             //very important to use ... before value
             setValue([...value])
@@ -378,11 +378,11 @@ function ClickAndToggleIcon(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    onClick:({option})=>{
+                    onClick:(option)=>{
                         toggleRef.current(option.id)
                     },
-                    after:(details)=>{
-                        let {childs = [],id} = details.option;
+                    after:(option)=>{
+                        let {childs = [],id} = option;
                         if(!childs.length){return null}
                         let icon = openDic[id]?mdiChevronDown:mdiChevronLeft
                         return (
@@ -403,10 +403,10 @@ function ClickAndToggleIcon(){
         value:'option.id',
         toggleIcon:()=>false,
         onClick:(details)=>{if(details.toggle)details.toggle()},
-        after:(details)=>{
-            let {childs = []} = details.option;
+        after:(option)=>{
+            let {childs = [],id} = option;
             if(!childs.length){return null}
-            let icon = details.active?mdiChevronDown:mdiChevronLeft
+            let icon = openDic[id]?mdiChevronDown:mdiChevronLeft
             return (
                 <Icon path={icon} size={0.8}/>
             )
@@ -446,16 +446,15 @@ function CustomizeToggleIcon(){
     type='tree'
     style={{width:240,background:'#eee'}}
     value={[...value]}
+    toggleIcon={({open})=>{
+        if(open === undefined){return <Icon path={mdiCircleOutline} size={0.3}/>}
+        if(open === true){return <Icon path={mdiPlusBoxOutline} size={0.8}/>}
+        return <Icon path={mdiMinusBoxOutline} size={0.8}/>
+    }}
     option={{
         text:'option.name',
         value:'option.id',
-        toggleIcon:()=>{
-            return [
-                <Icon path={mdiPlusBoxOutline} size={0.8}/>,
-                <Icon path={mdiMinusBoxOutline} size={0.8}/>,
-                <Icon path={mdiCircleOutline} size={0.3}/>,
-            ]
-        },
+        
     }}
 />`
                 )
@@ -700,10 +699,10 @@ function SideMenu(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    after:({option,active = false})=>getAfter(option,active),
-                    before:({option,level = 0})=>getBefore(option,level),
-                    onClick:({option})=>toggleRef.current(option.id),
-                    className:({level = 0})=>`tree-row-${level}`
+                    after:(option,{active = false})=>getAfter(option,active),
+                    before:(option,{level = 0})=>getBefore(option,level),
+                    onClick:(option)=>toggleRef.current(option.id),
+                    className:(option,{level = 0})=>`tree-row-${level}`
                 }}
                 indent={0}
             />
@@ -784,14 +783,14 @@ function SideMenu(){
             className='tree-side'
             size={48}
             value={[...value]}
+            toggleIcon={()=>false}
             option={{
                 text:'option.name',
                 value:'option.id',
-                toggleIcon:()=>false,
-                after:(option:any,details:any)=>getAfter(option,details),
-                before:(option:any,details:any)=>getBefore(option,details),
-                onClick:(option:any,details:any)=>details.toggle(),
-                className:(option:any,details:any)=>${'`tree-row-${details.level}`'}
+                after:(option,{active = false})=>getAfter(option,active),
+                before:(option,{level = 0})=>getBefore(option,level),
+                onClick:(option)=>toggleRef.current(option.id),
+                className:(option,{level = 0})=>${'`tree-row-${level}`'}
             }}
             indent={0}
         />
@@ -939,12 +938,10 @@ function Complete(){
                 option={{
                     text:'option.name',
                     value:'option.id',
-                    checked:({option})=>{
-                        return !!option.active
-                    },
-                    subtext:({option})=>option.id,
+                    checked:(option)=>!!option.active,
+                    subtext:(option)=>option.id,
                     before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
-                    onClick:({option})=>{
+                    onClick:(option)=>{
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
@@ -979,14 +976,11 @@ function Complete(){
     option={{
         text:'option.name',
         value:'option.id',
-        checked:(row)=>{
-            return !!row.active
-        },
-        subtext:(row)=>row.id,
+        checked:(option)=>!!option.active,
+        subtext:(option)=>option.id,
         before:()=><Icon path={mdiFolder} size={0.6} color='#ffef17'/>,
-        after:(row)=>row.active?'active':'deactive',
-        onClick:(row)=>{
-            row.active = !row.active;
+        onClick:(option)=>{
+            option.active = !option.active;
             //very important to use ... before value
             setValue([...value])
         }
@@ -1014,7 +1008,7 @@ function Input(){
                 value={[...value]}
                 onChange={(newValue)=>setValue(newValue)}
                 option={{
-                    text:({change = ()=>{},option})=>{
+                    text:(option,{change = ()=>{}})=>{
                         return (
                             <AIOInput
                                 type='text'
@@ -1037,15 +1031,14 @@ function Input(){
     value={[...value]}
     onChange={(newValue)=>setValue(newValue)}
     option={{
-        text:(row:any,details:any)=>{
-            let {change} = details;
+        text:(option,{change = ()=>{}})=>{
             return (
                 <AIOInput
                     type='text'
                     before={<Icon path={mdiFolder} size={0.6}/>}
-                    value={row.name}
+                    value={option.name}
                     onChange={(newName:string)=>{
-                        change({...row,name:newName})
+                        change({...option,name:newName})
                     }}
                 />
             )
@@ -1061,7 +1054,7 @@ function Input(){
                 onChange={(newValue)=>setValue(newValue)}
                 option={{
                     value:'option.id',
-                    text:({option,change = ()=>{}})=>{
+                    text:(option,{change = ()=>{}})=>{
                         return (
                             <AIOInput
                                 type='checkbox'
@@ -1083,15 +1076,14 @@ function Input(){
     onChange={(newValue)=>setValue(newValue)}
     option={{
         value:'option.id',
-        text:(row:any,details:any)=>{
-            let {change} = details;
+        text:(option,{change = ()=>{}})=>{
             return (
                 <AIOInput
                     type='checkbox'
                     before={<Icon path={mdiFolder} size={0.6}/>}
-                    text={row.name}
-                    value={!!row.active}
-                    onChange={(newActive:boolean)=>change({...row,active:newActive})}
+                    text={option.name}
+                    value={!!option.active}
+                    onChange={(newActive:boolean)=>change({...option,active:newActive})}
                 />
             )
         }

@@ -151,7 +151,7 @@ const MapHeader: FC = () => {
                 before={<MagnifyIcon/>}
                 onChange={(searchValue) => changeSearch(searchValue)}
                 option={{
-                    onClick: ({ option }) => { if (onSearch) { onSearch(option as I_searchResult) } }
+                    onClick: (option) => { if (onSearch) { onSearch(option as I_searchResult) } }
                 }}
             />
         </div>
