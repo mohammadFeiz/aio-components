@@ -1,138 +1,32 @@
-import React, { FC, createContext, useContext, useState } from "react"
-import { mdiAccount, mdiMinusThick, mdiPlusThick, mdiStar } from "@mdi/js"
+import { FC, useContext, useState } from "react"
+import { mdiAccount, mdiStar } from "@mdi/js"
 import { Icon } from "@mdi/react"
-import AIOInput, { AICheckbox, AIRadio, AISelect, AISlider } from "../../npm/aio-input";
-import {Code} from './../../npm/aio-components';
-import { Storage } from "../../npm/aio-utils";
+import AIOInput, { AITYPE } from "../../npm/aio-input";
+import Example, { ExampleContext, I_ExampleContext } from "./example";
 type I_exampleType = 'slider' | 'spinner'
-type I_setting = { show: number, showCode: boolean, round: number, reverse: boolean, vertical: boolean }
-type I_CTX = { setting: I_setting, type: I_exampleType, code: (coe: string) => React.ReactNode }
-const CTX = createContext({} as any)
 const RangeExamples: FC<{ type: I_exampleType }> = ({ type }) => {
     let [examples] = useState<any[]>([
-        ['test', Test],
-        ['start step end', StartStepEnd],
-        ['label', Label],
-        ['label (list)', LabelList],
-        ['scale', Scale],
-        ['scale (list)', ScaleList],
-        ['handle (thickness,size,color,offset)', Handle, type === 'spinner'],
-        ['handle (false)', HandleFalse, type === 'spinner'],
-        ['point (attrs)', PointAttrs],
-        ['point (html)', PointHtml],
-        ['point (offset)', PointOffset],
-        ['point (false)', PointFalse],
-        ['disabled', Disabled],
-        ['circles', Circles, type === 'spinner'],
-        ['rotate (-180 deg)', Rotate_180, type === 'spinner'],
-        ['rotate (-90 deg)', Rotate_90, type === 'spinner'],
-        ['ranges (static)', RangesStatic],
-        ['ranges (dynamic)', RangesDynamic],
-        ['multiple', Multiple]
+        ['test', ()=><Test type={type}/>],
+        ['start step end', ()=><StartStepEnd type={type}/>],
+        ['label', ()=><Label type={type}/>],
+        ['label (list)', ()=><LabelList type={type}/>],
+        ['scale', ()=><Scale type={type}/>],
+        ['scale (list)', ()=><ScaleList type={type}/>],
+        ['handle (thickness,size,color,offset)',()=> <Handle type={type}/>, type === 'spinner'],
+        ['handle (false)', ()=><HandleFalse type={type}/>, type === 'spinner'],
+        ['point (attrs)', ()=><PointAttrs type={type}/>],
+        ['point (html)', ()=><PointHtml type={type}/>],
+        ['point (offset)', ()=><PointOffset type={type}/>],
+        ['point (false)', ()=><PointFalse type={type}/>],
+        ['disabled', ()=><Disabled type={type}/>],
+        ['circles', ()=><Circles type={type}/>, type === 'spinner'],
+        ['rotate (-180 deg)', ()=><Rotate_180 type={type}/>, type === 'spinner'],
+        ['rotate (-90 deg)',()=> <Rotate_90 type={type}/>, type === 'spinner'],
+        ['ranges (static)',()=> <RangesStatic type={type}/>],
+        ['ranges (dynamic)', ()=><RangesDynamic type={type}/>],
+        ['multiple', ()=><Multiple type={type}/>]
     ])
-    let [titles] = useState<string[]>(getTitles)
-    function getTitles() {
-        let res = ['all'];
-        for (let i = 0; i < examples.length; i++) {
-            let ex = examples[i];
-            if (ex[2] !== false) { res.push(ex[0]) }
-        }
-        return res
-    }
-    let [setting, SetSetting] = useState<any>(new Storage(`${type}examplessetting`).load('setting', {
-        round: type === 'spinner' ? 1 : 0,
-        reverse: false,
-        vertical: false,
-        showCode: true,
-        show: 'all'
-    }))
-    function setSetting(setting: any) {
-        new Storage(`${type}examplessetting`).save('setting', setting)
-        SetSetting(setting)
-    }
-    function changeShow(dir: 1 | -1) {
-        let index = titles.indexOf(setting.show) + dir
-        if (index < 0) { index = titles.length - 1 }
-        if (index > titles.length - 1) { index = 0 }
-        setSetting({ ...setting, show: titles[index] })
-    }
-    function setting_node() {
-        let btnstyle = { background: 'none', border: 'none' }
-        return (
-            <div className="flex-row-">
-                <div className="align-v- w-48- flex-0-">round</div>
-                {
-                    type === 'spinner' &&
-                    <AIRadio
-                        options={[0.25, 0.75, 1]}
-                        option={{ text: 'option', value: 'option' }}
-                        value={setting.round}
-                        onChange={(round) => setSetting({ ...setting, round })}
-                    />
-                }
-                <AICheckbox
-                    text='reverse'
-                    value={setting.reverse}
-                    onChange={(reverse) => setSetting({ ...setting, reverse })}
-                />
-                {
-                    type === 'slider' &&
-                    <AICheckbox
-                        text='vertical'
-                        value={setting.vertical}
-                        onChange={(vertical) => setSetting({ ...setting, vertical })}
-                    />
-                }
-                <div className="flex-1-"></div>
-                <AISelect
-                    options={titles} before={'Show:'}
-                    option={{ text: 'option', value: 'option' }}
-                    value={setting.show}
-                    onChange={(show) => setSetting({ ...setting, show })}
-                />
-                <div className="align-vh-">
-                    <button type='button' style={btnstyle} onClick={() => changeShow(-1)}><Icon path={mdiMinusThick} size={1} /></button>
-                </div>
-                <div className="align-vh-">
-                    <button type='button' style={btnstyle} onClick={() => changeShow(1)}><Icon path={mdiPlusThick} size={1} /></button>
-                </div>
-            </div>
-        )
-    }
-    function render_node() {
-        return (
-            <div className="ofy-auto- flex-1- p-12- flex-col-" key={JSON.stringify(setting)} style={{ fontFamily: 'Arial' }}>
-                {
-                    examples.map((o: any, i: number) => {
-                        let [title, COMP] = o;
-                        if (setting.show !== 'all' && setting.show !== title) { return null }
-                        return (
-                            <div className="w-100-">
-                                <h3>{`${i} - ${title}`}</h3>
-                                <COMP />
-                            </div>
-                        )
-                    })
-                }
-            </div>
-        )
-    }
-    function code(code: string) {
-        //return <div style={{height:500}}></div>
-        return Code(code)
-    }
-    function getContext() {
-        let context: I_CTX = { setting, type, code }
-        return context
-    }
-    return (
-        <CTX.Provider value={getContext()}>
-            <div className="h-100- flex-col-">
-                {setting_node()}
-                {render_node()}
-            </div>
-        </CTX.Provider>
-    )
+    return (<Example type={type} examples={examples}/>)
 }
 export default RangeExamples
 
@@ -147,8 +41,7 @@ ${`    vartical={${vertical ? 'true' : 'false'}}`}`
 }
 
 
-const Test: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Test: FC<{type:I_exampleType}> = ({type}) => {
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -229,8 +122,8 @@ const Test: FC = () => {
         </div>
     )
 }
-const StartStepEnd: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const StartStepEnd: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -249,8 +142,8 @@ const StartStepEnd: FC = () => {
         </div>
     )
 }
-const Label: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Label: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -304,8 +197,8 @@ const Label: FC = () => {
         </div>
     )
 }
-const LabelList: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const LabelList: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div className='example'>
@@ -349,8 +242,8 @@ const LabelList: FC = () => {
         </div>
     )
 }
-const Scale: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Scale: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     let thicknessStr = 'width', sizeStr = 'height';
     if (setting.round || setting.vertical) { thicknessStr = 'height'; sizeStr = 'width' }
@@ -414,8 +307,8 @@ const Scale: FC = () => {
         </div>
     )
 }
-const ScaleList: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const ScaleList: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     let thicknessStr = 'width', sizeStr = 'height';
     if (setting.round || setting.vertical) { thicknessStr = 'height'; sizeStr = 'width' }
@@ -468,8 +361,8 @@ const ScaleList: FC = () => {
         </div>
     )
 }
-const Handle: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Handle: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     if (!round) { return null }
@@ -508,8 +401,8 @@ const Handle: FC = () => {
         </div>
     )
 }
-const HandleFalse: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const HandleFalse: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     if (!round) { return null }
@@ -533,8 +426,8 @@ const HandleFalse: FC = () => {
         </div>
     )
 }
-const PointAttrs: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const PointAttrs: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     return (
@@ -579,8 +472,8 @@ const PointAttrs: FC = () => {
         </div>
     )
 }
-const PointHtml: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const PointHtml: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     return (
@@ -611,8 +504,8 @@ const PointHtml: FC = () => {
         </div>
     )
 }
-const PointOffset: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const PointOffset: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     return (
@@ -644,8 +537,8 @@ const PointOffset: FC = () => {
         </div>
     )
 }
-const PointFalse: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const PointFalse: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     return (
@@ -668,8 +561,8 @@ const PointFalse: FC = () => {
         </div>
     )
 }
-const Disabled: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Disabled: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>(0)
     return (
@@ -813,8 +706,8 @@ const Disabled: FC = () => {
         </div>
     )
 }
-const Circles: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Circles: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     if (!round) { return null }
@@ -844,8 +737,8 @@ const Circles: FC = () => {
         </div>
     )
 }
-const Rotate_180: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Rotate_180: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     if (!round) { return null }
@@ -896,8 +789,8 @@ const Rotate_180: FC = () => {
         </div>
     )
 }
-const Rotate_90: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Rotate_90: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     if (!round) { return null }
@@ -944,8 +837,8 @@ const Rotate_90: FC = () => {
         </div>
     )
 }
-const RangesStatic: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const RangesStatic: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number>()
     return (
@@ -979,8 +872,8 @@ const RangesStatic: FC = () => {
         </div>
     )
 }
-const RangesDynamic: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const RangesDynamic: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>(0)
     function getRanges(): any[] {
         let color;
@@ -1029,8 +922,8 @@ function getRanges(value):any[]{
         </div>
     )
 }
-const Multiple: FC = () => {
-    const { type, code, setting }: I_CTX = useContext(CTX);
+const Multiple: FC<{type:I_exampleType}> = ({type}) => {
+    const { code, setting }: I_ExampleContext = useContext(ExampleContext);
     let { round, reverse, vertical } = setting
     const [value, setValue] = useState<number[]>([10, 30])
     return (

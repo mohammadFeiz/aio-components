@@ -3094,8 +3094,8 @@ function GetOptionProps(p: I_GetOptionProps) {
     if (optionResult !== undefined) { return optionResult }
     let prop = optionProp[key];
     if (typeof prop === 'string') {
-        debugger
         try {
+            const option = optionOrg
             let value;
             eval('value = ' + prop);
             return value;

@@ -2,14 +2,9 @@ import { createContext, FC, ReactNode, useContext, useEffect, useState } from "r
 import AIOInput,{ AI, AI_table_column, AI_table_paging, AITYPE } from "../../npm/aio-input"
 import { mdiFile, mdiHumanFemale, mdiHumanMale, mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import Icon from '@mdi/react';
-import model from './table-model.js';
+import model, { I_table_model } from './table-model';
 import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
-const rowsCode = `
-let [rows,setRows] = useState([
-    {name:'mohammad',family:'feiz',age:38,id:0},
-    {name:'john',family:'doe',age:30,id:1},
-])
-        ` 
+
 const TableExamples:FC = ()=>{
     let [examples] = useState<any>([
         ['performance',()=><Performance/>],
@@ -54,7 +49,7 @@ const Performance:FC = () => {
         let rows = []
         for(let i = 0; i < 10000; i++){
             rows.push({
-                name:`name_${i + 1}`,family:`family_${i + 1}`,age:Math.round(Math.random() * 70) + 5,id:i + 1
+                name:`name_${i + 1}`,gender:'male',age:Math.round(Math.random() * 70) + 5,id:i + 1
             })
         }
         return rows
@@ -62,7 +57,7 @@ const Performance:FC = () => {
     let [columns] = useState<AI_table_column[]>([
         {title:'#',value:(p:any)=>p.rowIndex + 1,width:68},
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     let [paging,setPaging] = useState<AI_table_paging>({size:100,number:1,sizes:[100,200,300]})
@@ -143,10 +138,10 @@ const OnSwap:FC = () => {
     const {code} = context
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
-    let [rows,setRows] = useState(model);
+    let [rows,setRows] = useState<I_table_model[]>(model);
     function renderTable(type:'true'|'function'){
         let p:AITYPE = {type:'table',value:rows,columns,onChange:(newRows)=>setRows(newRows)}
         if(type === 'true'){p.onSwap = true}
@@ -155,10 +150,9 @@ const OnSwap:FC = () => {
     }
     function getCode(type:'true'|'function'){
         return (`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -185,13 +179,12 @@ return (
         </div>
     )
 }
-function Excel(p:any){
+const Excel:FC = ()=>{
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'},excel:'name'},
-        {title:'Family',value:'row.family',input:{type:'text'},excel:'family'},
+        {title:'Gender',value:'row.gender',input:{type:'text'},excel:'gender'},
         {title:'Age',value:'row.age',input:{type:'number'},excel:'age'},
     ])
     return (
@@ -205,10 +198,9 @@ function Excel(p:any){
             />         
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'},excel:'name'},
-    {title:'Family',value:'row.family',input:{type:'text'},excel:'family'},
+    {title:'Gender',value:'row.gender',input:{type:'text'},excel:'gender'},
     {title:'Age',value:'row.age',input:{type:'number'},excel:'age'},
 ]
 return (
@@ -226,13 +218,12 @@ return (
         </div>
     )
 }
-function Toolbar(p:any) {
+const Toolbar:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     return (
@@ -252,10 +243,9 @@ function Toolbar(p:any) {
             />          
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -279,13 +269,12 @@ return (
         </div>
     )
 }
-function ToolbarAttrs(p:any){
+const ToolbarAttrs:FC = (p:any) => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     return (
@@ -308,10 +297,9 @@ function ToolbarAttrs(p:any){
             />   
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -338,13 +326,12 @@ return (
         </div>
     )
 }
-function RowGapColumnGap(p:any) {
+const RowGapColumnGap:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     return (
@@ -359,10 +346,9 @@ function RowGapColumnGap(p:any) {
             />          
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -381,13 +367,12 @@ return (
         </div>
     )
 }
-function OnAdd(p:any) {
+const OnAdd:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    const [rows,setRows] = useState(model)    
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     function renderTable(type:'object' | 'function'){
@@ -398,10 +383,10 @@ function OnAdd(p:any) {
             onChange:(newRows)=>setRows(newRows)
         }
         if(type === 'function'){
-            p.onAdd = ()=>setRows([{name:'',family:'',age:0},...rows])
+            p.onAdd = ()=>setRows([{name:'',gender:'',age:0,date:''},...rows])
         }
         else {
-            p.onAdd = {name:'',family:'',age:0}
+            p.onAdd = {name:'',gender:'',age:0}
         }
         return <AIOInput {...p}/>
     }
@@ -412,10 +397,9 @@ function OnAdd(p:any) {
             {
                 code(`
 
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -425,7 +409,7 @@ return (
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         onAdd={()=>{
-            this.setState({rows:[{name:'',family:'',age:0},...rows]})
+            this.setState({rows:[{name:'',gender:'',age:0},...rows]})
         }}
     />
 )
@@ -436,10 +420,9 @@ return (
             {
                 code(`
 
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -448,7 +431,7 @@ return (
         value={rows}
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
-        onAdd={{name:'',family:'',age:0}}
+        onAdd={{name:'',gender:'',age:0}}
     />
 )
                 `)
@@ -457,13 +440,12 @@ return (
         </div>
     )
 }
-function OnRemove(p:any) {
+const OnRemove:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    const [rows,setRows] = useState<any[]>(Rows)
+    const [rows,setRows] = useState<I_table_model[]>(model)    
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     function renderTable(type:'true' | 'function'){
@@ -474,7 +456,7 @@ function OnRemove(p:any) {
             onChange:(newRows)=>setRows(newRows)
         }
         if(type === 'function'){p.onRemove = async ({row})=>{
-            const newRows:any[] = rows.filter((o)=>o.id !== row.id);
+            const newRows:any[] = rows.filter((o)=>o.name !== row.name);
             setRows(newRows)
         }}
         else {p.onRemove = true}
@@ -486,10 +468,9 @@ function OnRemove(p:any) {
             {renderTable('function')}                
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -510,10 +491,9 @@ return (
             {renderTable('true')}                
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -531,9 +511,9 @@ return (
         </div>
     )
 }
-function OnSearch() {
+const OnSearch:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumn] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'},search:true},
         {title:'Gender',value:'row.gender',input:{type:'text'},search:true},
@@ -552,6 +532,7 @@ function OnSearch() {
     }
     return (
         <div className='example'>
+            <h3>{`onSearch={function}`}</h3>
             {renderTable('function')}                
             {
                 code(`
@@ -575,6 +556,7 @@ return (
 )
                 `)
             }
+            <h3>{`onSearch={true}`}</h3>
             {renderTable('true')}                
             {
                 code(`
@@ -600,9 +582,9 @@ return (
         </div>
     )
 }
-function RowAttrs() {
+const RowAttrs:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     return (
         <div className='example'>
             <AIOInput
@@ -650,13 +632,12 @@ return (
         </div>
     )
 }
-function HeaderAttrs(p:any) {
+const HeaderAttrs:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    const [rows,setRows] = useState(model)    
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'}},
     ])
     function renderTable(){
@@ -676,10 +657,9 @@ function HeaderAttrs(p:any) {
             {renderTable()}                
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',input:{type:'text'}},
-    {title:'Family',value:'row.family',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
     {title:'Age',value:'row.age',input:{type:'number'}},
 ]
 return (
@@ -699,9 +679,9 @@ return (
         </div>
     )
 }
-function Paging() {
+const Paging:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {
             title:'',width:42,justify:true,
@@ -781,7 +761,7 @@ render() {
         </div>
     )
 }
-function Paging_ServerSide() {
+const Paging_ServerSide:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
     let [rows,setRows] = useState<any[]>([])
     let [paging,setPaging] = useState<AI_table_paging>({
@@ -879,9 +859,9 @@ render() {
         </div>
     )
 }
-function RowTemplate() {
+const RowTemplate:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     return (
         <div className='example'>
             <AIOInput
@@ -909,9 +889,9 @@ return (
         </div>
     )
 }
-function RowsTemplate() {
+const RowsTemplate:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [paging,setPaging] = useState<AI_table_paging>({
         size:10,
         number:1,
@@ -949,7 +929,7 @@ function RowsTemplate() {
             />          
             {
                 code(`
-let [rows,setRows] = useState(model)
+let [rows,setRows] = useState<I_table_model[]>(model)
 let [paging,setPaging] = useState<AI_table_paging>({
     size:10,
     number:1,
@@ -1000,9 +980,9 @@ function Card(p:any){
         </div>
     )
 }
-function RowAfter() {
+const RowAfter:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {title:'Gender',value:'row.gender',input:{type:'text'}},
@@ -1023,7 +1003,7 @@ function RowAfter() {
             {
                 code(`
 
-let [rows,setRows] = useState(model)
+let [rows,setRows] = useState<I_table_model[]>(model)
 let [columns,setColumns] = useState<AI_table_column[]>([
     {title:'Name',value:'row.name',input:{type:'text'}},
     {title:'Gender',value:'row.gender',input:{type:'text'}},
@@ -1047,9 +1027,9 @@ return (
         </div>
     )
 }
-function RowBefore() {
+const RowBefore:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model);
+    let [rows,setRows] = useState<I_table_model[]>(model);
     let [columns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
         {title:'Gender',value:'row.gender',input:{type:'text'}},
@@ -1105,9 +1085,9 @@ render() {
         </div>
     )
 }
-function OnChangeSort() {
+const OnChangeSort:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let [rows,setRows] = useState(model)
+    let [rows,setRows] = useState<I_table_model[]>(model)
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'},sort:true},
         {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
@@ -1133,7 +1113,7 @@ function OnChangeSort() {
             {
                 code(`
 
-let [rows,setRows] = useState(model)
+let [rows,setRows] = useState<I_table_model[]>(model)
 let [columns,setColumns] = useState<AI_table_column[]>([
     {title:'Name',value:'row.name',input:{type:'text'},sort:true},
     {title:'Gender',value:'row.gender',input:{type:'text'},sort:true},
@@ -1157,9 +1137,9 @@ return (
         </div>
     )
 }
-function Column_Title(p:any) {
+const Column_Title:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows,rowsCode} = p;
+    const [rows,setRows] = useState(model)
     return (
         <div className='example'>
             <AIOInput
@@ -1167,16 +1147,15 @@ function Column_Title(p:any) {
                 value={rows}
                 columns={[
                     {title:()=>'Name',value:'row.name'},
-                    {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.family'},
+                    {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.gender'},
                     {title:'Age',value:'row.age'},
                 ]}
             />         
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:()=>'Name',value:'row.name'},
-    {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.family'},
+    {title:<div style={{width:24,height:24,borderRadius:'100%',background:'yellow'}}></div>,value:'row.gender'},
     {title:'Age',value:'row.age'},
 ]
 return (
@@ -1194,7 +1173,7 @@ return (
 }
 function Column_TitleAttrs(p:any) {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows} = p;
+    const [rows,setRows] = useState(model)
     return (
         <div className='example'>
             <AIOInput
@@ -1202,16 +1181,15 @@ function Column_TitleAttrs(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name',titleAttrs:{style:{background:'yellow'}}},
-                    {title:'Family',value:'row.family'},
+                    {title:'Gender',value:'row.gender'},
                     {title:'Age',value:'row.age'},
                 ]}
             />          
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',titleAttrs:{style:{background:'yellow'}}},
-    {title:'Family',value:'row.family'},
+    {title:'Gender',value:'row.gender'},
     {title:'Age',value:'row.age'},
 ]
 return (<AIOInput type='table' value={rows} columns={columns}/>)
@@ -1223,7 +1201,7 @@ return (<AIOInput type='table' value={rows} columns={columns}/>)
 }
 function Column_Value(p:any) {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows} = p;
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1231,7 +1209,7 @@ function Column_Value(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'abc'},
-                    {title:'Family',value:'row.family'},
+                    {title:'Gender',value:'row.gender'},
                     {title:'Age',value:'get_age'},
                 ]}
                 getValue={{
@@ -1240,12 +1218,11 @@ function Column_Value(p:any) {
             />
             {
                 code(`
-${rowsCode}
 let columns = [
     //static value
     {title:'Name',value:'abc'},
     //dynamic string
-    {title:'Family',value:'row.family'},
+    {title:'Gender',value:'row.gender'},
     //refrence to getValue prop
     {title:'Age',value:'get_age'}
 ]
@@ -1265,9 +1242,9 @@ return (
         </div>
     )
 }
-function Column_Width(p:any) {
+const Column_Width:FC = ()=> {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows} = p;
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1275,19 +1252,18 @@ function Column_Width(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name',width:120},
-                    {title:'Family',value:'row.family',width:'family_column_width'},
+                    {title:'Gender',value:'row.gender',width:'gender_column_width'},
                     {title:'Age',value:'row.age'},
                 ]}
                 getValue={{
-                    family_column_width:({row,column})=>260
+                    gender_column_width:({row,column})=>260
                 }}
             />                
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',width:120},
-    {title:'Family',value:'row.family',width:'family_column_width'},
+    {title:'Gender',value:'row.gender',width:'gender_column_width'},
     {title:'Age',value:'row.age'},
 ]
 return (
@@ -1296,7 +1272,7 @@ return (
         value={rows}
         columns={columns}
         getValue={{
-            family_column_width:({row,column})=>260
+            gender_column_width:({row,column})=>260
         }}
     />
 )
@@ -1308,7 +1284,7 @@ return (
 }
 function Column_MinWidth(p:any) {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows} = p;
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1316,16 +1292,15 @@ function Column_MinWidth(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name',width:120},
-                    {title:'Family',value:'row.family',minWidth:160},
+                    {title:'Gender',value:'row.gender',minWidth:160},
                     {title:'Age',value:'row.age'},
                 ]}
             />
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name',width:120},
-    {title:'Family',value:'row.family',minWidth:160},
+    {title:'Gender',value:'row.gender',minWidth:160},
     {title:'Age',value:'row.age'}
 ]
 return (<AIOInput type='table' value={rows} columns={columns}/>)
@@ -1337,7 +1312,7 @@ return (<AIOInput type='table' value={rows} columns={columns}/>)
 }
 function Column_Justify(p:any) {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows} = p;
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1345,16 +1320,15 @@ function Column_Justify(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name'},
-                    {title:'Family',value:'row.family'},
+                    {title:'Gender',value:'row.gender'},
                     {title:'Age',value:'row.age',justify:true},
                 ]}
             />
             {
                 code(`
-${rowsCode}
 let columns = [
     {title:'Name',value:'row.name'},
-    {title:'Family',value:'row.family'},
+    {title:'Gender',value:'row.gender'},
     {title:'Age',value:'row.age',justify:true},
 ]
 return (<AIOInput type='table' value={rows} columns={columns}/>)
@@ -1382,7 +1356,7 @@ function Column_Input() {
         {title:'Date',value:'row.date',input:{type:'date',unit:'month'}},
         {title:'Active',value:'row.active',input:{type:'checkbox'}},
     ])
-    let [rows,setRows] = useState(model);
+    let [rows,setRows] = useState<I_table_model[]>(model);
     function renderTable(){
         let p:AITYPE = {type:'table',attrs:{style:{height:500}},value:rows,columns,onChange:(rows)=>setRows(rows)}
         return <AIOInput {...p}/>
@@ -1425,10 +1399,9 @@ return (
         </div>
     )
 }
-function Column_OnChange(p:any) {
+const Column_OnChange:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows);
+    const [rows,setRows] = useState(model)    
     function change(row:any,key:string,value:any){
         let newRows = rows.map( (o:any) => o.id !== row.id ? o :{...o,[key]:value})
         setRows(newRows)
@@ -1440,17 +1413,16 @@ function Column_OnChange(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name',input:{type:'text',onChange:({row,column,value})=>change(row,'name',value)}},
-                    {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>change(row,'family',value)}},
+                    {title:'Gender',value:'row.gender',input:{type:'text',onChange:({row,column,value})=>change(row,'gender',value)}},
                     {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>change(row,'age',value)}},
                 ]}
             />             
             {
                 code(`
 
-${rowsCode}
 let [columns] = useState<AI_table_column[]>([
     {title:'Name',value:'row.name',input:{type:'text',onChange:({row,column,value})=>change(row,'name',value)}},
-    {title:'Family',value:'row.family',input:{type:'text',onChange:({row,column,value})=>change(row,'family',value)}},
+    {title:'Gender',value:'row.gender',input:{type:'text',onChange:({row,column,value})=>change(row,'gender',value)}},
     {title:'Age',value:'row.age',input:{type:'number',onChange:({row,column,value})=>change(row,'age',value)}},
 ])
 function change(row,key,value){
@@ -1524,10 +1496,9 @@ render() {
         </div>
     )
 }
-function Column_CellAttrs(p:any) {
+const Column_CellAttrs:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1535,7 +1506,7 @@ function Column_CellAttrs(p:any) {
                 value={rows}
                 columns={[
                     {title:'Name',value:'row.name',input:{type:'text'},cellAttrs:{style:{background:'pink'}}},
-                    {title:'Family',value:'row.family',input:{type:'text'},cellAttrs:'family_column_attrs'},
+                    {title:'Gender',value:'row.gender',input:{type:'text'},cellAttrs:'gender_column_attrs'},
                     {title:'Age',value:'row.age',input:{type:'number'},cellAttrs:({row,column})=>{
                         if(row.age < 35){return {style:{background:'red',color:'#fff'}}}
                         return {style:{background:'green',color:'#fff'}}
@@ -1543,14 +1514,13 @@ function Column_CellAttrs(p:any) {
                 ]}
                 onChange={(newRows)=>setRows(newRows)}
                 getValue={{
-                    family_column_attrs:({row,column})=>{
+                    gender_column_attrs:({row,column})=>{
                         return {style:{background:'lightblue'}}
                     }
                 }}
             />             
             {
                 code(`
-${rowsCode}
 let columns = [
     {
         title:'Name',
@@ -1562,11 +1532,11 @@ let columns = [
         }
     },
     {
-        title:'Family',
-        value:'row.family',
+        title:'Gender',
+        value:'row.gender',
         input:{type:'text'},
         //reference to getValue props
-        cellAttrs:'family_column_attrs'
+        cellAttrs:'gender_column_attrs'
     },
     {
         title:'Age',
@@ -1592,7 +1562,7 @@ return (
         columns={columns}
         onChange={(newRows)=>setRows(newRows)}
         getValue={{
-            family_column_attrs:({row,column})=>{
+            gender_column_attrs:({row,column})=>{
                 return {style:{background:'lightblue'}}
             }
         }}
@@ -1606,8 +1576,7 @@ return (
 }
 function Column_SubtextBeforeAfter(p:any) {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows);
+    const [rows,setRows] = useState(model)    
     return (
         <div className='example'>
             <AIOInput
@@ -1645,7 +1614,6 @@ function Column_SubtextBeforeAfter(p:any) {
             {
                 code(`
 
-${rowsCode}
 let columns = [
     {
         title:'Name',
@@ -1691,13 +1659,12 @@ return (
         </div>
     )
 }
-function Column_Template(p:any) {
+const Column_Template:FC = () => {
     const {code}:I_ExampleContext = useContext(ExampleContext);
-    let {rows:Rows} = p;
-    let [rows,setRows] = useState(Rows)
+    let [rows,setRows] = useState<I_table_model[]>(model);
     let [columns,setColumns] = useState<AI_table_column[]>([
         {title:'Name',value:'row.name',input:{type:'text'}},
-        {title:'Family',value:'row.family',input:{type:'text'}},
+        {title:'Gender',value:'row.gender',input:{type:'text'}},
         {title:'Age',value:'row.age',input:{type:'number'},template:'age_template'}
     ])
     function renderTable(){
@@ -1720,28 +1687,25 @@ function Column_Template(p:any) {
             {
                 code(`
 
-let rows = [
-{name:'mohammad',family:'feiz',age:38},
-{name:'john',family:'doe',age:30},
-]
 let columns = [
-{title:'Name',value:'row.name',input:{type:'text'}},
-{title:'Family',value:'row.family',input:{type:'text'}},
-{title:'Age',value:'row.age',input:{type:'number'},template:'age_template'}
+    {title:'Name',value:'row.name',input:{type:'text'}},
+    {title:'Gender',value:'row.gender',input:{type:'text'}},
+    {title:'Age',value:'row.age',input:{type:'number'},template:'age_template'}
 ]
 function setRows(newRows){
 //update state
 }
 return (
-type='table'
-value={rows}
-columns={columns}
-onChange={(newRows)=>this.setState({rows:newRows})}
-getValue={{
-    age_template:({row,column})=>{
-        return row.age + ' years old'
-    }
-}}
+    <AITable
+        value={rows}
+        columns={columns}
+        onChange={(newRows)=>this.setState({rows:newRows})}
+        getValue={{
+            age_template:({row,column})=>{
+                return row.age + ' years old'
+            }
+        }}
+    />
 )
                 `)
             }

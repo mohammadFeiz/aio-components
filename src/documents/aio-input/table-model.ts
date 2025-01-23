@@ -1,4 +1,10 @@
-let model = [
+export type I_table_model = {
+    name: string,
+    gender: string,
+    age: number,
+    date: string,
+}
+let model:I_table_model[] = [
     {
         "name": "hot",
         "gender": "female",
