@@ -1,4 +1,4 @@
-import Geo from './../../npm/aio-geo';
+import { I_point, Geo } from 'aio-utils';
 export type I_Swip_mousePosition = {
     x: number;
     y: number;
@@ -7,6 +7,7 @@ export type I_Swip_mousePosition = {
     clientX: number;
     clientY: number;
     centerAngle: number;
+    centerDistance: number;
 };
 export type I_Swip_change = {
     x: number;
@@ -35,7 +36,7 @@ export type I_Swip = {
     parent?: () => any;
     onClick?: (p: I_Swip_parameter) => void;
     page?: () => any;
-    start?: (p: I_Swip_parameter) => number[];
+    start?: (p: I_Swip_parameter) => number[] | false;
     move?: (p: I_Swip_parameter) => void;
     end?: (p: I_Swip_parameter) => void;
     selectRect?: I_Swip_selectRect_config;
@@ -51,6 +52,7 @@ export type I_Swip = {
     maxX?: number;
     insideX?: boolean;
     insideY?: boolean;
+    maxCenterDistance?: number;
 };
 export type I_Swip_domLimit = {
     width: number;
@@ -77,18 +79,23 @@ export type I_Swip_tempSelectRect = {
 export default class Swip {
     p: I_Swip;
     geo: Geo;
+    defaultLimit: I_Swip_domLimit;
     timeout: any;
     count: number;
     domLimit: I_Swip_domLimit;
     parentLimit: I_Swip_domLimit;
     getDom: () => any;
     getParent: () => any;
-    init: () => void;
+    dist: number;
+    change: I_Swip_change;
+    isMoving: boolean;
+    centerAngle: number;
+    selectRect?: I_Swip_selectRect_config;
+    defaultChange: I_Swip_change;
     dx: number;
     dy: number;
     cx: number;
     cy: number;
-    dist: number;
     so: {
         client?: {
             x: number;
@@ -99,24 +106,23 @@ export default class Swip {
         sr?: I_Swip_selectRect;
         tsr?: I_Swip_tempSelectRect;
     };
+    constructor(p: I_Swip);
+    init: () => void;
     getPercentByValue: (value: number, start: number, end: number) => number;
+    getPage: () => any;
     getMousePosition: (e: any) => I_Swip_mousePosition;
+    getDOMLimit: (type: 'dom' | 'parent') => I_Swip_domLimit;
     click: (e: any) => void;
     mouseDown: (e: any) => void;
     mouseMove: (e: any) => void;
     mouseUp: (e: any) => void;
-    getDOMLimit: (type: 'dom' | 'parent') => I_Swip_domLimit;
-    change: I_Swip_change;
-    getPage: () => any;
-    isMoving: boolean;
-    centerAngle: number;
-    defaultLimit: I_Swip_domLimit;
-    addSelectRect: (x: number, y: number) => void;
+    getIsInSelectRect: I_Swip_getIsInSelectrect;
+    addSelectRect: (left: number, top: number) => void;
     setSelectRect: (width: number, height: number) => void;
     removeSelectRect: () => void;
-    selectRect?: I_Swip_selectRect_config;
-    getIsInSelectRect: I_Swip_getIsInSelectrect;
-    defaultChange: I_Swip_change;
-    constructor(p: I_Swip);
 }
+export declare function getLeftAndTopByCenterAngleLength(center: I_point, angle: number, length: number): {
+    left: number;
+    top: number;
+};
 export {};

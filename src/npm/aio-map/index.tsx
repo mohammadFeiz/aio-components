@@ -4,7 +4,7 @@ import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Re
 import AIOInput from "../aio-input"
 import { JSXToHTML } from "../aio-utils"
 import 'leaflet/dist/leaflet.css';
-import './index.css';
+import './repo/index.css';
 
 type I_pos = [number, number]
 export type I_marker = { pos: [number, number], html?: ReactNode, eventHandlers?: any }

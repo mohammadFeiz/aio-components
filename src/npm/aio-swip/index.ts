@@ -1,5 +1,4 @@
-import Geo, { I_line } from './../../npm/aio-geo';
-import { EventHandler, GetClient, I_point } from '../aio-utils';
+import { EventHandler, GetClient, I_point,Geo,I_line } from '../aio-utils';
 import $ from 'jquery';
 export type I_Swip_mousePosition = { x: number, y: number, xp: number, yp: number, clientX: number, clientY: number, centerAngle: number, centerDistance: number };
 export type I_Swip_change = {

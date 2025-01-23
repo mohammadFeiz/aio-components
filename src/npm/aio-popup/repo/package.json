@@ -1,6 +1,6 @@
 {
   "name": "aio-popup",
-  "version": "4.5.2",
+  "version": "5.0.0",
   "description": "handle all types of popup and modals in react",
   "main": "index.js",
   "scripts": {
@@ -12,8 +12,6 @@
     "url": "git+https://github.com/mohammadFeiz/aio-popup.git"
   },
   "dependencies": {
-    "@mdi/js": "^7.0.96",
-    "@mdi/react": "^1.6.1",
     "jquery": "^3.6.1",
     "animejs": "^3.2.1"
   },

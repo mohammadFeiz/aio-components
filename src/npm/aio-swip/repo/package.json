@@ -1,6 +1,6 @@
 {
   "name": "aio-swip",
-  "version": "3.0.1",
+  "version": "3.1.1",
   "description": "",
   "types":"index.d.ts",
   "main": "index.js",
@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "jquery": "^3.6.1",
-    "aio-utils":"latest",
-    "aio-geo":"latest"
+    "aio-utils":"latest"
   },
   "author": "mohammad sharif feiz feiz.ms@gmail.com",
   "license": "ISC",

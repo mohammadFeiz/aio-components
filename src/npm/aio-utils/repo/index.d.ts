@@ -7,17 +7,6 @@ type I_dateObject = {
     minute?: number;
 };
 export type I_Date = string | number | Date | I_dateObject | number[];
-export type I_point = number[];
-export type I_line = [I_point, I_point];
-export type I_dline = [number, number, number];
-export type I_dip = number;
-export type I_arc = {
-    x: number;
-    y: number;
-    r: number;
-    slice?: number[];
-};
-export type I_rect = [I_point, I_point];
 export declare function HasClass(target: any, className: string): any;
 export declare function DownloadFile(file: any): Promise<void>;
 export declare function GetFileUrl(file: any): string;
@@ -125,30 +114,35 @@ export declare function setValueByField(data: any, field: string, value: any): a
 export declare function GetArray(count: number, fn?: (index: number) => any, step?: number): any[];
 export declare function GetRandomNumber(from: number, to: number): number;
 type I_storage_model = {
-    [key: string]: any;
-};
-type I_storage_time = {
-    [key: string]: number;
+    [key: string]: {
+        value: any;
+        saveTime: number;
+        expiredIn: number;
+    };
 };
 export declare class Storage {
-    model: I_storage_model;
-    time: I_storage_time;
+    private model;
+    id: string;
+    constructor(id: string);
     init: () => void;
-    saveStorage: (model: I_storage_model, time: I_storage_time) => void;
-    getParent: (field: string) => I_storage_model | undefined;
-    removeValueByField: (field: string) => I_storage_model;
-    setValueByField: (field: string, value: any) => I_storage_model;
-    getValueByField: (field: string) => any;
-    save: (field: string, value: any) => I_storage_model;
-    remove: (field: string, callback?: () => void) => I_storage_model;
-    load: (field: string, def?: any, time?: number) => any;
-    clear: () => void;
+    copy: (v: any) => any;
+    setModel: (model: I_storage_model) => I_storage_model;
+    getNow: () => number;
+    save: (field: string, value: any, expiredIn?: number) => I_storage_model;
+    remove: (field: string) => I_storage_model;
+    removeKeyFromObject: (obj: {
+        [key: string]: any;
+    }, key: string) => {
+        [key: string]: any;
+    };
+    isExpired: (field: string) => boolean;
+    load: (field: string, def?: any, expiredIn?: number) => any;
+    clear: () => I_storage_model;
     download: (file: any, name: string) => void;
     export: () => void;
-    read: (file: any, callback: (model: any) => void) => void;
-    import: (file: any, callback: () => void) => void;
-    getModel: () => I_storage_model;
-    constructor(id: string);
+    read: (file: File) => Promise<any>;
+    import: (file: any) => Promise<I_storage_model>;
+    getKeys: () => string[];
 }
 export declare function DisabledContextMenu(): void;
 export type AV_operator = 'contain' | 'required' | '=' | '>' | '>=' | '<' | '<=' | 'startBy' | '<>' | '<=>';
@@ -313,3 +307,58 @@ export declare function Normalize(str: string): string;
 type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown';
 export declare const DetectOS: () => I_os;
 export declare function ArrayToObject<T>(keys: T[], fn: (key: T) => any): any;
+export declare function keyboard_filter(value: string | number, p: {
+    filter?: (string | 'symbol' | 'string' | 'number')[];
+    maxLength?: number;
+    toPersian?: boolean;
+}): string;
+export type I_point = number[];
+export type I_line = [I_point, I_point];
+export type I_dline = [number, number, number];
+export type I_dip = number;
+export type I_arc = {
+    x: number;
+    y: number;
+    r: number;
+    slice?: number[];
+};
+export type I_rect = [I_point, I_point];
+export declare class Geo {
+    getAngle: (l: I_line | I_dline) => number;
+    getDipAngle: (dip: I_dip) => number;
+    getLength: (p: I_line) => number;
+    getPrepDip: (dip: I_dip) => number;
+    getDip: (l: I_line | I_dline) => I_dip;
+    getPrepFromLine: (l: I_dline | I_line, point: I_point, offset: number) => I_point;
+    getLineBySLA: (p1: I_point, length: number, angle: number) => I_line;
+    getArcByPoints: (arcPoints: I_point[], height?: number) => any;
+    getAvg: (list: I_point[]) => I_point;
+    getArcBy3Points: (p1: I_point, p2: I_point, p3: I_point) => I_arc;
+    getYOnLineByX: (l: I_dline | I_line, X: number) => number;
+    getXOnLineByY: (l: I_dline | I_line, Y: number) => number;
+    getMeet: (l1: I_dline | I_line, l2: I_dline | I_line) => I_point | false;
+    getInnerMeet: (line1: I_line, line2: I_line) => false | I_point;
+    getDLineByLine: (line: I_line) => I_dline;
+    getPointsByNGon: (r: number, count: number, corner: number) => I_point[];
+    getLineByDLine: (dline: I_dline) => I_line;
+    tri: (type: 'sin' | 'cos', teta: number) => number;
+    getPrepToLine: (l: I_dline | I_line, p: I_point) => I_point | false;
+    getLineType: (line: I_dline | I_line) => 'DLine' | 'Line';
+    getLine: (l: I_dline | I_line) => I_line;
+    getDLine: (l: I_dline | I_line) => I_dline;
+    setLineByLength: (line: I_line, length: number, from?: 'center' | 'start' | 'end') => I_line;
+    getParallelLine: (points: I_point[], offset: number) => I_point[];
+    getPointsByDivide: (points: I_point[], divide: number) => I_point[];
+    fix: (value: number) => number;
+    setLineByAngle: (line: I_line, angle: number) => I_line;
+    getNumberByStep: (number: number, step: number) => number;
+    setLineByOrtho: (line: I_line, ortho: number) => I_line;
+    rotateSpline: (points: I_point[], angle: number, center: I_point) => I_point[];
+    isPointInPath: (points: I_point[], point: I_point) => boolean;
+    getDXF: (p: {
+        type: 'line' | 'rect' | 'arc';
+        obj: any;
+    }[]) => string;
+    smooth: (points: I_point[], angle: number) => I_point[];
+    constructor();
+}

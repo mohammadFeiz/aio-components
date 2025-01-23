@@ -1,13 +1,9 @@
-import React, { FC, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import './index.css';
-export type AP_props = {
-    rtl?: boolean;
-    id?: string;
-};
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom';
 export type AP_attrsKey = 'backdrop' | 'modal' | 'header' | 'body' | 'footer';
 export type AP_header = ((p: {
-    close: () => void;
+    removeModal: () => void;
     state: any;
     setState: any;
 }) => ReactNode) | {
@@ -19,28 +15,21 @@ export type AP_header = ((p: {
         state: any;
         setState: (state: any) => void;
     }) => void);
-    attrs?: any;
 };
 export type AP_body = (p: {
-    close: () => void;
-    state?: any;
-    setState?: (state: any) => void;
+    removeModal: () => void;
+    state: any;
+    setState: (state: any) => void;
 }) => ReactNode;
 export type AP_footer = (p: {
     state: any;
     setState: (v: any) => void;
-    close: () => void;
+    removeModal: () => void;
 }) => ReactNode;
 type AP_setAttrs = (mode: AP_attrsKey) => any;
 export type AP_modal = {
     getTarget?: () => any;
-    pageSelector?: string;
     limitTo?: string;
-    maxHeight?: number | 'string';
-    fixStyle?: (o: any, p: {
-        targetLimit: any;
-        pageLimit: any;
-    }) => any;
     rtl?: boolean;
     id?: string;
     onClose?: boolean | (() => void);
@@ -55,7 +44,6 @@ export type AP_modal = {
 };
 export type AP_alert = {
     icon?: false | ReactNode;
-    position?: AP_position;
     type: 'success' | 'error' | 'warning' | 'info';
     text?: ReactNode;
     subtext?: string;
@@ -76,8 +64,7 @@ export type AP_snackebar = {
         onClick: () => void;
     };
     type: 'success' | 'error' | 'warning' | 'info';
-    verticalAlign?: 'start' | 'end';
-    horizontalAlign?: 'start' | 'center' | 'end';
+    align?: ['left' | 'center' | 'right', 'top' | 'bottom'];
     onClose?: boolean | (() => void);
     attrs?: any;
 };
@@ -111,43 +98,49 @@ export type AP_prompt = {
     onCansel?: () => void;
     setAttrs?: AP_setAttrs;
 };
-export type AP_Snackebar = {
-    getActions: (p: {
-        add: (item: AP_snackebar) => void;
-    }) => void;
-    rtl: boolean;
+type AP_removeModal = (arg?: string) => void;
+type AP_addAlert = (p: AP_alert) => void;
+type AP_addSnackebar = (item: AP_snackebar) => void;
+type AP_addModal = (o: AP_modal) => void;
+type AP_addHighlight = (highlight: AP_highlight) => void;
+type AP_removeHighlight = () => void;
+type AP_getModals = () => AP_modal[];
+type AP_addConfirm = (item: AP_confirm) => void;
+type AP_addPrompt = (item: AP_prompt) => void;
+type AP_render = () => ReactNode;
+export type AP_usePopup = {
+    addAlert: AP_addAlert;
+    addSnackebar: AP_addSnackebar;
+    removeModal: AP_removeModal;
+    addModal: AP_addModal;
+    getModals: AP_getModals;
+    addHighlight: AP_addHighlight;
+    removeHighlight: AP_removeHighlight;
+    render: AP_render;
+    addConfirm: AP_addConfirm;
+    addPrompt: AP_addPrompt;
 };
+export type I_usePopup = {
+    addAlert: AP_addAlert;
+    addSnackebar: AP_addSnackebar;
+    removeModal: AP_removeModal;
+    addModal: AP_addModal;
+    getModals: AP_getModals;
+    addHighlight: AP_addHighlight;
+    removeHighlight: AP_removeHighlight;
+    render: AP_render;
+    addConfirm: AP_addConfirm;
+    addPrompt: AP_addPrompt;
+    portal: () => void;
+};
+declare const usePopup: (props?: {
+    rtl?: boolean;
+    id?: string;
+}) => I_usePopup;
+export default usePopup;
 export type AP_SnackebarItem = {
     item: AP_snackebar;
-    onRemove: (id: string) => void;
     index: number;
-    rtl: boolean;
 };
-export default class AIOPopup {
-    rtl?: boolean;
-    render: () => ReactNode;
-    addModal: (p: AP_modal) => void;
-    addHighlight: (p: AP_highlight) => void;
-    removeHighlight: () => void;
-    addAlert: (p: AP_alert) => void;
-    removeModal: (arg?: string) => void;
-    addSnackebar: (p: AP_snackebar) => void;
-    getModals: () => AP_modal[];
-    addConfirm: (p: AP_confirm) => void;
-    addPrompt: (p: AP_prompt) => void;
-    popupId?: string;
-    popupsRef: React.RefObject<typeof Popups>;
-    highlightRef: React.RefObject<typeof Highlight>;
-    constructor(obj?: AP_props);
-}
-type AP_Popups = {
-    ref: any;
-    rtl: boolean;
-};
-declare const Popups: FC<AP_Popups>;
+export declare function Alert(props: AP_alert): void;
 type AP_easing = 'linear' | 'easeInQuad' | 'easeInCubic' | 'easeInQuart' | 'easeInQuint' | 'easeInSine' | 'easeInExpo' | 'easeInCirc' | 'easeInBack' | 'easeOutQuad' | 'easeOutCubic' | 'easeOutQuart' | 'easeOutQuint' | 'easeOutSine' | 'easeOutExpo' | 'easeOutCirc' | 'easeOutBack' | 'easeInBounce' | 'easeInOutQuad' | 'easeInOutCubic' | 'easeInOutQuart' | 'easeInOutQuint' | 'easeInOutSine' | 'easeInOutExpo' | 'easeInOutCirc' | 'easeInOutBack' | 'easeInOutBounce' | 'easeOutBounce' | 'easeOutInQuad' | 'easeOutInCubic' | 'easeOutInQuart' | 'easeOutInQuint' | 'easeOutInSine' | 'easeOutInExpo' | 'easeOutInCirc' | 'easeOutInBack' | 'easeOutInBounce';
-type AP_Highlight = {
-    ref: any;
-};
-declare const Highlight: FC<AP_Highlight>;
-export {};

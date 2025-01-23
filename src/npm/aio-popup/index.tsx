@@ -1,9 +1,9 @@
 import { createRef, useEffect, useState, FC, createContext, useContext, useRef, ReactNode } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ReactDOM from 'react-dom';
-import $ from 'jquery';
-import './index.css';
 import anime from "animejs/lib/anime.es.js";
+import $ from 'jquery';
+import './repo/index.css';
 export type AP_position = 'fullscreen' | 'center' | 'popover' | 'left' | 'right' | 'top' | 'bottom'
 export type AP_attrsKey = 'backdrop' | 'modal' | 'header' | 'body' | 'footer';
 export type AP_header = ((p: { removeModal: () => void, state: any, setState: any }) => ReactNode) | {

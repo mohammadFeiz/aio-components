@@ -1,0 +1,27 @@
+{
+    "name": "aio-map",
+    "version": "1.0.0",
+    "description": "",
+    "types": "index.d.ts",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mohammadFeiz/aio-map.git"
+    },
+    "dependencies": {
+        "jquery": "^3.6.1",
+        "aio-utils": "latest",
+        "leaflet": "^1.9.4",
+        "react-leaflet": "^4.2.1",
+        "aio-input":"latest"
+    },
+    "author": "mohammad sharif feiz feiz.ms@gmail.com",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/mohammadFeiz/aio-map/issues"
+    },
+    "homepage": "https://github.com/mohammadFeiz/aio-map#readme"
+}

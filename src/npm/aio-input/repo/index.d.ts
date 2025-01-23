@@ -1,7 +1,7 @@
 import { FC, ReactNode, MutableRefObject } from 'react';
-import AIOPopup, { AP_modal } from "./../aio-popup";
-import { DragClass } from './../aio-utils';
-import AIODate from './../aio-date';
+import { AP_modal, AP_usePopup } from "aio-popup";
+import { DragClass } from 'aio-utils';
+import AIODate from 'aio-date';
 import './index.css';
 declare const AIOInput: FC<AITYPE>;
 export default AIOInput;
@@ -106,22 +106,6 @@ export type AI_Sidemenu_badge = {
     color: 'red' | 'green' | 'blue' | 'grey' | 'white' | 'orange' | 'yellow';
 };
 export declare const SideMenu: FC<AI_Sidemenu>;
-type I_AICard = {
-    text: ReactNode;
-    subtext?: ReactNode;
-    onClick: () => void;
-    before?: ReactNode;
-    after?: ReactNode;
-};
-export declare const AICard: FC<I_AICard>;
-type I_AIPanel = {
-    text: string;
-    subtext?: ReactNode;
-    before?: ReactNode;
-    after?: ReactNode;
-    body: ReactNode;
-};
-export declare const AIPanel: FC<I_AIPanel>;
 export declare const AISwitch: FC<{
     size?: number[];
     value: boolean;
@@ -138,149 +122,78 @@ export type I_MonthCalendar = {
     dateAttrs?: (date: number[]) => any;
 };
 export declare const MonthCalendar: FC<I_MonthCalendar>;
-export declare function Code(code: string, language?: 'js' | 'css', style?: any): JSX.Element;
-type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber';
-type I_login_field = string;
-export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton' | 'otpcodeButton' | 'registerTitle' | 'userpassTitle' | 'otpcodeTitle' | 'otpnumberTitle' | 'switchuserpass' | 'switchregister' | 'switchotp' | 'repasswordMatch' | 'usernameRequired' | 'passwordRequired' | 'repasswordRequired' | 'otpnumberRequired' | 'otpcodeLength' | 'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError';
-type I_login_model = {
-    username: string;
-    password: string;
-    otpnumber: string;
-    otpcode: string;
-    register: any;
-};
-type I_AILogin = {
-    checkToken: (token: string) => Promise<{
-        method: 'post' | 'get';
-        url: string;
-        body?: any;
-        onSuccess: (response: any) => string | boolean;
-        onCatch: (response: any) => string | false;
-    }>;
-    before?: (mode: I_loginMode) => ReactNode;
-    after?: (mode: I_loginMode) => ReactNode;
-    renderApp: (p: {
-        user: any;
-        token: string;
-        logout: () => void;
-    }) => ReactNode;
-    translate?: (key: I_login_key) => string | undefined;
-    fa?: boolean;
-    rememberTime: number;
-    id: string;
-    splash?: {
-        html: ReactNode;
-        time: number;
-    };
-    label: (field: I_login_field) => string;
-    validation?: (model: I_login_model, mode: I_loginMode) => string | undefined;
-    otpLength?: number;
-    otp?: {
-        numberApi: (model: I_login_model, mode: I_loginMode) => Promise<{
-            method: 'post' | 'get';
-            url: string;
-            body?: any;
-            onSuccess: (response: any) => Promise<{
-                message?: string;
-            }>;
-            onCatch: (response: any) => string;
-        }>;
-        codeApi: (model: I_login_model, mode: I_loginMode) => Promise<{
-            method: 'post' | 'get';
-            url: string;
-            body?: any;
-            onSuccess: (response: any) => Promise<{
-                user: any;
-                token: string;
-                message?: string;
-            }>;
-            onCatch: (response: any) => string;
-        }>;
-    };
-    userpass?: {
-        api: (model: I_login_model, mode: I_loginMode) => Promise<{
-            method: 'post' | 'get';
-            url: string;
-            body?: any;
-            onSuccess: (response: any) => Promise<{
-                user: any;
-                token: string;
-                message?: string;
-            }>;
-            onCatch: (response: any) => string;
-        }>;
-    };
-    register?: {
-        defaultValue?: {
-            [field: string]: any;
-        };
-        inputs?: (model: I_login_model) => (AITYPE & {
-            field: string;
-        })[];
-        api: (model: I_login_model, mode: I_loginMode) => Promise<{
-            method: 'post' | 'get';
-            url: string;
-            body?: any;
-            onSuccess: (response: any) => Promise<{
-                message?: string;
-            }>;
-            onCatch: (response: any) => string;
-        }>;
-    };
-    mode?: I_loginMode;
-    attrs?: any;
-    setAttrs?: (key: I_login_key) => any;
-    mock?: {
-        user: any;
-        token: string;
-    };
-};
-export declare function AIOLogin_updateCatchedUser(loginId: string, newUser: any): any;
-export declare const AILogin: FC<I_AILogin>;
-type I_AIApp = {
-    attrs?: any;
-    bottomMenu: {
-        options: AI_bottomMenuOption[];
-        onChange: (v: string) => void;
-    };
-    body: () => ReactNode;
-    header?: () => ReactNode | false;
-    children?: ReactNode;
-};
-type AI_bottomMenuOption = {
-    text?: ReactNode;
-    uptext?: ReactNode;
-    subtext?: ReactNode;
-    value: string;
-    before?: ReactNode;
-    after?: ReactNode;
-    show?: boolean;
-    active?: boolean;
-};
-export declare const AIApp: FC<I_AIApp>;
 export type I_mask_pattern = ['number' | 'text' | 'select' | ReactNode, number, (string[] | ReactNode)?][];
 export declare const Mask: FC<{
     value?: string;
     pattern: I_mask_pattern;
     onChange: (v: string) => void;
 }>;
-export type I_MonthCells = {
-    year: number;
-    month: number;
-    cellContent: (date: number[], weekDayIndex: number) => ReactNode;
-    weekDayContent?: (v: number) => ReactNode;
-    changeMonth: (month: number) => void;
-};
-export declare const MonthCells: FC<I_MonthCells>;
 export declare const RichText: FC;
+export type I_formInputs<T> = {
+    [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) | string;
+};
+type I_formInput<T> = {
+    input: AITYPE | string;
+    field?: NestedKeys<T>;
+    label?: string;
+    error?: (data: T) => string | undefined;
+    customProps?: any;
+    value?: (data: T) => any;
+    onChange?: (v: any) => any;
+};
+type I_useFormProps<T> = {
+    initData: T;
+    onSubmit?: (data: T) => void;
+    inputs: I_formInputs<T>;
+    customTypes?: {
+        [name: string]: (value: any, onChange: (v: any) => void, customProps: any) => ReactNode;
+    };
+};
+type NestedKeys<T> = {
+    [K in keyof T]: T[K] extends object ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}` : `${K & string}`;
+}[keyof T];
+type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
+type I_formNode = {
+    v?: I_formNode[];
+    h?: I_formNode[];
+    html?: ReactNode;
+    input?: string;
+    attrs?: any;
+    className?: string;
+    style?: any;
+    show?: boolean;
+    flex?: number;
+    size?: number;
+    tag?: I_formTag;
+    legend?: ReactNode;
+};
+export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => {
+    data: T;
+    change: (p: {
+        field: NestedKeys<T>;
+        value: any;
+    }[]) => void;
+    getError: (name: string) => string | undefined;
+    getErrors: () => string[];
+    hasError: () => boolean;
+    renderInput: (name: string, attrs?: any) => JSX.Element;
+    isDataChanged: () => boolean;
+    renderSubmitButton: (text: string, attrs: any) => JSX.Element;
+    renderInputs: (p: {
+        node?: I_formNode;
+        content?: ReactNode;
+    }) => string | number | boolean | import("react").ReactFragment | JSX.Element;
+};
 type AI_FormItem = {
     label?: string;
     input: ReactNode;
+    attrs?: any;
     action?: {
         text: ReactNode;
         fn?: () => void;
     };
-    error?: () => string | undefined | void;
+    error?: string;
+    id?: string;
 };
 export declare const FormItem: FC<AI_FormItem>;
 type AI_FormContainer = {
@@ -293,33 +206,48 @@ type AI_FormContainer = {
     }[];
 };
 export declare const FormContainer: FC<AI_FormContainer>;
+type I_JoyStick_data = {
+    length: number;
+    angle: number;
+    x: number;
+    y: number;
+};
+type I_JoyStick = {
+    x?: number;
+    y?: number;
+    angle?: number;
+    length?: number;
+    scale?: number;
+    size: number;
+    onChange: (v: I_JoyStick_data) => void;
+    centerOriented?: boolean;
+};
+export declare const JoyStick: FC<I_JoyStick>;
 export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
     after?: ReactNode | ((p?: any) => ReactNode);
     attrs?: any;
     before?: ReactNode | ((p?: any) => ReactNode);
     className?: string;
     disabled?: boolean | any[];
-    footer?: ReactNode;
     imageAttrs?: any;
     justify?: boolean;
-    label?: string;
-    lang?: 'fa' | 'en';
     loading?: boolean | ReactNode;
     onChange?: (newValue: any, p?: any) => undefined | boolean | void;
     placeholder?: ReactNode;
-    reportError?: (errorMessage: string | undefined) => void;
     rtl?: boolean;
-    showErrors?: boolean | string;
     style?: any;
     subtext?: ReactNode | (() => ReactNode);
     type: AI_type;
     validations?: (any[]) | ((v: any) => string | undefined);
     value?: any;
-    body?: (value: AI_optionDetails) => {
+    body?: (option: any, details: AI_optionDetails) => {
         attrs?: any;
         html?: ReactNode;
     };
-    checkIcon?: AI_checkIcon;
+    checkIcon?: (p: {
+        checked: boolean;
+        row: any;
+    }) => ReactNode;
     listOptions?: {
         decay?: number;
         stop?: number;
@@ -335,9 +263,9 @@ export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboa
     text?: ReactNode | (() => ReactNode);
 };
 export type AI_option = {
+    optionOrg: any;
     show: any;
     checked?: boolean;
-    checkIcon: AI_checkIcon;
     after: ReactNode | ((p?: any) => ReactNode);
     before: ReactNode | ((p?: any) => ReactNode);
     draggable: boolean;
@@ -359,16 +287,15 @@ export type AI_option = {
     details: AI_optionDetails;
 };
 export type AI_optionDetails = {
-    option: any;
     rootProps: AITYPE;
     index: number;
     level?: number;
     active?: boolean;
     change?: (v: any) => any;
 };
-export type AI_optionKey = ('attrs' | 'text' | 'value' | 'disabled' | 'checkIcon' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show');
+export type AI_optionKey = ('attrs' | 'text' | 'value' | 'disabled' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' | 'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show');
 export type AI_optionProp = {
-    [key in AI_optionKey]?: string | ((optionDetails: AI_optionDetails) => any);
+    [key in AI_optionKey]?: string | ((optionOrg: any, optionDetails: AI_optionDetails) => any);
 };
 export type AI_optionDic = {
     [key: string]: AI_option;
@@ -455,9 +382,6 @@ export type AI_fill = {
     className?: string;
     style?: any;
 };
-export type AI_checkIcon = {
-    [key: string]: string | number;
-} | [ReactNode, ReactNode];
 export type AI_getProp_param = {
     key: string;
     def?: any;
@@ -471,7 +395,7 @@ export type AI_addToAttrs = (attrs: any, p: {
 }) => any;
 export type AI_context = {
     rootProps: AITYPE;
-    popup: AIOPopup;
+    popup: AP_usePopup;
     showPassword: boolean;
     setShowPassword: (v?: boolean) => void;
     DragOptions: DragClass;
@@ -594,16 +518,17 @@ type AI_hasOption = {
     options?: any[] | ((p?: any) => any[]);
     search?: string;
 };
+export type AI_date_cell_param = {
+    dateArray: number[];
+    isToday: boolean;
+    isActive: boolean;
+    isFuture: boolean;
+    weekDayIndex: number | null;
+    weekDay: string | null;
+    monthString: string;
+};
 type AI_isDate = {
-    dateAttrs?: (p: {
-        dateArray: number[];
-        isToday: boolean;
-        isActive: boolean;
-        isFuture: boolean;
-        weekDayIndex: number | null;
-        weekDay: string | null;
-        monthString: string;
-    }) => any;
+    dateAttrs?: (p: AI_date_cell_param) => any;
     jalali?: boolean;
     now?: boolean;
     pattern?: string;
@@ -638,7 +563,7 @@ type AI_hasKeyboard = {
     spin?: boolean;
     autoHighlight?: boolean;
     delay?: number;
-    voice?: boolean;
+    voice?: 'en' | 'fa';
 };
 type AI_isTable = {
     addText?: ReactNode | ((value: any) => ReactNode);
@@ -709,7 +634,6 @@ type AI_isTree = {
         [key in keyof AI_option]?: any;
     }[]);
     addText?: ReactNode | ((value: any) => ReactNode);
-    checkIcon?: AI_checkIcon;
     getChilds?: (p: {
         row: any;
         details: I_treeRowDetails;
@@ -734,11 +658,11 @@ type AI_isTree = {
         details: I_treeRowDetails;
     }) => void;
     toggleRef?: MutableRefObject<(id: any) => void>;
-    toggleIcon?: false | ((p: {
+    toggleIcon?: (p: {
         row: any;
         level: number;
         open?: boolean;
-    }) => ReactNode);
+    }) => ReactNode;
 };
 export type AI<AI_type> = Omit<AITYPE, 'onChange' | 'type'> & {
     onChange?: AI_onChange<AI_type>;

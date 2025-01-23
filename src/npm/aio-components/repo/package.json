@@ -1,0 +1,25 @@
+{
+    "name": "aio-component-utils",
+    "version": "1.0.0",
+    "description": "small and usable components",
+    "main": "index.js",
+    "dependencies": {
+        "prismjs": "^1.29.0",
+        "aio-date": "latest",
+        "aio-utils": "latest"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "mohammad sharif feiz feiz.ms@gmail.com",
+    "license": "ISC",
+    "types": "./index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mohammadFeiz/aio-component-utils.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mohammadFeiz/aio-component-utils/issues"
+    },
+    "homepage": "https://github.com/mohammadFeiz/aio-component-utils#readme"
+}

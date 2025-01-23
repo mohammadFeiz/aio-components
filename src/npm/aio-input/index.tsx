@@ -10,7 +10,7 @@ import {
 } from './../aio-utils';
 import Swip, { I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength } from './../aio-swip';
 import AIODate from './../aio-date';
-import './index.css';
+import './repo/index.css';
 import { Indent, GetSvg } from '../aio-components';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
