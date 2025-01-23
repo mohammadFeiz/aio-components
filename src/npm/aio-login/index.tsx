@@ -1,10 +1,9 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react"
 import AIOInput, { AITYPE } from "../aio-input"
 import { AddToAttrs, Storage } from "../aio-utils"
-import AIOLoading from "../aio-loading"
-import AIOPopup, { AP_alert } from "../aio-popup"
+import { AP_alert,Loading,Alert } from "../aio-popup"
 import axios from "axios"
-import './index.css';
+import './repo/index.css';
 
 type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber'
 type I_login_field = string
@@ -84,7 +83,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
     const [data, setData] = useState<{ token: string, user: any }>()
     const [storage] = useState<Storage>(new Storage('ai-login' + props.id))
     const [model, setModel] = useState<I_login_model>(getModel)
-    const [loading] = useState<AIOLoading>(new AIOLoading())
+    const [loading] = useState<Loading>(new Loading())
     const [submitDisabled, setSubmitDisabled] = useState<boolean>(false)
     const modelRef = useRef(model)
     modelRef.current = model;
@@ -169,7 +168,6 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     const [waitingCheckToken, setWeightingCheckToken] = useState<boolean>(true)
     const [splashing, setSplashing] = useState<boolean>(!!props.splash)
-    const [popup] = useState<AIOPopup>(new AIOPopup())
     function trans(key: I_login_key) {
         const dic: { [key in I_login_key]: { fa: string, en: string } } = {
             registerButton: { en: 'Register', fa: 'ثبت نام' },
@@ -321,7 +319,7 @@ export const AILogin: FC<I_AILogin> = (props) => {
         setWeightingCheckToken(false)
     }
     useEffect(() => { CheckToken() }, [])
-    function setAlert(p: AP_alert) { popup.addAlert(p) }
+    function setAlert(p: AP_alert) { Alert(p) }
     function getContent() {
         if (waitingCheckToken || splashing) { return props.splash ? props.splash.html : null }
         if (!data) {
@@ -330,5 +328,5 @@ export const AILogin: FC<I_AILogin> = (props) => {
         }
         return props.renderApp({ token: data.token, user: data.user, logout })
     }
-    return (<>{getContent()} {popup.render()}</>)
+    return (<>{getContent()}</>)
 }

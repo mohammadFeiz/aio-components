@@ -1,98 +1,138 @@
-import AIOPopup from 'aio-popup';
-import AIOLoading from 'aio-loading';
-type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
-type I_getErrorMessage = (err: any, config: AA_api) => string;
-type AA_isSuccess = (response: any, confing: AA_api) => string | true;
-type AA_cache = {
-    name: string;
-    time: number;
-};
-type I_getSuccessMessage = true | ((response: any, result: any) => string | undefined);
-type I_messageType = 'alert' | 'snackebar' | 'console' | 'none';
-export type AA_props = {
-    id: string;
-    token: string;
-    loader?: string;
-    getErrorMessage?: I_getErrorMessage;
-    getSuccessMessage?: I_getSuccessMessage;
-    isSuccess?: AA_isSuccess;
-    getSuccessResult?: (response: any) => any;
-    getErrorResult?: (response: any) => any;
-    lang: 'en' | 'fa';
-    messageTime?: number;
-    errorMessageType?: I_messageType;
-};
 export type AA_api = {
     description: string;
-    method: AA_method;
+    name: string;
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch';
     url: string;
-    getSuccessResult?: (response: any) => any;
-    getErrorResult?: (response: any) => any;
-    getSuccessMessage?: I_getSuccessMessage;
-    errorMessageType?: I_messageType;
-    successMessageType?: I_messageType;
     body?: any;
-    getErrorMessage?: I_getErrorMessage;
-    isSuccess?: AA_isSuccess;
-    cache?: AA_cache;
     loading?: boolean;
-    loadingParent?: string;
+    cache?: {
+        name: string;
+        expiredIn?: number;
+        interval?: number;
+    };
+    mock?: {
+        delay: number;
+        methodName: string;
+    };
+    errorResult?: any;
+    showMessage?: (obj: {
+        response: any;
+        success: boolean;
+        result: any;
+        message?: string;
+    }) => {
+        type: 'success' | 'warning' | 'error' | 'info';
+        time?: number;
+        text: string;
+        subtext?: string;
+    } | false;
     headers?: any;
-    messageTime?: number;
+    token?: string;
+    loader?: string;
+    loadingParent?: string;
 };
-type AA_alertType = 'success' | 'error' | 'warning' | 'info';
+type I_cachedApi = {
+    api: AA_api;
+    value: any;
+};
 export default class AIOApis {
-    props: AA_props;
-    storage: Storage;
-    aioLoading: AIOLoading;
-    popup: AIOPopup;
-    constructor(props: AA_props);
-    setToken: (token?: string) => void;
+    props: {
+        id: string;
+        token: string;
+        loader?: string;
+        getResult: (response: any) => any;
+        onCatch: (err: any, config: AA_api) => string;
+        headers?: any;
+        errorResult?: any;
+        lang?: 'en' | 'fa';
+    };
+    token: string;
+    private cache;
+    getCachedValue: Cache["getCachedValue"];
+    updateCache: Cache["updateCacheValue"];
+    setCache: Cache["setCache"];
+    removeCache: Cache["removeCache"];
+    apisThatAreInLoadingTime: {
+        [apiName: string]: boolean | undefined;
+    };
+    constructor(props: {
+        id: string;
+        token: string;
+        loader?: string;
+        getResult: (response: any) => any;
+        onCatch: (err: any, config: AA_api) => string;
+        headers?: any;
+        errorResult?: any;
+        lang?: 'en' | 'fa';
+    });
+    setToken: (token: string) => void;
     addAlert: (p: {
-        type: AA_alertType;
+        type: 'success' | 'error' | 'warning' | 'info';
         text: string;
         subtext?: string;
         time?: number;
-        messageType: I_messageType;
     }) => void;
-    renderPopup: () => any;
-    setStorage: (name: string, value: any) => I_storage_model;
-    getStorage: (name: string, def?: any) => any;
-    removeStorage: (name: string) => I_storage_model;
-    handleCacheVersions: (cacheVersions: {
-        [key: string]: number;
-    }) => {
-        [key: string]: boolean;
-    };
-    responseToResult: (api: AA_api) => Promise<{
-        success: boolean;
-        result: any;
-        response: any;
-    }>;
-    showErrorMessage: (message: string, api: AA_api) => void;
-    showSuccessMessage: (response: any, result: any, api: AA_api) => void;
-    request: (api: AA_api) => Promise<any>;
+    private responseToResult;
+    private showErrorMessage;
+    request: (api: AA_api, isCalledByCache?: boolean) => Promise<any>;
+}
+export type I_mock = {
+    url: string;
+    delay: number;
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch';
+    result: ((body: any) => {
+        status: number;
+        data: any;
+    });
+};
+type I_callApi = (cachedApi: I_cachedApi) => Promise<any>;
+declare class Cache {
+    private storage;
+    private callApi;
+    private intervals;
+    constructor(storage: Storage, callApi: I_callApi);
+    private getKey;
+    private detectIntervalChange;
+    private handleIntervals;
+    private SetInterval;
+    private ClearInterval;
+    private getCachedApi;
+    private updateCacheByKey;
+    getCachedValue: (apiName: string, cacheName: string) => any;
+    updateCacheValue: (apiName: string, cacheName: string) => Promise<void>;
+    setCache: (apiName: string, cacheName: string, changeObj: Partial<I_cachedApi>) => void;
+    private removeByKey;
+    removeCache: (apiName: string, cacheName?: string) => void;
 }
 type I_storage_model = {
-    [key: string]: any;
+    [key: string]: {
+        value: any;
+        saveTime: number;
+        expiredIn: number;
+    };
 };
-type I_storage_time = {
-    [key: string]: number;
-};
-declare class Storage {
-    model: I_storage_model;
-    time: I_storage_time;
-    init: () => void;
-    saveStorage: (model: I_storage_model, time: I_storage_time) => void;
-    getParent: (field: string) => I_storage_model | undefined;
-    removeValueByField: (field: string) => I_storage_model;
-    setValueByField: (field: string, value: any) => I_storage_model;
-    getValueByField: (field: string) => any;
-    save: (field: string, value: any) => I_storage_model;
-    remove: (field: string, callback?: () => void) => I_storage_model;
-    load: (field: string, def?: any, time?: number) => any;
-    clear: () => void;
-    getModel: () => I_storage_model;
+export declare class Storage {
+    private model;
+    id: string;
     constructor(id: string);
+    init: () => void;
+    copy: (v: any) => any;
+    setModel: (model: I_storage_model) => I_storage_model;
+    getNow: () => number;
+    save: (field: string, value: any, expiredIn?: number) => I_storage_model;
+    remove: (field: string) => I_storage_model;
+    removeKeyFromObject: (obj: {
+        [key: string]: any;
+    }, key: string) => {
+        [key: string]: any;
+    };
+    isExpired: (field: string) => boolean;
+    load: (field: string, def?: any, expiredIn?: number) => any;
+    clear: () => I_storage_model;
+    download: (file: any, name: string) => void;
+    export: () => void;
+    read: (file: File) => Promise<any>;
+    import: (file: any) => Promise<I_storage_model>;
+    getKeys: () => string[];
 }
 export {};

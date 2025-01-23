@@ -101,13 +101,4 @@ export type I_MonthCells = {
 };
 export declare const MonthCells: FC<I_MonthCells>;
 export declare function Code(code: string, language?: 'js' | 'css', style?: any): JSX.Element;
-export declare class AIOLoading {
-    loader: any;
-    constructor(loader?: string);
-    private getLoader_0;
-    private getLoaderItem_0;
-    getLoader: (id: string) => string;
-    show: (id: string, parentSelector?: string) => void;
-    hide: (id: string) => void;
-}
 export {};

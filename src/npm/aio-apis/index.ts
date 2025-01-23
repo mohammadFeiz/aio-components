@@ -1,24 +1,11 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import {Alert} from './../../npm/aio-popup';
-import AIOLoading from './../../npm/aio-loading';
-type AA_method = 'post' | 'get' | 'delete' | 'put' | 'patch';
-type I_onCatch = (err: any, config: AA_api) => string;
-type AA_getResult = (response: any) => any
-export type AA_props = {
-    id: string,
-    token: string,
-    loader?: string,
-    getResult: AA_getResult,
-    onCatch: I_onCatch,
-    headers?: any,
-    errorResult?: any,
-    lang?: 'en' | 'fa'
-}
+import {Alert,Loading} from './../../npm/aio-popup';
+
 export type AA_api = {
     description: string,
     name: string,
-    method: AA_method,
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     url: string,
     body?: any,
     loading?: boolean,
@@ -30,13 +17,21 @@ export type AA_api = {
     token?: string,
     loader?: string, loadingParent?: string,
 }
-type AA_alertType = 'success' | 'error' | 'warning' | 'info'
 type I_cachedApi = {
     api: AA_api,
     value: any,
 }
 export default class AIOApis {
-    props: AA_props;
+    props: {
+        id: string,
+        token: string,
+        loader?: string,
+        getResult: (response: any) => any,
+        onCatch: (err: any, config: AA_api) => string;
+        headers?: any,
+        errorResult?: any,
+        lang?: 'en' | 'fa'
+    };
     token: string;
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
@@ -44,7 +39,16 @@ export default class AIOApis {
     setCache: Cache["setCache"]
     removeCache: Cache["removeCache"]
     apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
-    constructor(props: AA_props) {
+    constructor(props: {
+        id: string,
+        token: string,
+        loader?: string,
+        getResult: (response: any) => any,
+        onCatch: (err: any, config: AA_api) => string;
+        headers?: any,
+        errorResult?: any,
+        lang?: 'en' | 'fa'
+    }) {
         console.log('aio-apis constructor')
         this.props = props
         const storage = new Storage(props.id);
@@ -60,7 +64,7 @@ export default class AIOApis {
         let res = token || this.props.token;
         if (res) { Axios.defaults.headers.common['Authorization'] = `Bearer ${res}`; }
     }
-    addAlert = (p: { type: AA_alertType, text: string, subtext?: string, time?: number }) => {
+    addAlert = (p: { type: 'success' | 'error' | 'warning' | 'info', text: string, subtext?: string, time?: number }) => {
         let { type, text, subtext, time } = p;
         Alert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
@@ -116,7 +120,7 @@ export default class AIOApis {
             }
         }
         const loadingKey: string = 'aa' + Math.round(Math.random() * 100000)
-        const aioLoading = new AIOLoading(loader)
+        const aioLoading = new Loading(loader)
         if (loading) { aioLoading.show(loadingKey, api.loadingParent); }
         this.apisThatAreInLoadingTime[api.name] = true
         let { result, errorMessage, success,response } = await this.responseToResult({ ...api })
@@ -138,7 +142,7 @@ export default class AIOApis {
 export type I_mock = {
     url: string,
     delay: number,
-    method: AA_method,
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     result: ((body: any) => { status: number, data: any })
 }
 function handleMockApi(p: I_mock) {
