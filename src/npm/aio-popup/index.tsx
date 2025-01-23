@@ -448,6 +448,7 @@ function Alert(props: AP_alert) {
         if (typeof onClose === 'function') { onClose() }
         if (onClose === false) { return }
         $('.' + $$.id).remove()
+        $$.time = 0;
       }, 200);
     },
     getIcon() {

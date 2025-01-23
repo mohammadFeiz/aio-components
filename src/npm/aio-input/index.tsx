@@ -24,8 +24,7 @@ const AIOInput: FC<AITYPE> = (props) => {
     }
     else if (type === 'slider') { type = 'range'; round = 0; }
     else if (type === 'range') { return null; }
-    const defaultProps = new Storage('aio-input-storage').getModel() || {}
-    let rootProps: AITYPE = { ...props, type, round, value, ...defaultProps }
+    let rootProps: AITYPE = { ...props, type, round, value }
     if (type === 'text' && rootProps.getOptions) {
         return <SuggestionInput {...rootProps} />
     }

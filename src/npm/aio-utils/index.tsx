@@ -506,162 +506,81 @@ export function GetArray(count: number, fn?: (index: number) => any, step?: numb
     return new Array(count).fill(0).map((o, i) => fn(i))
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
-type I_storage_model = { [key: string]: any }
-type I_storage_time = { [key: string]: number }
+type I_storage_model = { [key: string]: { value: any, saveTime: number, expiredIn: number } }
 export class Storage {
-    model: I_storage_model;
-    time: I_storage_time;
-    init: () => void;
-    saveStorage: (model: I_storage_model, time: I_storage_time) => void;
-    getParent: (field: string) => I_storage_model | undefined;
-    removeValueByField: (field: string) => I_storage_model
-    setValueByField: (field: string, value: any) => I_storage_model
-    getValueByField: (field: string) => any
-    save: (field: string, value: any) => I_storage_model
-    remove: (field: string, callback?: () => void) => I_storage_model
-    load: (field: string, def?: any, time?: number) => any
-    clear: () => void
-    download: (file: any, name: string) => void
-    export: () => void;
-    read: (file: any, callback: (model: any) => void) => void
-    import: (file: any, callback: () => void) => void
-    getModel: () => I_storage_model
-    constructor(id: string) {
-        this.model = {}
-        this.time = {}
-        this.init = () => {
-            let storage: any = localStorage.getItem('storageClass' + id);
-            let timeStorage = localStorage.getItem('storageClassTime' + id);
-            let model: I_storage_model, time: I_storage_time;
-            if (storage === undefined || storage === null) { model = {} }
-            else { model = JSON.parse(storage) }
-            if (timeStorage === undefined || timeStorage === null) { time = {} }
-            else { time = JSON.parse(timeStorage) }
-            this.model = model;
-            this.time = time
-            this.saveStorage(model, time)
-        }
-        this.saveStorage = (model, time) => {
-            localStorage.setItem('storageClass' + id, JSON.stringify(model));
-            localStorage.setItem('storageClassTime' + id, JSON.stringify(time));
-        }
-        this.getParent = (field) => {
-            let fields = field.split('.');
-            let parent = this.model;
-            for (let i = 0; i < fields.length - 1; i++) {
-                parent = parent[fields[i]];
-                if (typeof parent !== 'object') { return }
-            }
-            return parent
-        }
-        this.removeValueByField = (field: string) => {
-            let fields = field.split('.')
-            let parent: I_storage_model | undefined = this.getParent(field)
-            let lastField: string = fields[fields.length - 1]
-            let newParent: I_storage_model = {};
-            for (let prop in parent) {
-                if (prop !== lastField) { newParent[prop] = parent[prop] }
-            }
-            fields.pop();
-            return this.setValueByField(fields.join('.'), newParent)
-        }
-        this.setValueByField = (field, value) => {
-            if (!field) { this.model = value; return; }
-            var fields = field.split('.');
-            var parent = this.model;
-            for (let i = 0; i < fields.length - 1; i++) {
-                let f = fields[i];
-                if (parent[f] === undefined) { parent[f] = {} }
-                parent = parent[f];
-            }
-            parent[fields[fields.length - 1]] = value;
-            return this.getValueByField(fields[0])
-        }
-        this.getValueByField = (field) => {
-            let fields = field.split('.');
-            let model = this.model;
-            let parent = { ...model };
-            for (let i = 0; i < fields.length - 1; i++) {
-                parent = parent[fields[i]];
-                if (typeof parent !== 'object') { return }
-            }
-            return parent[fields[fields.length - 1]]
-        }
-        this.save = (field, value) => {
-            try { value = JSON.parse(JSON.stringify(value)) } catch { value = value; }
-            if (!field || field === null) { return {} }
-            let res = this.setValueByField(field, value)
-            this.time[field] = new Date().getTime();
-            this.saveStorage(this.model, this.time);
-            return res;
-        }
-        this.remove = (field, callback = () => { }) => {
-            let res = this.removeValueByField(field);
-            let newTime: any = {};
-            for (let prop in this.time) { if (prop !== field) { newTime[prop] = this.time[prop] } }
-            this.time = newTime;
-            this.saveStorage(this.model, this.time);
-            callback();
-            return res;
-        }
-        this.load = (field, def, time) => {
-            let value = this.getValueByField(field);
-            if (time && value !== undefined) {
-                let thisTime = new Date().getTime();
-                let lastTime = this.time[field] || thisTime;
-                let dif = Math.abs(thisTime - lastTime);
-                if (dif > time) { value = undefined }
-            }
-            if (value === undefined && def !== undefined) {
-                value = typeof def === 'function' ? def() : def;
-                this.save(field, def);
-            }
-            return value;
-        }
-        this.clear = () => {
-            this.model = {};
-            this.time = {};
-            this.saveStorage(this.model, this.time)
-        }
-        this.download = (file, name) => {
-            if (!name || name === null) { return }
-            let text = JSON.stringify(file)
-            let element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', name);
-            element.style.display = 'none';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-        this.export = () => {
-            let name = window.prompt('Please Inter File Name');
-            if (name === null || !name) { return; }
-            this.download({ model: this.model, time: this.time }, name)
-        }
-        this.read = (file, callback = () => { }) => {
-            var fr = new FileReader();
-            fr.onload = () => { try { callback(JSON.parse((fr as any).result)); } catch { return; } }
-            fr.readAsText(file);
-        }
-        this.import = (file, callback = () => { }) => {
-            this.read(
-                file,
-                (obj) => {
-                    if (obj === undefined) { return; }
-                    let { model, time } = obj;
-                    this.model = model;
-                    this.time = time;
-                    this.saveStorage(this.model, this.time);
-                    callback()
-                }
-            )
-        }
-        this.getModel = () => {
-            return JSON.parse(JSON.stringify(this.model))
-        }
-        this.init()
+    private model: I_storage_model; id: string;
+    constructor(id: string) { this.model = {}; this.id = id; this.init() }
+    init = () => {
+        let storage: any = localStorage.getItem('storageClass' + this.id);
+        this.setModel(storage === undefined || storage === null ? {} : JSON.parse(storage))
     }
+    copy = (v: any) => JSON.parse(JSON.stringify(v))
+    setModel = (model: I_storage_model): I_storage_model => {
+        this.model = model; localStorage.setItem('storageClass' + this.id, JSON.stringify(model)); return this.copy(model)
+    }
+    getNow = () => new Date().getTime();
+    save = (field: string, value: any, expiredIn?: number): I_storage_model => {
+        if (value === undefined) { return this.copy(this.model) }
+        const newModel = { ...this.model }, now = this.getNow();
+        newModel[field] = { value, saveTime: now, expiredIn:Infinity }
+        if(expiredIn){newModel[field].expiredIn = expiredIn}
+        return this.setModel(newModel);
+    }
+    remove = (field: string): I_storage_model => {
+        const newModel: I_storage_model = {}
+        for (let prop in this.model) { if (prop !== field) { newModel[prop] = this.model[prop] } }
+        return this.setModel(newModel)
+    }
+    removeKeyFromObject = (obj: { [key: string]: any }, key: string) => {
+        const newObj: { [key: string]: any } = {};
+        for (let prop in obj) { if (prop !== key) { newObj[prop] = obj[prop] } }
+        return newObj
+    }
+    isExpired = (field: string): boolean => {
+        if (!this.model[field]) { return true }
+        return this.model[field].expiredIn < this.getNow()
+    }
+    load = (field: string, def?: any, expiredIn?: number) => {
+        const obj = this.model[field]
+        if (!obj) { this.save(field, def, expiredIn); return def }
+        const isExpired = this.isExpired(field)
+        if (isExpired) { this.save(field, def, expiredIn); return def }
+        else { return obj.value }
+    }
+    clear = (): I_storage_model => this.setModel({})
+    download = (file: any, name: string) => {
+        if (!name || name === null) { return }
+        let text = JSON.stringify(file)
+        let element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', name);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+    export = () => {
+        let name = window.prompt('Please Inter File Name');
+        if (name === null || !name) { return; }
+        this.download({ model: this.model }, name)
+    }
+    read = async (file: File): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onload = () => {
+                try { const result = JSON.parse(fr.result as string); resolve(result); }
+                catch (error: any) { reject(new Error('Error parsing JSON: ' + error.message)); }
+            };
+            fr.onerror = () => reject(new Error('Error reading file.'));
+            fr.readAsText(file);
+        });
+    }
+    import = async (file: any): Promise<I_storage_model> => {
+        const model = await this.read(file)
+        if (model === undefined) { return this.model; }
+        return this.setModel(model);
+    }
+    getKeys = (): string[] => Object.keys(this.model)
 }
 export function DisabledContextMenu() { window.addEventListener(`contextmenu`, (e) => e.preventDefault()); }
 export type AV_operator = 'contain' | 'required' | '=' | '>' | '>=' | '<' | '<=' | 'startBy' | '<>' | '<=>'
@@ -1393,8 +1312,8 @@ export function keyboard_filter(value: string | number, p: { filter?: (string | 
     for (let i = 0; i < p.filter.length; i++) {
         let char = '';
         try { char = p.filter[i].toString() } catch { continue }
-        if(char.length > 1 && char[0] === '!'){
-            if(char[1] === lastChar){isOk = false; break;}
+        if (char.length > 1 && char[0] === '!') {
+            if (char[1] === lastChar) { isOk = false; break; }
         }
         if (char === 'symbol') { if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(lastChar)) { isOk = true; } }
         else if (char === 'number') { if (isNumber) { isOk = true } }
