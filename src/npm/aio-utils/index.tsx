@@ -1,5 +1,7 @@
 import * as ReactDOMServer from 'react-dom/server';
 import { ReactNode } from 'react';
+import MockAdapter from 'axios-mock-adapter';
+import Axios from 'axios';
 import $ from 'jquery';
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
@@ -516,8 +518,8 @@ export class Storage {
     save = (field: string, value: any, expiredIn?: number): I_storage_model => {
         if (value === undefined) { return this.copy(this.model) }
         const newModel = { ...this.model }, now = this.getNow();
-        newModel[field] = { value, saveTime: now, expiredIn:Infinity }
-        if(expiredIn){newModel[field].expiredIn = expiredIn}
+        newModel[field] = { value, saveTime: now, expiredIn: Infinity }
+        if (expiredIn) { newModel[field].expiredIn = expiredIn }
         return this.setModel(newModel);
     }
     remove = (field: string): I_storage_model => {
@@ -1731,5 +1733,53 @@ export class Geo {
                 "EOF";
             return dxfText;
         }
+    }
+}
+export type I_MockApi = {
+    url: string;
+    delay: number;
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch';
+    getResult: (params: { body: any; queryParams: any }) => { status: number; data: any };
+};
+
+export function MockApi(p: I_MockApi) {
+    const fn: any = (config: any) => {
+        return new Promise((resolve, reject) => {
+            try {
+                setTimeout(() => {
+                    const body = config.data ? JSON.parse(config.data) : null;
+                    const url = new URL(config.url, 'http://localhost');
+                    const queryParams: Record<string, string> = {};
+                    url.searchParams.forEach((value, key) => {
+                        queryParams[key] = value;
+                    });
+                    const { status, data } = p.getResult({ body, queryParams });
+                    resolve([status, data]);
+                }, p.delay);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    };
+    const mock = new MockAdapter(Axios);
+    mock.resetHandlers();
+    switch (p.method) {
+        case 'get':
+            mock.onGet(p.url).replyOnce(fn);
+            break;
+        case 'post':
+            mock.onPost(p.url).replyOnce(fn);
+            break;
+        case 'delete':
+            mock.onDelete(p.url).replyOnce(fn);
+            break;
+        case 'put':
+            mock.onPut(p.url).replyOnce(fn);
+            break;
+        case 'patch':
+            mock.onPatch(p.url).replyOnce(fn);
+            break;
+        default:
+            console.error(`Unsupported method: ${p.method}`);
     }
 }
