@@ -77,7 +77,7 @@ export function AIOLogin_updateCatchedUser(loginId: string, newUser: any) {
     const newStoredData = { ...storedData, user: newUser }
     return storage.save('data', newStoredData)
 }
-export const AILogin: FC<I_AILogin> = (props) => {
+const AILogin: FC<I_AILogin> = (props) => {
     const { translate = () => { }, otpLength = 4 } = props;
     const { validation = () => { return undefined } } = props;
     const [data, setData] = useState<{ token: string, user: any }>()
@@ -330,3 +330,4 @@ export const AILogin: FC<I_AILogin> = (props) => {
     }
     return (<>{getContent()}</>)
 }
+export default AILogin

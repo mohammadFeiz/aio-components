@@ -72,6 +72,9 @@ export default class AIOApis {
         subtext?: string;
         time?: number;
     }) => void;
+    getUrlQueryParam: (params?: string | {
+        [key: string]: string;
+    }) => string;
     private responseToResult;
     private showErrorMessage;
     request: (api: AA_api, isCalledByCache?: boolean) => Promise<any>;

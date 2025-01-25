@@ -68,6 +68,16 @@ export default class AIOApis {
         let { type, text, subtext, time } = p;
         Alert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
+    getUrlQueryParam = (params?: { [key: string]: string } | string) => {
+        if (typeof params === 'string') { return `/${params}`; }
+        else if (typeof params === 'object' && params !== null) {
+            const queryString = Object.keys(params)
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .join('&');
+            return `?${queryString}`;
+        }
+        return '';
+    }
     private responseToResult = async (api: AA_api): Promise<{ result: any, errorMessage?: string, success: boolean,response:any }> => {
         const { headers = this.props.headers, errorResult = this.props.errorResult } = api;
         const { onCatch, getResult } = this.props;

@@ -98,5 +98,5 @@ type I_AILogin = {
     };
 };
 export declare function AIOLogin_updateCatchedUser(loginId: string, newUser: any): any;
-export declare const AILogin: FC<I_AILogin>;
-export {};
+declare const AILogin: FC<I_AILogin>;
+export default AILogin;

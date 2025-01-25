@@ -8,7 +8,7 @@ import bodyParser from 'body-parser';
 import Agenda from 'agenda';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean,appName:string };
 export type I_response<T> = { status: number, success: boolean, message?: string, value?: T }
 export type I_auth = {
     schema?: I_schemaDefinition,
@@ -26,10 +26,9 @@ export type I_entities = { [entityName: string]: I_entity }
 export type I_queryParam = { [key: string]: any }
 export type I_api = {
     path: string,
-    method: 'post' | 'get' | 'put' | 'delete',
+    method: 'post' | 'get' | 'put' | 'delete' | 'patch',
     body?: string,
-    successResultType: string,
-    errorResultType: string,
+    returnType: string,
     configStr: string,
     description: string,
     queryString?: string,
@@ -329,7 +328,7 @@ class AIOExpress<I_User> {
     }
     addEntities = (entities: I_entities) => {
         if (this.p.uiDoc) {
-            const { success, result } = this.AIOSchemaInstance.generateUIDoc(entities);
+            const { success, result } = this.AIOSchemaInstance.generateUIDoc(entities,this.p.appName);
             const message = success ? 'generate ui doc was successful!!!' : 'error in generate ui doc!!!';
             const color = success ? 'green' : 'red'
             this.log(message, color);
@@ -829,7 +828,7 @@ export class AIOSchema {
         return { success: true, result: res };
     }
     getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
-        return { success: true, result: `:Promise<(${api.successResultType}) | (${api.errorResultType})>` }
+        return { success: true, result: `:Promise<${api.returnType}>` }
     }
     getUrlString = (name: string, path: string, queryString?: string) => {
         if (!queryString) { return `const url = ${"`${this.base_url}"}${name}${path}${"`"}` }
@@ -887,17 +886,17 @@ type I_response<T> = { status: number, success: boolean, message?: string, value
         for (let name in entities) {
             const {apis,path} = entities[name]
             for(let api of apis){
-                let {path,successResultType,errorResultType} = api;
+                let {path,returnType} = api;
                 if(path[0] === '/'){path = path.slice(1,path.length)}
                 res += `
-export type API_${name}_${path} = I_response<(${successResultType}) | (${errorResultType})>;
+export type API_${name}_${path} = I_response<(${returnType})>;
             `
             }
         }
         
         return res
     }
-    generateUIDoc = (entities: I_entities): { success: boolean, result: string } => {
+    generateUIDoc = (entities: I_entities,appName:string): { success: boolean, result: string } => {
         const methodsString = this.getMethodsString(entities)
         if (!methodsString.success) { return { success: false, result: methodsString.result } }
         const interfaces = this.getInterfaces()
@@ -906,33 +905,21 @@ export type API_${name}_${path} = I_response<(${successResultType}) | (${errorRe
 import AIOApis from "aio-apis";
 type I_APIS = {base_url:string,token:string,logout:()=>void}
 ${interfaces.result}
-export default class APIS {
-    request: AIOApis['request'];
+export default class APIS extends AIOApis {
     base_url:string;
     constructor(p:I_APIS) {
-        this.base_url = p.base_url;
-        const inst = new AIOApis({
-            id: 'cardexsuperadminapis', token:p.token, lang: 'fa',
+        this.base_url = p.base_url;    
+        super({
+            token: p.token,
+            id: '${appName}',
+            lang: 'fa',
             onCatch: (response) => {
-                try{return response.response.data.message}
-                catch{return response.messge}
+                if(response.status === 401 || response.data?.status === 401){p.logout()}
+                return response.response.data.message
             },
-            isSuccess: (response) => {
-                if(response.status === 401 || response.data.status === 401){p.logout()}
-                else if (response.data.success === false) { return response.data.message }
-            }
-        })
-        this.request = inst.request;
-    }
-    getUrlQueryParam = (params?: { [key: string]: string } | string) => {
-        if (typeof params === 'string') { return ${"`/${params}`"}; }
-        else if (typeof params === 'object' && params !== null) {
-            const queryString = Object.keys(params)
-                .map(key => ${"`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`"})
-                .join('&');
-            return ${"`?${queryString}`"};
-        }
-        return '';
+            getResult: (response) => response.data.value,
+            errorResult:false
+        });
     }
 ${methodsString.result}
 }
