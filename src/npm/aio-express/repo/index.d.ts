@@ -1,29 +1,4 @@
 /// <reference types="cookie-parser" />
-/// <reference types="mongoose/types/aggregate" />
-/// <reference types="mongoose/types/callback" />
-/// <reference types="mongoose/types/collection" />
-/// <reference types="mongoose/types/connection" />
-/// <reference types="mongoose/types/cursor" />
-/// <reference types="mongoose/types/document" />
-/// <reference types="mongoose/types/error" />
-/// <reference types="mongoose/types/expressions" />
-/// <reference types="mongoose/types/helpers" />
-/// <reference types="mongoose/types/middlewares" />
-/// <reference types="mongoose/types/indexes" />
-/// <reference types="mongoose/types/models" />
-/// <reference types="mongoose/types/mongooseoptions" />
-/// <reference types="mongoose/types/pipelinestage" />
-/// <reference types="mongoose/types/populate" />
-/// <reference types="mongoose/types/query" />
-/// <reference types="mongoose/types/schemaoptions" />
-/// <reference types="mongoose/types/schematypes" />
-/// <reference types="mongoose/types/session" />
-/// <reference types="mongoose/types/types" />
-/// <reference types="mongoose/types/utility" />
-/// <reference types="mongoose/types/validation" />
-/// <reference types="mongoose/types/virtuals" />
-/// <reference types="mongoose/types/inferschematype" />
-/// <reference types="mongoose/types/inferrawdoctype" />
 import { NextFunction, Request, Response } from 'express';
 import mongoose, { ClientSession, Model, Schema } from 'mongoose';
 import Agenda from 'agenda';
@@ -35,6 +10,7 @@ export type I_AIOExpress = {
         secretKey: string;
     };
     uiDoc?: boolean;
+    appName: string;
 };
 export type I_response<T> = {
     status: number;
@@ -89,11 +65,10 @@ export type I_queryParam = {
 };
 export type I_api = {
     path: string;
-    method: 'post' | 'get' | 'put' | 'delete';
+    method: 'post' | 'get' | 'put' | 'delete' | 'patch';
     body?: string;
-    successResultType: string;
-    errorResultType: string;
-    configStr: string;
+    returnType: string;
+    configStr?: string;
     description: string;
     queryString?: string;
     checkAccess?: (p: {
@@ -185,8 +160,7 @@ declare class AIOExpress<I_User> {
         session?: ClientSession;
     }) => Promise<number | string>;
     changeUserPassword: (p: {
-        userPassword: string;
-        oldPassword: string;
+        oldPassword: string | false;
         newPassword: string;
         userId: string;
     }) => Promise<true | string>;
@@ -207,7 +181,7 @@ declare class AIOExpress<I_User> {
     getTotal: (name: string) => Promise<number>;
     getNewPassword: (p: {
         userPassword: string;
-        oldPassword: string;
+        oldPassword: string | false;
         newPassword: string;
     }) => Promise<string | false>;
     initJwt: (req: any, res: Response, next: NextFunction) => Response<any, Record<string, any>>;
@@ -243,17 +217,17 @@ declare class GCRUD {
         entityName: string | 'auth';
         search?: Partial<T>;
         id?: any;
-    }) => Promise<null | I_record<T> | string>;
+    }) => Promise<string | I_record<T>>;
     getRows: <T>(p: {
         entityName: string;
         search?: Partial<T>;
         ids?: any[];
-    }) => Promise<I_record<T>[] | string>;
+    }) => Promise<string | I_record<T>[]>;
     addRow: <T>(p: {
         entityName: string | 'auth';
         newValue: T;
         session?: ClientSession;
-    }) => Promise<I_record<T> | string>;
+    }) => Promise<string | I_record<T>>;
     editRow: <T>(p: {
         entityName: string | 'auth';
         id?: any;
@@ -280,7 +254,7 @@ declare class GCRUD {
         search?: Partial<T>;
         id?: string;
         session?: ClientSession;
-    }) => Promise<string | I_record<T> | null>;
+    }) => Promise<string | I_record<T>>;
     removeRows: <T>(p: {
         entityName: string | 'auth';
         search?: Partial<T>;
@@ -373,7 +347,7 @@ export declare class AIOSchema {
         result: string;
     };
     getApiTypes: (entities: I_entities) => string;
-    generateUIDoc: (entities: I_entities) => {
+    generateUIDoc: (entities: I_entities, appName: string) => {
         success: boolean;
         result: string;
     };

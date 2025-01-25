@@ -29,7 +29,7 @@ export type I_api = {
     method: 'post' | 'get' | 'put' | 'delete' | 'patch',
     body?: string,
     returnType: string,
-    configStr: string,
+    configStr?: string,
     description: string,
     queryString?: string,
     checkAccess?: (p: { reqUser: any, body: any, queryParam: I_queryParam }) => Promise<void | string | { [key: string]: any }>
@@ -839,7 +839,7 @@ export class AIOSchema {
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
-                const { method, configStr, description, queryString } = api;
+                const { method, configStr = '', description, queryString } = api;
                 const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 const bodyParamString = this.bodyParamToString(api);
@@ -850,6 +850,7 @@ export class AIOSchema {
     ${apiName} = async (${bodyParamString.result})${returnTypeString.result}=>{
         ${this.getUrlString(name, path, queryString)}
         return await this.request({
+            name:'${apiName}',
             url,description:"${description}",method:"${method}",${!api.body ? '' : `body,`}\n
             ${configStr}
         })
@@ -908,7 +909,6 @@ ${interfaces.result}
 export default class APIS extends AIOApis {
     base_url:string;
     constructor(p:I_APIS) {
-        this.base_url = p.base_url;    
         super({
             token: p.token,
             id: '${appName}',
@@ -920,6 +920,7 @@ export default class APIS extends AIOApis {
             getResult: (response) => response.data.value,
             errorResult:false
         });
+        this.base_url = p.base_url;
     }
 ${methodsString.result}
 }
