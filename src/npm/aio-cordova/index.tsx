@@ -420,7 +420,7 @@ declare var navigator: any;
 declare var Camera: any;
 declare var MLKit: any;
 type I_AIOCordova = {
-    backButton?: (e: any, self: AIOCordova) => void
+    backButton?: (p:{exitApp:()=>void}) => void
 }
 type I_AIOCordova_capture = (p: {
     onSuccess: (imageData: string) => void,
@@ -442,9 +442,8 @@ export class AIOCordova {
         document.addEventListener('backbutton', (e: any) => this.backButton(e), false);
     }
     backButton = (e: any) => {
-        if (this.p?.backButton) {
-            e.preventDefalut();
-            this.p.backButton(e, this)
+        if (this.p && this.p.backButton) {
+            this.p.backButton({exitApp:this.exitApp})
         }
     }
     exitApp = () => navigator.app.exitApp()
@@ -591,19 +590,18 @@ const DetectOS = (): I_os => {
     else { os = 'Unknown'; }
     return os;
 }
-export const AIOCordovaComponent: FC<{startWindows:()=>ReactNode,startAndroid:(aioCordova:AIOCordova)=>ReactNode}> = ({startWindows,startAndroid}) => {
+type I_AIOCordovaComponent = {
+    startWindows:()=>ReactNode,
+    startAndroid:(aioCordova:AIOCordova)=>ReactNode,
+    backButton?:(p:{exitApp:()=>void})=>void
+}
+export const AIOCordovaComponent: FC<I_AIOCordovaComponent> = ({startWindows,startAndroid,backButton}) => {
   const [os] = useState(DetectOS())
   const [loading, setLoading] = useState<boolean>(true)
   let cordovaRef = useRef<undefined | AIOCordova>(undefined)
   async function onDeviceReady() {
     if (os === 'Android') {
-      cordovaRef.current = new AIOCordova({
-        backButton: (e, self) => {
-          if (window.confirm("آیا می‌خواهید از برنامه خارج شوید؟")) {
-            self.exitApp();
-          }
-        }
-      })
+      cordovaRef.current = new AIOCordova({backButton})
     }
     setTimeout(() => { setLoading(false) }, 3000)
   }

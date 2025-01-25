@@ -1,0 +1,21 @@
+{
+    "name": "aio-cordova",
+    "version": "3.0.1",
+    "description": "",
+    "types":"index.d.ts",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/mohammadFeiz/aio-cordova.git"
+    },
+    "author": "mohammad sharif feiz feiz.ms@gmail.com",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/mohammadFeiz/aio-cordova/issues"
+    },
+    "homepage": "https://github.com/mohammadFeiz/aio-cordova#readme"
+  }
+  
