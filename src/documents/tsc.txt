@@ -1,0 +1,1 @@
+tsc index.tsx --target ES6 --declaration --jsx react-jsx

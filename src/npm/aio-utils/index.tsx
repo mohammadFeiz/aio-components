@@ -516,10 +516,11 @@ export class Storage {
     }
     getNow = () => new Date().getTime();
     save = (field: string, value: any, expiredIn?: number): I_storage_model => {
+        if(expiredIn === null){expiredIn = undefined}
         if (value === undefined) { return this.copy(this.model) }
         const newModel = { ...this.model }, now = this.getNow();
         newModel[field] = { value, saveTime: now, expiredIn: Infinity }
-        if (expiredIn) { newModel[field].expiredIn = expiredIn }
+        if (typeof expiredIn === 'number') { newModel[field].expiredIn = expiredIn }
         return this.setModel(newModel);
     }
     remove = (field: string): I_storage_model => {
@@ -534,9 +535,11 @@ export class Storage {
     }
     isExpired = (field: string): boolean => {
         if (!this.model[field]) { return true }
+        if(typeof this.model[field].expiredIn !== 'number'){return false}
         return this.model[field].expiredIn < this.getNow()
     }
     load = (field: string, def?: any, expiredIn?: number) => {
+        if(expiredIn === null){expiredIn = undefined}
         const obj = this.model[field]
         if (!obj) { this.save(field, def, expiredIn); return def }
         const isExpired = this.isExpired(field)
@@ -1784,8 +1787,8 @@ export function MockApi(p: I_MockApi) {
     }
 }
 
-export function ShuffleArray(array:any[]) {
-    let shuffledArray = [...array]; 
+export function ShuffleArray(array: any[]) {
+    let shuffledArray = [...array];
     for (let i = shuffledArray.length - 1; i > 0; i--) {
         const randomIndex = Math.floor(Math.random() * (i + 1));
         [shuffledArray[i], shuffledArray[randomIndex]] = [shuffledArray[randomIndex], shuffledArray[i]];
@@ -1949,7 +1952,7 @@ export class Swip {
         this.addSelectRect(mousePosition.x, mousePosition.y);
         let startParams: I_Swip_parameter = { mousePosition, domLimit: this.domLimit, parentLimit: this.parentLimit, event: e, change: this.defaultChange }
         let res = (this.p.start || (() => [0, 0]))(startParams);
-        if(res === false){return}
+        if (res === false) { return }
         if (!Array.isArray(res)) { return; }
         let x = res[0], y = res[1];
         this.so = { ...this.so, x, y }

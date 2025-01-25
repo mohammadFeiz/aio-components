@@ -28,7 +28,6 @@ type I_AILogin = {
     }) => ReactNode;
     translate?: (key: I_login_key) => string | undefined;
     fa?: boolean;
-    rememberTime: number;
     id: string;
     splash?: {
         html: ReactNode;

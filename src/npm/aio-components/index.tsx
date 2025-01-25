@@ -158,7 +158,7 @@ export const AIApp: FC<I_AIApp> = (props) => {
     }
     function body_layout() {
         return (
-            <div className="msf">
+            <div style={{flex:1}}>
                 <div className="ai-app-side"></div>
                 <div className="ai-app-body">
                     {props.body()}

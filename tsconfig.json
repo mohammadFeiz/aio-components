@@ -4,8 +4,9 @@
         "noEmit": true, // or "emitDeclarationOnly": true
         "jsx": "react-jsx", // Specify the JSX factory you're using (e.g., "react" for React applications)
         "esModuleInterop": true,        // Enable interoperability between CommonJS and ES modules
-        "target":"ES2021",
-        "module":"CommonJS",
+        "target": "ES6",
+        "module":"NodeNext",
+        "moduleResolution": "NodeNext",
         "declaration": true,
         "strict": true,
         "allowSyntheticDefaultImports": true,

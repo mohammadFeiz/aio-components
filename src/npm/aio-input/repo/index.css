@@ -51,7 +51,6 @@
     width: 100%;
     position: relative;
     overflow: hidden;
-    max-width: 100%;
     flex-direction:column;
 }
 
@@ -2752,6 +2751,7 @@ pre[class*="language-"]>code[class*="language-"] {
     display: flex;
     align-items: center;
     min-height: 30px;
+    width:100%;
 }
 
 .ai-form-item-label {

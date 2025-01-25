@@ -1,1 +1,343 @@
-import{useEffect as e,useRef as r,useState as t}from"react";import s from"aio-input";import{AddToAttrs as o,Storage as i}from"aio-utils";import{Loading as n,Alert as a}from"aio-popup";import u from"axios";import"./index.css";import{Fragment as l}from"react/jsx-runtime";import{jsxs as d}from"react/jsx-runtime";import{jsx as p}from"react/jsx-runtime";import{createElement as c}from"react";export function AIOLogin_updateCatchedUser(e,r){let t=new i("ai-login"+e),s=t.load("data");if(!s)return r;let o={...s,user:r};return t.save("data",o)}let AILogin=f=>{let{translate:m=()=>{},otpLength:g=4}=f,{validation:h=()=>{}}=f,[y,k]=t(),[b]=t(new i("ai-login"+f.id)),[w,x]=t(L),[$]=t(new n),[T,v]=t(!1),R=r(w);R.current=w,console.log(R.current);let[q,N]=t(A());function _(){return f.mode?f.mode:f.userpass?"userpass":f.otp?"otpnumber":"userpass"}function A(e){let r={inputs:()=>null,key:e||_(),title:null,submitText:"",shouldReturnsUserAndToken:!1};if("userpass"===r.key)r.inputs=()=>d(l,{children:[E({mode:r.key,field:"username",type:"text"}),E({mode:r.key,field:"password",type:"text"})]}),r.shouldReturnsUserAndToken=!0;else if("register"===r.key){if(f.register){let t=(f.register.inputs||(()=>[]))(R.current)||[];r.inputs=()=>d(l,{children:[E({mode:r.key,field:"username",type:"text"}),E({mode:r.key,field:"password",type:"password"}),E({mode:r.key,field:"repassword",type:"password"}),t.map(e=>E({mode:r.key,field:e.field,type:e.type,inputProps:e}))]})}}else"otpnumber"===r.key?r.inputs=()=>E({mode:r.key,field:"otpnumber",type:"text"}):"otpcode"===r.key&&(r.inputs=()=>E({mode:r.key,field:"otpcode",type:"text"}),r.shouldReturnsUserAndToken=!0);return r.submitText=U(r.key+"Button"),r.title=p("div",{className:"ai-login-title",children:U(r.key+"Title")}),r}function E(e){let r=e.inputProps||{},t=R.current;"register"===e.mode&&(t=t.register);let{maxLength:o=({otpnumber:11,otpcode:g})[e.mode],filter:i="otpnumber"===e.mode||"otpcode"===e.mode?["number"]:void 0,preview:n="password"===e.field,rtl:a=!!f.fa,label:u=f.label(e.field)}=r,l={...r,"aria-label":`aio-login-${e.field}`},d=r=>{let t=R.current;"register"===e.mode?x({...t,register:{...t.register,[e.field]:r}}):x({...t,[e.field]:r})};return c(s,{...r,maxLength:o,filter:i,preview:n,rtl:a,label:u,onChange:d,inputAttrs:l,key:`${e.mode}-${e.field}`,value:t[e.field],type:e.type})}function L(){var e;let r={username:"",password:"",otpnumber:"",otpcode:"",register:{username:"",password:"",repassword:""}};if(!f.register)return r;if(null!==(e=f.register)&&void 0!==e&&e.defaultValue){let t={};for(let s in f.register.defaultValue)t[s]=f.register.defaultValue[s];r.register=t}return r}let[P,j]=t(!0),[B,C]=t(!!f.splash);function U(e){let r={registerButton:{en:"Register",fa:"ثبت نام"},userpassButton:{en:"Login",fa:"ورود"},otpnumberButton:{en:"Send Number",fa:"ارسال شماره همراه"},otpcodeButton:{en:"Login",fa:"ورود"},registerTitle:{en:"Register",fa:"ثبت نام"},userpassTitle:{en:"Login",fa:"ورود"},otpcodeTitle:{en:"OTP Code",fa:"کد یکبار مصرف"},otpnumberTitle:{en:"Phone Number",fa:"شماره همراه"},switchuserpass:{en:"login by user name",fa:"ورود با نام کاربری"},switchregister:{en:"Go To Register",fa:"ثبت نام"},switchotp:{en:"login by otp",fa:"ورود با رمز یکبار مصرف"},repasswordMatch:{en:"Password is not match with Re password",fa:"رمز عبور با تکرار آن مطابقت ندارد"},usernameRequired:{en:"User Name is required",fa:"نام کاربری ضروری است"},passwordRequired:{en:"password is required",fa:"رمز عبور ضروری است"},repasswordRequired:{en:"Re Password is required",fa:"تکرار رمز عبور ضروری است"},otpnumberRequired:{en:"Phone Number is required",fa:"شماره همراه ضروری است"},otpcodeLength:{en:`otp code should be ${g} digit`,fa:`کد یکبار مصرف باید ${g} رقم باشد`},registerError:{en:"Registeration failed",fa:"ثبت نام با خطا روبرو شد"},userpassError:{en:"login by username failed",fa:"ورود با نام کاربری با خطا روبرو شد"},otpcodeError:{en:"login by otp failed",fa:"ورود با کد یکبار مصرف با خطا روبرو شد"},otpnumberError:{en:"send otp number for receive otp code failed",fa:"ارسال شماره همراه برای دریافت کد یکبار مصرف با خطا روبرو شد"}};return f.fa?r[e].fa:m(e)||r[e].en}async function I(e,r){if(!f.userpass)return;let{onSuccess:t}=await f.userpass.api(R.current,"userpass");$.show("login0");let s=await t(e);if($.hide("login0"),"object"==typeof s&&s.user&&"string"==typeof s.token){s.message&&W({type:"success",text:s.message});let{user:o,token:i}=s;b.save("data",{user:o,token:i}),k({user:o,token:i})}else{let n=`onSuccess of props.${r}.${"userpass"===r?"api":"codeApi"} should returns {user:any,token:string}`;W({type:"error",text:U(`${r}Error`),subtext:n})}}async function V(e,r){if(!f.userpass)return;let{onSuccess:t}=await f.userpass.api(R.current,"userpass");$.show("login0");let s=await t(e);$.hide("login0"),s.message&&W({type:"success",text:s.message}),"otpnumber"===r?N(A("otpcode")):setTimeout(()=>window.location.reload(),1e3)}async function M(e){"userpass"===q.key||"otpcode"===q.key?I(e,q.key):V(e,q.key)}async function O(){$.show("login0");let{url:e,method:r,body:t,onCatch:s}=await f[q.key].api(R.current,q.key);$.hide("login0"),u[r](e,t).then(M).catch(e=>{s?W({type:"error",text:"Error",subtext:s(e)}):e.message&&W({type:"error",text:"Error",subtext:e.message})})}function S(e){x(L()),N(A(e))}function z(e){return{className:"ai-login-mode",onClick:()=>S(e)}}function F(){return d("div",{className:"ai-login-modes",children:[f.userpass&&"userpass"!==q.key&&p("button",{...z("userpass"),children:U("switchuserpass")}),f.register&&"register"!==q.key&&p("button",{...z("register"),children:U("switchregister")}),f.otp&&"otpnumber"!==q.key&&p("button",{...z("otpnumber"),children:U("switchotp")})]})}function G(){let e=R.current;if("otpcode"===q.key&&(e.otpcode||"").length!==g)return U("otpcodeLength");if("otpnumber"===q.key&&!e.otpnumber)return U("otpnumberRequired");if("userpass"===q.key&&!e.username)return U("usernameRequired");if("register"===q.key){if(!e.register.username)return U("usernameRequired");if(!e.register.password)return U("passwordRequired");if(!e.register.repassword)return U("repasswordRequired");if(e.register.password!==e.register.repassword)return U("repasswordMatch")}return h(e,q.key)}function D(){let e=G();return d(l,{children:[p("div",{className:"ai-login-errors",children:!!e&&p("div",{className:"ai-login-error",children:e})}),p("button",{className:"ai-login-submit",disabled:!!e||!!T,onClick(){v(!0),setTimeout(()=>v(!1),3e3),O()},children:q.submitText})]})}function H(){let{title:e,inputs:r}=q;return d("div",{className:"ai-login-form",children:[e,r(),D(),F()]})}let J=e=>{let r=f[e],t=null;return r&&(t=r(q.key)),p("div",{className:`ai-login-${e}`,children:t})};function K(){b.remove("data"),window.location.reload()}async function Q(){if(f.splash&&setTimeout(()=>{C(!1)},f.splash.time),f.mock){k({user:f.mock.user,token:f.mock.token});return}let e=b.load("data",{},f.rememberTime),{user:r,token:t}=e;$.show("login0");let{url:s,method:o,onSuccess:i,onCatch:n}=await f.checkToken(t||"");$.hide("login0"),r&&t&&u[o](s,{headers:{authorization:`Bearer ${t}`}}).then(e=>{let s;try{s=i(e)}catch(o){W({type:"error",text:"checkToken failed",subtext:o.message});return}!0===s?k({user:r,token:t}):!1===s?K():W({type:"error",text:"checkToken failed",subtext:"checkToken props should return string as error or true as token is valid and false as token is invalid"})}).catch(e=>{let r,t="";try{r=n(e)}catch(s){t=s.message}"string"==typeof r?t=r:!1===r?K():t="AILogin checkToken onCatch props should returns string as error or false as invalid token",t?W({type:"error",text:"checkToken failed",subtext:t}):e.message&&W({type:"error",text:"Error",subtext:e.message})}),j(!1)}function W(e){a(e)}function X(){if(P||B)return f.splash?f.splash.html:null;if(!y){let e=o(f.attrs,{className:"ai-login",style:{direction:f.fa?"rtl":void 0}});return d("div",{...e,children:[J("before")," ",H()," ",J("after")]})}return f.renderApp({token:y.token,user:y.user,logout:K})}return e(()=>{Q()},[]),p(l,{children:X()})};export default AILogin;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { createElement as _createElement } from "react";
+import { Fragment as _Fragment, jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
+import { useEffect, useRef, useState } from "react";
+import AIOInput from "aio-input";
+import { AddToAttrs, Storage } from "aio-utils";
+import { Loading, Alert } from "aio-popup";
+import axios from "axios";
+import './index.css';
+export function AIOLogin_updateCatchedUser(loginId, newUser) {
+    const storage = new Storage('ai-login' + loginId);
+    const storedData = storage.load('data');
+    if (!storedData) {
+        return newUser;
+    }
+    const newStoredData = Object.assign(Object.assign({}, storedData), { user: newUser });
+    return storage.save('data', newStoredData);
+}
+const AILogin = (props) => {
+    const { translate = () => { }, otpLength = 4 } = props;
+    const { validation = () => { return undefined; } } = props;
+    const [data, setData] = useState();
+    const [storage] = useState(new Storage('ai-login' + props.id));
+    const [model, setModel] = useState(getModel);
+    const [loading] = useState(new Loading());
+    const [submitDisabled, setSubmitDisabled] = useState(false);
+    const modelRef = useRef(model);
+    modelRef.current = model;
+    console.log(modelRef.current);
+    const [mode, setMode] = useState(getMode());
+    function getModeKey() {
+        if (props.mode) {
+            return props.mode;
+        }
+        if (props.userpass) {
+            return 'userpass';
+        }
+        if (props.otp) {
+            return 'otpnumber';
+        }
+        return 'userpass';
+    }
+    function getMode(mode) {
+        let res = { inputs: () => null, key: mode || getModeKey(), title: null, submitText: '', shouldReturnsUserAndToken: false };
+        if (res.key === 'userpass') {
+            res.inputs = () => {
+                return (_jsxs(_Fragment, { children: [getInput({ mode: res.key, field: 'username', type: 'text' }), getInput({ mode: res.key, field: 'password', type: 'text' })] }));
+            };
+            res.shouldReturnsUserAndToken = true;
+        }
+        else if (res.key === 'register') {
+            if (props.register) {
+                const inputs = (props.register.inputs || (() => []))(modelRef.current) || [];
+                res.inputs = () => {
+                    return (_jsxs(_Fragment, { children: [getInput({ mode: res.key, field: 'username', type: 'text' }), getInput({ mode: res.key, field: 'password', type: 'password' }), getInput({ mode: res.key, field: 'repassword', type: 'password' }), inputs.map((input) => getInput({ mode: res.key, field: input.field, type: input.type, inputProps: input }))] }));
+                };
+            }
+        }
+        else if (res.key === 'otpnumber') {
+            res.inputs = () => getInput({ mode: res.key, field: 'otpnumber', type: 'text' });
+        }
+        else if (res.key === 'otpcode') {
+            res.inputs = () => getInput({ mode: res.key, field: 'otpcode', type: 'text' });
+            res.shouldReturnsUserAndToken = true;
+        }
+        res.submitText = trans(res.key + 'Button');
+        res.title = _jsx("div", { className: "ai-login-title", children: trans(res.key + 'Title') });
+        return res;
+    }
+    function getInput(p) {
+        const inputProps = p.inputProps || {};
+        let model = modelRef.current;
+        if (p.mode === 'register') {
+            model = model.register;
+        }
+        const { maxLength = { otpnumber: 11, otpcode: otpLength }[p.mode], filter = p.mode === 'otpnumber' || p.mode === 'otpcode' ? ['number'] : undefined, preview = p.field === 'password', rtl = !!props.fa, label = props.label(p.field) } = inputProps;
+        const inputAttrs = Object.assign(Object.assign({}, inputProps), { 'aria-label': `aio-login-${p.field}` });
+        const onChange = (v) => {
+            let model = modelRef.current;
+            if (p.mode === 'register') {
+                setModel(Object.assign(Object.assign({}, model), { register: Object.assign(Object.assign({}, model.register), { [p.field]: v }) }));
+            }
+            else {
+                setModel(Object.assign(Object.assign({}, model), { [p.field]: v }));
+            }
+        };
+        return (_createElement(AIOInput, Object.assign({}, inputProps, { maxLength, filter, preview, rtl, label, onChange, inputAttrs, key: `${p.mode}-${p.field}`, value: model[p.field], type: p.type })));
+    }
+    function getModel() {
+        var _a;
+        let model = { username: '', password: '', otpnumber: '', otpcode: '', register: { username: '', password: '', repassword: '' } };
+        if (!props.register) {
+            return model;
+        }
+        if ((_a = props.register) === null || _a === void 0 ? void 0 : _a.defaultValue) {
+            let register = {};
+            for (let prop in props.register.defaultValue) {
+                register[prop] = props.register.defaultValue[prop];
+            }
+            model.register = register;
+        }
+        return model;
+    }
+    const [waitingCheckToken, setWeightingCheckToken] = useState(true);
+    const [splashing, setSplashing] = useState(!!props.splash);
+    function trans(key) {
+        const dic = {
+            registerButton: { en: 'Register', fa: 'ثبت نام' },
+            userpassButton: { en: 'Login', fa: 'ورود' },
+            otpnumberButton: { en: 'Send Number', fa: 'ارسال شماره همراه' },
+            otpcodeButton: { en: 'Login', fa: 'ورود' },
+            registerTitle: { en: 'Register', fa: 'ثبت نام' },
+            userpassTitle: { en: 'Login', fa: 'ورود' },
+            otpcodeTitle: { en: 'OTP Code', fa: 'کد یکبار مصرف' },
+            otpnumberTitle: { en: 'Phone Number', fa: 'شماره همراه' },
+            switchuserpass: { en: 'login by user name', fa: 'ورود با نام کاربری' },
+            switchregister: { en: 'Go To Register', fa: 'ثبت نام' },
+            switchotp: { en: 'login by otp', fa: 'ورود با رمز یکبار مصرف' },
+            repasswordMatch: { en: 'Password is not match with Re password', fa: 'رمز عبور با تکرار آن مطابقت ندارد' },
+            usernameRequired: { en: 'User Name is required', fa: 'نام کاربری ضروری است' },
+            passwordRequired: { en: 'password is required', fa: 'رمز عبور ضروری است' },
+            repasswordRequired: { en: 'Re Password is required', fa: 'تکرار رمز عبور ضروری است' },
+            otpnumberRequired: { en: 'Phone Number is required', fa: 'شماره همراه ضروری است' },
+            otpcodeLength: { en: `otp code should be ${otpLength} digit`, fa: `کد یکبار مصرف باید ${otpLength} رقم باشد` },
+            registerError: { en: 'Registeration failed', fa: 'ثبت نام با خطا روبرو شد' },
+            userpassError: { en: 'login by username failed', fa: 'ورود با نام کاربری با خطا روبرو شد' },
+            otpcodeError: { en: 'login by otp failed', fa: 'ورود با کد یکبار مصرف با خطا روبرو شد' },
+            otpnumberError: { en: 'send otp number for receive otp code failed', fa: 'ارسال شماره همراه برای دریافت کد یکبار مصرف با خطا روبرو شد' },
+        };
+        return props.fa ? dic[key].fa : translate(key) || dic[key].en;
+    }
+    function success_1(response, mode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!props.userpass) {
+                return;
+            }
+            const { onSuccess } = yield props.userpass.api(modelRef.current, 'userpass');
+            loading.show('login0');
+            const res = yield onSuccess(response);
+            loading.hide('login0');
+            if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') {
+                const message = `onSuccess of props.${mode}.${mode === 'userpass' ? 'api' : 'codeApi'} should returns {user:any,token:string}`;
+                setAlert({ type: 'error', text: trans(`${mode}Error`), subtext: message });
+            }
+            else {
+                if (res.message) {
+                    setAlert({ type: 'success', text: res.message });
+                }
+                const { user, token } = res;
+                storage.save('data', { user, token });
+                setData({ user, token });
+            }
+        });
+    }
+    function success_2(response, mode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!props.userpass) {
+                return;
+            }
+            const { onSuccess } = yield props.userpass.api(modelRef.current, 'userpass');
+            loading.show('login0');
+            const res = yield onSuccess(response);
+            loading.hide('login0');
+            if (res.message) {
+                setAlert({ type: 'success', text: res.message });
+            }
+            if (mode === 'otpnumber') {
+                setMode(getMode('otpcode'));
+            }
+            else {
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        });
+    }
+    function success(response) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (mode.key === 'userpass' || mode.key === 'otpcode') {
+                success_1(response, mode.key);
+            }
+            else {
+                success_2(response, mode.key);
+            }
+        });
+    }
+    function submit() {
+        return __awaiter(this, void 0, void 0, function* () {
+            loading.show('login0');
+            const { url, method, body, onCatch } = yield props[mode.key].api(modelRef.current, mode.key);
+            loading.hide('login0');
+            axios[method](url, body).then(success).catch(response => {
+                if (onCatch) {
+                    setAlert({ type: 'error', text: 'Error', subtext: onCatch(response) });
+                }
+                else if (response.message) {
+                    setAlert({ type: 'error', text: 'Error', subtext: response.message });
+                }
+            });
+        });
+    }
+    function changeMode(mode) { setModel(getModel()); setMode(getMode(mode)); }
+    function mode_props(key) { return { className: 'ai-login-mode', onClick: () => changeMode(key) }; }
+    function mode_layout() {
+        return (_jsxs("div", { className: "ai-login-modes", children: [props.userpass && mode.key !== 'userpass' && _jsx("button", Object.assign({}, mode_props('userpass'), { children: trans('switchuserpass') })), props.register && mode.key !== 'register' && _jsx("button", Object.assign({}, mode_props('register'), { children: trans('switchregister') })), props.otp && mode.key !== 'otpnumber' && _jsx("button", Object.assign({}, mode_props('otpnumber'), { children: trans('switchotp') }))] }));
+    }
+    function validate() {
+        const model = modelRef.current;
+        if (mode.key === 'otpcode') {
+            if ((model.otpcode || '').length !== otpLength) {
+                return trans('otpcodeLength');
+            }
+        }
+        if (mode.key === 'otpnumber') {
+            if (!model.otpnumber) {
+                return trans('otpnumberRequired');
+            }
+        }
+        if (mode.key === 'userpass') {
+            if (!model.username) {
+                return trans('usernameRequired');
+            }
+        }
+        if (mode.key === 'register') {
+            if (!model.register.username) {
+                return trans('usernameRequired');
+            }
+            if (!model.register.password) {
+                return trans('passwordRequired');
+            }
+            if (!model.register.repassword) {
+                return trans('repasswordRequired');
+            }
+            if (model.register.password !== model.register.repassword) {
+                return trans('repasswordMatch');
+            }
+        }
+        return validation(model, mode.key);
+    }
+    function submit_layout() {
+        const message = validate();
+        return (_jsxs(_Fragment, { children: [_jsx("div", { className: "ai-login-errors", children: !!message && _jsx("div", { className: "ai-login-error", children: message }) }), _jsx("button", { className: 'ai-login-submit', disabled: !!message || !!submitDisabled, onClick: () => {
+                        setSubmitDisabled(true);
+                        setTimeout(() => setSubmitDisabled(false), 3000);
+                        submit();
+                    }, children: mode.submitText })] }));
+    }
+    function form_layout() {
+        const { title, inputs } = mode;
+        return (_jsxs("div", { className: "ai-login-form", children: [title, inputs(), submit_layout(), mode_layout()] }));
+    }
+    const bf_layout = (type) => {
+        const fn = props[type];
+        let content = null;
+        if (fn) {
+            content = fn(mode.key);
+        }
+        return (_jsx("div", { className: `ai-login-${type}`, children: content }));
+    };
+    function logout() { storage.remove('data'); window.location.reload(); }
+    function CheckToken() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (props.splash) {
+                setTimeout(() => { setSplashing(false); }, props.splash.time);
+            }
+            if (props.mock) {
+                setData({ user: props.mock.user, token: props.mock.token });
+                return;
+            }
+            const storedData = storage.load('data', {}), { user, token } = storedData;
+            loading.show('login0');
+            const { url, method, onSuccess, onCatch } = yield props.checkToken(token || '');
+            loading.hide('login0');
+            if (user && token) {
+                axios[method](url, { headers: { authorization: `Bearer ${token}` } })
+                    .then(response => {
+                    let res;
+                    try {
+                        res = onSuccess(response);
+                    }
+                    catch (err) {
+                        setAlert({ type: 'error', text: 'checkToken failed', subtext: err.message });
+                        return;
+                    }
+                    if (res === true) {
+                        setData({ user, token });
+                    }
+                    else if (res === false) {
+                        logout();
+                    }
+                    else {
+                        setAlert({ type: 'error', text: 'checkToken failed', subtext: 'checkToken props should return string as error or true as token is valid and false as token is invalid' });
+                    }
+                })
+                    .catch(response => {
+                    let res, message = '';
+                    try {
+                        res = onCatch(response);
+                    }
+                    catch (err) {
+                        message = err.message;
+                    }
+                    if (typeof res === 'string') {
+                        message = res;
+                    }
+                    else if (res === false) {
+                        logout();
+                    }
+                    else {
+                        message = 'AILogin checkToken onCatch props should returns string as error or false as invalid token';
+                    }
+                    if (message) {
+                        setAlert({ type: 'error', text: 'checkToken failed', subtext: message });
+                    }
+                    else if (response.message) {
+                        setAlert({ type: 'error', text: 'Error', subtext: response.message });
+                    }
+                });
+            }
+            setWeightingCheckToken(false);
+        });
+    }
+    useEffect(() => { CheckToken(); }, []);
+    function setAlert(p) { Alert(p); }
+    function getContent() {
+        if (waitingCheckToken || splashing) {
+            return props.splash ? props.splash.html : null;
+        }
+        if (!data) {
+            const attrs = AddToAttrs(props.attrs, { className: 'ai-login', style: { direction: !!props.fa ? 'rtl' : undefined } });
+            return (_jsxs("div", Object.assign({}, attrs, { children: [bf_layout('before'), " ", form_layout(), " ", bf_layout('after')] })));
+        }
+        return props.renderApp({ token: data.token, user: data.user, logout });
+    }
+    return (_jsx(_Fragment, { children: getContent() }));
+};
+export default AILogin;

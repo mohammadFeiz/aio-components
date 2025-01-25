@@ -1,6 +1,6 @@
 {
     "name": "aio-login",
-    "version": "8.0.1",
+    "version": "8.0.3",
     "description": "handle all types of popup and modals in react",
     "main": "index.js",
     "scripts": {

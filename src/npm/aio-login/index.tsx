@@ -24,7 +24,6 @@ type I_AILogin = {
     renderApp: (p: { user: any, token: string, logout: () => void }) => ReactNode,
     translate?: (key: I_login_key) => string | undefined,
     fa?: boolean,
-    rememberTime: number,
     id: string,
     splash?: {
         html: ReactNode,
@@ -289,7 +288,7 @@ const AILogin: FC<I_AILogin> = (props) => {
             setData({ user: props.mock.user, token: props.mock.token })
             return
         }
-        const storedData = storage.load('data', {}, props.rememberTime), { user, token } = storedData;
+        const storedData = storage.load('data', {}), { user, token } = storedData;
         loading.show('login0')
         const { url, method, onSuccess, onCatch } = await props.checkToken(token || '');
         loading.hide('login0')
