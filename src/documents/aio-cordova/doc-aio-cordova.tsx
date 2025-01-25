@@ -119,57 +119,18 @@ const ReactAppTsx: FC = () => {
     return (
         <div className="example">
             <div className="fs-16- bold">In react/public/index.html</div>
-            <div className="msf">
-                {Code(`
-type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown'
-export const DetectOS = ():I_os => {
-    const userAgent = window.navigator.userAgent;
-    const platform = window.navigator.platform;
-    const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
-    const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
-    const iosPlatforms = ['iPhone', 'iPad', 'iPod'];
-    let os: any = null;
-    if (macosPlatforms.includes(platform)) { os = 'macOS'; }
-    else if (iosPlatforms.includes(platform)) { os = 'iOS'; }
-    else if (windowsPlatforms.includes(platform)) { os = 'Windows'; }
-    else if (/Android/.test(userAgent)) { os = 'Android'; }
-    else if (/Linux/.test(platform)) { os = 'Linux'; }
-    else { os = 'Unknown'; }
-    return os;
-}    
-                `)}
-            </div>
             <div>
                 {Code(`
+import { AIOCordovaComponent } from "aio-cordova";
 const App: FC = () => {
-  const [os] = useState(DetectOS())
-  const [loading, setLoading] = useState<boolean>(true)
-  let [aioCordova] = useState<AIOCordova>()
-  const setAioCordova = () => {
-    if (os !== 'Android') { return }
-    aioCordova = new AIOCordova({
-      backButton: (e, self) => {
-        if (window.confirm("آیا می‌خواهید از برنامه خارج شوید؟")) {
-          self.exitApp();
-        }
-      }
-    })
-  }
-  async function onDeviceReady() {
-    setAioCordova()
-    //delay for load cordova
-    setTimeout(() => setLoading(false), 3000)
-  }
-  useEffect(() => {
-    if (os === 'Android') { document.addEventListener('deviceready', onDeviceReady, false) }
-    else { onDeviceReady() }
-  }, [])
-  if (loading) {return <Loading />}
-  return os === 'Windows' ? <WindowsApp /> : <MobileApp aioCordova={aioCordova as AIOCordova} />
+  return (
+    <AIOCordovaComponent
+      startWindows={() => <WindowsApp />}
+      startAndroid={(aioCordova) => <MobileApp aioCordova={aioCordova} />}
+    />
+  )
 }
 export default App
-
-
                 `)}
             </div>
         </div>

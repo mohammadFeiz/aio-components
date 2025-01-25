@@ -1,3 +1,5 @@
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
+
 declare var BackgroundGeolocation: any;
 declare var cordova: any;
 declare var TTS: { speak: (arg0: { text: string; locale: "fa-IR" | "en-US"; rate: number; }) => void; };
@@ -217,7 +219,8 @@ export class SQL {
     pkDic: { [tableName: string]: string } = {}
     constructor(p: I_SQL) {
         this.parameter = p;
-        if (this.openDb()) { this.createTables(); }
+        const res = this.openDb()
+        if (res) { this.createTables(); }
     }
     private openDb = (): boolean => {
         //@ts-ignore
@@ -289,7 +292,7 @@ export class SQL {
                 (tx: any) => {
                     tx.executeSql(
                         `INSERT INTO ${table.name} (${keys}) VALUES (${placeholders})`, values, (tx: any, res: any) => resolve({ success: true, result: true }),
-                        (error: Error) => resolve({ success: false, result: `Error saving row to SQLite: ${error.message}` })
+                        (error: any) => resolve({ success: false, result: `Error saving row to SQLite: ${error}` })
                     );
                 },
                 (error: Error) => resolve({ success: false, result: `Transaction error in insert: ${error.message}` }));
@@ -311,7 +314,7 @@ export class SQL {
                         `UPDATE ${table.name} SET ${keys} WHERE ${table.primaryKey} = ?`,
                         [...values, primaryKeyValue],
                         (tx: any, res: any) => resolve({ success: true, result: true }),
-                        (error: Error) => resolve({ success: false, result: `Error updating row in SQLite: ${error.message}` })
+                        (error: any) => reject({ success: false, result: `Error updating row in SQLite: ${JSON.stringify(error)}` })
                     );
                 },
                 (error: Error) => resolve({ success: false, result: `Transaction error in update: ${error.message}` })
@@ -407,7 +410,7 @@ export class SQL {
                         }
                         resolve({ success: true, result: results })
                     },
-                    (error: Error) => resolve({ success: false, result: `Error fetching rows from SQLite: ${error.message}` })
+                    (error:any) => reject({ success: false, result: `Error fetching rows from SQLite: ${error}` })
                 );
             });
         })
@@ -549,22 +552,76 @@ export class AIOCordova {
             }
         );
     }
-    speak = (text: string, lang: 'fa-IR' | 'en-US') => {
-        try {TTS.speak({text,locale: lang,rate: 1})} catch (err: any) { alert(err.message) }
+    speak = (text: string, lang: 'fa-IR' | 'en-US',onError?:(err:string)=>void) => {
+        try {TTS.speak({text,locale: lang,rate: 1})} 
+        catch (err: any) { 
+            if(onError){onError(err.message)}
+            else {alert(err.message)} 
+        }
     }
     handleStorageRes = (res:{success:boolean,result:any})=>{
-        if (res.success) {
-            try{return {success:true,result:JSON.parse(res.result.str).result}}
-            catch(err:any){return {success:false,result:err.message}}
-        }
-        else { return {success:false,result:res.result} }
+        
     }
-    storageLoad:(name:string,def:any)=>Promise<{success:boolean,result:any}> = async (name, def) => {
+    storageLoad:(name:string,def:any)=>Promise<any> = async (name, def) => {
         const res = await this.storageSql.getRow('aiocordovatable', { id: name }, { id: name, str: JSON.stringify(def) })
-        return this.handleStorageRes(res)
+        if (res.success) {
+            try{return JSON.parse((res.result as any).str)}
+            catch(err:any){alert(err.message); return def}
+        }
+        else { alert(res.result); return def }
     }
-    storageSave:(name:string,value:any) => Promise<{success:boolean,result:any}> = async (name,value)=>{
-        const res = await this.storageSql.editRow('aiocordovatable', { id: name }, { id: name, str: JSON.stringify(value) })
-        return this.handleStorageRes(res)
+    storageSave:(name:string,value:any) => Promise<void> = async (name,value)=>{
+        const {success,result} = await this.storageSql.editRow('aiocordovatable', { id: name, str: JSON.stringify(value) }, { id: name, str: JSON.stringify(value) }) 
+        if(!success){alert(result)}
     }
+}
+type I_os = 'Macintosh' | 'MacIntel' | 'MacPPC' | 'Mac68K' | 'Win32' | 'Win64' | 'Windows' | 'WinCE' | 'iPhone' | 'iPad' | 'iPod' | 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | 'Unknown'
+const DetectOS = (): I_os => {
+    const userAgent = window.navigator.userAgent;
+    const platform = window.navigator.platform;
+    const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+    const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+    const iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+    let os: any = null;
+    if (macosPlatforms.includes(platform)) { os = 'macOS'; }
+    else if (iosPlatforms.includes(platform)) { os = 'iOS'; }
+    else if (windowsPlatforms.includes(platform)) { os = 'Windows'; }
+    else if (/Android/.test(userAgent)) { os = 'Android'; }
+    else if (/Linux/.test(platform)) { os = 'Linux'; }
+    else { os = 'Unknown'; }
+    return os;
+}
+export const AIOCordovaComponent: FC<{startWindows:()=>ReactNode,startAndroid:(aioCordova:AIOCordova)=>ReactNode}> = ({startWindows,startAndroid}) => {
+  const [os] = useState(DetectOS())
+  const [loading, setLoading] = useState<boolean>(true)
+  let cordovaRef = useRef<undefined | AIOCordova>(undefined)
+  async function onDeviceReady() {
+    if (os === 'Android') {
+      cordovaRef.current = new AIOCordova({
+        backButton: (e, self) => {
+          if (window.confirm("آیا می‌خواهید از برنامه خارج شوید؟")) {
+            self.exitApp();
+          }
+        }
+      })
+    }
+    setTimeout(() => { setLoading(false) }, 3000)
+  }
+  useEffect(() => {
+    if (os === 'Android') { document.addEventListener('deviceready', onDeviceReady, false) }
+    else { onDeviceReady() }
+  }, [])
+  if (loading) { return <Loading /> }
+  if (os === 'Windows') { return <>{startWindows()}</> }
+  if (!cordovaRef.current) { alert('aio cordova instance not created'); return null }
+  return <>{startAndroid(cordovaRef.current)}</>
+}
+const Loading: FC = () => {
+  return (
+    <div className="loading-container">
+      <div className="loading-3">
+        <span></span>
+      </div>
+    </div>
+  )
 }

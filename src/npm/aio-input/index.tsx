@@ -1,17 +1,18 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
-import $ from 'jquery';
 import usePopup, { AP_modal, AP_usePopup } from "./../aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
-    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, Validation,
+    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray,
     keyboard_filter,
     setValueByField,
     getValueByField,
+    Swip, I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength
+
 } from './../aio-utils';
-import Swip, { I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength } from './../aio-swip';
 import AIODate from './../aio-date';
 import './repo/index.css';
 import { Indent, GetSvg } from '../aio-components';
+import $ from 'jquery';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
