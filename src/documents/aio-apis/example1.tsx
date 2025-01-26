@@ -7,7 +7,7 @@ const GetResult:FC = ()=>{
     const [data,setData] = useState<I_data>()
     const getData = async ()=>{
         const res = await apis.getData1()
-        if(res){setData(res)}
+        if(res.success){setData(res.result as I_data)}
     }
     useEffect(()=>{
         getData()
@@ -26,7 +26,7 @@ class APIS extends AIOApis {
             errorResult:false,
         });
     }
-    getData1 = async ():Promise<{name:string,family:string} | false> => {
+    getData1 = async ():Promise<{success:boolean,result:{name:string,family:string} | false}> => {
         return await this.request({
             name:'getData1',
             description:'get data 1',

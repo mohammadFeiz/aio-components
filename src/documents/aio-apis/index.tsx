@@ -11,26 +11,26 @@ export default function DOC_AIOApis(props: any) {
             nav={{
                 items: () => [
                     { text: 'apis class', id: 'apis', render: () => <Apis /> },
-                    {text:'onCatch , getResult',id:'onCatch',render: () => <OnCatch_GetResult />},
-                    {text:'loading',id:'loading',render: () => <Loading />},
-                    {text:'loader',id:'loader',render: () => <Loader />},
-                    {text:'body',id:'body',render: () => <Body />},
+                    { text: 'onCatch , getResult', id: 'onCatch', render: () => <OnCatch_GetResult /> },
+                    { text: 'loading', id: 'loading', render: () => <Loading /> },
+                    { text: 'loader', id: 'loader', render: () => <Loader /> },
+                    { text: 'body', id: 'body', render: () => <Body /> },
                     {
-                        text:'cache',id:'cache',
-                        items:[
-                            {text:'name',id:'cache_name',render: () => <Cache_Name />},
-                            {text:'expiredIn',id:'cache_expiredIn',render: () => <Cache_ExpiredIn />},
-                            {text:'interval',id:'cache_interval',render: () => <Cache_Interval />},
-                            {text:'removeCache',id:'removeCache',render: () => <RemoveCache />}
+                        text: 'cache', id: 'cache',
+                        items: [
+                            { text: 'name', id: 'cache_name', render: () => <Cache_Name /> },
+                            { text: 'expiredIn', id: 'cache_expiredIn', render: () => <Cache_ExpiredIn /> },
+                            { text: 'interval', id: 'cache_interval', render: () => <Cache_Interval /> },
+                            { text: 'removeCache', id: 'removeCache', render: () => <RemoveCache /> }
                         ]
                     },
-                    {text:'errorResult',id:'errorResult',render: () => <ErrorResult />},
-                    {text:'showMessage',id:'showMessage',render: () => <ShowMessage />},
-                    {text:'prevent showMessage',id:'preventShowMessage',render: () => <PreventShowMessage />},
-                    {text:'mapResult',id:'mapResult',render: () => <MapResult />},
-                    {text:'getResultMethod',id:'getResultMethod',render: () => <GetResultMethod />},
-                    {text:'onCatchMethod',id:'onCatchMethod',render: () => <OnCatchMethod />},
-                    
+                    { text: 'errorResult', id: 'errorResult', render: () => <ErrorResult /> },
+                    { text: 'showMessage', id: 'showMessage', render: () => <ShowMessage /> },
+                    { text: 'prevent showMessage', id: 'preventShowMessage', render: () => <PreventShowMessage /> },
+                    { text: 'mapResult', id: 'mapResult', render: () => <MapResult /> },
+                    { text: 'getResultMethod', id: 'getResultMethod', render: () => <GetResultMethod /> },
+                    { text: 'onCatchMethod', id: 'onCatchMethod', render: () => <OnCatchMethod /> },
+
                 ]
             }}
         />
@@ -104,7 +104,7 @@ const Apis: FC = () => {
 }
 const OnCatch_GetResult: FC = () => {
     const apiName = 'OnCatch_GetResult'
-    const responseCode = 
+    const responseCode =
         `{ 
         status: 400, 
         data: { 
@@ -112,8 +112,8 @@ const OnCatch_GetResult: FC = () => {
         } 
     }`
     const propCode =
-    `method:'get',`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+        `method:'get',`
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const Loading: FC = () => {
     const apiName = 'Loading';
@@ -123,10 +123,10 @@ const Loading: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz' 
     } 
-}`  
-    const propCode = 
+}`
+    const propCode =
         `loading:false`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const Loader: FC = () => {
     const apiName = 'Loader';
@@ -136,15 +136,15 @@ const Loader: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz' 
     } 
-}`  
-    const propCode = 
-            `loading:true,
+}`
+    const propCode =
+        `loading:true,
             loader:(
                 <svg class='sdsas' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13,2.03C17.73,2.5 21.5,6.25 21.95,11C22.5,16.5 18.5,21.38 13,21.93V19.93C16.64,19.5 19.5,16.61 19.96,12.97C20.5,8.58 17.39,4.59 13,4.05V2.05L13,2.03M11,2.06V4.06C9.57,4.26 8.22,4.84 7.1,5.74L5.67,4.26C7.19,3 9.05,2.25 11,2.06M4.26,5.67L5.69,7.1C4.8,8.23 4.24,9.58 4.05,11H2.05C2.25,9.04 3,7.19 4.26,5.67M2.06,13H4.06C4.24,14.42 4.81,15.77 5.69,16.9L4.27,18.33C3.03,16.81 2.26,14.96 2.06,13M7.1,18.37C8.23,19.25 9.58,19.82 11,20V22C9.04,21.79 7.18,21 5.67,19.74L7.1,18.37M12,16.5L7.5,12H11V8H13V12H16.5L12,16.5Z" />
                 </svg>        
             )`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const Body: FC = () => {
     const apiName = 'Body';
@@ -154,13 +154,13 @@ const Body: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz',message:${'`sent'} id is ${'${body.id}`'}}
     }
-}`  
-    const propCode = 
-            `method:'post',
+}`
+    const propCode =
+        `method:'post',
             body:{id},`
     const param = `id:string`
     const body = 'id1432234'
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} />
 }
 const Cache_Name: FC = () => {
     const apiName = 'Cache_Name';
@@ -170,13 +170,13 @@ const Cache_Name: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz',message:'sent id is id1432234'
     }
-}`  
-    const propCode = 
-            `method:'get',
+}`
+    const propCode =
+        `method:'get',
             cache:{name:'user1'}`
     const param = `id:string`
     const body = 'id1432234'
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} />
 }
 const Cache_ExpiredIn: FC = () => {
     const apiName = 'Cache_ExpiredIn';
@@ -186,16 +186,16 @@ const Cache_ExpiredIn: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz',message:'sent id is id1432234'
     }
-}`  
-    const propCode = 
-            `method:'get',
+}`
+    const propCode =
+        `method:'get',
             cache:{
                 name:'user1',
                 expiredIn:new Date().getTime() + 10000
             }`
     const param = `id:string`
     const body = 'id1432234'
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} />
 }
 const Cache_Interval: FC = () => {
     console.log('call Cache_Interval component')
@@ -206,9 +206,9 @@ const Cache_Interval: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz',message:'sent id is id1432234'
     }
-}`  
-    const propCode = 
-            `method:'get',
+}`
+    const propCode =
+        `method:'get',
             cache:{
                 name:'user1',
                 expiredIn:new Date().getTime() + 40000,
@@ -216,7 +216,7 @@ const Cache_Interval: FC = () => {
             }`
     const param = `id:string`
     const body = 'id1432234'
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} />
 }
 const RemoveCache: FC = () => {
     const apiName = 'RemoveCache';
@@ -226,18 +226,18 @@ const RemoveCache: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz',message:'sent id is id1432234'
     }
-}`  
-    const propCode = 
-            `method:'get',
+}`
+    const propCode =
+        `method:'get',
             cache:{name:'user1'}`
     const param = `id:string`
     const body = 'id1432234'
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} removeCache='user1'/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} param={param} body={body} removeCache='user1' />
 }
 
 const ErrorResult: FC = () => {
     const apiName = 'ErrorResult'
-    const responseCode = 
+    const responseCode =
         `{ 
         status: 400, 
         data: { 
@@ -245,9 +245,9 @@ const ErrorResult: FC = () => {
         } 
     }`
     const propCode =
-            `method:'get',
+        `method:'get',
             errorResult:{}`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const ShowMessage: FC = () => {
     const apiName = 'ShowMessage';
@@ -257,14 +257,14 @@ const ShowMessage: FC = () => {
     data: { 
         name: 'mohammad',family:'feiz' 
     } 
-}`  
-    const propCode = 
+}`
+    const propCode =
         `showMessage:(response)=>({type:'success',text:'operation was successful',subtext:'sent id is id34532'})`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const PreventShowMessage: FC = () => {
     const apiName = 'PreventShowMessage'
-    const responseCode = 
+    const responseCode =
         `{ 
         status: 400, 
         data: { 
@@ -272,14 +272,14 @@ const PreventShowMessage: FC = () => {
         } 
     }`
     const propCode =
-    `method:'get',
+        `method:'get',
     showMessage:()=>false`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const MapResult: FC = () => {
     const apiName = 'MapResult'
-    const responseCode = 
-`{ 
+    const responseCode =
+        `{ 
     status: 200, 
     data: { 
         items:[
@@ -291,14 +291,14 @@ const MapResult: FC = () => {
     } 
 }`
     const propCode =
-            `method:'get',
+        `method:'get',
             mapResult:(result)=>result.items[0]`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode}/>
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} />
 }
 const GetResultMethod: FC = () => {
     const apiName = 'GetResultMethod'
-    const responseCode = 
-`{ 
+    const responseCode =
+        `{ 
     status: 200, 
     data: { 
         items:[
@@ -310,12 +310,12 @@ const GetResultMethod: FC = () => {
     } 
 }`
     const propCode =
-    `method:'get',`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} gm={true}/>
+        `method:'get',`
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} gm={true} />
 }
 const OnCatchMethod: FC = () => {
     const apiName = 'OnCatchMethod'
-    const responseCode = 
+    const responseCode =
         `{ 
         status: 400, 
         data: { 
@@ -325,8 +325,8 @@ const OnCatchMethod: FC = () => {
         } 
     }`
     const propCode =
-    `method:'get',`
-    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} om={true}/>
+        `method:'get',`
+    return <Sample apiName={apiName} responseCode={responseCode} propCode={propCode} om={true} />
 }
 
 
@@ -338,76 +338,76 @@ class APIS extends AIOApis {
             lang: 'fa',
             onCatch: (response) => response.response.data.message,
             getResult: (response) => response.data,
-            onCatchMethods:{
-                mainOnCatch:(response) => response.response.data.messages[0].message,
+            onCatchMethods: {
+                mainOnCatch: (response) => response.response.data.messages[0].message,
             },
-            getResultMethods:{
-                mainGetResult:(response) => response.data.items[0],
+            getResultMethods: {
+                mainGetResult: (response) => response.data.items[0],
             },
-            errorResult:false
+            errorResult: false
         });
     }
-    mock1:I_mockMethod = ()=>({ status: 400, data: { message: 'you cannot do this action' } })
-    mock2:I_mockMethod = ()=>({ status: 200, data: { name: 'mohammad',family:'feiz' } })
-    mock3:I_mockMethod = (config:any)=>{
+    mock1: I_mockMethod = () => ({ status: 400, data: { message: 'you cannot do this action' } })
+    mock2: I_mockMethod = () => ({ status: 200, data: { name: 'mohammad', family: 'feiz' } })
+    mock3: I_mockMethod = (config: any) => {
         const data = JSON.parse(config.data)
-        return { status: 200, data: { name: 'mohammad',family:'feiz',message:`sent id is ${data.id}` } }
+        return { status: 200, data: { name: 'mohammad', family: 'feiz', message: `sent id is ${data.id}` } }
     }
-    mock4:I_mockMethod = ()=>{
+    mock4: I_mockMethod = () => {
         const time = new Date().getTime()
-        return { status: 200, data: { name: 'mohammad',family:'feiz',time } }
+        return { status: 200, data: { name: 'mohammad', family: 'feiz', time } }
     }
-    mock_MapResult:I_mockMethod = ()=>{
-        return { 
-            status: 200, 
-            data: { 
-                items:[
+    mock_MapResult: I_mockMethod = () => {
+        return {
+            status: 200,
+            data: {
+                items: [
                     {
-                        name:'mohammad',
-                        family:'feiz'
+                        name: 'mohammad',
+                        family: 'feiz'
                     }
                 ]
-            } 
+            }
         }
     }
-    mock_GetResutMethod:I_mockMethod = ()=>{
-        return { 
-            status: 200, 
-            data: { 
-                items:[
+    mock_GetResutMethod: I_mockMethod = () => {
+        return {
+            status: 200,
+            data: {
+                items: [
                     {
-                        name:'mohammad',
-                        family:'feiz'
+                        name: 'mohammad',
+                        family: 'feiz'
                     }
                 ]
-            } 
+            }
         }
     }
-    mock_OnCatchMethod:I_mockMethod = ()=>{
-        return { 
-            status: 400, 
-            data: { 
+    mock_OnCatchMethod: I_mockMethod = () => {
+        return {
+            status: 400,
+            data: {
                 messages: [
-                    {message:'you cannot do this action' }
+                    { message: 'you cannot do this action' }
                 ]
-            } 
+            }
         }
     }
-    OnCatch_GetResult = async (): Promise<{ name: string, family: string } | false> => {
+    OnCatch_GetResult = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock1'},name: 'OnCatch_GetResult',description: 'get data',method: 'get',url: '/OnCatch_GetResult',
+            mock: { delay: 2500, methodName: 'mock1' }, name: 'OnCatch_GetResult', description: 'get data', method: 'get', url: '/OnCatch_GetResult',
         })
     }
-    Loading = async (): Promise<{ name: string, family: string } | false> => {
+    Loading = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock2'},loading:false,description: 'get data',method: 'get',url: '/Loading',
+            mock: { delay: 2500, methodName: 'mock2' }, loading: false, description: 'get data', method: 'get', url: '/Loading',
             name: 'Loading'
         })
     }
-    Loader = async (): Promise<{ name: string, family: string } | false> => {
+    Loader = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock2'},name: 'Loader',description: 'get data',method: 'get',url: '/Loader',
-            loading:true,loader:(
+            mock: { delay: 2500, methodName: 'mock2' }, name: 'Loader', description: 'get data', method: 'get', url: '/Loader',
+            loading: true, loader: (
                 `<svg class='sample-loader' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13,2.03C17.73,2.5 21.5,6.25 21.95,11C22.5,16.5 18.5,21.38 13,21.93V19.93C16.64,19.5 19.5,16.61 19.96,12.97C20.5,8.58 17.39,4.59 13,4.05V2.05L13,2.03M11,2.06V4.06C9.57,4.26 8.22,4.84 7.1,5.74L5.67,4.26C7.19,3 9.05,2.25 11,2.06M4.26,5.67L5.69,7.1C4.8,8.23 4.24,9.58 4.05,11H2.05C2.25,9.04 3,7.19 4.26,5.67M2.06,13H4.06C4.24,14.42 4.81,15.77 5.69,16.9L4.27,18.33C3.03,16.81 2.26,14.96 2.06,13M7.1,18.37C8.23,19.25 9.58,19.82 11,20V22C9.04,21.79 7.18,21 5.67,19.74L7.1,18.37M12,16.5L7.5,12H11V8H13V12H16.5L12,16.5Z" />
                 </svg>
@@ -415,90 +415,90 @@ class APIS extends AIOApis {
             )
         })
     }
-    Body = async (id:string): Promise<{ name: string, family: string } | false> => {
+    Body = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock3'},name: 'Body',description: 'get data',method: 'post',url: '/Body',
-            body:{id}
+            mock: { delay: 2500, methodName: 'mock3' }, name: 'Body', description: 'get data', method: 'post', url: '/Body',
+            body: { id }
         })
     }
-    Cache_Name = async (id:string): Promise<{ name: string, family: string } | false> => {
+    Cache_Name = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock4'},name: 'Cache_Name',description: 'get data',method: 'get',url: '/Cache_Name',body:{id},
-            cache:{name:'user1'}
+            mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_Name', description: 'get data', method: 'get', url: '/Cache_Name', body: { id },
+            cache: { name: 'user1' }
         })
     }
-    Cache_ExpiredIn = async (id:string): Promise<{ name: string, family: string } | false> => {
+    Cache_ExpiredIn = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock4'},name: 'Cache_ExpiredIn',description: 'get data',method: 'get',url: '/Cache_ExpiredIn',body:{id},
-            cache:{name:'user1',expiredIn:new Date().getTime() + 10000}
+            mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_ExpiredIn', description: 'get data', method: 'get', url: '/Cache_ExpiredIn', body: { id },
+            cache: { name: 'user1', expiredIn: new Date().getTime() + 10000 }
         })
     }
-    Cache_Interval = async (id:string): Promise<{ name: string, family: string } | false> => {
+    Cache_Interval = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock4'},name: 'Cache_Interval',description: 'get data',method: 'get',url: '/Cache_Interval',body:{id},
-            cache:{name:'user1',expiredIn:new Date().getTime() + 40000,interval:10 * 1000}
+            mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_Interval', description: 'get data', method: 'get', url: '/Cache_Interval', body: { id },
+            cache: { name: 'user1', expiredIn: new Date().getTime() + 40000, interval: 10 * 1000 }
         })
     }
-    RemoveCache = async (id:string): Promise<{ name: string, family: string } | false> => {
+    RemoveCache = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock4'},name: 'RemoveCache',description: 'get data',method: 'get',url: '/RemoveCache',body:{id},
-            cache:{name:'user1'}
+            mock: { delay: 2500, methodName: 'mock4' }, name: 'RemoveCache', description: 'get data', method: 'get', url: '/RemoveCache', body: { id },
+            cache: { name: 'user1' }
         })
     }
-    ErrorResult = async (id:string): Promise<{ name: string, family: string } | false> => {
+    ErrorResult = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock1'},
-            name: 'ErrorResult',description: 'get data',method: 'get',url: '/ErrorResult',getResultMethod:'main',onCatchMethod:'main',
-            errorResult:{}
+            mock: { delay: 2500, methodName: 'mock1' },
+            name: 'ErrorResult', description: 'get data', method: 'get', url: '/ErrorResult', getResultMethod: 'main', onCatchMethod: 'main',
+            errorResult: {}
         })
     }
-    ShowMessage = async (): Promise<{ name: string, family: string } | false> => {
+    ShowMessage = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock2'},loading:true,name: 'ShowMessage',description: 'get data',method: 'get',url: '/ShowMessage',
-            showMessage:(response)=>({type:'success',text:'operation was successful',subtext:'sent id is id34532'})
+            mock: { delay: 2500, methodName: 'mock2' }, loading: true, name: 'ShowMessage', description: 'get data', method: 'get', url: '/ShowMessage',
+            showMessage: (response) => ({ type: 'success', text: 'operation was successful', subtext: 'sent id is id34532' })
         })
     }
-    PreventShowMessage = async (): Promise<{ name: string, family: string } | false> => {
+    PreventShowMessage = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock1'},
-            name: 'PreventShowMessage',description: 'get data',method: 'get',url: '/PreventShowMessage',
-            showMessage:()=>false
+            mock: { delay: 2500, methodName: 'mock1' },
+            name: 'PreventShowMessage', description: 'get data', method: 'get', url: '/PreventShowMessage',
+            showMessage: () => false
         })
     }
-    MapResult = async (): Promise<{ name: string, family: string } | false> => {
+    MapResult = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock_MapResult'},
-            name: 'MapResult',description: 'get data',method: 'get',url: '/MapResult',
-            mapResult:(result)=>result.items[0]
+            mock: { delay: 2500, methodName: 'mock_MapResult' },
+            name: 'MapResult', description: 'get data', method: 'get', url: '/MapResult',
+            mapResult: (result) => result.items[0]
         })
     }
-    GetResultMethod = async (): Promise<{ name: string, family: string } | false> => {
+    GetResultMethod = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock_GetResutMethod'},
-            name: 'GetResultMethod',description: 'get data',method: 'get',url: '/GetResultMethod',
-            getResultMethod:'mainGetResult',
+            mock: { delay: 2500, methodName: 'mock_GetResutMethod' },
+            name: 'GetResultMethod', description: 'get data', method: 'get', url: '/GetResultMethod',
+            getResultMethod: 'mainGetResult',
         })
     }
-    OnCatchMethod = async (): Promise<{ name: string, family: string } | false> => {
+    OnCatchMethod = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
         return await this.request({
-            mock: {delay: 2500,methodName:'mock_OnCatchMethod'},
-            name: 'OnCatchMethod',description: 'get data',method: 'get',url: '/OnCatchMethod',
-            onCatchMethod:'mainOnCatch',
+            mock: { delay: 2500, methodName: 'mock_OnCatchMethod' },
+            name: 'OnCatchMethod', description: 'get data', method: 'get', url: '/OnCatchMethod',
+            onCatchMethod: 'mainOnCatch',
         })
     }
-    
-    
+
+
 }
-type I_Sample = { apiName: string,responseCode:string,propCode:string,param?:string,body?:any,removeCache?:string,gm?:boolean,om?:boolean }
-const Sample: FC<I_Sample> = ({apiName,responseCode,propCode,param,body,removeCache,gm,om}) => {
+type I_Sample = { apiName: string, responseCode: string, propCode: string, param?: string, body?: any, removeCache?: string, gm?: boolean, om?: boolean }
+const Sample: FC<I_Sample> = ({ apiName, responseCode, propCode, param, body, removeCache, gm, om }) => {
     console.log('call Sample Component')
     const [data, setData] = useState<any>()
     const [apis] = useState<APIS>(getApis)
-    function getApis(){
+    function getApis() {
         console.log('create aio-apis instance')
         return new APIS()
     }
-    const getData = async (body:any) => {
+    const getData = async (body: any) => {
         const res = await (apis as any)[apiName](body);
         setData(res)
     }
@@ -515,22 +515,22 @@ const Sample: FC<I_Sample> = ({apiName,responseCode,propCode,param,body,removeCa
             onCatch: (response) => response.response.data.message,
             getResult: (response) => response.data,
             errorResult:false,
-            ${!!gm?
-            `getResultMethods:{
+            ${!!gm ?
+                        `getResultMethods:{
                 mainGetResult:(response) => response.data.items[0],
-            }`:''}
-            ${!!om?
-            `onCatchMethods:{
+            }`: ''}
+            ${!!om ?
+                        `onCatchMethods:{
                 mainOnCatch:(response) => response.response.data.messages[0].message,
-            },`:''}
+            },`: ''}
         });
     }
-    getData = async (${param || ''}):Promise<{name:string,family:string} | false> => {
+    getData = async (${param || ''}):Promise<{success:boolean,result:{name:string,family:string} | false}> => {
         return await this.request({
             id:'getData',
-            ${!!gm?`getResultMethod:'mainGetResult',`:''}
-            ${!!om?`onCatchMethod:'mainOnCatch',`:''}
-            url:'/api-url',${propCode?`\n            ${propCode}`:''}
+            ${!!gm ? `getResultMethod:'mainGetResult',` : ''}
+            ${!!om ? `onCatchMethod:'mainOnCatch',` : ''}
+            url:'/api-url',${propCode ? `\n            ${propCode}` : ''}
         })
     }
     ...
@@ -541,16 +541,16 @@ const Sample: FC<I_Sample> = ({apiName,responseCode,propCode,param,body,removeCa
             {Code(responseCode)}
             {
                 Code(
-`const [apis] = useState<APIS>(new APIS())
+                    `const [apis] = useState<APIS>(new APIS())
 ...
 const result = await apis.getData()`
                 )
             }
-            <button onClick={() => getData(body)}>{`click to call apis.getData and see result`}</button><br/>
-            {!!removeCache && <button onClick={() => apis.removeCache(apiName,removeCache)}>{`click to remove api cache`}</button>}
+            <button onClick={() => getData(body)}>{`click to call apis.getData and see result`}</button><br />
+            {!!removeCache && <button onClick={() => apis.removeCache(apiName, removeCache)}>{`click to remove api cache`}</button>}
             {
                 !!removeCache && Code(
-`const apiName = 'getData';
+                    `const apiName = 'getData';
 const cacheName = '${removeCache}';
 apis.removeCache(apiName,cacheName)`
                 )
@@ -560,11 +560,11 @@ apis.removeCache(apiName,cacheName)`
                 <>
 
                     <p>{`result is :`}</p>
-                    {Code(data === false?'false':JSON.stringify(data,null,4))}
+                    {Code(data === false ? 'false' : JSON.stringify(data, null, 4))}
 
                 </>
             }
-            
+
         </div>
     )
 

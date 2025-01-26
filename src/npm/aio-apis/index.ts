@@ -14,7 +14,7 @@ export type AA_api = {
     cache?: { name: string, expiredIn?: number, interval?: number },//AA_cache
     mock?: { delay: number, methodName: string },
     errorResult?: any,
-    showMessage?: (obj:{response:any,success:boolean,result:any,message?:string}) => { type: 'success' | 'warning' | 'error' | 'info', time?: number, text: string, subtext?: string } | false
+    showMessage?: (obj:{response:any,success:boolean,result:any}) => { type: 'success' | 'warning' | 'error' | 'info', time?: number, text: string, subtext?: string } | false
     headers?: any,
     token?: string,
     loader?: string, loadingParent?: string,
@@ -93,40 +93,39 @@ export default class AIOApis {
         }
         return '';
     }
-    private responseToResult = async (api: AA_api): Promise<{ result: any, errorMessage?: string, success: boolean,response:any }> => {
+    private responseToResult = async (api: AA_api): Promise<{ result: any, success: boolean,response:any,errorText?:string }> => {
         const { headers = this.props.headers, errorResult = this.props.errorResult,getResultMethod,onCatchMethod } = api;
         const { onCatchMethods = {}, getResultMethods = {} } = this.props;
         const onCatch = onCatchMethod?onCatchMethods[onCatchMethod]:this.props.onCatch;
         const getResult = getResultMethod?getResultMethods[getResultMethod]:this.props.getResult;
         if(!onCatch){
-            const errorMessage = `AIOApis error => missing onCatch in api by name = ${api.name}. you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
-            return {success:false,errorMessage,result:errorResult,response:{}}
+            const errorMessage = `AIOApis error => you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
+            return {success:false,result:errorMessage,response:{},errorText:`missing onCatch in api(${api.name})`}
         }
         if(!getResult){
-            const errorMessage = `AIOApis error => missing onCatch in api by name = ${api.name}. you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
-            return {success:false,errorMessage,result:errorResult,response:{}}
+            const errorMessage = `AIOApis error => you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
+            return {success:false,result:errorMessage,response:{},errorText:`missing onCatch in api(${api.name})`}
         }
         try {
             let response = await Axios({ method: api.method, url: api.url, data: api.body, headers })
-            const result = getResult(response,api);
-            return { result, success: true,response }
+            try{return {success:true,result:getResult(response,api),response}}
+            catch(err:any){return {success:false,result:err.message,response}}         
         }
         catch (response: any) {
-            let errorMessage = onCatch(response, api);
-            return { result: errorResult, errorMessage, success: false,response }
+            try{return { result: onCatch(response, api), success: false,response }}
+            catch(err:any){return { result: err.message, success: false,response,errorText:'onCatch fuction error in api(${api.name})' }}
         }
     }
     private getTextByDescription = (api:AA_api):string=>{
         const {description} = api;
         return this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
     }
-    private showErrorMessage = (p: { errorMessage: string, api: AA_api }) => {
+    private showErrorMessage = (p: { errorMessage: string,errorText:string, api: AA_api }) => {
         if (!p.errorMessage) { return }
-        let text = this.getTextByDescription(p.api)
-        this.addAlert({ type: 'error', text, subtext: p.errorMessage });
+        this.addAlert({ type: 'error', text:p.errorText, subtext: p.errorMessage });
     }
-    private getResult = async (api: AA_api, isCalledByCache?: boolean): Promise<any> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return }
+    private getResult = async <T>(api: AA_api, isCalledByCache?: boolean): Promise<{success:boolean,result:T,isLoading:boolean}> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return {success:false,result:'api is requesting' as T,isLoading:true} }
         const {
             loading = true,
             loader = this.props.loader,
@@ -143,7 +142,7 @@ export default class AIOApis {
                 let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
                 if (cachedValue !== undefined) {
                     console.log(`AIOApis => get result of api by api.name='${api.name}' and cache.name='${api.cache.name}' from cache`)
-                    return cachedValue
+                    return {success:true,result:cachedValue,isLoading:false}
                 }
             }
             else {
@@ -154,29 +153,31 @@ export default class AIOApis {
         const aioLoading = new Loading(loader)
         if (loading) { aioLoading.show(loadingKey, api.loadingParent); }
         this.apisThatAreInLoadingTime[api.name] = true
-        let { result, errorMessage, success,response } = await this.responseToResult({ ...api })
+        let { result, errorText, success,response } = await this.responseToResult({ ...api })
         if(api.showMessage){
-            const config = api.showMessage({response,result,success,message:errorMessage})
+            const config = api.showMessage({response,result,success})
             if(config !== false){this.addAlert(config)}
         }
         this.apisThatAreInLoadingTime[api.name] = false
         if (loading) { aioLoading.hide(loadingKey) }
-        if (!!errorMessage && api.showMessage === undefined) { this.showErrorMessage({ errorMessage, api }); return result }
+        if (!!errorText && !success && api.showMessage === undefined) { 
+            this.showErrorMessage({ errorMessage:result,errorText, api }); 
+        }
         if (success && api.cache) {
             const cacheObj: I_cachedApi = { api, value: result }
             this.cache.setCache(api.name, api.cache.name, cacheObj)
         }
-        return result;
+        return {success,result,isLoading:false} 
     };
-    request = async (api: AA_api): Promise<any> => {
-        const data = await this.getResult(api);
-        if(api.errorResult !== undefined && data === api.errorResult){return data}
-        if(!api.mapResult){return data}
-        try{return api.mapResult(data)}
+    request = async <T>(api: AA_api): Promise<{success:boolean,result:T,isLoading:boolean}> => {
+        const {success,result,isLoading} = await this.getResult<T>(api);
+        if (isLoading) { return {success:false,result:'api is requesting' as T,isLoading:true} }
+        if(!success || !api.mapResult){return {success,result,isLoading}}
+        try{return {success:true,result:api.mapResult(result),isLoading}}
         catch(err:any){
             let text = this.getTextByDescription(api)
             this.addAlert({type:'error',text,subtext:err.message});
-            return api.errorResult
+            return {success:false,result:err.message,isLoading}
         }   
     }
 }
@@ -229,8 +230,8 @@ class Cache {
         if (this.storage.isExpired(key)) {this.removeByKey(key); return;}
         const cachedApi = this.getCachedApi(key); if (!cachedApi) { return }
         const { api } = cachedApi; if (!api.cache) { return }
-        const value = await this.callApi(cachedApi);
-        const newCachedApi: I_cachedApi = { api: cachedApi.api, value }
+        const {result} = await this.callApi(cachedApi);
+        const newCachedApi: I_cachedApi = { api: cachedApi.api, value:result }
         this.setCache(api.name, api.cache.name as string, newCachedApi)
     }
     getCachedValue = (apiName: string, cacheName: string): any => {
@@ -264,4 +265,3 @@ class Cache {
         }
     }
 }
-
