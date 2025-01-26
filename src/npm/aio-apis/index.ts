@@ -16,6 +16,7 @@ export type AA_api = {
     headers?: any,
     token?: string,
     loader?: string, loadingParent?: string,
+    getData?:(data:any)=>any
 }
 type I_cachedApi = {
     api: AA_api,
@@ -54,7 +55,7 @@ export default class AIOApis {
         const storage = new Storage(props.id);
         this.token = props.token;
         this.setToken(props.token);
-        this.cache = new Cache(storage, async (cachedApi: I_cachedApi) => await this.request(cachedApi.api, true))
+        this.cache = new Cache(storage, async (cachedApi: I_cachedApi) => await this.getResult(cachedApi.api, true))
         this.getCachedValue = this.cache.getCachedValue;
         this.updateCache = this.cache.updateCacheValue;
         this.setCache = this.cache.setCache;
@@ -104,7 +105,7 @@ export default class AIOApis {
         let text: string = this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
         this.addAlert({ type: 'error', text, subtext: p.errorMessage });
     }
-    request = async (api: AA_api, isCalledByCache?: boolean): Promise<any> => {
+    private getResult = async (api: AA_api, isCalledByCache?: boolean): Promise<any> => {
         if (this.apisThatAreInLoadingTime[api.name]) { return }
         const {
             loading = false,
@@ -147,6 +148,12 @@ export default class AIOApis {
         }
         return result;
     };
+    request = async (api: AA_api): Promise<any> => {
+        const data = await this.getResult(api);
+        if(api.errorResult !== undefined && data === api.errorResult){return data}
+        if(!api.getData){return data}
+        return api.getData(data)
+    }
 }
 
 export type I_mock = {

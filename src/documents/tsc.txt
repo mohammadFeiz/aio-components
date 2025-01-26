@@ -1,1 +1,99 @@
 tsc index.tsx --target ES6 --declaration --jsx react-jsx
+
+
+{
+  "pagination": {
+    "page": 1,
+    "size": 100
+  },
+  "searchCriteria": {
+    "dateTime": {
+      "from": {
+        "year": 0,
+        "month": 0,
+        "day": 0
+      },
+      "to": {
+        "year": 0,
+        "month": 0,
+        "day": 0
+      }
+    },
+    "recipientNumbers": [
+      "string"
+    ],
+    "textContains": [
+      "string"
+    ],
+    "smsPageCounts": [
+      0
+    ],
+    "tags": [
+      {
+        "tag": "senderId",
+        "value": "string"
+      }
+    ],
+    "hasOperatorError": true,
+    "hasInternalError": true
+  }
+}
+
+
+{
+  "response": {
+    "items": [
+      {
+        "id": "string",
+        "key": "string",
+        "sms": {
+          "recipientNumber": "9127362121",
+          "textContent": "string",
+          "tags": [
+            {
+              "tag": "senderId",
+              "value": "string"
+            }
+          ],
+          "createDateTime": 0
+        },
+        "result": {
+          "id": "string",
+          "error": {
+            "key": "string",
+            "value": "string"
+          },
+          "pageCount": 0,
+          "status": "1"
+        },
+        "errors": [
+          {
+            "occurDateTime": 0,
+            "verbose": "string"
+          }
+        ],
+        "createdDate": 0,
+        "modifiedDate": 0
+      }
+    ],
+    "pageSize": 0,
+    "pageNumber": 0,
+    "totalPages": 0,
+    "totalItems": 0
+  },
+  "messages": [
+    {
+      "code": "string",
+      "clearTextMessage": "string",
+      "args": [
+        {}
+      ]
+    },
+    {
+      "code": "string",
+      "message": "string"
+    }
+  ]
+}
+
+/consignment-api/sms/search
