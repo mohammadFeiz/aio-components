@@ -1,9 +1,11 @@
 import Axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
 import {Alert,Loading} from './../../npm/aio-popup';
+import {Storage,MockApi} from './../../npm/aio-utils';
 
 export type AA_api = {
     description: string,
+    getResultMethod?:string,
+    onCatchMethod?:string,
     name: string,
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     url: string,
@@ -16,7 +18,7 @@ export type AA_api = {
     headers?: any,
     token?: string,
     loader?: string, loadingParent?: string,
-    getData?:(data:any)=>any
+    mapResult?:(data:any)=>any
 }
 type I_cachedApi = {
     api: AA_api,
@@ -27,8 +29,14 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        getResult: (response: any) => any,
-        onCatch: (err: any, config: AA_api) => string;
+        getResult?:(response: any,api:AA_api) => any,
+        onCatch?: (err: any, api: AA_api) => string,
+        getResultMethods?:{
+            [getResultMethod:string]:(response: any,api:AA_api) => any
+        },
+        onCatchMethods?: {
+            [onCatchMethod:string]:(err: any, api: AA_api) => string
+        };
         headers?: any,
         errorResult?: any,
         lang?: 'en' | 'fa'
@@ -44,8 +52,14 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        getResult: (response: any) => any,
-        onCatch: (err: any, config: AA_api) => string;
+        getResult?:(response: any,api:AA_api) => any,
+        onCatch?: (err: any, api: AA_api) => string,
+        getResultMethods?:{
+            [getResultMethod:string]:(response: any,api:AA_api) => any
+        },
+        onCatchMethods?: {
+            [onCatchMethod:string]:(err: any, api: AA_api) => string
+        };
         headers?: any,
         errorResult?: any,
         lang?: 'en' | 'fa'
@@ -80,18 +94,21 @@ export default class AIOApis {
         return '';
     }
     private responseToResult = async (api: AA_api): Promise<{ result: any, errorMessage?: string, success: boolean,response:any }> => {
-        const { headers = this.props.headers, errorResult = this.props.errorResult } = api;
-        const { onCatch, getResult } = this.props;
-        if (!onCatch) {
-            const errorMessage = `
-                missing onCatch in api: ${api.description},
-                you should set onCatch in api or in props of AIOApis    
-            `
-            return { result: errorResult, errorMessage, success: false,response:{} }
+        const { headers = this.props.headers, errorResult = this.props.errorResult,getResultMethod,onCatchMethod } = api;
+        const { onCatchMethods = {}, getResultMethods = {} } = this.props;
+        const onCatch = onCatchMethod?onCatchMethods[onCatchMethod]:this.props.onCatch;
+        const getResult = getResultMethod?getResultMethods[getResultMethod]:this.props.getResult;
+        if(!onCatch){
+            const errorMessage = `AIOApis error => missing onCatch in api by name = ${api.name}. you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
+            return {success:false,errorMessage,result:errorResult,response:{}}
+        }
+        if(!getResult){
+            const errorMessage = `AIOApis error => missing onCatch in api by name = ${api.name}. you should set onCatch function or a function in onCatchMethods in constructor by api.onCatchMethod key`
+            return {success:false,errorMessage,result:errorResult,response:{}}
         }
         try {
             let response = await Axios({ method: api.method, url: api.url, data: api.body, headers })
-            const result = getResult(response);
+            const result = getResult(response,api);
             return { result, success: true,response }
         }
         catch (response: any) {
@@ -99,16 +116,19 @@ export default class AIOApis {
             return { result: errorResult, errorMessage, success: false,response }
         }
     }
+    private getTextByDescription = (api:AA_api):string=>{
+        const {description} = api;
+        return this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
+    }
     private showErrorMessage = (p: { errorMessage: string, api: AA_api }) => {
-        const { description } = p.api;
         if (!p.errorMessage) { return }
-        let text: string = this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
+        let text = this.getTextByDescription(p.api)
         this.addAlert({ type: 'error', text, subtext: p.errorMessage });
     }
     private getResult = async (api: AA_api, isCalledByCache?: boolean): Promise<any> => {
         if (this.apisThatAreInLoadingTime[api.name]) { return }
         const {
-            loading = false,
+            loading = true,
             loader = this.props.loader,
             token = this.props.token
         } = api;
@@ -116,7 +136,7 @@ export default class AIOApis {
         //if not check !isCalledByCache then will infinite loop between updateCache and request
         if (api.mock && !!(this as any)[api.mock.methodName]) {
             const methodName = api.mock.methodName;
-            handleMockApi({ url: api.url, delay: api.mock.delay, method: api.method, result: (config) => (this as any)[methodName](config) })
+            MockApi({ url: api.url, delay: api.mock.delay, method: api.method, getResult: (config) => (this as any)[methodName](config) })
         }
         if (!isCalledByCache) {
             if (api.cache) {
@@ -151,47 +171,16 @@ export default class AIOApis {
     request = async (api: AA_api): Promise<any> => {
         const data = await this.getResult(api);
         if(api.errorResult !== undefined && data === api.errorResult){return data}
-        if(!api.getData){return data}
-        return api.getData(data)
+        if(!api.mapResult){return data}
+        try{return api.mapResult(data)}
+        catch(err:any){
+            let text = this.getTextByDescription(api)
+            this.addAlert({type:'error',text,subtext:err.message});
+            return api.errorResult
+        }   
     }
 }
 
-export type I_mock = {
-    url: string,
-    delay: number,
-    method: 'post' | 'get' | 'delete' | 'put' | 'patch',
-    result: ((body: any) => { status: number, data: any })
-}
-function handleMockApi(p: I_mock) {
-    // const methodRes = {'get':'onGet','post':'onPost'}[p.method]
-    // const fn = (mock as any)[methodRes]
-    const mock = new MockAdapter(Axios);
-    if (p.method === 'get') {
-        mock.resetHandlers();
-        mock.onGet(p.url).replyOnce((config: any) => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const { status, data } = p.result(config)
-                    resolve([status, data]);
-                    mock.restore();
-                }, p.delay);
-            });
-        });
-    }
-    if (p.method === 'post') {
-        mock.resetHandlers();
-        mock.onPost(p.url).replyOnce((config: any) => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const { status, data } = p.result(config)
-                    resolve([status, data]);
-                    mock.restore();
-                }, p.delay);
-            });
-        });
-    }
-
-}
 type I_callApi = (cachedApi: I_cachedApi) => Promise<any>
 class Cache {
     private storage: Storage;
@@ -276,79 +265,3 @@ class Cache {
     }
 }
 
-type I_storage_model = { [key: string]: { value: any, saveTime: number, expiredIn: number } }
-export class Storage {
-    private model: I_storage_model; id: string;
-    constructor(id: string) { this.model = {}; this.id = id; this.init() }
-    init = () => {
-        let storage: any = localStorage.getItem('storageClass' + this.id);
-        this.setModel(storage === undefined || storage === null ? {} : JSON.parse(storage))
-    }
-    copy = (v: any) => JSON.parse(JSON.stringify(v))
-    setModel = (model: I_storage_model): I_storage_model => {
-        this.model = model; localStorage.setItem('storageClass' + this.id, JSON.stringify(model)); return this.copy(model)
-    }
-    getNow = () => new Date().getTime();
-    save = (field: string, value: any, expiredIn?: number): I_storage_model => {
-        if (value === undefined) { return this.copy(this.model) }
-        const newModel = { ...this.model }, now = this.getNow();
-        newModel[field] = { value, saveTime: now, expiredIn:Infinity }
-        if(expiredIn){newModel[field].expiredIn = expiredIn}
-        return this.setModel(newModel);
-    }
-    remove = (field: string): I_storage_model => {
-        const newModel: I_storage_model = {}
-        for (let prop in this.model) { if (prop !== field) { newModel[prop] = this.model[prop] } }
-        return this.setModel(newModel)
-    }
-    removeKeyFromObject = (obj: { [key: string]: any }, key: string) => {
-        const newObj: { [key: string]: any } = {};
-        for (let prop in obj) { if (prop !== key) { newObj[prop] = obj[prop] } }
-        return newObj
-    }
-    isExpired = (field: string): boolean => {
-        if (!this.model[field]) { return true }
-        return this.model[field].expiredIn < this.getNow()
-    }
-    load = (field: string, def?: any, expiredIn?: number) => {
-        const obj = this.model[field]
-        if (!obj) { this.save(field, def, expiredIn); return def }
-        const isExpired = this.isExpired(field)
-        if (isExpired) { this.save(field, def, expiredIn); return def }
-        else { return obj.value }
-    }
-    clear = (): I_storage_model => this.setModel({})
-    download = (file: any, name: string) => {
-        if (!name || name === null) { return }
-        let text = JSON.stringify(file)
-        let element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', name);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-    export = () => {
-        let name = window.prompt('Please Inter File Name');
-        if (name === null || !name) { return; }
-        this.download({ model: this.model }, name)
-    }
-    read = async (file: File): Promise<any> => {
-        return new Promise((resolve, reject) => {
-            const fr = new FileReader();
-            fr.onload = () => {
-                try { const result = JSON.parse(fr.result as string); resolve(result); }
-                catch (error: any) { reject(new Error('Error parsing JSON: ' + error.message)); }
-            };
-            fr.onerror = () => reject(new Error('Error reading file.'));
-            fr.readAsText(file);
-        });
-    }
-    import = async (file: any): Promise<I_storage_model> => {
-        const model = await this.read(file)
-        if (model === undefined) { return this.model; }
-        return this.setModel(model);
-    }
-    getKeys = (): string[] => Object.keys(this.model)
-}

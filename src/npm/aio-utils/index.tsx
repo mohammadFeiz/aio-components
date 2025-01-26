@@ -2097,3 +2097,4 @@ export function getLeftAndTopByCenterAngleLength(center: I_point, angle: number,
     const [left, top] = line[1]
     return { left, top }
 }
+export type I_mockMethod = (p:{body?:any,queryParams?:any})=>{status:number,data:any}
