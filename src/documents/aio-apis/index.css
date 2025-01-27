@@ -7,3 +7,12 @@
     0% {transform:rotate(0deg);}
     100% {transform: rotate(360deg)}
 }
+
+.res-option{
+    flex:1;
+    border:12px solid #aaa;
+    cursor:pointer;
+}
+.res-option.active{
+    border:12px solid yellow;
+}

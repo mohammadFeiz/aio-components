@@ -4,12 +4,14 @@ import { Code } from './../../npm/aio-components';
 import AIOApis from '../../npm/aio-apis/index.ts';
 import './index.css';
 import { I_mockMethod } from '../../npm/aio-utils/index.tsx';
+import GetResult from './example1.tsx';
 export default function DOC_AIOApis(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
             nav={{
                 items: () => [
+                    { text: 'Example1', id: 'e1', render: () => <GetResult /> },
                     { text: 'apis class', id: 'apis', render: () => <Apis /> },
                     { text: 'onCatch , getResult', id: 'onCatch', render: () => <OnCatch_GetResult /> },
                     { text: 'loading', id: 'loading', render: () => <Loading /> },
@@ -24,12 +26,11 @@ export default function DOC_AIOApis(props: any) {
                             { text: 'removeCache', id: 'removeCache', render: () => <RemoveCache /> }
                         ]
                     },
-                    { text: 'errorResult', id: 'errorResult', render: () => <ErrorResult /> },
                     { text: 'showMessage', id: 'showMessage', render: () => <ShowMessage /> },
                     { text: 'prevent showMessage', id: 'preventShowMessage', render: () => <PreventShowMessage /> },
                     { text: 'mapResult', id: 'mapResult', render: () => <MapResult /> },
-                    { text: 'getResultMethod', id: 'getResultMethod', render: () => <GetResultMethod /> },
-                    { text: 'onCatchMethod', id: 'onCatchMethod', render: () => <OnCatchMethod /> },
+                    { text: 'getResult', id: 'getResult', render: () => <GetResultMethod /> },
+                    { text: 'onCatch', id: 'onCatch', render: () => <OnCatchMethod /> },
 
                 ]
             }}
@@ -336,15 +337,14 @@ class APIS extends AIOApis {
             token: '',
             id: 'testaioapis',
             lang: 'fa',
-            onCatch: (response) => response.response.data.message,
-            getResult: (response) => response.data,
-            onCatchMethods: {
-                mainOnCatch: (response) => response.response.data.messages[0].message,
+            onCatch: {
+                main:(response) => response.response.data.message,
+                second: (response) => response.response.data.messages[0].message,
             },
-            getResultMethods: {
-                mainGetResult: (response) => response.data.items[0],
+            getResult: {
+                main:(response) => response.data,
+                second: (response) => response.data.items[0],
             },
-            errorResult: false
         });
     }
     mock1: I_mockMethod = () => ({ status: 400, data: { message: 'you cannot do this action' } })
@@ -393,20 +393,23 @@ class APIS extends AIOApis {
             }
         }
     }
-    OnCatch_GetResult = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    OnCatch_GetResult = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock1' }, name: 'OnCatch_GetResult', description: 'get data', method: 'get', url: '/OnCatch_GetResult',
+            getResult:'main',onCatch:'main'
         })
     }
-    Loading = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Loading = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock2' }, loading: false, description: 'get data', method: 'get', url: '/Loading',
+            getResult:'main',onCatch:'main',
             name: 'Loading'
         })
     }
-    Loader = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Loader = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock2' }, name: 'Loader', description: 'get data', method: 'get', url: '/Loader',
+            getResult:'main',onCatch:'main',
             loading: true, loader: (
                 `<svg class='sample-loader' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13,2.03C17.73,2.5 21.5,6.25 21.95,11C22.5,16.5 18.5,21.38 13,21.93V19.93C16.64,19.5 19.5,16.61 19.96,12.97C20.5,8.58 17.39,4.59 13,4.05V2.05L13,2.03M11,2.06V4.06C9.57,4.26 8.22,4.84 7.1,5.74L5.67,4.26C7.19,3 9.05,2.25 11,2.06M4.26,5.67L5.69,7.1C4.8,8.23 4.24,9.58 4.05,11H2.05C2.25,9.04 3,7.19 4.26,5.67M2.06,13H4.06C4.24,14.42 4.81,15.77 5.69,16.9L4.27,18.33C3.03,16.81 2.26,14.96 2.06,13M7.1,18.37C8.23,19.25 9.58,19.82 11,20V22C9.04,21.79 7.18,21 5.67,19.74L7.1,18.37M12,16.5L7.5,12H11V8H13V12H16.5L12,16.5Z" />
@@ -415,75 +418,76 @@ class APIS extends AIOApis {
             )
         })
     }
-    Body = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Body = async (id: string) => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock3' }, name: 'Body', description: 'get data', method: 'post', url: '/Body',
+            getResult:'main',onCatch:'main',
             body: { id }
         })
     }
-    Cache_Name = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Cache_Name = async (id: string) => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_Name', description: 'get data', method: 'get', url: '/Cache_Name', body: { id },
+            getResult:'main',onCatch:'main',
             cache: { name: 'user1' }
         })
     }
-    Cache_ExpiredIn = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Cache_ExpiredIn = async (id: string) => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_ExpiredIn', description: 'get data', method: 'get', url: '/Cache_ExpiredIn', body: { id },
+            getResult:'main',onCatch:'main',
             cache: { name: 'user1', expiredIn: new Date().getTime() + 10000 }
         })
     }
-    Cache_Interval = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    Cache_Interval = async (id: string) => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock4' }, name: 'Cache_Interval', description: 'get data', method: 'get', url: '/Cache_Interval', body: { id },
+            getResult:'main',onCatch:'main',
             cache: { name: 'user1', expiredIn: new Date().getTime() + 40000, interval: 10 * 1000 }
         })
     }
-    RemoveCache = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    RemoveCache = async (id: string) => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock4' }, name: 'RemoveCache', description: 'get data', method: 'get', url: '/RemoveCache', body: { id },
+            getResult:'main',onCatch:'main',
             cache: { name: 'user1' }
         })
     }
-    ErrorResult = async (id: string): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
-            mock: { delay: 2500, methodName: 'mock1' },
-            name: 'ErrorResult', description: 'get data', method: 'get', url: '/ErrorResult', getResultMethod: 'main', onCatchMethod: 'main',
-            errorResult: {}
-        })
-    }
-    ShowMessage = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    ShowMessage = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock2' }, loading: true, name: 'ShowMessage', description: 'get data', method: 'get', url: '/ShowMessage',
+            getResult:'main',onCatch:'main',
             showMessage: (response) => ({ type: 'success', text: 'operation was successful', subtext: 'sent id is id34532' })
         })
     }
-    PreventShowMessage = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    PreventShowMessage = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock1' },
             name: 'PreventShowMessage', description: 'get data', method: 'get', url: '/PreventShowMessage',
+            getResult:'main',onCatch:'main',
             showMessage: () => false
         })
     }
-    MapResult = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    MapResult = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock_MapResult' },
             name: 'MapResult', description: 'get data', method: 'get', url: '/MapResult',
+            getResult:'main',onCatch:'main',
             mapResult: (result) => result.items[0]
         })
     }
-    GetResultMethod = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    GetResultMethod = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock_GetResutMethod' },
             name: 'GetResultMethod', description: 'get data', method: 'get', url: '/GetResultMethod',
-            getResultMethod: 'mainGetResult',
+            getResult:'second',onCatch:'main',
         })
     }
-    OnCatchMethod = async (): Promise<{ success: boolean, result: { name: string, family: string } | string }> => {
-        return await this.request({
+    OnCatchMethod = async () => {
+        return await this.request<{ name: string, family: string }>({
             mock: { delay: 2500, methodName: 'mock_OnCatchMethod' },
             name: 'OnCatchMethod', description: 'get data', method: 'get', url: '/OnCatchMethod',
-            onCatchMethod: 'mainOnCatch',
+            getResult:'main',onCatch:'second',
         })
     }
 
@@ -512,24 +516,21 @@ const Sample: FC<I_Sample> = ({ apiName, responseCode, propCode, param, body, re
             token: '',
             id: 'testaioapis',
             lang: 'fa',
-            onCatch: (response) => response.response.data.message,
-            getResult: (response) => response.data,
-            errorResult:false,
-            ${!!gm ?
-                        `getResultMethods:{
-                mainGetResult:(response) => response.data.items[0],
-            }`: ''}
-            ${!!om ?
-                        `onCatchMethods:{
-                mainOnCatch:(response) => response.response.data.messages[0].message,
-            },`: ''}
+            onCatch: {
+                main:(response) => response.response.data.message,
+                second: (response) => response.response.data.messages[0].message,
+            },
+            getResult: {
+                main:(response) => response.data,
+                second: (response) => response.data.items[0],
+            }
         });
     }
     getData = async (${param || ''}):Promise<{success:boolean,result:{name:string,family:string} | false}> => {
         return await this.request({
             id:'getData',
-            ${!!gm ? `getResultMethod:'mainGetResult',` : ''}
-            ${!!om ? `onCatchMethod:'mainOnCatch',` : ''}
+            getResult:'${!!gm ? `second` : 'main'}'
+            onCatch:'${!!om ? `second` : 'main'}'
             url:'/api-url',${propCode ? `\n            ${propCode}` : ''}
         })
     }
