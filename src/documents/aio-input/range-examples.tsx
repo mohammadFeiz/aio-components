@@ -435,7 +435,7 @@ const PointAttrs: FC<{type:I_exampleType}> = ({type}) => {
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue) => setValue(newValue)}
-                point={(value, { angle }) => {
+                point={({ value,angle,index,disabled }) => {
                     return {
                         attrs: {
                             style: {
@@ -454,14 +454,14 @@ const PointAttrs: FC<{type:I_exampleType}> = ({type}) => {
     type='${type}' 
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    point={(value,{angle})=>{
+    point={({ value,angle,index,disabled }) => {
         return {
-            attrs:{
-                style:{
-                    height:24,
-                    width:24,
-                    background:'orange',
-                    color:'#fff'
+            attrs: {
+                style: {
+                    height: 24,
+                    width: 24,
+                    background: 'orange',
+                    color: '#fff'
                 }
             }
         }
@@ -481,7 +481,7 @@ const PointHtml: FC<{type:I_exampleType}> = ({type}) => {
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue) => setValue(newValue)}
-                point={(value, { angle }) => {
+                point={({ angle,index,value,disabled }) => {
                     return {
                         html: <Icon path={mdiStar} size={1} />
                     }
@@ -493,9 +493,9 @@ const PointHtml: FC<{type:I_exampleType}> = ({type}) => {
     type='${type}' 
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    point={(value,{angle})=>{
+    point={({ angle,index,value,disabled }) => {
         return {
-            html:<Icon path={mdiStar} size={1}/>
+            html: <Icon path={mdiStar} size={1} />
         }
     }}
     ${sc(setting)}
@@ -513,7 +513,7 @@ const PointOffset: FC<{type:I_exampleType}> = ({type}) => {
             <AIOInput
                 type={type} value={value} start={0} end={100} step={1}
                 onChange={(newValue) => setValue(newValue)}
-                point={(value, { angle }) => {
+                point={({ angle,index,value,disabled }) => {
                     return {
                         html: value,
                         offset: -25
@@ -525,10 +525,10 @@ const PointOffset: FC<{type:I_exampleType}> = ({type}) => {
 <AIOInput
     type={type} value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
-    point={(value,{angle})=>{
+    point={({ angle,index,value,disabled }) => {
         return {
-            html:value,
-            offset:-25
+            html: value,
+            offset: -25
         }
     }}
     ${sc(setting)}
@@ -569,7 +569,9 @@ const Disabled: FC<{type:I_exampleType}> = ({type}) => {
         <div className='example'>
             <AIOInput
                 type={type} value={value} start={0} end={12} step={1}
-                onChange={(newValue) => setValue(newValue)}
+                onChange={(newValue) => {
+                    setValue(newValue)
+                }}
                 disabled={[4, 6, 7, 10, 11]}
                 point={false}
                 fill={false}
@@ -861,10 +863,10 @@ const RangesStatic: FC<{type:I_exampleType}> = ({type}) => {
     value={value} start={0} end={100} step={1}
     onChange={(newValue)=>setValue(newValue)}
     ranges={[
-        [40,'6 0 red'],
-        [60,'6 0 orange'],
-        [80,'6 0 yellow'],
-        [100,'6 0 green'] 
+        [40, {thickness:6,offset:0,color:'red'}],
+        [60, {thickness:6,offset:0,color:'orange'}],
+        [80, {thickness:6,offset:0,color:'yellow'}],
+        [100, {thickness:6,offset:0,color:'green'}]
     ]}
     ${sc(setting)}
 />
@@ -882,8 +884,8 @@ const RangesDynamic: FC<{type:I_exampleType}> = ({type}) => {
         else if (value < 75) { color = 'yellow' }
         else { color = 'green' }
         return [
-            [value as number, `4 0 ${color}`],
-            [100, '5 0 #eee']
+            [value as number, {thickness:4,offset:0,color}],
+            [100, {thickness:5,offset:0,color:'#eee'}]
         ]
     }
     return (
@@ -896,15 +898,15 @@ const RangesDynamic: FC<{type:I_exampleType}> = ({type}) => {
                 {...setting}
             />
             {code(`
-function getRanges(value):any[]{
+function getRanges(): any[] {
     let color;
-    if(value < 25){color = 'red'}
-    else if(value < 50){color = 'orange'}
-    else if(value < 75){color = 'yellow'}
-    else {color = 'green'}
+    if (value < 25) { color = 'red' }
+    else if (value < 50) { color = 'orange' }
+    else if (value < 75) { color = 'yellow' }
+    else { color = 'green' }
     return [
-        [value as number,${'`4 0 ${color}`'}],
-        [100,'5 0 #eee']
+        [value as number, {thickness:4,offset:0,color}],
+        [100, {thickness:5,offset:0,color:'#eee'}]
     ]
 }
 <AIOInput

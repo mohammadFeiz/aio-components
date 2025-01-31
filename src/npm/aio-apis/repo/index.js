@@ -1,4 +1,424 @@
-function _defineProperty(e,t,i){return(t=_toPropertyKey(t))in e?Object.defineProperty(e,t,{value:i,enumerable:!0,configurable:!0,writable:!0}):e[t]=i,e}function _toPropertyKey(e){var t=_toPrimitive(e,"string");return"symbol"==typeof t?t:String(t)}function _toPrimitive(e,t){if("object"!=typeof e||null===e)return e;var i=e[Symbol.toPrimitive];if(void 0!==i){var r=i.call(e,t||"default");if("object"!=typeof r)return r;throw TypeError("@@toPrimitive must return a primitive value.")}return("string"===t?String:Number)(e)}import e from"axios";import t from"axios-mock-adapter";import{Alert as i,Loading as r}from"aio-popup";export default class s{constructor(t){_defineProperty(this,"props",void 0),_defineProperty(this,"token",void 0),_defineProperty(this,"cache",void 0),_defineProperty(this,"getCachedValue",void 0),_defineProperty(this,"updateCache",void 0),_defineProperty(this,"setCache",void 0),_defineProperty(this,"removeCache",void 0),_defineProperty(this,"apisThatAreInLoadingTime",{}),_defineProperty(this,"setToken",t=>{let i=t||this.props.token;i&&(e.defaults.headers.common.Authorization=`Bearer ${i}`)}),_defineProperty(this,"addAlert",e=>{let{type:t,text:r,subtext:s,time:a}=e;i({type:t,text:r,subtext:s,time:a,className:"aio-apis-popup",closeText:"fa"===this.props.lang?"بستن":"Close"})}),_defineProperty(this,"getUrlQueryParam",e=>{if("string"==typeof e)return`/${e}`;if("object"==typeof e&&null!==e){let t=Object.keys(e).map(t=>`${encodeURIComponent(t)}=${encodeURIComponent(e[t])}`).join("&");return`?${t}`}return""}),_defineProperty(this,"responseToResult",async t=>{let{headers:i=this.props.headers,errorResult:r=this.props.errorResult}=t,{onCatch:s,getResult:a}=this.props;if(!s){let o=`
-  missing onCatch in api: ${t.description},
-  you should set onCatch in api or in props of AIOApis    
-`;return{result:r,errorMessage:o,success:!1,response:{}}}try{let n=await e({method:t.method,url:t.url,data:t.body,headers:i}),h=a(n);return{result:h,success:!0,response:n}}catch(l){let d=s(l,t);return{result:r,errorMessage:d,success:!1,response:l}}}),_defineProperty(this,"showErrorMessage",e=>{let{description:t}=e.api;if(!e.errorMessage)return;let i="fa"===this.props.lang?`${t} با خطا روبرو شد`:`An error was occured in ${t}`;this.addAlert({type:"error",text:i,subtext:e.errorMessage})}),_defineProperty(this,"request",async(e,t)=>{if(this.apisThatAreInLoadingTime[e.name])return;let{loading:i=!1,loader:s=this.props.loader,token:a=this.props.token}=e;if(this.token!==a&&this.setToken(a),e.mock&&this[e.mock.methodName]){let o=e.mock.methodName;handleMockApi({url:e.url,delay:e.mock.delay,method:e.method,result:e=>this[o](e)})}if(!t){if(e.cache){let n=this.cache.getCachedValue(e.name,e.cache.name);if(void 0!==n)return console.log(`AIOApis => get result of api by api.name='${e.name}' and cache.name='${e.cache.name}' from cache`),n}else this.cache.removeCache(e.name)}let h="aa"+Math.round(1e5*Math.random()),l=new r(s);i&&l.show(h,e.loadingParent),this.apisThatAreInLoadingTime[e.name]=!0;let{result:d,errorMessage:p,success:c,response:u}=await this.responseToResult({...e});if(e.showMessage){let y=e.showMessage({response:u,result:d,success:c,message:p});!1!==y&&this.addAlert(y)}if(this.apisThatAreInLoadingTime[e.name]=!1,i&&l.hide(h),p&&void 0===e.showMessage)return this.showErrorMessage({errorMessage:p,api:e}),d;if(c&&e.cache){let f={api:e,value:d};this.cache.setCache(e.name,e.cache.name,f)}return d}),console.log("aio-apis constructor"),this.props=t;let s=new Storage(t.id);this.token=t.token,this.setToken(t.token),this.cache=new Cache(s,async e=>await this.request(e.api,!0)),this.getCachedValue=this.cache.getCachedValue,this.updateCache=this.cache.updateCacheValue,this.setCache=this.cache.setCache,this.removeCache=this.cache.removeCache}};function handleMockApi(i){let r=new t(e);"get"===i.method&&(r.resetHandlers(),r.onGet(i.url).replyOnce(e=>new Promise(t=>{setTimeout(()=>{let{status:s,data:a}=i.result(e);t([s,a]),r.restore()},i.delay)}))),"post"===i.method&&(r.resetHandlers(),r.onPost(i.url).replyOnce(e=>new Promise(t=>{setTimeout(()=>{let{status:s,data:a}=i.result(e);t([s,a]),r.restore()},i.delay)})))}class Cache{constructor(e,t){_defineProperty(this,"storage",void 0),_defineProperty(this,"callApi",void 0),_defineProperty(this,"intervals",{}),_defineProperty(this,"getKey",e=>`${e.api.name}-${e.api.cache.name}`),_defineProperty(this,"detectIntervalChange",e=>{var t;let i=null===(t=e.api.cache)||void 0===t?void 0:t.interval,r=this.intervals[this.getKey(e)]||{};return i!==r.repeatTime}),_defineProperty(this,"handleIntervals",()=>{console.log("handleIntervals");let e=this.storage.getKeys();for(let t of e)this.SetInterval(t)}),_defineProperty(this,"SetInterval",e=>{let t=this.getCachedApi(e);if(!t)return;let{api:i}=t,{cache:r}=i;if(!r||!this.detectIntervalChange(t))return;let{interval:s=0}=r;!(s<1e3)&&(this.ClearInterval(e),this.intervals[e]=this.intervals[e]||{repeatTime:s,value:void 0},this.intervals[e].value=setInterval(async()=>{var i;console.log(`AIOApis => call api by api.name='${t.api.name}' and cache.name='${null===(i=t.api)||void 0===i||null===(i=i.cache)||void 0===i?void 0:i.name}' by interval (${s} miliseconds)`),this.updateCacheByKey(e)},s))}),_defineProperty(this,"ClearInterval",e=>{clearInterval((this.intervals[e]||{}).value),this.intervals[e]=void 0}),_defineProperty(this,"getCachedApi",e=>{let t=this.storage.load(e);return t}),_defineProperty(this,"updateCacheByKey",async e=>{if(this.storage.isExpired(e)){this.removeByKey(e);return}let t=this.getCachedApi(e);if(!t)return;let{api:i}=t;if(!i.cache)return;let r=await this.callApi(t),s={api:t.api,value:r};this.setCache(i.name,i.cache.name,s)}),_defineProperty(this,"getCachedValue",(e,t)=>{let i=this.getCachedApi(`${e}-${t}`);if(void 0!==i)return i.value}),_defineProperty(this,"updateCacheValue",(e,t)=>this.updateCacheByKey(`${e}-${t}`)),_defineProperty(this,"setCache",(e,t,i)=>{var r,s;let a=`${e}-${t}`,o=this.getCachedApi(a),n={...o,...i},h=null===(r=n.api.cache)||void 0===r?void 0:r.expiredIn;this.storage.save(a,n,h),null!=n&&null!==(s=n.api.cache)&&void 0!==s&&s.interval?this.SetInterval(a):this.ClearInterval(a)}),_defineProperty(this,"removeByKey",e=>{clearInterval((this.intervals[e]||{}).value),this.storage.remove(e)}),_defineProperty(this,"removeCache",(e,t)=>{if(t)this.removeByKey(`${e}-${t}`);else{let i=this.storage.getKeys();for(let r of i)0===r.indexOf(`${e}-`)&&this.removeByKey(r)}}),this.storage=e,this.callApi=t,this.handleIntervals()}}export class Storage{constructor(e){_defineProperty(this,"model",void 0),_defineProperty(this,"id",void 0),_defineProperty(this,"init",()=>{let e=localStorage.getItem("storageClass"+this.id);this.setModel(null==e?{}:JSON.parse(e))}),_defineProperty(this,"copy",e=>JSON.parse(JSON.stringify(e))),_defineProperty(this,"setModel",e=>(this.model=e,localStorage.setItem("storageClass"+this.id,JSON.stringify(e)),this.copy(e))),_defineProperty(this,"getNow",()=>new Date().getTime()),_defineProperty(this,"save",(e,t,i)=>{if(void 0===t)return this.copy(this.model);let r={...this.model},s=this.getNow();return r[e]={value:t,saveTime:s,expiredIn:1/0},i&&(r[e].expiredIn=i),this.setModel(r)}),_defineProperty(this,"remove",e=>{let t={};for(let i in this.model)i!==e&&(t[i]=this.model[i]);return this.setModel(t)}),_defineProperty(this,"removeKeyFromObject",(e,t)=>{let i={};for(let r in e)r!==t&&(i[r]=e[r]);return i}),_defineProperty(this,"isExpired",e=>!this.model[e]||this.model[e].expiredIn<this.getNow()),_defineProperty(this,"load",(e,t,i)=>{let r=this.model[e];if(!r)return this.save(e,t,i),t;let s=this.isExpired(e);return s?(this.save(e,t,i),t):r.value}),_defineProperty(this,"clear",()=>this.setModel({})),_defineProperty(this,"download",(e,t)=>{if(!t||null===t)return;let i=JSON.stringify(e),r=document.createElement("a");r.setAttribute("href","data:text/plain;charset=utf-8,"+encodeURIComponent(i)),r.setAttribute("download",t),r.style.display="none",document.body.appendChild(r),r.click(),document.body.removeChild(r)}),_defineProperty(this,"export",()=>{let e=window.prompt("Please Inter File Name");null!==e&&e&&this.download({model:this.model},e)}),_defineProperty(this,"read",async e=>new Promise((t,i)=>{let r=new FileReader;r.onload=()=>{try{let e=JSON.parse(r.result);t(e)}catch(s){i(Error("Error parsing JSON: "+s.message))}},r.onerror=()=>i(Error("Error reading file.")),r.readAsText(e)})),_defineProperty(this,"import",async e=>{let t=await this.read(e);return void 0===t?this.model:this.setModel(t)}),_defineProperty(this,"getKeys",()=>Object.keys(this.model)),this.model={},this.id=e,this.init()}}
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import Axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+import { Alert, Loading } from 'aio-popup';
+export default class AIOApis {
+    constructor(props) {
+        this.apisThatAreInLoadingTime = {};
+        this.setToken = (token) => {
+            if (token && token === this.token) {
+                Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+        };
+        this.addAlert = (p) => {
+            let { type, text, subtext, time } = p;
+            Alert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' });
+        };
+        this.getUrlQueryParam = (params) => {
+            if (typeof params === 'string') {
+                return `/${params}`;
+            }
+            else if (typeof params === 'object' && params !== null) {
+                const queryString = Object.keys(params)
+                    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                    .join('&');
+                return `?${queryString}`;
+            }
+            return '';
+        };
+        this.responseToResult = (api) => __awaiter(this, void 0, void 0, function* () {
+            const { headers = this.props.headers, getResult } = api;
+            const { onCatch } = this.props;
+            if (!onCatch) {
+                const errorMessage = `
+                missing onCatch in api: ${api.description},
+                you should set onCatch in api or in props of AIOApis    
+            `;
+                return { result: false, errorMessage, success: false, response: {} };
+            }
+            try {
+                let response = yield Axios({ method: api.method, url: api.url, data: api.body, headers });
+                try {
+                    return { result: getResult(response), success: true, response, errorMessage: '' };
+                }
+                catch (err) {
+                    return { result: err.message, success: false, response, errorMessage: '' };
+                }
+            }
+            catch (response) {
+                try {
+                    return { result: false, errorMessage: onCatch[api.onCatch](response, api), success: false, response };
+                }
+                catch (err) {
+                    return { result: false, errorMessage: err.message, success: false, response };
+                }
+            }
+        });
+        this.showErrorMessage = (p) => {
+            const { description } = p.api;
+            if (!p.errorMessage) {
+                return;
+            }
+            let errorMessage = p.errorMessage;
+            if (p.api.errorMessage) {
+                const res = p.api.errorMessage({ response: p.response, message: p.errorMessage });
+                if (res !== false) {
+                    errorMessage = res;
+                }
+                else {
+                    return;
+                }
+            }
+            let text = this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
+            this.addAlert({ type: 'error', text, subtext: errorMessage });
+        };
+        this.loading = (api, state) => {
+            const { loading = true, loader = this.props.loader, name, loadingParent } = api;
+            if (loading) {
+                const aioLoading = new Loading(loader);
+                aioLoading[state ? 'show' : 'hide'](name, loadingParent);
+            }
+        };
+        this.handleMock = (api) => {
+            if (api.mock && !!this[api.mock.methodName]) {
+                const methodName = api.mock.methodName;
+                handleMockApi({ url: api.url, delay: api.mock.delay, method: api.method, result: (config) => this[methodName](config) });
+            }
+        };
+        this.callCache = (api) => __awaiter(this, void 0, void 0, function* () {
+            if (this.apisThatAreInLoadingTime[api.name]) {
+                return false;
+            }
+            this.setToken(api.token || this.props.token);
+            this.handleMock(api);
+            this.apisThatAreInLoadingTime[api.name] = true;
+            let { success, response } = yield this.responseToResult(api);
+            this.apisThatAreInLoadingTime[api.name] = false;
+            if (success) {
+                return response;
+            }
+        });
+        this.request = (api, isCalledByCache) => __awaiter(this, void 0, void 0, function* () {
+            if (this.apisThatAreInLoadingTime[api.name]) {
+                return false;
+            }
+            this.setToken(api.token || this.props.token);
+            this.handleMock(api);
+            if (!isCalledByCache) {
+                if (api.cache) {
+                    let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
+                    if (cachedValue !== undefined) {
+                        return api.getResult(cachedValue);
+                    }
+                }
+                else {
+                    this.cache.removeCache(api.name);
+                }
+            }
+            this.loading(api, true);
+            this.apisThatAreInLoadingTime[api.name] = true;
+            let { result, errorMessage, success, response } = yield this.responseToResult(api);
+            this.loading(api, false);
+            this.apisThatAreInLoadingTime[api.name] = false;
+            if (api.onError && !success) {
+                api.onError(errorMessage);
+            }
+            if (!!success) {
+                if (api.onSuccess) {
+                    api.onSuccess(result);
+                }
+                if (api.successMessage) {
+                    const res = api.successMessage({ response, result: result });
+                    if (res) {
+                        this.addAlert({ type: 'success', subtext: res, text: '' });
+                    }
+                }
+            }
+            else {
+                this.showErrorMessage({ errorMessage, api, response });
+                return result;
+            }
+            if (success && api.cache) {
+                this.cache.setCache(api.name, api.cache.name, { api, value: response });
+            }
+            return result;
+        });
+        console.log('aio-apis constructor');
+        this.props = props;
+        const storage = new Storage(props.id);
+        this.token = props.token;
+        this.setToken(props.token);
+        this.cache = new Cache(storage, (cachedApi) => __awaiter(this, void 0, void 0, function* () { return yield this.callCache(cachedApi.api); }));
+        this.getCachedValue = this.cache.getCachedValue;
+        this.fetchCachedValue = this.cache.fetchCachedValue;
+        this.editCachedExpiredIn = this.cache.editCachedExpiredIn;
+        this.editCachedInterval = this.cache.editCachedInterval;
+        this.removeCache = this.cache.removeCache;
+    }
+}
+function handleMockApi(p) {
+    // const methodRes = {'get':'onGet','post':'onPost'}[p.method]
+    // const fn = (mock as any)[methodRes]
+    const mock = new MockAdapter(Axios);
+    if (p.method === 'get') {
+        mock.resetHandlers();
+        mock.onGet(p.url).replyOnce((config) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const { status, data } = p.result(config);
+                    resolve([status, data]);
+                    mock.restore();
+                }, p.delay);
+            });
+        });
+    }
+    if (p.method === 'post') {
+        mock.resetHandlers();
+        mock.onPost(p.url).replyOnce((config) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const { status, data } = p.result(config);
+                    resolve([status, data]);
+                    mock.restore();
+                }, p.delay);
+            });
+        });
+    }
+}
+class Cache {
+    constructor(storage, callApi) {
+        this.intervals = {};
+        this.getKey = (cachedApi) => `${cachedApi.api.name}-${cachedApi.api.cache.name}`;
+        this.detectIntervalChange = (cachedApi) => {
+            var _a;
+            const interval = (_a = cachedApi.api.cache) === null || _a === void 0 ? void 0 : _a.interval;
+            const existIntervalObject = (this.intervals[this.getKey(cachedApi)] || {});
+            return interval !== existIntervalObject.repeatTime;
+        };
+        this.SetInterval = (key) => {
+            const cachedApi = this.getCachedApi(key);
+            if (!cachedApi) {
+                return false;
+            }
+            const { api } = cachedApi, { cache } = api;
+            if (!cache) {
+                return false;
+            }
+            if (!this.detectIntervalChange(cachedApi)) {
+                return false;
+            }
+            const { interval = 0 } = cache;
+            if (interval < 1000) {
+                return false;
+            }
+            this.ClearInterval(key);
+            this.intervals[key] = this.intervals[key] || { repeatTime: interval, value: undefined };
+            this.intervals[key].value = setInterval(() => __awaiter(this, void 0, void 0, function* () {
+                var _a, _b;
+                console.log(`AIOApis => call api by api.name='${cachedApi.api.name}' and cache.name='${(_b = (_a = cachedApi.api) === null || _a === void 0 ? void 0 : _a.cache) === null || _b === void 0 ? void 0 : _b.name}' by interval (${interval} miliseconds)`);
+                this.updateCacheByKey(key);
+            }), interval);
+            return true;
+        };
+        this.ClearInterval = (key) => {
+            clearInterval((this.intervals[key] || {}).value);
+            this.intervals[key] = undefined;
+        };
+        this.getCachedApi = (key) => {
+            const res = this.storage.load(key);
+            return res;
+        };
+        this.updateCacheByKey = (key) => __awaiter(this, void 0, void 0, function* () {
+            if (this.storage.isExpired(key)) {
+                this.removeByKey(key);
+                return;
+            }
+            const cachedApi = this.getCachedApi(key);
+            if (!cachedApi) {
+                return;
+            }
+            const { api } = cachedApi;
+            if (!api.cache) {
+                return;
+            }
+            debugger;
+            const value = yield this.callApi(cachedApi);
+            const newCachedApi = { api: cachedApi.api, value };
+            this.setCache(api.name, api.cache.name, newCachedApi);
+        });
+        this.getCachedValue = (apiName, cacheName) => {
+            let cachedApi = this.getCachedApi(`${apiName}-${cacheName}`);
+            if (cachedApi !== undefined) {
+                return cachedApi.value;
+            }
+        };
+        this.fetchCachedValue = (apiName, cacheName) => this.updateCacheByKey(`${apiName}-${cacheName}`);
+        this.setCache = (apiName, cacheName, cachedApi) => {
+            var _a;
+            const key = `${apiName}-${cacheName}`;
+            const expiredIn = (_a = cachedApi.api.cache) === null || _a === void 0 ? void 0 : _a.expiredIn;
+            this.storage.save(key, cachedApi, expiredIn);
+            if (!this.SetInterval(key)) {
+                this.ClearInterval(key);
+            }
+        };
+        this.editCache = (apiName, cacheName, prop, value) => {
+            const key = `${apiName}-${cacheName}`;
+            const cachedApi = this.getCachedApi(key);
+            if (!cachedApi) {
+                return;
+            }
+            const { api } = cachedApi;
+            const { cache } = api;
+            const newCache = Object.assign(Object.assign({}, cache), { [prop]: value });
+            const newCachedApi = Object.assign(Object.assign({}, cachedApi), { api: Object.assign(Object.assign({}, api), { cache: newCache }) });
+            this.setCache(apiName, cacheName, newCachedApi);
+        };
+        this.editCachedExpiredIn = (apiName, cacheName, expiredIn) => {
+            this.editCache(apiName, cacheName, 'expiredIn', expiredIn);
+        };
+        this.editCachedInterval = (apiName, cacheName, interval) => {
+            this.editCache(apiName, cacheName, 'interval', interval);
+        };
+        this.removeByKey = (key) => {
+            clearInterval((this.intervals[key] || {}).value);
+            this.storage.remove(key);
+        };
+        this.removeCache = (apiName, cacheName) => {
+            if (cacheName) {
+                this.removeByKey(`${apiName}-${cacheName}`);
+            }
+            else {
+                const keys = this.storage.getKeys();
+                for (let key of keys) {
+                    if (key.indexOf(`${apiName}-`) === 0) {
+                        this.removeByKey(key);
+                    }
+                }
+            }
+        };
+        this.storage = storage;
+        this.callApi = callApi;
+    }
+}
+export class Storage {
+    constructor(id) {
+        this.init = () => {
+            let storage = localStorage.getItem('storageClass' + this.id);
+            this.setModel(storage === undefined || storage === null ? {} : JSON.parse(storage));
+        };
+        this.copy = (v) => JSON.parse(JSON.stringify(v));
+        this.setModel = (model) => {
+            this.model = model;
+            localStorage.setItem('storageClass' + this.id, JSON.stringify(model));
+            return this.copy(model);
+        };
+        this.getNow = () => new Date().getTime();
+        this.save = (field, value, expiredIn) => {
+            if (value === undefined) {
+                return this.copy(this.model);
+            }
+            const newModel = Object.assign({}, this.model), now = this.getNow();
+            newModel[field] = { value, saveTime: now, expiredIn: Infinity };
+            if (expiredIn) {
+                newModel[field].expiredIn = expiredIn;
+            }
+            return this.setModel(newModel);
+        };
+        this.remove = (field) => {
+            const newModel = {};
+            for (let prop in this.model) {
+                if (prop !== field) {
+                    newModel[prop] = this.model[prop];
+                }
+            }
+            return this.setModel(newModel);
+        };
+        this.removeKeyFromObject = (obj, key) => {
+            const newObj = {};
+            for (let prop in obj) {
+                if (prop !== key) {
+                    newObj[prop] = obj[prop];
+                }
+            }
+            return newObj;
+        };
+        this.isExpired = (field) => {
+            if (!this.model[field]) {
+                return true;
+            }
+            return this.model[field].expiredIn < this.getNow();
+        };
+        this.load = (field, def, expiredIn) => {
+            const obj = this.model[field];
+            if (!obj) {
+                this.save(field, def, expiredIn);
+                return def;
+            }
+            const isExpired = this.isExpired(field);
+            if (isExpired) {
+                this.save(field, def, expiredIn);
+                return def;
+            }
+            else {
+                return obj.value;
+            }
+        };
+        this.clear = () => this.setModel({});
+        this.download = (file, name) => {
+            if (!name || name === null) {
+                return;
+            }
+            let text = JSON.stringify(file);
+            let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', name);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        };
+        this.export = () => {
+            let name = window.prompt('Please Inter File Name');
+            if (name === null || !name) {
+                return;
+            }
+            this.download({ model: this.model }, name);
+        };
+        this.read = (file) => __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    try {
+                        const result = JSON.parse(fr.result);
+                        resolve(result);
+                    }
+                    catch (error) {
+                        reject(new Error('Error parsing JSON: ' + error.message));
+                    }
+                };
+                fr.onerror = () => reject(new Error('Error reading file.'));
+                fr.readAsText(file);
+            });
+        });
+        this.import = (file) => __awaiter(this, void 0, void 0, function* () {
+            const model = yield this.read(file);
+            if (model === undefined) {
+                return this.model;
+            }
+            return this.setModel(model);
+        });
+        this.getKeys = () => Object.keys(this.model);
+        this.model = {};
+        this.id = id;
+        this.init();
+    }
+}

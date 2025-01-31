@@ -122,7 +122,7 @@ export const AIApp = (props) => {
         return (_jsx("div", { className: "ai-app-header", children: header }));
     }
     function body_layout() {
-        return (_jsxs("div", { style: { flex: 1 }, children: [_jsx("div", { className: "ai-app-side" }), _jsx("div", { className: "ai-app-body", children: props.body() })] }));
+        return (_jsxs("div", { style: { flex: 1, overflow: 'hidden' }, children: [_jsx("div", { className: "ai-app-side" }), _jsx("div", { className: "ai-app-body", children: props.body() })] }));
     }
     function bottomMenu_layout() {
         return (_jsx(AIBottomMenu, { bottomMenu: props.bottomMenu }));

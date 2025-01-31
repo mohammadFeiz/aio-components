@@ -2319,7 +2319,7 @@ const Range: FC = () => {
                 dom: () => $(temp.dom.current),
                 start: (p: { event: Event }) => {
                     const {disabled} = rootPropsRef.current;
-                    if(disabled){return false}
+                    if(disabled === true){return false}
                     let { event } = p;
                     if (event.target !== null) {
                         let target = $(event.target);
@@ -2695,7 +2695,7 @@ const RangePoint: FC<I_RangeValue> = (props) => {
     let { value, disabled, angle, index, parentDom } = props;
     if (rootProps.point === false) { return null }
     let { round, size = Def('range-size') } = rootProps;
-    let point = (rootProps.point || (() => { }))(value, { disabled, angle, value, index }) || {}
+    let point = (rootProps.point || (() => { }))({ disabled, angle, value, index }) || {}
     let { attrs = {}, html = value, offset = 0 } = point;
     let containerStyle, pointStyle = { ...attrs.style }
     if (round) { containerStyle = { left: size / 2 + offset, transform: `rotate(${-angle}deg)` } }
@@ -3684,7 +3684,6 @@ export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = { [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean }
 export type AI_table_param = { row: any, column: AI_table_column, rowIndex: number }
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
-export type AI_point = (index: number, p: any) => { offset?: number, html?: ReactNode, attrs?: any }
 export type AI_labels = AI_label[]
 export type AI_label = {
     list?: number[], start?: number, end?: number, step?: number, dynamic?: boolean, autoHide?: boolean, zIndex?: number,
@@ -3788,6 +3787,7 @@ type AI_isTable = {
     toolbarAttrs?: any,
     tabIndex?: number
 }
+
 type AI_isRange = {
     end?: number,
     fill?: false | AI_fill | ((index: number) => AI_fill),
@@ -3795,7 +3795,7 @@ type AI_isRange = {
     labels?: AI_labels,
     max?: number,
     min?: number,
-    point?: false | AI_point,
+    point?: false | ((p: {disabled:boolean, angle:number, value:number, index:number}) => { offset?: number, html?: ReactNode, attrs?: any }),
     ranges?: [number, I_rangeConfig][],
     reverse?: boolean,
     size?: number,

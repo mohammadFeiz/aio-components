@@ -8,14 +8,16 @@ import bodyParser from 'body-parser';
 import Agenda from 'agenda';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean,appName:string };
+export type I_AIOExpress = { auth?: I_auth, env: { mongoUrl: string, port: string, secretKey: string }, uiDoc?: boolean, appName: string, fa?:boolean };
 export type I_response<T> = { status: number, success: boolean, message?: string, value?: T }
 export type I_auth = {
     schema?: I_schemaDefinition,
     name: string,
     path: string,
+    loginInputsStr?:string,
+    loginConfigStr?:string,
     tokenTime: { unit: 's' | 'm' | 'h' | 'd', value: number },
-    registerExeption?: (p: { userName: string, password: string, userProps: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, userProps?: any } | void>,
+    registerExeption?: (p: { userName: string, password: string, properties: any }) => Promise<{ status?: number, message?: string, userName?: string, password?: string, properties?: any } | void>,
     loginExeption?: (p: { user: any, token: string }) => Promise<{ status?: number, message?: string, user?: any } | void>
 };
 type I_transaction = <T>(callback: (session: ClientSession) => Promise<T | string>) => Promise<T | string>
@@ -37,7 +39,7 @@ export type I_api = {
 };
 type I_setResult = (p: { res: Response, status: number, message: string, success: boolean, value?: any }) => any
 type I_schemas = { [key: string]: (I_schemaDefinition | I_schemaDefinitionOption) }
-type I_record<T> = T & {id:string} & Document
+type I_record<T> = T & { id: string } & Document
 class AIOExpress<I_User> {
     private app: Express;
     private p: I_AIOExpress;
@@ -94,19 +96,19 @@ class AIOExpress<I_User> {
             const newValue: any = p.newValue;
             const hashedPassword = await bcrypt.hash(newValue.password, 10);
             newValue.password = hashedPassword;
-            const res = await this.addRow<I_User>({ ...p,newValue, entityName: 'auth' })
+            const res = await this.addRow<I_User>({ ...p, newValue, entityName: 'auth' })
             return typeof res === 'string' ? res : res
         }
         this.editUser = async (p) => await this.editRow<I_User>({ ...p, entityName: 'auth' })
         this.editUsers = async (p) => await this.editRows<I_User>({ ...p, newValue: p.newValue, entityName: 'auth' })
-        this.removeUser = async (p) =>await this.removeRow<I_User>({ ...p, entityName: 'auth' })
+        this.removeUser = async (p) => await this.removeRow<I_User>({ ...p, entityName: 'auth' })
         this.removeUsers = async (p) => await this.removeRows<I_User>({ ...p, entityName: 'auth' })
         this.changeUserPassword = async (p) => {
             try {
-                const user = await this.getUser({id:p.userId});
-                if(user === null){return 'user not found'}
-                if(typeof user === 'string'){return user}
-                const newPasswrod = await this.getNewPassword({userPassword:user.id,oldPassword:p.oldPassword,newPassword:p.newPassword});
+                const user = await this.getUser({ id: p.userId });
+                if (user === null) { return 'user not found' }
+                if (typeof user === 'string') { return user }
+                const newPasswrod = await this.getNewPassword({ userPassword: user.id, oldPassword: p.oldPassword, newPassword: p.newPassword });
                 if (newPasswrod === false) { return 'old password is not match' }
                 const newValue: any = { password: newPasswrod }
                 const res = await this.editUser({ id: p.userId, newValue })
@@ -123,7 +125,7 @@ class AIOExpress<I_User> {
         if (color === "green") { console.log('\x1b[32m%s\x1b[0m', message) }
         else if (color === "yellow") { console.log('\x1b[33m%s\x1b[0m', message) }
         else if (color === "red") { console.log('\x1b[31m%s\x1b[0m', message) }
-        else if (color === "orange") { console.log('\x1b[38;5;208m%s\x1b[0m', message) }        
+        else if (color === "orange") { console.log('\x1b[38;5;208m%s\x1b[0m', message) }
         else { console.log(message) }
     }
     start = async () => {
@@ -204,7 +206,7 @@ class AIOExpress<I_User> {
     };
     getTotal = async (name: string): Promise<number> => await this.getModel(name).countDocuments({})
     getNewPassword = async (p: { userPassword: string, oldPassword: string | false, newPassword: string }): Promise<string | false> => {
-        if(p.oldPassword !== false){
+        if (p.oldPassword !== false) {
             const isMatch = await bcrypt.compare(p.oldPassword, p.userPassword);
             if (!isMatch) { return false }
         }
@@ -242,19 +244,19 @@ class AIOExpress<I_User> {
         this.AuthModel = mongoose.model(this.p.auth.name, authSchema);
         const registerFn: any = async (req: Request, res: Response): Promise<express.Response | void> => {
             if (!this.AuthModel) { return res.status(400).json({ message: 'class error 23423' }); }
-            const { userName, password, userProps = {} } = req.body;
+            const { userName, password, properties = {} } = req.body;
             try {
                 const existingUser = await this.AuthModel.findOne({ userName });
                 if (existingUser) { return res.status(403).json({ message: 'User with this username already exists' }); }
                 if (!password || !userName) { return res.status(403).json({ message: 'Missing username or password' }); }
                 let defModel: any = {};
                 if (schema) {
-                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, { ...userProps, userName, password });
+                    defModel = this.AIOSchemaInstance.getDefaultValueBySchema(schema, { ...properties, userName, password });
                     const message = this.AIOSchemaInstance.validateObjectBySchema(schema, '', defModel);
                     if (typeof message === 'string') { return res.status(400).json({ message, success: false }); }
                 }
                 if (registerExeption) {
-                    const exep = await registerExeption({ userName, password, userProps });
+                    const exep = await registerExeption({ userName, password, properties });
                     if (exep) {
                         if (exep.status) { return res.status(exep.status).json({ message: exep.message, success: false }); }
                         if (exep.userName) { }
@@ -274,7 +276,8 @@ class AIOExpress<I_User> {
             const { userName, password } = req.body;
             try {
                 let user = await this.AuthModel.findOne({ userName });
-                if (!user || !(await user.matchPassword(password))) {
+                const passRes = await user.matchPassword(password)
+                if (!user || !passRes) {
                     return res.status(400).json({ message: 'Invalid username or password' });
                 }
                 const secretKey: string = this.env.secretKey;
@@ -328,11 +331,15 @@ class AIOExpress<I_User> {
     }
     addEntities = (entities: I_entities) => {
         if (this.p.uiDoc) {
-            const { success, result } = this.AIOSchemaInstance.generateUIDoc(entities,this.p.appName);
+            const { success, result } = this.AIOSchemaInstance.generateUIDoc(entities, this.p.appName);
             const message = success ? 'generate ui doc was successful!!!' : 'error in generate ui doc!!!';
             const color = success ? 'green' : 'red'
             this.log(message, color);
             this.log(result, 'yellow');
+        }
+        if (this.p.auth?.loginInputsStr) {
+            const result = generateLoginCode({loginInputsStr:this.p.auth.loginInputsStr,appName:this.p.appName,fa:!!this.p.fa,loginConfigStr:this.p.auth?.loginConfigStr})
+            this.log(result, 'green');
         }
         this.log(this.AIOSchemaInstance.getApiTypes(entities), 'orange');
         for (let prop in entities) { this.addEntity(entities[prop], prop) }
@@ -369,7 +376,7 @@ class AIOExpress<I_User> {
                         const queryParam = this.processUrl(req);
                         if (api.body) {
                             let scm = this.schemas[api.body];
-                            if (!scm) {console.log(`${api.body} in not defined by addSchema`)}
+                            if (!scm) { console.log(`${api.body} in not defined by addSchema`) }
                             let message = this.AIOSchemaInstance.validateObjectBySchema(scm, '', req.body);
                             if (typeof message === 'string') {
                                 message = `in request body : ${message}`
@@ -414,9 +421,50 @@ class AIOExpress<I_User> {
         catch (err: any) { return err.message }
     }
 }
+function generateLoginCode(p:{loginInputsStr:string,appName:string,fa:boolean,loginConfigStr?:string}) {
+    return (
+        `
+UI Auth Code : 
 
+const App: FC = () => {
+  const base_url = process.env.REACT_APP_BASE_URL as string;
+  const login = useLogin({
+    base_url,app:StartApp,
+    fa: ${p.fa?'true':'false'}, id: '${p.appName}login',
+    checkToken: { url: ${'`${base_url}auth/checkToken`'} },
+    userpass: {
+      path:'/auth/login',method: 'post',
+      body:(data)=>({ userName: data.userpass.username, password: data.userpass.password }),
+      onSuccess: async (response) => {
+        const token = response.data.token;
+        let user: any = response.data.user
+        user = { ...user, id: user._id }
+        return { user, token, message: 'ورود موفق' }
+      }
+    },
+    register: {
+      ${p.loginInputsStr},
+      path:'auth/register',method: 'post',
+      body:(data)=>({
+        userName: data.register.username,
+        password: data.register.password,
+        properties: { ...data.register.properties }
+      }),
+      onSuccess: async (response) => { return { message: '${p.fa?'ثبت نام موفق':'Register Was Successful'}' } },
+    },
+    ${p.loginConfigStr || ''}
+  })
+  return (<>{login.render()}</>)
+}
+export default App;
+const StartApp: FC<{user:I_user,token:string,base_url:string,logout:()=>void}> = ({user,token,base_url,logout}) => {
+  return null
+}
+        `
+    )
+}
 export default AIOExpress;
-type I_GCRUD = {getModel: I_getModel,getAuthModel: () => Model<any>}
+type I_GCRUD = { getModel: I_getModel, getAuthModel: () => Model<any> }
 class GCRUD {
     getModel: I_getModel;
     getAuthModel: () => Model<any>
@@ -426,7 +474,7 @@ class GCRUD {
         if (typeof row === 'object' && !Array.isArray(row) && row !== null) { row.id = row._id; }
         return row
     }
-    getRow = async <T>(p:{ entityName: string | 'auth', search?: Partial<T>, id?: any }):Promise<null | I_record<T> | string> => {
+    getRow = async <T>(p: { entityName: string | 'auth', search?: Partial<T>, id?: any }): Promise<null | I_record<T> | string> => {
         try {
             const model = await this.getModelByP(p);
             if (p.id) { const res: I_record<T> | null = await model.findById(p.id); return this.fixId(res) }
@@ -435,31 +483,31 @@ class GCRUD {
         }
         catch (error: any) { return `Error in get row: ${error.message}`; }
     }
-    getRows = async <T>(p:{ entityName: string, search?: Partial<T>, ids?: any[] }):Promise<I_record<T>[] | string> => {
+    getRows = async <T>(p: { entityName: string, search?: Partial<T>, ids?: any[] }): Promise<I_record<T>[] | string> => {
         try {
             const model = await this.getModelByP(p);
             if (p.ids && p.ids.length > 0) { return await model.find({ _id: { $in: p.ids } }); }
             if (p.search) {
-                const res:I_record<T>[] = await model.find(p.search);
-                return res.map((o: (T & {id:string})) => this.fixId(o))
+                const res: I_record<T>[] = await model.find(p.search);
+                return res.map((o: (T & { id: string })) => this.fixId(o))
             }
             return [];
         }
         catch (error: any) { return `Error in getRows: ${error.message}`; }
     }
-    addRow = async <T>(p:{ entityName: string | 'auth', newValue: T, session?: ClientSession }):Promise<I_record<T>  | string> => {
+    addRow = async <T>(p: { entityName: string | 'auth', newValue: T, session?: ClientSession }): Promise<I_record<T> | string> => {
         try {
             let model, newRecord;
             try { model = await this.getModelByP(p); newRecord = new model(p.newValue); }
             catch (err: any) { return err.message }
             const param = p.session ? { session: p.session } : undefined
-            const res:T = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
-            const result:I_record<T> = this.fixId(res)
+            const res: T = await newRecord.save(param).catch((err: any) => `Error in adding row : ${err}`);
+            const result: I_record<T> = this.fixId(res)
             return result
         }
         catch (error: any) { return `Error in adding row: ${error.message}`; }
     }
-    editRow = async <T>(p:{ entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: I_row, session?: ClientSession }):Promise<string | I_record<T>> => {
+    editRow = async <T>(p: { entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: I_row, session?: ClientSession }): Promise<string | I_record<T>> => {
         try {
             const model = await this.getModelByP(p);
             const exist = await this.getRow(p);
@@ -475,11 +523,11 @@ class GCRUD {
         }
         catch (error: any) { throw new Error(`Error updating record: ${error.message}`); }
     }
-    addOrEditRow = async <T>(p: { entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: T, session?: ClientSession }):Promise<string | I_record<T>> => {
+    addOrEditRow = async <T>(p: { entityName: string | 'auth', id?: any, search?: Partial<T>, newValue: T, session?: ClientSession }): Promise<string | I_record<T>> => {
         try {
             const model = await this.getModelByP(p);
-            let existingRecord = await this.getRow({entityName:p.entityName,search:p.search,id:p.id});
-            if(typeof existingRecord === 'string'){return existingRecord}
+            let existingRecord = await this.getRow({ entityName: p.entityName, search: p.search, id: p.id });
+            if (typeof existingRecord === 'string') { return existingRecord }
             if (existingRecord !== null) {
                 const updatedRecord = await model.findByIdAndUpdate(existingRecord.id, p.newValue as any, { new: true, session: p.session });
                 return this.fixId(updatedRecord);
@@ -492,7 +540,7 @@ class GCRUD {
         }
         catch (error: any) { return `Error adding or updating record: ${error.message}` }
     }
-    editRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[]; newValue: Partial<T>, session?: ClientSession }):Promise<string | number> => {
+    editRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[]; newValue: Partial<T>, session?: ClientSession }): Promise<string | number> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -504,7 +552,7 @@ class GCRUD {
         }
         catch (error: any) { throw new Error(`Error updating records: ${error.message}`); }
     }
-    removeRow = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; id?: string, session?: ClientSession }):Promise<string | I_record<T> | null> => {
+    removeRow = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; id?: string, session?: ClientSession }): Promise<string | I_record<T> | null> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -517,7 +565,7 @@ class GCRUD {
         }
         catch (error: any) { throw new Error(`Error deleting record: ${error.message}`); }
     }
-    removeRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[], session?: ClientSession }):Promise<string | number> => {
+    removeRows = async <T>(p: { entityName: string | 'auth', search?: Partial<T>; ids?: any[], session?: ClientSession }): Promise<string | number> => {
         try {
             const model = await this.getModelByP(p);
             let query;
@@ -573,17 +621,17 @@ export class AIOSchema {
         else if (type === 'false') return Boolean;
         else if (type === 'date') return Date;
         else if (type === 'map') return Map;
-        else if (typeof type === 'string') { 
+        else if (typeof type === 'string') {
             const schema = this.schemas[type];
-            if(!schema){
-                return 
+            if (!schema) {
+                return
             }
-            return this.getSchemaType(schema as I_schemaDefinition) 
+            return this.getSchemaType(schema as I_schemaDefinition)
         }
         else if (Array.isArray(type)) {
             return [this.getSchemaType(type[0])] as any;
         }
-        else {return this.getSchema(type)};
+        else { return this.getSchema(type) };
     }
     getSchema = (scm: I_schemaDefinition): I_schema => {
         const { dif } = this.getSchemaByRefrence(scm);
@@ -593,17 +641,17 @@ export class AIOSchema {
             Object.keys(schemaDefinition).forEach(fieldKey => {
                 let h = this.getSchemaByRefrence(schemaDefinition[fieldKey]);
                 const dif = h.dif as I_schemaDefinitionOption;
-                if(!dif.type){
+                if (!dif.type) {
                     console.error(`missing schemaDefinitionOption.type`)
-                    console.error('schemaDefinition is:',scm)
-                    console.error('field is:',fieldKey)
+                    console.error('schemaDefinition is:', scm)
+                    console.error('field is:', fieldKey)
                 }
                 const type = this.getSchemaType(dif.type)
-                if(type === undefined){
+                if (type === undefined) {
                     console.log(`schema.type:'${dif.type}' is not valid for mongooseSchema`)
                     return
                 }
-                let mongooseSchema: any = {type,required: !!dif.required,unique: !!dif.unique};
+                let mongooseSchema: any = { type, required: !!dif.required, unique: !!dif.unique };
                 if (dif.def !== undefined) mongooseSchema.default = dif.def;
                 if (dif.ref) mongooseSchema.ref = dif.ref;
                 if (dif.enum) mongooseSchema.enum = dif.enum;
@@ -810,7 +858,7 @@ export class AIOSchema {
             }
             return { success: true, result }
         }
-        if (['string', 'number', 'boolean', 'date', 'true', 'false','null'].indexOf(sdo.type) !== -1) {
+        if (['string', 'number', 'boolean', 'date', 'true', 'false', 'null'].indexOf(sdo.type) !== -1) {
             return this.simpleTypeToTS(sdo.type as any, !!sdo.required)
         }
         else {
@@ -821,14 +869,11 @@ export class AIOSchema {
         let res: string = ''
         if (api.body) {
             let scm = this.schemas[api.body];
-            if (!scm) { return {result:`${api.body} is not defined by addSchema`,success:false}}
+            if (!scm) { return { result: `${api.body} is not defined by addSchema`, success: false } }
             res = `body:${api.body}`
         }
         if (api.queryString) { res += `${res ? ',' : ''}queryParam:{[key:string]:string} | string`; }
         return { success: true, result: res };
-    }
-    getReturnTypeString = (api: I_api): { success: boolean, result: string } => {
-        return { success: true, result: `:Promise<${api.returnType}>` }
     }
     getUrlString = (name: string, path: string, queryString?: string) => {
         if (!queryString) { return `const url = ${"`${this.base_url}"}${name}${path}${"`"}` }
@@ -839,18 +884,16 @@ export class AIOSchema {
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
-                const { method, configStr = '', description, queryString } = api;
+                const { method, configStr = '', description, queryString, returnType } = api;
                 const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 const bodyParamString = this.bodyParamToString(api);
                 if (!bodyParamString.success) { return { success: false, result: bodyParamString.result } }
-                const returnTypeString = this.getReturnTypeString(api);
-                if (!returnTypeString.success) { return { success: false, result: returnTypeString.result } }
                 res += `
-    ${apiName} = async (${bodyParamString.result})${returnTypeString.result}=>{
+    ${apiName} = async (${bodyParamString.result})=>{
         ${this.getUrlString(name, path, queryString)}
-        return await this.request({
-            name:'${apiName}',
+        return await this.request<${returnType}>({
+            name:'${apiName}',getResult:(response)=>response.data.value,onCatch:'main',
             url,description:"${description}",method:"${method}",${!api.body ? '' : `body,`}\n
             ${configStr}
         })
@@ -871,10 +914,10 @@ export class AIOSchema {
 export type ${prop} = ${result};
             `
         }
-        
+
         return { success: true, result: res }
     }
-    getApiTypes = (entities:I_entities): string => {
+    getApiTypes = (entities: I_entities): string => {
         let res: string = ''
         res += `
 express app api types:
@@ -885,19 +928,19 @@ express app api types:
 type I_response<T> = { status: number, success: boolean, message?: string, value: T }
             `
         for (let name in entities) {
-            const {apis,path} = entities[name]
-            for(let api of apis){
-                let {path,returnType} = api;
-                if(path[0] === '/'){path = path.slice(1,path.length)}
+            const { apis, path } = entities[name]
+            for (let api of apis) {
+                let { path, returnType } = api;
+                if (path[0] === '/') { path = path.slice(1, path.length) }
                 res += `
-export type API_${name}_${path} = I_response<(${returnType})>;
+export type API_${name}_${path} = I_response<(${returnType}) | false>;
             `
             }
         }
-        
+
         return res
     }
-    generateUIDoc = (entities: I_entities,appName:string): { success: boolean, result: string } => {
+    generateUIDoc = (entities: I_entities, appName: string): { success: boolean, result: string } => {
         const methodsString = this.getMethodsString(entities)
         if (!methodsString.success) { return { success: false, result: methodsString.result } }
         const interfaces = this.getInterfaces()
@@ -913,12 +956,12 @@ export default class APIS extends AIOApis {
             token: p.token,
             id: '${appName}',
             lang: 'fa',
-            onCatch: (response) => {
-                if(response.status === 401 || response.data?.status === 401){p.logout()}
-                return response.response.data.message
-            },
-            getResult: (response) => response.data.value,
-            errorResult:false
+            onCatch: {
+                main:(response) => {
+                    if(response.status === 401 || response.data?.status === 401){p.logout()}
+                    return response.response.data.message
+                }
+            }        
         });
         this.base_url = p.base_url;
     }
@@ -934,7 +977,7 @@ ${methodsString.result}
 //2- dar mahale path\to\mongodb\Server\7.0\bin\mongod.cfg khotoote zir ro zafe kon
 //replication:
 //replSetName: "rs0"
-//3- agar error cannot open file daryaft shod bayad 
+//3- agar error cannot open file daryaft shod bayad
 //rooye folder rightclick=>properties=>security=>full controll tik bezani rooye hame ye halat ha
 //4- power shell as administrator => net start MongoDB
 //5- mongod --config "C:\Program Files\MongoDB\Server\7.0\bin\mongod.cfg"

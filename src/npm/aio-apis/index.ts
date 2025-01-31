@@ -37,8 +37,9 @@ export default class AIOApis {
     token: string;
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
-    updateCache: Cache["updateCacheValue"]
-    setCache: Cache["setCache"]
+    fetchCachedValue: Cache["fetchCachedValue"]
+    editCachedExpiredIn:Cache["editCachedExpiredIn"]
+    editCachedInterval:Cache["editCachedInterval"]
     removeCache: Cache["removeCache"]
     apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
     constructor(props: {
@@ -54,10 +55,11 @@ export default class AIOApis {
         const storage = new Storage(props.id);
         this.token = props.token;
         this.setToken(props.token);
-        this.cache = new Cache(storage, async (cachedApi: I_cachedApi<any>) => await this.request(cachedApi.api, true))
+        this.cache = new Cache(storage, async (cachedApi: I_cachedApi<any>) => await this.callCache(cachedApi.api));
         this.getCachedValue = this.cache.getCachedValue;
-        this.updateCache = this.cache.updateCacheValue;
-        this.setCache = this.cache.setCache;
+        this.fetchCachedValue = this.cache.fetchCachedValue;
+        this.editCachedExpiredIn = this.cache.editCachedExpiredIn;
+        this.editCachedInterval = this.cache.editCachedInterval;
         this.removeCache = this.cache.removeCache;
     }
     setToken = (token: string) => {
@@ -107,7 +109,7 @@ export default class AIOApis {
             else{return}
         }
         let text: string = this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
-        this.addAlert({ type: 'error', text, subtext: p.errorMessage });
+        this.addAlert({ type: 'error', text, subtext: errorMessage });
     }
     private loading = (api: AA_api<any>, state: boolean) => {
         const { loading = true, loader = this.props.loader, name, loadingParent } = api;
@@ -115,7 +117,6 @@ export default class AIOApis {
             const aioLoading = new Loading(loader)
             aioLoading[state ? 'show' : 'hide'](name, loadingParent)
         }
-        this.apisThatAreInLoadingTime[api.name] = state
     }
     private handleMock = (api: AA_api<any>) => {
         if (api.mock && !!(this as any)[api.mock.methodName]) {
@@ -123,6 +124,15 @@ export default class AIOApis {
             handleMockApi({ url: api.url, delay: api.mock.delay, method: api.method, result: (config) => (this as any)[methodName](config) })
         }
     }
+    callCache = async (api: AA_api<any>): Promise<any> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return false}
+        this.setToken(api.token || this.props.token)
+        this.handleMock(api)
+        this.apisThatAreInLoadingTime[api.name] = true;
+        let { success, response } = await this.responseToResult(api);
+        this.apisThatAreInLoadingTime[api.name] = false
+        if (success) { return response}
+    };
     request = async <T>(api: AA_api<T>, isCalledByCache?: boolean): Promise<T | false> => {
         if (this.apisThatAreInLoadingTime[api.name]) { return false}
         this.setToken(api.token || this.props.token)
@@ -134,7 +144,9 @@ export default class AIOApis {
             }
             else { this.cache.removeCache(api.name) }
         }
-        this.loading(api, true); let { result, errorMessage, success, response } = await this.responseToResult(api); this.loading(api, false)
+        this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
+        let { result, errorMessage, success, response } = await this.responseToResult(api); 
+        this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if(api.onError && !success){api.onError(errorMessage)}
         if(!!success){
             if(api.onSuccess){api.onSuccess(result as T)}
@@ -194,7 +206,6 @@ class Cache {
     constructor(storage: Storage, callApi: I_callApi) {
         this.storage = storage;
         this.callApi = callApi;
-        this.handleIntervals()
     }
     private getKey = (cachedApi: I_cachedApi<any>) => `${cachedApi.api.name}-${(cachedApi.api.cache as any).name}`
     private detectIntervalChange = (cachedApi: I_cachedApi<any>) => {
@@ -202,25 +213,21 @@ class Cache {
         const existIntervalObject = (this.intervals[this.getKey(cachedApi)] || {}) as any
         return interval !== existIntervalObject.repeatTime
     }
-    private handleIntervals = () => {
-        console.log('handleIntervals')
-        const keys = this.storage.getKeys()
-        for (let key of keys) { this.SetInterval(key) }
-    }
-    private SetInterval = (key: string) => {
+    private SetInterval = (key: string):boolean => {
         const cachedApi = this.getCachedApi(key);
-        if (!cachedApi) { return }
+        if (!cachedApi) { return false }
         const { api } = cachedApi, { cache } = api;
-        if (!cache) { return }
-        if (!this.detectIntervalChange(cachedApi)) { return }
+        if (!cache) { return false }
+        if (!this.detectIntervalChange(cachedApi)) { return false}
         const { interval = 0 } = cache
-        if (interval < 1000) { return }
+        if (interval < 1000) { return false}
         this.ClearInterval(key)
         this.intervals[key] = this.intervals[key] || { repeatTime: interval, value: undefined }
         this.intervals[key].value = setInterval(async () => {
             console.log(`AIOApis => call api by api.name='${cachedApi.api.name}' and cache.name='${cachedApi.api?.cache?.name}' by interval (${interval} miliseconds)`)
             this.updateCacheByKey(key)
         }, interval)
+        return true
     }
     private ClearInterval = (key: string) => {
         clearInterval((this.intervals[key] || {}).value);
@@ -234,6 +241,7 @@ class Cache {
         if (this.storage.isExpired(key)) { this.removeByKey(key); return; }
         const cachedApi = this.getCachedApi(key); if (!cachedApi) { return }
         const { api } = cachedApi; if (!api.cache) { return }
+        debugger
         const value = await this.callApi(cachedApi);
         const newCachedApi: I_cachedApi<any> = { api: cachedApi.api, value }
         this.setCache(api.name, api.cache.name as string, newCachedApi)
@@ -242,16 +250,28 @@ class Cache {
         let cachedApi = this.getCachedApi(`${apiName}-${cacheName}`);
         if (cachedApi !== undefined) { return cachedApi.value }
     }
-    updateCacheValue = (apiName: string, cacheName: string) => this.updateCacheByKey(`${apiName}-${cacheName}`)
-    setCache = (apiName: string, cacheName: string, changeObj: Partial<I_cachedApi<any>>) => {
+    fetchCachedValue = (apiName: string, cacheName: string) => this.updateCacheByKey(`${apiName}-${cacheName}`)
+    setCache = (apiName: string, cacheName: string,cachedApi: I_cachedApi<any>) => {
+        const key = `${apiName}-${cacheName}`;
+        const expiredIn = cachedApi.api.cache?.expiredIn;
+        this.storage.save(key, cachedApi, expiredIn);
+        if (!this.SetInterval(key)) { this.ClearInterval(key) }
+    }
+    private editCache = (apiName: string, cacheName: string,prop:string,value:any)=>{
         const key = `${apiName}-${cacheName}`;
         const cachedApi = this.getCachedApi(key)
-        const newCachedApi: I_cachedApi<any> = { ...cachedApi, ...changeObj } as I_cachedApi<any>;
-        const expiredIn = newCachedApi.api.cache?.expiredIn;
-        this.storage.save(key, newCachedApi, expiredIn);
-        if (newCachedApi?.api.cache?.interval) { this.SetInterval(key) }
-        else { this.ClearInterval(key) }
-
+        if(!cachedApi){return}
+        const {api} = cachedApi
+        const {cache} = api
+        const newCache = {...cache,[prop]:value}
+        const newCachedApi: I_cachedApi<any> = { ...cachedApi, api:{...api,cache:newCache} } as I_cachedApi<any>;
+        this.setCache(apiName,cacheName,newCachedApi)
+    }
+    editCachedExpiredIn = (apiName: string, cacheName: string, expiredIn: number) => {
+        this.editCache(apiName,cacheName,'expiredIn',expiredIn)
+    }
+    editCachedInterval = (apiName: string, cacheName: string, interval: number) => {
+        this.editCache(apiName,cacheName,'interval',interval)
     }
     private removeByKey = (key: string) => {
         clearInterval((this.intervals[key] || {}).value);

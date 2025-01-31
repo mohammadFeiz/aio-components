@@ -11,6 +11,7 @@ export type I_AIOExpress = {
     };
     uiDoc?: boolean;
     appName: string;
+    fa?: boolean;
 };
 export type I_response<T> = {
     status: number;
@@ -22,6 +23,8 @@ export type I_auth = {
     schema?: I_schemaDefinition;
     name: string;
     path: string;
+    loginInputsStr?: string;
+    loginConfigStr?: string;
     tokenTime: {
         unit: 's' | 'm' | 'h' | 'd';
         value: number;
@@ -29,13 +32,13 @@ export type I_auth = {
     registerExeption?: (p: {
         userName: string;
         password: string;
-        userProps: any;
+        properties: any;
     }) => Promise<{
         status?: number;
         message?: string;
         userName?: string;
         password?: string;
-        userProps?: any;
+        properties?: any;
     } | void>;
     loginExeption?: (p: {
         user: any;
@@ -330,10 +333,6 @@ export declare class AIOSchema {
         result: string;
     };
     bodyParamToString: (api: I_api) => {
-        success: boolean;
-        result: string;
-    };
-    getReturnTypeString: (api: I_api) => {
         success: boolean;
         result: string;
     };

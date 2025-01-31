@@ -404,12 +404,12 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         <POPUPCTX.Provider value={getContext()}>
             <ModalBackdrop
                 content={<div {...getModalProps()}><ModalHeader /><ModalBody /><ModalFooter /></div>}
-                firstMount={!!firstMount} ref={temp.backdropDom}
+                firstMount={!!firstMount} backdropDom={temp.backdropDom}
             />
         </POPUPCTX.Provider>
     )
 }
-const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, ref: any }> = ({ content, firstMount, ref }) => {
+const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, backdropDom: any }> = ({ content, firstMount, backdropDom }) => {
     let { mainContext, modal, onKeyDown }: AP_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, id, position = 'fullscreen' } = modal;
     const [attrs] = useState<any>(setAttrs('backdrop') || {})
@@ -425,7 +425,7 @@ const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, ref: any }> =
         className += ` aio-popup-position-${position}`
         className += mainContext.rtl ? ' rtl' : ' ltr'
         if (firstMount) { className += ' not-mounted' }
-        return AddToAttrs(attrs, { className, attrs: { ref, onKeyDown, tabIndex: 0, ['data-id']: id, onClick: attrs.onClick ? attrs.onClick : backClick } })
+        return AddToAttrs(attrs, { className, attrs: { ref:backdropDom, onKeyDown, tabIndex: 0, ['data-id']: id, onClick: attrs.onClick ? attrs.onClick : backClick } })
     }
     return <div {...getProps()}>{content}</div>
 }

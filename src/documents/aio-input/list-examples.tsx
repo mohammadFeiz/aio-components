@@ -4,7 +4,7 @@ import {Code} from './../../npm/aio-components';
 import Example from "./example.tsx";
 const ListExamples:FC = ()=>{
     let [examples] = useState<any>([
-        ['Basic',Basic],
+        ['Basic',()=><Basic/>],
     ])
     return (<Example type={'list'} examples={examples}/>)
 }
@@ -25,7 +25,7 @@ function Basic() {
     }
     function renderSetting(){
         return (
-            <div className="flex-row- gap-3-">
+            <div className="flex-row- gap-3- m-b-24-">
                 <AISlider className='flex-1-' start={24} end={72} before='size' value={model.size} onChange={(size)=>changeModel('size',size)}/>
                 <AISlider className='flex-1-' start={0} end={40} before='decay' value={model.decay} onChange={(decay)=>changeModel('decay',decay)}/>
                 <AISlider className='flex-1-' start={0} end={9} before='stop' value={model.stop} onChange={(stop)=>changeModel('stop',stop)}/>

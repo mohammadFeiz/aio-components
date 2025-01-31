@@ -158,7 +158,7 @@ export const AIApp: FC<I_AIApp> = (props) => {
     }
     function body_layout() {
         return (
-            <div style={{flex:1}}>
+            <div style={{flex:1,overflow:'hidden'}}>
                 <div className="ai-app-side"></div>
                 <div className="ai-app-body">
                     {props.body()}

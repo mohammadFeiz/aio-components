@@ -14,7 +14,6 @@ type I_setting = {
 const GetResult: FC = () => {
     const [apis] = useState<APIS>(new APIS())
     const [data, setData] = useState<I_data | string>()
-    const [error, setError] = useState<string>()
     const [setting, setSetting] = useState<I_setting>({
         successMessage: false, mockType: 'mockError',errorMessage:true,loading:true
     })
@@ -24,7 +23,7 @@ const GetResult: FC = () => {
     }
     return (
         <div className="example flex-col- gap-12-">
-            {Code(classCode())}
+            {Code(classCode(setting))}
             <Responses type={setting.mockType} change={(mockType) => setSetting({ ...setting, mockType })} />
             <AICheckbox value={!!setting.successMessage} onChange={(successMessage)=>setSetting({...setting,successMessage})} text="successMessage"/>
             <AICheckbox value={!!setting.errorMessage} onChange={(errorMessage)=>setSetting({...setting,errorMessage})} text="errorMessage"/>
@@ -36,13 +35,6 @@ const GetResult: FC = () => {
                     result is:
                     {Code(JSON.stringify(data, null, 4))}
                 </>
-            }
-            {
-                !!error &&
-                <div style={{ color: 'red' }}>
-                    error is:
-                    {error}
-                </div>
             }
         </div>
     )
@@ -118,7 +110,7 @@ class APIS extends AIOApis {
         return await this.request<I_data>(config)
     }
 }
-function classCode() {
+function classCode(setting:I_setting) {
     return (
         `class APIS extends AIOApis {
     constructor(token:string) {
@@ -127,9 +119,6 @@ function classCode() {
             id: 'testaioapis',
             onCatch: {
                 main:(response) => response.response.data.message,
-            },
-            getResult: {
-                main:(response) => response.data,
             }
         });
     }
@@ -137,10 +126,14 @@ function classCode() {
         return await this.request<{name:string,family:string}>({
             name:'getData',
             description:'get data',
-            getResult:'main',
+            getResult:(response)=>response.data,
             onCatch:'main',
             url:'/api-url',
             method:'get',
+            ${setting.loading === false?'loading:false,':''}
+            ${setting.successMessage?`successMessage:()=>'عملیات با موفقیت انجام شد',`:''}
+            ${setting.errorMessage === false?`errorMessage:()=>false,`:''}
+            
         })
     }
 }

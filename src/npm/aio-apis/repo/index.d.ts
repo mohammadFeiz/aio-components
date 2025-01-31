@@ -1,4 +1,4 @@
-export type AA_api = {
+export type AA_api<T> = {
     description: string;
     name: string;
     method: 'post' | 'get' | 'delete' | 'put' | 'patch';
@@ -14,25 +14,25 @@ export type AA_api = {
         delay: number;
         methodName: string;
     };
-    errorResult?: any;
-    showMessage?: (obj: {
-        response: any;
-        success: boolean;
-        result: any;
-        message?: string;
-    }) => {
-        type: 'success' | 'warning' | 'error' | 'info';
-        time?: number;
-        text: string;
-        subtext?: string;
-    } | false;
     headers?: any;
     token?: string;
     loader?: string;
     loadingParent?: string;
+    getResult: (data: any) => T;
+    onError?: (error: string) => void;
+    onSuccess?: (result: T) => void;
+    onCatch: string;
+    successMessage?: (p: {
+        response: any;
+        result: T;
+    }) => string;
+    errorMessage?: (p: {
+        response: any;
+        message: string;
+    }) => string | false;
 };
-type I_cachedApi = {
-    api: AA_api;
+type I_cachedApi<T> = {
+    api: AA_api<T>;
     value: any;
 };
 export default class AIOApis {
@@ -40,17 +40,18 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        getResult: (response: any) => any;
-        onCatch: (err: any, config: AA_api) => string;
+        onCatch: {
+            [key: string]: (err: any, api: AA_api<any>) => string;
+        };
         headers?: any;
-        errorResult?: any;
         lang?: 'en' | 'fa';
     };
     token: string;
     private cache;
     getCachedValue: Cache["getCachedValue"];
-    updateCache: Cache["updateCacheValue"];
-    setCache: Cache["setCache"];
+    fetchCachedValue: Cache["fetchCachedValue"];
+    editCachedExpiredIn: Cache["editCachedExpiredIn"];
+    editCachedInterval: Cache["editCachedInterval"];
     removeCache: Cache["removeCache"];
     apisThatAreInLoadingTime: {
         [apiName: string]: boolean | undefined;
@@ -59,10 +60,10 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        getResult: (response: any) => any;
-        onCatch: (err: any, config: AA_api) => string;
+        onCatch: {
+            [key: string]: (err: any, api: AA_api<any>) => string;
+        };
         headers?: any;
-        errorResult?: any;
         lang?: 'en' | 'fa';
     });
     setToken: (token: string) => void;
@@ -77,7 +78,10 @@ export default class AIOApis {
     }) => string;
     private responseToResult;
     private showErrorMessage;
-    request: (api: AA_api, isCalledByCache?: boolean) => Promise<any>;
+    private loading;
+    private handleMock;
+    callCache: (api: AA_api<any>) => Promise<any>;
+    request: <T>(api: AA_api<T>, isCalledByCache?: boolean) => Promise<false | T>;
 }
 export type I_mock = {
     url: string;
@@ -88,7 +92,7 @@ export type I_mock = {
         data: any;
     });
 };
-type I_callApi = (cachedApi: I_cachedApi) => Promise<any>;
+type I_callApi = (cachedApi: I_cachedApi<any>) => Promise<any>;
 declare class Cache {
     private storage;
     private callApi;
@@ -96,14 +100,16 @@ declare class Cache {
     constructor(storage: Storage, callApi: I_callApi);
     private getKey;
     private detectIntervalChange;
-    private handleIntervals;
     private SetInterval;
     private ClearInterval;
     private getCachedApi;
     private updateCacheByKey;
     getCachedValue: (apiName: string, cacheName: string) => any;
-    updateCacheValue: (apiName: string, cacheName: string) => Promise<void>;
-    setCache: (apiName: string, cacheName: string, changeObj: Partial<I_cachedApi>) => void;
+    fetchCachedValue: (apiName: string, cacheName: string) => Promise<void>;
+    setCache: (apiName: string, cacheName: string, cachedApi: I_cachedApi<any>) => void;
+    private editCache;
+    editCachedExpiredIn: (apiName: string, cacheName: string, expiredIn: number) => void;
+    editCachedInterval: (apiName: string, cacheName: string, interval: number) => void;
     private removeByKey;
     removeCache: (apiName: string, cacheName?: string) => void;
 }
