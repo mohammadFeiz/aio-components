@@ -129,83 +129,6 @@ export declare const Mask: FC<{
     onChange: (v: string) => void;
 }>;
 export declare const RichText: FC;
-export type I_formInputs<T> = {
-    [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) | string;
-};
-type I_formInput<T> = {
-    input: AITYPE | string;
-    field?: NestedKeys<T>;
-    label?: string;
-    error?: (data: T) => string | undefined;
-    customProps?: any;
-    value?: (data: T) => any;
-    onChange?: (v: any) => any;
-};
-type I_useFormProps<T> = {
-    initData: T;
-    onSubmit?: (data: T) => void;
-    inputs: I_formInputs<T>;
-    customTypes?: {
-        [name: string]: (value: any, onChange: (v: any) => void, customProps: any) => ReactNode;
-    };
-};
-type NestedKeys<T> = {
-    [K in keyof T]: T[K] extends object ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}` : `${K & string}`;
-}[keyof T];
-type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
-type I_formNode = {
-    v?: I_formNode[];
-    h?: I_formNode[];
-    html?: ReactNode;
-    input?: string;
-    attrs?: any;
-    className?: string;
-    style?: any;
-    show?: boolean;
-    flex?: number;
-    size?: number;
-    tag?: I_formTag;
-    legend?: ReactNode;
-};
-export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => {
-    data: T;
-    change: (p: {
-        field: NestedKeys<T>;
-        value: any;
-    }[]) => void;
-    getError: (name: string) => string | undefined;
-    getErrors: () => string[];
-    hasError: () => boolean;
-    renderInput: (name: string, attrs?: any) => JSX.Element;
-    isDataChanged: () => boolean;
-    renderSubmitButton: (text: string, attrs: any) => JSX.Element;
-    renderInputs: (p: {
-        node?: I_formNode;
-        content?: ReactNode;
-    }) => string | number | boolean | import("react").ReactFragment | JSX.Element;
-};
-type AI_FormItem = {
-    label?: string;
-    input: ReactNode;
-    attrs?: any;
-    action?: {
-        text: ReactNode;
-        fn?: () => void;
-    };
-    error?: string;
-    id?: string;
-};
-export declare const FormItem: FC<AI_FormItem>;
-type AI_FormContainer = {
-    body: ReactNode;
-    buttons?: {
-        text: ReactNode;
-        active?: boolean;
-        disabled?: boolean;
-        onClick: () => void;
-    }[];
-};
-export declare const FormContainer: FC<AI_FormContainer>;
 type I_JoyStick_data = {
     length: number;
     angle: number;
@@ -344,11 +267,6 @@ export type AI_table_param = {
     rowIndex: number;
 };
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year';
-export type AI_point = (index: number, p: any) => {
-    offset?: number;
-    html?: ReactNode;
-    attrs?: any;
-};
 export type AI_labels = AI_label[];
 export type AI_label = {
     list?: number[];
@@ -547,7 +465,7 @@ type AI_isDate = {
 };
 type AI_isDropdown = {
     caret?: boolean | ReactNode;
-    popover?: AP_modal;
+    popover?: Partial<AP_modal>;
     open?: boolean;
 };
 type AI_isMultiple = {
@@ -615,7 +533,16 @@ type AI_isRange = {
     labels?: AI_labels;
     max?: number;
     min?: number;
-    point?: false | AI_point;
+    point?: false | ((p: {
+        disabled: boolean;
+        angle: number;
+        value: number;
+        index: number;
+    }) => {
+        offset?: number;
+        html?: ReactNode;
+        attrs?: any;
+    });
     ranges?: [number, I_rangeConfig][];
     reverse?: boolean;
     size?: number;
@@ -689,3 +616,72 @@ export declare const AISpinner: FC<AI<'spinner'>>;
 export declare const AIAcardion: FC<AI<'acardion'>>;
 export declare const AIList: FC<AI<'list'>>;
 export declare const AITable: FC<AI<'table'>>;
+export type I_validateType = 'email' | 'irMobile' | 'irNationalCode';
+export type I_formInput = AITYPE & {
+    label: string;
+    required?: boolean;
+    validateType?: I_validateType;
+};
+export type I_formInputs<T> = {
+    [key in I_formField<T>]?: I_formInput | string;
+};
+export type I_formField<T> = NestedKeys<T>;
+type I_useFormProps<T> = {
+    initData: () => T;
+    onSubmit?: (data: T) => void;
+    fa?: boolean;
+    inputs: (data: T) => I_formInputs<T>;
+    isFieldActive?: (field: I_formField<T>) => boolean;
+    validate?: (p: {
+        field: I_formField<T>;
+        data: T;
+        value: any;
+        input: I_formInput;
+    }) => string | undefined;
+};
+type NestedKeys<T> = {
+    [K in keyof T]: T[K] extends object ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}` : `${K & string}`;
+}[keyof T];
+type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
+export type I_formNode<T> = {
+    v?: I_formNode<T>[];
+    h?: I_formNode<T>[];
+    html?: ReactNode;
+    input?: I_formField<T>;
+    attrs?: any;
+    className?: string;
+    style?: any;
+    show?: boolean;
+    flex?: number;
+    size?: number;
+    scroll?: boolean;
+    tag?: I_formTag;
+    legend?: ReactNode;
+    submitButton?: {
+        text: string;
+        attrs?: any;
+    };
+    required?: boolean;
+};
+export type I_formHook<T> = {
+    data: T;
+    change: (p: {
+        field: I_formField<T>;
+        value: any;
+    }[]) => void;
+    render: (node: I_formNode<T>) => ReactNode;
+    setData: (data: T) => void;
+};
+export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
+export declare const FormItem: FC<{
+    label?: string;
+    input: ReactNode;
+    attrs?: any;
+    action?: {
+        text: ReactNode;
+        fn?: () => void;
+    };
+    error?: string;
+    id?: string;
+    required?: boolean;
+}>;

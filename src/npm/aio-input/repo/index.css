@@ -36,7 +36,7 @@
 .aio-input-popover {
     font-size: 12px;
     background: #fff;
-    border:1px solid #ddd;
+    border: 1px solid #ddd;
 }
 
 .aio-input-popover .aio-popup-body {
@@ -46,12 +46,13 @@
 .aio-input-popover-rtl {
     direction: rtl;
 }
+
 .aio-input-value {
     display: flex;
     width: 100%;
     position: relative;
     overflow: hidden;
-    flex-direction:column;
+    flex-direction: column;
 }
 
 .aio-input-subtext {
@@ -910,6 +911,7 @@
     stroke: #333;
     color: #333;
     padding: 1em;
+    flex: 1;
 }
 
 .aio-input-date-header {
@@ -917,7 +919,6 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    direction: ltr;
 }
 
 .aio-input-date-arrow {
@@ -926,6 +927,15 @@
     justify-content: center;
     border-radius: 100%;
     stroke: inherit;
+    border-radius: 100%;
+    box-shadow: 1px 1px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.aio-input-date-arrow:hover {
+    background: var(--aio-input-color);
+    color: #fff;
+    fill: #fff;
+    stroke: #fff;
 }
 
 .aio-input-date-footer {
@@ -992,27 +1002,34 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
-.aio-input-date-theme-active{
-    background:#0069ff;
-    color:#fff;
+
+.aio-input-date-theme-active {
+    background: #0069ff;
+    color: #fff;
 }
-.aio-input-date-theme-bg{
-    background:#fff;
+
+.aio-input-date-theme-bg {
+    background: #fff;
 }
-.aio-input-date-theme-color{
-    color:#333;
-    fill:#333;
-    stroke:#333;
+
+.aio-input-date-theme-color {
+    color: #333;
+    fill: #333;
+    stroke: #333;
 }
+
 .aio-input-date-theme-border {
     border: 1px solid #0069ff;
 }
-.aio-input-time-theme-color{
-    color:#0069ff;
+
+.aio-input-time-theme-color {
+    color: #0069ff;
 }
-.aio-input-time-theme-bg{
-    background:#fff;
+
+.aio-input-time-theme-bg {
+    background: #fff;
 }
+
 /* custom scrollbar */
 .aio-input-scroll::-webkit-scrollbar {
     width: 6px !important;
@@ -1059,10 +1076,6 @@
 .aio-input-date-weekday {
     font-weight: bold;
     font-size: 1em;
-}
-
-.aio-input-date-rtl {
-    direction: rtl;
 }
 
 .aio-input-date-popup-body {
@@ -1564,10 +1577,13 @@
     left: 0;
     top: 0;
     z-index: 10;
+    direction: ltr;
 }
 
 .aio-input-date-popup-header {
     display: flex;
+    padding: 6px;
+    box-sizing: border-box;
 }
 
 .aio-input-date-popup-body {
@@ -1788,70 +1804,9 @@
     width: 4px;
 }
 
-.aio-input-form {
-    width: 100%;
-}
-
-.aio-input-form-item {
-    border: none;
-    padding: 0;
-}
-
-.aio-input-form-item-column {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.aio-input-form-item-row {
-    display: flex;
-    gap: 12px;
-}
-
-.aio-input-form-label {
-    margin-bottom: 4px;
-    display: flex;
-    padding: 3px 6px;
-}
-
-.aio-input-form-label-star {
-    color: red;
-    display: flex;
-    justify-content: center;
-    width: 12px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.aio-input-form-input {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.aio-input-form-input>.aio-input {
-    border: 1px solid #ddd;
-    min-height: 36px;
-}
-
-.aio-input-form-error {
-    font-size: 11px;
-    color: red;
-    display: flex;
-    margin: 3px;
-    justify-content: flex-start;
-    text-align: start;
-
-}
-
-.aio-input-form-footer {
-    margin-top: 12px;
-}
-
 .aio-input-select-value {
     display: flex;
     justify-content: flex-start;
-    text-align: left;
 }
 
 .aio-input-tree {
@@ -2705,41 +2660,29 @@ pre[class*="language-"]>code[class*="language-"] {
     background: #fff;
 }
 
-.ai-form-container {
-    display: flex;
+.aio-input-has-subtext:after {
+    content: attr(data-subtext);
+    font-size: 85%;
+    opacity: 0.7;
+}
+
+
+.ai-form{
+    display:flex;
     flex-direction: column;
+    gap:24px;
+    height:100%;
 }
-
-.ai-form-container-body {
-    padding: 12px;
-    box-sizing: border-box;
+.ai-form-body{
+    padding:12px;
+    flex:1;
+    overflow-y:auto;
 }
-
-.ai-form-container-footer {
-    padding: 12px 24px;
-}
-
-.ai-form-container-footer button {
-    height: 36px;
-    display: flex;
+.ai-form-footer{
+    padding:12px;
+    width:100%;
+    display:flex;
     align-items: center;
-    justify-content: center;
-    padding: 0 24px;
-    border-radius: 6px;
-    border: 1px solid #0069ff;
-    color: #0069ff;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.ai-form-container-footer button.active {
-    color: #fff;
-    background: #0069ff;
-}
-
-.ai-form-container-footer button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
 }
 .ai-form-item {
     display: flex;
@@ -2757,7 +2700,6 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-form-item-label {
     flex: 1;
     font-size: 14px;
-    font-weight: bold;
 }
 
 .ai-form-item-body {
@@ -2775,6 +2717,12 @@ pre[class*="language-"]>code[class*="language-"] {
     flex:1;
     gap:6px;
 }
+.ai-form-scroll-v{
+    overflow-y:auto;
+}
+.ai-form-scroll-h{
+    overflow-x:auto;
+}
 .ai-form-h{
     display:flex;
     gap:12px;
@@ -2783,9 +2731,4 @@ pre[class*="language-"]>code[class*="language-"] {
     display:flex;
     align-items: center;
     justify-content: center;
-}
-.aio-input-has-subtext:after{
-    content:attr(data-subtext);
-    font-size: 85%;
-    opacity: 0.7;
 }

@@ -16,16 +16,6 @@ export type AP_header = ((p: {
         setState: (state: any) => void;
     }) => void);
 };
-export type AP_body = (p: {
-    removeModal: () => void;
-    state: any;
-    setState: (state: any) => void;
-}) => ReactNode;
-export type AP_footer = (p: {
-    state: any;
-    setState: (v: any) => void;
-    removeModal: () => void;
-}) => ReactNode;
 type AP_setAttrs = (mode: AP_attrsKey) => any;
 export type AP_modal = {
     getTarget?: () => any;
@@ -36,8 +26,8 @@ export type AP_modal = {
     position?: AP_position;
     header?: AP_header;
     state?: any;
-    footer?: AP_footer;
-    body?: AP_body;
+    footer?: ReactNode;
+    body: ReactNode;
     animate?: boolean;
     fitHorizontal?: boolean;
     setAttrs?: AP_setAttrs;
@@ -81,7 +71,6 @@ export type AP_highlight = {
 export type AP_confirm = {
     title?: string;
     subtitle?: string;
-    text?: ReactNode;
     submitText?: string;
     canselText?: string;
     onSubmit?: () => Promise<boolean>;
@@ -91,7 +80,6 @@ export type AP_confirm = {
 export type AP_prompt = {
     title?: string;
     subtitle?: string;
-    text?: string;
     submitText?: string;
     canselText?: string;
     onSubmit?: (text: string) => Promise<boolean>;
@@ -107,7 +95,7 @@ type AP_removeHighlight = () => void;
 type AP_getModals = () => AP_modal[];
 type AP_addConfirm = (item: AP_confirm) => void;
 type AP_addPrompt = (item: AP_prompt) => void;
-type AP_render = () => ReactNode;
+type AP_render = (caller?: string) => ReactNode;
 export type AP_usePopup = {
     addAlert: AP_addAlert;
     addSnackebar: AP_addSnackebar;

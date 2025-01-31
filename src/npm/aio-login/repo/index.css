@@ -22,7 +22,6 @@
     padding: 0 6px;
     outline: none;
     flex-shrink: 0;
-    margin-top: 30px;
 }
 
 .ai-login-form {
@@ -34,6 +33,7 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    min-width: 300px;
 }
 
 .ai-login-title {
@@ -63,14 +63,6 @@
     text-decoration: underline;
     border-radius: 4px;
     height: 48px;
-}
-
-.ai-login-errors {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 12px;
-    box-sizing: border-box;
 }
 
 .ai-login-error {
@@ -109,4 +101,13 @@
 
 .ai-login button:disabled {
     opacity: 0.3;
+}
+.ai-form-item-label{
+    font-size:12px;
+    display:flex;
+    gap:4px;
+    align-items: center;
+}
+.ai-form-required{
+    color:red;
 }

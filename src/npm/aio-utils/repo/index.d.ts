@@ -502,3 +502,19 @@ export declare function getLeftAndTopByCenterAngleLength(center: I_point, angle:
     left: number;
     top: number;
 };
+export type I_mockMethod = (p: {
+    body?: any;
+    queryParams?: any;
+}) => {
+    status: number;
+    data: any;
+};
+export declare function FixUrl(base_url: string, path: string): string;
+export declare function IsJustNumber(str: string): boolean;
+export declare function IsValidIrNationalCode(code: string): boolean;
+export declare function IsValidEmail(value: string): boolean;
+export declare function ValidateIrMobile(p: {
+    value: string;
+    fa?: boolean;
+    label: string;
+}): string | undefined;

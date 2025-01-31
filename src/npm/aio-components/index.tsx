@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useState } from "react";
-import { AddToAttrs, GetArray } from "../aio-utils";
+import { AddToAttrs, GetArray } from "./../../npm/aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import './repo/index.css';

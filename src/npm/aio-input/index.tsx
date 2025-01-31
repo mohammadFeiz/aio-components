@@ -1,17 +1,20 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
-import usePopup, { AP_modal, AP_usePopup } from "./../aio-popup";
+import usePopup, { AP_modal, AP_usePopup } from "./../../npm/aio-popup";
 import {
     Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
     svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray,
     keyboard_filter,
     setValueByField,
     getValueByField,
-    Swip, I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength
+    Swip, I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength,
+    ValidateIrMobile,
+    IsValidEmail,
+    IsValidIrNationalCode
 
-} from './../aio-utils';
-import AIODate from './../aio-date';
+} from './../../npm/aio-utils';
+import AIODate from './../../npm/aio-date';
 import './repo/index.css';
-import { Indent, GetSvg } from '../aio-components';
+import { Indent, GetSvg } from './../../npm/aio-components';
 import $ from 'jquery';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
@@ -52,8 +55,8 @@ const SuggestionInput: FC<AITYPE> = (props) => {
             options={searchResult}
             option={{
                 ...option,
-                onClick: (optionOrg,optionDetails) => {
-                    const text = GetOptionProps({ optionProp:option, key: 'text', optionDetails,optionOrg })
+                onClick: (optionOrg, optionDetails) => {
+                    const text = GetOptionProps({ optionProp: option, key: 'text', optionDetails, optionOrg })
                     setSearchResult(text);
                     if (onChange) { onChange(text, optionOrg); }
                 }
@@ -93,30 +96,25 @@ function AIOINPUT(props: AITYPE) {
         className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
         if (types.hasOption) { className += ' aio-input-dropdown' }
         if (props.type === 'time') { className += ' aio-input-time-popover' }
-        let popover: AP_modal = { ...(props.popover || {}) }
-        let { body, limitTo, header, setAttrs = () => { return {} }, position = 'popover' } = popover;
-        let target: ReactNode = $(dom.current)
-        let fitHorizontal = ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!props.multiple) || !!popover.fitHorizontal
-        let config: AP_modal = {
-            //props that have default but can change by user
-            position, fitHorizontal,
-            //props that havent default but can define by user(header,footer,fixStyle)
-            limitTo, header,
-            //props that cannot change by user
+        const popover = (props.popover || {}) as Partial<AP_modal>;
+        let body = null;
+        if (popover.body) { body = popover.body }
+        else if (type === 'date') { body = <Calendar onClose={popup.removeModal} /> }
+        else if (type === 'time') { body = <TimePopover onClose={popup.removeModal} /> }
+        else { body = <Options /> }
+        let obj: AP_modal = {
+            ...(props.popover || {}),
+            position: popover.position || 'popover',
+            fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!props.multiple) || !!popover.fitHorizontal,
             onClose: () => closePopup(),
-            body: (o) => {
-                if (body) { return body(o) }
-                else if (type === 'date') { return <Calendar onClose={o.removeModal} /> }
-                else if (type === 'time') { return <TimePopover onClose={o.removeModal} /> }
-                else { return <Options /> }
-            },
-            getTarget: () => target,
+            body,
+            getTarget: () => $(dom.current),
             setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
-                let attrs = setAttrs(key);
+                let attrs = (popover.setAttrs || (() => { return {} }))(key);
                 if (key === 'modal') { return AddToAttrs(attrs, { className }) }
             }
         }
-        return config;
+        return obj;
     }
     function closePopup() {
         popup.removeModal();
@@ -166,7 +164,7 @@ function AIOINPUT(props: AITYPE) {
         else if (typeof props.options === 'function') { options = props.options() }
         else if (props.options) { options = props.options }
         else { options = []; }
-        return GetOptions({ rootProps: props, types, options,optionProp:props.option || {} })
+        return GetOptions({ rootProps: props, types, options, optionProp: props.option || {} })
     }
     function getContext(): AI_context {
         let context: AI_context = {
@@ -267,7 +265,7 @@ function TimePopover(props: { onClose: () => void }) {
     )
 }
 function Image() {
-    let { rootProps,popup }: AI_context = useContext(AICTX);
+    let { rootProps, popup }: AI_context = useContext(AICTX);
     let { value, attrs, onChange, disabled, placeholder, preview, deSelect, imageAttrs = {} } = rootProps;
     let [url, setUrl] = useState<string>();
     let dom: any = createRef()
@@ -302,7 +300,7 @@ function Image() {
     function openPopup() {
         popup.addModal({
             position: 'center', header: { title: '', onClose: () => popup.removeModal() },
-            body: () => <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder as string} /></div>
+            body: <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder as string} /></div>
         })
     }
     let IMG = url ? (
@@ -494,7 +492,7 @@ function DateInput() {
                 else if (unit === 'hour') { pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00` }
                 content = DATE.getDateByPattern(list, pattern)
             }
-            return <div style={{ direction: 'ltr', width: '100%' }}>{content}</div>
+            return <div style={{ direction: 'ltr', width: 'fit-content' }}>{content}</div>
         }
         return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
     }
@@ -781,18 +779,18 @@ const Layout: FC<AI_Layout> = (props) => {
         cls += ' ' + datauniqid;
         return cls;
     }
-    function cls(key: string,hasSubtext?:boolean) {
+    function cls(key: string, hasSubtext?: boolean) {
         let className = `aio-input-${key}`;
         if (option) { className += ` aio-input-${type}-option-${key}` }
         else { className += ` aio-input-${type}-${key}` }
-        if(hasSubtext) { className += ` aio-input-has-subtext` }
+        if (hasSubtext) { className += ` aio-input-has-subtext` }
         return className;
     }
     function Text(): ReactNode {
         let { text, placeholder, subtext, justify } = properties;
         if (text === undefined && placeholder !== undefined) { text = <div className='aio-input-placeholder'>{placeholder}</div> }
         if (text !== undefined) {
-            const className = `${cls('value',!!subtext)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
+            const className = `${cls('value', !!subtext)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`
             return <div className={className} data-subtext={subtext}>{text}</div>
         }
         else { return <div style={{ flex: 1 }}></div> }
@@ -1114,7 +1112,7 @@ type I_AcardionBody = { option: AI_option }
 const AcardionBody: FC<I_AcardionBody> = ({ option }) => {
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
     let { body = () => { } } = rootProps;
-    let { html, attrs } = body(option.optionOrg,option.details) || { html: '' }
+    let { html, attrs } = body(option.optionOrg, option.details) || { html: '' }
     let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`] })
     return <div {...Attrs}>{html}</div>
 }
@@ -1210,19 +1208,19 @@ const Tree: FC = () => {
         else { res = true }
         if (!res) { return }
         const details = { index, active: false, toggle: () => { } }
-        const {option:optionProp = {}} = rootProps;
+        const { option: optionProp = {} } = rootProps;
         if (!p.parent) {
             value = value.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', optionProp,optionOrg:p.row, optionDetails: { ...details, rootProps } })
-                let oValue = GetOptionProps({ key: 'value', optionProp,optionOrg:o, optionDetails: { ...details, rootProps } })
+                let rowValue = GetOptionProps({ key: 'value', optionProp, optionOrg: p.row, optionDetails: { ...details, rootProps } })
+                let oValue = GetOptionProps({ key: 'value', optionProp, optionOrg: o, optionDetails: { ...details, rootProps } })
                 return rowValue !== oValue
             })
         }
         else {
             let parentChilds = getChilds({ row: p.parent, details: p.parentDetails });
             let newChilds: any[] = parentChilds.filter((o: any) => {
-                let rowValue = GetOptionProps({ key: 'value', optionProp,optionOrg:p.row, optionDetails: { ...details, rootProps } })
-                let oValue = GetOptionProps({ key: 'value', optionProp,optionOrg:o, optionDetails: { ...details, rootProps } })
+                let rowValue = GetOptionProps({ key: 'value', optionProp, optionOrg: p.row, optionDetails: { ...details, rootProps } })
+                let oValue = GetOptionProps({ key: 'value', optionProp, optionOrg: o, optionDetails: { ...details, rootProps } })
                 return rowValue !== oValue
             });
             setChilds({ row: p.parent, details: p.parentDetails, childs: newChilds })
@@ -1273,7 +1271,7 @@ const TreeBody: FC<I_TreeBody> = (props) => {
     let { onAdd, onRemove, actions } = rootProps;
     let { optionsList } = GetOptions({
         rootProps, types, options: rows, level, isOpen: (id: any) => !!openDic[id],
-        change: (row: any, newRow: any) => change(row, newRow),optionProp:rootProps.option || {}
+        change: (row: any, newRow: any) => change(row, newRow), optionProp: rootProps.option || {}
     })
     if (!!onAdd || !!onRemove || !!actions) {
         optionsList = optionsList.map((o) => {
@@ -1476,7 +1474,7 @@ export function Calendar(props: { onClose?: () => void }) {
                 }
                 onChange(newValue, props);
                 if (onClose) {
-                    if (typeof option.close === 'function') { if (option.close(undefined,{ index, rootProps })) { onClose() } }
+                    if (typeof option.close === 'function') { if (option.close(undefined, { index, rootProps })) { onClose() } }
                 }
             }
         }
@@ -1750,7 +1748,7 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
     let { jalali, unit = Def('date-unit'), theme = Def('theme') } = rootProps;
     function change() {
         if (onClick) { onClick(); return }
-        let offset = (!jalali ? 1 : -1) * (type === 'minus' ? -1 : 1);
+        let offset = type === 'minus' ? -1 : 1
         let date = [activeDate.year as number, activeDate.month as number, activeDate.day as number]
         if (unit === 'month') { changeActiveDate({ year: (activeDate.year as number) + offset }) }
         if (unit === 'day') {
@@ -2110,8 +2108,8 @@ function TableToolbar() {
         if (!sorts.length) { return null }
         let p: AITYPE = {
             popover: {
-                header: {title: 'Sort',onClose: false},
-                setAttrs:(key)=>{if(key === 'header'){return { className: 'aio-input-table-toolbar-popover-header' }}},
+                header: { title: 'Sort', onClose: false },
+                setAttrs: (key) => { if (key === 'header') { return { className: 'aio-input-table-toolbar-popover-header' } } },
                 limitTo: '.aio-input-table'
             },
             caret: false, type: 'select', options: sorts,
@@ -2318,8 +2316,8 @@ const Range: FC = () => {
                 reverseY: !!reverse && !!vertical,
                 dom: () => $(temp.dom.current),
                 start: (p: { event: Event }) => {
-                    const {disabled} = rootPropsRef.current;
-                    if(disabled === true){return false}
+                    const { disabled } = rootPropsRef.current;
+                    if (disabled === true) { return false }
                     let { event } = p;
                     if (event.target !== null) {
                         let target = $(event.target);
@@ -2338,10 +2336,10 @@ const Range: FC = () => {
                     let { change, mousePosition } = p;
                     if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
                 },
-                onClick: function (p: I_Swip_parameter) { 
-                    const {disabled} = rootPropsRef.current;
-                    if(disabled){return}
-                    click(p.mousePosition) 
+                onClick: function (p: I_Swip_parameter) {
+                    const { disabled } = rootPropsRef.current;
+                    if (disabled) { return }
+                    click(p.mousePosition)
                 }
             })
         }, 100)
@@ -3021,7 +3019,7 @@ type I_GetOptions = {
     level?: number,
     change?: (row: any, newRow: any) => void,
     isOpen?: (id: any) => boolean | undefined,
-    optionProp:AI_optionProp
+    optionProp: AI_optionProp
 }
 //isOpen ro baraye tashkhise active(open) boodane node haye tree mifrestim
 function GetOptions(p: I_GetOptions): AI_options {
@@ -3046,34 +3044,34 @@ function GetOptions(p: I_GetOptions): AI_options {
             index: i, active: false, level, rootProps,
             change: change ? (newRow: any) => { if (change) change(option, newRow) } : undefined,
         };
-        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'disabled' });
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'disabled' });
         //ghabl az har chiz sharte namayesh ro check kon
-        let show = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'show' })
+        let show = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'show' })
         if (show === false) { continue }
-        let optionValue = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'value' })
+        let optionValue = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'value' })
         let active = isActive(optionValue);
-        let text = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'text' });
+        let text = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'text' });
         //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
         optionDetails.active = active;
-        let attrs = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'attrs', def: {} });
+        let attrs = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'attrs', def: {} });
         let defaultChecked = getDefaultOptionChecked(optionValue)
-        let checked = GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'checked', def: defaultChecked })
+        let checked = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'checked', def: defaultChecked })
         //object:option => do not remove mutability to use original value of option in for example tree row
         let obj: AI_option = {
-            optionOrg:option,show,loading: rootProps.loading,
+            optionOrg: option, show, loading: rootProps.loading,
             attrs, text, value: optionValue, disabled, draggable,
             checked,
-            before: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'before' }),
-            after: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'after' }),
-            justify: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'justify' }),
-            subtext: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'subtext' }),
-            onClick: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'onClick', preventFunction: true }),
-            className: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'className' }),
-            style: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'style' }),
-            tagAttrs: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagAttrs' }),
-            tagBefore: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagBefore' }),
-            close: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'close', def: !types.isMultiple }),
-            tagAfter: GetOptionProps({ optionProp,optionOrg:option, optionDetails, key: 'tagAfter' }),
+            before: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'before' }),
+            after: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'after' }),
+            justify: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'justify' }),
+            subtext: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'subtext' }),
+            onClick: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'onClick', preventFunction: true }),
+            className: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'className' }),
+            style: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'style' }),
+            tagAttrs: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagAttrs' }),
+            tagBefore: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagBefore' }),
+            close: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'close', def: !types.isMultiple }),
+            tagAfter: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagAfter' }),
             details: optionDetails
         }
         result.push(obj)
@@ -3086,12 +3084,12 @@ type I_GetOptionProps = {
     def?: any,
     preventFunction?: boolean,
     optionDetails: AI_optionDetails,
-    optionProp:AI_optionProp,
-    optionOrg:any
+    optionProp: AI_optionProp,
+    optionOrg: any
 }
 function GetOptionProps(p: I_GetOptionProps) {
     let { optionProp, key, def, preventFunction, optionDetails, optionOrg } = p;
-    let optionResult = typeof optionOrg[key] === 'function' && !preventFunction ? optionOrg[key](optionOrg,optionDetails) : optionOrg[key]
+    let optionResult = typeof optionOrg[key] === 'function' && !preventFunction ? optionOrg[key](optionOrg, optionDetails) : optionOrg[key]
     if (optionResult !== undefined) { return optionResult }
     let prop = optionProp[key];
     if (typeof prop === 'string') {
@@ -3104,7 +3102,7 @@ function GetOptionProps(p: I_GetOptionProps) {
         catch { }
     }
     if (typeof prop === 'function' && !preventFunction) {
-        let res = prop(optionOrg,optionDetails);
+        let res = prop(optionOrg, optionDetails);
         return res === undefined ? def : res;
     }
     return prop !== undefined ? prop : def;
@@ -3346,17 +3344,15 @@ export const RichText: FC = () => {
         const item = getItemByNestedIndex()
         popup.addModal({
             position: 'center',
-            body: () => {
-                return (
-                    <div className="rich-text-options">
-                        <div className="rich-text-option-title">{item.tag}</div>
-                        <div className="rich-text-option">Add Child</div>
-                        <div className="rich-text-option">Remove</div>
-                        <div className="rich-text-option">Move Up</div>
-                        <div className="rich-text-option">Move Down</div>
-                    </div>
-                )
-            }
+            body: (
+                <div className="rich-text-options">
+                    <div className="rich-text-option-title">{item.tag}</div>
+                    <div className="rich-text-option">Add Child</div>
+                    <div className="rich-text-option">Remove</div>
+                    <div className="rich-text-option">Move Up</div>
+                    <div className="rich-text-option">Move Down</div>
+                </div>
+            )
         })
     }
     return (
@@ -3395,196 +3391,7 @@ const RichModal: FC<{ item: I_richTextItem }> = (props) => {
         </div>
     )
 }
-export type I_formInputs<T> = { [name: string]: I_formInput<T> | ((data: T) => I_formInput<T>) | string }
-type I_formInput<T> = {
-    input: AITYPE | string,
-    field?: NestedKeys<T>,
-    label?: string,
-    error?: (data: T) => string | undefined,
-    customProps?: any,
-    value?: (data: T) => any,
-    onChange?: (v: any) => any
-}
-type I_useFormProps<T> = {
-    initData: T; onSubmit?: (data: T) => void;
-    inputs: I_formInputs<T>;
-    customTypes?: { [name: string]: (value: any, onChange: (v: any) => void, customProps: any) => ReactNode }
-};
-type NestedKeys<T> = {
-    [K in keyof T]: T[K] extends object
-    ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
-    : `${K & string}`;
-}[keyof T];
-type I_formErrors = { [name: string]: string | undefined }
-type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
-type I_formNode = {
-    v?: I_formNode[],
-    h?: I_formNode[],
-    html?: ReactNode,
-    input?: string,
-    attrs?: any,
-    className?: string,
-    style?: any,
-    show?: boolean,
-    flex?: number,
-    size?: number,
-    tag?:I_formTag,
-    legend?:ReactNode
-}
-export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>) => {
-    const [initData] = useState<T>(JSON.parse(JSON.stringify(p.initData))); // کلون ساده
-    const [data, setData] = useState<T>(initData);
-    const dataRef = useRef(data);
-    dataRef.current = data;
-    const errors = useRef<I_formErrors>(getInitialErrors())
-    function getInitialErrors(): I_formErrors {
-        const data = dataRef.current, errors: I_formErrors = {}
-        for (let name in p.inputs) {
-            const { error = () => { return undefined } } = getInputByName(name);
-            errors[name] = error(data)
-        }
-        return errors
-    }
-    function change(p: { field: NestedKeys<T>, value: any }[]) {
-        let newData = { ...dataRef.current }
-        for (let i = 0; i < p.length; i++) {
-            const { field, value } = p[i]
-            newData = setValueByField(newData, field, value)
-        }
-        setData(newData)
-    }
-    const getError = (name: string): string | undefined => errors.current[name];
-    const getErrors = (): string[] => Object.values(errors.current).filter((err): err is string => !!err);
-    const hasError = () => getErrors().length > 0;
-    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    function getInputByName(name: string): I_formInput<T> {
-        let inputObj = p.inputs[name];
-        if (typeof inputObj === 'function') { return inputObj(dataRef.current) }
-        if(typeof inputObj === 'string'){
-            eval(`inputObj = ${inputObj}`)
-        }
-        return inputObj as I_formInput<T>
-    }
-    const getValueAndOnChangeByName = (name: string): { value: any, onChange: (v: any) => void } => {
-        const { field, value, onChange } = getInputByName(name), data = dataRef.current
-        const valueResult = value?value(data):(field?getValueByField(data, field):undefined)
-        const onChangeResult = onChange?(v: any) => onChange(v):(field?(v: any) => change([{ field, value: v }]):()=>{})
-        return {value:valueResult,onChange:onChangeResult}
-    }
-    const renderInput = (name: string,attrs?:any) => {
-        const { input, label, error = () => { return undefined }, customProps } = getInputByName(name);
-        const data = dataRef.current;
-        const vo = getValueAndOnChangeByName(name)
-        if (!vo) { return null }
-        const { value, onChange } = vo;
-        const message = error(data);
-        errors.current[name] = message;
-        if (typeof input === 'string') {
-            const fn = (p.customTypes || {})[input]
-            if (!fn) { return null }
-            return (
-                <FormItem key={name}
-                    input={fn(value, onChange, customProps)}
-                    label={label} error={message} attrs={attrs}
-                />
-            );
-        }
-        return (
-            <FormItem key={name}
-                input={<AIOInput {...input} value={value} onChange={onChange} />}
-                label={label} error={message} attrs={attrs}
-            />
-        );
-    };
-    const renderGroup = (node:I_formNode,attrs:any,html:ReactNode)=>{
-        const {tag = 'div',legend} = node;
-        const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
-        if(tag === 'section'){return (<section {...attrs}>{content}</section>)}
-        if(tag === 'fieldset'){return (<fieldset {...attrs}>{content}</fieldset>)}
-        if(tag === 'p'){return (<p {...attrs}>{content}</p>)}
-        return (<div {...attrs}>{content}</div>)
-    }
-    const renderNode = (node: I_formNode):ReactNode => {
-        let { show = true, flex, size } = node;
-        if (!show) { return null }
-        if (node.html) { return node.html }
-        if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
-        if (node.input) {
-            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
-            return <>{renderInput(node.input,attrs)}</>
-        }
-        if (node.v) {
-            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-v", node.className], style: { flex, height: size, ...node.style } })
-            const html = <>{node.v.map((o) => renderNode(o))}</>
-            return renderGroup(node,attrs,html)
-        }
-        if (node.h) {
-            const attrs = AddToAttrs(node.attrs, { className: ["ai-form-h", node.className], style: { flex, width: size, ...node.style } })
-            const html = <>{node.h.map((o) => renderNode(o))}</>
-            return renderGroup(node,attrs,html)
-        }
-    }
-    const renderInputs = (p: { node?: I_formNode, content?: ReactNode }) => {
-        if (p.node) { return renderNode(p.node) }
-        if (p.content) { return <>{p.content}</> }
-        return null
-    };
-    const submit = () => {
-        if (p.onSubmit) { p.onSubmit(dataRef.current) }
-    }
-    const renderSubmitButton = (text: string, attrs: any) => {
-        const disabled = isDataChanged() || hasError()
-        const allAttrs = { ...attrs, disabled, onClick: () => submit() }
-        return <button {...allAttrs}>{text}</button>
-    }
-    return { data: dataRef.current, change, getError, getErrors, hasError, renderInput, isDataChanged, renderSubmitButton, renderInputs };
-};
-type AI_FormItem = {
-    label?: string,
-    input: ReactNode,
-    attrs?: any,
-    action?: { text: ReactNode, fn?: () => void },
-    error?: string,
-    id?:string
-}
-export const FormItem: FC<AI_FormItem> = (props) => {
-    const { label, input, action, error, attrs,id } = props;
-    const hasHeader = !!label || !!action
-    const Attrs = AddToAttrs(attrs, { className: "ai-form-item" })
-    return (
-        <div {...Attrs}>
-            {
-                hasHeader === true &&
-                <label className="ai-form-item-header" htmlFor={id}>
-                    {!!label && <div className="ai-form-item-label">{label}</div>}
-                    {!!action && <div className="ai-form-item-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
-                </label>
-            }
-            <div className="ai-form-item-body">{input}</div>
-            {!!error && <div className="ai-form-item-error">{error}</div>}
-        </div>
-    )
-}
-type AI_FormContainer = { body: ReactNode, buttons?: { text: ReactNode, active?: boolean, disabled?: boolean, onClick: () => void }[] }
-export const FormContainer: FC<AI_FormContainer> = (props) => {
-    const { body, buttons = [] } = props;
-    return (
-        <div className="ai-form-container">
-            <div className="ai-form-container-body">{body}</div>
-            {
-                !!buttons.length &&
-                <div className="ai-form-container-footer">
-                    {buttons.map((o) => {
-                        const { text, disabled, onClick, active } = o;
-                        return (
-                            <button disabled={disabled} className={`ai-form-container-button${active ? ' active' : ''}`} onClick={onClick}>{text}</button>
-                        )
-                    })}
-                </div>
-            }
-        </div>
-    )
-}
+
 type I_JoyStick_data = { length: number, angle: number, x: number, y: number }
 type I_JoyStick = { x?: number, y?: number, angle?: number, length?: number, scale?: number, size: number, onChange: (v: I_JoyStick_data) => void, centerOriented?: boolean }
 export const JoyStick: FC<I_JoyStick> = (props) => {
@@ -3607,8 +3414,8 @@ export const JoyStick: FC<I_JoyStick> = (props) => {
     return <JOYSTICK x={data.x * scale} y={data.y * scale} size={props.size} onChange={change} centerOriented={props.centerOriented} />
 }
 const JOYSTICK: FC<{ x: number, y: number, size: number, onChange: (v: I_JoyStick_data) => void, centerOriented?: boolean }> = ({ size, x, y, onChange, centerOriented }) => {
-    const [center] = useState<[number,number]>([size / 2, size / 2])
-    const [pos, setPos] = useState<[number,number]>([center[0] + x, center[0] + y])
+    const [center] = useState<[number, number]>([size / 2, size / 2])
+    const [pos, setPos] = useState<[number, number]>([center[0] + x, center[0] + y])
     const posRef = useRef(pos)
     posRef.current = pos;
     const [dom] = useState<any>(createRef())
@@ -3648,7 +3455,7 @@ export type AITYPE =
         type: AI_type,
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
-        body?: (option:any,details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
+        body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
@@ -3660,7 +3467,7 @@ export type AITYPE =
     }
 
 export type AI_option = {
-    optionOrg:any,show: any, checked?: boolean, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
+    optionOrg: any, show: any, checked?: boolean, after: ReactNode | ((p?: any) => ReactNode), before: ReactNode | ((p?: any) => ReactNode), draggable: boolean,
     text: ReactNode, subtext: ReactNode, justify: boolean, loading: boolean | ReactNode, disabled: boolean, attrs: any, className: string, style: any, value: any,
     tagAttrs: any, tagBefore: any, tagAfter: any, onClick?: (o1: any, o2?: any) => void, close?: boolean, level?: number,
     details: AI_optionDetails
@@ -3670,7 +3477,7 @@ export type AI_optionKey = (
     'attrs' | 'text' | 'value' | 'disabled' | 'checked' | 'before' | 'after' | 'justify' | 'subtext' | 'onClick' |
     'className' | 'style' | 'tagAttrs' | 'tagBefore' | 'tagAfter' | 'close' | 'show'
 )
-export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionOrg:any,optionDetails: AI_optionDetails) => any) }
+export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionOrg: any, optionDetails: AI_optionDetails) => any) }
 export type AI_optionDic = { [key: string]: AI_option }
 export type AI_options = { optionsList: AI_option[], optionsDic: AI_optionDic }
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' |
@@ -3757,7 +3564,7 @@ type AI_isDate = {
     timeStep?: { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number },
     text?: ReactNode | (() => ReactNode),
 }
-type AI_isDropdown = { caret?: boolean | ReactNode, popover?: AP_modal, open?: boolean }
+type AI_isDropdown = { caret?: boolean | ReactNode, popover?: Partial<AP_modal>, open?: boolean }
 type AI_isMultiple = { multiple?: boolean | number, maxLength?: number }
 type AI_hasKeyboard = {
     blurChange?: boolean, filter?: string[], inputAttrs?: any,
@@ -3795,7 +3602,7 @@ type AI_isRange = {
     labels?: AI_labels,
     max?: number,
     min?: number,
-    point?: false | ((p: {disabled:boolean, angle:number, value:number, index:number}) => { offset?: number, html?: ReactNode, attrs?: any }),
+    point?: false | ((p: { disabled: boolean, angle: number, value: number, index: number }) => { offset?: number, html?: ReactNode, attrs?: any }),
     ranges?: [number, I_rangeConfig][],
     reverse?: boolean,
     size?: number,
@@ -3874,3 +3681,250 @@ export const AIAcardion: FC<AI<'acardion'>> = (props) => <AIOInput {...props} ty
 export const AIList: FC<AI<'list'>> = (props) => <AIOInput {...props} type='list' />
 export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='table' />
 
+
+
+export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
+export type I_formInput = AITYPE & { label: string, required?: boolean,validateType?:I_validateType }
+export type I_formInputs<T> = { [key in I_formField<T>]?: I_formInput | string }
+export type I_formField<T> = NestedKeys<T>
+type I_useFormProps<T> = {
+    initData: () => T; onSubmit?: (data: T) => void;
+    fa?: boolean;
+    inputs: (data: T) => I_formInputs<T>;
+    isFieldActive?: (field: I_formField<T>) => boolean;
+    validate?: (p: { field: I_formField<T>, data: T, value: any, input: I_formInput }) => string | undefined,
+};
+type NestedKeys<T> = {
+    [K in keyof T]: T[K] extends object
+    ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
+    : `${K & string}`;
+}[keyof T];
+type I_formErrors<T> = { [key in keyof I_formField<T>]?: string | undefined }
+type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
+export type I_formNode<T> = {
+    v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formField<T>, attrs?: any, className?: string, style?: any, show?: boolean,
+    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submitButton?: { text: string, attrs?: any }, required?: boolean
+}
+export type I_formHook<T> = {
+    data: T,
+    change: (p: { field: I_formField<T>, value: any }[]) => void,
+    render: (node: I_formNode<T>) => ReactNode,
+    setData: (data: T) => void,
+}
+export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
+    function getInitData() { return JSON.parse(JSON.stringify(p.initData())) }
+    const [initData] = useState<T>(getInitData);
+    const fieldChangesRef = useRef<{ [field: string]: boolean }>({})
+    const isFieldChanged = (field: string) => !!fieldChangesRef.current[field]
+    const [data, SetData] = useState<T>(getInitData);
+    function getData() { return dataRef.current }
+    const setData = (data: T) => { dataRef.current = data; SetData(data) }
+    const dataRef = useRef(data); dataRef.current = data;
+    const errorsHook = useErrors<T>({ rootProps: p, getData: () => dataRef.current })
+
+    function change(p: { field: I_formField<T>, value: any }[]) {
+        let newData = { ...dataRef.current }
+        for (let i = 0; i < p.length; i++) {
+            const { field, value } = p[i]
+            fieldChangesRef.current = { ...fieldChangesRef.current, [field as string]: true }
+            newData = setValueByField(newData, field, value)
+        }
+        setData(newData)
+        const fields = p.map((o: any) => o.field) as I_formField<T>[]
+        errorsHook.updateErrors(fields)
+    }
+
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+
+    function getInputByField(field: I_formField<T>): I_formInput | undefined {
+        const inputs = p.inputs(dataRef.current)
+        let inputObj = inputs[field]
+        if (!inputObj) { return }
+        if (typeof inputObj === 'string') { eval(`inputObj = ${inputObj}`) }
+        return inputObj as I_formInput
+    }
+    const render = (node: I_formNode<T>) => {
+        const context: I_formContext<T> = { rootProps: p, getData, getInputByField, change, isDataChanged, errorsHook, isFieldChanged }
+        return <AIFormNode key={`level-${0}-index-${0}`} node={node} context={context} level={0} index={0} />
+    };
+    return { data, setData, change, render }
+}
+type I_formContext<T> = {
+    getInputByField: (field: I_formField<T>) => I_formInput | undefined,
+    getData: () => T,
+    change: (p: { field: I_formField<T>, value: any }[]) => void,
+    isDataChanged: () => boolean,
+    errorsHook: I_errorsHook<T>
+    rootProps: I_useFormProps<T>,
+    isFieldChanged: (field: string) => boolean
+}
+const AIFormNode: FC<{
+    node: I_formNode<any>,
+    context: I_formContext<any>,
+    level: number,
+    index: number
+}> = ({ node, context, level, index }) => {
+    let { show = true } = node;
+    if (!show) { return null }
+    if (node.html !== undefined) { return <>{node.html}</> }
+    if (node.submitButton) { return <FormSubmitButton node={node} context={context} /> }
+    if (node.input) { return <AIFormInput key={node.input} node={node} context={context} /> }
+    if (Array.isArray(node.h) || Array.isArray(node.v)) {
+        return <AIFormGroup node={node} context={context} level={level} index={index} />
+    }
+    return null
+}
+const AIFormGroup: FC<{
+    node: I_formNode<any>,
+    context: I_formContext<any>,
+    level: number,
+    index: number
+}> = ({ node, context, level, index }) => {
+    let { tag = 'div', legend, flex, size, scroll } = node;
+    const dir = node.v ? 'v' : 'h'
+    const scrollClass = scroll ? `ai-form-scroll-${dir}` : undefined
+    const html = <>{(node as any)[dir].map((o: I_formNode<any>, i: number) => <AIFormNode key={`level-${level + 1}-index-${i}`} node={o} context={context} level={level + 1} index={i} />)}</>
+    if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
+    const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
+    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
+    if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
+    if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
+    if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
+    return (<div {...attrs}>{content}</div>)
+}
+const AIFormInput: FC<{
+    node: I_formNode<any>,
+    context: I_formContext<any>
+}> = ({ node, context }) => {
+    const { getInputByField, getData, change, errorsHook, isFieldChanged } = context;
+    let { input: field, size, flex } = node
+    if (!field) { return null }
+    const input = getInputByField(field);
+    if (!input) { return null }
+    const label = input.label;
+    const data = getData();
+    const value = getValueByField(data, field);
+    if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
+    const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
+    return (
+        <FormItem key={field} required={input.required}
+            input={<AIOInput {...input} inputAttrs={{ ...input.inputAttrs, 'aria-label': field }} value={value} onChange={(v: any) => change([{ field, value: v }])} />}
+            label={label} error={isFieldChanged(field) ? errorsHook.getErrorByField(field as any) : undefined} attrs={attrs}
+        />
+    );
+}
+const FormSubmitButton: FC<{
+    node: I_formNode<any>,
+    context: I_formContext<any>
+}> = ({ node, context }) => {
+    const [timerDisabled, setTimerDisabled] = useState(false)
+    const { rootProps, errorsHook, getData } = context;
+    const { onSubmit } = rootProps; if (!onSubmit) { return null }
+    const disabled = !context.isDataChanged() || errorsHook.hasError() || !!timerDisabled
+    if (!node.submitButton) { return null }
+    const { text, attrs } = node.submitButton
+    const allAttrs = {
+        ...attrs, disabled, type: 'button',
+        onClick: () => {
+            setTimerDisabled(true); onSubmit(getData());
+            setTimeout(() => setTimerDisabled(false), 3000)
+        }
+    }
+    return <button {...allAttrs}>{text}</button>
+}
+export const FormItem: FC<{
+    label?: string,
+    input: ReactNode,
+    attrs?: any,
+    action?: { text: ReactNode, fn?: () => void },
+    error?: string,
+    id?: string,
+    required?: boolean
+}> = (props) => {
+    const { label, input, action, error, attrs, id, required = true } = props;
+    const hasHeader = !!label || !!action
+    const Attrs = AddToAttrs(attrs, { className: "ai-form-item" })
+    return (
+        <div {...Attrs}>
+            {
+                hasHeader === true &&
+                <label className="ai-form-item-header" htmlFor={id}>
+                    {!!label && <div className="ai-form-item-label">{required ? <div className="ai-form-required">*</div> : null}{label}</div>}
+                    {!!action && <div className="ai-form-item-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
+                </label>
+            }
+            <div className="ai-form-item-body">{input}</div>
+            {!!error && <div className="ai-form-item-error">{error}</div>}
+        </div>
+    )
+}
+
+
+
+type I_errorsHook<T> = {
+    updateErrors: (fields?: I_formField<T>[]) => void,
+    getErrorByField: (field: I_formField<T>) => string | undefined,
+    getErrorsList: () => string[],
+    hasError: () => boolean
+}
+const useErrors = <T extends Record<string, any>>(p: {
+    rootProps: I_useFormProps<T>,
+    getData: () => T
+}): I_errorsHook<T> => {
+    const { getData, rootProps } = p;
+    const { inputs, validate, isFieldActive = () => true, fa } = rootProps
+    let [errors, SetErrors] = useState<I_formErrors<T>>(updateErrors())
+    const errorsRef = useRef(errors); errorsRef.current = errors;
+    function getInputByField(field: I_formField<T>): I_formInput | undefined {
+        let input = inputs(getData())[field]; if (!input) { return }
+        if (typeof input === 'string') { eval(`inputObj = ${input}`) }
+        return input as I_formInput
+    }
+    function getErrorByField(field: I_formField<T>): string | undefined {
+        if (isFieldActive(field)) { return errors[field] }
+        return undefined
+    };
+    function getErrorsList(): string[] {
+        const list: string[] = []
+        for (let field of Object.keys(errorsRef.current) as I_formField<T>[]) {
+            const error = getErrorByField(field)
+            if (!!error) { list.push(error) }
+        }
+        return list
+    };
+    function hasError() { return getErrorsList().length > 0 }
+    function getError(input: I_formInput,field:I_formField<T>,value:any):string | undefined {
+        const { required = true, label, validateType } = input;
+        if (required && (value === '' || value === undefined || value === null)) {
+            let message = `${label} is required`
+            if (fa) { message = `${label} ضروری است` }
+            return message
+        }
+        if(validateType === 'email'){const res = validateEmail(value,label); if(res){return res}}
+        if(validateType === 'irNationalCode'){const res = validateIrNationalCode(value,label); if(res){return res}}
+        if(validateType === 'irMobile'){const res = ValidateIrMobile({value,label}); if(res){return res}}
+        if (validate) {
+            return validate({ field, value, data: getData(), input })
+        }
+    }
+    function validateEmail(value: string, label: string): string | undefined {
+        const res = IsValidEmail(value);
+        if(!res){return fa ? `فرمت ${label} اشتباه است` : `${label} is incorrect`}
+    }
+    function validateIrNationalCode(value: string, label: string): string | undefined {
+        const res = IsValidIrNationalCode(value);
+        if(!res){return fa ? `فرمت ${label} اشتباه است` : `${label} is incorrect`}
+    }
+    function updateErrors(Fields?: I_formField<T>[]): I_formErrors<T> {
+        const fields = Fields || Object.keys(inputs(getData())) as I_formField<T>[]
+        const newErrors: I_formErrors<T> = !Fields ? {} : { ...errorsRef.current }
+        for (let field of fields) {
+            const value = getValueByField(getData(), field);
+            const input = getInputByField(field) as I_formInput
+            (newErrors as any)[field] = getError(input,field,value)
+        }
+        if (Fields) { errorsRef.current = newErrors; SetErrors(newErrors) }
+        return newErrors
+    }
+    return { updateErrors, getErrorByField, getErrorsList, hasError }
+}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { createRef, useEffect, useState, FC, createContext, useContext, useRef, ReactNode } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ReactDOM from 'react-dom';
@@ -13,8 +14,6 @@ export type AP_header = ((p: { removeModal: () => void, state: any, setState: an
     after?: ReactNode,
     onClose?: boolean | ((p: { state: any, setState: (state: any) => void }) => void),
 }
-export type AP_body = (p: { removeModal: () => void, state: any, setState: (state: any) => void }) => ReactNode
-export type AP_footer = (p: { state: any, setState: (v: any) => void, removeModal: () => void }) => ReactNode
 type AP_setAttrs = (mode: AP_attrsKey) => any
 export type AP_modal = {
     getTarget?: () => any,
@@ -25,8 +24,8 @@ export type AP_modal = {
     position?: AP_position,
     header?: AP_header,
     state?: any,
-    footer?: AP_footer,
-    body?: AP_body,
+    footer?: ReactNode,
+    body: ReactNode,
     animate?: boolean,
     fitHorizontal?: boolean,
     setAttrs?: AP_setAttrs
@@ -64,8 +63,8 @@ export type AP_highlight = {
     easing?: number | AP_easing,
     duration?: number
 }
-export type AP_confirm = { title?: string, subtitle?: string, text?: ReactNode, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
-export type AP_prompt = { title?: string, subtitle?: string, text?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
+export type AP_confirm = { title?: string, subtitle?: string, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
+export type AP_prompt = { title?: string, subtitle?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
 type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string }
 const CTX = createContext({} as any)
 
@@ -164,7 +163,7 @@ type AP_removeSnackebar = (id: string) => void
 type AP_getModals = () => AP_modal[]
 type AP_addConfirm = (item: AP_confirm) => void;
 type AP_addPrompt = (item: AP_prompt) => void
-type AP_render = () => ReactNode
+type AP_render = (caller?: string) => ReactNode
 
 export type AP_usePopup = {
     addAlert: AP_addAlert,
@@ -178,12 +177,13 @@ export type AP_usePopup = {
     addConfirm: AP_addConfirm,
     addPrompt: AP_addPrompt
 }
-export type I_usePopup = { 
-    addAlert:AP_addAlert, addSnackebar:AP_addSnackebar, removeModal:AP_removeModal, addModal:AP_addModal, getModals:AP_getModals, 
-    addHighlight:AP_addHighlight, removeHighlight:AP_removeHighlight, render:AP_render, addConfirm:AP_addConfirm, addPrompt:AP_addPrompt,portal:()=>void 
+export type I_usePopup = {
+    addAlert: AP_addAlert, addSnackebar: AP_addSnackebar, removeModal: AP_removeModal, addModal: AP_addModal, getModals: AP_getModals,
+    addHighlight: AP_addHighlight, removeHighlight: AP_removeHighlight, render: AP_render, addConfirm: AP_addConfirm, addPrompt: AP_addPrompt, portal: () => void
 }
-const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
+const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
     let [modals, setModals] = useState<AP_modal[]>([]);
+    const promptTexts = useRef<{ [key: string]: string }>({})
     let modalsRef = useRef(modals)
     modalsRef.current = modals;
     const getModals = () => modalsRef.current
@@ -229,7 +229,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
     const addHighlight: AP_addHighlight = (highlight) => setHighlight(highlight)
     const removeHighlight: AP_removeHighlight = () => setHighlight(undefined)
     const addConfirm: AP_addConfirm = (obj) => {
-        let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        let { title, subtitle, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
         let config: AP_modal = {
             position: 'center',
             setAttrs: (key) => {
@@ -240,24 +240,23 @@ const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
                 return attrs
             },
             header: { title, subtitle },
-            body: () => text,
-            footer: () => {
-                return (
-                    <>
-                        <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
-                        <button type='button' className='active' onClick={async () => {
-                            if (!onSubmit) { return }
-                            let res: boolean = await onSubmit();
-                            if (res !== false) { removeModal() }
-                        }}>{submitText}</button>
-                    </>
-                )
-            }
+            body: <>text</>,
+            footer: (
+                <>
+                    <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
+                    <button type='button' className='active' onClick={async () => {
+                        if (!onSubmit) { return }
+                        let res: boolean = await onSubmit();
+                        if (res !== false) { removeModal() }
+                    }}>{submitText}</button>
+                </>
+            )
         }
         addModal(config)
     }
     const addPrompt: AP_addPrompt = (obj) => {
-        let { title, subtitle, text, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        const id = 'a' + (Math.round(Math.random() * 100000))
+        let { title, subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
         let config: AP_modal = {
             position: 'center',
             setAttrs: (key) => {
@@ -267,32 +266,30 @@ const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
                 }
                 return attrs
             },
-            state: { temp: '' },
             header: { title, subtitle },
-            body: ({ state, setState }) => {
-                return (
-                    <textarea
-                        placeholder={text} value={state.temp}
-                        onChange={(e) => { if (setState) { setState({ temp: e.target.value }) } }} />
-                )
-            },
-            footer: ({ state, setState }: { state: any, setState: (v: any) => void }) => {
-                return (
-                    <>
-                        <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
-                        <button
-                            type='button' className='active'
-                            onClick={async () => {
-                                if (!onSubmit) { return }
-                                let res = await onSubmit(state.temp);
-                                if (res !== false) { removeModal() }
-                                else { setState({ temp: '' }) }
-                            }}
-                            disabled={!state.temp}
-                        >{submitText}</button>
-                    </>
-                )
-            }
+            body: <Prompt change={(value: string) => promptTexts.current = { ...promptTexts.current, [id]: value }} />,
+            footer: (
+                <>
+                    <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
+                    <button
+                        type='button' className='active'
+                        onClick={async () => {
+                            if (!onSubmit) { return }
+                            const value = promptTexts.current[id]
+                            let res = await onSubmit(value);
+                            if (res !== false) { removeModal() }
+                            else {
+                                const newPromptTexts: { [key: string]: string } = {}
+                                for (let prop in promptTexts.current) {
+                                    if (prop !== id) { newPromptTexts[prop] = promptTexts.current[prop] }
+                                }
+                                promptTexts.current = newPromptTexts
+                            }
+                        }}
+                        disabled={!promptTexts.current[id]}
+                    >{submitText}</button>
+                </>
+            )
         }
         addModal(config)
     }
@@ -303,12 +300,12 @@ const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
             removeSnackebar, removeModal
         }
     }
-    const render: AP_render = () => {
+    const render: AP_render = (caller?: string) => {
         return (
             <CTX.Provider value={getContext()}>
                 {
                     modalsRef.current.map((modal: AP_modal, i: number) => {
-                        return (<Popup key={modal.id} modal={modal} isLast={i === modalsRef.current.length - 1} />)
+                        return (<Popup key={modal.id} modal={modal} isLast={i === modalsRef.current.length - 1} renderCaller={caller} />)
                     })
                 }
                 {snackebarItems.map((item: AP_snackebar, i) => <SnackebarItem item={item} index={i} key={item.id} />)}
@@ -317,33 +314,36 @@ const usePopup = (props?: { rtl?: boolean, id?: string }):I_usePopup => {
         )
     }
     const portal = () => ReactDOM.createPortal(render(), document.body)
-    return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt,portal }
+    return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt, portal }
 }
 export default usePopup;
+const Prompt: FC<{ change: (value: string) => void }> = ({ change }) => {
+    const [text, setText] = useState<string>('')
+    return (<textarea placeholder={text} value={text} onChange={(e) => { const value = e.target.value; setText(value); change(value) }} />)
+}
 const POPUPCTX = createContext({} as any)
 type AP_POPUPCTX = {
-    mainContext: AP_CTX,
     modal: AP_modal,
     isLast: boolean,
     state: any,
     setState: (v: any) => void,
     onKeyDown: any
 }
-type AP_Popup = { modal: AP_modal, isLast: boolean }
-const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
+type AP_Popup = { modal: AP_modal, isLast: boolean, renderCaller?: string }
+const Popup: FC<AP_Popup> = ({ modal, isLast, renderCaller }) => {
     const mainContext: AP_CTX = useContext(CTX);
     let { setAttrs = () => { return {} }, id, position = 'fullscreen', getTarget } = modal;
     let [temp] = useState<AP_Popup_temp>({ dom: createRef(), backdropDom: createRef(), dui: undefined })
     let [popoverStyle, setPopoverStyle] = useState({})
+    let modalMouseDown = useRef(false)
+    //bar taraf kardane moshkele mozakhrafe click rooye backdrop ke az har ja mouse ro roosh vel mikoni modal baste mishe
+    const isModalMouseDown = () => modalMouseDown.current;
     let [state, setState] = useState(modal.state)
     let attrs = setAttrs('modal') || {}
     const firstMount = useRef(false);
     useEffect(() => () => { $(window).unbind('click', handleBackClick) })
     useEffect(() => {
-        //be khatere 300 mili sanie transitioni ke popup dare bayad inja bish az oon 300 milisanie vaghfe bedim ta dorost update beshe andaze ha 
-        let newStyle: any = position === 'popover' ? getPopoverStyle() : {}
-        console.log('updatedStyle.top', newStyle.top)
-        setPopoverStyle(newStyle)
+        if (position === 'popover') { setPopoverStyle(getPopoverStyle()) }
         if (getTarget) {
             temp.dui = 'a' + (Math.round(Math.random() * 10000000));
             let target = getTarget();
@@ -369,7 +369,11 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
     function getModalProps(): AP_align {
         let style: any = { ...popoverStyle, ...attrs.style }
         let ev = "ontouchstart" in document.documentElement ? 'onTouchStart' : 'onMouseDown'
-        return { ...attrs, ref: temp.dom, "data-id": modal.id, tabIndex: 0, onKeyDown, [ev]: mouseDown, className: getClassName(), style: { ...style } }
+        return {
+            ...attrs, ref: temp.dom, "data-id": modal.id, tabIndex: 0, onKeyDown, [ev]: mouseDown, className: getClassName(),
+            style: { ...style },
+            onClick: (e: Event) => { e.stopPropagation(); }
+        }
     }
     function getPopoverStyle(): { [key: string]: any } {
         if (!getTarget) { return {} }
@@ -386,9 +390,10 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         if (code === 27) { mainContext.removeModal() }
     }
     function mouseUp() {
-
+        setTimeout(() => modalMouseDown.current = false, 0)
     }
     function mouseDown(e: any) {
+        modalMouseDown.current = true
         $(window).unbind('mouseup', mouseUp);
         $(window).bind('mouseup', mouseUp);
     }
@@ -399,42 +404,46 @@ const Popup: FC<AP_Popup> = ({ modal, isLast }) => {
         if (attrs.className) { className += ' ' + attrs.className }
         return className
     }
-    const getContext = (): AP_POPUPCTX => ({ mainContext, modal, isLast, state, setState, onKeyDown })
+    const getContext = (): AP_POPUPCTX => ({ modal, isLast, state, setState, onKeyDown })
     return (
         <POPUPCTX.Provider value={getContext()}>
             <ModalBackdrop
-                content={<div {...getModalProps()}><ModalHeader /><ModalBody /><ModalFooter /></div>}
-                firstMount={!!firstMount} backdropDom={temp.backdropDom}
-            />
+                key={modal.id}
+                firstMount={!!firstMount} backdropDom={temp.backdropDom} isModalMouseDown={isModalMouseDown}
+            >
+                <div key={modal.id} {...getModalProps()}><ModalHeader /><ModalBody key={modal.id}/><ModalFooter /></div>
+            </ModalBackdrop>
         </POPUPCTX.Provider>
     )
 }
-const ModalBackdrop: FC<{ content: ReactNode, firstMount: boolean, backdropDom: any }> = ({ content, firstMount, backdropDom }) => {
-    let { mainContext, modal, onKeyDown }: AP_POPUPCTX = useContext(POPUPCTX);
+const ModalBackdrop: FC<{ children: ReactNode, firstMount: boolean, backdropDom: any, isModalMouseDown: () => boolean }> = ({ children, firstMount, backdropDom, isModalMouseDown }) => {
+    const {removeModal,rtl}:AP_CTX = useContext(CTX)
+    let { modal, onKeyDown }: AP_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, id, position = 'fullscreen' } = modal;
     const [attrs] = useState<any>(setAttrs('backdrop') || {})
     function backClick(e: Event) {
+        if (isModalMouseDown()) { return }
         if (e.target !== e.currentTarget) { return }
-        e.stopPropagation();
         let target = $(e.target as any);
         if (!target.hasClass('aio-popup-backdrop')) { return }
-        mainContext.removeModal()
+        removeModal()
     }
     function getProps() {
         let className = 'aio-popup-backdrop';
         className += ` aio-popup-position-${position}`
-        className += mainContext.rtl ? ' rtl' : ' ltr'
+        className += rtl ? ' rtl' : ' ltr'
         if (firstMount) { className += ' not-mounted' }
-        return AddToAttrs(attrs, { className, attrs: { ref:backdropDom, onKeyDown, tabIndex: 0, ['data-id']: id, onClick: attrs.onClick ? attrs.onClick : backClick } })
+        return AddToAttrs(attrs, { className, attrs: { ref: backdropDom, onKeyDown, tabIndex: 0, ['data-id']: id, onClick: attrs.onClick ? attrs.onClick : backClick } })
     }
-    return <div {...getProps()}>{content}</div>
+    return <div {...getProps()}>{children}</div>
 }
 const ModalHeader: FC = () => {
-    let { mainContext, modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX);
+    const {removeModal}:AP_CTX = useContext(CTX)
+    let { modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX);
     if (!modal.header) { return null }
     let { setAttrs = () => { return {} } } = modal;
     let attrs = setAttrs('header') || {};
-    if (typeof modal.header === 'function') { return modal.header({ removeModal: mainContext.removeModal, state, setState }) as any }
+    if (typeof modal.header === 'function') { return modal.header({ removeModal: removeModal, state, setState }) as any }
     if (typeof modal.header !== 'object') { return null }
     return (
         <div {...AddToAttrs(attrs, { className: 'aio-popup-header' })}>
@@ -452,31 +461,30 @@ const ModalHeaderElement: FC<{ type: 'before' | 'after' | 'title' }> = ({ type }
     return <div className={`aio-popup-header-${type}`} data-subtitle={type === 'title' ? header.subtitle : undefined}>{header[type]}</div>
 }
 const ModalClose: FC = () => {
-    let { modal, state, setState, mainContext }: AP_POPUPCTX = useContext(POPUPCTX), { header } = modal;
+    const {removeModal}:AP_CTX = useContext(CTX)
+    let { modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX), { header } = modal;
     if (typeof header === 'function' || !header) { return null }
     if (header.onClose === false) { return null }
     return <div className={`aio-popup-header-close`} onClick={(e) => {
         e.stopPropagation(); e.preventDefault();
         if (typeof header.onClose === 'function') { header.onClose({ state, setState }) }
-        else { mainContext.removeModal(modal.id) }
+        else { removeModal(modal.id) }
     }}><CloseIcon /></div>
 }
 const ModalBody: FC = () => {
-    const { mainContext, state, setState, modal }: AP_POPUPCTX = useContext(POPUPCTX);
-    let { body = () => null, setAttrs = () => { return {} } } = modal;
+    const { modal }: AP_POPUPCTX = useContext(POPUPCTX);
+    let { body, setAttrs = () => { return {} } } = modal;
     let attrs = setAttrs('body') || {}
-    const param: { removeModal: () => void, state: any, setState: (v: any) => void } = { removeModal: mainContext.removeModal, state, setState }
-    let content: ReactNode = body(param);
-    if (!content || content === null) { return null }
-    return (<div {...AddToAttrs(attrs, { className: 'aio-popup-body aio-popup-scroll' })}>{content}</div>)
+    if (!body || body === null) { return null }
+    return (<div {...AddToAttrs(attrs, { className: 'aio-popup-body aio-popup-scroll' })}>{body}</div>)
 }
 const ModalFooter: FC = () => {
-    const { mainContext, modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX);
+    const { modal}: AP_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, footer } = modal;
     if (!footer) { return null }
     let Attrs = setAttrs('footer') || {};
     const attrs = AddToAttrs(Attrs, { className: 'aio-popup-footer' })
-    return <div {...attrs}>{footer({ state, setState, removeModal: mainContext.removeModal })}</div>
+    return <div {...attrs}>{footer}</div>
 }
 export type AP_SnackebarItem = { item: AP_snackebar, index: number }
 type AP_getSvg = (type: AP_snackebar["type"]) => ReactNode
@@ -794,37 +802,37 @@ function getBound(dom: any) {
     catch { return { width: 0, height: 0, left: 0, top: 0, bottom: 0, right: 0 } }
 }
 export class Loading {
-    loader:any = '0';
-    constructor(loader?:string){
-        if(typeof loader === 'string'){this.loader = loader}
+    loader: any = '0';
+    constructor(loader?: string) {
+        if (typeof loader === 'string') { this.loader = loader }
     }
     private getLoader_0 = () => {
         return (`
             <div class="aio-loading-container-0">
                 <div class="aio-loading-0">
-                    ${new Array(5).fill(0).map((o,i)=>this.getLoaderItem_0(`0.${i}`)).join(' ')}
+                    ${new Array(5).fill(0).map((o, i) => this.getLoaderItem_0(`0.${i}`)).join(' ')}
                 </div>
             </div>
         `)
     }
-    private getLoaderItem_0 = (ease:string)=>{
+    private getLoaderItem_0 = (ease: string) => {
         return `<div class="aio-loading-item-0" style="animation: 1s ease-in-out ${ease}s infinite normal none running aioloading0;"></div>`
     }
-    getLoader = (id:string)=>{
+    getLoader = (id: string) => {
         let content = ''
-        if(this.loader === '0'){content = this.getLoader_0()}
-        else if (typeof this.loader === 'string'){content = this.loader}
+        if (this.loader === '0') { content = this.getLoader_0() }
+        else if (typeof this.loader === 'string') { content = this.loader }
         return (`<div class="aio-loading" id="aio-loading-${id}">${content}</div>`)
     }
-    show = (id:string, parentSelector?:string) => {
+    show = (id: string, parentSelector?: string) => {
         parentSelector = parentSelector || 'body'
         let loadingStr = this.getLoader(id);
         let parent = document.querySelector(parentSelector);
-        if (parent) {parent.insertAdjacentHTML('beforeend', loadingStr);}
+        if (parent) { parent.insertAdjacentHTML('beforeend', loadingStr); }
     }
-    hide = (id:string) => {
+    hide = (id: string) => {
         let loadingDom = document.getElementById('aio-loading-' + id);
-        if (!loadingDom) {loadingDom = document.querySelector('.aio-loading');}
-        if (loadingDom) {loadingDom.remove();}
+        if (!loadingDom) { loadingDom = document.querySelector('.aio-loading'); }
+        if (loadingDom) { loadingDom.remove(); }
     }
 }

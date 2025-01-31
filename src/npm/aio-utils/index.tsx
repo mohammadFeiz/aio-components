@@ -499,7 +499,7 @@ export function GetArray(count: number, fn?: (index: number) => any, step?: numb
         }
         return res
     }
-    return new Array(count).fill(0).map((o, i) => fn(i))
+    return new Array(count).fill(0).map((o, i) => fn ? fn(i) : i)
 }
 export function GetRandomNumber(from: number, to: number) { return from + Math.round(Math.random() * (to - from)) }
 type I_storage_model = { [key: string]: { value: any, saveTime: number, expiredIn: number } }
@@ -516,7 +516,7 @@ export class Storage {
     }
     getNow = () => new Date().getTime();
     save = (field: string, value: any, expiredIn?: number): I_storage_model => {
-        if(expiredIn === null){expiredIn = undefined}
+        if (expiredIn === null) { expiredIn = undefined }
         if (value === undefined) { return this.copy(this.model) }
         const newModel = { ...this.model }, now = this.getNow();
         newModel[field] = { value, saveTime: now, expiredIn: Infinity }
@@ -535,11 +535,11 @@ export class Storage {
     }
     isExpired = (field: string): boolean => {
         if (!this.model[field]) { return true }
-        if(typeof this.model[field].expiredIn !== 'number'){return false}
+        if (typeof this.model[field].expiredIn !== 'number') { return false }
         return this.model[field].expiredIn < this.getNow()
     }
     load = (field: string, def?: any, expiredIn?: number) => {
-        if(expiredIn === null){expiredIn = undefined}
+        if (expiredIn === null) { expiredIn = undefined }
         const obj = this.model[field]
         if (!obj) { this.save(field, def, expiredIn); return def }
         const isExpired = this.isExpired(field)
@@ -2097,4 +2097,33 @@ export function getLeftAndTopByCenterAngleLength(center: I_point, angle: number,
     const [left, top] = line[1]
     return { left, top }
 }
-export type I_mockMethod = (p:{body?:any,queryParams?:any})=>{status:number,data:any}
+export type I_mockMethod = (p: { body?: any, queryParams?: any }) => { status: number, data: any }
+
+export function FixUrl(base_url: string, path: string) {
+    if (base_url[base_url.length - 1] === '/') { base_url = base_url.slice(0, base_url.length - 1) }
+    if (path[0] === '/') { path = path.slice(1, path.length) }
+    return `${base_url}/${path}`
+}
+export function IsJustNumber(str:string){return /^\d+$/.test(str)}
+export function IsValidIrNationalCode(code: string):boolean {
+    if (!/^\d{10}$/.test(code)) return false;
+
+    const check = parseInt(code[9], 10);
+    let sum = 0;
+
+    for (let i = 0; i < 9; i++) {
+        sum += parseInt(code[i], 10) * (10 - i);
+    }
+
+    const remainder = sum % 11;
+    return (remainder < 2 && check === remainder) || (remainder >= 2 && check === 11 - remainder);
+}
+export function IsValidEmail(value: string): boolean {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return !!emailRegex.test(value)
+}
+export function ValidateIrMobile(p:{value: string,fa?:boolean,label:string}): string | undefined {
+    if (p.value.indexOf('09') !== 0) { return p.fa?`${p.label} باید با 09 شروع شود`:`${p.label} should start with 09` }
+    if (p.value.length < 11) { return p.fa?`${p.label} باید 11 رقم باشد`:`${p.label} should be 11 character` } 
+    if(!IsJustNumber(p.value)){return p.fa?`${p.label} باید فقط شامل عدد باشد`:`${p.label} should be contain just numbers`}
+}
