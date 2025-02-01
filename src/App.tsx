@@ -25,6 +25,7 @@ import DOC_AIOSwiper from "./documents/aio-swiper/index.tsx";
 import FG from "./documents/form-generator/index.tsx";
 import AIOApis from './documents/aio-apis';
 import ThreeD from "./documents/three-d/index.tsx";
+import DOC_UseForm from "./documents/use-form/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -49,6 +50,7 @@ export default function AIOComponents(){
     'test':Test,
     'ThreeD':ThreeD,
     'aio-apis':AIOApis,
+    'use-form':DOC_UseForm,
     'tree-search':DOC_TreeSearch
   })
   function goToHome(){

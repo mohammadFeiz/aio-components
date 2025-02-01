@@ -1,8 +1,8 @@
 import { createContext, FC, ReactNode, useContext, useRef, useState } from "react";
-import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, FormContainer, FormItem } from "../../npm/aio-input";
+import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, FormItem } from "../../npm/aio-input";
 import usePopup, { I_usePopup } from "../../npm/aio-popup";
 import './index.css';
-import {Code} from './../../npm/aio-components';
+import { Code } from './../../npm/aio-components';
 const CTX = createContext({} as any)
 type I_CTX = {
     popup: I_usePopup,
@@ -72,36 +72,32 @@ const FG: FC = () => {
     const addItem: I_addItem = (type) => {
         popup.addModal({
             header: { title: 'Add Item', subtitle: type },
-            body: () => {
-                return (
-                    <SettingModal
-                        type={type}
-                        onSubmit={(newItem) => {
-                            setItems([...itemsRef.current, newItem]);
-                            popup.removeModal()
-                        }}
-                    />
-                )
-            }
+            body: (
+                <SettingModal
+                    type={type}
+                    onSubmit={(newItem) => {
+                        setItems([...itemsRef.current, newItem]);
+                        popup.removeModal()
+                    }}
+                />
+            )
         })
     }
     const editItem = (index: number) => {
         const item = items[index]
         popup.addModal({
             header: { title: 'Add Item', subtitle: item.type },
-            body: () => {
-                return (
-                    <SettingModal
-                        type={item.type}
-                        item={item}
-                        index={index}
-                        onSubmit={(newItem) => {
-                            setItems(itemsRef.current.map((o, i) => i === index ? newItem : o));
-                            popup.removeModal()
-                        }}
-                    />
-                )
-            }
+            body: (
+                <SettingModal
+                    type={item.type}
+                    item={item}
+                    index={index}
+                    onSubmit={(newItem) => {
+                        setItems(itemsRef.current.map((o, i) => i === index ? newItem : o));
+                        popup.removeModal()
+                    }}
+                />
+            )
         })
     }
     const removeItem = (index: number) => {
@@ -161,7 +157,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
         return (
             <FormItem
                 label={field}
-                input={<AIText value={item[field]} onChange={(value) => changeItem(field, value)} filter={field === 'field'?[' ']:undefined}/>}
+                input={<AIText value={item[field]} onChange={(value) => changeItem(field, value)} filter={field === 'field' ? [' '] : undefined} />}
                 error={required && !item[field] ? `${field} is required` : undefined}
             />
         )
@@ -171,22 +167,20 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
             <FormItem
                 label={field}
                 input={<AINumber value={item[field]} onChange={(value) => changeItem(field, value)} />}
-                error={required && !item[field]? `${field} is required` : undefined}
+                error={required && !item[field] ? `${field} is required` : undefined}
             />
         )
     }
     const openAddOptionModal = () => {
         popup.addModal({
             header: { title: 'Add Option' }, position: 'center',
-            body: () => {
-                return (
-                    <AddOptionModal onSubmit={(option) => {
-                        const options = itemRef.current.options || [];
-                        const newOptions = [...options, option]
-                        changeItem('options', newOptions)
-                    }} />
-                )
-            }
+            body: (
+                <AddOptionModal onSubmit={(option) => {
+                    const options = itemRef.current.options || [];
+                    const newOptions = [...options, option]
+                    changeItem('options', newOptions)
+                }} />
+            )
         })
     }
     const input_options = (field: I_prop, required: boolean) => {
@@ -256,49 +250,51 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
         return !!error || !isChange()
     }
     const propKeys: I_prop[] = Object.keys(propFnDic) as I_prop[]
-    return (
-        <FormContainer
-            body={(
-                <div className="flex-col- h-100-">
-                    {
-                        propKeys.map((prop) => {
-                            if (propDic[props.type][prop] === 0) { return null }
-                            const fns: { [key in I_propFn]: any } = { text: input_text, options: input_options, boolean: input_boolean, number: input_number }
-                            return fns[propFnDic[prop]](prop, propDic[props.type][prop] === 2)
-                        })
-                    }
-                    <div className="flex-1-"></div>
-                </div>
-            )}
-            buttons={[
-                { text: 'Submit', onClick: () => props.onSubmit(item), active: true, disabled: isDisabled() }
-            ]}
-        />
-    )
+    return null
+    // return (
+    //     <FormContainer
+    //         body={(
+    //             <div className="flex-col- h-100-">
+    //                 {
+    //                     propKeys.map((prop) => {
+    //                         if (propDic[props.type][prop] === 0) { return null }
+    //                         const fns: { [key in I_propFn]: any } = { text: input_text, options: input_options, boolean: input_boolean, number: input_number }
+    //                         return fns[propFnDic[prop]](prop, propDic[props.type][prop] === 2)
+    //                     })
+    //                 }
+    //                 <div className="flex-1-"></div>
+    //             </div>
+    //         )}
+    //         buttons={[
+    //             { text: 'Submit', onClick: () => props.onSubmit(item), active: true, disabled: isDisabled() }
+    //         ]}
+    //     />
+    // )
 }
 const AddOptionModal: FC<{ onSubmit: (v: { text: ReactNode, value: string }) => void }> = ({ onSubmit }) => {
     const [option, setOption] = useState<I_option>({ text: '', value: '' })
-    return (
-        <FormContainer
-            body={(
-                <div className="flex-col-">
-                    <FormItem
-                        label='text'
-                        input={<AIText value={option.text} onChange={(text) => setOption({ ...option, text })} />}
-                        error={!option.text ? 'text is required' : ''}
-                    />
-                    <FormItem
-                        label='value'
-                        input={<AIText value={option.value} onChange={(value) => setOption({ ...option, value })} />}
-                        error={!option.value ? 'value is required' : ''}
-                    />
-                </div>
-            )}
-            buttons={[
-                { text: 'Submit', onClick: () => onSubmit(option), disabled: !option.text || !option.value }
-            ]}
-        />
-    )
+    return null
+    // return (
+    //     <FormContainer
+    //         body={(
+    //             <div className="flex-col-">
+    //                 <FormItem
+    //                     label='text'
+    //                     input={<AIText value={option.text} onChange={(text) => setOption({ ...option, text })} />}
+    //                     error={!option.text ? 'text is required' : ''}
+    //                 />
+    //                 <FormItem
+    //                     label='value'
+    //                     input={<AIText value={option.value} onChange={(value) => setOption({ ...option, value })} />}
+    //                     error={!option.value ? 'value is required' : ''}
+    //                 />
+    //             </div>
+    //         )}
+    //         buttons={[
+    //             { text: 'Submit', onClick: () => onSubmit(option), disabled: !option.text || !option.value }
+    //         ]}
+    //     />
+    // )
 }
 const SettingOptions: FC<{ options: I_option[], onChange: (options: I_option[]) => void }> = ({ options, onChange }) => {
     function changeOption(index: number, field: 'text' | 'value', value: string) {
@@ -360,13 +356,13 @@ const Side: FC = () => {
             <AISelect
                 text='Add Item'
                 className='fg-bg-2 brd-none- br-0-'
-                style={{height:40}}
+                style={{ height: 40 }}
                 options={Object.keys(propDic)}
                 option={{
                     text: 'option', value: 'option',
                     onClick: (option) => addItem(option)
                 }}
-                popover={{fitHorizontal:true}}
+                popover={{ fitHorizontal: true }}
             />
             <div className="flex-col-">
                 {getItems().map((o, i) => item_layout(o, i))}
@@ -377,8 +373,8 @@ const Side: FC = () => {
 type I_preview_tab = 'preview' | 'code'
 const Preview: FC = () => {
     const { getItems, componentDic }: I_CTX = useContext(CTX)
-    const [tabs] = useState<I_preview_tab[]>(['preview','code'])
-    const [tab,setTab] = useState<I_preview_tab>('preview')
+    const [tabs] = useState<I_preview_tab[]>(['preview', 'code'])
+    const [tab, setTab] = useState<I_preview_tab>('preview')
     function getDic() {
         const rows = getItems();
         const dic: { [key: string]: I_item[] } = {}
@@ -416,17 +412,17 @@ const Preview: FC = () => {
                 className="fg-bg-2 br-0-"
                 options={tabs}
                 option={{
-                    text:(option)=>{
-                        return option[0].toUpperCase() + option.slice(1) 
+                    text: (option) => {
+                        return option[0].toUpperCase() + option.slice(1)
                     },
-                    value:'option'
+                    value: 'option'
                 }}
                 value={tab}
-                onChange={(v)=>setTab(v)}
+                onChange={(v) => setTab(v)}
             />
-            <div className={`flex-1- p-${tab === 'preview'?'12':'0'}-`}>
+            <div className={`flex-1- p-${tab === 'preview' ? '12' : '0'}-`}>
                 {tab === 'preview' && keys.map((key) => row_layout(dic[key]))}
-                {tab === 'code' && Code(JSON.stringify(getItems(),null,4))}
+                {tab === 'code' && Code(JSON.stringify(getItems(), null, 4))}
             </div>
         </div>
     )

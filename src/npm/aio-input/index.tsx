@@ -797,7 +797,6 @@ const Layout: FC<AI_Layout> = (props) => {
     }
     function keyDown(e: any) {
         const code = e.keyCode;
-        console.log(code)
         if (code === 13) { click(e, dom) }
     }
     function DragIcon() {
@@ -3687,23 +3686,25 @@ export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
 export type I_formInput = AITYPE & { label: string, required?: boolean,validateType?:I_validateType }
 export type I_formInputs<T> = { [key in I_formField<T>]?: I_formInput | string }
 export type I_formField<T> = NestedKeys<T>
-type I_useFormProps<T> = {
-    initData: () => T; onSubmit?: (data: T) => void;
-    fa?: boolean;
-    inputs: (data: T) => I_formInputs<T>;
-    isFieldActive?: (field: I_formField<T>) => boolean;
-    validate?: (p: { field: I_formField<T>, data: T, value: any, input: I_formInput }) => string | undefined,
-};
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object
     ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}`
     : `${K & string}`;
 }[keyof T];
+
+type I_useFormProps<T> = {
+    initData: () => T; 
+    onSubmit?: (data: T) => void;
+    fa?: boolean;
+    inputs: (data: T) => I_formInputs<T>;
+    isFieldActive?: (field: I_formField<T>) => boolean;
+    validate?: (p: { field: I_formField<T>, data: T, value: any, input: I_formInput }) => string | undefined,
+};
 type I_formErrors<T> = { [key in keyof I_formField<T>]?: string | undefined }
 type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
 export type I_formNode<T> = {
     v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formField<T>, attrs?: any, className?: string, style?: any, show?: boolean,
-    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submitButton?: { text: string, attrs?: any }, required?: boolean
+    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submit?: { text: string, attrs?: any }, required?: boolean
 }
 export type I_formHook<T> = {
     data: T,
@@ -3767,7 +3768,7 @@ const AIFormNode: FC<{
     let { show = true } = node;
     if (!show) { return null }
     if (node.html !== undefined) { return <>{node.html}</> }
-    if (node.submitButton) { return <FormSubmitButton node={node} context={context} /> }
+    if (node.submit) { return <FormSubmitButton node={node} context={context} /> }
     if (node.input) { return <AIFormInput key={node.input} node={node} context={context} /> }
     if (Array.isArray(node.h) || Array.isArray(node.v)) {
         return <AIFormGroup node={node} context={context} level={level} index={index} />
@@ -3779,14 +3780,13 @@ const AIFormGroup: FC<{
     context: I_formContext<any>,
     level: number,
     index: number
-}> = ({ node, context, level, index }) => {
+}> = ({ node, context, level }) => {
     let { tag = 'div', legend, flex, size, scroll } = node;
     const dir = node.v ? 'v' : 'h'
     const scrollClass = scroll ? `ai-form-scroll-${dir}` : undefined
     const html = <>{(node as any)[dir].map((o: I_formNode<any>, i: number) => <AIFormNode key={`level-${level + 1}-index-${i}`} node={o} context={context} level={level + 1} index={i} />)}</>
-    if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
     const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
-    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
+    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass,level === 0?'ai-form':''], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
     if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
     if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
     if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
@@ -3804,7 +3804,6 @@ const AIFormInput: FC<{
     const label = input.label;
     const data = getData();
     const value = getValueByField(data, field);
-    if (!size && !node.attrs?.style?.width && !node.style?.width) { flex = flex || 1 }
     const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
     return (
         <FormItem key={field} required={input.required}
@@ -3821,8 +3820,8 @@ const FormSubmitButton: FC<{
     const { rootProps, errorsHook, getData } = context;
     const { onSubmit } = rootProps; if (!onSubmit) { return null }
     const disabled = !context.isDataChanged() || errorsHook.hasError() || !!timerDisabled
-    if (!node.submitButton) { return null }
-    const { text, attrs } = node.submitButton
+    if (!node.submit) { return null }
+    const { text, attrs } = node.submit
     const allAttrs = {
         ...attrs, disabled, type: 'button',
         onClick: () => {

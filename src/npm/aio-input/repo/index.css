@@ -2671,7 +2671,7 @@ pre[class*="language-"]>code[class*="language-"] {
     display:flex;
     flex-direction: column;
     gap:24px;
-    height:100%;
+    padding:12px;
 }
 .ai-form-body{
     padding:12px;
@@ -2700,6 +2700,8 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-form-item-label {
     flex: 1;
     font-size: 14px;
+    display:flex;
+    gap:6px;
 }
 
 .ai-form-item-body {
