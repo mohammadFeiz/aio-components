@@ -617,28 +617,24 @@ export declare const AIAcardion: FC<AI<'acardion'>>;
 export declare const AIList: FC<AI<'list'>>;
 export declare const AITable: FC<AI<'table'>>;
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode';
-export type I_formInput = AITYPE & {
+export type I_formInput<T> = AITYPE & {
     label: string;
     required?: boolean;
     validateType?: I_validateType;
-};
-export type I_formInputs<T> = {
-    [key in I_formField<T>]?: I_formInput | string;
-};
-export type I_formField<T> = NestedKeys<T>;
-type I_useFormProps<T> = {
-    initData: () => T;
-    onSubmit?: (data: T) => void;
-    fa?: boolean;
-    inputs: (data: T) => I_formInputs<T>;
-    isFieldActive?: (field: I_formField<T>) => boolean;
+    field: I_formField<T>;
     validate?: (p: {
-        field: I_formField<T>;
         data: T;
         value: any;
-        input: I_formInput;
+        input: I_formInput<T>;
     }) => string | undefined;
 };
+type I_useFormProps<T> = {
+    initData: T;
+    onSubmit?: (data: T) => void;
+    fa?: boolean;
+    getLayout?: (data: T) => I_formNode<T>;
+};
+export type I_formField<T> = NestedKeys<T>;
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}` : `${K & string}`;
 }[keyof T];
@@ -647,7 +643,7 @@ export type I_formNode<T> = {
     v?: I_formNode<T>[];
     h?: I_formNode<T>[];
     html?: ReactNode;
-    input?: I_formField<T>;
+    input?: I_formInput<T>;
     attrs?: any;
     className?: string;
     style?: any;
@@ -657,20 +653,26 @@ export type I_formNode<T> = {
     scroll?: boolean;
     tag?: I_formTag;
     legend?: ReactNode;
-    submitButton?: {
+    submit?: {
         text: string;
         attrs?: any;
     };
     required?: boolean;
+    reset?: {
+        text: string;
+        attrs?: any;
+    };
 };
 export type I_formHook<T> = {
     data: T;
-    change: (p: {
-        field: I_formField<T>;
-        value: any;
-    }[]) => void;
-    render: (node: I_formNode<T>) => ReactNode;
-    setData: (data: T) => void;
+    render: ReactNode;
+    changeData: (data: T) => void;
+    changeByField: (field: I_formField<T>, value: any) => void;
+    getErrorsDic: () => {
+        [key in I_formField<T>]?: string | undefined;
+    };
+    getErrorsList: () => string[];
+    reset: () => void;
 };
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
 export declare const FormItem: FC<{

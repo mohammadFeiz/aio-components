@@ -3683,8 +3683,14 @@ export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='ta
 
 
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
-export type I_formInput = AITYPE & { label: string, required?: boolean,validateType?:I_validateType }
-export type I_formInputs<T> = { [key in I_formField<T>]?: I_formInput | string }
+export type I_formInput<T> = AITYPE & { label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>, 
+    validate?: (p:{data: T, value: any, input: I_formInput<T>}) => string | undefined }
+type I_useFormProps<T> = {
+    initData: T;
+    onSubmit?: (data: T) => void;
+    fa?: boolean;
+    getLayout?:(data:T)=>I_formNode<T>
+};
 export type I_formField<T> = NestedKeys<T>
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object
@@ -3692,72 +3698,102 @@ type NestedKeys<T> = {
     : `${K & string}`;
 }[keyof T];
 
-type I_useFormProps<T> = {
-    initData: () => T; 
-    onSubmit?: (data: T) => void;
-    fa?: boolean;
-    inputs: (data: T) => I_formInputs<T>;
-    isFieldActive?: (field: I_formField<T>) => boolean;
-    validate?: (p: { field: I_formField<T>, data: T, value: any, input: I_formInput }) => string | undefined,
-};
-type I_formErrors<T> = { [key in keyof I_formField<T>]?: string | undefined }
 type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
 export type I_formNode<T> = {
-    v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formField<T>, attrs?: any, className?: string, style?: any, show?: boolean,
-    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submit?: { text: string, attrs?: any }, required?: boolean
+    v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formInput<T>, attrs?: any, className?: string, style?: any, show?: boolean,
+    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submit?: { text: string, attrs?: any }, required?: boolean,
+    reset?: { text: string, attrs?: any }
 }
 export type I_formHook<T> = {
     data: T,
-    change: (p: { field: I_formField<T>, value: any }[]) => void,
-    render: (node: I_formNode<T>) => ReactNode,
-    setData: (data: T) => void,
-}
-export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
-    function getInitData() { return JSON.parse(JSON.stringify(p.initData())) }
-    const [initData] = useState<T>(getInitData);
-    const fieldChangesRef = useRef<{ [field: string]: boolean }>({})
-    const isFieldChanged = (field: string) => !!fieldChangesRef.current[field]
-    const [data, SetData] = useState<T>(getInitData);
-    function getData() { return dataRef.current }
-    const setData = (data: T) => { dataRef.current = data; SetData(data) }
-    const dataRef = useRef(data); dataRef.current = data;
-    const errorsHook = useErrors<T>({ rootProps: p, getData: () => dataRef.current })
-
-    function change(p: { field: I_formField<T>, value: any }[]) {
-        let newData = { ...dataRef.current }
-        for (let i = 0; i < p.length; i++) {
-            const { field, value } = p[i]
-            fieldChangesRef.current = { ...fieldChangesRef.current, [field as string]: true }
-            newData = setValueByField(newData, field, value)
-        }
-        setData(newData)
-        const fields = p.map((o: any) => o.field) as I_formField<T>[]
-        errorsHook.updateErrors(fields)
-    }
-
-    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-
-    function getInputByField(field: I_formField<T>): I_formInput | undefined {
-        const inputs = p.inputs(dataRef.current)
-        let inputObj = inputs[field]
-        if (!inputObj) { return }
-        if (typeof inputObj === 'string') { eval(`inputObj = ${inputObj}`) }
-        return inputObj as I_formInput
-    }
-    const render = (node: I_formNode<T>) => {
-        const context: I_formContext<T> = { rootProps: p, getData, getInputByField, change, isDataChanged, errorsHook, isFieldChanged }
-        return <AIFormNode key={`level-${0}-index-${0}`} node={node} context={context} level={0} index={0} />
-    };
-    return { data, setData, change, render }
+    render: ReactNode,
+    changeData: (data: T) => void,
+    changeByField:(field:I_formField<T>,value:any)=>void,
+    getErrorsDic:()=>{[key in I_formField<T>]?: string | undefined},
+    getErrorsList:()=>string[],
+    reset:()=>void
 }
 type I_formContext<T> = {
-    getInputByField: (field: I_formField<T>) => I_formInput | undefined,
     getData: () => T,
-    change: (p: { field: I_formField<T>, value: any }[]) => void,
+    changeData: (data: T) => void,
+    changeByField: (field: I_formField<T>, value: any) => void,
     isDataChanged: () => boolean,
-    errorsHook: I_errorsHook<T>
     rootProps: I_useFormProps<T>,
-    isFieldChanged: (field: string) => boolean
+    isFieldChanged: (field: I_formField<T>) => boolean,
+    getValueAndErrorByInput: (input: I_formInput<T>) => { value: any, error: string | undefined },
+    hasError:()=>boolean,
+    getErrorsList:()=>string[],
+    reset:()=>void
+}
+
+export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
+    function getInitData() { return JSON.parse(JSON.stringify(p.initData)) }
+    const [initData] = useState<T>(getInitData);
+    const fieldChangesRef = useRef<{ [key in I_formField<T>]?: boolean }>({})
+    const errorsRef = useRef<{ [key in I_formField<T>]?: string | undefined }>({})
+    const hasError = ()=>{
+        const keys = Object.keys(errorsRef.current) as any
+        return !!keys.filter((o:I_formField<T>)=>!!errorsRef.current[o]).length
+    }
+    const isFieldChanged = (field: I_formField<T>) => !!fieldChangesRef.current[field]
+    const [data, setData] = useState<T>(getInitData);
+    const [dom,setDom] = useState<ReactNode>(null)
+    function getData() { return dataRef.current }
+    const changeData = (data: T) => { dataRef.current = data; setData(data) }
+    const changeByField = (field: I_formField<T>, value: any) => {
+        let newData = { ...dataRef.current }; 
+        fieldChangesRef.current = { ...fieldChangesRef.current, [field]: true }
+        setValueByField(newData, field, value); 
+        changeData(newData)
+    }
+    const dataRef = useRef(data); dataRef.current = data;
+    function getValueAndErrorByInput(input: I_formInput<T>) {
+        const {required = true,label,field} = input;
+        const value = getValueByField(dataRef.current, field)
+        let error;
+        if(required && value === undefined || value === '' || value === null){
+            error = p.fa?`${label} ضروری است`:`${label} is required`
+        }
+        else if(input.validate){
+            error = input.validate({ data: dataRef.current, value, input })
+        }
+        errorsRef.current = {...errorsRef.current,[field]:error}
+        return { value, error }
+    }
+    const reset = ()=>{
+        const newData = getInitData();
+        dataRef.current = newData
+        errorsRef.current = {}
+        setData(newData);
+    }
+    const getErrorsDic = ()=>errorsRef.current
+    const getErrorsList = ():string[]=>{
+        const errors = errorsRef.current as any;
+        const keys = Object.keys(errors) as any;
+        const strs = keys.filter((o:any)=>!!errors[o]) as any
+        return strs.map((o:any)=>errors[o])
+    }
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    useEffect(()=>{
+        setDom(getDom())
+    },[data])
+    const getDom = () => {
+        if(!p.getLayout){return null}
+        const node = p.getLayout(dataRef.current)
+        const context: I_formContext<T> = { rootProps: p, getData, isDataChanged, isFieldChanged, getValueAndErrorByInput,changeData,changeByField,hasError,getErrorsList,reset }
+        //@ts-ignore
+        return <FormRender node={node} context={context}/>
+    };
+    return { data, changeData,getErrorsDic,getErrorsList,changeByField, render:<>{dom}</>,reset }
+}
+const FormRender:FC<{context:I_formContext<any>,node:I_formNode<any>}> = ({context,node})=>{
+    const [dom,setDom] = useState<ReactNode>(null)
+    const {getData} = context
+    const data = getData();
+    useEffect(()=>{
+        setDom(<AIFormNode node={node} context={context} level={0} index={0} />)
+    },[data])
+    return <>{dom}</>
 }
 const AIFormNode: FC<{
     node: I_formNode<any>,
@@ -3769,7 +3805,8 @@ const AIFormNode: FC<{
     if (!show) { return null }
     if (node.html !== undefined) { return <>{node.html}</> }
     if (node.submit) { return <FormSubmitButton node={node} context={context} /> }
-    if (node.input) { return <AIFormInput key={node.input} node={node} context={context} /> }
+    if (node.reset) { return <FormResetButton node={node} context={context} /> }
+    if (node.input) { return <AIFormInput key={node.input.field} node={node} context={context} /> }
     if (Array.isArray(node.h) || Array.isArray(node.v)) {
         return <AIFormGroup node={node} context={context} level={level} index={index} />
     }
@@ -3786,7 +3823,8 @@ const AIFormGroup: FC<{
     const scrollClass = scroll ? `ai-form-scroll-${dir}` : undefined
     const html = <>{(node as any)[dir].map((o: I_formNode<any>, i: number) => <AIFormNode key={`level-${level + 1}-index-${i}`} node={o} context={context} level={level + 1} index={i} />)}</>
     const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
-    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass,level === 0?'ai-form':''], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
+    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass, level === 0 ? 'ai-form' : ''], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
+    if (level === 0) { return (<form {...attrs}>{content}</form>) }
     if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
     if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
     if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
@@ -3796,37 +3834,63 @@ const AIFormInput: FC<{
     node: I_formNode<any>,
     context: I_formContext<any>
 }> = ({ node, context }) => {
-    const { getInputByField, getData, change, errorsHook, isFieldChanged } = context;
-    let { input: field, size, flex } = node
-    if (!field) { return null }
-    const input = getInputByField(field);
-    if (!input) { return null }
-    const label = input.label;
-    const data = getData();
-    const value = getValueByField(data, field);
-    const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })
-    return (
-        <FormItem key={field} required={input.required}
-            input={<AIOInput {...input} inputAttrs={{ ...input.inputAttrs, 'aria-label': field }} value={value} onChange={(v: any) => change([{ field, value: v }])} />}
-            label={label} error={isFieldChanged(field) ? errorsHook.getErrorByField(field as any) : undefined} attrs={attrs}
-        />
-    );
+    const { getValueAndErrorByInput,changeByField } = context;
+    const {input} = node;
+    if(!input){return null}
+    const {inputAttrs,field} = input;
+    const { value, error } = getValueAndErrorByInput(input);
+    const props:any = {...input,inputAttrs:{ ...inputAttrs, 'aria-label': field },value,onChange:(v: any) => changeByField(field, v)}
+    return <RenderInput value={value} error={error} input={input} node={node} context={context} props={props}/>;
+}
+const RenderInput:FC<{value:any,error?:string,input:I_formInput<any>,node:I_formNode<any>,context:I_formContext<any>,props:any}> = ({value,error,input,node,context,props})=>{
+    const { isFieldChanged } = context;
+    const [dom, setDom] = useState<ReactNode>(null)
+    useEffect(() => {
+        const {field,label} = input;
+        let { size, flex } = node
+        const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })        
+        setDom(
+            <FormItem key={field} required={input.required}
+                input={<AIOInput {...props}/>}
+                label={label} error={isFieldChanged(field) ? error : undefined} attrs={attrs}
+            />
+        )
+    }, [props, error])
+    console.log('input render')
+    return <>{dom}</>;
 }
 const FormSubmitButton: FC<{
     node: I_formNode<any>,
     context: I_formContext<any>
 }> = ({ node, context }) => {
+    const {rootProps, getData,hasError,isDataChanged} = context;
     const [timerDisabled, setTimerDisabled] = useState(false)
-    const { rootProps, errorsHook, getData } = context;
+    const {  } = context;
     const { onSubmit } = rootProps; if (!onSubmit) { return null }
-    const disabled = !context.isDataChanged() || errorsHook.hasError() || !!timerDisabled
+    const dataChanged = isDataChanged()
+    const disabled = !dataChanged || hasError() || !!timerDisabled
     if (!node.submit) { return null }
     const { text, attrs } = node.submit
     const allAttrs = {
-        ...attrs, disabled, type: 'button',
+        type: 'button',...attrs, disabled, 
         onClick: () => {
             setTimerDisabled(true); onSubmit(getData());
             setTimeout(() => setTimerDisabled(false), 3000)
+        }
+    }
+    return <button {...allAttrs}>{text}</button>
+}
+const FormResetButton: FC<{
+    node: I_formNode<any>,
+    context: I_formContext<any>
+}> = ({ node, context }) => {
+    const {reset} = context;
+    if (!node.reset) { return null }
+    const { text, attrs } = node.reset
+    const allAttrs = {
+        type: 'button',...attrs, 
+        onClick: () => {
+            reset();
         }
     }
     return <button {...allAttrs}>{text}</button>
@@ -3859,71 +3923,3 @@ export const FormItem: FC<{
 }
 
 
-
-type I_errorsHook<T> = {
-    updateErrors: (fields?: I_formField<T>[]) => void,
-    getErrorByField: (field: I_formField<T>) => string | undefined,
-    getErrorsList: () => string[],
-    hasError: () => boolean
-}
-const useErrors = <T extends Record<string, any>>(p: {
-    rootProps: I_useFormProps<T>,
-    getData: () => T
-}): I_errorsHook<T> => {
-    const { getData, rootProps } = p;
-    const { inputs, validate, isFieldActive = () => true, fa } = rootProps
-    let [errors, SetErrors] = useState<I_formErrors<T>>(updateErrors())
-    const errorsRef = useRef(errors); errorsRef.current = errors;
-    function getInputByField(field: I_formField<T>): I_formInput | undefined {
-        let input = inputs(getData())[field]; if (!input) { return }
-        if (typeof input === 'string') { eval(`inputObj = ${input}`) }
-        return input as I_formInput
-    }
-    function getErrorByField(field: I_formField<T>): string | undefined {
-        if (isFieldActive(field)) { return errors[field] }
-        return undefined
-    };
-    function getErrorsList(): string[] {
-        const list: string[] = []
-        for (let field of Object.keys(errorsRef.current) as I_formField<T>[]) {
-            const error = getErrorByField(field)
-            if (!!error) { list.push(error) }
-        }
-        return list
-    };
-    function hasError() { return getErrorsList().length > 0 }
-    function getError(input: I_formInput,field:I_formField<T>,value:any):string | undefined {
-        const { required = true, label, validateType } = input;
-        if (required && (value === '' || value === undefined || value === null)) {
-            let message = `${label} is required`
-            if (fa) { message = `${label} ضروری است` }
-            return message
-        }
-        if(validateType === 'email'){const res = validateEmail(value,label); if(res){return res}}
-        if(validateType === 'irNationalCode'){const res = validateIrNationalCode(value,label); if(res){return res}}
-        if(validateType === 'irMobile'){const res = ValidateIrMobile({value,label}); if(res){return res}}
-        if (validate) {
-            return validate({ field, value, data: getData(), input })
-        }
-    }
-    function validateEmail(value: string, label: string): string | undefined {
-        const res = IsValidEmail(value);
-        if(!res){return fa ? `فرمت ${label} اشتباه است` : `${label} is incorrect`}
-    }
-    function validateIrNationalCode(value: string, label: string): string | undefined {
-        const res = IsValidIrNationalCode(value);
-        if(!res){return fa ? `فرمت ${label} اشتباه است` : `${label} is incorrect`}
-    }
-    function updateErrors(Fields?: I_formField<T>[]): I_formErrors<T> {
-        const fields = Fields || Object.keys(inputs(getData())) as I_formField<T>[]
-        const newErrors: I_formErrors<T> = !Fields ? {} : { ...errorsRef.current }
-        for (let field of fields) {
-            const value = getValueByField(getData(), field);
-            const input = getInputByField(field) as I_formInput
-            (newErrors as any)[field] = getError(input,field,value)
-        }
-        if (Fields) { errorsRef.current = newErrors; SetErrors(newErrors) }
-        return newErrors
-    }
-    return { updateErrors, getErrorByField, getErrorsList, hasError }
-}
