@@ -15,6 +15,7 @@ export default function DOC_UseForm(props: any) {
                     { text: 'validate', id: 'validate', render: () => <Validate /> },
                     { text: 'dynamic', id: 'dynamic', render: () => <Dynamic /> },
                     { text: 'reset', id: 'reset', render: () => <Reset /> },
+                    { text: 'barati', id: 'barati', render: () => <Barati /> },
                     
                 ]
             }}
@@ -521,6 +522,104 @@ const Basic:FC = ()=>{
         </>
     )
 }
+            `)}
+        </div>
+    )
+}
+
+
+const Barati:FC = ()=>{
+    const form = useForm<I_form>({
+        initData:{
+            name:'',
+            email:'',
+            password:'',
+        },
+        onSubmit:(data)=>{
+            console.log(data)
+        },
+        getLayout:(data)=>{
+            return {
+                style:{background:'#eee'},
+                v:[
+                    {style:{background:'#fff',height:100},h:[{flex:1,html:'a'}]},
+                    {
+                        h:[
+                            {style:{background:'#fff',width:100},h:[{html:'b'}]},
+                            {
+                                v:[
+                                    {style:{background:'#fff',height:100},h:[{html:'c'}]},
+                                    {
+                                        style:{height:100},
+                                        h:[
+                                            {style:{background:'#fff',width:100},h:[{html:'d'}]},
+                                            {style:{background:'#fff',flex:1},h:[{html:'e'}]}
+                                        ]
+                                    },
+                                    {
+                                        style:{height:100},
+                                        h:[
+                                            {style:{background:'#fff',flex:1,},h:[{html:'e'}]},
+                                            {style:{background:'#fff',width:100},h:[{html:'d'}]}
+                                        ]
+                                    },
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    })
+    return (
+        <div className="example">
+            {form.render}
+            {Code(`
+type I_form = {
+    name:string,
+    email:string,
+    password:string,
+}
+const GetLayout:FC = ()=>{
+    const form = useForm<I_form>({
+        initData:{
+            name:'',
+            email:'',
+            password:'',
+        },
+        onSubmit:(data)=>{
+            console.log(data)
+        },
+        getLayout:(data)=>{
+            return {
+                v:[
+                    {
+                        h:[
+                            {input:{type:'text',field:'name',label:'Name'}},
+                            {input:{type:'text',field:'email',label:'Email'}},
+                        ]
+                    },
+                    {
+                        h:[
+                            {input:{type:'password',field:'password',label:'Password'}},
+                        ]
+                    },
+                    {
+                        className:'p-v-12-',
+                        h:[
+                            {submit:{text:'Submit'}}
+                        ]
+                    }
+                ]
+            }
+        }
+    })
+    return (
+        <>
+            {form.render}
+        </>
+    )
+}    
             `)}
         </div>
     )
