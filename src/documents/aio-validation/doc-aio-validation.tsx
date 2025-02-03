@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { AIRadio, AISelect, AIText, FormItem } from '../../npm/aio-input/index.tsx';
+import { AIRadio, AISelect, AIText, AIFormInput } from '../../npm/aio-input/index.tsx';
 import DOC from '../../resuse-components/doc.tsx';
 import { AV_operator,Validation } from '../../npm/aio-utils';
 import { ParseString } from '../../npm/aio-utils/index.tsx';
@@ -449,11 +449,11 @@ const TryIt: FC = () => {
         <div className="example">
             <div className="flex-row-">
                 <div className="flex-row- align-v- gap-12-">
-                    <FormItem
+                    <AIFormInput
                         input={<AIText value={model.title} onChange={(title)=>changeModelByField('title',title)}/>}
                         label='title'
                     />
-                    <FormItem
+                    <AIFormInput
                         input={<AIRadio 
                             options={['en', 'fa']} option={{ text: 'option', value: 'option' } }
                             value={model.lang} onChange={(lang)=>changeModelByField('lang',lang)} 
@@ -462,18 +462,18 @@ const TryIt: FC = () => {
                     />
                 </div>
                 <div className="flex-row- align-v- gap-12-">
-                    <FormItem
+                    <AIFormInput
                         input={<AIText value={model.value} onChange={(value)=>changeModelByField('value',value)}/>}
                         label='value' 
                     />
-                    <FormItem
+                    <AIFormInput
                         input={<AISelect
                             options={ops} option={{ text: 'option', value: 'option' }} 
                             value={model.operator} onChange={(operator)=>changeModelByField('operator',operator)}
                         />}
                         label='operator' 
                     />
-                    <FormItem
+                    <AIFormInput
                         input={<AIText value={model.target} onChange={(target)=>changeModelByField('target',target)}/>}
                         label='target' 
                     />

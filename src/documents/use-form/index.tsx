@@ -1,6 +1,6 @@
 import { FC } from "react";
 import DOC from "../../resuse-components/doc";
-import { useForm } from "../../npm/aio-form";
+import { useForm } from "../../npm/aio-input";
 import { Code } from "../../npm/aio-components";
 
 export default function DOC_UseForm(props: any) {
@@ -15,7 +15,7 @@ export default function DOC_UseForm(props: any) {
                     { text: 'validate', id: 'validate', render: () => <Validate /> },
                     { text: 'dynamic', id: 'dynamic', render: () => <Dynamic /> },
                     { text: 'reset', id: 'reset', render: () => <Reset /> },
-                    { text: 'barati', id: 'barati', render: () => <Barati /> },
+                    { text: 'complex layout', id: 'barati', render: () => <ComplexLayput /> },
                     
                 ]
             }}
@@ -43,7 +43,7 @@ const Basic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -52,7 +52,7 @@ const Basic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -61,7 +61,7 @@ const Basic:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -78,7 +78,7 @@ const Basic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -87,7 +87,7 @@ const Basic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -96,7 +96,7 @@ const Basic:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }
@@ -114,7 +114,7 @@ const GetLayout:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {
@@ -131,7 +131,7 @@ const GetLayout:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -140,7 +140,7 @@ const GetLayout:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -157,7 +157,7 @@ const GetLayout:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {
@@ -174,7 +174,7 @@ const GetLayout:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -183,7 +183,7 @@ const GetLayout:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }    
@@ -201,7 +201,7 @@ const Required:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -210,7 +210,7 @@ const Required:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -219,7 +219,7 @@ const Required:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -236,7 +236,7 @@ const Basic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -245,7 +245,7 @@ const Basic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -254,7 +254,7 @@ const Basic:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }
@@ -273,7 +273,7 @@ const Validate:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -290,7 +290,7 @@ const Validate:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -299,7 +299,7 @@ const Validate:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -318,7 +318,7 @@ const Validate:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -335,7 +335,7 @@ const Validate:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -344,7 +344,7 @@ const Validate:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }    
@@ -364,13 +364,13 @@ const Dynamic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({getData,renderSubmitButton})=>{
             return {
                 v:[
                     {
                         h:[
                             {input:{type:'text',field:'name',label:'Name'}},
-                            {input:{type:'text',field:'email',label:'Email',disabled:data.name === 'mohammad'}},
+                            {input:{type:'text',field:'email',label:'Email',disabled:getData().name === 'mohammad'}},
                         ]
                     },
                     {
@@ -389,7 +389,7 @@ const Dynamic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -398,7 +398,7 @@ const Dynamic:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 const Dynamic:FC = ()=>{
     const form = useForm<I_form>({
@@ -410,13 +410,13 @@ const Dynamic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({getData,renderSubmitButton})=>{
             return {
                 v:[
                     {
                         h:[
                             {input:{type:'text',field:'name',label:'Name'}},
-                            {input:{type:'text',field:'email',label:'Email',disabled:data.name === 'mohammad'}},
+                            {input:{type:'text',field:'email',label:'Email',disabled:getData().name === 'mohammad'}},
                         ]
                     },
                     {
@@ -435,7 +435,7 @@ const Dynamic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}}
+                            {html:renderSubmitButton('Submit')}
                         ]
                     }
                 ]
@@ -444,7 +444,7 @@ const Dynamic:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }    
@@ -463,7 +463,7 @@ const Reset:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton,reset})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -472,8 +472,8 @@ const Reset:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}},
-                            {reset:{text:'Reset'}},
+                            {html:renderSubmitButton('Submit'),id:'msf'},
+                            {html:<button type='button' onClick={()=>reset()}>Reset</button>},
                         ]
                     }
                 ]
@@ -482,7 +482,7 @@ const Reset:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -499,7 +499,7 @@ const Basic:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout:({renderSubmitButton,reset})=>{
             return {
                 v:[
                     {input:{type:'text',field:'name',label:'Name'}},
@@ -508,8 +508,8 @@ const Basic:FC = ()=>{
                     {
                         className:'p-v-12-',
                         h:[
-                            {submit:{text:'Submit'}},
-                            {reset:{text:'Reset'}},
+                            {html:renderSubmitButton('Submit')},
+                            {html:<button onClick={()=>reset()}>Reset</button>},
                         ]
                     }
                 ]
@@ -518,7 +518,7 @@ const Basic:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }
@@ -528,7 +528,7 @@ const Basic:FC = ()=>{
 }
 
 
-const Barati:FC = ()=>{
+const ComplexLayput:FC = ()=>{
     const form = useForm<I_form>({
         initData:{
             name:'',
@@ -542,25 +542,25 @@ const Barati:FC = ()=>{
             return {
                 style:{background:'#eee'},
                 v:[
-                    {style:{background:'#fff',height:100},h:[{flex:1,html:'a'}]},
+                    {style:{background:'#fff'},size:100,html:'a'},
                     {
                         h:[
-                            {style:{background:'#fff',width:100},h:[{html:'b'}]},
+                            {style:{background:'#fff'},size:100,html:'b'},
                             {
                                 v:[
-                                    {style:{background:'#fff',height:100},h:[{html:'c'}]},
+                                    {style:{background:'#fff'},size:100,html:'c'},
                                     {
-                                        style:{height:100},
+                                        size:100,
                                         h:[
-                                            {style:{background:'#fff',width:100},h:[{html:'d'}]},
-                                            {style:{background:'#fff',flex:1},h:[{html:'e'}]}
+                                            {style:{background:'#fff'},size:100,html:'d'},
+                                            {style:{background:'#fff'},flex:1,html:'e'}
                                         ]
                                     },
                                     {
                                         style:{height:100},
                                         h:[
-                                            {style:{background:'#fff',flex:1,},h:[{html:'e'}]},
-                                            {style:{background:'#fff',width:100},h:[{html:'d'}]}
+                                            {style:{background:'#fff'},flex:1,html:'e'},
+                                            {style:{background:'#fff'},size:100,html:'d'}
                                         ]
                                     },
                                 ]
@@ -573,7 +573,7 @@ const Barati:FC = ()=>{
     })
     return (
         <div className="example">
-            {form.render}
+            {form.renderLayout}
             {Code(`
 type I_form = {
     name:string,
@@ -616,7 +616,7 @@ const GetLayout:FC = ()=>{
     })
     return (
         <>
-            {form.render}
+            {form.renderLayout}
         </>
     )
 }    

@@ -675,7 +675,7 @@ export type I_formHook<T> = {
     reset: () => void;
 };
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
-export declare const FormItem: FC<{
+export declare const AIFormInput: FC<{
     label?: string;
     input: ReactNode;
     attrs?: any;

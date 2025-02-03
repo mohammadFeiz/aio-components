@@ -1,5 +1,5 @@
 import { createContext, FC, ReactNode, useContext, useRef, useState } from "react";
-import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, FormItem } from "../../npm/aio-input";
+import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, AIFormInput } from "../../npm/aio-input";
 import usePopup, { I_usePopup } from "../../npm/aio-popup";
 import './index.css';
 import { Code } from './../../npm/aio-components';
@@ -155,7 +155,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
 
     const input_text = (field: keyof I_item, required: boolean) => {
         return (
-            <FormItem
+            <AIFormInput
                 label={field}
                 input={<AIText value={item[field]} onChange={(value) => changeItem(field, value)} filter={field === 'field' ? [' '] : undefined} />}
                 error={required && !item[field] ? `${field} is required` : undefined}
@@ -164,7 +164,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
     }
     const input_number = (field: keyof I_item, required: boolean) => {
         return (
-            <FormItem
+            <AIFormInput
                 label={field}
                 input={<AINumber value={item[field]} onChange={(value) => changeItem(field, value)} />}
                 error={required && !item[field] ? `${field} is required` : undefined}
@@ -186,7 +186,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
     const input_options = (field: I_prop, required: boolean) => {
         return (
             <>
-                <FormItem
+                <AIFormInput
                     label='options'
                     input={(
                         <AIRadio
@@ -202,7 +202,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
                 />
                 {
                     !!item.options &&
-                    <FormItem
+                    <AIFormInput
                         label='options'
                         input={<SettingOptions options={item.options} onChange={(newOptions) => changeItem('options', newOptions)} />}
                         action={{ text: <PlusIcon />, fn: () => openAddOptionModal() }}
@@ -213,7 +213,7 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
     }
     const input_boolean = (field: keyof I_item, required: boolean) => {
         return (
-            <FormItem
+            <AIFormInput
                 label={field}
                 input={(
                     <AIRadio
@@ -278,12 +278,12 @@ const AddOptionModal: FC<{ onSubmit: (v: { text: ReactNode, value: string }) => 
     //     <FormContainer
     //         body={(
     //             <div className="flex-col-">
-    //                 <FormItem
+    //                 <AIFormInput
     //                     label='text'
     //                     input={<AIText value={option.text} onChange={(text) => setOption({ ...option, text })} />}
     //                     error={!option.text ? 'text is required' : ''}
     //                 />
-    //                 <FormItem
+    //                 <AIFormInput
     //                     label='value'
     //                     input={<AIText value={option.value} onChange={(value) => setOption({ ...option, value })} />}
     //                     error={!option.value ? 'value is required' : ''}
@@ -306,7 +306,7 @@ const SettingOptions: FC<{ options: I_option[], onChange: (options: I_option[]) 
     }
     function input_layout(option: I_option, field: 'text' | 'value', index: number) {
         const p: any = { className: 'w-100- brd-none-', value: option[field], onChange: (value: any) => changeOption(index, field, value) }
-        return (<FormItem input={(<AIText {...p} />)} error={!option[field] ? `${field} is required` : ''} />)
+        return (<AIFormInput input={(<AIText {...p} />)} error={!option[field] ? `${field} is required` : ''} />)
     }
     function option_layout(option: I_option, index: number) {
         return (
@@ -391,7 +391,7 @@ const Preview: FC = () => {
         const Comp = componentDic[item.type]
         const props = { ...item, options: !item.options ? undefined : item.options, label: undefined }
         return (
-            <FormItem
+            <AIFormInput
                 label={item.label}
                 input={<Comp {...props} />}
             />

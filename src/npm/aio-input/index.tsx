@@ -3683,13 +3683,16 @@ export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='ta
 
 
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
-export type I_formInput<T> = AITYPE & { label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>, 
-    validate?: (p:{data: T, value: any, input: I_formInput<T>}) => string | undefined }
+export type I_formInput<T> = AITYPE & {
+    label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
+    validate?: (p: { data: T, value: any, input: I_formInput<T> }) => string | undefined
+}
 type I_useFormProps<T> = {
     initData: T;
     onSubmit?: (data: T) => void;
     fa?: boolean;
-    getLayout?:(data:T)=>I_formNode<T>
+    showLabel?:boolean,
+    getLayout?: (context: I_formContext<T>) => I_formNode<T>
 };
 export type I_formField<T> = NestedKeys<T>
 type NestedKeys<T> = {
@@ -3701,202 +3704,311 @@ type NestedKeys<T> = {
 type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
 export type I_formNode<T> = {
     v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formInput<T>, attrs?: any, className?: string, style?: any, show?: boolean,
-    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, submit?: { text: string, attrs?: any }, required?: boolean,
-    reset?: { text: string, attrs?: any }
+    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode,id?:string,
+    align?: 'v' | 'h' | 'vh' | 'hv',hide_xs?:boolean,hide_sm?:boolean,hide_md?:boolean,hide_lg?:boolean,show_xs?:boolean,show_sm?:boolean,show_md?:boolean,show_lg?:boolean
 }
 export type I_formHook<T> = {
     data: T,
-    render: ReactNode,
+    renderLayout: ReactNode,
     changeData: (data: T) => void,
-    changeByField:(field:I_formField<T>,value:any)=>void,
-    getErrorsDic:()=>{[key in I_formField<T>]?: string | undefined},
-    getErrorsList:()=>string[],
-    reset:()=>void
+    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
+    getErrorsList: () => string[],
+    reset: () => void,
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
+    isSubmitDisabled: () => boolean,
+    renderInput:(input:I_formInput<T>,attrs?:any)=>ReactNode
 }
 type I_formContext<T> = {
-    getData: () => T,
     changeData: (data: T) => void,
-    changeByField: (field: I_formField<T>, value: any) => void,
+    changeByInput: (field: I_formInput<T>, value: any) => void,
+    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
+    getErrorsList: () => string[],
+    reset: () => void,
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
+    isSubmitDisabled: () => boolean,
+    getData: () => T,
     isDataChanged: () => boolean,
     rootProps: I_useFormProps<T>,
     isFieldChanged: (field: I_formField<T>) => boolean,
     getValueAndErrorByInput: (input: I_formInput<T>) => { value: any, error: string | undefined },
-    hasError:()=>boolean,
-    getErrorsList:()=>string[],
-    reset:()=>void
+    hasError: () => boolean,
+    getNodeAttrs: (p: { node: I_formNode<T>, type: 'group' | 'html' | 'input', isRoot: boolean, parentNode?: I_formNode<T> }) => any
 }
 
 export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
     function getInitData() { return JSON.parse(JSON.stringify(p.initData)) }
     const [initData] = useState<T>(getInitData);
+    const [timerDisabled, setTimerDisabled] = useState(false)
     const fieldChangesRef = useRef<{ [key in I_formField<T>]?: boolean }>({})
     const errorsRef = useRef<{ [key in I_formField<T>]?: string | undefined }>({})
-    const hasError = ()=>{
+    const hasError = () => {
         const keys = Object.keys(errorsRef.current) as any
-        return !!keys.filter((o:I_formField<T>)=>!!errorsRef.current[o]).length
+        return !!keys.filter((o: I_formField<T>) => !!errorsRef.current[o]).length
     }
     const isFieldChanged = (field: I_formField<T>) => !!fieldChangesRef.current[field]
     const [data, setData] = useState<T>(getInitData);
-    const [dom,setDom] = useState<ReactNode>(null)
+    const [layout, setLayout] = useState<ReactNode>(null)
     function getData() { return dataRef.current }
-    const changeData = (data: T) => { dataRef.current = data; setData(data) }
-    const changeByField = (field: I_formField<T>, value: any) => {
-        let newData = { ...dataRef.current }; 
-        fieldChangesRef.current = { ...fieldChangesRef.current, [field]: true }
-        setValueByField(newData, field, value); 
+    const changeData = (data: T) => { 
+        dataRef.current = data; setData(data) 
+    }
+    const changeByInput = (input: I_formInput<T>, value: any) => {
+        let newData = { ...dataRef.current };
+        fieldChangesRef.current = { ...fieldChangesRef.current, [input.field]: true }
+        errorsRef.current = {...errorsRef.current,[input.field]:getErrorByInput(input,value)}
+        setValueByField(newData, input.field, value);
         changeData(newData)
     }
     const dataRef = useRef(data); dataRef.current = data;
+    function getErrorByInput(input:I_formInput<T>,value:any):string | undefined{
+        const {required = true,label,validateType} = input;
+        if (required && value === undefined || value === '' || value === null) {
+            return p.fa ? `${label} ضروری است` : `${label} is required`
+        }
+        if(validateType === 'email'){
+            const res = IsValidEmail(value);
+            if(!res){return p.fa?`فرمت ${label} صحیح نیست`:`${label} format is incorrect`}
+        }
+        if(validateType === 'irMobile'){
+            const res = ValidateIrMobile({value,label,fa:p.fa});
+            if(res){return res}
+        }
+        if(validateType === "irNationalCode"){
+            const res = IsValidIrNationalCode(value);
+            if(!res){return p.fa?`فرمت ${label} صحیح نیست`:`${label} format is incorrect`}
+        }
+        if (input.validate) {
+            const res = input.validate({ data: dataRef.current, value, input })
+            if(res){return res}
+        }
+        if(value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN'){
+            return p.fa?'این مقدار مجاز نیست':'this value is forbidden'
+        }
+        return undefined
+    }
     function getValueAndErrorByInput(input: I_formInput<T>) {
-        const {required = true,label,field} = input;
+        const { field } = input;
         const value = getValueByField(dataRef.current, field)
-        let error;
-        if(required && value === undefined || value === '' || value === null){
-            error = p.fa?`${label} ضروری است`:`${label} is required`
-        }
-        else if(input.validate){
-            error = input.validate({ data: dataRef.current, value, input })
-        }
-        errorsRef.current = {...errorsRef.current,[field]:error}
+        const error = getErrorByInput(input,value);
+        errorsRef.current = { ...errorsRef.current, [field]: error }
         return { value, error }
     }
-    const reset = ()=>{
+    const getNodeStyle = (node: I_formNode<T>, parentNode?: I_formNode<T>) => {
+        const res: any = { flex: node.flex };
+        if (parentNode && (parentNode.h || parentNode.v)) {
+            res[parentNode.v ? 'height' : 'width'] = node.size
+        }
+        return { ...res, ...node.style }
+    }
+    function getVisibilityClassNames(node:I_formNode<T>):string[] {
+        let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
+        if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
+        if (node.hide_xs) { hide_xs = true; }
+        if (node.show_sm) { hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true; }
+        if (node.hide_sm) { hide_sm = true; }
+        if (node.show_md) { hide_xs = true; hide_sm = true; hide_md = false; hide_lg = true; }
+        if (node.hide_md) { hide_md = true; }
+        if (node.show_lg) { hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false; }
+        if (node.hide_lg) { hide_lg = true; }
+        if (hide_xs) { classNames.push('ai-form-hide-xs') }
+        if (hide_sm) { classNames.push('ai-form-hide-sm') }
+        if (hide_md) { classNames.push('ai-form-hide-md') }
+        if (hide_lg) { classNames.push('ai-form-hide-lg') }
+        return classNames;
+    }
+    const getNodeClassNames = (node: I_formNode<T>, className?: string, isRoot?: boolean): (string | undefined)[] => {
+        let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined,visibilityClassNames = getVisibilityClassNames(node);
+        if (node.v) {
+            scrollClassName = `ai-form-scroll-v`
+            if (node.align === 'v') { alignClassName = 'ai-form-justify-center' }
+            else if (node.align === 'h') { alignClassName = 'ai-form-items-center' }
+            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+        }
+        else if (node.h) {
+            scrollClassName = `ai-form-scroll-h`
+            if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
+            else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
+            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+        }
+        return [rootClassName, className, node.className, scrollClassName, alignClassName,...visibilityClassNames]
+    }
+    const getNodeAttrs = (p: { node: I_formNode<T>, type: 'group' | 'html' | 'input', isRoot: boolean, parentNode?: I_formNode<T> }) => {
+        const { node, type, parentNode, isRoot } = p;
+        let className = '';
+        if (type === 'group') { className = `ai-form-${node.v ? 'v' : 'h'}` }
+        else if (type === 'html') { className = 'ai-form-html' }
+        return AddToAttrs(
+            node.attrs, 
+            { 
+                className: getNodeClassNames(node, className, isRoot), 
+                style: getNodeStyle(node, parentNode) ,
+                attrs:type === 'input' && node.input?{['data-label']:node.input.label}:undefined
+            }
+        )
+    }
+    const reset = () => {
         const newData = getInitData();
         dataRef.current = newData
         errorsRef.current = {}
-        setData(newData);
+        changeData(newData);
     }
-    const getErrorsDic = ()=>errorsRef.current
-    const getErrorsList = ():string[]=>{
+    const getErrorsDic = () => errorsRef.current
+    const getErrorsList = (): string[] => {
         const errors = errorsRef.current as any;
         const keys = Object.keys(errors) as any;
-        const strs = keys.filter((o:any)=>!!errors[o]) as any
-        return strs.map((o:any)=>errors[o])
+        const strs = keys.filter((o: any) => !!errors[o]) as any
+        return strs.map((o: any) => errors[o])
     }
     const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    useEffect(()=>{
-        setDom(getDom())
-    },[data])
-    const getDom = () => {
-        if(!p.getLayout){return null}
-        const node = p.getLayout(dataRef.current)
-        const context: I_formContext<T> = { rootProps: p, getData, isDataChanged, isFieldChanged, getValueAndErrorByInput,changeData,changeByField,hasError,getErrorsList,reset }
+    useEffect(() => {
+        setLayout(getLayout())
+    }, [data])
+    const getContext = ():I_formContext<T>=>{
+        return {
+            rootProps: p, getData, isDataChanged, isFieldChanged, getValueAndErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
+            getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled
+        }
+    }
+    const getLayout = () => {
+        if (!p.getLayout) { return null }
+        const context = getContext()
+        const node = p.getLayout(context)
         //@ts-ignore
-        return <FormRender node={node} context={context}/>
+        return <FormRender node={node} context={context} />
     };
-    return { data, changeData,getErrorsDic,getErrorsList,changeByField, render:<>{dom}</>,reset }
+    const isSubmitDisabled = (): boolean => {
+        const dataChanged = isDataChanged();
+        const error = hasError();
+        const isTimerdisabled = !!timerDisabled
+        return !dataChanged || error || !!isTimerdisabled
+    };
+    const renderSubmitButton = (text: string, attrs?: any): ReactNode => {
+        if (p.onSubmit === undefined) {
+            console.error('useForm error => for use renderSubmitButton you should set onSubmit props in difinition of useForm hook');
+            return null;
+        }
+        const onClick = () => {
+            const onSubmit = p.onSubmit as any;
+            setTimerDisabled(true); onSubmit(getData());
+            setTimeout(() => setTimerDisabled(false), 3000)
+        }
+        const disabled = isSubmitDisabled()
+        const allAttrs = { type: 'button', ...attrs, disabled, onClick }
+        return <button {...allAttrs}>{text}</button>
+    }
+    const renderInput = (input:I_formInput<T>,attrs?:any)=>{
+        return (
+            <AIFormInputContainer
+                context={getContext()} 
+                input={input as I_formInput<any>}
+                attrs={getNodeAttrs({node:{input,attrs},type:'input',isRoot:false})}
+            />
+        )
+    }
+    return { data, changeData, getErrorsDic, getErrorsList,renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled,renderInput }
 }
-const FormRender:FC<{context:I_formContext<any>,node:I_formNode<any>}> = ({context,node})=>{
-    const [dom,setDom] = useState<ReactNode>(null)
-    const {getData} = context
+const FormRender: FC<{ context: I_formContext<any>, node: I_formNode<any> }> = ({ context, node }) => {
+    const [dom, setDom] = useState<ReactNode>(null)
+    const { getData } = context
     const data = getData();
-    useEffect(()=>{
+    useEffect(() => {
         setDom(<AIFormNode node={node} context={context} level={0} index={0} />)
-    },[data])
+    }, [data])
     return <>{dom}</>
 }
 const AIFormNode: FC<{
-    node: I_formNode<any>,
+    node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
     context: I_formContext<any>,
-    level: number,
-    index: number
-}> = ({ node, context, level, index }) => {
+}> = ({ node, context, level, index, parentNode }) => {
     let { show = true } = node;
     if (!show) { return null }
-    if (node.html !== undefined) { return <>{node.html}</> }
-    if (node.submit) { return <FormSubmitButton node={node} context={context} /> }
-    if (node.reset) { return <FormResetButton node={node} context={context} /> }
-    if (node.input) { return <AIFormInput key={node.input.field} node={node} context={context} /> }
     if (Array.isArray(node.h) || Array.isArray(node.v)) {
-        return <AIFormGroup node={node} context={context} level={level} index={index} />
+        return <AIFormGroup node={node} context={context} level={level} index={index} parentNode={parentNode} />
     }
+    const { getNodeAttrs } = context;
+    if (node.html !== undefined) {
+        const attrs = getNodeAttrs({ node, type: 'html', isRoot: level === 0, parentNode })
+        return (<div {...attrs}>{node.html}</div>)
+    }
+    if (node.input) { 
+        const attrs = getNodeAttrs({node,type:'input',isRoot:false})
+        return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} /> 
+    }
+
     return null
 }
 const AIFormGroup: FC<{
-    node: I_formNode<any>,
-    context: I_formContext<any>,
-    level: number,
-    index: number
-}> = ({ node, context, level }) => {
-    let { tag = 'div', legend, flex, size, scroll } = node;
-    const dir = node.v ? 'v' : 'h'
-    const scrollClass = scroll ? `ai-form-scroll-${dir}` : undefined
-    const html = <>{(node as any)[dir].map((o: I_formNode<any>, i: number) => <AIFormNode key={`level-${level + 1}-index-${i}`} node={o} context={context} level={level + 1} index={i} />)}</>
-    const content = (<>{!!legend && tag === 'fieldset' && <legend>{legend}</legend>}{html}</>)
-    const attrs = AddToAttrs(node.attrs, { className: [`ai-form-${dir}`, node.className, scrollClass, level === 0 ? 'ai-form' : ''], style: { flex, [dir === 'v' ? 'height' : 'width']: size, ...node.style } })
+    node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
+    context: I_formContext<any>
+}> = ({ node, context, level, parentNode }) => {
+    let { tag = 'div', legend } = node;
+    const { getNodeAttrs } = context;
+    const content = (<>
+        {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
+        {
+            (node as any)[node.v ? 'v' : 'h'].map((o: I_formNode<any>, i: number) => {
+                return (
+                    <AIFormNode
+                        node={o} parentNode={node}
+                        key={`level-${level + 1}-index-${i}`}
+                        context={context}
+                        level={level + 1} index={i}
+                    />
+                )
+            })
+        }
+    </>)
+    const attrs = getNodeAttrs({ node, type: 'group', isRoot: level === 0, parentNode })
     if (level === 0) { return (<form {...attrs}>{content}</form>) }
     if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
     if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
     if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
     return (<div {...attrs}>{content}</div>)
 }
-const AIFormInput: FC<{
-    node: I_formNode<any>,
-    context: I_formContext<any>
-}> = ({ node, context }) => {
-    const { getValueAndErrorByInput,changeByField } = context;
-    const {input} = node;
-    if(!input){return null}
-    const {inputAttrs,field} = input;
+const AIFormInputContainer: FC<{
+    input:I_formInput<any>,
+    attrs?:any,
+    context: I_formContext<any>,
+}> = ({ context,input,attrs}) => {
+    const { getValueAndErrorByInput, changeByInput } = context;
+    const { inputAttrs,field,label } = input;
     const { value, error } = getValueAndErrorByInput(input);
-    const props:any = {...input,inputAttrs:{ ...inputAttrs, 'aria-label': field },value,onChange:(v: any) => changeByField(field, v)}
-    return <RenderInput value={value} error={error} input={input} node={node} context={context} props={props}/>;
+    return (
+        <RenderInput 
+            value={value} error={error} input={input} context={context} 
+            inputProps={{ ...input, inputAttrs: { ...inputAttrs, 'aria-label': field }, value, onChange: (v: any) => changeByInput(input, v) }} 
+            attrs={attrs} 
+        />
+    )
 }
-const RenderInput:FC<{value:any,error?:string,input:I_formInput<any>,node:I_formNode<any>,context:I_formContext<any>,props:any}> = ({value,error,input,node,context,props})=>{
-    const { isFieldChanged } = context;
+type I_renderInput = {
+    attrs?:any,
+    value: any,
+    error?: string,
+    input: I_formInput<any>,
+    context: I_formContext<any>,
+    inputProps: any,
+}
+const RenderInput: FC<I_renderInput> = (props) => {
+    const { context, attrs, input, inputProps, error } = props;
+    const { isFieldChanged,rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
-        const {field,label} = input;
-        let { size, flex } = node
-        const attrs = AddToAttrs(node.attrs, { className: ["ai-form-input-container", node.className], style: { flex, width: size, ...node.style } })        
+        const { field, label } = input;
         setDom(
-            <FormItem key={field} required={input.required}
-                input={<AIOInput {...props}/>}
+            <AIFormInput required={input.required} showLabel={rootProps.showLabel}
+                input={<AIOInput {...inputProps} type={inputProps.type} />}
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={attrs}
             />
         )
     }, [props, error])
-    console.log('input render')
-    return <>{dom}</>;
+    return <Fragment key={input.field}>{dom}</Fragment>;
 }
-const FormSubmitButton: FC<{
-    node: I_formNode<any>,
-    context: I_formContext<any>
-}> = ({ node, context }) => {
-    const {rootProps, getData,hasError,isDataChanged} = context;
-    const [timerDisabled, setTimerDisabled] = useState(false)
-    const {  } = context;
-    const { onSubmit } = rootProps; if (!onSubmit) { return null }
-    const dataChanged = isDataChanged()
-    const disabled = !dataChanged || hasError() || !!timerDisabled
-    if (!node.submit) { return null }
-    const { text, attrs } = node.submit
-    const allAttrs = {
-        type: 'button',...attrs, disabled, 
-        onClick: () => {
-            setTimerDisabled(true); onSubmit(getData());
-            setTimeout(() => setTimerDisabled(false), 3000)
-        }
-    }
-    return <button {...allAttrs}>{text}</button>
-}
-const FormResetButton: FC<{
-    node: I_formNode<any>,
-    context: I_formContext<any>
-}> = ({ node, context }) => {
-    const {reset} = context;
-    if (!node.reset) { return null }
-    const { text, attrs } = node.reset
-    const allAttrs = {
-        type: 'button',...attrs, 
-        onClick: () => {
-            reset();
-        }
-    }
-    return <button {...allAttrs}>{text}</button>
-}
-export const FormItem: FC<{
+export const AIFormInput: FC<{
     label?: string,
+    showLabel?:boolean,
     input: ReactNode,
     attrs?: any,
     action?: { text: ReactNode, fn?: () => void },
@@ -3904,20 +4016,20 @@ export const FormItem: FC<{
     id?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true } = props;
-    const hasHeader = !!label || !!action
-    const Attrs = AddToAttrs(attrs, { className: "ai-form-item" })
+    const { label, input, action, error, attrs, id, required = true,showLabel = true } = props;
+    const hasHeader = (!!label && !!showLabel) || !!action
+    const Attrs = AddToAttrs(attrs, { className: "ai-form-input" })
     return (
         <div {...Attrs}>
             {
                 hasHeader === true &&
-                <label className="ai-form-item-header" htmlFor={id}>
-                    {!!label && <div className="ai-form-item-label">{required ? <div className="ai-form-required">*</div> : null}{label}</div>}
-                    {!!action && <div className="ai-form-item-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
+                <label className="ai-form-input-header" htmlFor={id}>
+                    {!!label && <div className="ai-form-input-label">{required ? <div className="ai-form-required">*</div> : null}{label}</div>}
+                    {!!action && <div className="ai-form-input-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
                 </label>
             }
-            <div className="ai-form-item-body">{input}</div>
-            {!!error && <div className="ai-form-item-error">{error}</div>}
+            <div className="ai-form-input-body">{input}</div>
+            {!!error && <div className="ai-form-input-error">{error}</div>}
         </div>
     )
 }
