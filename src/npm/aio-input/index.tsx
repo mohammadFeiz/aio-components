@@ -3688,7 +3688,7 @@ export type I_formInput<T> = AITYPE & {
     validate?: (p: { data: T, value: any, input: I_formInput<T> }) => string | undefined
 }
 type I_useFormProps<T> = {
-    initData: T;
+    initData: Partial<T>;
     onSubmit?: (data: T) => void;
     fa?: boolean;
     showLabel?:boolean,
@@ -3827,6 +3827,12 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         }
         else if (node.h) {
             scrollClassName = `ai-form-scroll-h`
+            if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
+            else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
+            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
+        }
+        else if(node.html){
             if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
             else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
             else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }

@@ -2692,7 +2692,9 @@ pre[class*="language-"]>code[class*="language-"] {
     flex-direction: column;
     width: 100%;
 }
-
+.ai-form-html{
+    display:flex;
+}
 .ai-form-input-header {
     display: flex;
     align-items: center;

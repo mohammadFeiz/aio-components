@@ -16,11 +16,16 @@ export default function DOC_UseForm(props: any) {
                     { text: 'validate', id: 'validate', render: () => <Validate /> },
                     { text: 'dynamic', id: 'dynamic', render: () => <Dynamic /> },
                     { text: 'reset', id: 'reset', render: () => <Reset /> },
-                    { text: 'complex layout', id: 'barati', render: () => <ComplexLayput /> },
+                    { text: 'complex layout', id: 'complex layout', render: () => <ComplexLayput /> },
                     { text: 'nested', id: 'nested', render: () => <Nested /> },
-                    { text: 'validate email', id: 'validateemail', render: () => <ValidateEmail /> },
-                    { text: 'validate ir mobile', id: 'validateirmobile', render: () => <ValidateIrMobile /> },
-                    { text: 'validate ir national code', id: 'validateirnationalcode', render: () => <ValidateIrNationalCode /> },
+                    {
+                        text: 'validate', id: 'validate',
+                        items: [
+                            { text: 'email', id: 'validateemail', render: () => <ValidateEmail /> },
+                            { text: 'ir mobile', id: 'validateirmobile', render: () => <ValidateIrMobile /> },
+                            { text: 'ir national code', id: 'validateirnationalcode', render: () => <ValidateIrNationalCode /> }
+                        ]
+                    },
                     { text: 'visibility', id: 'visibility', render: () => <Visibility /> },
 
                 ]
@@ -56,11 +61,7 @@ type I_form_5 = {
 }
 const Basic: FC = () => {
     const form = useForm<I_form>({
-        initData: {
-            name: '',
-            email: '',
-            password: ''
-        },
+        initData: {},
         onSubmit: (data) => {
             console.log(data)
         },
@@ -554,7 +555,7 @@ const ComplexLayput: FC = () => {
         onSubmit: (data) => {
             console.log(data)
         },
-        getLayout: (data) => {
+        getLayout: () => {
             return {
                 style: { background: '#eee' },
                 v: [
@@ -564,19 +565,19 @@ const ComplexLayput: FC = () => {
                             { style: { background: '#fff' }, size: 100, html: 'b' },
                             {
                                 v: [
-                                    { style: { background: '#fff' }, size: 100, html: 'c' },
+                                    { style: { background: '#fff' }, size: 100, align: 'vh', html: 'c' },
                                     {
                                         size: 100,
                                         h: [
                                             { style: { background: '#fff' }, size: 100, html: 'd' },
-                                            { style: { background: '#fff' }, flex: 1, html: 'e' }
+                                            { style: { background: '#fff' }, flex: 1, align: 'h', html: 'e' }
                                         ]
                                     },
                                     {
                                         style: { height: 100 },
                                         h: [
                                             { style: { background: '#fff' }, flex: 1, html: 'e' },
-                                            { style: { background: '#fff' }, size: 100, html: 'd' }
+                                            { style: { background: '#fff' }, size: 100, align: 'v', html: 'd' }
                                         ]
                                     },
                                 ]
@@ -606,29 +607,29 @@ const GetLayout:FC = ()=>{
         onSubmit:(data)=>{
             console.log(data)
         },
-        getLayout:(data)=>{
+        getLayout: () => {
             return {
-                style:{background:'#eee'},
-                v:[
-                    {style:{background:'#fff'},size:100,html:'a'},
+                style: { background: '#eee' },
+                v: [
+                    { style: { background: '#fff' }, size: 100, html: 'a' },
                     {
-                        h:[
-                            {style:{background:'#fff'},size:100,html:'b'},
+                        h: [
+                            { style: { background: '#fff' }, size: 100, html: 'b' },
                             {
-                                v:[
-                                    {style:{background:'#fff'},size:100,html:'c'},
+                                v: [
+                                    { style: { background: '#fff' }, size: 100, align:'vh',html: 'c' },
                                     {
-                                        size:100,
-                                        h:[
-                                            {style:{background:'#fff'},size:100,html:'d'},
-                                            {style:{background:'#fff'},flex:1,html:'e'}
+                                        size: 100,
+                                        h: [
+                                            { style: { background: '#fff' }, size: 100, html: 'd' },
+                                            { style: { background: '#fff' }, flex: 1,align:'h', html: 'e' }
                                         ]
                                     },
                                     {
-                                        style:{height:100},
-                                        h:[
-                                            {style:{background:'#fff'},flex:1,html:'e'},
-                                            {style:{background:'#fff'},size:100,html:'d'}
+                                        style: { height: 100 },
+                                        h: [
+                                            { style: { background: '#fff' }, flex: 1, html: 'e' },
+                                            { style: { background: '#fff' }, size: 100,align:'v', html: 'd' }
                                         ]
                                     },
                                 ]
@@ -931,25 +932,25 @@ const Visibility: FC = () => {
                 v: [
                     {
                         show_lg: true,
-                        h: [nameInput,familyInput,ageInput,birthdayInput]
+                        h: [nameInput, familyInput, ageInput, birthdayInput]
                     },
                     {
                         show_md: true,
                         v: [
-                            {h: [nameInput,familyInput,ageInput]},
+                            { h: [nameInput, familyInput, ageInput] },
                             birthdayInput
                         ]
                     },
                     {
                         show_sm: true,
                         v: [
-                            {h: [nameInput,familyInput]},
-                            {h: [ageInput,birthdayInput]}
+                            { h: [nameInput, familyInput] },
+                            { h: [ageInput, birthdayInput] }
                         ]
                     },
                     {
                         show_xs: true,
-                        v: [nameInput,familyInput,ageInput,birthdayInput]
+                        v: [nameInput, familyInput, ageInput, birthdayInput]
                     },
                     {
                         className: 'p-v-12-',
@@ -972,10 +973,18 @@ type I_form = {
     birthday: string
 }
 const Basic:FC = ()=>{
-    const nameInput: I_formNode<I_form> = { input: { type: 'text', field: 'name', label: 'Name' } }
-    const familyInput: I_formNode<I_form> = { input: { type: 'text', field: 'family', label: 'Family' } }
-    const ageInput: I_formNode<I_form> = { input: { type: 'number', field: 'age', label: 'Age' } }
-    const birthdayInput: I_formNode<I_form> = { input: { type: 'date', field: 'birthday', label: 'Birth Day' } }
+    const nameInput: I_formNode<I_form> = { 
+        input: { type: 'text', field: 'name', label: 'Name' } 
+    }
+    const familyInput: I_formNode<I_form> = { 
+        input: { type: 'text', field: 'family', label: 'Family' } 
+    }
+    const ageInput: I_formNode<I_form> = { 
+        input: { type: 'number', field: 'age', label: 'Age' } 
+    }
+    const birthdayInput: I_formNode<I_form> = { 
+        input: { type: 'date', field: 'birthday', label: 'Birth Day' } 
+    }
     const form = useForm<I_form>({
         initData:{
             name: '',
