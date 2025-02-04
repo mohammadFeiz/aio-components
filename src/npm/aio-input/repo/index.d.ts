@@ -632,7 +632,8 @@ type I_useFormProps<T> = {
     initData: T;
     onSubmit?: (data: T) => void;
     fa?: boolean;
-    getLayout?: (data: T) => I_formNode<T>;
+    showLabel?: boolean;
+    getLayout?: (context: I_formContext<T>) => I_formNode<T>;
 };
 export type I_formField<T> = NestedKeys<T>;
 type NestedKeys<T> = {
@@ -653,30 +654,60 @@ export type I_formNode<T> = {
     scroll?: boolean;
     tag?: I_formTag;
     legend?: ReactNode;
-    submit?: {
-        text: string;
-        attrs?: any;
-    };
-    required?: boolean;
-    reset?: {
-        text: string;
-        attrs?: any;
-    };
+    id?: string;
+    align?: 'v' | 'h' | 'vh' | 'hv';
+    hide_xs?: boolean;
+    hide_sm?: boolean;
+    hide_md?: boolean;
+    hide_lg?: boolean;
+    show_xs?: boolean;
+    show_sm?: boolean;
+    show_md?: boolean;
+    show_lg?: boolean;
 };
 export type I_formHook<T> = {
     data: T;
-    render: ReactNode;
+    renderLayout: ReactNode;
     changeData: (data: T) => void;
-    changeByField: (field: I_formField<T>, value: any) => void;
     getErrorsDic: () => {
         [key in I_formField<T>]?: string | undefined;
     };
     getErrorsList: () => string[];
     reset: () => void;
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode;
+    isSubmitDisabled: () => boolean;
+    renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode;
+};
+type I_formContext<T> = {
+    changeData: (data: T) => void;
+    changeByInput: (field: I_formInput<T>, value: any) => void;
+    getErrorsDic: () => {
+        [key in I_formField<T>]?: string | undefined;
+    };
+    getErrorsList: () => string[];
+    reset: () => void;
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode;
+    isSubmitDisabled: () => boolean;
+    getData: () => T;
+    isDataChanged: () => boolean;
+    rootProps: I_useFormProps<T>;
+    isFieldChanged: (field: I_formField<T>) => boolean;
+    getValueAndErrorByInput: (input: I_formInput<T>) => {
+        value: any;
+        error: string | undefined;
+    };
+    hasError: () => boolean;
+    getNodeAttrs: (p: {
+        node: I_formNode<T>;
+        type: 'group' | 'html' | 'input';
+        isRoot: boolean;
+        parentNode?: I_formNode<T>;
+    }) => any;
 };
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
 export declare const AIFormInput: FC<{
     label?: string;
+    showLabel?: boolean;
     input: ReactNode;
     attrs?: any;
     action?: {

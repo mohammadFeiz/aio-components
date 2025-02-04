@@ -13,9 +13,9 @@ import {
 
 } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
-import './repo/index.css';
 import { Indent, GetSvg } from './../../npm/aio-components';
 import $ from 'jquery';
+import './repo/index.css';
 const AICTX = createContext({} as any);
 const AIOInput: FC<AITYPE> = (props) => {
     let type = props.type, round = props.round;
