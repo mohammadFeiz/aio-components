@@ -1,26 +1,26 @@
 import { createContext, createRef, FC, MutableRefObject, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray, GetPercentByValue } from "../aio-utils";
+import { AddToAttrs, GetArray, GetPercentByValue } from "./../../npm/aio-utils";
 import Canvas from './../../npm/aio-canvas';
-import { I_canvas_item, I_canvas_props } from "../aio-canvas/types";
+import { I_canvas_item, I_canvas_props } from "./../../npm/aio-canvas/types";
 import $ from 'jquery';
 import './index.css';
-import { AI_point, AISlider, AISpinner, I_rangeConfig } from "../aio-input";
+import { AISlider, AISpinner, I_rangeConfig } from "./../../npm/aio-input";
 const ChartCtx = createContext({} as any)
-type I_chart_range = [number, string][]
-type I_chart_label = { offset: number, text: ReactNode }
-type I_chart_size = { x: number, y: number }
-type I_chart_axis = { start: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
-type I_chart_label_detail = { text: ReactNode, offset: number }
-type I_getPointStyle = (point: any) => I_chart_point_style;
-type I_getLineStyle = () => I_chart_line_style
-type I_chart_point_style = { lineWidth?: number, r?: number, dash?: number[], stroke?: string, fill?: string }
-type I_chart_line_style = { lineWidth?: number, dash?: number[], stroke?: string }
-type I_chart_data_detail = {
+export type I_chart_range = [number, string][]
+export type I_chart_label = { offset: number, text: ReactNode }
+export type I_chart_size = { x: number, y: number }
+export type I_chart_axis = { start: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
+export type I_chart_label_detail = { text: ReactNode, offset: number }
+export type I_getPointStyle = (point: any) => I_chart_point_style;
+export type I_getLineStyle = () => I_chart_line_style
+export type I_chart_point_style = { lineWidth?: number, r?: number, dash?: number[], stroke?: string, fill?: string }
+export type I_chart_line_style = { lineWidth?: number, dash?: number[], stroke?: string }
+export type I_chart_data_detail = {
     points: I_chart_point_detail[], type: 'line' | 'bar', lineStyle: I_chart_line_style, getPointText?: I_getPointText,
     barCount: number, barIndex: number, areaPoints: number[][], areaColors?: [string, string]
 }
-type I_rangeDetail = { offset: number, height: number, color: string }
-type I_chart_point_detail = {
+export type I_rangeDetail = { offset: number, height: number, color: string,value:number }
+export type I_chart_point_detail = {
     key:number,value:number,
     keyOffset:number,valueOffset:number,
     keyPercent:number,valuePercent:number,
@@ -29,16 +29,16 @@ type I_chart_point_detail = {
     valueBarSize:number,
     pointStyle?: I_chart_point_style, rangeDetails: I_rangeDetail[]
 }
-type I_getPointText = (point: I_chart_point_detail) => {
+export type I_getPointText = (point: I_chart_point_detail) => {
     text: string,
     style?: { fontSize?: number, rotate?: number, fill?: string, offset?: number }
 } | undefined
-type I_chart_data = {
+export type I_chart_data = {
     color?: string,
     title?: string,
     points: any[],
-    getKey: (point: any) => number,
-    getValue: (point: any) => number,
+    getKey: (point: any,index:number) => number,
+    getValue: (point: any,index:number) => number,
     getRanges?: (point: any) => I_chart_range | undefined,
     getPointStyle?: I_getPointStyle,
     getLineStyle?: I_getLineStyle,
@@ -86,7 +86,6 @@ const Chart: FC<I_Chart> = (props) => {
     let [timeout] = useState<any>()
     let [timeout1] = useState<any>()
     const filterMouseDownRef = useRef(false)
-    const calcTemp = useRef()
     function setFilterMouseDownRef(v: boolean) {
         filterMouseDownRef.current = v
     }
@@ -237,6 +236,9 @@ const Chart: FC<I_Chart> = (props) => {
     useEffect(() => {
         $(window).on('resize', resize)
     }, [])
+    useEffect(()=>{
+        update()
+    },[props.datas])
     function resize() {
         clearTimeout(timeout)
         timeout = setTimeout(() => {
@@ -379,8 +381,7 @@ const XLabels: FC<{ labelDetails: I_chart_label_detail[] }> = ({ labelDetails })
                             style: { opacity: 0.2 }
                         }
                     }}
-                    point={(index, p) => {
-                        const { value } = p;
+                    point={({index,value}) => {
                         const label = getLabel(value)
                         return {
                             html: (
@@ -494,11 +495,11 @@ export const Pie: FC<I_Pie> = (props) => {
         />
     )
 }
-type I_chart_tooltip = { tooltipY: number, tooltipPoints: { color: string, text: ReactNode }[] }
+type I_chart_tooltip = { tooltipY: number, tooltipPoints: { color: string, text: ReactNode,rangeDetails:I_rangeDetail[] }[] }
 type I_ChartData = { getFilter: () => I_filter, getProps: () => I_Chart, getChartSize: () => { x: number, y: number },dic:I_dic }
 class ChartData {
     p: I_ChartData
-    tooltipDic: { [key: string]: { ys: number[], labels: { color: string, text: ReactNode }[] } } = {};
+    tooltipDic: { [key: string]: { ys: number[], labels: { color: string, text: ReactNode,rangeDetails:I_rangeDetail[] }[] } } = {};
     constructor(p: I_ChartData) {
         this.p = p
     }
@@ -542,7 +543,7 @@ class ChartData {
         const key = x.toString();
         this.tooltipDic[key] = this.tooltipDic[key] || { ys: [], labels: [] }
         this.tooltipDic[key].ys.push(y);
-        this.tooltipDic[key].labels.push({ color, text });
+        this.tooltipDic[key].labels.push({ color, text,rangeDetails:pointDetail.rangeDetails });
     }
     getTooltip = (x: number, y: number): I_chart_tooltip => {
         const det = this.tooltipDic[x.toString()]
@@ -557,22 +558,40 @@ class ChartData {
         return res
     }
     updateTooltip = (xLabel: I_chart_label, yLabel: I_chart_label, container: any) => {
+        if(xLabel === undefined || yLabel === undefined){return}
         const { tooltipY, tooltipPoints } = this.getTooltip(xLabel.offset, yLabel.offset)
         const html = (
             `
                 <div class="aio-chart-tooltip">
                     <div class="aio-chart-tooltip-title">${xLabel.text}</div>
-                    ${tooltipPoints.map(({ text, color }) => {
-                return (
-                    `
-                        <div class='aio-chart-tooltip-item'>
-                            <div style="width:10px;height:10px;background:${color}"></div>
-                            <div>${text}</div>
-                        </div>
-                    `
-                )
-            })
-            }
+                    ${
+                        tooltipPoints.map(({ text, color,rangeDetails }) => {
+                            return (
+                                `
+                                    ${
+                                        !rangeDetails.length?
+                                        `<div class='aio-chart-tooltip-item'>
+                                            <div style="width:10px;height:10px;background:${color}"></div>
+                                            <div>${text}</div>
+                                        </div>`
+                                        :''
+                                    }
+                                    ${
+                                        rangeDetails.map((o)=>{
+                                            return (
+                                                `
+                                                    <div class='aio-chart-tooltip-item'>
+                                                        <div style="width:10px;height:10px;background:${o.color}"></div>
+                                                        <div>${o.value}</div>
+                                                    </div>
+                                                `
+                                            )
+                                        }).join('')
+                                    }
+                                `
+                            )
+                        }).join('')
+                    }
                     <div class="aio-chart-tooltip-arrow"></div>
                 </div>
             `
@@ -582,6 +601,7 @@ class ChartData {
         tooltipElement.html(html)
     }
     updateCursor = (container: any, xLabel: I_chart_label, yLabel: I_chart_label, canvasPos: [number, number]) => {
+        if(xLabel === undefined || yLabel === undefined){return}
         container.find('.aio-chart-cursor-label-y').html(xLabel.text)
         container.find('.aio-chart-cursor-label-x').html(yLabel.text)
         container.find('.aio-chart-cursor-label-container-y').css({ left: canvasPos[0], display: 'flex' });
@@ -601,10 +621,11 @@ class ChartData {
         if (ranges) {
             let lastValue = 0;
             for (let k = 0; k < ranges.length; k++) {
-                let [value, color] = ranges[k];
+                let [value = lastValue, color] = ranges[k];
+                if(value === undefined){continue}
                 const { offset: startOffset } = this.getPointDetail({ d: 'value', value: lastValue })
                 const { offset: endOffset } = this.getPointDetail({ d: 'value', value })
-                res.push({ offset: startOffset, height: endOffset - startOffset, color });
+                res.push({ offset: startOffset, height: endOffset - startOffset, color,value:value - lastValue });
                 lastValue = value;
             }
         }
@@ -629,7 +650,7 @@ class ChartData {
         const newPoints = []
         for (let i = 0; i < points.length; i++) {
             const point = points[i]
-            const key = data.getKey(point), value = data.getValue(point);
+            const key = data.getKey(point,i), value = data.getValue(point,i);
             if (key < filter[0]) { continue }
             if (key > filter[1]) { continue }
             newPoints.push({ key, value, point })

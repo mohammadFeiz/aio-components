@@ -2594,7 +2594,7 @@ const RangeCircles: FC = () => {
         let from = start, to = end
         let { thickness, color, radius, roundCap, full } = getCircleByStr(circles[i], 'radius')
         let p: I_RangeArc = { thickness, color, from, to, radius, full, roundCap };
-        pathes.push(<RangeArc {...p} />);
+        pathes.push(<RangeArc key={'rangecirclearc' + i} {...p} />);
     }
     return <>{pathes}</>;
 }
@@ -2626,7 +2626,7 @@ const RangeRanges: FC = () => {
         if (round) {
             let { thickness, color, radius, roundCap } = getCircleByStr(config, 'offset')
             let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false }
-            rangeItem = <RangeArc {...p} />
+            rangeItem = <RangeArc key={'rangearc' + i} {...p} />
         }
         else {
             let { thickness, color, offset, roundCap } = getRectByStr(config)
