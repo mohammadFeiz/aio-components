@@ -1,24 +1,24 @@
-.sidemenu-1{
+.sidenav-1{
     background-image: url(./bg.jpg);
     background-size: 360px 480px;
     position: relative;
 }
-.sidemenu-1:after{
+.sidenav-1:after{
     background:linear-gradient(0deg, #123f6e, #2b548352);
     backdrop-filter: blur(2px);
 }
-.sidemenu-1 .ai-sidemenu-header{
+.sidenav-1 .ai-sidenav-header{
     border-bottom:1px solid #2f3b53;
 }
-.sidemenu-1 .aio-input-tree-body .aio-input-tree-body{
+.sidenav-1 .aio-input-tree-body .aio-input-tree-body{
     background:rgba(0,0,0,0.3);
     backdrop-filter: blur(3px);
     padding:12px 0;
 }
-.ai-sidemenu-item.active{
+.ai-sidenav-item.active{
     background:#3c8fff96;
 }
-.ai-sidemenu-sub-item.active{
+.ai-sidenav-sub-item.active{
     background:#3c8fff96;
 }
 

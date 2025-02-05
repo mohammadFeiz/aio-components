@@ -270,22 +270,6 @@
 
 
 
-.aio-input-tree-option {
-    padding: 0;
-    gap: 6px;
-    position: relative;
-}
-
-.aio-input-tree-option-after {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.aio-input-select.aio-input-tree-options-button {
-    background: none;
-    border: none;
-}
 
 .aio-input-dropdown-option {
     border-bottom: 1px solid #eee;
@@ -1842,6 +1826,23 @@
     color: #fff;
 }
 
+.aio-input-tree-option {
+    padding-top: 0;
+    padding-bottom:0;
+    gap: 6px;
+    position: relative;
+}
+
+.aio-input-tree-option-after {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aio-input-select.aio-input-tree-options-button {
+    background: none;
+    border: none;
+}
 
 .aio-input-tree-body {
     position: relative;
@@ -1849,164 +1850,56 @@
     flex-direction: column;
     overflow: hidden;
 }
-
-.aio-input-tree-row {
-    position: relative;
+.aio-input-tree-body.not-mounted .aio-input-tree-option{
+    transition: height .9s,opacity .9s !important;
+    transition-timing-function: cubic-bezier(.16, 2.02, .84, .96) !important;
+    height:0 !important;
+    opacity:0 !important;
 }
-
-.aio-input-tree-body .aio-input-tree-row {
-    transition: transform var(--aio-input-transition), margin-top var(--aio-input-transition);
-    transition-timing-function: cubic-bezier(.16, 2.02, .84, .96);
-    transform: scaleY(1);
-    transform-origin: top;
-    margin-top: 0px;
+.aio-input-tree-body.not-mounted{
+    transition: padding var(--aio-input-transition) !important;
+    padding:0 !important;
 }
-
-.aio-input-tree-body.not-mounted {
-    /*use in tree animation if dont off padding animation will show not well*/
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+.aio-input-tree-body.not-mounted .ai-toggle-line{
+    display:none !important;
 }
-
-.aio-input-tree-body.not-mounted .aio-input-tree-row {
-    transition: transform var(--aio-input-transition), margin-top var(--aio-input-transition);
-    transform: scaleY(0);
-    transform-origin: top;
-    transform-style: preserve-3d;
-    margin-top: -48px;
+.aio-input-tree-body.mounted .aio-input-tree-option{
+    transition-timing-function: cubic-bezier(.16, 2.02, .84, .96) !important;
+    transition:height var(--aio-input-transition);
 }
-
-.aio-input-tree-body.mounted .aio-input-tree-row {
-    transform: unset;
-}
-
-.aio-input-toggle {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.aio-input-toggle-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.aio-input-indent-line {
-    stroke: #c0cbd3;
-    stroke-dasharray: 1, 3;
-}
-
-.aio-input-toggle-line {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: calc(50% - 12px);
-}
-
-.aio-input-indents {
-    height: 100%;
-    display: flex;
-    position: relative;
-    align-items: center;
-}
-
-.aio-input-indent {
-    height: 100%;
-    position: relative;
-}
-
-.aio-input-indent svg {
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-
-}
-
-
-
-.aio-input-indent-6 {
-    height: 6px;
-}
-
-.aio-input-indent-12 {
-    height: 12px;
-}
-
-.aio-input-indent-18 {
-    height: 18px;
-}
-
-.aio-input-indent-24 {
+.aio-input-tree-body.mounted .aio-input-size-24 {
     height: 24px;
 }
 
-.aio-input-indent-30 {
-    height: 30px;
-}
-
-.aio-input-indent-36 {
+.aio-input-tree-body.mounted .aio-input-size-36 {
     height: 36px;
 }
 
-.aio-input-indent-42 {
-    height: 42px;
-}
-
-.aio-input-indent-48 {
+.aio-input-tree-body.mounted .aio-input-size-48 {
     height: 48px;
 }
 
-.aio-input-indent-54 {
-    height: 54px;
-}
-
-.aio-input-indent-60 {
+.aio-input-tree-body.mounted .aio-input-size-60 {
     height: 60px;
 }
 
-
-
-
-.aio-input-size-24 {
-    height: 24px;
-}
-
-.aio-input-size-36 {
-    height: 36px;
-}
-
-.aio-input-size-48 {
-    height: 48px;
-}
-
-.aio-input-size-60 {
-    height: 60px;
-}
-
-.aio-input-size-72 {
+.aio-input-tree-body.mounted .aio-input-size-72 {
     height: 72px;
 }
 
-.aio-input-size-84 {
+.aio-input-tree-body.mounted .aio-input-size-84 {
     height: 84px;
 }
 
-.aio-input-size-96 {
+.aio-input-tree-body.mounted .aio-input-size-96 {
     height: 96px;
 }
 
-.aio-input-size-108 {
+.aio-input-tree-body.mounted .aio-input-size-108 {
     height: 108px;
 }
 
-.aio-input-size-120 {
+.aio-input-tree-body.mounted .aio-input-size-120 {
     height: 120px;
 }
 

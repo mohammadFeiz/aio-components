@@ -1157,8 +1157,14 @@ const Tree: FC = () => {
     }
     function toggle(id: any) {
         let open = !!openDic[id], time = 300;
-        if (!open) { SetOpen(id); setTimeout(() => SetMounted(id), 0) }
-        else { SetMounted(id); setTimeout(() => SetOpen(id), time) }
+        if (!open) { 
+            SetOpen(id); 
+            setTimeout(() => SetMounted(id), 0) 
+        }
+        else { 
+            SetMounted(id); 
+            setTimeout(() => SetOpen(id), time) 
+        }
     }
     useEffect(() => {
         if (rootProps.toggleRef) { rootProps.toggleRef.current = (id: any) => toggle(id) }
@@ -1302,8 +1308,7 @@ const TreeBody: FC<I_TreeBody> = (props) => {
                     row, option, parent, parentId, id, parentOpen, open, details,
                     indent: { height: size, childsLength: childs.length, size: indent, parentIndent, ...details }
                 }
-                let p = { className: `aio-input-tree-row` }
-                return <div {...p} key={id}><TreeRow item={item} /><TreeChilds item={item} /></div>;
+                return <><TreeRow item={item} /><TreeChilds item={item} /></>;
             })}
         </div>
     )

@@ -1,10 +1,10 @@
 import { FC, useState } from "react";
 import DOC from "../../resuse-components/doc";
-import { SideMenu } from "../../npm/aio-components";
+import { Sidenav } from "../../npm/aio-components";
 import Icon from "@mdi/react";
 import { mdiFile } from "@mdi/js";
 import './index.css';
-const DOC_Sidemenu: FC = (props: any) => {
+const DOC_Sidenav: FC = (props: any) => {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
@@ -19,12 +19,12 @@ const DOC_Sidemenu: FC = (props: any) => {
         />
     )
 }
-export default DOC_Sidemenu
+export default DOC_Sidenav
 const Basic: FC = () => {
     const [value,setValue] = useState<string>('item1')
     return (
         <div className="example">
-            <SideMenu
+            <Sidenav
                 value={value}
                 header={(
                     <div className='flex-row- align-vh-'>My Application</div>
@@ -57,9 +57,9 @@ const Example1: FC = () => {
     const [value,setValue] = useState<string>('item1')
     return (
         <div className="example">
-            <SideMenu
+            <Sidenav
                 value={value}
-                className="sidemenu-1"
+                className="sidenav-1"
                 header={(
                     <div className='flex-row- align-vh-'>My Application</div>
                 )}

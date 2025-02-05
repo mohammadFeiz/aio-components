@@ -316,7 +316,7 @@ code[class*="language-"] *::selection {
 }
 
 
-.ai-sidemenu{
+.ai-sidenav{
     width: 240px;
     background:#555;
     color:#fff;
@@ -325,7 +325,7 @@ code[class*="language-"] *::selection {
     position: relative;
     
 }
-.ai-sidemenu:after{
+.ai-sidenav:after{
     content:'';
     position: absolute;
     width: 100%;
@@ -334,28 +334,28 @@ code[class*="language-"] *::selection {
     left:0;
     background:linear-gradient(0deg, black, transparent)
 }
-.ai-sidemenu-tree{
+.ai-sidenav-tree{
     z-index:10;
     position: relative;
 }
-.ai-sidemenu-header{
+.ai-sidenav-header{
     z-index:10;
     position: relative;
 }
-.ai-sidemenu .aio-input-tree-body .aio-input-tree-body{
+.ai-sidenav .aio-input-tree-body .aio-input-tree-body{
     background:rgba(0,0,0,0.08);
     padding:12px 0;
 }
-.ai-sidemenu-tree{
+.ai-sidenav-tree{
     background:none ;
 }
-.ai-sidemenu-item.active{
+.ai-sidenav-item.active{
     background:#637da0
 }
-.ai-sidemenu-sub-item.active{
+.ai-sidenav-sub-item.active{
     background:#637da0
 }
-.ai-sidemenu-item .ai-sidemenu-item-icon{
+.ai-sidenav-item .ai-sidenav-item-icon{
     width:36px;
     height:36px;
     display:flex;
@@ -364,27 +364,27 @@ code[class*="language-"] *::selection {
     border-radius:100%;
     background:rgba(0,0,0,0.2)
 }
-.ai-sidemenu-sub-item .ai-sidemenu-item-icon{
+.ai-sidenav-sub-item .ai-sidenav-item-icon{
     width:36px;
     height:36px;
     display:flex;
     align-items: center;
     justify-content: center;
 }
-.ai-sidemenu-item{
+.ai-sidenav-item{
     padding-inline-end: 12px;
 }
-.ai-sidemenu-sub-item{
+.ai-sidenav-sub-item{
     padding-inline-end: 12px;
 }
-.ai-sidemenu-toggle{
+.ai-sidenav-toggle{
     width:24px;
     height:24px;
     display:flex;
     align-items: center;
     justify-content: center;
 }
-.ai-sidemenu-header{
+.ai-sidenav-header{
     display:flex;
     align-items: center;
     gap:12px;

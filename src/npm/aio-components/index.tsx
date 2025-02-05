@@ -142,19 +142,24 @@ export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) 
 }
 type I_AIApp = {
     attrs?: any,
-    bottomMenu: {
+    rtl?:boolean,
+    bottomMenu?: {
         options: AI_bottomMenuOption[],
         onChange: (v: string) => void
     }
-    sideNav?:{
-        
+    sidenav?:{
+        items: AI_sidenavItem[],
+        indent?: number,
+        header?:ReactNode,
+        value?:string,
     },
-    body: () => ReactNode,
-    header?: () => ReactNode | false,
+    body: (sidenavValue?:string) => ReactNode,
+    header?: (sidenavValue?:string) => ReactNode | false,
     children?: ReactNode
 }
 type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
 export const AIApp: FC<I_AIApp> = (props) => {
+    const [sidenavValue,setSidenavValue] = useState<string>(props.sidenav?.value || '')
     function header_layout() {
         if (!props.header) { return null }
         const header = props.header()
@@ -164,14 +169,23 @@ export const AIApp: FC<I_AIApp> = (props) => {
     function body_layout() {
         return (
             <div style={{flex:1,overflow:'hidden'}}>
-                <div className="ai-app-side"></div>
+                {
+                    !!props.sidenav && 
+                    <Sidenav
+                        rtl={props.rtl}
+                        items={props.sidenav.items}
+                        value={sidenavValue}
+                        onChange={(v)=>setSidenavValue(v.value)}
+                    />
+                }
                 <div className="ai-app-body">
-                    {props.body()}
+                    {props.body(sidenavValue)}
                 </div>
             </div>
         )
     }
     function bottomMenu_layout() {
+        if(!props.bottomMenu){return null}
         return (<AIBottomMenu bottomMenu={props.bottomMenu} />)
     }
     const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
@@ -187,7 +201,7 @@ export const AIApp: FC<I_AIApp> = (props) => {
 const AIAppSide:FC = ()=>{
     return null
 }
-type AI_BottomMenu = { bottomMenu: I_AIApp["bottomMenu"] }
+type AI_BottomMenu = { bottomMenu: NonNullable<I_AIApp["bottomMenu"]> }
 const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
     const { options, onChange } = bottomMenu
     function item_layout(item: AI_bottomMenuOption) {
@@ -216,9 +230,9 @@ const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
         </div>
     )
 }
-export type AI_Sidemenu = {
-    items: AI_Sidemenu_item[],
-    onChange: (item: AI_Sidemenu_item) => void,
+export type AI_Sidenav = {
+    items: AI_sidenavItem[],
+    onChange: (item: AI_sidenavItem) => void,
     className?: string,
     style?: any,
     attrs?: any,
@@ -227,27 +241,27 @@ export type AI_Sidemenu = {
     header?:ReactNode,
     value?:string
 }
-export type AI_Sidemenu_item = {
+export type AI_sidenavItem = {
     text: ReactNode,
     value: string,
     icon?: ReactNode,
-    items?: AI_Sidemenu_item[],
+    items?: AI_sidenavItem[],
     onClick?: () => void,
     after?:ReactNode
 }
-export const SideMenu: FC<AI_Sidemenu> = (props) => {
+export const Sidenav: FC<AI_Sidenav> = (props) => {
     let { items = [], onChange, rtl = false, indent = 0,header,value } = props;
     const [icons] = useState<GetSvg>(new GetSvg())
     const toggleRef = useRef((id: any) => { })
-    function getAfter(option: AI_Sidemenu_item, active: boolean) {
+    function getAfter(option: AI_sidenavItem, active: boolean) {
         let { items = [],after } = option;
         return (
-            <div className={`ai-sidemenu-after`}>
+            <div className={`ai-sidenav-after`}>
                 {!!after && after}
                 {
                     !!items.length && 
-                    <div className="ai-sidemenu-toggle">
-                        {icons.getIcon(active ? 'mdiChevronDown' : 'mdiChevronLeft', 0.7)}
+                    <div className="ai-sidenav-toggle">
+                        {icons.getIcon(active ? 'mdiChevronDown' : (rtl?'mdiChevronRight':'mdiChevronLeft'), 0.7)}
                     </div>
                 }
             </div>
@@ -257,7 +271,7 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
         let { icon = icons.getIcon('mdiCircleMedium', 0.6) } = option;
         if (!icon) { return null }
         return (
-            <div className={`ai-sidemenu-item-icon`}>
+            <div className={`ai-sidenav-item-icon`}>
                 {icon}
             </div>
         )
@@ -275,25 +289,25 @@ export const SideMenu: FC<AI_Sidemenu> = (props) => {
     }
     let finalOptions: AI_optionProp = {
         ...defaultOption,
-        className: (option, {level}) => `ai-sidemenu-${level === 0?'item':'sub-item'}${value !== undefined && option.value === value?' active':''}`
+        className: (option, {level}) => `ai-sidenav-${level === 0?'item':'sub-item'}${value !== undefined && option.value === value?' active':''}`
     }
-    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidemenu', props.className] })
+    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className] })
     return (
         <div {...attrs}>
             {
                 !!header && 
-                <div className="ai-sidemenu-header">
+                <div className="ai-sidenav-header">
                     {header}
                 </div>
             }
             <AITree
                 {...attrs}
                 toggleIcon={() => false}
-                className={'ai-sidemenu-tree'}
+                className={'ai-sidenav-tree'}
                 size={48}
                 toggleRef={toggleRef}
                 value={[...items]}
-                getChilds={(p: { row: AI_Sidemenu_item }) => p.row.items || []}
+                getChilds={(p: { row: AI_sidenavItem }) => p.row.items || []}
                 option={finalOptions}
                 indent={0}
             />
