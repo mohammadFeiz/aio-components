@@ -4,7 +4,7 @@ import { Code } from './../../npm/aio-components';
 import { Storage } from "../../npm/aio-utils"
 import { mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"
-export type I_setting = { show: string, showCode: boolean,reverse:boolean,vertical:boolean,round:number }
+export type I_setting = { show: string,reverse:boolean,vertical:boolean,round:number }
 export type I_ExampleContext = { setting: I_setting, type: AI_type, code: (code: string) => React.ReactNode }
 export const ExampleContext = createContext({} as any);
 
@@ -12,7 +12,7 @@ const Example: FC<{ type: AI_type, examples: [string, () => ReactNode, boolean?]
     let { type } = props
     let [examples] = useState<[string, () => ReactNode, boolean?][]>(props.examples)
     let [setting, SetSetting] = useState<I_setting>(new Storage(`${type}examplessetting`).load('setting', {
-        show: 'all', showCode: true
+        show: 'all'
     }))
     let [titles] = useState<string[]>(getTitles)
     function getTitles() {
@@ -40,7 +40,7 @@ const Example: FC<{ type: AI_type, examples: [string, () => ReactNode, boolean?]
         let btnstyle = { background: 'none', border: 'none' }
         return (
             <div className="p-12-">
-                <div className="flex-row-">
+                <div className="flex-row- align-v-">
                     {
                         type === 'spinner' &&
                         <AIRadio
@@ -66,11 +66,9 @@ const Example: FC<{ type: AI_type, examples: [string, () => ReactNode, boolean?]
                             onChange={(vertical) => setSetting({ ...setting, vertical })}
                         />
                     }
-                    <div className="flex-1-"></div>
-                    <AICheckbox text='Show Code' value={!!setting.showCode} onChange={(showCode) => setSetting(showCode, 'showCode')} />
                     <AISelect
-                        options={titles} before='Show' option={{ text: 'option', value: 'option' }}
-                        value={setting.show} onChange={(show) => setSetting(show, 'show')} className="w-fit-"
+                        options={titles} option={{ text: 'option', value: 'option' }} popover={{fitHorizontal:true}}
+                        value={setting.show} onChange={(show) => setSetting(show, 'show')} className="flex-1-"
                     />
                     <div className="flex-row- align-v-">
                         <button type='button' style={btnstyle} onClick={() => changeShow(-1)}><Icon path={mdiMinusThick} size={1} /></button>
@@ -101,7 +99,6 @@ const Example: FC<{ type: AI_type, examples: [string, () => ReactNode, boolean?]
         )
     }
     function code(code: string) {
-        if (setting.showCode === false) { return null }
         return Code(code)
     }
     function getContext(): I_ExampleContext { return { setting, type, code } }

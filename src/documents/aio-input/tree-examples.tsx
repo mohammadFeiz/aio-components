@@ -7,9 +7,10 @@ import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";
 const TreeExamples:FC = ()=>{
     let [examples] = useState<any>([
         ['Basic',()=><Basic/>],
+        ['rtl',()=><RTL/>],
         ['before',()=><Before/>],
         ['subtext',()=><Subtext/>],
-        ['childs',()=><Childs/>],
+        ['getChilds',()=><GetChilds/>],
         ['check',()=><Check/>],
         ['click and toggleIcon',()=><ClickAndToggleIcon/>],
         ['customize toggleIcon',()=><CustomizeToggleIcon/>],
@@ -48,9 +49,30 @@ function getValue(){
         {name:'row-3',id:'row-3'}
     ]
 }
-function ModelCode(setting:any,code?:string){
-    if(!setting.showCode){return null}
-    if(code){return Code(code)} 
+function getValueRTL(){
+    return [
+        {
+            name:'تیم فنی',id:'row-0',
+            childs:[
+                {name:'تیم دواپس',id:'row0-0',active:true},
+                {name:'تیم اسکرام',id:'row0-1'},
+                {
+                    name:'تیم برنامه نویسی',id:'row0-2',
+                    childs:[
+                        {name:'تیم بک اند',id:'row0-2-0'},
+                        {name:'تیم فرانت اند',id:'row0-2-1',active:true},
+                        {name:'تیم دیزاین',id:'row0-2-2'}                
+                    ]
+                },
+                {name:'تیم تحلیل',id:'row0-3'}        
+            ]
+        },
+        {name:'تیم فروش',id:'row-1'},
+        {name:'تیم ارتباط با مشتریان',id:'row-2',active:true},
+        {name:'تیم پشتیبانی',id:'row-3'}
+    ]
+}
+function ModelCode(){
     return (
         Code(
 
@@ -79,6 +101,35 @@ function ModelCode(setting:any,code?:string){
     ) 
         
 }
+function ModelCodeRTL(){
+    return (
+        Code(
+
+`const [value,setValue] = useState([
+    {
+        name:'تیم فنی',id:'row-0',
+        childs:[
+            {name:'تیم دواپس',id:'row0-0',active:true},
+            {name:'تیم اسکرام',id:'row0-1'},
+            {
+                name:'تیم برنامه نویسی',id:'row0-2',
+                childs:[
+                    {name:'تیم بک اند',id:'row0-2-0'},
+                    {name:'تیم فرانت اند',id:'row0-2-1',active:true},
+                    {name:'تیم دیزاین',id:'row0-2-2'}                
+                ]
+            },
+            {name:'تیم تحلیل',id:'row0-3'}        
+        ]
+    },
+    {name:'تیم فروش',id:'row-1'},
+    {name:'تیم ارتباط با مشتریان',id:'row-2',active:true},
+    {name:'تیم پشتیبانی',id:'row-3'}
+])`
+                    )
+    ) 
+        
+}
 
 function Basic(){
     let {code,setting}:I_ExampleContext = useContext(ExampleContext);
@@ -86,7 +137,7 @@ function Basic(){
     return (
         <div>
             <AIOInput 
-                type='tree' rtl={true}
+                type='tree'
                 value={[...value]}
                 option={{text:'option.name',value:'option.id'}}
             />
@@ -100,12 +151,38 @@ function Basic(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
+        </div>
+    )
+}
+function RTL(){
+    let {code}:I_ExampleContext = useContext(ExampleContext);
+    let [value,setValue] = useState<any>(getValueRTL)
+    return (
+        <div>
+            <AIOInput 
+                type='tree' rtl={true}
+                value={[...value]}
+                option={{
+                    text:'option.name',value:'option.id'
+                }}
+            />
+            {
+                code(
+
+`<AIOInput 
+    type='tree'
+    value={[...value]}
+    option={{text:'option.name',value:'option.id'}}
+/>`
+                )
+            }
+            {ModelCodeRTL()}
         </div>
     )
 }
 function Before(){
-    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
+    let {code}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>(getValue)
     return (
         <div>
@@ -138,7 +215,7 @@ function Before(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -170,12 +247,12 @@ function Subtext(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
-function Childs(){
-    let {code,setting}:I_ExampleContext = useContext(ExampleContext);
+function GetChilds(){
+    let {code}:I_ExampleContext = useContext(ExampleContext);
     let [value,setValue] = useState<any>([
         {
             name:'row-0',id:'row-0',
@@ -217,7 +294,7 @@ function Childs(){
                 )
             }
             {
-                ModelCode(setting,`
+                Code(`
 let [value,setValue] = useState<any>([
     {
         name:'row-0',id:'row-0',
@@ -287,7 +364,7 @@ function Check(){
                     checked:(option)=>{
                         return !!option.active
                     },
-                    onClick:(option)=>{
+                    onClick:(option,a)=>{
                         option.active = !option.active;
                         //very important to use ... before value
                         setValue([...value])
@@ -330,7 +407,7 @@ function Check(){
                     }
                 }}
                 checkIcon={({checked})=>{
-                    return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+                    return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>:
                     <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
                 }}
             />
@@ -351,13 +428,13 @@ function Check(){
         }
     }}
     checkIcon={({checked})=>{
-        return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd'/>:
+        return checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff'/>:
         <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff'/>
     }}
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -415,7 +492,7 @@ function ClickAndToggleIcon(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -459,7 +536,7 @@ function CustomizeToggleIcon(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -522,7 +599,7 @@ function AddRemove(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -579,7 +656,7 @@ function Size(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -636,7 +713,7 @@ function Indent(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -909,7 +986,7 @@ function Actions(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -992,7 +1069,7 @@ function Complete(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }
@@ -1091,7 +1168,7 @@ function Input(){
 />`
                 )
             }
-            {ModelCode(setting)}
+            {ModelCode()}
         </div>
     )
 }

@@ -1,7 +1,9 @@
-import { FC, ReactNode, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { AddToAttrs, GetArray } from "./../../npm/aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
+import { AI_optionProp } from "../aio-input/repo";
+import { AITree } from "../aio-input";
 import './repo/index.css';
 type AI_Indent = {
     level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any,
@@ -33,7 +35,7 @@ export const Indent: FC<AI_Indent> = (props) => {
 
     const getToggleSvg = () => {
         if (props.toggleIcon) { return props.toggleIcon({ row, level, open }) }
-        let path = open === undefined ? 'mdiCircleSmall' : (open ? 'mdiChevronDown' : 'mdiChevronRight');
+        let path = open === undefined ? 'mdiCircleSmall' : (open ? 'mdiChevronDown' : (rtl?'mdiChevronLeft':'mdiChevronRight'));
         return new GetSvg().getIcon(path, 1)
     }
     const getIndentIcons = () => {
@@ -144,6 +146,9 @@ type I_AIApp = {
         options: AI_bottomMenuOption[],
         onChange: (v: string) => void
     }
+    sideNav?:{
+        
+    },
     body: () => ReactNode,
     header?: () => ReactNode | false,
     children?: ReactNode
@@ -211,6 +216,91 @@ const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
         </div>
     )
 }
+export type AI_Sidemenu = {
+    items: AI_Sidemenu_item[],
+    onChange: (item: AI_Sidemenu_item) => void,
+    className?: string,
+    style?: any,
+    attrs?: any,
+    rtl?: boolean,
+    indent?: number,
+    header?:ReactNode,
+    value?:string
+}
+export type AI_Sidemenu_item = {
+    text: ReactNode,
+    value: string,
+    icon?: ReactNode,
+    items?: AI_Sidemenu_item[],
+    onClick?: () => void,
+    after?:ReactNode
+}
+export const SideMenu: FC<AI_Sidemenu> = (props) => {
+    let { items = [], onChange, rtl = false, indent = 0,header,value } = props;
+    const [icons] = useState<GetSvg>(new GetSvg())
+    const toggleRef = useRef((id: any) => { })
+    function getAfter(option: AI_Sidemenu_item, active: boolean) {
+        let { items = [],after } = option;
+        return (
+            <div className={`ai-sidemenu-after`}>
+                {!!after && after}
+                {
+                    !!items.length && 
+                    <div className="ai-sidemenu-toggle">
+                        {icons.getIcon(active ? 'mdiChevronDown' : 'mdiChevronLeft', 0.7)}
+                    </div>
+                }
+            </div>
+        )
+    }
+    function getBefore(option: any) {
+        let { icon = icons.getIcon('mdiCircleMedium', 0.6) } = option;
+        if (!icon) { return null }
+        return (
+            <div className={`ai-sidemenu-item-icon`}>
+                {icon}
+            </div>
+        )
+    }
+    const defaultOption: AI_optionProp = {
+        text: 'option.text',
+        value: 'option.value',
+        after: (option, { active }) => getAfter(option, !!active),
+        before: (option) => getBefore(option),
+        onClick: (option) => {
+            let { items = [], value } = option;
+            if (!!items.length) { toggleRef.current(value) }
+            else if (onChange) { onChange(option) }
+        },
+    }
+    let finalOptions: AI_optionProp = {
+        ...defaultOption,
+        className: (option, {level}) => `ai-sidemenu-${level === 0?'item':'sub-item'}${value !== undefined && option.value === value?' active':''}`
+    }
+    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidemenu', props.className] })
+    return (
+        <div {...attrs}>
+            {
+                !!header && 
+                <div className="ai-sidemenu-header">
+                    {header}
+                </div>
+            }
+            <AITree
+                {...attrs}
+                toggleIcon={() => false}
+                className={'ai-sidemenu-tree'}
+                size={48}
+                toggleRef={toggleRef}
+                value={[...items]}
+                getChilds={(p: { row: AI_Sidemenu_item }) => p.row.items || []}
+                option={finalOptions}
+                indent={0}
+            />
+        </div>
+    )
+}
+
 export type I_MonthCells = {
     year: number, month: number, cellContent: (date: number[], weekDayIndex: number) => ReactNode, weekDayContent?: (v: number) => ReactNode,
     changeMonth: (month: number) => void

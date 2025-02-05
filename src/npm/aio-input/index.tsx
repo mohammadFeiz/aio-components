@@ -2824,101 +2824,6 @@ const RangeLabelItem: FC<I_RangeLabelItem> = (props) => {
     let { html, textProps, containerProps } = getDetails();
     return (<div {...containerProps}><div {...textProps}>{html}</div></div>)
 }
-export type AI_Sidemenu = {
-    items: AI_Sidemenu_item[],
-    onChange: (item: AI_Sidemenu_item) => void,
-    option?: any,
-    type?: 'hover' | 'normal' | 'icon',
-    className?: string,
-    style?: any,
-    attrs?: any
-}
-export type AI_Sidemenu_item = {
-    text: ReactNode,
-    value: string,
-    badge?: AI_Sidemenu_badge | AI_Sidemenu_badge[],
-    icon: ReactNode,
-    items?: AI_Sidemenu_item[],
-    onClick?: () => void
-}
-export type AI_Sidemenu_badge = {
-    text: string, circle?: boolean,
-    color: 'red' | 'green' | 'blue' | 'grey' | 'white' | 'orange' | 'yellow',
-}
-export const SideMenu: FC<AI_Sidemenu> = (props) => {
-    let { items = [], onChange, option = {}, type = 'normal' } = props;
-    let cls = 'aio-input-sidemenu'
-    const toggleRef = useRef((id: any) => { })
-    function getBadge(item: AI_Sidemenu_item) {
-        let { badge } = item;
-        if (!badge) { badge = [] }
-        if (!Array.isArray(badge)) { badge = [badge] }
-        if (!badge.length) { return [] }
-        let res: ReactNode[] = []
-        for (let i = 0; i < badge.length; i++) {
-            let { text, color = 'red', circle } = badge[i]
-            res.push(<div className={`${cls}-badge ${cls}-align ${cls}-badge-${color}${circle ? ' ' + cls + `-badge-circle` : ''}`}>{text}</div>)
-        }
-        return res
-    }
-    function getAfter(option: AI_Sidemenu_item, active: boolean) {
-        let { items = [] } = option;
-        let badge: ReactNode[] = getBadge(option);
-        return (
-            <div className={`${cls}-after ${cls}-align`}>
-                {!!badge.length && badge}
-                {!!items.length && I(active ? 'mdiChevronDown' : 'mdiChevronRight', 0.7)}
-            </div>
-        )
-    }
-    function getBefore(option: any) {
-        let { icon = I('mdiCircleMedium', 0.6) } = option;
-        if (!icon) { return null }
-        return (
-            <div className={`${cls}-before`}>
-                <div className={`${cls}-icon ${cls}-align`}>{icon}</div>
-            </div>
-        )
-    }
-    const defaultOption: AI_optionProp = {
-        text: 'option.text',
-        value: 'option.value',
-        after: ({ option, active }) => getAfter(option, !!active),
-        before: ({ option }) => getBefore(option),
-        onClick: ({ option }) => {
-            let { items = [], value } = option;
-            if (!!items.length) { toggleRef.current(value) }
-            else if (option.onClick) { option.onClick() }
-            else if (onChange) { onChange(option) }
-        },
-        className: ({ level }) => `${cls}-row-level-${level}`
-    }
-    let finalOptions: AI_optionProp = {
-        ...defaultOption, ...option,
-        className: (obj) => {
-            let className = `${cls}-row-level-${obj.level}`
-            if (typeof option.className === 'function') {
-                const res = option.className(obj)
-                if (res) { className += ' ' + res }
-            }
-            return className
-        }
-    }
-    const attrs = AddToAttrs(props.attrs, { className: [cls, `aio-input-sidemenu-${type}`, props.className] })
-    return (
-        <AIOInput
-            {...attrs}
-            className={attrs.className}
-            type='tree'
-            size={48}
-            toggleRef={toggleRef}
-            value={[...items]}
-            getChilds={(p: { row: AI_Sidemenu_item }) => p.row.items || []}
-            option={finalOptions}
-            indent={0}
-        />
-    )
-}
 export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: boolean) => void, colors?: string[] }> = ({ colors = ['#555', 'orange'], size = [16, 2, 3, 48], value, onChange = () => { } }) => {
     function getContainerStyle() {
         return {
@@ -3033,8 +2938,7 @@ function GetOptions(p: I_GetOptions): AI_options {
     }
     if (deSelect && typeof deSelect !== 'function' && deSelect !== true) { options = [deSelect, ...options] }
     function isActive(optionValue: any): boolean {
-        if (rootProps.type === 'tree') { return !!isOpen && !!isOpen(optionValue) }
-        else if (types.isMultiple) { return rootProps.value.indexOf(optionValue) !== -1 }
+        if (types.isMultiple) { return rootProps.value.indexOf(optionValue) !== -1 }
         else { return optionValue === rootProps.value }
     }
     for (let i = 0; i < options.length; i++) {
@@ -3100,9 +3004,12 @@ function GetOptionProps(p: I_GetOptionProps) {
         }
         catch { }
     }
-    if (typeof prop === 'function' && !preventFunction) {
-        let res = prop(optionOrg, optionDetails);
-        return res === undefined ? def : res;
+    if (typeof prop === 'function') {
+        if (!preventFunction) {
+            let res = prop(optionOrg, optionDetails);
+            return res === undefined ? def : res;
+        }
+        else { return () => prop(optionOrg, optionDetails); }
     }
     return prop !== undefined ? prop : def;
 }
@@ -3691,7 +3598,7 @@ type I_useFormProps<T> = {
     initData: Partial<T>;
     onSubmit?: (data: T) => void;
     fa?: boolean;
-    showLabel?:boolean,
+    showLabel?: boolean,
     getLayout?: (context: I_formContext<T>) => I_formNode<T>
 };
 export type I_formField<T> = NestedKeys<T>
@@ -3704,8 +3611,8 @@ type NestedKeys<T> = {
 type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
 export type I_formNode<T> = {
     v?: I_formNode<T>[], h?: I_formNode<T>[], html?: ReactNode, input?: I_formInput<T>, attrs?: any, className?: string, style?: any, show?: boolean,
-    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode,id?:string,
-    align?: 'v' | 'h' | 'vh' | 'hv',hide_xs?:boolean,hide_sm?:boolean,hide_md?:boolean,hide_lg?:boolean,show_xs?:boolean,show_sm?:boolean,show_md?:boolean,show_lg?:boolean
+    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, id?: string,
+    align?: 'v' | 'h' | 'vh' | 'hv', hide_xs?: boolean, hide_sm?: boolean, hide_md?: boolean, hide_lg?: boolean, show_xs?: boolean, show_sm?: boolean, show_md?: boolean, show_lg?: boolean
 }
 export type I_formHook<T> = {
     data: T,
@@ -3716,7 +3623,7 @@ export type I_formHook<T> = {
     reset: () => void,
     renderSubmitButton: (text: string, attrs?: any) => ReactNode,
     isSubmitDisabled: () => boolean,
-    renderInput:(input:I_formInput<T>,attrs?:any)=>ReactNode
+    renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode
 }
 type I_formContext<T> = {
     changeData: (data: T) => void,
@@ -3749,47 +3656,47 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     const [data, setData] = useState<T>(getInitData);
     const [layout, setLayout] = useState<ReactNode>(null)
     function getData() { return dataRef.current }
-    const changeData = (data: T) => { 
-        dataRef.current = data; setData(data) 
+    const changeData = (data: T) => {
+        dataRef.current = data; setData(data)
     }
     const changeByInput = (input: I_formInput<T>, value: any) => {
         let newData = { ...dataRef.current };
         fieldChangesRef.current = { ...fieldChangesRef.current, [input.field]: true }
-        errorsRef.current = {...errorsRef.current,[input.field]:getErrorByInput(input,value)}
+        errorsRef.current = { ...errorsRef.current, [input.field]: getErrorByInput(input, value) }
         setValueByField(newData, input.field, value);
         changeData(newData)
     }
     const dataRef = useRef(data); dataRef.current = data;
-    function getErrorByInput(input:I_formInput<T>,value:any):string | undefined{
-        const {required = true,label,validateType} = input;
+    function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
+        const { required = true, label, validateType } = input;
         if (required && value === undefined || value === '' || value === null) {
             return p.fa ? `${label} ضروری است` : `${label} is required`
         }
-        if(validateType === 'email'){
+        if (validateType === 'email') {
             const res = IsValidEmail(value);
-            if(!res){return p.fa?`فرمت ${label} صحیح نیست`:`${label} format is incorrect`}
+            if (!res) { return p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
         }
-        if(validateType === 'irMobile'){
-            const res = ValidateIrMobile({value,label,fa:p.fa});
-            if(res){return res}
+        if (validateType === 'irMobile') {
+            const res = ValidateIrMobile({ value, label, fa: p.fa });
+            if (res) { return res }
         }
-        if(validateType === "irNationalCode"){
+        if (validateType === "irNationalCode") {
             const res = IsValidIrNationalCode(value);
-            if(!res){return p.fa?`فرمت ${label} صحیح نیست`:`${label} format is incorrect`}
+            if (!res) { return p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
         }
         if (input.validate) {
             const res = input.validate({ data: dataRef.current, value, input })
-            if(res){return res}
+            if (res) { return res }
         }
-        if(value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN'){
-            return p.fa?'این مقدار مجاز نیست':'this value is forbidden'
+        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') {
+            return p.fa ? 'این مقدار مجاز نیست' : 'this value is forbidden'
         }
         return undefined
     }
     function getValueAndErrorByInput(input: I_formInput<T>) {
         const { field } = input;
         const value = getValueByField(dataRef.current, field)
-        const error = getErrorByInput(input,value);
+        const error = getErrorByInput(input, value);
         errorsRef.current = { ...errorsRef.current, [field]: error }
         return { value, error }
     }
@@ -3800,7 +3707,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         }
         return { ...res, ...node.style }
     }
-    function getVisibilityClassNames(node:I_formNode<T>):string[] {
+    function getVisibilityClassNames(node: I_formNode<T>): string[] {
         let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
         if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
         if (node.hide_xs) { hide_xs = true; }
@@ -3817,7 +3724,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         return classNames;
     }
     const getNodeClassNames = (node: I_formNode<T>, className?: string, isRoot?: boolean): (string | undefined)[] => {
-        let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined,visibilityClassNames = getVisibilityClassNames(node);
+        let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined, visibilityClassNames = getVisibilityClassNames(node);
         if (node.v) {
             scrollClassName = `ai-form-scroll-v`
             if (node.align === 'v') { alignClassName = 'ai-form-justify-center' }
@@ -3832,13 +3739,13 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
             else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
         }
-        else if(node.html){
+        else if (node.html) {
             if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
             else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
             else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
             else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
         }
-        return [rootClassName, className, node.className, scrollClassName, alignClassName,...visibilityClassNames]
+        return [rootClassName, className, node.className, scrollClassName, alignClassName, ...visibilityClassNames]
     }
     const getNodeAttrs = (p: { node: I_formNode<T>, type: 'group' | 'html' | 'input', isRoot: boolean, parentNode?: I_formNode<T> }) => {
         const { node, type, parentNode, isRoot } = p;
@@ -3846,11 +3753,11 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         if (type === 'group') { className = `ai-form-${node.v ? 'v' : 'h'}` }
         else if (type === 'html') { className = 'ai-form-html' }
         return AddToAttrs(
-            node.attrs, 
-            { 
-                className: getNodeClassNames(node, className, isRoot), 
-                style: getNodeStyle(node, parentNode) ,
-                attrs:type === 'input' && node.input?{['data-label']:node.input.label}:undefined
+            node.attrs,
+            {
+                className: getNodeClassNames(node, className, isRoot),
+                style: getNodeStyle(node, parentNode),
+                attrs: type === 'input' && node.input ? { ['data-label']: node.input.label } : undefined
             }
         )
     }
@@ -3871,7 +3778,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     useEffect(() => {
         setLayout(getLayout())
     }, [data])
-    const getContext = ():I_formContext<T>=>{
+    const getContext = (): I_formContext<T> => {
         return {
             rootProps: p, getData, isDataChanged, isFieldChanged, getValueAndErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
             getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled
@@ -3904,16 +3811,16 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         const allAttrs = { type: 'button', ...attrs, disabled, onClick }
         return <button {...allAttrs}>{text}</button>
     }
-    const renderInput = (input:I_formInput<T>,attrs?:any)=>{
+    const renderInput = (input: I_formInput<T>, attrs?: any) => {
         return (
             <AIFormInputContainer
-                context={getContext()} 
+                context={getContext()}
                 input={input as I_formInput<any>}
-                attrs={getNodeAttrs({node:{input,attrs},type:'input',isRoot:false})}
+                attrs={getNodeAttrs({ node: { input, attrs }, type: 'input', isRoot: false })}
             />
         )
     }
-    return { data, changeData, getErrorsDic, getErrorsList,renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled,renderInput }
+    return { data, changeData, getErrorsDic, getErrorsList, renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled, renderInput }
 }
 const FormRender: FC<{ context: I_formContext<any>, node: I_formNode<any> }> = ({ context, node }) => {
     const [dom, setDom] = useState<ReactNode>(null)
@@ -3938,9 +3845,9 @@ const AIFormNode: FC<{
         const attrs = getNodeAttrs({ node, type: 'html', isRoot: level === 0, parentNode })
         return (<div {...attrs}>{node.html}</div>)
     }
-    if (node.input) { 
-        const attrs = getNodeAttrs({node,type:'input',isRoot:false})
-        return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} /> 
+    if (node.input) {
+        const attrs = getNodeAttrs({ node, type: 'input', isRoot: false })
+        return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} />
     }
 
     return null
@@ -3974,23 +3881,23 @@ const AIFormGroup: FC<{
     return (<div {...attrs}>{content}</div>)
 }
 const AIFormInputContainer: FC<{
-    input:I_formInput<any>,
-    attrs?:any,
+    input: I_formInput<any>,
+    attrs?: any,
     context: I_formContext<any>,
-}> = ({ context,input,attrs}) => {
+}> = ({ context, input, attrs }) => {
     const { getValueAndErrorByInput, changeByInput } = context;
-    const { inputAttrs,field,label } = input;
+    const { inputAttrs, field, label } = input;
     const { value, error } = getValueAndErrorByInput(input);
     return (
-        <RenderInput 
-            value={value} error={error} input={input} context={context} 
-            inputProps={{ ...input, inputAttrs: { ...inputAttrs, 'aria-label': field }, value, onChange: (v: any) => changeByInput(input, v) }} 
-            attrs={attrs} 
+        <RenderInput
+            value={value} error={error} input={input} context={context}
+            inputProps={{ ...input, inputAttrs: { ...inputAttrs, 'aria-label': field }, value, onChange: (v: any) => changeByInput(input, v) }}
+            attrs={attrs}
         />
     )
 }
 type I_renderInput = {
-    attrs?:any,
+    attrs?: any,
     value: any,
     error?: string,
     input: I_formInput<any>,
@@ -3999,7 +3906,7 @@ type I_renderInput = {
 }
 const RenderInput: FC<I_renderInput> = (props) => {
     const { context, attrs, input, inputProps, error } = props;
-    const { isFieldChanged,rootProps } = context;
+    const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
         const { field, label } = input;
@@ -4014,7 +3921,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
 }
 export const AIFormInput: FC<{
     label?: string,
-    showLabel?:boolean,
+    showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
     action?: { text: ReactNode, fn?: () => void },
@@ -4022,7 +3929,7 @@ export const AIFormInput: FC<{
     id?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true,showLabel = true } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
     const Attrs = AddToAttrs(attrs, { className: "ai-form-input" })
     return (

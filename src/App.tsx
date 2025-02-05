@@ -26,6 +26,7 @@ import FG from "./documents/form-generator/index.tsx";
 import AIOApis from './documents/aio-apis';
 import ThreeD from "./documents/three-d/index.tsx";
 import DOC_UseForm from "./documents/use-form/index.tsx";
+import DOC_Sidemenu from "./documents/ai-sidemenu/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -51,6 +52,7 @@ export default function AIOComponents(){
     'ThreeD':ThreeD,
     'aio-apis':AIOApis,
     'use-form':DOC_UseForm,
+    'sidemenu':DOC_Sidemenu,
     'tree-search':DOC_TreeSearch
   })
   function goToHome(){

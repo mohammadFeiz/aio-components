@@ -314,3 +314,81 @@ code[class*="language-"] *::selection {
     text-shadow: none;
     background: #264F78;
 }
+
+
+.ai-sidemenu{
+    width: 240px;
+    background:#555;
+    color:#fff;
+    flex:1;
+    height:100%;
+    position: relative;
+    
+}
+.ai-sidemenu:after{
+    content:'';
+    position: absolute;
+    width: 100%;
+    height:100%;
+    top:0;
+    left:0;
+    background:linear-gradient(0deg, black, transparent)
+}
+.ai-sidemenu-tree{
+    z-index:10;
+    position: relative;
+}
+.ai-sidemenu-header{
+    z-index:10;
+    position: relative;
+}
+.ai-sidemenu .aio-input-tree-body .aio-input-tree-body{
+    background:rgba(0,0,0,0.08);
+    padding:12px 0;
+}
+.ai-sidemenu-tree{
+    background:none ;
+}
+.ai-sidemenu-item.active{
+    background:#637da0
+}
+.ai-sidemenu-sub-item.active{
+    background:#637da0
+}
+.ai-sidemenu-item .ai-sidemenu-item-icon{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    border-radius:100%;
+    background:rgba(0,0,0,0.2)
+}
+.ai-sidemenu-sub-item .ai-sidemenu-item-icon{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.ai-sidemenu-item{
+    padding-inline-end: 12px;
+}
+.ai-sidemenu-sub-item{
+    padding-inline-end: 12px;
+}
+.ai-sidemenu-toggle{
+    width:24px;
+    height:24px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.ai-sidemenu-header{
+    display:flex;
+    align-items: center;
+    gap:12px;
+    padding:12px;
+    box-sizing: border-box;
+    border-bottom:1px solid #555;
+}

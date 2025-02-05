@@ -1810,7 +1810,6 @@
 }
 
 .aio-input-tree {
-    background-color: #fff;
     font-size: 12px;
     display: flex;
     flex-direction: column;
@@ -2038,108 +2037,6 @@
     border-width: 0px 3px 3px 0px !important;
     box-sizing: unset !important;
 }
-
-.aio-input-sidemenu {
-    color: #444;
-    background: #fff;
-    width: 240px;
-}
-
-.aio-input-sidemenu.aio-input-sidemenu-hover {
-    width: 60px;
-    transition: width 0.3s;
-}
-
-.aio-input-sidemenu.aio-input-sidemenu-icon {
-    width: 60px;
-}
-
-.aio-input-sidemenu-hover:hover {
-    width: 240px;
-    transition: width 0.3s;
-}
-
-.aio-input-sidemenu-before {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 48px;
-}
-
-.aio-input-sidemenu-after {
-    padding: 0 12px;
-    height: 100%;
-    gap: 6px;
-}
-
-.aio-input-sidemenu-align {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.aio-input-sidemenu-icon {
-    border-radius: 100%;
-}
-
-.aio-input-sidemenu-badge {
-    border-radius: 16px;
-    font-size: 10px;
-    min-width: 18px;
-    padding: 1px 6px;
-}
-
-.aio-input-sidemenu-badge-circle {
-    border-radius: 16px;
-    font-size: 10px;
-    min-width: 18px;
-    padding: 1px 0;
-}
-
-.aio-input-sidemenu-badge-grey {
-    color: #eee;
-    background: #959595;
-}
-
-.aio-input-sidemenu-badge-red {
-    color: #fff;
-    background: red;
-}
-
-.aio-input-sidemenu-badge-yellow {
-    color: #333;
-    background: #e0bb13;
-}
-
-.aio-input-sidemenu-badge-green {
-    color: #fff;
-    background: #4dc93e;
-}
-
-.aio-input-sidemenu-badge-blue {
-    color: #fff;
-    background: #0069ff;
-}
-
-.aio-input-sidemenu-badge-orange {
-    color: #fff;
-    background: orange;
-}
-
-.aio-input-sidemenu-badge-white {
-    color: #666;
-    background: #fff;
-}
-
-.aio-input-sidemenu .aio-input-tree-body-level-1 {
-    background: rgba(0, 0, 0, 0.03);
-}
-
-.aio-input-sidemenu .aio-input-tree-body-level-2 {
-    background: rgba(0, 0, 0, 0.06);
-}
-
 .aio-input-main-color {
     color: var(--aio-input-color);
 }
