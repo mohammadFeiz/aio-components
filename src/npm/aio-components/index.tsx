@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray } from "./../../npm/aio-utils";
+import { AddToAttrs, GetArray,Storage } from "./../../npm/aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import { AI_optionProp } from "../aio-input/repo";
@@ -35,7 +35,7 @@ export const Indent: FC<AI_Indent> = (props) => {
 
     const getToggleSvg = () => {
         if (props.toggleIcon) { return props.toggleIcon({ row, level, open }) }
-        let path = open === undefined ? 'mdiCircleSmall' : (open ? 'mdiChevronDown' : (rtl?'mdiChevronLeft':'mdiChevronRight'));
+        let path = open === undefined ? 'mdiCircleSmall' : (open ? 'mdiChevronDown' : (rtl ? 'mdiChevronLeft' : 'mdiChevronRight'));
         return new GetSvg().getIcon(path, 1)
     }
     const getIndentIcons = () => {
@@ -141,65 +141,110 @@ export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) 
     )
 }
 type I_AIApp = {
+    appName?:string,
+    appId:string,
     attrs?: any,
-    rtl?:boolean,
+    rtl?: boolean,
     bottomMenu?: {
         options: AI_bottomMenuOption[],
         onChange: (v: string) => void
     }
-    sidenav?:{
+    sidenav?: {
         items: AI_sidenavItem[],
         indent?: number,
-        header?:ReactNode,
-        value?:string,
+        header?: ReactNode,
+        value?: string,
+        render?: () => ReactNode,
+        cache?:boolean,
+        attrs?:any
     },
-    body: (sidenavValue?:string) => ReactNode,
-    header?: (sidenavValue?:string) => ReactNode | false,
+    body: (sidenavitem?: AI_sidenavItem) => ReactNode,
+    header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false,
     children?: ReactNode
 }
 type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
 export const AIApp: FC<I_AIApp> = (props) => {
-    const [sidenavValue,setSidenavValue] = useState<string>(props.sidenav?.value || '')
+    const [storage] = useState<Storage>(getStorage)
+    function getStorage():Storage{return new Storage('aiapp' + props.appId)}
+    const sidenav = useSidenav({ sidenav: props.sidenav,appId:props.appId,storage })
     function header_layout() {
         if (!props.header) { return null }
-        const header = props.header()
+        const header = props.header(sidenav.active)
         if (header === false) { return null }
-        return (<div className="ai-app-header">{header}</div>)
+        return header
     }
     function body_layout() {
+        const content = props.body(sidenav.active)
         return (
-            <div style={{flex:1,overflow:'hidden'}}>
+            <div className='ai-app-content'>
                 {
-                    !!props.sidenav && 
-                    <Sidenav
-                        rtl={props.rtl}
-                        items={props.sidenav.items}
-                        value={sidenavValue}
-                        onChange={(v)=>setSidenavValue(v.value)}
-                    />
+                    !!props.sidenav &&
+                    <div className="ai-app-side">
+                        <Sidenav
+                            rtl={props.rtl}
+                            attrs={props.sidenav.attrs}
+                            items={props.sidenav.items}
+                            header={props.sidenav.header}
+                            value={sidenav.active?.value}
+                            onChange={(v) => sidenav.changeActive(v)}
+                        />
+                    </div>
                 }
-                <div className="ai-app-body">
-                    {props.body(sidenavValue)}
+                <div className="ai-app-center">
+                    {header_layout()}
+                    <div className="ai-app-body">
+                        {content}
+                    </div>
                 </div>
+
             </div>
         )
     }
     function bottomMenu_layout() {
-        if(!props.bottomMenu){return null}
+        if (!props.bottomMenu) { return null }
         return (<AIBottomMenu bottomMenu={props.bottomMenu} />)
     }
     const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
     return (
         <div {...attrs}>
-            {header_layout()}
             {body_layout()}
             {bottomMenu_layout()}
             {!!props.children && props.children}
         </div>
     )
 }
-const AIAppSide:FC = ()=>{
-    return null
+const useSidenav = (props: { sidenav?: I_AIApp["sidenav"],appId:string,storage:Storage }) => {
+    const snRes = useRef<any>()
+    const [active, setActive] = useState<AI_sidenavItem | undefined>(getSidenavItem)
+    function changeActive(active:AI_sidenavItem){
+        if(props.sidenav?.cache){props.storage.save('navitemvalue',active.value)}
+        setActive(active)
+    }
+    function getSidenavItem(): AI_sidenavItem | undefined {
+        if (!props.sidenav) { return }
+        const value = props.sidenav.cache?props.storage.load('navitemvalue',props.sidenav.value):props.sidenav.value
+        const res = getByValue(value)
+        return res
+    }
+    function getByValue(value: string): AI_sidenavItem | undefined {
+        if (!props.sidenav || !value) { return }
+        snRes.current = undefined;
+        getByValue_req(props.sidenav.items, value);
+        return snRes.current;
+    }
+    function getByValue_req(items: AI_sidenavItem[], value: string) {
+        if (snRes.current) { return; }
+        for (let i = 0; i < items.length; i++) {
+            if (snRes.current) { return; }
+            let item: AI_sidenavItem = items[i];
+            let { show = true } = item;
+            if (!show) { continue }
+            if (item.value === value) { snRes.current = item; break; }
+            let navItems = item.items
+            if (navItems) { getByValue_req(navItems, value); }
+        }
+    }
+    return { active, changeActive }
 }
 type AI_BottomMenu = { bottomMenu: NonNullable<I_AIApp["bottomMenu"]> }
 const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
@@ -238,8 +283,9 @@ export type AI_Sidenav = {
     attrs?: any,
     rtl?: boolean,
     indent?: number,
-    header?:ReactNode,
-    value?:string
+    header?: ReactNode,
+    value?: string,
+
 }
 export type AI_sidenavItem = {
     text: ReactNode,
@@ -247,28 +293,31 @@ export type AI_sidenavItem = {
     icon?: ReactNode,
     items?: AI_sidenavItem[],
     onClick?: () => void,
-    after?:ReactNode
+    after?: ReactNode,
+    show?: boolean,
+    render?: () => ReactNode
 }
 export const Sidenav: FC<AI_Sidenav> = (props) => {
-    let { items = [], onChange, rtl = false, indent = 0,header,value } = props;
+    let { items = [], onChange, rtl = false, indent = 0, header, value } = props;
     const [icons] = useState<GetSvg>(new GetSvg())
     const toggleRef = useRef((id: any) => { })
     function getAfter(option: AI_sidenavItem, active: boolean) {
-        let { items = [],after } = option;
+        let { items = [], after } = option;
         return (
             <div className={`ai-sidenav-after`}>
                 {!!after && after}
                 {
-                    !!items.length && 
+                    !!items.length &&
                     <div className="ai-sidenav-toggle">
-                        {icons.getIcon(active ? 'mdiChevronDown' : (rtl?'mdiChevronRight':'mdiChevronLeft'), 0.7)}
+                        {icons.getIcon(active ? 'mdiChevronDown' : (rtl ? 'mdiChevronRight' : 'mdiChevronLeft'), 0.7)}
                     </div>
                 }
             </div>
         )
     }
-    function getBefore(option: any) {
-        let { icon = icons.getIcon('mdiCircleMedium', 0.6) } = option;
+    function getBefore(option: any,level:number) {
+        let { icon} = option;
+        if(level > 0 && !icon){ icon = icons.getIcon('mdiCircleMedium', 0.6)}
         if (!icon) { return null }
         return (
             <div className={`ai-sidenav-item-icon`}>
@@ -280,25 +329,27 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         text: 'option.text',
         value: 'option.value',
         after: (option, { active }) => getAfter(option, !!active),
-        before: (option) => getBefore(option),
+        before: (option,{level}) => getBefore(option,level || 0),
         onClick: (option) => {
             let { items = [], value } = option;
             if (!!items.length) { toggleRef.current(value) }
             else if (onChange) { onChange(option) }
         },
+        show: (option) => {
+            const { show = true } = option;
+            return show
+        }
     }
     let finalOptions: AI_optionProp = {
         ...defaultOption,
-        className: (option, {level}) => `ai-sidenav-${level === 0?'item':'sub-item'}${value !== undefined && option.value === value?' active':''}`
+        className: (option, { level }) => `ai-sidenav-${level === 0 ? 'item' : 'sub-item'}${value !== undefined && option.value === value ? ' active' : ''}`
     }
     const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className] })
     return (
         <div {...attrs}>
             {
                 !!header && 
-                <div className="ai-sidenav-header">
-                    {header}
-                </div>
+                <div className="ai-sidenav-header">{header}</div>
             }
             <AITree
                 {...attrs}
@@ -321,7 +372,6 @@ export type I_MonthCells = {
 }
 export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDayContent }) => {
     const [DATE] = useState<AIODate>(new AIODate())
-    const [monthes] = useState<string[]>(DATE.getMonths(true))
     function getDateInfo() {
         const res = {
             monthDaysLength: DATE.getMonthDaysLength([year, month]),
