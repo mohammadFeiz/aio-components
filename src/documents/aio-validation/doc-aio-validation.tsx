@@ -1,17 +1,15 @@
 import { FC, useState } from 'react';
 import { AIRadio, AISelect, AIText, AIFormInput } from '../../npm/aio-input/index.tsx';
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index.tsx';
 import { AV_operator,Validation } from '../../npm/aio-utils';
 import { ParseString } from '../../npm/aio-utils/index.tsx';
 export default function DOC_Validation(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'try it', id: 'try it', render: () => <TryIt /> }
-                ]
-            }}
+            items={[
+                { text: 'try it', value: 'try it', render: () => <TryIt /> }
+            ]}
         />
     )
 }

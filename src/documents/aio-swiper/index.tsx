@@ -1,5 +1,5 @@
 import { FC, useState } from "react"
-import DOC from "../../resuse-components/doc"
+import DOC from "../../resuse-components/Doc/index"
 import AIOSwiper from "../../npm/aio-swiper"
 import './index.css';
 import src1 from './images/1.jpg'
@@ -17,13 +17,11 @@ const DOC_AIOSwiper: FC<{ goToHome: () => void, name: string }> = ({ name, goToH
     return (
         <DOC
             name={name} goToHome={goToHome}
-            nav={{
-                items: () => [
-                    { text: 'Basic', id: 'basic', render: () => <Basic /> },
-                    { text: 'time', id: 'time', render: () => <Time /> },
-                    { text: 'aspect', id: 'aspect', render: () => <Aspect /> },
-                ]
-            }}
+            items={[
+                { text: 'Basic', value: 'basic', render: () => <Basic /> },
+                { text: 'time', value: 'time', render: () => <Time /> },
+                { text: 'aspect', value: 'aspect', render: () => <Aspect /> },
+            ]}
         />
     )
 }

@@ -1,15 +1,14 @@
 import { FC, useState } from "react"
-import AIOInput, { AI_option, AI_optionDetails, AIAcardion } from "../../npm/aio-input"
+import AIOInput, { AIAcardion } from "../../npm/aio-input"
 import {Code} from './../../npm/aio-components';
-import {mdiAccount, mdiMinusThick, mdiPlusThick } from "@mdi/js"
-import { Storage } from "../../npm/aio-utils/index.tsx";
+import {mdiAccount } from "@mdi/js"
 import Icon from '@mdi/react';
 import Example from "./example.tsx";
 const AcardionExamples:FC = ()=>{
     let [examples] = useState<any>([
-        ['Basic',Basic],
-        ['vertical',Vertical],
-        ['multiple',Multiple]
+        ['Basic',()=><Basic/>],
+        ['vertical',()=><Vertical/>],
+        ['multiple',()=><Multiple/>]
     ])
     return (<Example type='acardion' examples={examples}/>)
 }

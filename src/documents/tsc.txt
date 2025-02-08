@@ -1,5 +1,17 @@
 tsc index.tsx --target ES6 --declaration --jsx react-jsx
-
+// window.history.pushState({}, '')
+    // window.onpopstate = () => {
+    //   setTimeout(()=>window.history.pushState({}, ''),100)
+    //   try{
+    //     if(this.backButtonCallBack === true){
+    //       this.removeModal()
+    //     }
+    //     else if(typeof this.backButtonCallBack === 'function'){
+    //       this.backButtonCallBack()
+    //     }
+    //   }
+    //   catch{}
+    // };  
 
 {
   "pagination": {

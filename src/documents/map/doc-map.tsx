@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index.tsx';
 import {Code} from './../../npm/aio-components';
 import { AISelect, AITabs } from '../../npm/aio-input';
 import AIMap from '../../npm/aio-map/index.tsx';
@@ -23,23 +23,21 @@ export default function DOC_Map(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'Basic', id: 'Basic', render: () => <Basic /> },
-                    { text: 'onChange', id: 'onChange', render: () => <OnChange /> },
-                    { text: 'onSubmit', id: 'onSubmit', render: () => <OnSubmit /> },
-                    { text: 'change by parent', id: 'changebyparent', render: () => <ChangeByParent /> },
-                    { text: 'dragging', id: 'dragging', render: () => <Dragging /> },
-                    { text: 'marker', id: 'marker', render: () => <Marker /> },
-                    { text: 'markers', id: 'markers', render: () => <Markers /> },
-                    { text: 'onClick', id: 'onclick', render: () => <OnClick /> },
-                    { text: 'shapes', id: 'shapes', render: () => <Shapes /> },
-                    { text: 'layers', id: 'layers', render: () => <Layers /> },
-                    { text: 'zoom', id: 'zoom', render: () => <Zoom /> },
-                    { text: 'footer', id: 'footer', render: () => <Footer /> },
-                    { text: 'flyTo', id: 'flyTo', render: () => <FlyTo /> },
-                ]
-            }}
+            items={[
+                { text: 'Basic', value: 'Basic', render: () => <Basic /> },
+                { text: 'onChange', value: 'onChange', render: () => <OnChange /> },
+                { text: 'onSubmit', value: 'onSubmit', render: () => <OnSubmit /> },
+                { text: 'change by parent', value: 'changebyparent', render: () => <ChangeByParent /> },
+                { text: 'dragging', value: 'dragging', render: () => <Dragging /> },
+                { text: 'marker', value: 'marker', render: () => <Marker /> },
+                { text: 'markers', value: 'markers', render: () => <Markers /> },
+                { text: 'onClick', value: 'onclick', render: () => <OnClick /> },
+                { text: 'shapes', value: 'shapes', render: () => <Shapes /> },
+                { text: 'layers', value: 'layers', render: () => <Layers /> },
+                { text: 'zoom', value: 'zoom', render: () => <Zoom /> },
+                { text: 'footer', value: 'footer', render: () => <Footer /> },
+                { text: 'flyTo', value: 'flyTo', render: () => <FlyTo /> },
+            ]}
         />
     )
 }

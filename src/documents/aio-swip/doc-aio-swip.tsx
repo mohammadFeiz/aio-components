@@ -1,102 +1,100 @@
 import { useEffect, useRef, useState } from 'react';
 import {Swip,I_Swip } from './../../npm/aio-utils';
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index';
 import {Code} from './../../npm/aio-components';
 import $ from 'jquery';
 export default function DOC_AIOValidation(props:any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'Basic', id: 'Basic', render: () => <Basic key='basic' /> },
-                    { text: 'SelectRect', id: 'selectreact', render: () => <SelectRect /> },
-                    { text: 'Example', id: 'example', render: () => <Example /> },
-                    {
-                        text: 'insideX insideY', id: 'insideXY', render: () =>
-                            <Basic
-                                key='insideXY'
-                                props={{ insideX: true, insideY: true }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true`
-                                }
-                            />
-                    },
-                    {
-                        text: 'stepX stepY (boolean)', id: 'StepXYBoolean', render: () =>
-                            <Basic
-                                key='stepXYBoolean'
-                                props={{ insideX: true, insideY: true, stepX: true, stepY: true }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true
-            stepX:true,
-            stepY:true`
-                                }
-                            />
-                    },
-                    {
-                        text: 'stepX stepY (number)', id: 'StepXYNumber', render: () =>
-                            <Basic
-                                key='stepXYNumber'
-                                props={{ insideX: true, insideY: true, stepX: 25, stepY: 25 }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true
-            stepX:25,
-            stepY:25`
-                                }
-                            />
-                    },
-                    {
-                        text: 'speedX speedY', id: 'speedXY', render: () =>
-                            <Basic
-                                key='speedXY'
-                                props={{ insideX: true, insideY: true, speedX: 2, speedY: 2 }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true
-            speedX:2,
-            speedY:2`
-                                }
-                            />
-                    },
-                    {
-                        text: 'reverseX reverseY', id: 'reverseXY', render: () =>
-                            <Basic
-                                key='reverseXY'
-                                left={200}
-                                top={200}
-                                props={{ insideX: true, insideY: true, reverseX: 2, reverseY: 2 }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true
-            reverseX:true,
-            reverseY:true`
-                                }
-                            />
-                    },
-                    {
-                        text: 'minX minY maxX maxY', id: 'minmax', render: () =>
-                            <Basic
-                                key='minmax'
-                                props={{ insideX: true, insideY: true, minX: 100, maxX: 300, minY: 100, maxY: 300 }}
-                                propsCode={
-                                    `insideX:true,
-            insideY:true
-            minX:100,
-            minY:100,
-            maxX:300,
-            maxY:300`
-                                }
-                            />
-                    },
-                    { text: 'multi use', id: 'multiuse', render: () => <MultiUse /> },
-                    { text: 'id', id: 'id', render: () => <Id /> },
-                    { text: 'mousePopsition', id: 'mousePostion', render: () => <MousePosition /> },
-                ]
-            }}
+            items={[
+                { text: 'Basic', value: 'Basic', render: () => <Basic key='basic' /> },
+                { text: 'SelectRect', value: 'selectreact', render: () => <SelectRect /> },
+                { text: 'Example', value: 'example', render: () => <Example /> },
+                {
+                    text: 'insideX insideY', value: 'insideXY', render: () =>
+                        <Basic
+                            key='insideXY'
+                            props={{ insideX: true, insideY: true }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true`
+                            }
+                        />
+                },
+                {
+                    text: 'stepX stepY (boolean)', value: 'StepXYBoolean', render: () =>
+                        <Basic
+                            key='stepXYBoolean'
+                            props={{ insideX: true, insideY: true, stepX: true, stepY: true }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true
+        stepX:true,
+        stepY:true`
+                            }
+                        />
+                },
+                {
+                    text: 'stepX stepY (number)', value: 'StepXYNumber', render: () =>
+                        <Basic
+                            key='stepXYNumber'
+                            props={{ insideX: true, insideY: true, stepX: 25, stepY: 25 }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true
+        stepX:25,
+        stepY:25`
+                            }
+                        />
+                },
+                {
+                    text: 'speedX speedY', value: 'speedXY', render: () =>
+                        <Basic
+                            key='speedXY'
+                            props={{ insideX: true, insideY: true, speedX: 2, speedY: 2 }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true
+        speedX:2,
+        speedY:2`
+                            }
+                        />
+                },
+                {
+                    text: 'reverseX reverseY', value: 'reverseXY', render: () =>
+                        <Basic
+                            key='reverseXY'
+                            left={200}
+                            top={200}
+                            props={{ insideX: true, insideY: true, reverseX: 2, reverseY: 2 }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true
+        reverseX:true,
+        reverseY:true`
+                            }
+                        />
+                },
+                {
+                    text: 'minX minY maxX maxY', value: 'minmax', render: () =>
+                        <Basic
+                            key='minmax'
+                            props={{ insideX: true, insideY: true, minX: 100, maxX: 300, minY: 100, maxY: 300 }}
+                            propsCode={
+                                `insideX:true,
+        insideY:true
+        minX:100,
+        minY:100,
+        maxX:300,
+        maxY:300`
+                            }
+                        />
+                },
+                { text: 'multi use', value: 'multiuse', render: () => <MultiUse /> },
+                { text: 'id', value: 'id', render: () => <Id /> },
+                { text: 'mousePopsition', value: 'mousePostion', render: () => <MousePosition /> },
+            ]}
         />
     )
 }

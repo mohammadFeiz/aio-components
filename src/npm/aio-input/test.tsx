@@ -13,7 +13,7 @@ import {
 
 } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
-import { Indent, GetSvg } from './../../npm/aio-components';
+import { Indent, GetSvg, NodeAttrs,Node } from './../../npm/aio-components';
 import $ from 'jquery';
 import './repo/index.css';
 const AICTX = createContext({} as any);
@@ -3644,7 +3644,6 @@ export type I_formContext<T> = {
     getValueByInput: (input: I_formInput<T>) => any,
     getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
     hasError: () => boolean,
-    getNodeAttrs: (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => any,
     setInputsRef: (field: I_formField<T>, input: I_formInput<T>) => void
 }
 
@@ -3738,66 +3737,6 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         else { value = getValueByField(dataRef.current, field) }
         return value
     }
-    const getNodeStyle = (node: I_formNode<T>, parentNode?: I_formNode<T>) => {
-        const res: any = { flex: node.flex };
-        if (parentNode && (parentNode.h || parentNode.v)) {
-            res[parentNode.v ? 'height' : 'width'] = node.size
-        }
-        return { ...res, ...node.style }
-    }
-    function getVisibilityClassNames(node: I_formNode<T>): string[] {
-        let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
-        if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
-        if (node.hide_xs) { hide_xs = true; }
-        if (node.show_sm) { hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true; }
-        if (node.hide_sm) { hide_sm = true; }
-        if (node.show_md) { hide_xs = true; hide_sm = true; hide_md = false; hide_lg = true; }
-        if (node.hide_md) { hide_md = true; }
-        if (node.show_lg) { hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false; }
-        if (node.hide_lg) { hide_lg = true; }
-        if (hide_xs) { classNames.push('ai-form-hide-xs') }
-        if (hide_sm) { classNames.push('ai-form-hide-sm') }
-        if (hide_md) { classNames.push('ai-form-hide-md') }
-        if (hide_lg) { classNames.push('ai-form-hide-lg') }
-        return classNames;
-    }
-    const getNodeClassNames = (node: I_formNode<T>, className?: string, isRoot?: boolean): (string | undefined)[] => {
-        let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined, visibilityClassNames = getVisibilityClassNames(node);
-        if (node.v) {
-            scrollClassName = `ai-form-scroll-v`
-            if (node.align === 'v') { alignClassName = 'ai-form-justify-center' }
-            else if (node.align === 'h') { alignClassName = 'ai-form-items-center' }
-            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-        }
-        else if (node.h) {
-            scrollClassName = `ai-form-scroll-h`
-            if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
-            else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
-            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-        }
-        else if (node.html) {
-            if (node.align === 'v') { alignClassName = 'ai-form-items-center' }
-            else if (node.align === 'h') { alignClassName = 'ai-form-justify-center' }
-            else if (node.align === 'vh') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-            else if (node.align === 'hv') { alignClassName = 'ai-form-justify-center ai-form-items-center' }
-        }
-        return [rootClassName, className, node.className, scrollClassName, alignClassName, ...visibilityClassNames]
-    }
-    const getNodeAttrs = (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => {
-        const { node, parentNode, isRoot } = p;
-        let className = '';
-        if (node.v || node.h) { className = `ai-form-${node.v ? 'v' : 'h'}` }
-        else if (node.html) { className = 'ai-form-html' }
-        return AddToAttrs(
-            node.attrs,
-            {className: getNodeClassNames(node, className, isRoot),style: getNodeStyle(node, parentNode)}
-        )
-    }
-    function updateNode(node: I_formNode<T>, level: number) {
-        if (level === 0) { node.tag = 'form' }
-    }
     const reset = () => {
         const newData = getInitData();
         dataRef.current = newData
@@ -3815,7 +3754,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     const getContext = (): I_formContext<T> => {
         return {
             rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, getErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
-            getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled, setInputsRef
+            getErrorsDic, renderSubmitButton, isSubmitDisabled, setInputsRef
         }
     }
     const getLayout = () => {
@@ -3823,7 +3762,15 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         const context = getContext()
         const node = p.getLayout(context)
         //@ts-ignore
-        return <AIFormNode node={node} context={context} level={0} index={0} />
+        return <Node node={node} level={0} index={0} updateNode={(p) => {
+            if (p.level === 0) { node.tag = 'form' }
+            if ((node as any).input) {
+                const Node = node as any
+                const attrs = { ...NodeAttrs({ node }), 'data-label': (node as any).input.label }
+                p.node.content = <AIFormInputContainer key={Node.input.field} attrs={attrs} input={Node.input} context={context} />
+            }
+            return node
+        }} />
     };
     const isSubmitDisabled = (): boolean => {
         const dataChanged = isDataChanged();
@@ -3850,67 +3797,12 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             <AIFormInputContainer
                 context={getContext()}
                 input={input as I_formInput<any>}
-                attrs={getNodeAttrs({ node: { input, attrs }, isRoot: false })}
+                attrs={attrs}
             />
         )
     }
     const layout = getLayout();
     return { data, changeData, getErrorsDic, getErrorsList, renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled, renderInput, changeByField }
-}
-const AIFormNode: FC<{
-    node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
-    context: I_formContext<any>,
-}> = ({ node, context, level, index, parentNode }) => {
-    const [dom, setDom] = useState<ReactNode>(null)
-    let { show = true, isStatic } = node;
-    const getContent = (): ReactNode => {
-        if (!show) { return null }
-        if (Array.isArray(node.h) || Array.isArray(node.v)) {
-            return <AIFormGroup node={node} context={context} level={level} index={index} parentNode={parentNode} />
-        }
-        const { getNodeAttrs } = context;
-        if (node.html !== undefined) {
-            const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
-            return (<div {...attrs}>{node.html}</div>)
-        }
-        if (node.input) {
-            const attrs = {...getNodeAttrs({ node, isRoot: false }),'data-label':node.input.label}
-            return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} />
-        }
-    }
-    useEffect(() => {
-        if (isStatic) { setDom(getContent()) }
-    }, [isStatic])
-    return isStatic ? <>{dom}</> : <>{getContent()}</>
-}
-const AIFormGroup: FC<{
-    node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
-    context: I_formContext<any>
-}> = ({ node, context, level, parentNode }) => {
-    let { tag = 'div', legend } = node;
-    const { getNodeAttrs } = context;
-    const content = (<>
-        {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
-        {
-            (node as any)[node.v ? 'v' : 'h'].map((o: I_formNode<any>, i: number) => {
-                return (
-                    <AIFormNode
-                        node={o} parentNode={node}
-                        key={`level-${level + 1}-index-${i}`}
-                        context={context}
-                        level={level + 1} index={i}
-                    />
-                )
-            })
-        }
-    </>)
-    const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
-    if (level === 0) { return (<form {...attrs}>{content}</form>) }
-    if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
-    if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
-    if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
-    if (tag === 'form') { return (<p {...attrs}>{content}</p>) }
-    return (<div {...attrs}>{content}</div>)
 }
 const AIFormInputContainer: FC<{
     input: I_formInput<any>,
@@ -3991,124 +3883,4 @@ export const AIFormInput: FC<{
             {!!error && <div className="ai-form-input-error">{error}</div>}
         </div>
     )
-}
-
-
-
-// function updateNode(node:I_node,level:number,parentNode?:I_node){
-//     if(level === 0){node.tag = 'form'}
-//     if((node as any).input){
-//         const Node = node as any
-//         const attrs = {...NodeAttrs({ node }),'data-label':(node as any).input.label}
-//         node.content = <AIFormInputContainer key={Node.input.field} attrs={attrs} input={Node.input} context={context} />
-//     }
-//     return node
-// }
-
-export type I_node = {
-    v?: I_node[], h?: I_node[], html?: ReactNode, content?: any, attrs?: any, className?: string, style?: any, show?: boolean,
-    flex?: number, size?: number, scroll?: boolean, tag?: I_formTag, legend?: ReactNode, id?: string, isStatic?: boolean,
-    align?: 'v' | 'h' | 'vh' | 'hv', hide_xs?: boolean, hide_sm?: boolean, hide_md?: boolean, hide_lg?: boolean, show_xs?: boolean, show_sm?: boolean, show_md?: boolean, show_lg?: boolean
-}
-
-const NodeAttrs = (p: { node: I_node, parentNode?: I_node,isRoot?:boolean }) => {
-    const baseClassName = 'rvd'
-    const NodeStyle = () => {
-        const res: any = { flex: p.node.flex };
-        if (p.parentNode && (p.parentNode.h || p.parentNode.v)) {
-            res[p.parentNode.v ? 'height' : 'width'] = p.node.size
-        }
-        return { ...res, ...p.node.style }
-    }
-    function VisibilityClassNames(): string[] {
-        let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
-        if (p.node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
-        if (p.node.hide_xs) { hide_xs = true; }
-        if (p.node.show_sm) { hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true; }
-        if (p.node.hide_sm) { hide_sm = true; }
-        if (p.node.show_md) { hide_xs = true; hide_sm = true; hide_md = false; hide_lg = true; }
-        if (p.node.hide_md) { hide_md = true; }
-        if (p.node.show_lg) { hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false; }
-        if (p.node.hide_lg) { hide_lg = true; }
-        if (hide_xs) { classNames.push(`${baseClassName}-hide-xs`) }
-        if (hide_sm) { classNames.push(`${baseClassName}-hide-sm`) }
-        if (hide_md) { classNames.push(`${baseClassName}-hide-md`) }
-        if (hide_lg) { classNames.push(`${baseClassName}-hide-lg`) }
-        return classNames;
-    }
-    const NodeClassNames = (): (string | undefined)[] => {
-        let nodeClassName,scrollClassName, alignClassName, rootClassName = p.isRoot ? baseClassName : undefined, visibilityClassNames = VisibilityClassNames();
-        if (p.node.v) {
-            nodeClassName = `${baseClassName}-v`
-            scrollClassName = `${baseClassName}-scroll-v`
-            if (p.node.align === 'v') { alignClassName = `${baseClassName}-justify-center` }
-            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-items-center` }
-            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-        }
-        else if (p.node.h) {
-            nodeClassName = `${baseClassName}-h`
-            scrollClassName = `${baseClassName}-scroll-h`
-            if (p.node.align === 'v') { alignClassName = `${baseClassName}-items-center` }
-            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-justify-center` }
-            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-        }
-        else if (p.node.html) {
-            nodeClassName = `${baseClassName}-html`
-            if (p.node.align === 'v') { alignClassName = `${baseClassName}-items-center` }
-            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-justify-center` }
-            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
-        }
-        return [nodeClassName,rootClassName, p.node.className, scrollClassName, alignClassName, ...visibilityClassNames]
-    }
-    return AddToAttrs(p.node.attrs,{className: NodeClassNames(),style: NodeStyle()})
-}
-const Node: FC<{
-    node: I_node, parentNode?: I_node, level: number, index: number,updateNode?:(node:I_node)=>I_node
-}> = ({ node, level, index, parentNode,updateNode = (o)=>o }) => {
-    const [dom, setDom] = useState<ReactNode>(null)
-    let { show = true, isStatic } = updateNode(node);
-    const getContent = (): ReactNode => {
-        if (!show) { return null }
-        if (Array.isArray(node.h) || Array.isArray(node.v)) {
-            return <NodeGroup node={node} level={level} index={index} parentNode={parentNode}/>
-        }
-        if (node.html !== undefined) {
-            const attrs = NodeAttrs({ node, isRoot: level === 0, parentNode })
-            return (<div {...attrs}>{node.html}</div>)
-        }
-        return node.content
-    }
-    useEffect(() => {
-        if (isStatic) { setDom(getContent()) }
-    }, [isStatic])
-    return isStatic ? <>{dom}</> : <>{getContent()}</>
-}
-const NodeGroup: FC<{
-    node: I_node, parentNode?: I_node, level: number, index: number
-}> = ({ node, level, parentNode }) => {
-    let { tag = 'div', legend } = node;
-    const content = (<>
-        {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
-        {
-            (node as any)[node.v ? 'v' : 'h'].map((o: I_node, i: number) => {
-                return (
-                    <Node
-                        node={o} parentNode={node}
-                        key={`level-${level + 1}-index-${i}`}
-                        level={level + 1} index={i}
-                    />
-                )
-            })
-        }
-    </>)
-    const attrs = NodeAttrs({ node, isRoot: level === 0, parentNode })
-    if (level === 0) { return (<form {...attrs}>{content}</form>) }
-    if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
-    if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
-    if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
-    if (tag === 'form') { return (<p {...attrs}>{content}</p>) }
-    return (<div {...attrs}>{content}</div>)
 }

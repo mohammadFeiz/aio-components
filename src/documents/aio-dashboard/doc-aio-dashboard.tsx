@@ -1,42 +1,39 @@
 import React, { Component, FC, useState } from 'react';
-import DOC from '../../resuse-components/doc.tsx';
-import {Code} from './../../npm/aio-components';
+import DOC from '../../resuse-components/Doc/index';
+import { Code } from './../../npm/aio-components';
 import { Chart, Pie } from '../../npm/aio-dashboard';
 import AIODate from './../../npm/aio-date';
 import { GetRandomNumber } from '../../npm/aio-utils/index.tsx';
 import './index.css';
-import { AISlider } from '../../npm/aio-input/index.tsx';
+import { AIFormInput, AISlider } from '../../npm/aio-input/index.tsx';
 export default function DOC_AIODashboard(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                id: 'performance',
-                items: () => [
-                    { text: 'line chart', id: 'linechart', render: () => <LineChart /> },
-                    { text: 'bar chart', id: 'barchart', render: () => <BarChart /> },
-                    { text: 'reverse', id: 'reverse', render: () => <Reverse /> },
-                    { text: 'multi bar chart', id: 'multibarchart', render: () => <MultiBarChart /> },
-                    { text: 'combo chart', id: 'combochart', render: () => <ComboChart /> },
-                    { text: 'areaColors', id: 'areaColors', render: () => <AreaColors /> },
-                    { text: 'ranges', id: 'bar chart range', render: () => <GetRanges /> },
-                    { text: 'padding', id: 'axispadding', render: () => <AxisPadding /> },
-                    { text: 'getLabel', id: 'axisgtlabel', render: () => <AxisGetLabel /> },
-                    { text: 'rotate', id: 'axisrotate', render: () => <AxisRotate /> },
-                    { text: 'rotate rtl', id: 'axisrotatertl', render: () => <AxisRotateRTL /> },
-                    { text: 'gridLineColor', id: 'axisgridlinecolor', render: () => <AxisGridLineColor /> },
-                    { text: 'zoom', id: 'axiszoom', render: () => <AxisZoom /> },
-                    { text: 'point style', id: 'pointstyle', render: () => <PointStyle /> },
-                    { text: 'line style', id: 'linestyle', render: () => <LineStyle /> },
-                    { text: 'point text', id: 'pointtext', render: () => <PointText /> },
-                    { text: 'sample 1', id: 'sample1', render: () => <Sample1 /> },
-                    { text: 'Basic Pie Chart', id: 'basicpie', render: () => <BasicPie /> },
-                    { text: 'Pie Empty', id: 'pieempty', render: () => <PieEmpty /> },
-                    { text: 'Pie Size', id: 'piesize', render: () => <PieSize /> },
-                    { text: 'Pie Thickness', id: 'piethickness', render: () => <PieThickness /> },
-                    { text: 'Pie Generator', id: 'piegenerator', render: () => <PieGenerator /> },
-                ]
-            }}
+            items={[
+                { text: 'line chart', value: 'linechart', render: () => <LineChart /> },
+                { text: 'bar chart', value: 'barchart', render: () => <BarChart /> },
+                { text: 'reverse', value: 'reverse', render: () => <Reverse /> },
+                { text: 'multi bar chart', value: 'multibarchart', render: () => <MultiBarChart /> },
+                { text: 'combo chart', value: 'combochart', render: () => <ComboChart /> },
+                { text: 'areaColors', value: 'areaColors', render: () => <AreaColors /> },
+                { text: 'ranges', value: 'bar chart range', render: () => <GetRanges /> },
+                { text: 'padding', value: 'axispadding', render: () => <AxisPadding /> },
+                { text: 'getLabel', value: 'axisgtlabel', render: () => <AxisGetLabel /> },
+                { text: 'rotate', value: 'axisrotate', render: () => <AxisRotate /> },
+                { text: 'rotate rtl', value: 'axisrotatertl', render: () => <AxisRotateRTL /> },
+                { text: 'gridLineColor', value: 'axisgridlinecolor', render: () => <AxisGridLineColor /> },
+                { text: 'zoom', value: 'axiszoom', render: () => <AxisZoom /> },
+                { text: 'point style', value: 'pointstyle', render: () => <PointStyle /> },
+                { text: 'line style', value: 'linestyle', render: () => <LineStyle /> },
+                { text: 'point text', value: 'pointtext', render: () => <PointText /> },
+                { text: 'sample 1', value: 'sample1', render: () => <Sample1 /> },
+                { text: 'Basic Pie Chart', value: 'basicpie', render: () => <BasicPie /> },
+                { text: 'Pie Empty', value: 'pieempty', render: () => <PieEmpty /> },
+                { text: 'Pie Size', value: 'piesize', render: () => <PieSize /> },
+                { text: 'Pie Thickness', value: 'piethickness', render: () => <PieThickness /> },
+                { text: 'Pie Generator', value: 'piegenerator', render: () => <PieGenerator /> },
+            ]}
         />
     )
 }
@@ -449,7 +446,7 @@ const Sample1: FC = () => {
                         points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
                         getKey: (point: any) => point.a,
                         getValue: (point: any) => point.b,
-                        color:'#fff',
+                        color: '#fff',
                         getPointStyle: (point: any) => {
                             return {
                                 fill: '#fff'
@@ -532,12 +529,21 @@ const PieGenerator: FC = () => {
     return (
         <div className='p-24-'>
             <div className="msf">
-                <AISlider
-                    label='thickness' start={1} end={150} value={config.thickness} onChange={(thickness)=>setConfig({...config,thickness})}
+                <AIFormInput
+                    label='thickness'
+                    input={
+                        <AISlider
+                            start={1} end={150} value={config.thickness} onChange={(thickness) => setConfig({ ...config, thickness })}
+                        />
+                    }
                 />
-
-                <AISlider
-                    label='size' start={36} end={300} value={config.size} onChange={(size)=>setConfig({...config,size})}
+                <AIFormInput
+                    label='size'
+                    input={
+                        <AISlider
+                            start={36} end={300} value={config.size} onChange={(size) => setConfig({ ...config, size })}
+                        />
+                    }
                 />
             </div>
             <Pie

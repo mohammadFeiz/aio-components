@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray,Storage } from "./../../npm/aio-utils";
+import { AddToAttrs, GetArray, Storage } from "./../../npm/aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import { AI_optionProp } from "../aio-input/repo";
@@ -43,8 +43,6 @@ export const Indent: FC<AI_Indent> = (props) => {
         return list.map((o, i) => <div key={i} className={`ai-indent`} style={{ width }}>{getIndentIcon(i)}</div>)
     }
     const getToggleIcon = () => {
-        const toggleSvg = getToggleSvg();
-        if (toggleSvg === false) { return null }
         return (
             <div className="ai-toggle" style={{ width }} onClick={(e) => { e.stopPropagation(); if (props.onToggle) { props.onToggle() } }}>
                 <div className='ai-toggle-icon'>{toggleSvg}</div>
@@ -57,6 +55,8 @@ export const Indent: FC<AI_Indent> = (props) => {
             </div>
         )
     }
+    const toggleSvg = getToggleSvg();
+    if (toggleSvg === false) { return null }
     return (
         <div className={`ai-indents ai-indent-${height}`}>{indentPathes}{toggleIcon}</div>
     )
@@ -89,6 +89,7 @@ export class GetSvg {
         const content = (this as any)[path](color)
         return this.fixSvgContent(content, size, p)
     }
+    mdiMenu = (color?: string) => (<><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" style={this.getStyle(color)} /></>)
     mdiClose = (color?: string) => (<><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" style={this.getStyle(color)}></path></>)
     mdiLoading = (color?: string) => <><path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" style={this.getStyle(color)}></path><rect width="24" height="24" fill="transparent"></rect></>
     mdiAttachment = (color?: string) => (<><path d="M7.5,18A5.5,5.5 0 0,1 2,12.5A5.5,5.5 0 0,1 7.5,7H18A4,4 0 0,1 22,11A4,4 0 0,1 18,15H9.5A2.5,2.5 0 0,1 7,12.5A2.5,2.5 0 0,1 9.5,10H17V11.5H9.5A1,1 0 0,0 8.5,12.5A1,1 0 0,0 9.5,13.5H18A2.5,2.5 0 0,0 20.5,11A2.5,2.5 0 0,0 18,8.5H7.5A4,4 0 0,0 3.5,12.5A4,4 0 0,0 7.5,16.5H17V18H7.5Z" style={this.getStyle(color)}></path></>)
@@ -141,8 +142,8 @@ export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) 
     )
 }
 type I_AIApp = {
-    appName?:string,
-    appId:string,
+    appName?: string,
+    appId: string,
     attrs?: any,
     rtl?: boolean,
     bottomMenu?: {
@@ -152,11 +153,11 @@ type I_AIApp = {
     sidenav?: {
         items: AI_sidenavItem[],
         indent?: number,
-        header?: ReactNode,
+        header?:(minimize:boolean)=> ReactNode,
         value?: string,
         render?: () => ReactNode,
-        cache?:boolean,
-        attrs?:any
+        cache?: boolean,
+        attrs?: any
     },
     body: (sidenavitem?: AI_sidenavItem) => ReactNode,
     header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false,
@@ -165,8 +166,8 @@ type I_AIApp = {
 type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
 export const AIApp: FC<I_AIApp> = (props) => {
     const [storage] = useState<Storage>(getStorage)
-    function getStorage():Storage{return new Storage('aiapp' + props.appId)}
-    const sidenav = useSidenav({ sidenav: props.sidenav,appId:props.appId,storage })
+    function getStorage(): Storage { return new Storage('aiapp' + props.appId) }
+    const sidenav = useSidenav({ sidenav: props.sidenav, appId: props.appId, storage })
     function header_layout() {
         if (!props.header) { return null }
         const header = props.header(sidenav.active)
@@ -213,16 +214,16 @@ export const AIApp: FC<I_AIApp> = (props) => {
         </div>
     )
 }
-const useSidenav = (props: { sidenav?: I_AIApp["sidenav"],appId:string,storage:Storage }) => {
+const useSidenav = (props: { sidenav?: I_AIApp["sidenav"], appId: string, storage: Storage }) => {
     const snRes = useRef<any>()
     const [active, setActive] = useState<AI_sidenavItem | undefined>(getSidenavItem)
-    function changeActive(active:AI_sidenavItem){
-        if(props.sidenav?.cache){props.storage.save('navitemvalue',active.value)}
+    function changeActive(active: AI_sidenavItem) {
+        if (props.sidenav?.cache) { props.storage.save('navitemvalue', active.value) }
         setActive(active)
     }
     function getSidenavItem(): AI_sidenavItem | undefined {
         if (!props.sidenav) { return }
-        const value = props.sidenav.cache?props.storage.load('navitemvalue',props.sidenav.value):props.sidenav.value
+        const value = props.sidenav.cache ? props.storage.load('navitemvalue', props.sidenav.value) : props.sidenav.value
         const res = getByValue(value)
         return res
     }
@@ -283,12 +284,14 @@ export type AI_Sidenav = {
     attrs?: any,
     rtl?: boolean,
     indent?: number,
-    header?: ReactNode,
+    header?: (minimize:boolean)=>ReactNode,
     value?: string,
+    minimize?: boolean
 
 }
 export type AI_sidenavItem = {
     text: ReactNode,
+    subtext?: ReactNode,
     value: string,
     icon?: ReactNode,
     items?: AI_sidenavItem[],
@@ -299,6 +302,7 @@ export type AI_sidenavItem = {
 }
 export const Sidenav: FC<AI_Sidenav> = (props) => {
     let { items = [], onChange, rtl = false, indent = 0, header, value } = props;
+    const [minimize, setMinimize] = useState(!!props.minimize)
     const [icons] = useState<GetSvg>(new GetSvg())
     const toggleRef = useRef((id: any) => { })
     function getAfter(option: AI_sidenavItem, active: boolean) {
@@ -315,9 +319,9 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
             </div>
         )
     }
-    function getBefore(option: any,level:number) {
-        let { icon} = option;
-        if(level > 0 && !icon){ icon = icons.getIcon('mdiCircleMedium', 0.6)}
+    function getBefore(option: any, level: number) {
+        let { icon } = option;
+        if (level > 0 && !icon) { icon = icons.getIcon('mdiCircleMedium', 0.6) }
         if (!icon) { return null }
         return (
             <div className={`ai-sidenav-item-icon`}>
@@ -329,7 +333,7 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         text: 'option.text',
         value: 'option.value',
         after: (option, { active }) => getAfter(option, !!active),
-        before: (option,{level}) => getBefore(option,level || 0),
+        before: (option, { level }) => getBefore(option, level || 0),
         onClick: (option) => {
             let { items = [], value } = option;
             if (!!items.length) { toggleRef.current(value) }
@@ -344,12 +348,18 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         ...defaultOption,
         className: (option, { level }) => `ai-sidenav-${level === 0 ? 'item' : 'sub-item'}${value !== undefined && option.value === value ? ' active' : ''}`
     }
-    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className] })
+    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className,!!minimize?'ai-sidenav-minimize':undefined] })
     return (
         <div {...attrs}>
             {
-                !!header && 
-                <div className="ai-sidenav-header">{header}</div>
+                !!header &&
+                <div className="ai-sidenav-header">{header(minimize)}</div>
+            }
+            {
+                !!props.minimize &&
+                <div className="ai-sidenav-minimize-button" onClick={()=>setMinimize(!minimize)}>
+                    <div className="ai-sidenav-minimize-icon">{icons.getIcon('mdiMenu', 1)}</div>
+                </div>
             }
             <AITree
                 {...attrs}
@@ -421,4 +431,113 @@ const PrismCode: FC<{ code: string, language?: 'js' | 'css', style?: any }> = ({
 }
 export function Code(code: string, language?: 'js' | 'css', style?: any) {
     return <PrismCode code={code} language={language} style={style} />
+}
+
+
+export type I_node = {
+    v?: I_node[], h?: I_node[], html?: ReactNode, content?: any, attrs?: any, className?: string, style?: any, show?: boolean,
+    flex?: number, size?: number, scroll?: boolean, tag?: 'fieldset' | 'section' | 'div' | 'p' | 'form', legend?: ReactNode, id?: string, isStatic?: boolean,
+    align?: 'v' | 'h' | 'vh' | 'hv', hide_xs?: boolean, hide_sm?: boolean, hide_md?: boolean, hide_lg?: boolean, show_xs?: boolean, show_sm?: boolean, show_md?: boolean, show_lg?: boolean
+}
+
+export const NodeAttrs = (p: { node: I_node, parentNode?: I_node, isRoot?: boolean }) => {
+    const baseClassName = 'rvd'
+    const NodeStyle = () => {
+        const res: any = { flex: p.node.flex };
+        if (p.parentNode && (p.parentNode.h || p.parentNode.v)) {
+            res[p.parentNode.v ? 'height' : 'width'] = p.node.size
+        }
+        return { ...res, ...p.node.style }
+    }
+    function VisibilityClassNames(): string[] {
+        let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
+        if (p.node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
+        if (p.node.hide_xs) { hide_xs = true; }
+        if (p.node.show_sm) { hide_xs = true; hide_sm = false; hide_md = true; hide_lg = true; }
+        if (p.node.hide_sm) { hide_sm = true; }
+        if (p.node.show_md) { hide_xs = true; hide_sm = true; hide_md = false; hide_lg = true; }
+        if (p.node.hide_md) { hide_md = true; }
+        if (p.node.show_lg) { hide_xs = true; hide_sm = true; hide_md = true; hide_lg = false; }
+        if (p.node.hide_lg) { hide_lg = true; }
+        if (hide_xs) { classNames.push(`${baseClassName}-hide-xs`) }
+        if (hide_sm) { classNames.push(`${baseClassName}-hide-sm`) }
+        if (hide_md) { classNames.push(`${baseClassName}-hide-md`) }
+        if (hide_lg) { classNames.push(`${baseClassName}-hide-lg`) }
+        return classNames;
+    }
+    const NodeClassNames = (): (string | undefined)[] => {
+        let nodeClassName, scrollClassName, alignClassName, rootClassName = p.isRoot ? baseClassName : undefined, visibilityClassNames = VisibilityClassNames();
+        if (p.node.v) {
+            nodeClassName = `${baseClassName}-v`
+            scrollClassName = `${baseClassName}-scroll-v`
+            if (p.node.align === 'v') { alignClassName = `${baseClassName}-justify-center` }
+            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-items-center` }
+            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+        }
+        else if (p.node.h) {
+            nodeClassName = `${baseClassName}-h`
+            scrollClassName = `${baseClassName}-scroll-h`
+            if (p.node.align === 'v') { alignClassName = `${baseClassName}-items-center` }
+            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-justify-center` }
+            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+        }
+        else if (p.node.html) {
+            nodeClassName = `${baseClassName}-html`
+            if (p.node.align === 'v') { alignClassName = `${baseClassName}-items-center` }
+            else if (p.node.align === 'h') { alignClassName = `${baseClassName}-justify-center` }
+            else if (p.node.align === 'vh') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+            else if (p.node.align === 'hv') { alignClassName = `${baseClassName}-justify-center ai-form-items-center` }
+        }
+        return [nodeClassName, rootClassName, p.node.className, scrollClassName, alignClassName, ...visibilityClassNames]
+    }
+    return AddToAttrs(p.node.attrs, { className: NodeClassNames(), style: NodeStyle() })
+}
+export const Node: FC<{
+    node: I_node, parentNode?: I_node, level: number, index: number, updateNode?: (p: { node: I_node, level: number, parentNode?: I_node }) => I_node
+}> = ({ node, level, index, parentNode, updateNode }) => {
+    const [dom, setDom] = useState<ReactNode>(null)
+    let { show = true, isStatic } = updateNode ? updateNode({ node, level, parentNode }) : node;
+    const getContent = (): ReactNode => {
+        if (!show) { return null }
+        if (Array.isArray(node.h) || Array.isArray(node.v)) {
+            return <NodeGroup node={node} level={level} index={index} parentNode={parentNode} />
+        }
+        if (node.html !== undefined) {
+            const attrs = NodeAttrs({ node, isRoot: level === 0, parentNode })
+            return (<div {...attrs}>{node.html}</div>)
+        }
+        return node.content
+    }
+    useEffect(() => {
+        if (isStatic) { setDom(getContent()) }
+    }, [isStatic])
+    return isStatic ? <>{dom}</> : <>{getContent()}</>
+}
+const NodeGroup: FC<{
+    node: I_node, parentNode?: I_node, level: number, index: number
+}> = ({ node, level, parentNode }) => {
+    let { tag = 'div', legend } = node;
+    const content = (<>
+        {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
+        {
+            (node as any)[node.v ? 'v' : 'h'].map((o: I_node, i: number) => {
+                return (
+                    <Node
+                        node={o} parentNode={node}
+                        key={`level-${level + 1}-index-${i}`}
+                        level={level + 1} index={i}
+                    />
+                )
+            })
+        }
+    </>)
+    const attrs = NodeAttrs({ node, isRoot: level === 0, parentNode })
+    if (level === 0) { return (<form {...attrs}>{content}</form>) }
+    if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
+    if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
+    if (tag === 'p') { return (<p {...attrs}>{content}</p>) }
+    if (tag === 'form') { return (<p {...attrs}>{content}</p>) }
+    return (<div {...attrs}>{content}</div>)
 }

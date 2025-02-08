@@ -251,12 +251,32 @@ code[class*="language-"] *::selection {
 
 
 .ai-sidenav{
+    transition: width 0.3s;
     width: 240px;
     background:#555;
     color:#fff;
     height:100%;
     position: relative;
     
+}
+.ai-sidenav-minimize{
+    transition: width 0.3s;
+    width: 48px;
+}
+.ai-sidenav-minimize-button{
+    height:48px;
+    display:flex;
+    align-items: center;
+    padding:0 6px;
+    z-index:10;
+    position: relative;
+}
+.ai-sidenav-minimize-icon{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items: center;
+    justify-content: center;
 }
 .ai-sidenav:after{
     content:'';
@@ -281,9 +301,6 @@ code[class*="language-"] *::selection {
 .ai-sidenav-item.active{
     background:#637da0
 }
-.ai-sidenav-sub-item.active{
-    background:#637da0
-}
 .ai-sidenav-item .ai-sidenav-item-icon{
     width:36px;
     height:36px;
@@ -293,18 +310,18 @@ code[class*="language-"] *::selection {
     border-radius:100%;
     background:rgba(0,0,0,0.2)
 }
+.ai-sidenav-sub-item{
+    padding-inline-end: 12px;
+}
+.ai-sidenav-sub-item.active{
+    background:#637da0
+}
 .ai-sidenav-sub-item .ai-sidenav-item-icon{
     width:36px;
     height:36px;
     display:flex;
     align-items: center;
     justify-content: center;
-}
-.ai-sidenav-item{
-    padding-inline-end: 12px;
-}
-.ai-sidenav-sub-item{
-    padding-inline-end: 12px;
 }
 .ai-sidenav-toggle{
     width:24px;
@@ -317,7 +334,6 @@ code[class*="language-"] *::selection {
     display:flex;
     align-items: center;
     gap:12px;
-    padding:12px;
     box-sizing: border-box;
     border-bottom:1px solid #555;
     z-index:10;
@@ -343,6 +359,7 @@ code[class*="language-"] *::selection {
     height:100%;
     display:flex;
     flex-direction: column;
+    overflow: hidden;
 }
 .ai-app-header {
     display: flex;

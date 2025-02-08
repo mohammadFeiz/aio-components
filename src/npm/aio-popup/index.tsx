@@ -31,6 +31,7 @@ export type AP_modal = {
     setAttrs?: AP_setAttrs
 }
 export type AP_alert = {
+    align?:'left' | 'right' | 'center',
     icon?: false | ReactNode,
     type: 'success' | 'error' | 'warning' | 'info',
     text?: ReactNode,
@@ -572,7 +573,7 @@ const SnackebarBar: FC = () => {
     return <div className='aio-popup-snackebar-bar' style={{ transition: `${item.time || 8}s linear` }}></div>
 }
 export function Alert(props: AP_alert) {
-    let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'Close', onClose } = props;
+    let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'Close', onClose,align = 'left' } = props;
     let $$ = {
         id: '',
         time: 0,
@@ -592,7 +593,7 @@ export function Alert(props: AP_alert) {
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
             <div class='aio-popup-alert-text'>${ReactDOMServer.renderToStaticMarkup(text as any)}</div>
-            <div class='aio-popup-alert-subtext'>${subtext}</div>
+            <div class='aio-popup-alert-subtext' style="text-align:${align}">${subtext}</div>
           </div>
           <div class='aio-popup-alert-footer'>
             <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>

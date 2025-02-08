@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
 import Flip from './index.tsx';
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index.tsx';
 import {Code} from './../../npm/aio-components';
 export default function DOC_Flip(props:any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'Basic', id: 'Basic', render: () => <Basic/> },
-                ]
-            }}
+            items={[
+                { text: 'Basic', value: 'Basic', render: () => <Basic/> },
+            ]}
         />
     )
 }

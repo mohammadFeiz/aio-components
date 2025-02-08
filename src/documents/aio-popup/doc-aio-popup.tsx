@@ -1,6 +1,6 @@
 import { Component, createRef, FC, useRef, useState } from 'react';
 
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index.tsx';
 import { Code } from './../../npm/aio-components';
 import { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
@@ -14,28 +14,25 @@ export default function DOC_AIOForm(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                nested: true,
-                items: () => [
-                    { text: 'addModal', id: 'addModal', render: () => <AddModal /> },
-                    { text: 'modal position', id: 'modalposition', render: () => <ModalPosition /> },
-                    { text: 'alert', id: 'alert', render: () => <Alert /> },
-                    { text: 'snackebar', id: 'snackebar', render: () => <SnackebarExample /> },
-                    //{ text: 'snackebar to body', id: 'snackebartobody', render: () => <SnackebarToBody /> },
-                    { text: 'confirm', id: 'confirm', render: () => <Confirm /> },
-                    { text: 'prompt', id: 'prompt', render: () => <Prompt /> },
-                    { text: 'popover', id: 'popover', render: () => <Popover /> },
-                    {
-                        text: 'highlight', id: 'highlight',
-                        items: [
-                            { text: 'Basic Highlight', id: 'basichighlight', render: () => <BasicHighlight /> },
-                            { text: 'mouseAccess', id: 'mouseAccess', render: () => <MouseAccess /> },
-                            { text: 'Scroll Focus', id: 'testfocus', render: () => <TestFocus /> },
-                        ]
-                    },
-                    { text: 'theme1', id: 'theme1', render: () => <Theme1 /> },
-                ]
-            }}
+            items={[
+                { text: 'addModal', value: 'addModal', render: () => <AddModal /> },
+                { text: 'modal position', value: 'modalposition', render: () => <ModalPosition /> },
+                { text: 'alert', value: 'alert', render: () => <Alert /> },
+                { text: 'snackebar', value: 'snackebar', render: () => <SnackebarExample /> },
+                //{ text: 'snackebar to body', value: 'snackebartobody', render: () => <SnackebarToBody /> },
+                { text: 'confirm', value: 'confirm', render: () => <Confirm /> },
+                { text: 'prompt', value: 'prompt', render: () => <Prompt /> },
+                { text: 'popover', value: 'popover', render: () => <Popover /> },
+                {
+                    text: 'highlight', value: 'highlight',
+                    items: [
+                        { text: 'Basic Highlight', value: 'basichighlight', render: () => <BasicHighlight /> },
+                        { text: 'mouseAccess', value: 'mouseAccess', render: () => <MouseAccess /> },
+                        { text: 'Scroll Focus', value: 'testfocus', render: () => <TestFocus /> },
+                    ]
+                },
+                { text: 'theme1', value: 'theme1', render: () => <Theme1 /> },
+            ]}
         />
     )
 }
@@ -50,7 +47,7 @@ const Sample: FC<{ removeModal: any }> = ({ removeModal }) => {
         </div>
     )
 }
-const Sample2:FC<{removeModal:any}> = ({removeModal})=>{
+const Sample2: FC<{ removeModal: any }> = ({ removeModal }) => {
     return (
         <div className="flex-col- h-100-">
             <div className="flex-row- h-72- align-v- p-h-24- fs-18-" style={{ background: '#264065', color: '#fff' }}>My Titles</div>
@@ -84,22 +81,21 @@ const SampleCode = `
 `
 const AddModal: FC = () => {
     let popup = usePopup()
-    function click(props: AP_modal) {
-        popup.addModal(props)
-    }
     return (
         <div className="example">
             <h3>Add Modal</h3>
             {Code(
                 `popup.addModal({
     header:{title:'my modal'},
-    body: () => <div style={{padding:12}}>{content}</div>
+    body: <div style={{padding:12}}>{content}</div>
 })`
             )}
-            <button className='add-modal-button' onClick={() => click({
-                header: { title: 'my modal' },
-                body: () => <div style={{ padding: 12 }}>{content}</div>
-            })}>OpenModal</button>
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    header: { title: 'my modal' },
+                    body: <div style={{ padding: 12 }}>{content}</div>
+                })
+            }}>OpenModal</button>
 
             <h3>Modal header</h3>
             {Code(
@@ -116,46 +112,50 @@ const AddModal: FC = () => {
             </div>
         )
     },
-    body: () => <div style={{padding:12}}>{content}</div>
+    body: <div style={{padding:12}}>{content}</div>
 })`
             )}
-            <button className='add-modal-button' onClick={() => click({
-                header: {
-                    title: 'my modal',
-                    subtitle: 'my modal subtitle',
-                    before: <Icon path={mdiStar} size={1} />,
-                    after: (
-                        <div className='modal-header-after'>
-                            <button className='align-vh-' onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
-                            <button className='align-vh-' onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
-                            <button className='align-vh-' onClick={() => alert()}>My Button</button>
-                        </div>
-                    )
-                },
-                body: () => <div style={{ padding: 12 }}>{content}</div>
-            })}>OpenModal</button>
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    header: {
+                        title: 'my modal',
+                        subtitle: 'my modal subtitle',
+                        before: <Icon path={mdiStar} size={1} />,
+                        after: (
+                            <div className='modal-header-after'>
+                                <button className='align-vh-' onClick={() => alert()}><Icon path={mdiContentSave} size={1} /></button>
+                                <button className='align-vh-' onClick={() => alert()}><Icon path={mdiAttachment} size={1} /></button>
+                                <button className='align-vh-' onClick={() => alert()}>My Button</button>
+                            </div>
+                        )
+                    },
+                    body: <div style={{ padding: 12 }}>{content}</div>
+                })
+            }}>OpenModal</button>
 
             <h3>Modal header (onClose:false)</h3>
             {Code(
-                `instance.addModal({
+                `popup.addModal({
     header: {
         title: 'my modal',
         onClose: false
     },
-    body: () => <div style={{padding:12}}>{content}</div>
+    body: <div style={{padding:12}}>{content}</div>
 })`
             )}
-            <button className='add-modal-button' onClick={() => click({
-                header: {
-                    title: 'my modal',
-                    onClose: false
-                },
-                body: () => <div style={{ padding: 12 }}>{content}</div>
-            })}>OpenModal</button>
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    header: {
+                        title: 'my modal',
+                        onClose: false
+                    },
+                    body: <div style={{ padding: 12 }}>{content}</div>
+                })
+            }}>OpenModal</button>
 
             <h3>Modal header (onClose:custom function)</h3>
             {Code(
-                `instance.addModal({
+                `popup.addModal({
     header: {
         title: 'my modal',
         onClose: () => {
@@ -163,43 +163,58 @@ const AddModal: FC = () => {
             popup.removeModal()
         }
     },
-    body: () => <div style={{padding:12}}>{content}</div>
+    body: <div style={{padding:12}}>{content}</div>
 })`
             )}
-            <button className='add-modal-button' onClick={() => click({
-                header: {
-                    title: 'my modal',
-                    onClose: () => {
-                        alert('close popup');
-                        popup.removeModal()
-                    }
-                },
-                body: () => <div style={{ padding: 12 }}>{content}</div>
-            })}>OpenModal</button>
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    header: {
+                        title: 'my modal',
+                        onClose: () => {
+                            alert('close popup');
+                            popup.removeModal()
+                        }
+                    },
+                    body: <div style={{ padding: 12 }}>{content}</div>
+                })
+            }}>OpenModal</button>
 
             <h3>Modal header (function returns ReactNode)</h3>
             {Code(
-                `instance.addModal({
-    header: ({removeModal})=>{
+`popup.addModal({
+    header: ()=>{
         return (
-            ${SampleCode}
+            <div className='bg-16- flex-row- align-v- p-h-12- h-48- brd-c-14- brd-b-'>
+                My Header
+                <div className="flex-1-"></div>
+                <button onClick={()=>popup.removeModal()}>Close</button>
+            </div>
         )
     },
-    body: () => <div style={{ padding: 12 }}>{content}</div>
+    body: <div style={{ padding: 12 }}>{content}</div>
 })`
             )}
-            <button className='add-modal-button' onClick={() => click({
-                header: ({ removeModal }) => {
-                    return <Sample removeModal={removeModal} />
-                },
-                body: () => <div style={{ padding: 12 }}>{content}</div>
-            })}>OpenModal</button>
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    header: ()=>{
+                        return (
+                            <div className='bg-16- flex-row- align-v- p-h-12- h-48- brd-c-14- brd-b-'>
+                                My Header
+                                <div className="flex-1-"></div>
+                                <button onClick={()=>popup.removeModal()}>Close</button>
+                            </div>
+                        )
+                    },
+                    body: <div style={{ padding: 12 }}>{content}</div>
+                })
+            }}>OpenModal</button>
 
             <h3>Modal prevent backdrop close</h3>
-            {Code(
-                `popup.addModal({
+            {
+        Code(
+`popup.addModal({
     position: 'top',
-    body: ({ removeModal }) => (
+    body: (
         <div className="flex-row- p-12- align-v-" style={{background:'#264065',color:'#fff'}}>
             <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
             <div className="gap-6-">
@@ -216,146 +231,110 @@ const AddModal: FC = () => {
         }
     }
 })`
-            )}
-            <button className='add-modal-button' onClick={() => click({
-                position: 'top',
-                body: ({ removeModal }) => (
-                    <div className="flex-row- p-12- align-v-" style={{ background: '#264065', color: '#fff' }}>
-                        <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
-                        <div className="gap-6-">
-                            <button className='btn-123'>Approve</button>
-                            <button className='btn-123' onClick={removeModal}>Close</button>
-                        </div>
-                    </div>
-                ),
-                setAttrs: (key) => {
-                    if (key === 'backdrop') {
-                        return {
-                            onClick: () => false
-                        }
-                    }
-                }
-            })}>OpenModal</button>
-            <h3>open multiple modal</h3>
-            {Code(
-                `instance.addModal({
-    position:'top',
-    id:'one',
-    body:({removeModal})=><MyComponent onClose={removeModal}/>
-})
-instance.addModal({
-    position:'bottom',
-    id:'two',
-    body:({removeModal})=><MyComponent onClose={removeModal}/>
-})`
-            )}
+        )
+    }
             <button className='add-modal-button' onClick={() => {
                 popup.addModal({
                     position: 'top',
-                    id: 'one',
-                    body: ({ removeModal }) => <Sample removeModal={removeModal} />
+                    body: (
+                        <div className="flex-row- p-12- align-v-" style={{background:'#264065',color:'#fff'}}>
+                            <div className="align-v- flex-1- ofy-auto-" style={{ maxHeight: 400 }}>my sample text in modal</div>
+                            <div className="gap-6-">
+                                <button className='btn-123'>Approve</button>
+                                <button className='btn-123' onClick={()=>popup.removeModal()}>Close</button>
+                            </div>
+                        </div>
+                    ),
+                    setAttrs: (key) => {
+                        if (key === 'backdrop') {
+                            return {
+                                onClick: () => false
+                            }
+                        }
+                    }
+                })
+            }}>OpenModal</button>
+            <h3>open multiple modal</h3>
+    {
+        Code(
+`popup.addModal({
+    position:'top',
+    id:'one',
+    body:<MyComponent onClose={()=>popup.removeModal()}/>
+})
+popup.addModal({
+    position:'bottom',
+    id:'two',
+    body:<MyComponent onClose={()=>popup.removeModal()}/>
+})`
+        )
+    }
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    position:'top',
+                    id:'one',
+                    body:<Sample removeModal={()=>popup.removeModal()}/>
                 })
                 popup.addModal({
-                    position: 'bottom',
-                    id: 'two',
-                    body: ({ removeModal }) => <Sample removeModal={removeModal} />
+                    position:'bottom',
+                    id:'two',
+                    body:<Sample removeModal={()=>popup.removeModal()}/>
                 })
             }}>OpenModal</button>
             <h3>Modal footer</h3>
-            {Code(
-                `popup.addModal({
+    {
+        Code(
+`popup.addModal({
     position: 'center',
     header: { title: 'my confirm title' },
-    body: () => (
+    body: (
         <div style={{ padding: 12, width: 300 }}>
             Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
         </div>
     ),
-    footer: ({ removeModal }) => {
-        return (
-            <>
-                <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
-                <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
-            </>
+    footer: (
+        <>
+            <button className='ex-button-1' onClick={() => { console.log('yes'); popup.removeModal() }}>No</button>
+            <button className='ex-button-2' onClick={() => { console.log('no'); popup.removeModal() }}>Yes</button>
+        </>
+    )
+})`
         )
     }
-})`
-            )}
-            <button className='add-modal-button' onClick={() => click({
-                position: 'center',
-                header: { title: 'my confirm title' },
-                body: () => (
-                    <div style={{ padding: 12, width: 300 }}>
-                        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
-                    </div>
-                ),
-                footer: ({ removeModal }) => {
-                    return (
+            <button className='add-modal-button' onClick={() => {
+                popup.addModal({
+                    position: 'center',
+                    header: { title: 'my confirm title' },
+                    body: (
+                        <div style={{ padding: 12, width: 300 }}>
+                            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
+                        </div>
+                    ),
+                    footer: (
                         <>
-                            <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
-                            <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
+                            <button className='ex-button-1' onClick={() => { console.log('yes'); popup.removeModal() }}>No</button>
+                            <button className='ex-button-2' onClick={() => { console.log('no'); popup.removeModal() }}>Yes</button>
                         </>
                     )
-                }
-            })}>OpenModal</button>
-            <h3>Modal state</h3>
-            {Code(
-                `popup.addModal({
-    position: 'center',
-    header: { title: 'my confirm title' },
-    body: () => (
-        <div style={{ padding: 12, width: 300 }}>
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque dolorem suscipit enim alias repudiandae dolores fugiat nobis ad tenetur! Iste ex numquam non optio impedit voluptatum cumque rerum deleniti id?
-        </div>
-    ),
-    footer: ({ removeModal }) => {
-        return (
-            <>
-                <button className='ex-button-1' onClick={() => { console.log('yes'); removeModal() }}>No</button>
-                <button className='ex-button-2' onClick={() => { console.log('no'); removeModal() }}>Yes</button>
-            </>
-        )
-    }
-})`
-            )}
-            <button className='add-modal-button' onClick={() => click({
-                position: 'center',
-                header: { title: 'my prompt title' },
-                state: { temp: '' },
-                body: ({state,setState})=>{
-                    return (
-                        <textarea
-                            value={state.temp} onChange={(e) => setState({ temp: e.target.value })}
-                            style={{ resize: 'vertical', border: 'none', outline: 'none', background: 'rgba(0,0,0,0.05)', width: '100%' }}
-                        />
-                    )
-                },
-                footer: ({ removeModal,state }) => {
-                    return (
-                        <>
-                            <button className='ex-button-1' onClick={() => { removeModal() }}>Cansel</button>
-                            <button className='ex-button-2' onClick={() => { alert(state.temp); removeModal() }}>Submit</button>
-                        </>
-                    )
-                }
-            })}>OpenModal</button>
-            {popup.render()}
-        </div>
+                })
+            }}>OpenModal</button>
+    { popup.render() }
+        </div >
     )
 }
 function ModalPosition() {
     let popup = usePopup()
     function openModal(position: 'top' | 'bottom' | 'right' | 'left' | 'center' | 'fullscreen') {
         let p: AP_modal = {
-            body: () => null,
+            body: null,
             header: undefined,
             position
         }
         if (position === 'top' || position === 'bottom') {
-            p.body = ({ removeModal }) => <Sample removeModal={removeModal}/>
+            p.body = <Sample removeModal={() => popup.removeModal()} />
         }
         else if (position === 'left' || position === 'right') {
-            p.body = ({ removeModal }) => <Sample2 removeModal={removeModal}/>
+            p.body = <Sample2 removeModal={() => popup.removeModal()} />
             p.setAttrs = (key) => {
                 if (key === 'modal') {
                     return { style: { width: 360 } }
@@ -363,7 +342,7 @@ function ModalPosition() {
             }
         }
         else if (position === 'center') {
-            p.body = () => content;
+            p.body = content;
             p.setAttrs = (key) => {
                 if (key === 'modal') {
                     return { style: { maxHeight: '90vh' } }
@@ -372,7 +351,7 @@ function ModalPosition() {
             p.header = { title: 'My Modal' }
         }
         else if (position === 'fullscreen') {
-            p.body = () => content;
+            p.body = content;
             p.header = { title: 'My Modal' }
         }
         popup.addModal(p)
@@ -450,11 +429,11 @@ function Alert() {
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'error',
-closeText:'بستن'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن'
 })
                 `)
             }
@@ -464,12 +443,12 @@ closeText:'بستن'
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'error',
-closeText:'بستن',
-position:'top'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن',
+    position:'top'
 })
                 `)
             }
@@ -479,12 +458,12 @@ position:'top'
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'error',
-closeText:'بستن',
-position:'bottom'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'error',
+    closeText:'بستن',
+    position:'bottom'
 })
                 `)
             }
@@ -494,11 +473,11 @@ position:'bottom'
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'warning',
-closeText:'بستن'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'warning',
+    closeText:'بستن'
 })
                 `)
             }
@@ -509,11 +488,11 @@ closeText:'بستن'
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'warning',
-closeText:'بستن'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'warning',
+    closeText:'بستن'
 })
                 `)
             }
@@ -523,11 +502,11 @@ closeText:'بستن'
             {
                 Code(`
 instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'success',
-closeText:'بستن'
+    text:'my alert text',
+    subtext:'my subtext of my alert',
+    time:10,
+    type:'success',
+    closeText:'بستن'
 })
                 `)
             }
@@ -555,8 +534,7 @@ function Confirm() {
     let popup = usePopup()
     function addConfirm() {
         popup.addConfirm({
-            text: 'Confirm text',
-            title: 'My Title',
+            title: 'Confirm text',
             onSubmit: async () => {
                 alert('yes')
                 return true
@@ -572,12 +550,16 @@ function Confirm() {
             <h3>addAlert</h3>
             {
                 Code(`
-instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'error',
-closeText:'بستن'
+popup.addConfirm({
+    title: 'Confirm text',
+    onSubmit: async () => {
+        alert('yes')
+        return true
+    },
+    onCansel: async () => {
+        alert('no')
+        return true
+    },
 })
                 `)
             }
@@ -591,8 +573,7 @@ function Prompt() {
     let popup = usePopup()
     function addPrompt() {
         popup.addPrompt({
-            text: 'Confirm text',
-            title: 'My Title',
+            title: 'Confirm text',
             onSubmit: async () => {
                 alert('yes')
                 return true
@@ -608,12 +589,16 @@ function Prompt() {
             <h3>addAlert</h3>
             {
                 Code(`
-instance.addAlert({
-text:'my alert text',
-subtext:'my subtext of my alert',
-time:10,
-type:'error',
-closeText:'بستن'
+popup.addPrompt({
+    title: 'Confirm text',
+    onSubmit: async () => {
+        alert('yes')
+        return true
+    },
+    onCansel: async () => {
+        alert('no')
+        return true
+    },
 })
                 `)
             }
@@ -632,7 +617,7 @@ function SnackebarExample() {
             subtext = 'my subtext of my snackebar . please click on action',
             time = 10,
             type = 'error',
-            align = ['right','top'],
+            align = ['right', 'top'],
             icon,
             attrs
         } = obj || {}
@@ -878,7 +863,7 @@ const example = () => {
 }
 `)
             }
-            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ align: ['right','bottom'] })}>Add Snackebar</button>
+            <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({ align: ['right', 'bottom'] })}>Add Snackebar</button>
             <div style={{ marginTop: 24 }} className='aio-component-splitter'></div>
             <h3>icon</h3>
             {
@@ -917,7 +902,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                align: ['right','top'], type: 'success',
+                align: ['right', 'top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -973,7 +958,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                align: ['right','top'], type: 'success',
+                align: ['right', 'top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -1032,7 +1017,7 @@ const example = () => {
 `)
             }
             <button style={{ height: 36, padding: '0 24px' }} onClick={() => addSnackebar({
-                align: ['right','top'], type: 'success',
+                align: ['right', 'top'], type: 'success',
                 icon: (
                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="20" cy="20" r="20" fill="#36CB8C" />
@@ -1081,7 +1066,7 @@ function Popover() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom1.current as any),
-            body: ({ removeModal }) => v_layout(removeModal)
+            body: v_layout(() => popup.removeModal())
         })
     }
     function fitHorizontal() {
@@ -1089,14 +1074,14 @@ function Popover() {
             position: 'popover',
             getTarget: () => $(temp.dom3.current as any),
             fitHorizontal: true,
-            body: () => v_layout()
+            body: v_layout(() => popup.removeModal())
         })
     }
     function styling() {
         popup.addModal({
             position: 'popover',
             getTarget: () => $(temp.dom4.current as any),
-            body: () => content,
+            body: content,
             setAttrs: (key) => {
                 if (key === 'modal') {
                     return {
@@ -1114,7 +1099,7 @@ function Popover() {
             getTarget: () => $(temp.dom5.current as any),
             fitHorizontal: true,
             position: 'popover',
-            body: () => content,
+            body: content,
             setAttrs: (key) => {
                 if (key === 'backdrop') {
                     return {
@@ -1222,15 +1207,15 @@ function BasicHighlight() {
     function start(index: number) {
         let dom, html;
         if (index === 0) {
-            dom = $('.rsa-navigation-item').eq(0);
+            dom = $('.aio-input-tree-option').eq(0);
             html = 'this tab show basic usage of aio-highlighter component'
         }
         else if (index === 1) {
-            dom = $('.rsa-navigation-item').eq(1);
+            dom = $('.aio-input-tree-option').eq(1);
             html = 'this tab show usage of aio-highlighter mouseAccess Props';
         }
         else if (index === 2) {
-            dom = $('.rsa-header-title');
+            dom = $('.ai-sidenav-header');
             html = 'this is title of page';
         }
         else if (index === 3) {
@@ -1247,9 +1232,8 @@ function BasicHighlight() {
         popup.addModal({
             id: 'code',
             header: { title: 'code' },
-            body: () => {
-                return Code(
-                    `import AIOPopup from 'aio-popup';
+            body: Code(
+                `import AIOPopup from 'aio-popup';
 function BasicHighlight() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
     function start(index:number){
@@ -1286,9 +1270,7 @@ function BasicHighlight() {
         </div>
     )
 }`
-                )
-
-            }
+            )
         })
     }
     return (
@@ -1328,9 +1310,8 @@ function MouseAccess() {
         popup.addModal({
             id: 'code',
             header: { title: 'code' },
-            body: () => {
-                return Code(
-                    `import AIOPopup from 'aio-popup';
+            body: Code(
+                `import AIOPopup from 'aio-popup';
 function MouseAccess() {
     let [popup] = useState<AIOPopup>(new AIOPopup())
     function start(){
@@ -1366,8 +1347,7 @@ function MouseAccess() {
         </div>
     )
 }`
-                )
-            }
+            )
         })
     }
     return (
@@ -1434,19 +1414,17 @@ function Theme1() {
                         title: 'Theme1',
 
                     },
-                    body: () => {
-                        return (
-                            <div className='h-300- p-12-' style={{ width: 320 }}>
-                                <div className="flex-row- gap-6-">
-                                    <button className='active'>My Active Button</button>
-                                    <button>My Button</button>
-                                </div>
-                                <p>
-                                    this is my sample text
-                                </p>
+                    body: (
+                        <div className='h-300- p-12-' style={{ width: 320 }}>
+                            <div className="flex-row- gap-6-">
+                                <button className='active'>My Active Button</button>
+                                <button>My Button</button>
                             </div>
-                        )
-                    }
+                            <p>
+                                this is my sample text
+                            </p>
+                        </div>
+                    )
                 })
             }}>Open Modal</button>
             {popup.render()}

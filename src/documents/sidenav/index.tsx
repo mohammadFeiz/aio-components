@@ -10,6 +10,7 @@ const DOC_Sidenav: FC = (props: any) => {
             name={props.name} goToHome={props.goToHome}
             items={[
                 { text: 'Basic', value: 'basic', render: () => <Basic /> },
+                { text: 'minimize', value: 'minimize', render: () => <Minimize /> },
                 { text: 'example1', value: 'e1', render: () => <Example1 /> }
             ]}
         />
@@ -22,13 +23,13 @@ const Basic: FC = () => {
         <div className="example">
             <Sidenav
                 value={value}
-                header={(
-                    <div className='flex-row- align-vh- h-60-'>My Application</div>
+                header={()=>(
+                    <div className='flex-row- align-vh- h-60- p-h-12-'>My Application</div>
                 )}
                 items={[
                     { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
                     {
-                        text: 'item1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
+                        text: 'item1', subtext: 'subtext1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
                         after: <div style={{ background: 'red', color: '#fff' }} className='p-h-6- br-6-'>New</div>
                     },
                     {
@@ -52,12 +53,79 @@ const Basic: FC = () => {
 <Sidenav
     value={value}
     header={(
-        <div className='flex-row- align-vh- h-60-'>My Application</div>
+        <div className='flex-row- align-vh- h-60- p-h-12-'>My Application</div>
     )}
     items={[
         { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
         {
-            text: 'item1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
+            text: 'item1',subtext:'subtext1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
+            after: <div style={{ background: 'red', color: '#fff' }} className='p-h-6- br-6-'>New</div>
+        },
+        {
+            text: 'item2', value: 'item2', icon: <Icon path={mdiFile} size={0.8} />,
+            items: [
+                { text: 'item2-0', value: 'item2-0' },
+                { text: 'item2-1', value: 'item2-1' },
+                { text: 'item2-2', value: 'item2-2' },
+
+
+            ]
+        },
+        { text: 'item3', value: 'item3', icon: <Icon path={mdiFile} size={0.8} /> },
+
+    ]}
+    onChange={(v) => setValue(v.value)}
+/>
+                    `
+                )
+            }
+        </div>
+    )
+}
+const Minimize: FC = () => {
+    const [value, setValue] = useState<string>('item1')
+    return (
+        <div className="example">
+            <Sidenav
+                minimize={true}
+                value={value}
+                header={(minimize)=>{
+                    return <div className='flex-row- align-vh- h-60- nowrap- p-h-12-'>{minimize?'':'My Application'}</div>
+                }}
+                items={[
+                    { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
+                    {
+                        text: 'item1', subtext: 'subtext1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
+                        after: <div style={{ background: 'red', color: '#fff' }} className='p-h-6- br-6-'>New</div>
+                    },
+                    {
+                        text: 'item2', value: 'item2', icon: <Icon path={mdiFile} size={0.8} />,
+                        items: [
+                            { text: 'item2-0', value: 'item2-0' },
+                            { text: 'item2-1', value: 'item2-1' },
+                            { text: 'item2-2', value: 'item2-2' },
+
+
+                        ]
+                    },
+                    { text: 'item3', value: 'item3', icon: <Icon path={mdiFile} size={0.8} /> },
+
+                ]}
+                onChange={(v) => setValue(v.value)}
+            />
+            {
+                Code(
+                    `
+<Sidenav
+    minimize={true}
+    value={value}
+    header={(minimize)=>{
+        return <div className='flex-row- align-vh- h-60- nowrap- p-h-12-'>{minimize?'':'My Application'}</div>
+    }}
+    items={[
+        { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
+        {
+            text: 'item1',subtext:'subtext1', value: 'item1', icon: <Icon path={mdiFile} size={0.8} />,
             after: <div style={{ background: 'red', color: '#fff' }} className='p-h-6- br-6-'>New</div>
         },
         {
@@ -88,8 +156,8 @@ const Example1: FC = () => {
             <Sidenav
                 value={value}
                 className="sidenav-1"
-                header={(
-                    <div className='flex-row- align-vh- h-60-'>My Application</div>
+                header={()=>(
+                    <div className='flex-row- align-vh- h-60- p-h-12-'>My Application</div>
                 )}
                 items={[
                     { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
@@ -112,15 +180,15 @@ const Example1: FC = () => {
                 ]}
                 onChange={(v) => setValue(v.value)}
             />
-            
-                {
-                    Code(
-                        `
+
+            {
+                Code(
+                    `
 <Sidenav
     value={value}
     className="sidenav-1"
     header={(
-        <div className='flex-row- align-vh- h-60-'>My Application</div>
+        <div className='flex-row- align-vh- h-60- p-h-12-'>My Application</div>
     )}
     items={[
         { text: 'item0', value: 'item0', icon: <Icon path={mdiFile} size={0.8} /> },
@@ -144,12 +212,12 @@ const Example1: FC = () => {
     onChange={(v) => setValue(v.value)}
 />
                     `
-                    )
-                }
-                <h3>CSS</h3>
-                {
-                    Code(
-                        `
+                )
+            }
+            <h3>CSS</h3>
+            {
+                Code(
+                    `
 .sidenav-1{
     background-image: url(./../../../public//dist/bg.jpg);
     background-size: 360px 480px;
@@ -177,9 +245,9 @@ const Example1: FC = () => {
 
 
                     `
-                    )
-                }
-          
+                )
+            }
+
         </div>
     )
 }

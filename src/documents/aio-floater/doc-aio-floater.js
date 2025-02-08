@@ -1,20 +1,17 @@
 import React, { Component } from 'react';
-import DOC from '../../resuse-components/doc.tsx';
+import DOC from '../../resuse-components/Doc/index.tsx';
 import Floater from './../../npm/aio-floater/aio-floater';
 export default class DOC_AIOFloater extends Component {
   render() {
     return (
       <DOC
         {...this.props}
-        navId='example4'
-        nav={{
-          items: [
-            { text: 'Basic', id: 'example', render: () => <Example /> },
-            { text: 'relations', id: 'example2', render: () => <Example2 /> },
-            { text: 'group', id: 'example3', render: () => <Example3 /> },
-            { text: 'snap', id: 'example4', render: () => <Example4 /> }
-          ]
-        }}
+        items={[
+          { text: 'Basic', value: 'example', render: () => <Example /> },
+          { text: 'relations', value: 'example2', render: () => <Example2 /> },
+          { text: 'group', value: 'example3', render: () => <Example3 /> },
+          { text: 'snap', value: 'example4', render: () => <Example4 /> }
+        ]}
       />
     )
   }

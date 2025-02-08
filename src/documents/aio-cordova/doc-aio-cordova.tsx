@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
-import DOC from '../../resuse-components/doc.tsx';
-import {Code} from './../../npm/aio-components';
+import DOC from '../../resuse-components/Doc/index';
+import { Code } from './../../npm/aio-components';
 //@ts-ignore
 import src0 from './images/0.png';
 //@ts-ignore
@@ -19,19 +19,17 @@ export default function DOC_AIOCordova(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'folders structure', id: 'fs', render: () => <FoldersStructure /> },
-                    { text: 'root package.json', id: 'rp', render: () => <RootPackageJson /> },
-                    { text: 'create cordova', id: 'cc', render: () => <CreateCordova /> },
-                    { text: 'create react', id: 'cr', render: () => <CreateReact /> },
-                    { text: 'react index.html', id: 'rih', render: () => <ReactIndexHtml /> },
-                    { text: 'react App.tsx', id: 'rat', render: () => <ReactAppTsx /> },
-                    { text: 'Environment Variables', id: 'enva', render: () => <EnvVar /> },
-                    { text: 'Cordova Plugins', id: 'cp', render: () => <CordovaPlugins /> },
-                    { text: '.gitignore', id: 'gi', render: () => <GitIgnore /> },
-                ]
-            }}
+            items={[
+                { text: 'folders structure', value: 'fs', render: () => <FoldersStructure /> },
+                { text: 'root package.json', value: 'rp', render: () => <RootPackageJson /> },
+                { text: 'create cordova', value: 'cc', render: () => <CreateCordova /> },
+                { text: 'create react', value: 'cr', render: () => <CreateReact /> },
+                { text: 'react index.html', value: 'rih', render: () => <ReactIndexHtml /> },
+                { text: 'react App.tsx', value: 'rat', render: () => <ReactAppTsx /> },
+                { text: 'Environment Variables', value: 'enva', render: () => <EnvVar /> },
+                { text: 'Cordova Plugins', value: 'cp', render: () => <CordovaPlugins /> },
+                { text: '.gitignore', value: 'gi', render: () => <GitIgnore /> },
+            ]}
         />
     )
 }

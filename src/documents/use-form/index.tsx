@@ -1,35 +1,30 @@
 import { FC } from "react";
-import DOC from "../../resuse-components/doc";
+import DOC from "../../resuse-components/Doc/index";
 import { I_formNode, useForm } from "../../npm/aio-input";
 import { Code } from "../../npm/aio-components";
-import { name } from "agenda/dist/agenda/name";
-
 export default function DOC_UseForm(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
-            nav={{
-                items: () => [
-                    { text: 'basic', id: 'basic', render: () => <Basic /> },
-                    { text: 'getLayout', id: 'getLayout', render: () => <GetLayout /> },
-                    { text: 'required', id: 'required', render: () => <Required /> },
-                    { text: 'validate', id: 'validate', render: () => <Validate /> },
-                    { text: 'dynamic', id: 'dynamic', render: () => <Dynamic /> },
-                    { text: 'reset', id: 'reset', render: () => <Reset /> },
-                    { text: 'complex layout', id: 'complex layout', render: () => <ComplexLayput /> },
-                    { text: 'nested', id: 'nested', render: () => <Nested /> },
-                    {
-                        text: 'validate', id: 'validate',
-                        items: [
-                            { text: 'email', id: 'validateemail', render: () => <ValidateEmail /> },
-                            { text: 'ir mobile', id: 'validateirmobile', render: () => <ValidateIrMobile /> },
-                            { text: 'ir national code', id: 'validateirnationalcode', render: () => <ValidateIrNationalCode /> }
-                        ]
-                    },
-                    { text: 'visibility', id: 'visibility', render: () => <Visibility /> },
-
-                ]
-            }}
+            items={[
+                { text: 'basic', value: 'basic', render: () => <Basic /> },
+                { text: 'getLayout', value: 'getLayout', render: () => <GetLayout /> },
+                { text: 'required', value: 'required', render: () => <Required /> },
+                { text: 'validate', value: 'validate', render: () => <Validate /> },
+                { text: 'dynamic', value: 'dynamic', render: () => <Dynamic /> },
+                { text: 'reset', value: 'reset', render: () => <Reset /> },
+                { text: 'complex layout', value: 'complex layout', render: () => <ComplexLayput /> },
+                { text: 'nested', value: 'nested', render: () => <Nested /> },
+                {
+                    text: 'validate', value: 'validate',
+                    items: [
+                        { text: 'email', value: 'validateemail', render: () => <ValidateEmail /> },
+                        { text: 'ir mobile', value: 'validateirmobile', render: () => <ValidateIrMobile /> },
+                        { text: 'ir national code', value: 'validateirnationalcode', render: () => <ValidateIrNationalCode /> }
+                    ]
+                },
+                { text: 'visibility', value: 'visibility', render: () => <Visibility /> },
+            ]}
         />
     )
 }

@@ -102,7 +102,7 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
                 <Options
                     type={type}
                     option={{
-                        checked: (option,{rootProps}) => option.id === rootProps.value
+                        checked: (option, { rootProps }) => option.id === rootProps.value
                     }}
                     optionCode={
                         `checked: (option,{rootProps}) => option.id === rootProps.value`
@@ -391,11 +391,11 @@ const SelectExamples: FC<{ type: AI_type }> = ({ type }) => {
         ['tags popover', () => <TagsPopover />, ['tags'].indexOf(type) !== -1],
 
     ])
-    return (<Example type={type} examples={examples}/>)
+    return (<Example type={type} examples={examples} />)
 }
 export default SelectExamples
 const Before: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -429,7 +429,7 @@ const Before: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const After: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -463,7 +463,7 @@ const After: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Subtext: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -497,7 +497,7 @@ const Subtext: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Disabled: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -531,7 +531,7 @@ const Disabled: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const DeSelect_true: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -568,7 +568,7 @@ const DeSelect_true: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const DeSelect_Object: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -586,7 +586,7 @@ const DeSelect_Object: FC<{ type: AI_type }> = ({ type }) => {
                 }}
                 value={value}
                 onChange={(newValue) => setValue(newValue)}
-                deSelect={{id:false,text:'Not Selected'}}
+                deSelect={{ id: false, text: 'Not Selected' }}
             />
             {code(`
 <AIOInput
@@ -605,7 +605,7 @@ const DeSelect_Object: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Search: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -642,7 +642,7 @@ const Search: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Loading: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -676,7 +676,7 @@ const Loading: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Text: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div>
@@ -705,7 +705,7 @@ const Text: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const Multiple: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number>()
     return (
         <div>
@@ -734,7 +734,7 @@ const Multiple: FC<{ type: AI_type }> = ({ type }) => {
     )
 }
 const MultipleNumber: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number[]>([])
     return (
         <div>
@@ -765,7 +765,7 @@ const MultipleNumber: FC<{ type: AI_type }> = ({ type }) => {
 }
 
 const CheckIcon: FC<{ type: AI_type }> = ({ type }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number[]>([])
     return (
         <div>
@@ -779,9 +779,9 @@ const CheckIcon: FC<{ type: AI_type }> = ({ type }) => {
                 }}
                 value={value}
                 onChange={(newValue) => setValue(newValue)}
-                checkIcon={({checked})=>{
-                    return checked?<Icon path={mdiCheckboxMarked} size={0.9} color='#5400ff'/>:
-                    <Icon path={mdiCheckboxBlankOutline} size={0.9} color='#5400ff'/>
+                checkIcon={({ checked }) => {
+                    return checked ? <Icon path={mdiCheckboxMarked} size={0.9} color='#5400ff' /> :
+                        <Icon path={mdiCheckboxBlankOutline} size={0.9} color='#5400ff' />
                 }}
             />
             {code(`
@@ -802,7 +802,7 @@ const CheckIcon: FC<{ type: AI_type }> = ({ type }) => {
 }
 
 const Options: FC<{ type: AI_type, option?: AITYPE['option'], optionCode?: string, props?: AITYPE, propsCode?: string }> = ({ type, option = {}, optionCode, props = {}, propsCode }) => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<any>(getValue)
     function getValue() {
         if (type === 'tags') {
@@ -843,7 +843,7 @@ const Options: FC<{ type: AI_type, option?: AITYPE['option'], optionCode?: strin
 }
 
 const HideTags: FC = () => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const [value, setValue] = useState<number[]>([])
     return (
         <div>
@@ -875,7 +875,7 @@ const HideTags: FC = () => {
 }
 
 const TagsPopover: FC = () => {
-    const {code}:I_ExampleContext = useContext(ExampleContext);
+    const { code }: I_ExampleContext = useContext(ExampleContext);
     const type = 'tags';
     const [value, setValue] = useState<any>(getValue)
     const valueRef = useRef(value);
@@ -909,26 +909,24 @@ const TagsPopover: FC = () => {
                                 before: <Icon path={mdiStar} size={1.5} color='orange' />
                             },
                             position: 'center',
-                            body: () => {
-                                return (
-                                    <div style={{ whiteSpace: 'break-spaces', maxWidth: 600, paddingBottom: 12 }}>
-                                        <AIOInput
-                                            type='radio'
-                                            multiple={true}
-                                            options={textOptions}
-                                            option={{
-                                                text: 'option.name',
-                                                value: 'option.id',
-                                                style: () => ({ width: '32%' })
-                                            }}
-                                            value={[...valueRef.current]}
-                                            onChange={(newValue) => setValue([...newValue])}
-                                            subtext='Please Select Some Items'
+                            body: (
+                                <div style={{ whiteSpace: 'break-spaces', maxWidth: 600, paddingBottom: 12 }}>
+                                    <AIOInput
+                                        type='radio'
+                                        multiple={true}
+                                        options={textOptions}
+                                        option={{
+                                            text: 'option.name',
+                                            value: 'option.id',
+                                            style: () => ({ width: '32%' })
+                                        }}
+                                        value={[...valueRef.current]}
+                                        onChange={(newValue) => setValue([...newValue])}
+                                        subtext='Please Select Some Items'
 
-                                        />
-                                    </div>
-                                )
-                            }
+                                    />
+                                </div>
+                            )
                         }}
                     />
                 }
