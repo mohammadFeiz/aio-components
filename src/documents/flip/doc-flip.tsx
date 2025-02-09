@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import Flip from './index.tsx';
 import DOC from '../../resuse-components/Doc/index.tsx';
-import {Code} from './../../npm/aio-components';
+import {Code,Flip} from './../../npm/aio-components';
 export default function DOC_Flip(props:any) {
     return (
         <DOC
@@ -17,7 +16,7 @@ function Basic() {
     const [hour,setHour] = useState<number>(12)
     const [minute,setMinute] = useState<number>(0)
     const [second,setSecond] = useState<number>(0)
-    useEffect(()=>{
+    function start(){
         setTimeout(()=>{
             const d = new Date();
             const hour = d.getHours()
@@ -26,8 +25,12 @@ function Basic() {
             setHour(hour)
             setMinute(minute)
             setSecond(second)
+            start()
         },1000)
-    })
+    }
+    useEffect(()=>{
+        start()
+    },[])
     return (
         <>
             <div className='p-12- flex-row-'>

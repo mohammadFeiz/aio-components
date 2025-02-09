@@ -416,3 +416,7 @@ code[class*="language-"] *::selection {
     justify-content: center;
     margin-bottom: 6px;
 }
+
+.tick-credits{
+    display:none !important
+}
