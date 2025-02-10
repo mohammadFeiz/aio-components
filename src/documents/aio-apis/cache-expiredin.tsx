@@ -35,9 +35,7 @@ class APIS extends AIOApis {
             token: '',
             id: 'testaioapis2',
             lang: 'fa',
-            onCatch: {
-                main: (response) => response.response.data.message
-            },
+            onCatch: (response) => response.response.data.message
         });
     }
     mockSuccess: I_mockMethod = () => {
@@ -47,11 +45,10 @@ class APIS extends AIOApis {
         return await this.request<I_data>({
             name: 'getData',
             description: 'get data',
-            onCatch: 'main',
             url: '/api-url',
             method: 'get',
             mock: { delay: 2500, methodName: 'mockSuccess' },
-            getResult: (response: any) => response.data,
+            onSuccess: (response: any) => response.data,
             cache:{
                 expiredIn:new Date().getTime() + (12000),
                 name:'data'
@@ -69,19 +66,16 @@ class APIS extends AIOApis {
         super({
             token,
             id: 'testaioapis',
-            onCatch: {
-                main:(response) => response.response.data.message,
-            }
+            onCatch: (response) => response.response.data.message
         });
     }
     getData = async () => {
         return await this.request<{name:string,family:string}>({
             name: 'getData',
             description: 'get data',
-            onCatch: 'main',
             url: '/api-url',
             method: 'get',
-            getResult: (response: any) => response.data,
+            onSuccess: (response: any) => response.data,
             cache:{
                 expiredIn:new Date().getTime() + (12000),
                 name:'data'

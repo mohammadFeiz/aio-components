@@ -9,7 +9,8 @@ import {
     Swip, I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength,
     ValidateIrMobile,
     IsValidEmail,
-    IsValidIrNationalCode
+    IsValidIrNationalCode,
+    classListToString
 
 } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
@@ -809,11 +810,11 @@ const Layout: FC<AI_Layout> = (props) => {
     function BeforeAfter(mode: 'before' | 'after') {
         let res: ReactNode;
         if (mode === 'after' && type === 'password' && rootProps.preview) {
-            res = <div className='aio-input-password-preview' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
+            res = <div key={`layout${mode}`} className='aio-input-password-preview' onClick={() => setShowPassword()}>{I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8)}</div>
         }
         else { let v = properties[mode]; res = typeof v === 'function' ? v() : v; }
         if (res === undefined) { return null }
-        return <div className={cls(mode)}>{res}</div>
+        return <div key={'layout' + mode} className={cls(mode)}>{res}</div>
     }
     function Loading() {
         let { loading } = properties;
@@ -1301,7 +1302,7 @@ const TreeBody: FC<I_TreeBody> = (props) => {
                     row, option, parent, parentId, id, parentOpen, open, details,
                     indent: { height: size, childsLength: childs.length, size: indent, parentIndent, ...details }
                 }
-                return <><TreeRow item={item} /><TreeChilds item={item} /></>;
+                return <Fragment key={index}><TreeRow item={item} /><TreeChilds item={item} /></Fragment>;
             })}
         </div>
     )
@@ -2252,9 +2253,9 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
     return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
 type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number, range?: number }) => number;
-type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number }
-type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number }
-export type I_rangeConfig = { thickness: number, offset: number, color: string, roundCap?: boolean, full?: boolean }
+type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number,className?:string }
+type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number,className?:string }
+export type I_rangeConfig = { thickness: number, offset: number, color: string, roundCap?: boolean, full?: boolean,className?:string }
 export type I_RangeContext = {
     getXPByValue: (value: number) => number,
     fixAngle: (angle: number) => number,
@@ -2376,7 +2377,7 @@ const Range: FC = () => {
         return res
     }
     const getCircleByStr: AI_cbs = (rc: I_rangeConfig, type) => {
-        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000';
+        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000',className = rc.className;
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -2391,10 +2392,10 @@ const Range: FC = () => {
             else { roundCap = false }
         }
         catch { }
-        return { thickness, radius, color, roundCap, full }
+        return { thickness, radius, color, roundCap, full,className }
     }
     const getRectByStr: AI_rbs = (range) => {
-        let { thickness = 1, offset = 0, color = '#000', roundCap = false } = range;
+        let { thickness = 1, offset = 0, color = '#000', roundCap = false,className } = range;
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -2407,7 +2408,7 @@ const Range: FC = () => {
             if (offset < thickness / 2) { offset = thickness / 2 }
         }
         catch { }
-        return { thickness, offset, color, roundCap }
+        return { thickness, offset, color, roundCap,className }
     }
     function change1Unit(dir: 1 | -1): void {
         let value = valueRef.current;
@@ -2615,20 +2616,23 @@ const RangeFills: FC = () => {
 }
 const RangeRanges: FC = () => {
     let { rootProps, getCircleByStr, getRectByStr }: I_RangeContext = useContext(RangeContext);
-    let { start = 0, ranges = [], round } = rootProps;
+    let { start = 0, ranges = [], round,end } = rootProps;
     let res = [], from = start, list = ranges;
     for (let i = 0; i < list.length; i++) {
         let [value, config] = list[i];
-        let to = value
+        const isFirst = from === start;
+        let to = from + value
+        const isLast = to === end
         let rangeItem: ReactNode
         if (round) {
-            let { thickness, color, radius, roundCap } = getCircleByStr(config, 'offset')
-            let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false }
+            let { thickness, color, radius, roundCap,className } = getCircleByStr(config, 'offset')
+            let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false,className }
             rangeItem = <RangeArc key={'rangearc' + i} {...p} />
         }
         else {
-            let { thickness, color, offset, roundCap } = getRectByStr(config)
-            let p: I_RangeRect = { thickness, color, from, to, offset, roundCap, className: 'ai-range-range' }
+            let { thickness, color, offset, roundCap,className } = getRectByStr(config)
+            const cls = classListToString(['ai-range-range',className,isFirst?'ai-range-range-first':'',isLast?'ai-range-range-last':''])
+            let p: I_RangeRect = { thickness, color, from, to, offset, roundCap, className: cls }
             rangeItem = <RangeRect {...p} key={'range' + i} />
         }
         res.push(rangeItem);
@@ -2667,8 +2671,8 @@ const RangeRect: FC<I_RangeRect> = ({ thickness, color, from, to, className, sty
     let Style: any = { ...bigSizeStyle, ...smallSizeStyle, ...mainSideStyle, ...otherSideStyle, ...borderRadiusStyle, ...colorStyle, ...style }
     return <div className={className} style={Style} />
 }
-type I_RangeArc = { thickness: number, color: string, from: number, to: number, radius: number, full?: boolean, roundCap?: boolean }
-const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, roundCap }) => {
+type I_RangeArc = { thickness: number, color: string, from: number, to: number, radius: number, full?: boolean, roundCap?: boolean,className?:string }
+const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, roundCap,className }) => {
     let { fixAngle, getAngleByValue, rootProps }: I_RangeContext = useContext(RangeContext);
     let { size = Def('range-size'), reverse } = rootProps;
     let a, b;
@@ -2682,7 +2686,7 @@ const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, ro
         b = endAngle;
         if (reverse) { b = startAngle; a = endAngle }
     }
-    return <path key={`from${from}to${to}`} d={svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} />
+    return <path key={`from${from}to${to}`} d={svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} className={className}/>
 }
 const RangePoint: FC<I_RangeValue> = (props) => {
     let { rootProps, getOffset, sbp }: I_RangeContext = useContext(RangeContext);
@@ -3408,7 +3412,6 @@ export type AI_label = {
 export type AI_labelItem = { offset?: number, fixAngle?: boolean, html?: ReactNode }
 export type AI_range_handle = ((value: number, p: any) => AI_range_handle_config) | false
 export type AI_range_handle_config = { thickness?: number, size?: number, color?: string, offset?: number, sharp?: boolean }
-export type AI_fill = { thickness?: number, color?: string, className?: string, style?: any }
 export type AI_getProp_param = { key: string, def?: any, preventFunction?: boolean };
 export type AI_getProp = (p: AI_getProp_param) => any;
 export type AI_addToAttrs = (attrs: any, p: { className?: string | (any[]), style?: any, attrs?: any }) => any
@@ -3506,7 +3509,7 @@ type AI_isTable = {
 
 type AI_isRange = {
     end?: number,
-    fill?: false | AI_fill | ((index: number) => AI_fill),
+    fill?: false | { thickness?: number, color?: string, className?: string, style?: any } | ((index: number) => { thickness?: number, color?: string, className?: string, style?: any }),
     grooveAttrs?: { [key: string]: any },
     labels?: AI_labels,
     max?: number,

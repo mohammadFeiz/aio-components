@@ -83,9 +83,7 @@ class APIS extends AIOApis {
             token: '',
             id: 'testaioapis',
             lang: 'fa',
-            onCatch: {
-                main: (response) => response.response.data.message
-            },
+            onCatch: (response) => response.response.data.message
         });
     }
     mockError: I_mockMethod = () => {
@@ -95,19 +93,19 @@ class APIS extends AIOApis {
         return { status: 200, data: { name: 'mohammad', family: 'feiz' } }
     }
     getData = async (p: I_setting) => {
-        const config: any = {
+        return await this.request<I_data>({
             name: 'getData',
             description: 'get data',
-            onCatch: 'main',
             url: '/api-url',
             method: 'get',
             mock: { delay: 2500, methodName: p.mockType },
-            getResult: (response: any) => response.data,
-            successMessage: p.successMessage ? () => 'عملیات با موفقیت انجام شد' : undefined,
-            errorMessage:p.errorMessage?undefined:()=>false,
+            onSuccess: (response: any) => {
+                if(p.successMessage){this.addAlert({type:'success',subtext:'عملیات با موفقیت انجام شد',text:'دریافت اطلاعات'})}
+                return response.data
+            },
+            onError:p.errorMessage?undefined:()=>false,
             loading:p.loading?undefined:false
-        }
-        return await this.request<I_data>(config)
+        })
     }
 }
 function classCode(setting:I_setting) {
@@ -117,17 +115,14 @@ function classCode(setting:I_setting) {
         super({
             token,
             id: 'testaioapis',
-            onCatch: {
-                main:(response) => response.response.data.message,
-            }
+            onCatch: (response) => response.response.data.message
         });
     }
     getData = async () => {
         return await this.request<{name:string,family:string}>({
             name:'getData',
             description:'get data',
-            getResult:(response)=>response.data,
-            onCatch:'main',
+            onSuccess:(response)=>response.data,
             url:'/api-url',
             method:'get',
             ${setting.loading === false?'loading:false,':''}

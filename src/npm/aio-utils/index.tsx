@@ -312,15 +312,27 @@ export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMous
 function toRadians(degree: number) {
     return degree * (Math.PI / 180);
 }
+export function classListToString(classes:any[]){
+    let list:string[] = [];
+    const getClasses = (cls:any):string[]=>{
+        if(Array.isArray(cls)){
+            return cls.filter((o)=>!!o && typeof o === 'string')
+        }
+        if(typeof cls === 'string'){return cls.split(' ')}
+        return []
+    }
+    for(let i = 0; i < classes.length; i++){
+        const cls = classes[i];        
+        list = [...list,...getClasses(cls)]
+    }
+    return list.length?list.join(' '):''
+}
 export function AddToAttrs(attrs: any, p: any) {
     attrs = attrs || {};
     let { style } = p;
-    let attrClassName = attrs.className ? attrs.className.split(' ') : [];
-    let className = p.className ? (Array.isArray(p.className) ? p.className : p.className.split(' ')) : [];
-    let classNames = [...attrClassName, ...className.filter((o: any) => !!o)];
-    let newClassName = classNames.length ? classNames.join(' ') : undefined
+    const className = classListToString([attrs.className,p.className])
     let newStyle = { ...attrs.style, ...style };
-    return { ...attrs, className: newClassName, style: newStyle, ...p.attrs }
+    return { ...attrs, className, style: newStyle, ...p.attrs }
 }
 // export function JsonValidator(json:any, schema:any) {
 //     let $$ = {

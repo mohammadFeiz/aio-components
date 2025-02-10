@@ -1,20 +1,27 @@
 import DOC from '../../resuse-components/Doc/index.tsx';
 import './index.css';
-import Example1 from './example1.tsx';
 import CacheExpiredIn from './cache-expiredin.tsx';
-import CacheInterval from './cache-interval.tsx';
 import EditCache from './edit-cache.tsx';
+import OnCatch from './onCatch.tsx';
+import OnSuccess from './onSuccess.tsx';
+import ShowSuccessMessage from './show-success-message.tsx';
+import PreventErrorMessage from './prevent-error-message.tsx';
+import SendErrorMessageToComponent from './SendErrorMessageToComponent.tsx';
+import Retries from './retries.tsx';
 export default function DOC_AIOApis(props: any) {
     return (
         <DOC
             name={props.name} goToHome={props.goToHome}
             items={[
-                { text: 'Example1', value: 'e1', render: () => <Example1 /> },
+                { text: 'onCatch', value: 'onCatch', render: () => <OnCatch/> },
+                { text: 'onSuccess', value: 'onSuccess', render: () => <OnSuccess/> },
+                { text: 'show success message', value: 'ssm', render: () => <ShowSuccessMessage/> },
+                { text: 'prevent error message', value: 'pem', render: () => <PreventErrorMessage/> },
+                { text: 'send error message to component', value: 'semtc', render: () => <SendErrorMessageToComponent/> },
                 { text: 'cache expiredIn', value: 'e2', render: () => <CacheExpiredIn /> },
-                { text: 'cache interval', value: 'e3', render: () => <CacheInterval /> },
-                { text: 'edit cache', value: 'e4', render: () => <EditCache /> },    
+                { text: 'edit cache', value: 'e4', render: () => <EditCache /> },
+                { text: 'retries', value: 'retries', render: () => <Retries /> },
             ]}
         />
     )
 }
-

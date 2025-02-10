@@ -1,6 +1,8 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
+import { Stall, Storage } from '../aio-utils';
+import { useRef } from 'react';
 
 export type AA_api<T> = {
     description: string,
@@ -9,17 +11,14 @@ export type AA_api<T> = {
     url: string,
     body?: any,
     loading?: boolean,
-    cache?: { name: string, expiredIn?: number, interval?: number },//AA_cache
+    cache?: { name: string, expiredIn?: number },//AA_cache
     mock?: { delay: number, methodName: string },
     headers?: any,
     token?: string,
     loader?: string, loadingParent?: string,
-    getResult: (data: any) => T,
-    onError?:(error:string)=>void,
-    onSuccess?:(result:T)=>void,
-    onCatch:string,
-    successMessage?:(p:{response:any,result:T})=>string,
-    errorMessage?:(p:{response:any,message:string})=>string | false,
+    onSuccess: (data: any) => T,
+    onError?: (response: any, message: string) => string | false,
+    retries?: number[]
 }
 type I_cachedApi<T> = {
     api: AA_api<T>,
@@ -30,23 +29,22 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        onCatch: {[key:string]:(err: any, api: AA_api<any>) => string},
+        onCatch: (err: any, api: AA_api<any>) => string,
         headers?: any,
         lang?: 'en' | 'fa'
     };
     token: string;
+    currentError:string = '';
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
     fetchCachedValue: Cache["fetchCachedValue"]
-    editCachedExpiredIn:Cache["editCachedExpiredIn"]
-    editCachedInterval:Cache["editCachedInterval"]
     removeCache: Cache["removeCache"]
     apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
     constructor(props: {
         id: string,
         token: string,
         loader?: string,
-        onCatch: {[key:string]:(err: any, api: AA_api<any>) => string},
+        onCatch: (err: any, api: AA_api<any>) => string,
         headers?: any,
         lang?: 'en' | 'fa'
     }) {
@@ -58,8 +56,6 @@ export default class AIOApis {
         this.cache = new Cache(storage, async (cachedApi: I_cachedApi<any>) => await this.callCache(cachedApi.api));
         this.getCachedValue = this.cache.getCachedValue;
         this.fetchCachedValue = this.cache.fetchCachedValue;
-        this.editCachedExpiredIn = this.cache.editCachedExpiredIn;
-        this.editCachedInterval = this.cache.editCachedInterval;
         this.removeCache = this.cache.removeCache;
     }
     setToken = (token: string) => {
@@ -80,7 +76,7 @@ export default class AIOApis {
         return '';
     }
     private responseToResult = async <T>(api: AA_api<T>): Promise<{ result: T | false, errorMessage: string, success: boolean, response: any }> => {
-        const { headers = this.props.headers, getResult } = api;
+        const { headers = this.props.headers, onSuccess } = api;
         const { onCatch } = this.props;
         if (!onCatch) {
             const errorMessage = `
@@ -91,25 +87,13 @@ export default class AIOApis {
         }
         try {
             let response = await Axios({ method: api.method, url: api.url, data: api.body, headers })
-            try { return { result: getResult(response), success: true, response,errorMessage:'' } }
-            catch (err: any) { return { result: err.message, success: false, response,errorMessage:'' } }
+            try { return { result: onSuccess(response), success: true, response, errorMessage: '' } }
+            catch (err: any) { return { result: err.message, success: false, response, errorMessage: '' } }
         }
         catch (response: any) {
-            try { return { result: false, errorMessage: onCatch[api.onCatch](response, api), success: false, response } }
+            try { return { result: false, errorMessage: onCatch(response, api), success: false, response } }
             catch (err: any) { return { result: false, errorMessage: err.message, success: false, response } }
         }
-    }
-    private showErrorMessage = (p: { errorMessage: string, api: AA_api<any>,response:any }) => {
-        const { description } = p.api;
-        if (!p.errorMessage) { return }
-        let errorMessage = p.errorMessage
-        if(p.api.errorMessage){
-            const res = p.api.errorMessage({response:p.response,message:p.errorMessage})
-            if(res !== false){errorMessage = res}
-            else{return}
-        }
-        let text: string = this.props.lang === 'fa' ? `${description} با خطا روبرو شد` : `An error was occured in ${description}`;
-        this.addAlert({ type: 'error', text, subtext: errorMessage });
     }
     private loading = (api: AA_api<any>, state: boolean) => {
         const { loading = true, loader = this.props.loader, name, loadingParent } = api;
@@ -125,46 +109,67 @@ export default class AIOApis {
         }
     }
     callCache = async (api: AA_api<any>): Promise<any> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return false}
+        if (this.apisThatAreInLoadingTime[api.name]) { return false }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
         this.apisThatAreInLoadingTime[api.name] = true;
         let { success, response } = await this.responseToResult(api);
         this.apisThatAreInLoadingTime[api.name] = false
-        if (success) { return response}
+        if (success) { return response }
     };
-    request = async <T>(api: AA_api<T>, isCalledByCache?: boolean): Promise<T | false> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return false}
+    requestFn = async <T>(api: AA_api<T>,isRetry?:boolean): Promise<T | false> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return false }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
-        if (!isCalledByCache) {
-            if (api.cache) {
-                let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
-                if (cachedValue !== undefined) { return api.getResult(cachedValue) }
-            }
-            else { this.cache.removeCache(api.name) }
+        if (api.cache) {
+            let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
+            if (cachedValue !== undefined) { return api.onSuccess(cachedValue) }
         }
+        else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
-        let { result, errorMessage, success, response } = await this.responseToResult(api); 
+        let { result, errorMessage, success, response } = await this.responseToResult(api);
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
-        if(api.onError && !success){api.onError(errorMessage)}
-        if(!!success){
-            if(api.onSuccess){api.onSuccess(result as T)}
-            if(api.successMessage){
-                const res = api.successMessage({response,result:result as T})
-                if(res){
-                    this.addAlert({type:'success',subtext:res,text:''})
+        if (!success) {
+            let message: string | false = errorMessage;
+            if (api.onError) { message = api.onError(response, message) }
+            if (typeof message === 'string') {
+                this.currentError = message
+                if(!isRetry){
+                    let text: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
+                    this.addAlert({ type: 'error', text, subtext: message });
                 }
             }
         }
-        else { this.showErrorMessage({ errorMessage, api,response }); return result }
-        if (success && api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
+        else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
         return result;
     };
+    retries = async <T>(api:AA_api<T>,times:number[]): Promise<T | false> => {
+        const retries = [0, ...times] as number[]
+        return await new Promise(async (resolve) => {
+            for (let i = 0; i < retries.length; i++) {
+                await Stall(retries[i])
+                if (i < retries.length - 1) {
+                    const res = await this.requestFn<T>(api,true)
+                    if (res !== false) { return resolve(res); break; }
+                    else {
+                        console.log(`aio-apis => retries[${i}] failed`)
+                        console.log(`api error is : ${this.currentError}`)
+                    }
+                }
+                else { 
+                    const res = await this.requestFn<T>(api)
+                    resolve(res) 
+                }
+            }
+        })
+    }
+    request = async <T>(api: AA_api<T>): Promise<T | false> => {
+        if (api.retries) {return await this.retries(api,api.retries)}
+        else {return await this.requestFn<T>(api)}
+    }
 }
 export type I_mock = {
-    url: string,
-    delay: number,
+    url: string,delay: number,
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     result: ((body: any) => { status: number, data: any })
 }
@@ -202,167 +207,44 @@ type I_callApi = (cachedApi: I_cachedApi<any>) => Promise<any>
 class Cache {
     private storage: Storage;
     private callApi: I_callApi;
-    private intervals: { [key: string]: { repeatTime: number, value: any } | undefined } = {};
     constructor(storage: Storage, callApi: I_callApi) {
         this.storage = storage;
         this.callApi = callApi;
     }
-    private getKey = (cachedApi: I_cachedApi<any>) => `${cachedApi.api.name}-${(cachedApi.api.cache as any).name}`
-    private detectIntervalChange = (cachedApi: I_cachedApi<any>) => {
-        const interval = cachedApi.api.cache?.interval;
-        const existIntervalObject = (this.intervals[this.getKey(cachedApi)] || {}) as any
-        return interval !== existIntervalObject.repeatTime
-    }
-    private SetInterval = (key: string):boolean => {
-        const cachedApi = this.getCachedApi(key);
-        if (!cachedApi) { return false }
-        const { api } = cachedApi, { cache } = api;
-        if (!cache) { return false }
-        if (!this.detectIntervalChange(cachedApi)) { return false}
-        const { interval = 0 } = cache
-        if (interval < 1000) { return false}
-        this.ClearInterval(key)
-        this.intervals[key] = this.intervals[key] || { repeatTime: interval, value: undefined }
-        this.intervals[key].value = setInterval(async () => {
-            console.log(`AIOApis => call api by api.name='${cachedApi.api.name}' and cache.name='${cachedApi.api?.cache?.name}' by interval (${interval} miliseconds)`)
-            this.updateCacheByKey(key)
-        }, interval)
-        return true
-    }
-    private ClearInterval = (key: string) => {
-        clearInterval((this.intervals[key] || {}).value);
-        this.intervals[key] = undefined
-    }
-    private getCachedApi = (key: string): I_cachedApi<any> | undefined => {
-        const res = this.storage.load(key)
-        return res
-    }
     private updateCacheByKey = async (key: string) => {
-        if (this.storage.isExpired(key)) { this.removeByKey(key); return; }
-        const cachedApi = this.getCachedApi(key); if (!cachedApi) { return }
+        if (this.storage.isExpired(key)) { this.storage.remove(key); return; }
+        const cachedApi = this.storage.load(key); if (!cachedApi) { return }
         const { api } = cachedApi; if (!api.cache) { return }
-        debugger
         const value = await this.callApi(cachedApi);
         const newCachedApi: I_cachedApi<any> = { api: cachedApi.api, value }
         this.setCache(api.name, api.cache.name as string, newCachedApi)
     }
     getCachedValue = (apiName: string, cacheName: string): any => {
-        let cachedApi = this.getCachedApi(`${apiName}-${cacheName}`);
+        const key = `${apiName}-${cacheName}`;
+        let cachedApi = this.storage.load(key);
         if (cachedApi !== undefined) { return cachedApi.value }
     }
     fetchCachedValue = (apiName: string, cacheName: string) => this.updateCacheByKey(`${apiName}-${cacheName}`)
-    setCache = (apiName: string, cacheName: string,cachedApi: I_cachedApi<any>) => {
+    setCache = (apiName: string, cacheName: string, cachedApi: I_cachedApi<any>) => {
         const key = `${apiName}-${cacheName}`;
         const expiredIn = cachedApi.api.cache?.expiredIn;
         this.storage.save(key, cachedApi, expiredIn);
-        if (!this.SetInterval(key)) { this.ClearInterval(key) }
-    }
-    private editCache = (apiName: string, cacheName: string,prop:string,value:any)=>{
-        const key = `${apiName}-${cacheName}`;
-        const cachedApi = this.getCachedApi(key)
-        if(!cachedApi){return}
-        const {api} = cachedApi
-        const {cache} = api
-        const newCache = {...cache,[prop]:value}
-        const newCachedApi: I_cachedApi<any> = { ...cachedApi, api:{...api,cache:newCache} } as I_cachedApi<any>;
-        this.setCache(apiName,cacheName,newCachedApi)
-    }
-    editCachedExpiredIn = (apiName: string, cacheName: string, expiredIn: number) => {
-        this.editCache(apiName,cacheName,'expiredIn',expiredIn)
-    }
-    editCachedInterval = (apiName: string, cacheName: string, interval: number) => {
-        this.editCache(apiName,cacheName,'interval',interval)
-    }
-    private removeByKey = (key: string) => {
-        clearInterval((this.intervals[key] || {}).value);
-        this.storage.remove(key)
     }
     removeCache = (apiName: string, cacheName?: string) => {
-        if (cacheName) { this.removeByKey(`${apiName}-${cacheName}`) }
+        if (cacheName) { this.storage.remove(`${apiName}-${cacheName}`) }
         else {
             const keys = this.storage.getKeys()
             for (let key of keys) {
                 if (key.indexOf(`${apiName}-`) === 0) {
-                    this.removeByKey(key)
+                    this.storage.remove(key)
                 }
             }
         }
     }
 }
-
-type I_storage_model = { [key: string]: { value: any, saveTime: number, expiredIn: number } }
-export class Storage {
-    private model: I_storage_model; id: string;
-    constructor(id: string) { this.model = {}; this.id = id; this.init() }
-    init = () => {
-        let storage: any = localStorage.getItem('storageClass' + this.id);
-        this.setModel(storage === undefined || storage === null ? {} : JSON.parse(storage))
-    }
-    copy = (v: any) => JSON.parse(JSON.stringify(v))
-    setModel = (model: I_storage_model): I_storage_model => {
-        this.model = model; localStorage.setItem('storageClass' + this.id, JSON.stringify(model)); return this.copy(model)
-    }
-    getNow = () => new Date().getTime();
-    save = (field: string, value: any, expiredIn?: number): I_storage_model => {
-        if (value === undefined) { return this.copy(this.model) }
-        const newModel = { ...this.model }, now = this.getNow();
-        newModel[field] = { value, saveTime: now, expiredIn: Infinity }
-        if (expiredIn) { newModel[field].expiredIn = expiredIn }
-        return this.setModel(newModel);
-    }
-    remove = (field: string): I_storage_model => {
-        const newModel: I_storage_model = {}
-        for (let prop in this.model) { if (prop !== field) { newModel[prop] = this.model[prop] } }
-        return this.setModel(newModel)
-    }
-    removeKeyFromObject = (obj: { [key: string]: any }, key: string) => {
-        const newObj: { [key: string]: any } = {};
-        for (let prop in obj) { if (prop !== key) { newObj[prop] = obj[prop] } }
-        return newObj
-    }
-    isExpired = (field: string): boolean => {
-        if (!this.model[field]) { return true }
-        return this.model[field].expiredIn < this.getNow()
-    }
-    load = (field: string, def?: any, expiredIn?: number) => {
-        const obj = this.model[field]
-        if (!obj) { this.save(field, def, expiredIn); return def }
-        const isExpired = this.isExpired(field)
-        if (isExpired) { this.save(field, def, expiredIn); return def }
-        else { return obj.value }
-    }
-    clear = (): I_storage_model => this.setModel({})
-    download = (file: any, name: string) => {
-        if (!name || name === null) { return }
-        let text = JSON.stringify(file)
-        let element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', name);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-    export = () => {
-        let name = window.prompt('Please Inter File Name');
-        if (name === null || !name) { return; }
-        this.download({ model: this.model }, name)
-    }
-    read = async (file: File): Promise<any> => {
-        return new Promise((resolve, reject) => {
-            const fr = new FileReader();
-            fr.onload = () => {
-                try { const result = JSON.parse(fr.result as string); resolve(result); }
-                catch (error: any) { reject(new Error('Error parsing JSON: ' + error.message)); }
-            };
-            fr.onerror = () => reject(new Error('Error reading file.'));
-            fr.readAsText(file);
-        });
-    }
-    import = async (file: any): Promise<I_storage_model> => {
-        const model = await this.read(file)
-        if (model === undefined) { return this.model; }
-        return this.setModel(model);
-    }
-    getKeys = (): string[] => Object.keys(this.model)
+export const useInstance = <T extends Record<string, any>>(inst:T):T=>{
+    let res = useRef<any>(null)
+    if(res.current === null){res.current = inst}
+    return res.current
 }
+
