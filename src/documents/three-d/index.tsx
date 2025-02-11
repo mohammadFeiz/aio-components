@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import DOC from "../../resuse-components/Doc/index";
 import './three-d-1.css';
+import './theme.css';
 import { AITabs, JoyStick, useForm } from "../../npm/aio-input";
 import { Code } from "../../npm/aio-components";
 const ThreeD: FC<{ goToHome: () => void, name: string }> = ({ name, goToHome }) => {
@@ -9,6 +10,7 @@ const ThreeD: FC<{ goToHome: () => void, name: string }> = ({ name, goToHome }) 
             name={name} goToHome={goToHome}
             items={[
                 { text: 'sample 1', value: 's1', render: () => <S1 /> },
+                { text: 'sample 2', value: 's2', render: () => <S2 /> },
             ]}
         />
     )
@@ -214,5 +216,26 @@ box-shadow: ${si ? 'inset ' : ''}${-sp[0]}px ${-sp[1]}px ${ls}px rgba(255, 255, 
 ${si ? 'inset ' : ''}${sp[0]}px ${sp[1]}px ${ds}px rgba(0, 0, 0, ${dc});
 }
         `
+    )
+}
+
+
+
+const S2:FC = ()=>{
+    return (
+        <div className="example spanel-container gap-12- flex-col-">
+            <div className="spanel-double">
+                my text
+            </div>
+            <div className="spanel-double1">
+                <div className="z-10-">my text</div>
+            </div>
+            <div className="spanel-out">
+                my text
+            </div>
+            <div className="spanel-in">
+                my text
+            </div>
+        </div>
     )
 }
