@@ -438,6 +438,7 @@
 .aio-input-check-round .aio-input-check-in{
     border-radius:100%;
 }
+
 .aio-input-multiselect-container {
     display: flex;
     flex-direction: column;
@@ -2466,6 +2467,7 @@ pre[class*="language-"]>code[class*="language-"] {
     display: flex;
     flex-direction: column;
     width: 100%;
+    position: relative;
 }
 .ai-form-html{
     display:flex;
@@ -2473,7 +2475,6 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-form-input-header {
     display: flex;
     align-items: center;
-    min-height: 30px;
     width: 100%;
 }
 
@@ -2497,10 +2498,11 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-form-v {
     display: flex;
     flex-direction: column;
-    flex: 1;
     gap: 6px;
 }
-
+.ai-form-required{
+    color:red;
+}
 .ai-form-scroll-v {
     overflow-y: auto;
 }

@@ -73,6 +73,7 @@ export declare const FilterTree: (p: {
 export declare function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMouseUp', callback: (e: any) => void): {
     [x: string]: (e: any) => void;
 };
+export declare function classListToString(classes: any[]): string;
 export declare function AddToAttrs(attrs: any, p: any): any;
 export declare function GetCities(): {
     "\u0622\u0630\u0631\u0628\u0627\u06CC\u062C\u0627\u0646 \u0634\u0631\u0642\u06CC": string[];

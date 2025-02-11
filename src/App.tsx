@@ -27,6 +27,7 @@ import AIOApis from './documents/aio-apis';
 import ThreeD from "./documents/three-d/index.tsx";
 import DOC_UseForm from "./documents/use-form/index.tsx";
 import DOC_Sidenav from "./documents/sidenav/index.tsx";
+import Freelancer from './documents/freelancer';
 import Grid from './documents/data-grid'
 export default function AIOComponents(){
   const navigate = useNavigate()
@@ -55,6 +56,7 @@ export default function AIOComponents(){
     'use-form':DOC_UseForm,
     'sidenav':DOC_Sidenav,
     'Grid':Grid,
+    'Freelancer':Freelancer,
     'tree-search':DOC_TreeSearch
   })
   function goToHome(){

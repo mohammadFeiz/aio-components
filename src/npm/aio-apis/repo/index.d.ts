@@ -1,3 +1,4 @@
+import { Storage } from 'aio-utils';
 export type AA_api<T> = {
     description: string;
     name: string;
@@ -8,7 +9,6 @@ export type AA_api<T> = {
     cache?: {
         name: string;
         expiredIn?: number;
-        interval?: number;
     };
     mock?: {
         delay: number;
@@ -18,18 +18,9 @@ export type AA_api<T> = {
     token?: string;
     loader?: string;
     loadingParent?: string;
-    getResult: (data: any) => T;
-    onError?: (error: string) => void;
-    onSuccess?: (result: T) => void;
-    onCatch: string;
-    successMessage?: (p: {
-        response: any;
-        result: T;
-    }) => string;
-    errorMessage?: (p: {
-        response: any;
-        message: string;
-    }) => string | false;
+    onSuccess: (data: any) => T;
+    onError?: (response: any, message: string) => string | false;
+    retries?: number[];
 };
 type I_cachedApi<T> = {
     api: AA_api<T>;
@@ -40,18 +31,15 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        onCatch: {
-            [key: string]: (err: any, api: AA_api<any>) => string;
-        };
+        onCatch: (err: any, api: AA_api<any>) => string;
         headers?: any;
         lang?: 'en' | 'fa';
     };
     token: string;
+    currentError: string;
     private cache;
     getCachedValue: Cache["getCachedValue"];
     fetchCachedValue: Cache["fetchCachedValue"];
-    editCachedExpiredIn: Cache["editCachedExpiredIn"];
-    editCachedInterval: Cache["editCachedInterval"];
     removeCache: Cache["removeCache"];
     apisThatAreInLoadingTime: {
         [apiName: string]: boolean | undefined;
@@ -60,9 +48,7 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        onCatch: {
-            [key: string]: (err: any, api: AA_api<any>) => string;
-        };
+        onCatch: (err: any, api: AA_api<any>) => string;
         headers?: any;
         lang?: 'en' | 'fa';
     });
@@ -73,15 +59,16 @@ export default class AIOApis {
         subtext?: string;
         time?: number;
     }) => void;
-    getUrlQueryParam: (params?: string | {
+    getUrlQueryParam: (params?: {
         [key: string]: string;
-    }) => string;
+    } | string) => string;
     private responseToResult;
-    private showErrorMessage;
     private loading;
     private handleMock;
     callCache: (api: AA_api<any>) => Promise<any>;
-    request: <T>(api: AA_api<T>, isCalledByCache?: boolean) => Promise<false | T>;
+    requestFn: <T>(api: AA_api<T>, isRetry?: boolean) => Promise<T | false>;
+    retries: <T>(api: AA_api<T>, times: number[]) => Promise<T | false>;
+    request: <T>(api: AA_api<T>) => Promise<T | false>;
 }
 export type I_mock = {
     url: string;
@@ -96,52 +83,12 @@ type I_callApi = (cachedApi: I_cachedApi<any>) => Promise<any>;
 declare class Cache {
     private storage;
     private callApi;
-    private intervals;
     constructor(storage: Storage, callApi: I_callApi);
-    private getKey;
-    private detectIntervalChange;
-    private SetInterval;
-    private ClearInterval;
-    private getCachedApi;
     private updateCacheByKey;
     getCachedValue: (apiName: string, cacheName: string) => any;
     fetchCachedValue: (apiName: string, cacheName: string) => Promise<void>;
     setCache: (apiName: string, cacheName: string, cachedApi: I_cachedApi<any>) => void;
-    private editCache;
-    editCachedExpiredIn: (apiName: string, cacheName: string, expiredIn: number) => void;
-    editCachedInterval: (apiName: string, cacheName: string, interval: number) => void;
-    private removeByKey;
     removeCache: (apiName: string, cacheName?: string) => void;
 }
-type I_storage_model = {
-    [key: string]: {
-        value: any;
-        saveTime: number;
-        expiredIn: number;
-    };
-};
-export declare class Storage {
-    private model;
-    id: string;
-    constructor(id: string);
-    init: () => void;
-    copy: (v: any) => any;
-    setModel: (model: I_storage_model) => I_storage_model;
-    getNow: () => number;
-    save: (field: string, value: any, expiredIn?: number) => I_storage_model;
-    remove: (field: string) => I_storage_model;
-    removeKeyFromObject: (obj: {
-        [key: string]: any;
-    }, key: string) => {
-        [key: string]: any;
-    };
-    isExpired: (field: string) => boolean;
-    load: (field: string, def?: any, expiredIn?: number) => any;
-    clear: () => I_storage_model;
-    download: (file: any, name: string) => void;
-    export: () => void;
-    read: (file: File) => Promise<any>;
-    import: (file: any) => Promise<I_storage_model>;
-    getKeys: () => string[];
-}
+export declare const useInstance: <T extends Record<string, any>>(inst: T) => T;
 export {};

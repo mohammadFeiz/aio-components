@@ -1,0 +1,35 @@
+.boxit-freelancer{
+    color:#000;
+}
+.boxit-freelancer .aio-input{
+    border-radius:8px;
+}
+.boxit-freelancer .aio-input-text,
+.boxit-freelancer .aio-input-number,
+.boxit-freelancer .aio-input-date,
+.boxit-freelancer .aio-input-password
+{
+    border-radius:8px;
+    border:1px solid #999;
+}
+.boxit-freelancer .aio-input-main-bg{
+    background:#EF5644;
+}
+.boxit-freelancer .aio-input-main-color{
+    color:#EF5644;
+}
+.boxit-freelancer .ai-form-input-label{
+    background:#fff;
+    height:12px !important;
+    position: absolute;
+    z-index:10;
+    top:-10px;
+    width: fit-content;
+    padding:0 6px;
+    right:12px;
+    color:#666;
+    font-size:12px;
+}
+.boxit-freelancer .aio-input-tag{
+    border-radius:24px;
+}
