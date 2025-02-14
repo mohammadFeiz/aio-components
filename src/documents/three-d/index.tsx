@@ -3,7 +3,7 @@ import DOC from "../../resuse-components/Doc/index";
 import './three-d-1.css';
 import './theme.css';
 import { AITabs, JoyStick, useForm } from "../../npm/aio-input";
-import { Code } from "../../npm/aio-components";
+import { Code } from "../../npm/aio-component-utils";
 const ThreeD: FC<{ goToHome: () => void, name: string }> = ({ name, goToHome }) => {
     return (
         <DOC

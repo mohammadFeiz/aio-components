@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import DOC from '../../resuse-components/Doc/index.tsx';
-import {Code,Flip} from './../../npm/aio-components';
+import {Code,Flip} from './../../npm/aio-component-utils';
 export default function DOC_Flip(props:any) {
     return (
         <DOC

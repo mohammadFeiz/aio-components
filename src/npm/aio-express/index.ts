@@ -31,7 +31,8 @@ export type I_api = {
     method: 'post' | 'get' | 'put' | 'delete' | 'patch',
     body?: string,
     returnType: string,
-    configStr?: string,
+    apiConfigStr?: string,
+    onSuccessConfigStr?:string,
     description: string,
     queryString?: string,
     checkAccess?: (p: { reqUser: any, body: any, queryParam: I_queryParam }) => Promise<void | string | { [key: string]: any }>
@@ -884,7 +885,7 @@ export class AIOSchema {
         for (let name in entities) {
             const { apis } = entities[name];
             for (let api of apis) {
-                const { method, configStr = '', description, queryString, returnType } = api;
+                const { method, apiConfigStr = '', description, queryString, returnType,onSuccessConfigStr = '' } = api;
                 const path = api.path[0] !== '/' ? '/' + api.path : api.path;
                 const apiName = name + path.replace(/\//g, '_')
                 const bodyParamString = this.bodyParamToString(api);
@@ -893,9 +894,13 @@ export class AIOSchema {
     ${apiName} = async (${bodyParamString.result})=>{
         ${this.getUrlString(name, path, queryString)}
         return await this.request<${returnType}>({
-            name:'${apiName}',getResult:(response)=>response.data.value,onCatch:'main',
+            name:'${apiName}',
+            onSuccess:(response)=>{
+                ${onSuccessConfigStr}
+                return response.data.value
+            },
             url,description:"${description}",method:"${method}",${!api.body ? '' : `body,`}\n
-            ${configStr}
+            ${apiConfigStr}
         })
     }
                 `
@@ -956,12 +961,10 @@ export default class APIS extends AIOApis {
             token: p.token,
             id: '${appName}',
             lang: 'fa',
-            onCatch: {
-                main:(response) => {
-                    if(response.status === 401 || response.data?.status === 401){p.logout()}
-                    return response.response.data.message
-                }
-            }        
+            onCatch: (response) => {
+                if(response.status === 401 || response.data?.status === 401){p.logout()}
+                return response.response.data.message
+            }
         });
         this.base_url = p.base_url;
     }

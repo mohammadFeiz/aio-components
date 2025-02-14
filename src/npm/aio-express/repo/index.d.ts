@@ -71,7 +71,8 @@ export type I_api = {
     method: 'post' | 'get' | 'put' | 'delete' | 'patch';
     body?: string;
     returnType: string;
-    configStr?: string;
+    apiConfigStr?: string;
+    onSuccessConfigStr?: string;
     description: string;
     queryString?: string;
     checkAccess?: (p: {

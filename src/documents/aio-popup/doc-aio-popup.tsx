@@ -1,7 +1,7 @@
 import { Component, createRef, FC, useRef, useState } from 'react';
 
 import DOC from '../../resuse-components/Doc/index.tsx';
-import { Code } from './../../npm/aio-components';
+import { Code } from './../../npm/aio-component-utils';
 import { AP_modal, AP_snackebar } from '../../npm/aio-popup/index.tsx';
 import content from './content.js';
 import { Icon } from '@mdi/react';
@@ -574,12 +574,11 @@ function Prompt() {
     function addPrompt() {
         popup.addPrompt({
             title: 'Confirm text',
-            onSubmit: async () => {
-                alert('yes')
+            onSubmit: async (value) => {
+                alert(value)
                 return true
             },
             onCansel: async () => {
-                alert('no')
                 return true
             },
         })

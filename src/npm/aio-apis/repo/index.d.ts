@@ -55,20 +55,20 @@ export default class AIOApis {
     setToken: (token: string) => void;
     addAlert: (p: {
         type: 'success' | 'error' | 'warning' | 'info';
+        title?: string;
         text: string;
-        subtext?: string;
         time?: number;
     }) => void;
-    getUrlQueryParam: (params?: {
+    getUrlQueryParam: (params?: string | {
         [key: string]: string;
-    } | string) => string;
+    }) => string;
     private responseToResult;
     private loading;
     private handleMock;
     callCache: (api: AA_api<any>) => Promise<any>;
-    requestFn: <T>(api: AA_api<T>, isRetry?: boolean) => Promise<T | false>;
-    retries: <T>(api: AA_api<T>, times: number[]) => Promise<T | false>;
-    request: <T>(api: AA_api<T>) => Promise<T | false>;
+    requestFn: <T>(api: AA_api<T>, isRetry?: boolean) => Promise<false | T>;
+    retries: <T>(api: AA_api<T>, times: number[]) => Promise<false | T>;
+    request: <T>(api: AA_api<T>) => Promise<false | T>;
 }
 export type I_mock = {
     url: string;

@@ -1,2 +1,4086 @@
-var __awaiter=this&&this.__awaiter||function(e,t,n,i){function o(e){return e instanceof n?e:new n(function(t){t(e)})}return new(n||(n=Promise))(function(n,r){function a(e){try{s(i.next(e))}catch(t){r(t)}}function l(e){try{s(i.throw(e))}catch(t){r(t)}}function s(e){e.done?n(e.value):o(e.value).then(a,l)}s((i=i.apply(e,t||[])).next())})};import{createElement as _createElement}from"react";import{jsx as _jsx,jsxs as _jsxs,Fragment as _Fragment}from"react/jsx-runtime";import{createRef,useContext,createContext,useState,useEffect,useRef,Fragment}from"react";import usePopup from"aio-popup";import{Get2Digit,GetClient,EventHandler,DragClass,AddToAttrs,Storage,ExportToExcel,svgArc,HasClass,FilePreview,DownloadFile,GetPrecisionCount,GetArray,keyboard_filter,setValueByField,getValueByField,Swip,getLeftAndTopByCenterAngleLength,ValidateIrMobile,IsValidEmail,IsValidIrNationalCode}from"aio-utils";import AIODate from"aio-date";import{Indent,GetSvg}from"aio-component-utils";import $ from"jquery";import"./index.css";let AICTX=createContext({}),AIOInput=e=>{let t=e.type,n=e.round,i=e.value;if("text"===t?"string"!=typeof i&&(i=""):"number"===t&&"number"!=typeof i&&(i=void 0),"spinner"===t)t="range",n&&"number"==typeof n||(n=1);else if("slider"===t)t="range",n=0;else if("range"===t)return null;let o=Object.assign(Object.assign({},e),{type:t,round:n,value:i});return"text"===t&&o.getOptions?_jsx(SuggestionInput,Object.assign({},o)):_jsx(AIOINPUT,Object.assign({},o))};export default AIOInput;let SuggestionInput=e=>{let{getOptions:t,option:n={},onChange:i}=e,[o,r]=useState([]),[a,l]=useState("");function s(e){return __awaiter(this,void 0,void 0,function*(){if(l(e),!e){r([]);return}let n=t?yield t(e):[];r(n)})}return _jsx(AIOInput,Object.assign({},e,{value:a,options:o,option:Object.assign(Object.assign({},n),{onClick(e,t){let o=GetOptionProps({optionProp:n,key:"text",optionDetails:t,optionOrg:e});s(o),i&&i(o,e)}}),getOptions:void 0,onChange(e){s(e),i&&i(e)}}))};function AIOINPUT(e){let[t]=useState(getTypes(e)),[n]=useState(new AIODate),{type:i,value:o,onChange:r,attrs:a={},rtl:l}=e=getDefaultProps(e,t),[s]=useState(createRef()),[u]=useState("aiobutton"+Math.round(1e7*Math.random())),c=usePopup({rtl:e.rtl}),[d,p]=useState(!1);function f(e){p(void 0===e?!d:e)}let[g]=useState(new DragClass({callback(t,n){if("function"==typeof e.onSwap){let{fromIndex:i}=t,{options:o,toIndex:r}=n,a=g.reOrder(o,i,r);e.onSwap(a,o[i],o[r])}}}));function h(n){let o="aio-input-popover";o+=` aio-input-popover-${l?"rtl":"ltr"}`,t.hasOption&&(o+=" aio-input-dropdown"),"time"===e.type&&(o+=" aio-input-time-popover");let r=e.popover||{},a=null;return a=r.body?r.body:"date"===i?_jsx(Calendar,{onClose:c.removeModal}):"time"===i?_jsx(TimePopover,{onClose:c.removeModal}):_jsx(Options,{}),Object.assign(Object.assign({},e.popover||{}),{position:r.position||"popover",fitHorizontal:-1!==["text","number","textarea"].indexOf(i)||"select"===i&&!!e.multiple||!!r.fitHorizontal,onClose:()=>m(),body:a,getTarget:()=>$(n.current),setAttrs(e){let t=(r.setAttrs||(()=>({})))(e);if("modal"===e)return AddToAttrs(t,{className:o})}})}function m(){c.removeModal(),setTimeout(()=>$(s.current).focus(),0)}function v(n,l){if("checkbox"===i)r&&r(!o,n);else if(t.isDropdown){if(c.getModals().length)return;c.addModal(h(l))}else"function"==typeof e.onClick?e.onClick(n):a.onClick&&a.onClick()}function y(n){let{attrs:a={},onClick:l,close:s}=n;if(l)l(n.details);else if(a.onClick)a.onClick(n);else if(r){if(t.isInput);else if("tree"===i);else if("file"===i);else if(t.isMultiple){let{multiple:u}=e,c;for(c=-1===o.indexOf(n.value)?o.concat(n.value):o.filter(e=>e!==n.value);"number"==typeof u&&c.length>u;)c=c.slice(1,c.length);r(c,n.details)}else n.value!==e.value?r(n.value,n.details):!0===e.deSelect?r(void 0,n.details):"function"==typeof e.deSelect&&e.deSelect()}s&&m()}function _(){let n=[];if("date"===i){if(!e.multiple)return{optionsList:[],optionsDic:{}};n=[...e.value]}else n="function"==typeof e.options?e.options():e.options?e.options:[];return GetOptions({rootProps:e,types:t,options:n,optionProp:e.option||{}})}function x(){return{options:_(),popup:c,rootProps:Object.assign(Object.assign({},e),{value:o}),datauniqid:u,touch:"ontouchstart"in document.documentElement,DragOptions:g,click:v,optionClick:y,types:t,showPassword:d,setShowPassword:f,DATE:n}}function b(){let{round:t,vertical:n}=e;return t?"aio-input-range-round":n?"aio-input-range-vertical":"aio-input-range-horizontal"}let C={spinner:()=>null,slider:()=>null,acardion:()=>_jsx(Acardion,{}),tree:()=>_jsx(Tree,{}),tags:()=>_jsx(Layout,{properties:{text:_jsx(Tags,{})}}),list:()=>_jsx(List,{}),file:()=>_jsx(File,{}),select:()=>_jsx(Select,{}),table:()=>_jsx(Table,{}),checkbox:()=>_jsx(Layout,{}),button:()=>_jsx(Layout,{}),range:()=>_jsx(Layout,{properties:{text:_jsx(Range,{}),className:b()}}),radio:()=>_jsx(Layout,{properties:{text:_jsx(Options,{})}}),tabs:()=>_jsx(Layout,{properties:{text:_jsx(Options,{})}}),buttons:()=>_jsx(Layout,{properties:{text:_jsx(Options,{})}}),date:()=>_jsx(DateInput,{}),time:()=>_jsx(Layout,{properties:{text:getTimeText(e)}}),image:()=>_jsx(Layout,{properties:{text:_jsx(Image,{})}}),text:()=>_jsx(Layout,{properties:{text:_jsx(Input,{})}}),password:()=>_jsx(Layout,{properties:{text:_jsx(Input,{})}}),textarea:()=>_jsx(Layout,{properties:{text:_jsx(Input,{})}}),number:()=>_jsx(Layout,{properties:{text:_jsx(Input,{})}}),color:()=>_jsx(Layout,{properties:{text:_jsx(Input,{})}})};return i&&C[i]?_jsxs(AICTX.Provider,{value:x(),children:[C[i](),c.render()]},u):null}function TimePopover(e){let{DATE:t,rootProps:n}=useContext(AICTX),{jalali:i,onChange:o,size:r=12}=n,{onClose:a}=e,[l,s]=useState(getTimeByUnit(n)),[u]=useState(l.year?l.year-10:void 0),[c]=useState(l.year?l.year+10:void 0);function d(e){s(Object.assign(Object.assign({},l),e))}function p(e){return i?({year:"سال",month:"ماه",day:"روز",hour:"ساعت",minute:"دقیقه",second:"ثانیه",Submit:"ثبت",Now:"اکنون"})[e]:e}function f(e){var i,o,r;let{year:a,month:s,day:p}=l;if("year"===e&&u&&c)return GetArray(c-u+1,e=>({text:e+u,value:e+u}),null===(i=n.timeStep)||void 0===i?void 0:i.year);if("day"===e&&p){let f=a&&s?t.getMonthDaysLength([a,s]):31;return p>f&&d({day:1}),GetArray(f,e=>({text:e+1,value:e+1}),null===(o=n.timeStep)||void 0===o?void 0:o.day)}return"month"===e?GetArray(12,e=>({text:e+1,value:e+1}),null===(r=n.timeStep)||void 0===r?void 0:r.month):GetArray("hour"===e?24:60,e=>({text:e,value:e}),n.timeStep?n.timeStep[e]:void 0)}function g(e){if("number"!=typeof l[e])return null;let t=f(e),n={type:"list",value:l[e],options:t,size:2.5*r,onChange:t=>d({[e]:t})};return _jsxs("div",{className:"aio-input-time-popover-item",children:[_jsx("div",{className:"aio-input-time-popover-item-title",children:p(e)}),_jsx(AIOInput,Object.assign({},n)),_jsx("div",{className:"aio-input-time-popover-highlight"})]})}function h(e){return e}function m(){o&&o(h(l)),a()}function $(){s(getTimeByUnit(n,!0))}return _jsxs("div",{className:"aio-input-time-popover-content aio-input-time-theme-color aio-input-time-theme-bg",style:{fontSize:r},children:[_jsxs("div",{className:"aio-input-time-popover-body",children:[g("year")," ",g("month")," ",g("day")," ",g("hour")," ",g("minute")," ",g("second")]}),_jsxs("div",{className:"aio-input-time-popover-footer",children:[_jsx("button",{onClick:m,children:p("Submit")}),!1!==n.now&&_jsx("button",{onClick:()=>$(),children:p("Now")})]})]})}function Image(){let{rootProps:e,popup:t}=useContext(AICTX),{value:n,attrs:i,onChange:o,disabled:r,placeholder:a,preview:l,deSelect:s,imageAttrs:u={}}=e,[c,d]=useState(),p=createRef();function f(e,t){try{let n=new FileReader;n.onload=function(){c!==n.result&&(d(n.result),t&&t(n.result))},n.readAsDataURL(e)}catch(i){}}function g(e){e.stopPropagation(),e.preventDefault(),h()}function h(){t.addModal({position:"center",header:{title:"",onClose:()=>t.removeModal()},body:_jsx("div",{className:"aio-input-image-preview-popup",children:_jsx("img",{src:$(p.current).attr("src"),alt:a})})})}useEffect(()=>{n&&null!==n?"object"==typeof n?f(n):"string"==typeof n&&c!==n&&d(n):c!==n&&d("")});let m=c?_jsxs(_Fragment,{children:[_jsx("img",Object.assign({ref:p,src:c,alt:a,style:{objectFit:"contain",cursor:o?void 0:"default"},onClick:o?void 0:g,height:"100%"},u)),!!s&&_jsx("div",{onClick(e){e.stopPropagation(),e.preventDefault(),"function"==typeof s?s():o&&o("")},className:"aio-input-image-remove",children:I("mdiClose",1)}),l&&!!o&&_jsx("div",{onClick:e=>g(e),className:"aio-input-image-preview",children:I("mdiImage",1)}),t.render()]}):_jsx("span",Object.assign({},i,{className:"aio-input-image-placeholder",children:a||"placeholder"}));if(!o)return m;let v={disabled:r,justify:!0,text:m,attrs:{style:{width:"100%",height:"100%",padding:0}},onChange:e=>f(e,e=>{o&&o(e)})};return _jsx(AIFile,Object.assign({},v))}function File(){return _jsxs("div",{className:"aio-input-file-container",children:[_jsx(Layout,{}),_jsx(FileItems,{})]})}function InputFile(){let{rootProps:e,types:t}=useContext(AICTX),{value:n=[],onChange:i=()=>{},disabled:o,multiple:r,inputAttrs:a}=e;function l(e){let o=e.target.files,a;if(t.isMultiple){let l=(a=[...n]).map(({name:e})=>e);for(let s=0;s<o.length;s++){let u=o[s];-1===l.indexOf(u.name)&&a.push({name:u.name,size:u.size,file:u})}if("number"==typeof r)for(;a.length>r;)a=a.slice(1,a.length)}else a=o.length?o[0]:void 0;i(a)}let s;return _jsx("input",Object.assign({},Object.assign({disabled:!0===o,type:"file",style:{display:"none"},multiple:t.isMultiple,onChange:e=>l(e)},a)))}function FileItems(){let{rootProps:e}=useContext(AICTX),{value:t,rtl:n}=e,i=[];if(Array.isArray(t))i=t;else{if(!t)return null;i=[t]}if(!i.length)return null;let o=i.map((e,t)=>_jsx(FileItem,{file:e,index:t},t));return _jsx("div",{className:"aio-input-files",style:{direction:n?"rtl":"ltr"},children:o})}let FileItem=e=>{let{rootProps:t,types:n}=useContext(AICTX),{onChange:i=()=>{},value:o=[]}=t,{file:r,index:a}=e;function l(e){let t=e.name||"untitle",n=e.size||0,i=20;try{let o,r,a=t.lastIndexOf("."),l=t.slice(0,a),s=t.slice(a+1,t.length);o=l.length>i?l.slice(0,Math.floor(i/2))+"..."+l.slice(l.length-Math.floor(i/2),l.length)+"."+s:t;let u=n;if(!u)return{minName:o,sizeString:!1};let c=u/1073741824,d=u/1048576,p=u/1024;return r=c>=1?c.toFixed(2)+" GB":d>=1?d.toFixed(2)+" MB":p>=1?p.toFixed(2)+" KB":u+" byte",{minName:o,sizeString:r}}catch(f){return{minName:"untitle",sizeString:!1}}}function s(e,n){return __awaiter(this,void 0,void 0,function*(){if(e.stopPropagation(),e.preventDefault(),"function"==typeof t.onRemove){let r=yield t.onRemove({row:o[n],rowIndex:n});if(!1===r)return}let a=[];for(let l=0;l<o.length;l++)l!==n&&a.push(o[l]);i(a)})}function u(){DownloadFile(r)}function c(){let e;return(t.preview&&(e=FilePreview(r,{onClick:()=>u()})),e&&null!==e)?e:_jsx("div",{className:"aio-input-file-item-icon",onClick:()=>u(),children:I("mdiAttachment",.8)})}let{minName:d,sizeString:p}=l(r),{optionsList:f}=GetOptions({rootProps:t,types:n,options:[{minName:d,sizeString:p,index:a}],optionProp:Object.assign(Object.assign({},t.option),{subtext:()=>p,text:()=>d,before:()=>c(),after:()=>_jsx("div",{className:"aio-input-file-item-icon",onClick:e=>s(e,a),children:I("mdiClose",.7)})})});return _jsx(Layout,{option:f[0]})};function Select(){let{rootProps:e,types:t,options:n}=useContext(AICTX),{value:i,hideTags:o}=e,r=Array.isArray(i)?[...i]:void 0!==i?[i]:[];function a(){if(!r.length)return;let e=n.optionsDic["a"+r[0]];if(e)return e.text}return t.isMultiple?_jsxs("div",{className:"aio-input-multiselect-container",children:[_jsx(Layout,{}),!o&&!!r.length&&_jsx(Tags,{})]}):_jsx(Layout,{properties:{text:e.text||a()}})}function DateInput(){let{rootProps:e,types:t}=useContext(AICTX),{value:n,hideTags:i}=e,o=Array.isArray(n)?[...n]:void 0!==n?[n]:[];function r(){let{value:t,unit:n=Def("date-unit"),text:i,pattern:o,jalali:r,placeholder:a}=e;if(t){i=void 0!==o?o:i;let l=new AIODate,s=l.convertToArray(t),[u,c=1,d=1,p=0]=s;s=[u,c,d,p];let f=l.getSplitter(t),g="";if(i&&null!==i)g=i;else{let h="{}";"month"===n?h=`{year}${f}{month}`:"day"===n?h=`{year}${f}{month}${f}{day}`:"hour"===n&&(h=`{year}${f}{month}${f}{day} - {hour} : 00`),g=l.getDateByPattern(s,h)}return _jsx("div",{style:{direction:"ltr",width:"fit-content"},children:g})}return a||(r?"انتخاب تاریخ":"Select Date")}return t.isMultiple?_jsxs("div",{className:"aio-input-multiselect-container",children:[_jsx(Layout,{properties:{text:e.text||"Select Dates"}}),!i&&!!o.length&&_jsx(Tags,{})]}):_jsx(Layout,{properties:{text:r()}})}let Tags=()=>{let{rootProps:e,options:t}=useContext(AICTX),{value:n=[],rtl:i,disabled:o,onChange:r=()=>{}}=e,a=n.map((n,i)=>{let o=t.optionsDic["a"+n];return void 0===o?null:_jsx(Tag,{onClose:()=>r(e.value.filter(e=>e!==n)),attrs:o.tagAttrs,before:o.tagBefore,after:o.tagAfter,text:o.text,disabled:o.disabled},i)});return a.length?_jsx("div",{className:`aio-input-tags-container aio-input-scroll${i?" rtl":""}${o?" disabled":""}`,children:a}):null},Tag=e=>{let{attrs:t,before:n=I("mdiCircleMedium",.7),after:i,text:o,disabled:r,onClose:a=()=>{}}=e,l=r?void 0:a,s="aio-input-tag",u=AddToAttrs(t,{className:[s+" aio-input-main-bg",r?"disabled":void 0]});return _jsxs("div",Object.assign({},u,{children:[_jsx("div",{className:`${s}-icon`,children:n}),_jsx("div",{className:`${s}-text`,children:o}),void 0!==i&&_jsx("div",{className:`${s}-icon`,children:i}),_jsx("div",{className:`${s}-icon`,onClick:l,children:I("mdiClose",.7)})]}))};function Input(){let{rootProps:e,types:t,showPassword:n,options:i}=useContext(AICTX),{type:o,delay:r=500}=e,{min:a,max:l,swip:s,onChange:u,blurChange:c,maxLength:d=1/0,filter:p=[],disabled:f,placeholder:g,inputAttrs:h,spin:m=!0,justify:v}=e,[y]=useState(createRef()),[_]=useState({atimeout:void 0,btimeout:void 0,clicked:!1}),[x]=useState(`ac${Math.round(1e5*Math.random())}`),[b,C]=useState(e.value||""),k=useRef(b);function N(){"number"===o&&s&&new Swip({speedY:s,reverseY:!0,minY:a,maxY:l,dom:()=>$(y.current),start(){let e=+k.current;return[0,e=isNaN(e)?0:e]},move(e){let{y:t}=e.change||{y:0};void 0!==a&&t<a&&(t=a),void 0!==l&&t>l&&(t=l),T(t,u)}})}function w(){let t=e.value;if("number"===o){if(""===t)return;!isNaN(+t)&&(t=+t,"number"==typeof a&&t<a?t=a:"number"==typeof l&&t>l&&(t=l))}return t}function A(){clearTimeout(_.atimeout),_.atimeout=setTimeout(()=>{let e=w();e!==b&&C(e)},r)}function T(n,i){Array.isArray(p)||(p=[]),t.hasKeyboard&&(n=keyboard_filter(n,{maxLength:d,filter:p,toPersian:!0})),"number"===e.type&&(n=""===n?void 0:+n),C(n),!c&&i&&(clearTimeout(_.btimeout),_.btimeout=setTimeout(()=>i(n),r))}function D(){!1!==e.autoHighlight&&!_.clicked&&(_.clicked=!0,$(y.current).focus().select())}function O(e){_.clicked=!1,c&&e&&e(b)}function P(){let t=Object.assign(Object.assign({},AddToAttrs(h,{className:m?void 0:"no-spin",style:v?{textAlign:"center"}:void 0})),{value:b,type:o,ref:y,disabled:f,placeholder:g,list:e.options?x:void 0,onClick:e=>D(),onChange:u?e=>T(e.target.value,u):void 0,onBlur:()=>O(u)});return"password"===o&&n&&(t=Object.assign(Object.assign({},t),{type:"text",style:Object.assign(Object.assign({},t.style),{textAlign:"center"})})),1===p.length&&"number"===p[0]&&(t.pattern="d*",t.inputMode="numeric"),t}k.current=b,useEffect(()=>{N()},[]),useEffect(()=>{A()},[e.value]);let R=P();return R.onChange?"color"===o?_jsxs("label",{style:{width:"100%",height:"100%",background:b},children:[_jsx("input",Object.assign({},R,{style:{opacity:0},opacity:!0,rgba:!0,cmyk:!0,hsla:!0})),!!i.optionsList.length&&_jsx("datalist",{id:x,children:i.optionsList.map(e=>_jsx("option",{value:e.value}))})]}):"textarea"===o?_jsx("textarea",Object.assign({},R)):_jsx("input",Object.assign({},R)):b}function Options(){let{rootProps:e,types:t,options:n}=useContext(AICTX),[i,o]=useState(""),[r]=useState(createRef()),[a]=useState();function l(n){return"tabs"===e.type||"buttons"===e.type||t.isInput||!e.search||""===i&&n.length<10?null:_jsxs("div",{className:"aio-input-search",children:[_jsx("input",{type:"text",value:i,placeholder:e.search,onChange:e=>o(e.target.value)}),_jsx("div",{className:"aio-input-search-icon",onClick(){o("")},children:I(i?"mdiClose":"mdiMagnify",.8)})]})}function s(e){return e.map((e,t)=>i&&(void 0===e.text||""===e.text||null===e.text||-1===e.text.indexOf(i))?null:_createElement(Layout,Object.assign({},{option:e,index:t,searchValue:i},{key:t})))}function u(e){e.keyCode}if(useEffect(()=>{try{setTimeout(()=>$(r.current).focus(),30)}catch(e){}},[]),!n.optionsList.length)return null;let c=s(n.optionsList),d=`aio-input-options aio-input-scroll aio-input-${e.type}-options`;return t.isDropdown&&(d+=" aio-input-dropdown-options"),_jsxs("div",{className:"aio-input-options-container",ref:r,tabIndex:0,onKeyDown:e=>u(e),children:[l(n.optionsList),_jsx("div",{className:d,children:c})]})}let CheckIcon=e=>{if(void 0===e.checked)return null;if(e.checkIcon){let t=e.checkIcon({checked:e.checked,row:e.row});return!1===t?null:_jsx(_Fragment,{children:t})}return e.round?_jsx("div",{className:"aio-input-check-out aio-input-main-color"+(e.checked?" checked":""),style:{background:"none"},children:e.checked&&_jsx("div",{className:"aio-input-check-in aio-input-main-bg"})}):_jsx("div",{className:"aio-input-check-0 aio-input-main-color"+(e.checked?" checked":""),style:{background:"none"},children:e.checked&&_jsx("div",{className:"aio-input-main-bg"})})},Layout=e=>{let{rootProps:t,datauniqid:n,types:i,touch:o,DragOptions:r,click:a,optionClick:l,showPassword:s,setShowPassword:u,popup:c}=useContext(AICTX),{option:d,index:p}=e,{type:f,rtl:g}=t,[h]=useState(createRef()),[m,$]=useState();function v(){let e;if(void 0!==d?(e=`aio-input-option aio-input-${f}-option`,i.isMultiple&&(e+=` aio-input-${f}-multiple-option`),i.isDropdown&&(e+=" aio-input-dropdown-option"),!0===d.details.active&&(e+=" active","tabs"===f&&(e+=" aio-input-main-color"),"buttons"===f&&(e+=" aio-input-main-bg"))):(e=`aio-input aio-input-${f}${o?" aio-input-touch":""}`,i.isInput&&(e+=" aio-input-input"),t.justify&&(e+=" aio-input-justify"),e+=g?" aio-input-rtl":" aio-input-ltr"),"tree"===f){let r=t.size||Def("tree-size");(r=12*Math.round(r/12))<24&&(r=24),r>120&&(r=120),e+=` aio-input-size-${r}`}return!0===O.disabled&&(e+=" disabled"),O.className&&(e+=" "+O.className),e+=" "+n}function y(e,t){let n=`aio-input-${e}`;return d?n+=` aio-input-${f}-option-${e}`:n+=` aio-input-${f}-${e}`,t&&(n+=" aio-input-has-subtext"),n}function _(){let{text:e,placeholder:t,subtext:n,justify:o}=O;if(void 0===e&&void 0!==t&&(e=_jsx("div",{className:"aio-input-placeholder",children:t})),void 0===e)return _jsx("div",{style:{flex:1}});{let r=`${y("value",!!n)}${o&&!i.isInput?" aio-input-value-justify":""}`;return _jsx("div",{className:r,"data-subtext":n,children:e})}}function x(e){let t=e.keyCode;13===t&&a(e,h)}function b(){return O.draggable?_jsx("svg",{viewBox:"8 4 10 13",role:"presentation",style:{width:12,height:"1.8rem"},children:_jsx("path",{d:"M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z",style:{fill:"currentcolor"}})}):null}function C(){if(!i.isDropdown||d||i.isInput&&!t.options)return null;let{caret:e}=t;return!1===e?null:_jsx("div",{className:"aio-input-caret",children:void 0===e?I("mdiChevronDown",.8):e})}function k(e){let n;if("after"===e&&"password"===f&&t.preview)n=_jsx("div",{className:"aio-input-password-preview",onClick:()=>u(),children:I(s?"mdiEyeOff":"mdiEye",.8)});else{let i=O[e];n="function"==typeof i?i():i}return void 0===n?null:_jsx("div",{className:y(e),children:n})}function N(){let{loading:e}=O,t;return e?(t=!0===e?I("mdiLoading",.8,{spin:.8}):e,_jsx("div",{className:y("loading"),children:t})):null}function w(){let{attrs:n,disabled:i,draggable:o,style:s}=O,u;c.getModals().length&&!d&&-1!==["text","number","textarea"].indexOf(f)&&(u=1e5);let g;i||(g=void 0===d?e=>{e.stopPropagation(),a(e,h)}:t=>{t.stopPropagation(),t.preventDefault(),(e.properties||{}).onClick?e.properties.onClick():l(d)}),n=AddToAttrs(n,{className:v(),style:Object.assign(Object.assign({},s),{zIndex:u})});let m=Object.assign(Object.assign({tabIndex:d?void 0:1,onKeyDown:x},n),{onClick:g,ref:h,disabled:i}),$="function"==typeof t.options?t.options():t.options||[];return o&&(m=Object.assign(Object.assign(Object.assign({},m),r.getDragAttrs({fromIndex:p||0})),r.getDropAttrs({options:$,toIndex:p||0}))),p&&(m["data-index"]=p),m}function A(){let n=e.properties||{},i=d||t,{draggable:o=!!d&&d.draggable}=n,{placeholder:r=d?void 0:t.placeholder}=n,{checked:a=d?d.checked:"checkbox"===f?!!t.value:void 0}=n,{disabled:l=i.disabled}=n,{text:s=i.text}=n,{subtext:u=i.subtext}=n,{justify:c=i.justify}=n,{loading:p=i.loading}=n,{attrs:g=i.attrs||{}}=n,h=Object.assign(Object.assign({},i.style||{}),n.style),{before:m=i.before}=n,{after:$=i.after}=n,v=[i.className,n.className].filter(e=>!!e),y=v.length?v.join(" "):void 0;return{disabled:l,draggable:o,text:s,subtext:u,placeholder:r,justify:c,checked:a,loading:p,attrs:g,style:h,before:m,after:$,className:y}}function T(){m.start()}function D(){return m?_jsx("div",{className:"aio-input-voice",onClick:()=>T(),children:I("mdiMicrophoneOutline",.8)}):null}useEffect(()=>{if(!("webkitSpeechRecognition"in window))return;let{onChange:e,voice:n}=t;if(!n||!e||!i.hasKeyboard)return;let o=window.SpeechRecognition||window.webkitSpeechRecognition;if(!o)return;let r=new o;return r.lang=({en:"en-US",fa:"fa-IR"})[n],r.continuous=!0,r.interimResults=!1,r.onresult=t=>{let n=t.results[0][0].transcript;e&&e(n)},r.onerror=e=>{console.error("خطا در تشخیص گفتار: ",e.error)},r.onend=()=>{console.log("تشخیص گفتار پایان یافت.")},$(r),()=>{r.stop()}},[]);let O=A(),P=_jsxs(_Fragment,{children:[b(),"boolean"==typeof O.checked&&_jsx(CheckIcon,{round:!t.multiple&&"radio"===f,checked:O.checked,checkIcon:t.checkIcon,row:d||{}}),k("before"),_(),k("after"),N(),D(),C()]}),R=w();return"file"===f?_jsxs("label",Object.assign({},R,{children:[P,_jsx(InputFile,{})]})):_jsxs("div",Object.assign({},R,{children:[P,!!d&&"tabs"===f&&_jsx("div",{className:"aio-input-tabs-option-bar"})]}))};function List(){let{rootProps:e,options:t}=useContext(AICTX),{attrs:n={},size:i=36,listOptions:o={count:3,editable:!0,stop:3,decay:8},onChange:r=()=>{}}=e,{count:a=3,editable:l=!0,stop:s=3,decay:u=8}=o,c=t.optionsList.length,[d]=useState({dom:createRef(),activeIndex:0,interval:void 0,moved:!1,lastY:0,deltaY:0,so:{y:0,top:0,limit:{top:0,bottom:0}}});function p(){var e=a*i;return{height:e}}function f(e){return Math.round((a*i-i-2*e)/(2*i))}function g(e){return(a-2*e-1)*i/2}function h(){return{top:g(d.activeIndex)}}function m(e){if(e.preventDefault(),d.activeIndex>=c-1)return;d.activeIndex++;let t=g(d.activeIndex);A({top:t}),v(d.activeIndex)}function v(e){$(d.dom.current).find(".aio-input-list-option").removeClass("active"),$(d.dom.current).find(".aio-input-list-option[data-index="+e+"]").addClass("active")}function y(){if(d.activeIndex<=0)return;d.activeIndex--;let e=g(d.activeIndex);A({top:e}),v(d.activeIndex)}function _(e){l&&(38===e.keyCode?y():40===e.keyCode&&m(e))}function x(){return{top:g(-1),bottom:g(c)}}function b(e){let t=f(e);return t<0&&(t=0),t>c-1&&(t=c-1),g(t)}function C(e){if(!l)return;EventHandler("window","mousemove",w,"bind"),EventHandler("window","mouseup",T,"bind"),clearInterval(d.interval),d.moved=!1;let n=GetClient(e).y;A({transition:"unset"});let i=k();var o=f(i);v(o),A({top:i,transition:"unset"}),r(t.optionsList[o].value,o),d.so={y:n,top:i,limit:x()}}function k(){var e=parseInt($(d.dom.current).find(".aio-input-list-options").css("top"));return b(e)}function N(e){let{top:t,bottom:n}=d.so.limit;return e>t?t:e<n?n:e}function w(e){e.preventDefault(),e.stopPropagation(),console.log("move"),d.moved=!0;let t=GetClient(e).y;var n=t-d.so.y;void 0===d.lastY&&(d.lastY=t),d.deltaY=t-d.lastY,d.lastY=t,20>Math.abs(n)&&(d.deltaY=3);var i=N(d.so.top+n);let o=f(i);d.so.newTop=i,v(o),A({top:i})}function A(e){$(d.dom.current).find(".aio-input-list-options").css(e)}function T(){EventHandler("window","mousemove",w,"unbind"),EventHandler("window","mouseup",T,"unbind"),d.moved&&(d.moved=!1,D(d.deltaY,d.so.newTop))}function D(e,n=k()){u<0&&(u=0),u>99&&(u=99),u=1+u/1e3,d.interval=setInterval(()=>{let i=f(n+=e);if(v(i),Math.abs(e)<s||i<0||i>c-1){clearInterval(d.interval),i<0&&(i=0),i>c-1&&(i=c-1);let o=g(i);A({top:o,transition:"0.3s"});let a=t.optionsList[i];r(a.value,a.details);return}e/=u,A({top:n})},20)}useEffect(()=>{var t;(null===(t=e.listOptions)||void 0===t?void 0:t.move)&&e.listOptions.move(D)},[]),useEffect(()=>{v(d.activeIndex)});let O=t.optionsList.map((t,n)=>(t.value===e.value&&(d.activeIndex=n),_jsx(Layout,{option:t,index:n,properties:{style:{height:i},justify:!0}},n)));return _jsx("div",Object.assign({},n,{ref:d.dom,tabIndex:0,onKeyDown:e=>_(e),className:"aio-input-list"+(n.className?" "+n.className:""),style:Object.assign(Object.assign({},n.style),p()),children:_jsx("div",{className:"aio-input-list-options",style:h(),onMouseDown:e=>C(e),onTouchStart:e=>C(e),children:O})}))}let AcardionContext=createContext({});export const Acardion=()=>{let{rootProps:e,options:t}=useContext(AICTX),{multiple:n,vertical:i=!0,value:o}=e;function r(e){return n?-1!==(o||[]).indexOf(e):e===o}function a(){return{rootProps:e,isOpen:r}}return _jsx(AcardionContext.Provider,{value:a(),children:_jsx("div",{className:`aio-input-acardion aio-input-scroll${i?" aio-input-acardion-vertical":" aio-input-acardion-horizontal"}`,children:t.optionsList.map((e,t)=>_jsx(AcardionItem,{option:e},t))})})};let AcardionItem=({option:e})=>{let t=!!e.details.active,[n]=useState(),i=AddToAttrs(e.attrs,{className:"aio-input-acardion-item"});return _jsxs("div",Object.assign({},i,{children:[_jsx(Layout,{option:e}),!!t&&_jsx(AcardionBody,{option:e})]}))},AcardionBody=({option:e})=>{let{rootProps:t}=useContext(AcardionContext),{body:n=()=>{}}=t,{html:i,attrs:o}=n(e.optionOrg,e.details)||{html:""},r=AddToAttrs(o,{className:["aio-input-acardion-body"]});return _jsx("div",Object.assign({},r,{children:i}))},TreeContext=createContext({}),Tree=()=>{let{rootProps:e,types:t}=useContext(AICTX),{onAdd:n,onRemove:i,value:o=[],onChange:r,size:a=Def("tree-size"),attrs:l}=e,[s,u]=useState({}),c=useRef(s);c.current=s;let[d,p]=useState({}),f=useRef(d);f.current=d;let[g]=useState($);function h(e){p(Object.assign(Object.assign({},f.current),{[e]:!f.current[e]}))}function m(e){u(Object.assign(Object.assign({},c.current),{[e]:!c.current[e]}))}function $(){let{indent:t=24}=e;return"number"!=typeof t&&(t=12),(t=6*Math.round(t/6))<0&&(t=0),t>60&&(t=60),t}function v(e){let t=!!s[e],n=300;t?(h(e),setTimeout(()=>m(e),n)):(m(e),setTimeout(()=>h(e),0))}function y(t,n){for(let i in n)t[i]=n[i];e.onChange&&e.onChange(e.value)}function _(t){let{row:n,details:i}=t,o=[];try{o=e.getChilds?e.getChilds({row:n,details:i}):n.childs||[]}catch(r){o=[]}return o||[]}function x(t){let{row:n,childs:i}=t;try{e.setChilds?e.setChilds(t):n.childs=i}catch(o){}}function b(e){return __awaiter(this,void 0,void 0,function*(){let t;if(t="function"==typeof n?yield n(e):n){if(e){let i=_({row:e.parent,details:e.parentDetails});x({row:e.parent,childs:i.concat(t),details:e.parentDetails})}else o.push(t);r&&r(o)}})}function C(t){return __awaiter(this,void 0,void 0,function*(){let{index:n}=t,a;if(!(a="function"!=typeof i||(yield i(t))))return;let l={index:n,active:!1,toggle(){}},{option:s={}}=e;if(t.parent){let u=_({row:t.parent,details:t.parentDetails}).filter(n=>{let i=GetOptionProps({key:"value",optionProp:s,optionOrg:t.row,optionDetails:Object.assign(Object.assign({},l),{rootProps:e})}),o=GetOptionProps({key:"value",optionProp:s,optionOrg:n,optionDetails:Object.assign(Object.assign({},l),{rootProps:e})});return i!==o});x({row:t.parent,details:t.parentDetails,childs:u})}else o=o.filter(n=>{let i=GetOptionProps({key:"value",optionProp:s,optionOrg:t.row,optionDetails:Object.assign(Object.assign({},l),{rootProps:e})}),o=GetOptionProps({key:"value",optionProp:s,optionOrg:n,optionDetails:Object.assign(Object.assign({},l),{rootProps:e})});return i!==o});r&&r(o)})}function k(){return{toggle:v,rootProps:e,mountedDic:d,openDic:s,add:b,remove:C,types:t,indent:g,size:a,change:y,getChilds:_}}useEffect(()=>{e.toggleRef&&(e.toggleRef.current=e=>v(e))},[v]),useEffect(()=>{e.onToggle&&e.onToggle(s)},[s]);let N=AddToAttrs(l,{className:["aio-input-tree",e.className,e.rtl?"aio-input-tree-rtl":void 0],style:e.style});return _jsx(TreeContext.Provider,{value:k(),children:_jsxs("div",Object.assign({},N,{children:[_jsx(TreeHeader,{}),_jsx(TreeBody,{rows:o,level:0})]}))})},TreeHeader=()=>{let{rootProps:e,add:t}=useContext(TreeContext),{addText:n="add",onAdd:i}=e;return i?(n=("function"==typeof n?n("header"):n)||"add",_jsx("div",{className:"aio-input-tree-header",children:_jsxs("button",{onClick:()=>t(),children:[I("mdiPlusThick",.8),n]})})):null},TreeActions=e=>{let{row:t,index:n,parent:i,rowDetails:o,parentDetails:r}=e,{rootProps:a,add:l,remove:s}=useContext(TreeContext),{onAdd:u,onRemove:c,removeText:d="Remove"}=a,p=("function"==typeof a.addText?a.addText(t):a.addText)||"Add",f="function"==typeof a.actions?a.actions(t,i):a.actions;function g(){let e=[];return u&&e.push({text:p,value:"add",before:I("mdiPlusThick",.7),onClick:()=>l({parent:t,parentDetails:o})}),e=[...e,...(f||[]).map(e=>Object.assign(Object.assign({},e),{onClick(){e.onClick&&e.onClick(t,i)}}))],c&&e.push({text:d,value:"remove",before:I("mdiDelete",.7),onClick:()=>s({row:t,index:n,parent:i,parentDetails:r})}),e}let h=g();if(!h.length)return null;let m={type:"select",caret:!1,popover:{limitTo:".aio-input-tree"},className:"aio-input-tree-options-button",options:h,text:I("mdiDotsHorizontal",.7)};return _jsx(AIOInput,Object.assign({},m))},TreeBody=e=>{let{rootProps:t,types:n,openDic:i,mountedDic:o,indent:r,size:a,change:l,getChilds:s,toggle:u}=useContext(TreeContext),{rows:c,level:d,parent:p,parentId:f,parentIndent:g,parentDetails:h}=e,m=void 0===f||!!i[f],$=void 0==f||o[f],{onAdd:v,onRemove:y,actions:_}=t,{optionsList:x}=GetOptions({rootProps:t,types:n,options:c,level:d,isOpen:e=>!!i[e],change:(e,t)=>l(e,t),optionProp:t.option||{}});function b(){let e="aio-input-tree-body";return p||(e+=" aio-input-tree-root"),m&&(e+=" open"),e+=$?" mounted":" not-mounted",e+=` aio-input-tree-body-level-${d}`}return(v||y||_)&&(x=x.map(e=>{let{index:t,level:n=0}=e.details,i=0===t,o=t===c.length-1,r={index:t,level:n,isFirstChild:i,isLastChild:o},a=_jsx(TreeActions,{row:e.optionOrg,index:t,parent:p,rowDetails:r,parentDetails:h});return Object.assign(Object.assign({},e),{after:a})})),_jsx("div",{className:b(),children:x.map((e,t)=>{let n=c[t],o=e.value,l={level:d,index:t,isLastChild:t===x.length-1,isFirstChild:0===t},u=s({row:n,details:l}),h=!!i[o],$={row:n,option:e,parent:p,parentId:f,id:o,parentOpen:m,open:h,details:l,indent:Object.assign({height:a,childsLength:u.length,size:r,parentIndent:g},l)};return _createElement("div",Object.assign({},{className:"aio-input-tree-row"},{key:o}),_jsx(TreeRow,{item:$}),_jsx(TreeChilds,{item:$}))})})},TreeRow=e=>{let{openDic:t,getChilds:n,toggle:i,rootProps:o}=useContext(TreeContext),{item:r}=e,a=n(r).length?!!t[r.id]:void 0,{row:l,indent:s,option:u}=r,{level:c,size:d,height:p}=s,{checked:f}=u,g=()=>{var e;return[_jsx(Indent,{row:l,width:d,height:p,level:c,isLastChild:r.indent.isLastChild,isParentLastChild:!!(null===(e=r.indent.parentIndent)||void 0===e?void 0:e.isLastChild),rtl:!!o.rtl,toggleIcon:o.toggleIcon,open:a,onToggle:()=>i(r.id)}),_jsx(_Fragment,{children:void 0===f?null:_jsx(CheckIcon,{checked:f,checkIcon:o.checkIcon,row:l})}),_jsx(_Fragment,{children:r.option.before||null})]},h={option:Object.assign(Object.assign({},r.option),{before:g(),checked:void 0})};return _jsx(Layout,Object.assign({},h))},TreeChilds=e=>{let{getChilds:t}=useContext(TreeContext),{row:n,id:i,open:o,indent:r,details:a}=e.item,l=t(e.item);return o&&l&&l.length?_jsx(TreeBody,{rows:l,level:r.level+1,parent:n,parentId:i,parentIndent:r,parentDetails:a}):null},DPContext=createContext({});export function Calendar(e){let{rootProps:t,DATE:n}=useContext(AICTX),{onClose:i}=e,{multiple:o,unit:r=Def("date-unit"),jalali:a,value:l,disabled:s,size:u=12,theme:c=Def("theme"),translate:d,onChange:p=()=>{},option:f={}}=t,[g]=useState(n.getMonths(a)),[h]=useState(n.getToday(a)),[m]=useState(n.getWeekDay(h).weekDay),[$]=useState(g[h[1]-1]),[v,y]=useState(N),[_,x]=useState(null),[b,C]=useState(!1);function k(){let e;return o?l.length?l[l.length-1]:void 0:l}function N(){let e=k();e=e&&null!==e?e:h;let[t,i,o]=n.convertToArray(e);return{year:t,month:i,day:o}}let w=useRef(v);function A(e){if(d){let t=d(e);if(t)return t}"Today"===e&&("month"===r?e="This Month":"hour"===r&&(e="This Hour"));let n={Clear:"حذف","This Hour":"ساعت کنونی",Today:"امروز","This Month":"ماه جاری","Select Year":"انتخاب سال",Close:"بستن"},i=e;return a&&n[e]&&(i=n[e]),i}function T(e){b=!1,null===e?(C(!1),setTimeout(()=>x(null),300)):(x(e),setTimeout(()=>C(!0),0))}function D(e){let t;if("today"===e){let[n,i,o]=h;t={year:n,month:i,day:"month"===r?1:o}}else t=Object.assign(Object.assign({},v),e);y(t)}function O(){return{fontSize:u,background:c[1],color:c[0],stroke:c[0],cursor:!0===s?"not-allowed":void 0}}function P(){let e=k();return"string"==typeof e?n.getSplitter(e):"/"}function R(){return{changeActiveDate:D,DATE:n,changePopup:T,translate:A,rootProps:t,activeDate:w.current,today:h,todayWeekDay:m,thisMonthString:$,months:g,onChange(e){let{year:s=1e3,month:u=1,day:c=1,hour:d=0}=e,h=[s,u,c,d],m=a?h:n.toJalali(h),$=a?n.toGregorian(h):h,{weekDay:v,index:y}="month"===r?{weekDay:"",index:0}:n.getWeekDay(h),_=e=>{if(void 0===e)return;let t=e.toString();return 1===t.length?`0${t}`:t},x="",b=P();"month"===r?x=`${s}${b}${_(u)}`:"day"===r?x=`${s}${b}${_(u)}${b}${_(c)}`:"hour"===r&&(x=`${s}${b}${_(u)}${b}${_(c)}${b}${_(d)}`);let C=g[u-1],k=a?C:n.getMonths(!0)[u-1],N=a?n.getMonths(!1)[u-1]:C,w={months:g,jalaliDateArray:m,gregorianDateArray:$,dateArray:h,weekDay:v,weekDayIndex:y,dateString:x,year:s,month:u,day:c,hour:d,monthString:C,jalaliMonthString:k,gregorianMonthString:N},A,T=0;if(o){let D=[],O=(D=l?Array.isArray(l)?[...l]:[l]:[]).indexOf(x);if(A=-1===O?[...D,x]:D.filter(e=>e!==x),"number"==typeof o)for(;A.length>o;)A=A.slice(1,A.length);O=A.length-1}else T=0,A=x;p(A,w),i&&"function"==typeof f.close&&f.close(void 0,{index:T,rootProps:t})&&i()}}}return w.current=v,_jsxs(DPContext.Provider,{value:R(),children:[_jsxs("div",{className:"aio-input-date-container aio-input-date-theme-bg",style:{display:"flex",fontSize:u},children:[_jsxs("div",{className:"aio-input-date-calendar",style:O(),children:[_jsx(DPHeader,{}),_jsx(DPBody,{}),_jsx(DPFooter,{})]}),_jsx(DPToday,{})]}),_jsx("div",{className:`aio-input-date-popup-container ${b?"mounted":"not-mounted"}`,children:_})]})}function DPToday(){let{rootProps:e,translate:t,today:n,todayWeekDay:i,thisMonthString:o}=useContext(DPContext),{theme:r=Def("theme"),jalali:a,unit:l=Def("date-unit")}=e;return _jsxs("div",{className:"aio-input-date-today aio-input-date-theme-active",style:{color:r[1],background:r[0]},children:[_jsx("div",{className:"aio-input-date-today-label",children:t("Today")}),"month"!==l&&_jsx("div",{className:"aio-input-date-today-weekday",children:a?i:i.slice(0,3)}),"month"!==l&&_jsx("div",{className:"aio-input-date-today-day",children:n[2]}),_jsx("div",{className:"aio-input-date-today-month",children:a?o:o.slice(0,3)}),_jsx("div",{className:"aio-input-date-today-year",children:n[0]}),"hour"===l&&_jsx("div",{className:"aio-input-date-today-year",children:n[3]+":00"})]})}function DPFooter(){let{rootProps:e,changeActiveDate:t,translate:n}=useContext(DPContext),{disabled:i,onChange:o=()=>{},deSelect:r,multiple:a,now:l=!0}=e;if(i)return null;let s="aio-input-date-theme-color";function u(){"function"==typeof r?r():o(a?[]:void 0)}return _jsxs("div",{className:"aio-input-date-footer",children:[!!r&&_jsx("button",{onClick:()=>u(),className:s,children:n("Clear")}),!!l&&_jsx("button",{onClick:()=>t("today"),className:s,children:n("Today")})]})}function DPBody(){let{rootProps:e,activeDate:t}=useContext(DPContext),{unit:n=Def("date-unit"),jalali:i}=e;function o(){let e="aio-input-date-body";return e+=` aio-input-date-body-${n}`,e+=` aio-input-date-${i?"rtl":"ltr"}`}return _jsxs("div",{className:o(),children:["hour"===n&&GetArray(24,e=>_jsx(DPCell,{dateArray:[t.year,t.month,t.day,e]},"cell"+e)),"day"===n&&_jsx(DPBodyDay,{}),"month"===n&&GetArray(12,e=>_jsx(DPCell,{dateArray:[t.year,e+1]},"cell"+e))]})}function DPBodyDay(){let{rootProps:e,activeDate:t,DATE:n}=useContext(DPContext),{theme:i=Def("theme"),jalali:o}=e,r=n.getWeekDay([t.year,t.month,1]).index,a=n.getMonthDaysLength([t.year,t.month]);return _jsxs(_Fragment,{children:[n.getWeekDays(o).map((e,t)=>_jsx(DPCellWeekday,{weekDay:e},"weekday"+t)),GetArray(r,e=>_jsx("div",{className:"aio-input-date-space aio-input-date-cell",style:{background:i[1]}},"space"+e)),GetArray(a,e=>_jsx(DPCell,{dateArray:[t.year||0,t.month||0,e+1]},"cell"+e)),GetArray(42-(r+a),e=>_jsx("div",{className:"aio-input-date-space aio-input-date-cell",style:{background:i[1]}},"endspace"+e))]})}let DPCellWeekday=e=>{let{rootProps:t,translate:n}=useContext(DPContext),{theme:i=Def("theme"),jalali:o}=t,{weekDay:r}=e;return _jsx("div",{className:"aio-input-date-weekday aio-input-date-cell aio-input-date-theme-color",style:{background:i[1],color:i[0]},children:_jsx("span",{children:n(r.slice(0,o?1:2))})})};function DPCell(e){let{rootProps:t,translate:n,onChange:i,DATE:o}=useContext(DPContext),{disabled:r,dateAttrs:a,theme:l=Def("theme"),value:s,jalali:u,unit:c=Def("date-unit"),multiple:d}=t,{dateArray:p}=e;function f(){return d?!!s.length&&!!s.find(e=>o.isEqual(p,e)):!!s&&o.isEqual(p,s)}function g(e,t,n,i){var o="aio-input-date-cell";return n&&(o+=" aio-input-date-disabled"),e?o+=" aio-input-date-active aio-input-date-theme-active":o+=" aio-input-date-theme-color",t&&(o+=" today aio-input-date-theme-border"),i&&(o+=` ${i}`),o}let h=f(),m=o.isEqual(p,o.getToday(u)),$=o.isGreater(p,o.getToday(u)),v={};if(a){let{unit:y="day"}=t,_=null,x=null,b="";if("day"===y){let C=o.getWeekDay(p);_=C.weekDay,x=C.index}else if("month"===y){let k=o.getMonths(u);b=k[p[1]-1]}v=(v=a({dateArray:p,isToday:m,isActive:h,isFuture:$,weekDayIndex:x,weekDay:_,monthString:b}))||{}}let N=!0===r||!0===v.disabled,w=g(h,m,N,v.className),A=N?void 0:()=>{i({year:p[0],month:p[1],day:p[2],hour:p[3]})},T={};N||(T.background=l[1],T.color=l[0]),-1!==w.indexOf("aio-input-date-active")&&(T.background=l[0],T.color=l[1]),-1!==w.indexOf("today")&&(T.border=`1px solid ${l[0]}`),T=Object.assign(Object.assign({},T),v.style);let D;if("hour"===c)D=p[3]+":00";else if("day"===c)D=p[2];else if("month"===c){let O=o.getMonths(u);D=n(u?O[p[1]-1]:O[p[1]-1].slice(0,3))}return _jsx("div",{style:T,onClick:A,className:w,children:N?_jsx("del",{children:D}):D})}function DPHeaderItem(e){let{unit:t}=e,{rootProps:n,activeDate:i,months:o,changePopup:r}=useContext(DPContext),{theme:a=Def("theme"),jalali:l}=n;if(!i||!i[t])return null;let s="year"===t?i.year:o[i[t]-1].substring(0,l?10:3);return _jsx("button",{type:"button",className:"aio-input-date-dropdown aio-input-date-theme-color",style:{color:a[0],background:a[1]},onClick:()=>r(_jsx(DPHeaderPopup,{onClose:()=>r(null),unit:t})),children:s})}let DPHeaderPopup=e=>{let{onClose:t,unit:n}=e,{rootProps:i,DATE:o,translate:r,activeDate:a,changeActiveDate:l}=useContext(DPContext),{jalali:s,theme:u=Def("theme")}=i,[c]=useState(o.getMonths(s)),[d,p]=useState(10*Math.floor(a.year/10)),[f,g]=useState(a.year),[h,m]=useState(a.month);function $(e){"year"===n?(g(e),l({year:e})):(m(e),l({month:e})),t()}function v(e){p(d+10*e)}function y(){let e=[],t=e=>{let t="aio-input-date-cell";return e?t+=" aio-input-date-active aio-input-date-theme-active":t+=" aio-input-date-theme-color",t};if("year"===n)for(let i=d;i<d+10;i++){let o=i===f,r={style:o?{background:u[0],color:u[1]}:{background:u[1],color:u[0]},className:t(o),onClick:()=>$(i)};e.push(_createElement("div",Object.assign({},r,{key:i}),i))}else for(let a=1;a<=12;a++){let l=a===h,p={style:l?{background:u[0],color:u[1]}:{background:u[1],color:u[0]},className:t(l),onClick:()=>$(a)},g=c[a-1];s||(g=`${g.slice(0,3)} (${a})`),e.push(_createElement("div",Object.assign({},p,{key:a}),g))}return e}function _(){return"year"!==n?null:_jsxs("div",{className:"aio-input-date-popup-header",children:[_jsx(DPArrow,{type:"minus",onClick:()=>v(-1)}),_jsx("div",{className:"aio-input-date-popup-label",children:r("Select Year")}),_jsx(DPArrow,{type:"plus",onClick:()=>v(1)})]})}function x(){return _jsx("div",{className:"aio-input-date-popup-body",children:y()})}function b(){let e=r("Close");return _jsx("div",{className:"aio-input-date-popup-footer",children:_jsx("button",{className:"aio-input-date-theme-color",onClick:()=>t(),children:e})})}return useEffect(()=>{g(a.year),m(a.month)},[a.year,a.month]),_jsxs("div",{style:{background:u[0],color:u[1]},className:"aio-input-date-popup aio-input-date-theme-bg"+(s?" aio-input-date-rtl":" aio-input-date-ltr"),children:[_(),x(),b()]})};function DPHeader(){let{rootProps:e,activeDate:t,changeActiveDate:n,DATE:i}=useContext(DPContext),{unit:o=Def("date-unit")}=e;function r(){if(!t||!t.year||!t.month)return null;let e=GetArray(i.getMonthDaysLength([t.year,t.month]),e=>({text:(e+1).toString(),value:e+1})),o={value:t.day,options:e,onChange:e=>n({day:e})};return _jsx(DPHeaderDropdown,Object.assign({},o))}return _jsxs("div",{className:"aio-input-date-header",children:[_jsx(DPArrow,{type:"minus"}),_jsxs("div",{className:"aio-input-date-select",children:[_jsx(DPHeaderItem,{unit:"year"}),"month"!==o?_jsx(DPHeaderItem,{unit:"month"}):null,"hour"===o?r():null]}),_jsx(DPArrow,{type:"plus"})]})}function DPHeaderDropdown(e){let{rootProps:t}=useContext(DPContext),{value:n,options:i,onChange:o}=e,{theme:r=Def("theme")}=t;return _jsx(AIOInput,Object.assign({},{value:n,options:i,onChange:o,caret:!1,type:"select",attrs:{className:"aio-input-date-dropdown aio-input-date-theme-color"},option:{style:()=>({background:r[1],color:r[0]})}}))}function DPArrow(e){let{rootProps:t,changeActiveDate:n,activeDate:i,DATE:o}=useContext(DPContext),{type:r,onClick:a}=e,{jalali:l,unit:s=Def("date-unit"),theme:u=Def("theme")}=t;function c(){if(a){a();return}let e="minus"===r?-1:1,t=[i.year,i.month,i.day];if("month"===s&&n({year:i.year+e}),"day"===s){let u=[];n({year:(u=1===t[1]&&-1===e?[t[0]-1,12]:12===t[1]&&1===e?[t[0]+1,1]:[t[0],t[1]+e])[0],month:u[1]})}if("hour"===s){let c=o.getNextTime(t,864e5*e,l);n({year:c[0],month:c[1],day:c[2]})}}function d(){return I("minus"===r?"mdiChevronLeft":"mdiChevronRight",1,{color:u[0]})}return _jsx("div",{className:"aio-input-date-arrow aio-input-date-theme-color",onClick:()=>c(),children:d()})}let AITableContext=createContext({});function Table(){let{rootProps,DATE}=useContext(AICTX),{paging,getValue={},value,onChange=()=>{},onAdd,onRemove,excel,onSwap,onSearch,rowAttrs,onChangeSort,className,style}=rootProps,[dom]=useState(createRef()),[searchValue,setSearchValue]=useState(""),[columns,setColumns]=useState([]),[searchColumns,setSearchColumns]=useState([]),[excelColumns,setExcelColumns]=useState([]),[temp]=useState({}),[DragRows]=useState(!!onSwap&&new DragClass({callback(e,t){if(!1===DragRows)return;let{dragIndex:n}=e,{dropIndex:i,rows:o}=t,r=DragRows.reOrder(o,n,i),a=o[n],l=o[i];"function"==typeof onSwap?onSwap(r,a,l):onChange(r)}})),[sorts,setSorts]=useState([]);function getColumns(){let{columns:e=[]}=rootProps;e="function"==typeof e?e():e;let t=[],n=[],i=e.map(e=>{let{id:i="aitc"+Math.round(1e6*Math.random()),sort:o,search:r,excel:a}=e,l=Object.assign(Object.assign({},e),{_id:i});return r&&t.push(l),a&&n.push(l),l});return setColumns(i),setSearchColumns(t),setExcelColumns(n),i}function getSorts(e){let t=[];for(let n=0;n<e.length;n++){let i=e[n],{_id:o,input:r}=i,a=!0===i.sort?{}:i.sort;if(!a)continue;let{active:l=!1,dir:s="dec"}=a,u;u=a.getValue?a.getValue:e=>{let t=getDynamics({value:i.value,row:e,column:i});return r&&"date"===r.type&&(t=DATE.getTime(t)),t};let c;c=r&&-1!==["number","date","range"].indexOf(r.type)?"number":a.type||"string";let d={dir:s,title:a.title||i.title,sortId:o,active:l,type:c,getValue:u};t.push(d)}setSorts(t)}function getDynamics(p){let{value,row,column,def,rowIndex}=p;if(paging){let{number,size}=paging;rowIndex&&(rowIndex+=(number-1)*size)}let type=typeof value;if("string"===type){let result=value,param={row,column:column,rowIndex:rowIndex};if(getValue[value])result=getValue[value](param);else if(-1!==value.indexOf("row."))try{eval(`result = ${value}`)}catch(_a){result=""}return void 0===result?def:result}return"undefined"===type?def:"function"===type?value({row,column,rowIndex}):void 0===value?def:value}function add(){"function"==typeof onAdd?onAdd():onChange([Object.assign({},onAdd),...value])}function remove(e,t){let n=()=>onChange(value.filter(t=>t._id!==e._id));"function"==typeof onRemove?onRemove({row:e,action:n,rowIndex:t}):n()}function exportToExcel(){let e=[];if("function"==typeof rootProps.excel)e=rootProps.excel(value);else for(let t=0;t<value.length;t++){let n=value[t],i={};for(let o=0;o<excelColumns.length;o++){let r=excelColumns[o],{excel:a,value:l}=r,s="";if(!0===a)s="string"==typeof r.title?r.title:"untitle";else{if("string"!=typeof a)continue;s=a}i[s]=getDynamics({value:l,row:n,column:r,rowIndex:t})}e.push(i)}ExportToExcel(e,{promptText:"string"==typeof excel?excel:"Inter Excel File Name"})}function getSearchedRows(e){return!0===onSearch&&searchColumns.length&&searchValue?AIOInputSearch(e,searchValue,(e,t)=>{let n="";for(let i=0;i<searchColumns.length;i++){let o=searchColumns[i],r=getDynamics({value:o.value,row:e,def:"",column:o,rowIndex:t});r&&(n+=r+" ")}return n}):e}function sortRows(e,t){return e?t&&t.length?e.sort((e,n)=>{for(let i=0;i<t.length;i++){let{dir:o,getValue:r}=t[i];if(!r)break;let a=r(e),l=r(n);if(a<l)return -1*("dec"===o?-1:1);if(a>l)return 1*("dec"===o?-1:1);if(i===t.length-1)break}return 0}):e:[]}function getSortedRows(e){if(temp.isInitSortExecuted||onChangeSort)return e;let t=sorts.filter(e=>!1!==e.active);if(!t.length||!e.length)return e;temp.isInitSortExecuted=!0;let n=sortRows(e,t);return onChange(n),n}function getRows(){let e=getSearchedRows(value),t=getSortedRows(e),n=paging&&!paging.serverSide?t.slice((paging.number-1)*paging.size,paging.number*paging.size):t;return{rows:value,searchedRows:e,sortedRows:t,pagedRows:n}}function getCellStyle(e){let t=getDynamics({value:e.width}),n=getDynamics({value:e.minWidth});return{width:t||void 0,flex:t?void 0:1,minWidth:n}}function getCellAttrs(e){let{row:t,rowIndex:n,column:i,type:o}=e,{cellAttrs:r,titleAttrs:a}=i,l=getDynamics({value:"title"===o?a:r,column:i,def:{},row:t,rowIndex:n}),s=getDynamics({value:i.justify,def:!1});return l=AddToAttrs(l,{className:`aio-input-table-${o}`+(s?` aio-input-table-${o}-justify`:""),style:getCellStyle(i)}),"title"===o&&(l.title=getDynamics({value:i.title,def:""})),Object.assign({},l)}function getRowAttrs(e,t){let n=rowAttrs?rowAttrs({row:e,rowIndex:t}):{},i=AddToAttrs(n,{className:"aio-input-table-row"});return!1!==DragRows&&(i=Object.assign(Object.assign(Object.assign({},i),DragRows.getDragAttrs({dragIndex:t})),DragRows.getDropAttrs({dropIndex:t,rows:value}))),i}function search(e){!0===onSearch?setSearchValue(e):"function"==typeof onSearch&&onSearch(e)}function getContext(e){return{ROWS:e,rootProps,columns,sorts,setSorts,sortRows,excelColumns,getCellAttrs,getRowAttrs,add,remove,search,exportToExcel,getDynamics}}useEffect(()=>{let e;getSorts(getColumns())},[]);let ROWS=getRows(),attrs=AddToAttrs(rootProps.attrs,{className:["aio-input aio-input-table",className],style:rootProps.style,attrs:{ref:dom}});return _jsx(AITableContext.Provider,{value:getContext(ROWS),children:_jsxs("div",Object.assign({},attrs,{children:[_jsx(TableToolbar,{}),_jsxs("div",{className:"aio-input-table-unit aio-input-scroll",children:[_jsx(TableHeader,{}),_jsx(TableRows,{})]}),paging?_jsx(TablePaging,{}):""]}))})}function TableGap(e){let{rootProps:t}=useContext(AITableContext),{rowGap:n,columnGap:i}=t,{dir:o}=e,r;return r="h"===o?{height:n}:{width:i},_jsx("div",{className:`aio-input-table-border-${o}`,style:r})}function TablePaging(){let{ROWS:e,rootProps:t}=useContext(AITableContext),[n]=useState({timeout:void 0,start:void 0,end:void 0,pages:0});function i(i){if("function"!=typeof t.onChangePaging)return alert("aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input"),{number:0,size:0};let{number:o,size:r=20,length:a=0,sizes:l=[1,5,10,15,20,30,50,70,100],serverSide:s}=i;s||(a=e.sortedRows.length),-1===l.indexOf(r)&&(r=l[0]);let u=Math.ceil(a/r),c=(o=(o=o>u?u:o)<1?1:o)-3,d=o+3;return n.start=c,n.end=d,n.pages=u,Object.assign(Object.assign({},i),{length:a,number:o,size:r,sizes:l})}let[o,r]=useState(i(t.paging||{size:0,number:0}));function a(e){let a=i(Object.assign(Object.assign({},o),e));r(a),t.onChangePaging&&(a.serverSide?(clearTimeout(n.timeout),n.timeout=setTimeout(()=>{t.onChangePaging&&t.onChangePaging(a)},800)):t.onChangePaging(a))}useEffect(()=>{t.paging&&r(i(t.paging))},[(t.paging||{size:0,number:0,length:0}).size,(t.paging||{size:0,number:0,length:0}).number,(t.paging||{size:0,number:0,length:0}).length]);let{number:l,size:s,sizes:u}=o,c=[],d=!0;for(let p=n.start;p<=n.end;p++)if(p<1||p>n.pages)c.push(_jsx("button",{className:"aio-input-table-paging-button aio-input-table-paging-button-hidden",children:p},p));else{let f;d?(f=1,d=!1):f=p===Math.min(n.end,n.pages)?n.pages:p,c.push(_jsx("button",{className:"aio-input-table-paging-button"+(f===l?" active":""),onClick:()=>a({number:f}),children:f},f))}function g(){if(!u||!u.length)return null;let e={attrs:{className:"aio-input-table-paging-button aio-input-table-paging-size"},type:"select",value:s,options:u,option:{text:"option",value:"option"},onChange:e=>a({size:e}),popover:{fitHorizontal:!0}};return _jsx(AIOInput,Object.assign({},e))}return _jsxs("div",{className:"aio-input-table-paging",children:[c,g()]})}function TableRows(){let{ROWS:e,rootProps:t}=useContext(AITableContext),{rowTemplate:n,rowAfter:i=()=>null,rowBefore:o=()=>null,rowsTemplate:r,placeholder:a="there is not any items"}=t,l=e.pagedRows||[],s;if(r)s=r(l);else if(l.length)s=l.map((e,t)=>{let{id:r="ailr"+Math.round(1e7*Math.random())}=e;e._id=void 0===e._id?r:e._id;let a=t===l.length-1,s;return s=n?n({row:e,rowIndex:t,isLast:a}):_jsx(TableRow,{row:e,rowIndex:t,isLast:a},e._id),_jsxs(Fragment,{children:[o({row:e,rowIndex:t}),s,i({row:e,rowIndex:t})]},e._id)});else{if(!a)return null;s=_jsx("div",{style:{width:"100%",textAlign:"center",padding:12,boxSizing:"border-box"},children:a})}return _jsx("div",{className:"aio-input-table-rows",children:s})}function TableToolbar(){let{add:e,exportToExcel:t,sorts:n,sortRows:i,setSorts:o,search:r,rootProps:a,excelColumns:l}=useContext(AITableContext),{toolbarAttrs:s,toolbar:u,onAdd:c,onSearch:d,onChangeSort:p,onChange:f=()=>{},value:g,addText:h}=a;if(s=AddToAttrs(s,{className:"aio-input-table-toolbar"}),!c&&!u&&!d&&!n.length&&!l.length)return null;function m(e,t){$(n.map(n=>n.sortId===e?Object.assign(Object.assign({},n),t):n))}function $(e){return __awaiter(this,void 0,void 0,function*(){if(p)!1!==(yield p(e))&&o(e);else{o(e);let t=e.filter(e=>!1!==e.active);t.length&&f(i(g,t))}})}function v(){if(!n.length)return null;let e={popover:{header:{title:"Sort",onClose:!1},setAttrs(e){if("header"===e)return{className:"aio-input-table-toolbar-popover-header"}},limitTo:".aio-input-table"},caret:!1,type:"select",options:n,option:{text:"option.title",checked:"!!option.active",close:()=>!1,value:"option.sortId",after(e){let{dir:t="dec",sortId:n}=e;return _jsx("div",{onClick(e){e.stopPropagation(),m(n,{dir:"dec"===t?"inc":"dec"})},children:I("dec"===t?"mdiArrowDown":"mdiArrowUp",.8)})}},attrs:{className:"aio-input-table-toolbar-button"},text:I("mdiSort",.7),onSwap:(e,t,n)=>$(e),onChange:(e,t)=>m(e,{active:!t.checked})};return _createElement(AIOInput,Object.assign({},e,{key:"sortbutton"}))}function y(){let{addText:e}=a;return a.addText?"function"==typeof e?e(g):e:I("mdiPlusThick",.8)}return _jsxs(_Fragment,{children:[_jsxs("div",Object.assign({},s,{children:[u&&_jsx("div",{className:"aio-input-table-toolbar-content",children:"function"==typeof u?u():u}),_jsx("div",{className:"aio-input-table-search",children:!!d&&_jsx(AIOInput,{type:"text",onChange:e=>r(e),after:I("mdiMagnify",.7)})}),v(),!!l.length&&_jsx("div",{className:"aio-input-table-toolbar-button",onClick:()=>t(),children:I("mdiFileExcel",.8)}),!!c&&_jsx("div",{className:"aio-input-table-toolbar-button",onClick:()=>e(),children:y()})]})),_jsx(TableGap,{dir:"h"})]})}function TableHeader(){let{rootProps:e,columns:t}=useContext(AITableContext),{headerAttrs:n,onRemove:i}=e;n=AddToAttrs(n,{className:"aio-input-table-header"});let o=t.map((e,n)=>_jsx(TableTitle,{column:e,isLast:n===t.length-1},e._id)),r=i?_jsxs(_Fragment,{children:[_jsx(TableGap,{dir:"v"}),_jsx("div",{className:"aio-input-table-remove-title"})]}):null;return _jsxs("div",Object.assign({},n,{children:[o,r,_jsx(TableGap,{dir:"h"})]}))}function TableTitle(e){let{column:t,isLast:n}=e,{getCellAttrs:i}=useContext(AITableContext),o=i({column:t,type:"title"});return _jsxs(_Fragment,{children:[_jsx("div",Object.assign({},o,{children:o.title})),!n&&_jsx(TableGap,{dir:"v"})]})}function TableRow(e){let{row:t,isLast:n,rowIndex:i}=e,{remove:o,rootProps:r,columns:a,getRowAttrs:l}=useContext(AITableContext);function s(){return a.map((e,n)=>{let o=t._id+" "+e._id;return _jsx(TableCell,{isLast:n===a.length-1,row:t,rowIndex:i,column:e},o)})}let{onRemove:u}=r;return _jsxs(_Fragment,{children:[_jsxs("div",Object.assign({},l(t,i),{children:[s(),u?_jsxs(_Fragment,{children:[_jsx(TableGap,{dir:"v"}),_jsx("button",{className:"aio-input-table-remove",onClick:()=>o(t,i),children:I("mdiClose",.8)})]}):null]}),t._id),_jsx(TableGap,{dir:"h"})]})}let TableCell=p=>{let{row,rowIndex,column,isLast}=p,{getCellAttrs,rootProps,getDynamics}=useContext(AITableContext),{onChange=()=>{},value=[]}=rootProps;function setCell(row,column,cellNewValue){column.input&&column.input.onChange?column.input.onChange({value:cellNewValue,row,column}):(row=JSON.parse(JSON.stringify(row)),eval(`${column.value} = cellNewValue`),onChange(value.map(e=>e._id!==row._id?e:row)))}let contentProps={row,rowIndex,column,onChange:column.input?e=>setCell(row,column,e):void 0},key=row._id+" "+column._id;return _jsxs(Fragment,{children:[_jsx("div",Object.assign({},getCellAttrs({row,rowIndex,column,type:"cell"}),{children:_createElement(TableCellContent,Object.assign({},contentProps,{key:key}))})),!isLast&&_jsx(TableGap,{dir:"v"})]},key)};function TableCellContent(e){let{row:t,column:n,rowIndex:i,onChange:o}=e,{getDynamics:r}=useContext(AITableContext),a=r({value:n.template,row:t,rowIndex:i,column:n});if(void 0!==a)return a;let l=r({value:n.input,row:t,rowIndex:i,column:n}),s=r({value:n.value,row:t,rowIndex:i,column:n});if(!l)return"object"==typeof s?"":s;l.justify=l.justify||r({value:n.justify,row:t,rowIndex:i,column:n});let u={type:"text"};for(let c in l){let d=c,p=l[d];-1!==["onChange","onClick"].indexOf(d)?u[d]=p:u[d]=r({value:p,row:t,rowIndex:i,column:n})}return _createElement(AIOInput,Object.assign({},Object.assign(Object.assign({},u),{value:s,onChange:o,type:l.type}),{key:t._id+" "+n._id}))}function AIOInputSearch(e,t,n){if(!t)return e;function i(e,t){for(let n=0;n<e.length;n++)if(-1===t.indexOf(e[n]))return!1;return!0}let o=t.split(" ");return e.filter((e,t)=>i(o,n?n(e,t):e))}let RangeContext=createContext({}),Range=()=>{let{rootProps:e}=useContext(AICTX),t=useRef(e);t.current=e;let{start:n=0,end:i=360,min:o=n,max:r=i,step:a=1,reverse:l,round:s,vertical:u,multiple:c,text:d,onChange:p,size:f=Def("range-size"),disabled:g,className:h,labels:m=[],rotate:v=0}=e,[y]=useState({dom:createRef(),start:0,index:!1});function _(e){Array.isArray(e)||(e=[e||0]);for(let t=0;t<e.length;t++){let i=e[t]||0;(i=+(i=Math.round((i-n)/a)*a+n).toFixed(GetPrecisionCount(a)))<o&&(i=o),i>r&&(i=r),e[t]=i}return e}let x=_(e.value),b=useRef(x);b.current=x;let[C,k]=useState(N());function N(){if(!Array.isArray(g))return{};let e={};for(let t=0;t<g.length;t++)e["a"+g[t]]=!0;return e}function w(e){return"point"===e?s?100:0:"label"===e?s?116:14:"scale"===e?s?100:14:0}function A(e){p&&(e=_(e),p(c?e:e[0]))}function T(e){if(!0===g||!1!==y.index)return;let t=b.current,n;(!((n=s?E(e.centerAngle):J(e[u?"yp":"xp"]))<t[t.length-1])||!(n>t[0]))&&(n<t[0]?L(-1):L(1))}function D(e){for(let t=0;t<e.length;t++)if(j(e[t]))return!1;return!0}useEffect(()=>{k(N())},[JSON.stringify(g)]),useEffect(()=>{p&&(clearTimeout(y.timeOut),y.timeOut=setTimeout(()=>{new Swip({reverseX:!!l,reverseY:!!l&&!!u,dom:()=>$(y.dom.current),start(e){let{disabled:n}=t.current;if(!0===n)return!1;let{event:i}=e;if(null!==i.target){let o=$(i.target);if(HasClass(o,"ai-range-point")){let r=o.attr("data-index")||"0";y.index=+r}else y.index=!1;y.start=[...b.current]}return[0,0]},move(e){let{change:t,mousePosition:n}=e;t&&S({dx:t.dx,dy:t.dy,deltaCenterAngle:t.deltaCenterAngle,centerAngle:n.centerAngle})},onClick:function(e){let{disabled:n}=t.current;!n&&T(e.mousePosition)}})},100))},[S]);let O=(e,t={})=>{let{half:n=!1,range:i=f/(n?2:1)}=t,o=i*e/100,{min:r,max:a}=t;return void 0!==r&&o<r&&(o=r),void 0!==a&&o>a&&(o=a),o},P=(e,t)=>{let n=e.thickness||1,i=0,o=e.roundCap||!1,r=e.full||!1,a=e.offset,l=e.color||"#000";try{let s=n;isNaN(s)&&(s=1),n=s;let u=a;isNaN(u)&&(u=0);let c=f/2-n/2;(i="offset"===t?c-u:u)>c&&(i=c),i<n/2?i=n/2:o=!1}catch(d){}return{thickness:n,radius:i,color:l,roundCap:o,full:r}},R=e=>{let{thickness:t=1,offset:n=0,color:i="#000",roundCap:o=!1}=e;try{let r=t;isNaN(r)&&(r=1),t=r;let a=n;isNaN(a)&&(a=0);(n=f/2-t/2-a)>f-t/2&&(n=f-t/2),n<t/2&&(n=t/2)}catch(l){}return{thickness:t,offset:n,color:i,roundCap:o}};function L(e){let t=[...b.current],n=JSON.stringify(t);for(t=z(t,e*a);!D(t)&&JSON.stringify(t)!==n;)n=JSON.stringify(t),t=z(t,e*a);A(t)}function S(e){if(!0===g)return;let t=H(e);A(t)}function M(e){let t=b.current,o,r;return o=0===e?n:t[e-1],r=e===t.length-1?i:t[e+1],{before:o,after:r}}function z(e,t,o){let r=e.map(e=>e+t);return r[0]<n||r[r.length-1]>i?o?b.current:e:r}function H(e){let{dx:t,dy:o,deltaCenterAngle:r,centerAngle:l}=e,c=[...y.start],d=y.index;1===c.length&&!1===d&&(d=0);let p;if(!1===d){let f;if(s){let g=r*(i-n)/360;f=g=Math.round(g/a)*a}else f=Math.round(J(Z(u?o:t))/a)*a;let h=z(c,f,!0);p=D(h)?h:b.current}else{let{before:m,after:v}=M(d),_;if(s)_=Math.round(E(l)/a)*a;else{let x=Math.round(J(Z(u?o:t))/a)*a;_=c[d]+x}_>v&&(_=v),_<m&&(_=m),j(_)&&(_=b.current[d]),c[d]=_,p=c}return p}function G(){return u?l?"bottom":"top":l?"right":"left"}function F(){return u?"left":"top"}function j(e){return!!C[`a${e}`]}function B(){let e="ai-range";return s?e+=" ai-range-round":e+=` ai-range-${u?"vertical":"horizontal"}`,h&&(e+=" "+h),l&&(e+=" ai-range-reverse"),e}function V(){let{style:t}=e,n;return Object.assign(Object.assign({},n=s?{width:f,height:f}:u?{width:f}:{height:f}),t)}function X(){let{attrs:t={}}=e,n=V();return AddToAttrs(t,{className:B(),style:n,attrs:{ref:y.dom}})}function Y(){return _jsxs("div",Object.assign({},X(),{children:[_jsx(RangeGroove,{}),void 0!==d&&_jsx("div",{className:"ai-range-text",children:"function"==typeof d?d():d},"rangetext"),!s&&_jsxs(Fragment,{children:[_jsx(RangeRanges,{}),_jsx(RangeFills,{})]},"rangefill"),_jsx(RangeSvg,{}),m.map((e,t)=>_jsx(RangeLabel,{label:e},t)),x.map((e,t)=>_jsx(RangeValueContainer,{index:t,itemValue:e},"rangecontainervalue"+t))]}))}function q(e){let t=s=s||1,o=(1-t)*(i-n)/t;return e>i+o/2&&(e=n-o+e-i),e}function E(e){let t=360*(s||1),o=360-t;l&&(e=180-e),e-=v,e-=o/2,e-=90;let r=(e=U(e))*(i-n)/t;return q(r)}function W(e,t){let o=360*s,r=360-o,a=e*o/(i-n);return a+=90,a+=r/2,a+=v,a+=t||0,l?a=180-a:a}function U(e){return(e%=360)<0?e=360+e:e}function K(e){return 100*(e-n)/(i-n)}function J(e){return e*(i-n)/100}function Z(e){return 100*e/$(y.dom.current)[u?"height":"width"]()}function Q(){return{getXPByValue:K,rootProps:e,fixAngle:U,getAngleByValue:W,dom:y.dom,getCircleByStr:P,getRectByStr:R,isValueDisabled:j,value:b.current,getSide:G,getOffset:F,getDefaultOffset:w,sbp:O}}return _jsx(RangeContext.Provider,{value:Q(),children:Y()})},RangeGroove=()=>{let{rootProps:e}=useContext(RangeContext),t=AddToAttrs(e.grooveAttrs,{className:"ai-range-groove"});return e.round?null:_jsx("div",Object.assign({},t))},RangeSvg=()=>{let{rootProps:e,value:t}=useContext(RangeContext),{round:n,ranges:i=[],circles:o=[],size:r=Def("range-size"),end:a=360}=e;if(!n||!(i||[0]).length&&!o.length)return null;let l=[_jsx(RangeCircles,{}),_jsx(RangeRanges,{})];return _jsx("svg",{style:{position:"absolute",left:0,top:0},width:r,height:r,children:l})},RangeCircles=()=>{let{rootProps:e,getCircleByStr:t}=useContext(RangeContext),{start:n=0,end:i=360,circles:o=[],size:r=Def("range-size")}=e,a=[];for(let l=0;l<o.length;l++){let s=n,u=i,{thickness:c,color:d,radius:p,roundCap:f,full:g}=t(o[l],"radius"),h={thickness:c,color:d,from:s,to:u,radius:p,full:g,roundCap:f};a.push(_jsx(RangeArc,Object.assign({},h)))}return _jsx(_Fragment,{children:a})},RangeFills=()=>{let{rootProps:e,value:t}=useContext(RangeContext),{start:n=0,fill:i,round:o}=e;if(o||!1===i)return null;let r=1===t.length?[n,t[0]]:[...t],a=[];for(let l=1;l<r.length;l++){let{thickness:s,style:u,className:c,color:d}=("function"==typeof i?i(l):i)||{},p=r[l-1],f=r[l],g="ai-range-fill";c&&(g+=" "+c);let h={thickness:s,color:d,from:p,to:f,className:g,style:u};a.push(_createElement(RangeRect,Object.assign({},h,{key:"fill"+l})))}return _jsx(_Fragment,{children:a})},RangeRanges=()=>{let{rootProps:e,getCircleByStr:t,getRectByStr:n}=useContext(RangeContext),{start:i=0,ranges:o=[],round:r}=e,a=[],l=i,s=o;for(let u=0;u<s.length;u++){let[c,d]=s[u],p=c,f;if(r){let{thickness:g,color:h,radius:m,roundCap:$}=t(d,"offset");f=_jsx(RangeArc,Object.assign({},{thickness:g,color:h,from:l,to:p,radius:m,roundCap:$,full:!1}))}else{let{thickness:v,color:y,offset:_,roundCap:x}=n(d);f=_createElement(RangeRect,Object.assign({},{thickness:v,color:y,from:l,to:p,offset:_,roundCap:x,className:"ai-range-range"},{key:"range"+u}))}a.push(f),l=p}return _jsx(_Fragment,{children:a})},RangeValueContainer=e=>{let{rootProps:t,isValueDisabled:n,fixAngle:i,getAngleByValue:o,getXPByValue:r,dom:a,getSide:l}=useContext(RangeContext),{itemValue:s,index:u}=e,{round:c}=t,d=i(o(s));function p(){let e;return e=c?{transform:`rotate(${d}deg)`}:{[l()]:r(s)+"%"},{className:"ai-range-value-container",draggable:!1,style:e}}let f={value:s,index:u,disabled:n(s),angle:d,parentDom:a};return _jsxs("div",Object.assign({},p(),{children:[_createElement(RangeHandle,Object.assign({},f,{key:"handle"}))," ",_createElement(RangePoint,Object.assign({},f,{key:"point"}))]}))},RangeRect=({thickness:e,color:t,from:n,to:i,className:o,style:r,offset:a,roundCap:l})=>{let{getXPByValue:s,rootProps:u,getSide:c}=useContext(RangeContext),{vertical:d}=u,p=s(n),f={[d?"height":"width"]:s(i)-p+"%"},g={[d?"width":"height"]:e},h={[c()]:p+"%"},m=a?{[d?"left":"top"]:a}:{},$=l?{borderRadius:"100%"}:{},v={background:t};return _jsx("div",{className:o,style:Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({},f),g),h),m),$),v),r)})},RangeArc=({thickness:e,color:t,from:n,to:i,radius:o,full:r,roundCap:a})=>{let{fixAngle:l,getAngleByValue:s,rootProps:u}=useContext(RangeContext),{size:c=Def("range-size"),reverse:d}=u,p,f,g=c/2,h=c/2;if(r)p=0,f=360;else{let m=l(s(n)+90),$=l(s(i)+90);0===$&&($=360),p=m,f=$,d&&(f=m,p=$)}return _jsx("path",{d:svgArc(g,h,o,p,f),stroke:t,strokeWidth:e,fill:"transparent",strokeLinecap:a?"round":void 0},`from${n}to${i}`)},RangePoint=e=>{let{rootProps:t,getOffset:n,sbp:i}=useContext(RangeContext),[o]=useState({dom:createRef()}),{value:r,disabled:a,angle:l,index:s,parentDom:u}=e;if(!1===t.point)return null;let{round:c,size:d=Def("range-size")}=t,{attrs:p={},html:f=r,offset:g=0}=(t.point||(()=>{}))({disabled:a,angle:l,value:r,index:s})||{},h,m=Object.assign({},p.style);h=c?{left:d/2+g,transform:`rotate(${-l}deg)`}:{[n()]:g};let v={ref:o.dom,className:"ai-range-point-container",style:h,draggable:!1},y=AddToAttrs(p,{className:["ai-range-point"],style:m,attrs:{draggable:!1,"data-index":s}});return y.onMouseDown=e=>{let t=$(u.current).find("ai-range-value-container");t.css({zIndex:10}),t.eq(s).css({zIndex:100}),p.onMouseDown&&p.onMouseDown(e)},_createElement("div",Object.assign({},v,{key:"rangepoint"+s}),_jsx("div",Object.assign({},y,{children:f})))},RangeHandle=e=>{let{rootProps:t,sbp:n}=useContext(RangeContext),{value:i,angle:o,disabled:r,index:a}=e,{handle:l=()=>{},round:s}=t;if(!1===l||!s)return null;if(l&&"function"!=typeof l)return alert(`aio-input error => in type round, handle props should be a function,
-        handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`),null;let{sharp:u=!1,thickness:c=10,size:d=90,color:p="#000",offset:f=0}=l(i,{angle:o,disabled:r,value:i})||{},g=n(d,{half:!0}),h=n(c,{half:!0});function m(){return u?{[g<0?"borderRight":"borderLeft"]:`${Math.abs(g)}px solid ${p}`,borderTop:`${h/2}px solid transparent`,borderBottom:`${h/2}px solid transparent`,left:f}:{width:g,height:h,left:f,background:p}}let $=AddToAttrs({},{className:"aio-input-handle",style:m(),attrs:{draggable:!1}});return _createElement("div",Object.assign({},$,{key:"rangehandle"+a}))},RangeLabel=e=>{let{dom:t,rootProps:n}=useContext(RangeContext),{label:i}=e,{zIndex:o,dynamic:r,step:a,list:l=[]}=i,{round:s,start:u=0,end:c=360,reverse:d,vertical:p}=n,[f]=useState(g);function g(){return v(!0)}function h(){let e=[];if(a){let{start:t=u,end:n=c}=i;for(let o=t;o<=n;o+=a)e.push(o)}for(let r=0;r<l.length;r++)-1===e.indexOf(l[r])&&e.push(l[r]);return e}function m(){if(s||!i.autoHide||p)return;let e=$(t.current).find(".ai-range-label");if(!e.length)return;let n=e.eq(0),o="yes"===n.attr("data-rotated")?"height":"width",r=n.offset().left+(d?0:n[o]());for(let a=1;a<e.length;a++){let l=e.eq(a),u="yes"===l.attr("data-rotated")?"height":"width";l.css({display:"flex"});let c=l.offset().left,f=l[u](),g=c+f;d?g>r-5?l.css({display:"none"}):r=c:c<r+5?l.css({display:"none"}):r=c+f}}function v(e){return e||r?_jsx("div",{className:"ai-range-labels",style:{zIndex:o},children:h().map(e=>_jsx(RangeLabelItem,{label:i,itemValue:e},e))}):f}return useEffect(()=>{$(window).on("resize",m)},[]),useEffect(()=>{m()}),_jsx(_Fragment,{children:v(!1)})},RangeLabelItem=e=>{let{rootProps:t,isValueDisabled:n,fixAngle:i,getAngleByValue:o,getXPByValue:r,getSide:a}=useContext(RangeContext),{label:l,itemValue:s}=e,{round:u,vertical:c,size:d=Def("range-size")}=t,p;u&&(p=i(o(s)));let f=n(s);function g(e){return u?{transform:`rotate(${p}deg)`}:Object.assign({[a()]:r(s)+"%"},e)}function h(e,t){let n={};return u&&(n=Object.assign(Object.assign({},n),t),e.fixAngle&&(n=Object.assign(Object.assign({},n),{transform:`rotate(${-p}deg)`}))),Object.assign({width:0,height:0},n)}function m(){let e=l.setting(s,{disabled:f,angle:p}),{offset:t=0,html:n=""}=e,i={[u||c?"left":"top"]:d/2+t},o={className:"ai-range-label-container",style:g(i),draggable:!1},r=AddToAttrs({},{className:["ai-range-label"],style:h(e,i),attrs:{draggable:!1}});return{html:n,textProps:r,containerProps:o}}let{html:$,textProps:v,containerProps:y}=m();return _jsx("div",Object.assign({},y,{children:_jsx("div",Object.assign({},v,{children:$}))}))};export const SideMenu=e=>{let{items:t=[],onChange:n,option:i={},type:o="normal"}=e,r="aio-input-sidemenu",a=useRef(e=>{});function l(e){let{badge:t}=e;if(t||(t=[]),Array.isArray(t)||(t=[t]),!t.length)return[];let n=[];for(let i=0;i<t.length;i++){let{text:o,color:a="red",circle:l}=t[i];n.push(_jsx("div",{className:`${r}-badge ${r}-align ${r}-badge-${a}${l?" "+r+"-badge-circle":""}`,children:o}))}return n}function s(e,t){let{items:n=[]}=e,i=l(e);return _jsxs("div",{className:`${r}-after ${r}-align`,children:[!!i.length&&i,!!n.length&&I(t?"mdiChevronDown":"mdiChevronRight",.7)]})}function u(e){let{icon:t=I("mdiCircleMedium",.6)}=e;return t?_jsx("div",{className:`${r}-before`,children:_jsx("div",{className:`${r}-icon ${r}-align`,children:t})}):null}let c={text:"option.text",value:"option.value",after:({option:e,active:t})=>s(e,!!t),before:({option:e})=>u(e),onClick({option:e}){let{items:t=[],value:i}=e;t.length?a.current(i):e.onClick?e.onClick():n&&n(e)},className:({level:e})=>`${r}-row-level-${e}`},d=Object.assign(Object.assign(Object.assign({},c),i),{className(e){let t=`${r}-row-level-${e.level}`;if("function"==typeof i.className){let n=i.className(e);n&&(t+=" "+n)}return t}}),p=AddToAttrs(e.attrs,{className:[r,`aio-input-sidemenu-${o}`,e.className]});return _jsx(AIOInput,Object.assign({},p,{className:p.className,type:"tree",size:48,toggleRef:a,value:[...t],getChilds:e=>e.row.items||[],option:d,indent:0}))};export const AISwitch=({colors:e=["#555","orange"],size:t=[16,2,3,48],value:n,onChange:i=()=>{}})=>{function o(){return{paddingRight:t[0]+t[1],paddingLeft:t[1],border:`${t[2]}px solid ${n?e[1]:e[0]}`}}function r(){return{width:t[3]-t[0]-t[1],height:t[0]+2*t[1]}}function a(){return{width:t[0],height:t[0],top:`calc(50% - ${t[0]/2}px)`,background:n?e[1]:e[0]}}return _jsx("div",{className:`aio-input-switch${n?" active":""}`,style:o(),onClick:()=>i(!n),children:_jsx("div",{className:"aio-input-switch-outer",style:r(),children:_jsx("div",{className:"aio-input-switch-inner",style:a()})})})};export function AIOInput_defaultProps(e){let t=new Storage("aio-input-storage");for(let n in e)t.save(n,e[n])}function getTypes(e){function t(){return -1!==["select","date","time"].indexOf(n)||-1!==["text","number","textarea"].indexOf(n)&&!!e.options||"button"===n&&!!e.popover}let{type:n,multiple:i}=e,o;return o="table"===n||"tags"===n||-1!==["radio","range","file","buttons","select","date","acardion"].indexOf(n)&&!!i,{isMultiple:o,isInput:-1!==["text","number","textarea","password"].indexOf(n),isDropdown:t(),hasOption:-1!==["text","number","textarea","color","select","radio","tabs","list","buttons","tags"].indexOf(n),hasPlaceholder:-1!==["text","number","textarea","color","select","table","image","date"].indexOf(n),hasKeyboard:-1!==["text","textarea","number","password"].indexOf(n),hasText:-1!==["checkbox","button","select"].indexOf(n),hasSearch:-1!==["table","select"].indexOf(n)}}function getDefaultProps(e,t){let n=Array.isArray(e.value)?"array":typeof e.value;return"select"===(e=Object.assign({},e)).type?e.multiple&&void 0===e.text&&(e.text="Select Items"):"time"===e.type?e.value||(e.value={}):"acardion"===e.type?e.deSelect=!0:"date"===e.type&&e.multiple&&(e.option=Object.assign(Object.assign({},e.option),{text:"option",value:"option"})),!0===e.loading&&(e.disabled=!0),t.isMultiple?e.value?"array"!==n&&(e.value=[e.value]):e.value=[]:"tree"===e.type||"array"===n&&(e.value=e.value[0]),e}function Def(e){return({theme:[],"date-size":180,"tree-size":36,"range-size":72,"date-unit":"day"})[e]}function I(e,t,n){return new GetSvg().getIcon(e,t,n)}function GetOptions(e){let{options:t,rootProps:n,types:i,level:o,isOpen:r,change:a,optionProp:l}=e,{deSelect:s}=n,u=[],c={},d=i.isDropdown&&i.hasOption&&!!n.onSwap;function p(e){return"select"===n.type&&i.isMultiple?-1!==n.value.indexOf(e):"radio"===n.type?i.isMultiple?-1!==n.value.indexOf(e):n.value===e:void 0}function f(e){return"tree"===n.type?!!r&&!!r(e):i.isMultiple?-1!==n.value.indexOf(e):e===n.value}s&&"function"!=typeof s&&!0!==s&&(t=[s,...t]);for(let g=0;g<t.length;g++){let h=t[g],m={index:g,active:!1,level:o,rootProps:n,change:a?e=>{a&&a(h,e)}:void 0},$=!!n.disabled||!!n.loading||!!GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"disabled"}),v=GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"show"});if(!1===v)continue;let y=GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"value"}),_=f(y),x=GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"text"});m.active=_;let b=GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"attrs",def:{}}),C=p(y),k=GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"checked",def:C}),N={optionOrg:h,show:v,loading:n.loading,attrs:b,text:x,value:y,disabled:$,draggable:d,checked:k,before:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"before"}),after:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"after"}),justify:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"justify"}),subtext:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"subtext"}),onClick:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"onClick",preventFunction:!0}),className:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"className"}),style:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"style"}),tagAttrs:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"tagAttrs"}),tagBefore:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"tagBefore"}),close:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"close",def:!i.isMultiple}),tagAfter:GetOptionProps({optionProp:l,optionOrg:h,optionDetails:m,key:"tagAfter"}),details:m};u.push(N),c["a"+N.value]=N}return{optionsList:u,optionsDic:c}}function GetOptionProps(p){let{optionProp,key,def,preventFunction,optionDetails,optionOrg}=p,optionResult="function"!=typeof optionOrg[key]||preventFunction?optionOrg[key]:optionOrg[key](optionOrg,optionDetails);if(void 0!==optionResult)return optionResult;let prop=optionProp[key];if("string"==typeof prop)try{let option=optionOrg,value;return eval("value = "+prop),value}catch(_a){}if("function"==typeof prop&&!preventFunction){let res=prop(optionOrg,optionDetails);return void 0===res?def:res}return void 0!==prop?prop:def}function getTimeByUnit(e,t){let{value:n={},jalali:i,unit:o={year:!0,month:!0,day:!0}}=e;function r(){let e=new AIODate().getToday(i);return{year:e[0],month:e[1],day:e[2],hour:e[3],minute:e[4],second:e[5]}}let a=r(),l={},s;for(s in o)if(!0===o[s]){let u=n[s],c={year:1e3,month:1,day:1,hour:0,minute:0,second:0}[s],d={year:3e3,month:12,day:31,hour:23,minute:59,second:59}[s];(void 0!==u&&"number"!=typeof u||u<c||u>d)&&alert(`aio input error => in type time value.${s} should be an number between ${c} and ${d}`);let p=void 0===u||t?a[s]:u,f=e.timeStep&&e.timeStep[s]?e.timeStep[s]:void 0;f&&(p=Math.round(p/f)*f),l[s]=p}return l}function getTimeText(e){let t=getTimeByUnit(e);if(!t)return"string"==typeof e.placeholder?e.placeholder:"string"==typeof e.text?e.text:"";if(e.pattern)return new AIODate().getDateByPattern(t,e.pattern);if(void 0!==e.text)return e.text;let n=[],i=[];void 0!==t.year&&i.push(Get2Digit(t.year)),void 0!==t.month&&i.push(Get2Digit(t.month)),void 0!==t.day&&i.push(Get2Digit(t.day)),i.length&&n.push(i.join("/"));let o=[];return void 0!==t.hour&&o.push(Get2Digit(t.hour)),void 0!==t.minute&&o.push(Get2Digit(t.minute)),void 0!==t.second&&o.push(Get2Digit(t.second)),o.length&&n.push(o.join(":")),n.join(" ")}export const MonthCalendar=({date:e,onClick:t=()=>{},dateAttrs:n=()=>({})})=>{let i=new AIODate,[o]=useState(i.isJalali(e)),[r]=useState(i.getMonths(o)),[a]=useState(i.getWeekDay([e[0],e[1],1]).index),[l]=useState(i.getMonthDaysLength(e));function s(){return i.getWeekDays(!0).map(e=>_jsx("div",{className:"month-calendar-weekday",children:e[0]}))}function u(){return Array(a).fill(0).map(()=>_jsx("div",{className:""}))}function c(){return Array(l).fill(0).map((t,n)=>d([e[0],e[1],n+1]))}function d(e){let i=AddToAttrs(n(e),{className:"month-calendar-day",attrs:{onClick:()=>t(e)}});return _jsx("div",Object.assign({},i,{children:e[2]}))}return _jsxs("div",{className:"month-calendar",children:[_jsx("div",{className:"month-calendar-title",children:r[e[1]-1]}),_jsx("div",{className:"month-calendar-weekdays",children:s()}),_jsxs("div",{className:"month-calendar-days",children:[u()," ",c()]})]})};export const Mask=e=>{let[t]=useState(createRef()),[n,i]=useState(e.value||""),[o,r]=useState(l(e.value||"")),a=useRef(o);function l(t){let n=[],i=t;for(let o of e.pattern)if("number"===o[0]||"text"===o[0]||"select"===o[0]){let r=+o[1],a=i.slice(0,r);n.push(a),i=i.slice(r,i.length)}else i=i.slice(o[1],i.length);return n}function s(n,o,a){let l=-1;console.log(n);let s="";for(let u=0;u<e.pattern.length;u++){let c=e.pattern[u];if("number"===c[0]||"text"===c[0]||"select"===c[0]){l++;let d=+c[1],p=n[l],f=d-p.length;if(f){let g="number"===c[0]?"0":"x";for(let h=0;h<f;h++)p=g+p;n[l]=p}else if(a===u){let m=$(t.current).find(".aio-input"),v=m.length;++o>v&&(o=0);let y=m.eq(o).find("input");y.length&&y.focus().select()}s+=p}else s+=c[0]}i(s),e.onChange(s),r(n)}function u(e,t,n){s(a.current.map((n,i)=>t===i?e:n),t,n)}function c(){let t=0;return e.pattern.map((e,n)=>{let i=e[0],o=t;if("text"===i||"number"===i){let r=+e[1];return t++,_jsx(AIText,{style:{width:10*r},placeholder:Array(r).fill("x").join(""),maxLength:r,filter:"number"===i?["number"]:void 0,value:a.current[o],onChange:e=>u(e,o,n)})}if("select"!==i)return _jsx("div",{className:"aio-input-mask-gap",children:e[2]||e[0]});{let l=e[2];return t++,_jsx(AISelect,{style:{width:"fit-content"},options:l,option:{text:"option",value:"option"},value:a.current[o],onChange:e=>u(e,o,n)})}})}return a.current=o,useEffect(()=>{i(e.value||""),r(l(e.value||""))},[e.value]),_jsx("div",{className:"example",children:_jsx("div",{className:"aio-input-mask",ref:t,title:n,children:c()})})};export const RichText=()=>{let e=usePopup(),t=useRef([]),n={tag:"div",items:[{tag:"h1",html:"this is my h1"},{tag:"ul",items:[{tag:"li",html:"item1"},{tag:"li",html:"item2"}]}]};function i(e){$(".rich-text-item").removeClass("rich-text-item-hover");let n=$(e.target);n.addClass("rich-text-item-hover");let i=n.attr("data-index"),o=i?i.split("-"):[];t.current=o.map(e=>+e)}function o(e,t){let n=e.tag,r=void 0!==e.html?e.html:(e.items||[]).map((e,n)=>o(e,[...t,n])),l=AddToAttrs(e.attrs,{className:"rich-text-item",attrs:{"data-index":t.join("-")}});return _jsx(n,Object.assign({},l,{onMouseOver:e=>i(e),onClick(e){a(t)},children:r}))}function r(){let e=n;for(let i=0;i<t.current.length;i++){let o=t.current[i];e=e.items[o]}return e}function a(n){if(n.toString()!==t.current.toString())return;let i=r();e.addModal({position:"center",body:_jsxs("div",{className:"rich-text-options",children:[_jsx("div",{className:"rich-text-option-title",children:i.tag}),_jsx("div",{className:"rich-text-option",children:"Add Child"}),_jsx("div",{className:"rich-text-option",children:"Remove"}),_jsx("div",{className:"rich-text-option",children:"Move Up"}),_jsx("div",{className:"rich-text-option",children:"Move Down"})]})})}return _jsxs("div",{className:"msf",children:[_jsx("div",{className:"msf"}),_jsx("div",{className:"msf",children:o(n,[])}),_jsx(RichModal,{item:n}),e.render()]})};let RichModal=e=>{let[t,n]=useState(e.item);return _jsxs("div",{className:"rich-text-options",children:[_jsx("div",{className:"rich-text-option-title",children:t.tag}),_jsx(AIButtons,{justify:!0,style:{border:"1px solid #ddd"},options:[{text:"none",value:void 0},{text:"v",value:"align-v-"},{text:"h",value:"align-h-"},{text:"vh",value:"align-vh-"}],option:{text:"none"},value:t.align,onChange:e=>n(Object.assign(Object.assign({},t),{align:e}))})]})};export const JoyStick=e=>{let{scale:t=1}=e,[n,i]=useState();if(useEffect(()=>{let{x:t,y:n,angle:o,length:r}=e;if(void 0!==t&&void 0!==n&&i({x:t,y:n}),void 0!==o&&void 0!==r){let{left:a,top:l}=getLeftAndTopByCenterAngleLength([e.size/2,e.size/2],o,r);i({x:a,y:l})}},[]),!n)return null;function o(n){let{x:i,y:o,length:r,angle:a}=n;i/=t,o/=t,r/=t,e.onChange({x:i,y:o,length:r,angle:a})}return _jsx(JOYSTICK,{x:n.x*t,y:n.y*t,size:e.size,onChange:o,centerOriented:e.centerOriented})};let JOYSTICK=({size:e,x:t,y:n,onChange:i,centerOriented:o})=>{let[r]=useState([e/2,e/2]),[a,l]=useState([r[0]+t,r[0]+n]),s=useRef(a);s.current=a;let[u]=useState(createRef());function c(){return s.current}function d(){o&&(i({x:0,y:0,length:0,angle:0}),l(r))}function p(e){let{x:t,y:n,centerAngle:o,centerDistance:a}=e.mousePosition;l([t,n]),t-=r[0],n-=r[1],i({x:t,y:n,length:a,angle:o})}return useEffect(()=>{new Swip({dom:()=>$(u.current),start:c,move:p,end:d,maxCenterDistance:e/2})},[]),_jsx("div",{style:{width:e,height:e},className:"joy-stick",ref:u,children:_jsx("div",{style:{left:s.current[0],top:s.current[1]},className:"joy-stick-button",children:_jsx("div",{})})})};export const AIText=e=>_jsx(AIOInput,Object.assign({},e,{type:"text"}));export const AINumber=e=>_jsx(AIOInput,Object.assign({},e,{type:"number"}));export const AITextarea=e=>_jsx(AIOInput,Object.assign({},e,{type:"textarea"}));export const AIPassword=e=>_jsx(AIOInput,Object.assign({},e,{type:"password"}));export const AIColor=e=>_jsx(AIOInput,Object.assign({},e,{type:"color"}));export const AISelect=e=>_jsx(AIOInput,Object.assign({},e,{type:"select"}));export const AIRadio=e=>_jsx(AIOInput,Object.assign({},e,{type:"radio"}));export const AITabs=e=>_jsx(AIOInput,Object.assign({},e,{type:"tabs"}));export const AIButtons=e=>_jsx(AIOInput,Object.assign({},e,{type:"buttons"}));export const AITags=e=>_jsx(AIOInput,Object.assign({},e,{type:"tags"}));export const AITree=e=>_jsx(AIOInput,Object.assign({},e,{type:"tree"}));export const AIImage=e=>_jsx(AIOInput,Object.assign({},e,{type:"image"}));export const AIFile=e=>_jsx(AIOInput,Object.assign({},e,{type:"file"}));export const AICheckbox=e=>_jsx(AIOInput,Object.assign({},e,{type:"checkbox"}));export const AIDate=e=>_jsx(AIOInput,Object.assign({},e,{type:"date"}));export const AITime=e=>_jsx(AIOInput,Object.assign({},e,{type:"time"}));export const AISlider=e=>_jsx(AIOInput,Object.assign({},e,{type:"slider"}));export const AISpinner=e=>_jsx(AIOInput,Object.assign({},e,{type:"spinner"}));export const AIAcardion=e=>_jsx(AIOInput,Object.assign({},e,{type:"acardion"}));export const AIList=e=>_jsx(AIOInput,Object.assign({},e,{type:"list"}));export const AITable=e=>_jsx(AIOInput,Object.assign({},e,{type:"table"}));export const useForm=e=>{function t(){return JSON.parse(JSON.stringify(e.initData))}let[n]=useState(t),[i,o]=useState(!1),r=useRef({}),a=useRef({}),l=()=>{let e=Object.keys(a.current);return!!e.filter(e=>!!a.current[e]).length},s=e=>!!r.current[e],[u,c]=useState(t),[d,p]=useState(null);function f(){return m.current}let g=e=>{m.current=e,c(e)},h=(e,t)=>{let n=Object.assign({},m.current);r.current=Object.assign(Object.assign({},r.current),{[e.field]:!0}),a.current=Object.assign(Object.assign({},a.current),{[e.field]:$(e,t)}),setValueByField(n,e.field,t),g(n)},m=useRef(u);function $(t,n){let{required:i=!0,label:o,validateType:r}=t;if(i&&void 0===n||""===n||null===n)return e.fa?`${o} ضروری است`:`${o} is required`;if("email"===r){let a=IsValidEmail(n);if(!a)return e.fa?`فرمت ${o} صحیح نیست`:`${o} format is incorrect`}if("irMobile"===r){let l=ValidateIrMobile({value:n,label:o,fa:e.fa});if(l)return l}if("irNationalCode"===r){let s=IsValidIrNationalCode(n);if(!s)return e.fa?`فرمت ${o} صحیح نیست`:`${o} format is incorrect`}if(t.validate){let u=t.validate({data:m.current,value:n,input:t});if(u)return u}if("undefined"===n||"[Object-Object]"===n||"null"===n||"NaN"===n)return e.fa?"این مقدار مجاز نیست":"this value is forbidden"}function v(e){let{field:t}=e,n=getValueByField(m.current,t),i=$(e,n);return a.current=Object.assign(Object.assign({},a.current),{[t]:i}),{value:n,error:i}}m.current=u;let y=(e,t)=>{let n={flex:e.flex};return t&&(t.h||t.v)&&(n[t.v?"height":"width"]=e.size),Object.assign(Object.assign({},n),e.style)};function _(e){let t,n,i,o,r=[];return e.show_xs&&(t=!1,n=!0,i=!0,o=!0),e.hide_xs&&(t=!0),e.show_sm&&(t=!0,n=!1,i=!0,o=!0),e.hide_sm&&(n=!0),e.show_md&&(t=!0,n=!0,i=!1,o=!0),e.hide_md&&(i=!0),e.show_lg&&(t=!0,n=!0,i=!0,o=!1),e.hide_lg&&(o=!0),t&&r.push("ai-form-hide-xs"),n&&r.push("ai-form-hide-sm"),i&&r.push("ai-form-hide-md"),o&&r.push("ai-form-hide-lg"),r}let x=(e,t,n)=>{let i,o,r=n?"ai-form":void 0,a=_(e);return e.v?(i="ai-form-scroll-v","v"===e.align?o="ai-form-justify-center":"h"===e.align?o="ai-form-items-center":"vh"===e.align?o="ai-form-justify-center ai-form-items-center":"hv"===e.align&&(o="ai-form-justify-center ai-form-items-center")):e.h&&(i="ai-form-scroll-h","v"===e.align?o="ai-form-items-center":"h"===e.align?o="ai-form-justify-center":"vh"===e.align?o="ai-form-justify-center ai-form-items-center":"hv"===e.align&&(o="ai-form-justify-center ai-form-items-center")),[r,t,e.className,i,o,...a]},b=e=>{let{node:t,type:n,parentNode:i,isRoot:o}=e,r="";return"group"===n?r=`ai-form-${t.v?"v":"h"}`:"html"===n&&(r="ai-form-html"),AddToAttrs(t.attrs,{className:x(t,r,o),style:y(t,i),attrs:"input"===n&&t.input?{"data-label":t.input.label}:void 0})},C=()=>{let e=t();m.current=e,a.current={},g(e)},k=()=>a.current,N=()=>{let e=a.current,t=Object.keys(e),n=t.filter(t=>!!e[t]);return n.map(t=>e[t])},w=()=>JSON.stringify(n)!==JSON.stringify(m.current);useEffect(()=>{p(T())},[u]);let A=()=>({rootProps:e,getData:f,isDataChanged:w,isFieldChanged:s,getValueAndErrorByInput:v,changeData:g,changeByInput:h,hasError:l,getErrorsList:N,reset:C,getNodeAttrs:b,getErrorsDic:k,renderSubmitButton:O,isSubmitDisabled:D}),T=()=>{if(!e.getLayout)return null;let t=A(),n=e.getLayout(t);return _jsx(FormRender,{node:n,context:t})},D=()=>{let e=w(),t=l(),n=!!i;return!e||t||!!n},O=(t,n)=>{if(void 0===e.onSubmit)return console.error("useForm error => for use renderSubmitButton you should set onSubmit props in difinition of useForm hook"),null;let i=()=>{let t=e.onSubmit;o(!0),t(f()),setTimeout(()=>o(!1),3e3)},r=D(),a=Object.assign(Object.assign({type:"button"},n),{disabled:r,onClick:i});return _jsx("button",Object.assign({},a,{children:t}))},P=(e,t)=>_jsx(AIFormInputContainer,{context:A(),input:e,attrs:b({node:{input:e,attrs:t},type:"input",isRoot:!1})});return{data:u,changeData:g,getErrorsDic:k,getErrorsList:N,renderLayout:_jsx(_Fragment,{children:d}),reset:C,renderSubmitButton:O,isSubmitDisabled:D,renderInput:P}};let FormRender=({context:e,node:t})=>{let[n,i]=useState(null),{getData:o}=e,r=o();return useEffect(()=>{i(_jsx(AIFormNode,{node:t,context:e,level:0,index:0}))},[r]),_jsx(_Fragment,{children:n})},AIFormNode=({node:e,context:t,level:n,index:i,parentNode:o})=>{let{show:r=!0}=e;if(!r)return null;if(Array.isArray(e.h)||Array.isArray(e.v))return _jsx(AIFormGroup,{node:e,context:t,level:n,index:i,parentNode:o});let{getNodeAttrs:a}=t;if(void 0!==e.html){let l=a({node:e,type:"html",isRoot:0===n,parentNode:o});return _jsx("div",Object.assign({},l,{children:e.html}))}if(e.input){let s=a({node:e,type:"input",isRoot:!1});return _jsx(AIFormInputContainer,{attrs:s,input:e.input,context:t},e.input.field)}return null},AIFormGroup=({node:e,context:t,level:n,parentNode:i})=>{let{tag:o="div",legend:r}=e,{getNodeAttrs:a}=t,l=_jsxs(_Fragment,{children:[!!r&&"fieldset"===o&&_jsx("legend",{children:r}),e[e.v?"v":"h"].map((i,o)=>_jsx(AIFormNode,{node:i,parentNode:e,context:t,level:n+1,index:o},`level-${n+1}-index-${o}`))]}),s=a({node:e,type:"group",isRoot:0===n,parentNode:i});return 0===n?_jsx("form",Object.assign({},s,{children:l})):"section"===o?_jsx("section",Object.assign({},s,{children:l})):"fieldset"===o?_jsx("fieldset",Object.assign({},s,{children:l})):"p"===o?_jsx("p",Object.assign({},s,{children:l})):_jsx("div",Object.assign({},s,{children:l}))},AIFormInputContainer=({context:e,input:t,attrs:n})=>{let{getValueAndErrorByInput:i,changeByInput:o}=e,{inputAttrs:r,field:a,label:l}=t,{value:s,error:u}=i(t);return _jsx(RenderInput,{value:s,error:u,input:t,context:e,inputProps:Object.assign(Object.assign({},t),{inputAttrs:Object.assign(Object.assign({},r),{"aria-label":a}),value:s,onChange:e=>o(t,e)}),attrs:n})},RenderInput=e=>{let{context:t,attrs:n,input:i,inputProps:o,error:r}=e,{isFieldChanged:a,rootProps:l}=t,[s,u]=useState(null);return useEffect(()=>{let{field:e,label:t}=i;u(_jsx(AIFormInput,{required:i.required,showLabel:l.showLabel,input:_jsx(AIOInput,Object.assign({},o,{type:o.type})),label:t,error:a(e)?r:void 0,attrs:n}))},[e,r]),_jsx(Fragment,{children:s},i.field)};export const AIFormInput=e=>{let{label:t,input:n,action:i,error:o,attrs:r,id:a,required:l=!0,showLabel:s=!0}=e,u=!!t&&!!s||!!i,c=AddToAttrs(r,{className:"ai-form-input"});return _jsxs("div",Object.assign({},c,{children:[!0===u&&_jsxs("label",{className:"ai-form-input-header",htmlFor:a,children:[!!t&&_jsxs("div",{className:"ai-form-input-label",children:[l?_jsx("div",{className:"ai-form-required",children:"*"}):null,t]}),!!i&&_jsx("div",{className:"ai-form-input-action",onClick:i.fn?()=>i.fn():()=>{},children:i.text})]}),_jsx("div",{className:"ai-form-input-body",children:n}),!!o&&_jsx("div",{className:"ai-form-input-error",children:o})]}))};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { createElement as _createElement } from "react";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { createRef, useContext, createContext, useState, useEffect, useRef, Fragment } from 'react';
+import usePopup from "aio-popup";
+import { Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel, svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray, keyboard_filter, setValueByField, getValueByField, Swip, getLeftAndTopByCenterAngleLength, ValidateIrMobile, IsValidEmail, IsValidIrNationalCode, classListToString } from 'aio-utils';
+import AIODate from 'aio-date';
+import { Indent, GetSvg } from 'aio-component-utils';
+import $ from 'jquery';
+import './index.css';
+const AICTX = createContext({});
+const AIOInput = (props) => {
+    let type = props.type, round = props.round;
+    let value = props.value;
+    if (type === 'text') {
+        if (typeof value !== 'string') {
+            value = '';
+        }
+    }
+    else if (type === 'number') {
+        if (typeof value !== 'number') {
+            value = undefined;
+        }
+    }
+    if (type === 'spinner') {
+        type = 'range';
+        if (!round || typeof round !== 'number') {
+            round = 1;
+        }
+    }
+    else if (type === 'slider') {
+        type = 'range';
+        round = 0;
+    }
+    else if (type === 'range') {
+        return null;
+    }
+    let rootProps = Object.assign(Object.assign({}, props), { type, round, value });
+    if (type === 'text' && rootProps.getOptions) {
+        return _jsx(SuggestionInput, Object.assign({}, rootProps));
+    }
+    return _jsx(AIOINPUT, Object.assign({}, rootProps));
+};
+export default AIOInput;
+const SuggestionInput = (props) => {
+    const { getOptions, option = {}, onChange } = props;
+    const [searchResult, SetSearchResult] = useState([]);
+    const [value, setValue] = useState('');
+    function setSearchResult(newValue) {
+        return __awaiter(this, void 0, void 0, function* () {
+            setValue(newValue);
+            if (!newValue) {
+                SetSearchResult([]);
+                return;
+            }
+            const res = getOptions ? yield getOptions(newValue) : [];
+            SetSearchResult(res);
+        });
+    }
+    return (_jsx(AIOInput, Object.assign({}, props, { value: value, options: searchResult, option: Object.assign(Object.assign({}, option), { onClick: (optionOrg, optionDetails) => {
+                const text = GetOptionProps({ optionProp: option, key: 'text', optionDetails, optionOrg });
+                setSearchResult(text);
+                if (onChange) {
+                    onChange(text, optionOrg);
+                }
+            } }), getOptions: undefined, onChange: (newValue) => {
+            setSearchResult(newValue);
+            if (onChange) {
+                onChange(newValue);
+            }
+        } })));
+};
+function AIOINPUT(props) {
+    let [types] = useState(getTypes(props));
+    let [DATE] = useState(new AIODate());
+    props = getDefaultProps(props, types);
+    let { type, value, onChange, attrs = {}, rtl } = props;
+    let [parentDom] = useState(createRef());
+    let [datauniqid] = useState('aiobutton' + (Math.round(Math.random() * 10000000)));
+    let popup = usePopup({ rtl: props.rtl });
+    let [showPassword, SetShowPassword] = useState(false);
+    function setShowPassword(state) { SetShowPassword(state === undefined ? !showPassword : state); }
+    let [DragOptions] = useState(new DragClass({
+        callback: (fromData, toData) => {
+            if (typeof props.onSwap === 'function') {
+                const { fromIndex } = fromData;
+                const { options, toIndex } = toData;
+                const sorted = DragOptions.reOrder(options, fromIndex, toIndex);
+                props.onSwap(sorted, options[fromIndex], options[toIndex]);
+            }
+        }
+    }));
+    function getPopover(dom) {
+        let className = 'aio-input-popover';
+        className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`;
+        if (types.hasOption) {
+            className += ' aio-input-dropdown';
+        }
+        if (props.type === 'time') {
+            className += ' aio-input-time-popover';
+        }
+        const popover = (props.popover || {});
+        let body = null;
+        if (popover.body) {
+            body = popover.body;
+        }
+        else if (type === 'date') {
+            body = _jsx(Calendar, { onClose: popup.removeModal });
+        }
+        else if (type === 'time') {
+            body = _jsx(TimePopover, { onClose: popup.removeModal });
+        }
+        else {
+            body = _jsx(Options, {});
+        }
+        let obj = Object.assign(Object.assign({}, (props.popover || {})), { position: popover.position || 'popover', fitHorizontal: ['text', 'number', 'textarea'].indexOf(type) !== -1 || (type === 'select' && !!props.multiple) || !!popover.fitHorizontal, onClose: () => closePopup(), body, getTarget: () => $(dom.current), setAttrs: (key) => {
+                let attrs = (popover.setAttrs || (() => { return {}; }))(key);
+                if (key === 'modal') {
+                    return AddToAttrs(attrs, { className });
+                }
+            } });
+        return obj;
+    }
+    function closePopup() {
+        popup.removeModal();
+        setTimeout(() => $(parentDom.current).focus(), 0);
+    }
+    function click(e, dom) {
+        if (type === 'checkbox') {
+            if (onChange) {
+                onChange(!value, e);
+            }
+        }
+        else if (types.isDropdown) {
+            let open = !!popup.getModals().length;
+            if (open) {
+                return;
+            }
+            popup.addModal(getPopover(dom));
+        }
+        else if (typeof props.onClick === 'function') {
+            props.onClick(e);
+        }
+        else if (attrs.onClick) {
+            attrs.onClick();
+        }
+    }
+    function optionClick(option) {
+        let { attrs = {}, onClick, close } = option;
+        if (onClick) {
+            onClick(option.details);
+        }
+        else if (attrs.onClick) {
+            attrs.onClick(option);
+        }
+        else if (onChange) {
+            if (types.isInput) { /*do nothing*/ }
+            else if (type === 'tree') { /*do nothing*/ }
+            else if (type === 'file') { /*do nothing*/ }
+            else if (types.isMultiple) {
+                let { multiple } = props, newValue;
+                if (value.indexOf(option.value) === -1) {
+                    newValue = value.concat(option.value);
+                }
+                else {
+                    newValue = value.filter((o) => o !== option.value);
+                }
+                while (typeof multiple === 'number' && newValue.length > multiple) {
+                    newValue = newValue.slice(1, newValue.length);
+                }
+                onChange(newValue, option.details);
+            }
+            else {
+                if (option.value !== props.value) {
+                    onChange(option.value, option.details);
+                }
+                else if (props.deSelect === true) {
+                    onChange(undefined, option.details);
+                }
+                else if (typeof props.deSelect === 'function') {
+                    props.deSelect();
+                }
+            }
+        }
+        if (close) {
+            closePopup();
+        }
+    }
+    function getOptions() {
+        let options = [];
+        if (type === 'date') {
+            if (!props.multiple) {
+                return { optionsList: [], optionsDic: {} };
+            }
+            options = [...props.value];
+        }
+        else if (typeof props.options === 'function') {
+            options = props.options();
+        }
+        else if (props.options) {
+            options = props.options;
+        }
+        else {
+            options = [];
+        }
+        return GetOptions({ rootProps: props, types, options, optionProp: props.option || {} });
+    }
+    function getContext() {
+        let context = {
+            options: getOptions(), popup,
+            rootProps: Object.assign(Object.assign({}, props), { value }), datauniqid, touch: 'ontouchstart' in document.documentElement,
+            DragOptions, click, optionClick, types, showPassword, setShowPassword, DATE
+        };
+        return context;
+    }
+    function getRangeClassName() {
+        let { round, vertical } = props;
+        if (round) {
+            return 'aio-input-range-round';
+        }
+        if (vertical) {
+            return 'aio-input-range-vertical';
+        }
+        return 'aio-input-range-horizontal';
+    }
+    let render = {
+        spinner: () => null,
+        slider: () => null,
+        acardion: () => _jsx(Acardion, {}),
+        tree: () => _jsx(Tree, {}),
+        tags: () => _jsx(Layout, { properties: { text: _jsx(Tags, {}) } }),
+        list: () => _jsx(List, {}),
+        file: () => _jsx(File, {}),
+        select: () => _jsx(Select, {}),
+        table: () => _jsx(Table, {}),
+        checkbox: () => _jsx(Layout, {}),
+        button: () => _jsx(Layout, {}),
+        range: () => _jsx(Layout, { properties: { text: _jsx(Range, {}), className: getRangeClassName() } }),
+        radio: () => _jsx(Layout, { properties: { text: _jsx(Options, {}) } }),
+        tabs: () => _jsx(Layout, { properties: { text: _jsx(Options, {}) } }),
+        buttons: () => _jsx(Layout, { properties: { text: _jsx(Options, {}) } }),
+        date: () => _jsx(DateInput, {}),
+        time: () => _jsx(Layout, { properties: { text: getTimeText(props) } }),
+        image: () => _jsx(Layout, { properties: { text: _jsx(Image, {}) } }),
+        text: () => _jsx(Layout, { properties: { text: _jsx(Input, {}) } }),
+        password: () => _jsx(Layout, { properties: { text: _jsx(Input, {}) } }),
+        textarea: () => _jsx(Layout, { properties: { text: _jsx(Input, {}) } }),
+        number: () => _jsx(Layout, { properties: { text: _jsx(Input, {}) } }),
+        color: () => _jsx(Layout, { properties: { text: _jsx(Input, {}) } })
+    };
+    if (!type || !render[type]) {
+        return null;
+    }
+    return (_jsxs(AICTX.Provider, { value: getContext(), children: [render[type](), popup.render()] }, datauniqid));
+}
+function TimePopover(props) {
+    let { DATE, rootProps } = useContext(AICTX);
+    let { jalali, onChange, size = 12 } = rootProps;
+    let { onClose } = props;
+    let [value, setValue] = useState(getTimeByUnit(rootProps));
+    const [startYear] = useState(value.year ? value.year - 10 : undefined);
+    const [endYear] = useState(value.year ? value.year + 10 : undefined);
+    function change(obj) {
+        setValue(Object.assign(Object.assign({}, value), obj));
+    }
+    function translate(key) {
+        return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت', 'Now': 'اکنون' }[key] : key;
+    }
+    function getTimeOptions(type) {
+        var _a, _b, _c;
+        //@ts-nocheck
+        let { year, month, day } = value;
+        if (type === 'year' && startYear && endYear) {
+            return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear }), (_a = rootProps.timeStep) === null || _a === void 0 ? void 0 : _a.year);
+        }
+        if (type === 'day' && day) {
+            let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
+            if (day > length) {
+                change({ day: 1 });
+            }
+            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 }; }, (_b = rootProps.timeStep) === null || _b === void 0 ? void 0 : _b.day);
+        }
+        if (type === 'month') {
+            return GetArray(12, (i) => ({ text: i + 1, value: i + 1 }), (_c = rootProps.timeStep) === null || _c === void 0 ? void 0 : _c.month);
+        }
+        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }), rootProps.timeStep ? rootProps.timeStep[type] : undefined);
+    }
+    function layout(type) {
+        if (typeof value[type] !== 'number') {
+            return null;
+        }
+        let options = getTimeOptions(type);
+        let p = { type: 'list', value: value[type], options, size: size * 2.5, onChange: (v) => change({ [type]: v }) };
+        return (_jsxs("div", { className: "aio-input-time-popover-item", children: [_jsx("div", { className: "aio-input-time-popover-item-title", children: translate(type) }), _jsx(AIOInput, Object.assign({}, p)), _jsx("div", { className: 'aio-input-time-popover-highlight' })] }));
+    }
+    function setValueByTimeStep(value) {
+        return value;
+    }
+    function submit() { if (onChange) {
+        onChange(setValueByTimeStep(value));
+    } onClose(); }
+    function now() { setValue(getTimeByUnit(rootProps, true)); }
+    return (_jsxs("div", { className: 'aio-input-time-popover-content aio-input-time-theme-color aio-input-time-theme-bg', style: { fontSize: size }, children: [_jsxs("div", { className: "aio-input-time-popover-body", children: [layout('year'), " ", layout('month'), " ", layout('day'), " ", layout('hour'), " ", layout('minute'), " ", layout('second')] }), _jsxs("div", { className: "aio-input-time-popover-footer", children: [_jsx("button", { onClick: submit, children: translate('Submit') }), rootProps.now !== false && _jsx("button", { onClick: () => now(), children: translate('Now') })] })] }));
+}
+function Image() {
+    let { rootProps, popup } = useContext(AICTX);
+    let { value, attrs, onChange, disabled, placeholder, preview, deSelect, imageAttrs = {} } = rootProps;
+    let [url, setUrl] = useState();
+    let dom = createRef();
+    // if(typeof value === 'object'){
+    //     let fr = new FileReader();
+    //     fr.onload = function () {
+    //         $(dom.current).attr('src',fr.result)
+    //     }
+    //     fr.readAsDataURL(value);
+    // }
+    useEffect(() => {
+        if (!value || value === null) {
+            if (url !== value) {
+                setUrl('');
+            }
+        }
+        else if (typeof value === 'object') {
+            changeUrl(value);
+        }
+        else if (typeof value === 'string') {
+            if (url !== value) {
+                setUrl(value);
+            }
+        }
+    });
+    function changeUrl(file, callback) {
+        try {
+            let fr = new FileReader();
+            fr.onload = function () {
+                if (url !== fr.result) {
+                    setUrl(fr.result);
+                    if (callback) {
+                        callback(fr.result);
+                    }
+                }
+            };
+            fr.readAsDataURL(file);
+        }
+        catch (_a) { }
+    }
+    function onPreview(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        openPopup();
+    }
+    function openPopup() {
+        popup.addModal({
+            position: 'center', header: { title: '', onClose: () => popup.removeModal() },
+            body: _jsx("div", { className: 'aio-input-image-preview-popup', children: _jsx("img", { src: $(dom.current).attr('src'), alt: placeholder }) })
+        });
+    }
+    let IMG = url ? (_jsxs(_Fragment, { children: [_jsx("img", Object.assign({ ref: dom, src: url, alt: placeholder, style: { objectFit: 'contain', cursor: !onChange ? 'default' : undefined }, onClick: !!onChange ? undefined : onPreview, height: '100%' }, imageAttrs)), !!deSelect &&
+                _jsx("div", { onClick: (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (typeof deSelect === 'function') {
+                            deSelect();
+                        }
+                        else if (onChange) {
+                            onChange('');
+                        }
+                    }, className: 'aio-input-image-remove', children: I('mdiClose', 1) }), preview && !!onChange && _jsx("div", { onClick: (e) => onPreview(e), className: 'aio-input-image-preview', children: I('mdiImage', 1) }), popup.render()] })) : _jsx("span", Object.assign({}, attrs, { className: 'aio-input-image-placeholder', children: placeholder || 'placeholder' }));
+    if (!onChange) {
+        return IMG;
+    }
+    let p = {
+        disabled,
+        justify: true, text: IMG, attrs: { style: { width: '100%', height: '100%', padding: 0 } },
+        onChange: (file) => changeUrl(file, (url) => { if (onChange)
+            onChange(url); })
+    };
+    return (_jsx(AIFile, Object.assign({}, p)));
+}
+function File() { return (_jsxs("div", { className: 'aio-input-file-container', children: [_jsx(Layout, {}), _jsx(FileItems, {})] })); }
+function InputFile() {
+    let { rootProps, types } = useContext(AICTX);
+    let { value = [], onChange = () => { }, disabled, multiple, inputAttrs } = rootProps;
+    function change(e) {
+        let Files = e.target.files;
+        let result;
+        if (types.isMultiple) {
+            result = [...value];
+            let names = result.map(({ name }) => name);
+            for (let i = 0; i < Files.length; i++) {
+                let file = Files[i];
+                if (names.indexOf(file.name) !== -1) {
+                    continue;
+                }
+                result.push({ name: file.name, size: file.size, file });
+            }
+            if (typeof multiple === 'number') {
+                while (result.length > multiple) {
+                    result = result.slice(1, result.length);
+                }
+            }
+        }
+        else {
+            result = Files.length ? Files[0] : undefined;
+        }
+        onChange(result);
+    }
+    let props = Object.assign({ disabled: disabled === true, type: 'file', style: { display: 'none' }, multiple: types.isMultiple, onChange: (e) => change(e) }, inputAttrs);
+    return _jsx("input", Object.assign({}, props));
+}
+function FileItems() {
+    let { rootProps } = useContext(AICTX);
+    let { value, rtl } = rootProps;
+    let files = [];
+    if (Array.isArray(value)) {
+        files = value;
+    }
+    else if (value) {
+        files = [value];
+    }
+    else {
+        return null;
+    }
+    if (!files.length) {
+        return null;
+    }
+    let Files = files.map((file, i) => { return _jsx(FileItem, { file: file, index: i }, i); });
+    return (_jsx("div", { className: 'aio-input-files', style: { direction: rtl ? 'rtl' : 'ltr' }, children: Files }));
+}
+const FileItem = (props) => {
+    let { rootProps, types } = useContext(AICTX);
+    let { onChange = () => { }, value = [] } = rootProps;
+    let { file, index } = props;
+    function getFile(file) {
+        let filename = file.name || 'untitle';
+        let fileSize = file.size || 0;
+        let nameLength = 20;
+        try {
+            let minName, sizeString;
+            let lastDotIndex = filename.lastIndexOf('.');
+            let name = filename.slice(0, lastDotIndex);
+            let format = filename.slice(lastDotIndex + 1, filename.length);
+            if (name.length > nameLength) {
+                minName = name.slice(0, Math.floor(nameLength / 2)) + '...' + name.slice(name.length - Math.floor(nameLength / 2), name.length) + '.' + format;
+            }
+            else {
+                minName = filename;
+            }
+            let size = fileSize;
+            if (!size) {
+                return { minName, sizeString: false };
+            }
+            let gb = size / (1024 * 1024 * 1024), mb = size / (1024 * 1024), kb = size / 1024;
+            if (gb >= 1) {
+                sizeString = gb.toFixed(2) + ' GB';
+            }
+            else if (mb >= 1) {
+                sizeString = mb.toFixed(2) + ' MB';
+            }
+            else if (kb >= 1) {
+                sizeString = kb.toFixed(2) + ' KB';
+            }
+            else {
+                sizeString = size + ' byte';
+            }
+            return { minName, sizeString };
+        }
+        catch (_a) {
+            return { minName: 'untitle', sizeString: false };
+        }
+    }
+    function remove(e, index) {
+        return __awaiter(this, void 0, void 0, function* () {
+            e.stopPropagation();
+            e.preventDefault();
+            if (typeof rootProps.onRemove === 'function') {
+                const res = yield rootProps.onRemove({ row: value[index], rowIndex: index });
+                if (res === false) {
+                    return;
+                }
+            }
+            let newValue = [];
+            for (let i = 0; i < value.length; i++) {
+                if (i === index) {
+                    continue;
+                }
+                newValue.push(value[i]);
+            }
+            onChange(newValue);
+        });
+    }
+    function download() {
+        DownloadFile(file);
+    }
+    function getIcon() {
+        let filePreview;
+        if (rootProps.preview) {
+            filePreview = FilePreview(file, { onClick: () => download() });
+        }
+        if (filePreview && filePreview !== null) {
+            return filePreview;
+        }
+        return (_jsx("div", { className: 'aio-input-file-item-icon', onClick: () => download(), children: I('mdiAttachment', .8) }));
+    }
+    let { minName, sizeString } = getFile(file);
+    let { optionsList } = GetOptions({
+        rootProps, types,
+        options: [{ minName, sizeString, index }],
+        optionProp: Object.assign(Object.assign({}, rootProps.option), { subtext: () => sizeString, text: () => minName, before: () => getIcon(), after: () => _jsx("div", { className: 'aio-input-file-item-icon', onClick: (e) => remove(e, index), children: I('mdiClose', .7) }) })
+    });
+    let option = optionsList[0];
+    return _jsx(Layout, { option: option });
+};
+function Select() {
+    let { rootProps, types, options } = useContext(AICTX);
+    let { value, hideTags } = rootProps;
+    let values = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : []);
+    function getSelectText() {
+        if (!values.length) {
+            return;
+        }
+        let option = options.optionsDic['a' + values[0]];
+        if (!option) {
+            return;
+        }
+        return option.text;
+    }
+    if (types.isMultiple) {
+        return (_jsxs("div", { className: 'aio-input-multiselect-container', children: [_jsx(Layout, {}), !hideTags && !!values.length && _jsx(Tags, {})] }));
+    }
+    else {
+        return _jsx(Layout, { properties: { text: rootProps.text || getSelectText() } });
+    }
+}
+function DateInput() {
+    let { rootProps, types } = useContext(AICTX);
+    let { value, hideTags } = rootProps;
+    let values = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : []);
+    function getDateText() {
+        let { value, unit = Def('date-unit'), text, pattern: PT, jalali, placeholder } = rootProps;
+        if (value) {
+            text = PT !== undefined ? PT : text;
+            let DATE = new AIODate();
+            let list = DATE.convertToArray(value);
+            let [year, month = 1, day = 1, hour = 0] = list;
+            list = [year, month, day, hour];
+            let splitter = DATE.getSplitter(value);
+            let content = '';
+            if (text && text !== null) {
+                content = text;
+            }
+            else {
+                let pattern = '{}';
+                if (unit === 'month') {
+                    pattern = `{year}${splitter}{month}`;
+                }
+                else if (unit === 'day') {
+                    pattern = `{year}${splitter}{month}${splitter}{day}`;
+                }
+                else if (unit === 'hour') {
+                    pattern = `{year}${splitter}{month}${splitter}{day} - {hour} : 00`;
+                }
+                content = DATE.getDateByPattern(list, pattern);
+            }
+            return _jsx("div", { style: { direction: 'ltr', width: 'fit-content' }, children: content });
+        }
+        return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ');
+    }
+    if (types.isMultiple) {
+        return (_jsxs("div", { className: 'aio-input-multiselect-container', children: [_jsx(Layout, { properties: { text: rootProps.text || 'Select Dates' } }), !hideTags && !!values.length && _jsx(Tags, {})] }));
+    }
+    else {
+        return _jsx(Layout, { properties: { text: getDateText() } });
+    }
+}
+const Tags = () => {
+    let { rootProps, options } = useContext(AICTX);
+    let { value = [], rtl, disabled, onChange = () => { } } = rootProps;
+    let tags = value.map((o, i) => {
+        let option = options.optionsDic['a' + o];
+        if (option === undefined) {
+            return null;
+        }
+        return (_jsx(Tag, { onClose: () => onChange(rootProps.value.filter((rpv) => rpv !== o)), attrs: option.tagAttrs, before: option.tagBefore, after: option.tagAfter, text: option.text, disabled: option.disabled }, i));
+    });
+    return !tags.length ? null : _jsx("div", { className: `aio-input-tags-container aio-input-scroll${rtl ? ' rtl' : ''}${disabled ? ' disabled' : ''}`, children: tags });
+};
+const Tag = (props) => {
+    let { attrs, before = I('mdiCircleMedium', 0.7), after, text, disabled, onClose = () => { } } = props;
+    let close = disabled ? undefined : onClose;
+    let cls = 'aio-input-tag';
+    let Attrs = AddToAttrs(attrs, { className: [cls + ' aio-input-main-bg', disabled ? 'disabled' : undefined] });
+    return (_jsxs("div", Object.assign({}, Attrs, { children: [_jsx("div", { className: `${cls}-icon`, children: before }), _jsx("div", { className: `${cls}-text`, children: text }), after !== undefined && _jsx("div", { className: `${cls}-icon`, children: after }), _jsx("div", { className: `${cls}-icon`, onClick: close, children: I('mdiClose', 0.7) })] })));
+};
+function Input() {
+    let { rootProps, types, showPassword, options } = useContext(AICTX);
+    let { type, delay = 500 } = rootProps;
+    let { min, max, swip, onChange, blurChange, maxLength = Infinity, filter = [], disabled, placeholder, inputAttrs, spin = true, justify } = rootProps;
+    let [dom] = useState(createRef());
+    let [temp] = useState({ atimeout: undefined, btimeout: undefined, clicked: false });
+    let [datauniqid] = useState(`ac${Math.round(Math.random() * 100000)}`);
+    let [value, setValue] = useState(rootProps.value || '');
+    let valueRef = useRef(value);
+    valueRef.current = value;
+    function setSwip() {
+        if (type === 'number' && swip) {
+            new Swip({
+                speedY: swip, reverseY: true, minY: min, maxY: max,
+                dom: () => $(dom.current),
+                start: () => {
+                    let vref = +valueRef.current;
+                    vref = isNaN(vref) ? 0 : vref;
+                    return [0, vref];
+                },
+                move: (p) => {
+                    let { y } = p.change || { y: 0 };
+                    if (min !== undefined && y < min) {
+                        y = min;
+                    }
+                    if (max !== undefined && y > max) {
+                        y = max;
+                    }
+                    change(y, onChange);
+                }
+            });
+        }
+    }
+    useEffect(() => { setSwip(); }, []);
+    function getValidValue() {
+        let v = rootProps.value;
+        if (type === 'number') {
+            if (v === '') {
+                return undefined;
+            } //important because +('') is 0
+            else if (!isNaN(+v)) {
+                v = +v;
+                if (typeof min === 'number' && v < min) {
+                    v = min;
+                }
+                else if (typeof max === 'number' && v > max) {
+                    v = max;
+                }
+            }
+        }
+        return v;
+    }
+    function update() {
+        clearTimeout(temp.atimeout);
+        temp.atimeout = setTimeout(() => {
+            let v = getValidValue();
+            if (v !== value) {
+                setValue(v);
+            }
+        }, delay);
+    }
+    useEffect(() => { update(); }, [rootProps.value]);
+    function change(value, onChange) {
+        if (!Array.isArray(filter)) {
+            filter = [];
+        }
+        if (types.hasKeyboard) {
+            value = keyboard_filter(value, { maxLength, filter, toPersian: true });
+        }
+        if (rootProps.type === 'number') {
+            if (value === '') {
+                value = undefined;
+            }
+            else {
+                value = +value;
+            }
+        }
+        setValue(value);
+        if (!blurChange && onChange) {
+            clearTimeout(temp.btimeout);
+            temp.btimeout = setTimeout(() => onChange(value), delay);
+        }
+    }
+    function click() {
+        if (rootProps.autoHighlight === false) {
+            return;
+        }
+        if (temp.clicked) {
+            return;
+        }
+        temp.clicked = true;
+        $(dom.current).focus().select();
+    }
+    function blur(onChange) {
+        temp.clicked = false;
+        if (blurChange && onChange) {
+            onChange(value);
+        }
+    }
+    function getInputAttrs() {
+        let InputAttrs = AddToAttrs(inputAttrs, {
+            className: !spin ? 'no-spin' : undefined,
+            style: justify ? { textAlign: 'center' } : undefined
+        });
+        let p = Object.assign(Object.assign({}, InputAttrs), { value, type, ref: dom, disabled, placeholder, list: rootProps.options ? datauniqid : undefined, onClick: (e) => click(), onChange: onChange ? (e) => change(e.target.value, onChange) : undefined, onBlur: () => blur(onChange) });
+        if (type === 'password' && showPassword) {
+            p = Object.assign(Object.assign({}, p), { type: 'text', style: Object.assign(Object.assign({}, p.style), { textAlign: 'center' }) });
+        }
+        if (filter.length === 1 && filter[0] === 'number') {
+            p.pattern = "\d*";
+            p.inputMode = "numeric";
+        }
+        return p;
+    }
+    let attrs = getInputAttrs();
+    if (!attrs.onChange) {
+        return value;
+    }
+    else if (type === 'color') {
+        return (_jsxs("label", { style: { width: '100%', height: '100%', background: value }, children: [_jsx("input", Object.assign({}, attrs, { style: { opacity: 0 } })), !!options.optionsList.length && _jsx("datalist", { id: datauniqid, children: options.optionsList.map((o) => _jsx("option", { value: o.value })) })] }));
+    }
+    else if (type === 'textarea') {
+        return _jsx("textarea", Object.assign({}, attrs));
+    }
+    else {
+        return (_jsx("input", Object.assign({}, attrs)));
+    }
+}
+function Options() {
+    let { rootProps, types, options } = useContext(AICTX);
+    let [searchValue, setSearchValue] = useState('');
+    let [dom] = useState(createRef());
+    let [focused] = useState();
+    function renderSearchBox(options) {
+        if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) {
+            return null;
+        }
+        if (searchValue === '' && options.length < 10) {
+            return null;
+        }
+        return (_jsxs("div", { className: 'aio-input-search', children: [_jsx("input", { type: 'text', value: searchValue, placeholder: rootProps.search, onChange: (e) => setSearchValue(e.target.value) }), _jsx("div", { className: 'aio-input-search-icon', onClick: () => { setSearchValue(''); }, children: I(searchValue ? 'mdiClose' : 'mdiMagnify', .8) })] }));
+    }
+    function getRenderOptions(options) {
+        return options.map((option, i) => {
+            if (searchValue) {
+                if (option.text === undefined || option.text === '' || option.text === null) {
+                    return null;
+                }
+                if (option.text.indexOf(searchValue) === -1) {
+                    return null;
+                }
+            }
+            let p = { option, index: i, searchValue };
+            return _createElement(Layout, Object.assign({}, p, { key: i }));
+        });
+    }
+    useEffect(() => {
+        try {
+            setTimeout(() => $(dom.current).focus(), 30);
+        }
+        catch (_a) { }
+    }, []);
+    function keyDown(e) {
+        const code = e.keyCode;
+        if (code === 40) {
+        }
+    }
+    if (!options.optionsList.length) {
+        return null;
+    }
+    let renderOptions = getRenderOptions(options.optionsList);
+    let className = `aio-input-options aio-input-scroll aio-input-${rootProps.type}-options`;
+    if (types.isDropdown) {
+        className += ' aio-input-dropdown-options';
+    }
+    return (_jsxs("div", { className: 'aio-input-options-container', ref: dom, tabIndex: 0, onKeyDown: (e) => keyDown(e), children: [renderSearchBox(options.optionsList), _jsx("div", { className: className, children: renderOptions })] }));
+}
+const CheckIcon = (props) => {
+    if (props.checked === undefined) {
+        return null;
+    }
+    if (props.checkIcon) {
+        const res = props.checkIcon({ checked: props.checked, row: props.row });
+        return res === false ? null : _jsx(_Fragment, { children: res });
+    }
+    if (props.switch) {
+        return (_jsx(AISwitch, Object.assign({}, props.switch, { value: props.checked })));
+    }
+    return (_jsx("div", { className: 'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (props.round ? ' aio-input-check-round' : ''), style: { background: 'none' }, children: _jsx("div", { className: 'aio-input-main-bg aio-input-check-in' }) }));
+};
+const Layout = (props) => {
+    let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, popup } = useContext(AICTX);
+    let { option, index } = props;
+    let { type, rtl } = rootProps;
+    let [dom] = useState(createRef());
+    const [recognition, setRecognition] = useState();
+    useEffect(() => {
+        if (!('webkitSpeechRecognition' in window)) {
+            return;
+        }
+        let { onChange, voice } = rootProps;
+        if (!voice || !onChange || !types.hasKeyboard) {
+            return;
+        }
+        // @ts-ignore
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = { en: 'en-US', fa: 'fa-IR' }[voice];
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.onresult = (event) => {
+            const result = event.results[0][0].transcript;
+            if (onChange)
+                onChange(result);
+        };
+        recognition.onerror = (event) => {
+            console.error('خطا در تشخیص گفتار: ', event.error);
+        };
+        recognition.onend = () => {
+            console.log('تشخیص گفتار پایان یافت.');
+        };
+        setRecognition(recognition);
+        return () => { recognition.stop(); };
+    }, []);
+    function getClassName() {
+        let cls;
+        if (option !== undefined) {
+            cls = `aio-input-option aio-input-${type}-option`;
+            if (types.isMultiple) {
+                cls += ` aio-input-${type}-multiple-option`;
+            }
+            if (types.isDropdown) {
+                cls += ` aio-input-dropdown-option`;
+            }
+            if (option.details.active === true) {
+                cls += ' active';
+                if (type === 'tabs') {
+                    cls += ' aio-input-main-color';
+                }
+                if (type === 'buttons') {
+                    cls += ' aio-input-main-bg';
+                }
+            }
+        }
+        else {
+            cls = `aio-input aio-input-${type}${touch ? ' aio-input-touch' : ''}`;
+            if (types.isInput) {
+                cls += ` aio-input-input`;
+            }
+            if (rootProps.justify) {
+                cls += ' aio-input-justify';
+            }
+            cls += rtl ? ' aio-input-rtl' : ' aio-input-ltr';
+        }
+        if (type === 'tree') {
+            let size = rootProps.size || Def('tree-size');
+            size = Math.round(size / 12) * 12;
+            if (size < 24) {
+                size = 24;
+            }
+            if (size > 120) {
+                size = 120;
+            }
+            cls += ` aio-input-size-${size}`;
+        }
+        if (properties.disabled === true) {
+            cls += ' disabled';
+        }
+        if (properties.className) {
+            cls += ' ' + properties.className;
+        }
+        cls += ' ' + datauniqid;
+        return cls;
+    }
+    function cls(key, hasSubtext) {
+        let className = `aio-input-${key}`;
+        if (option) {
+            className += ` aio-input-${type}-option-${key}`;
+        }
+        else {
+            className += ` aio-input-${type}-${key}`;
+        }
+        if (hasSubtext) {
+            className += ` aio-input-has-subtext`;
+        }
+        return className;
+    }
+    function Text() {
+        let { text, placeholder, subtext, justify } = properties;
+        if (text === undefined && placeholder !== undefined) {
+            text = _jsx("div", { className: 'aio-input-placeholder', children: placeholder });
+        }
+        if (text !== undefined) {
+            const className = `${cls('value', !!subtext)}${justify && !types.isInput ? ' aio-input-value-justify' : ''}`;
+            return _jsx("div", { className: className, "data-subtext": subtext, children: text });
+        }
+        else {
+            return _jsx("div", { style: { flex: 1 } });
+        }
+    }
+    function keyDown(e) {
+        const code = e.keyCode;
+        if (code === 13) {
+            click(e, dom);
+        }
+    }
+    function DragIcon() {
+        if (!properties.draggable) {
+            return null;
+        }
+        return (_jsx("svg", { viewBox: "8 4 10 13", role: "presentation", style: { width: 12, height: '1.8rem' }, children: _jsx("path", { d: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z", style: { fill: 'currentcolor' } }) }));
+    }
+    function Caret() {
+        if (!types.isDropdown || option || (types.isInput && !rootProps.options)) {
+            return null;
+        }
+        let { caret } = rootProps;
+        if (caret === false) {
+            return null;
+        }
+        return _jsx("div", { className: 'aio-input-caret', children: caret === undefined ? I('mdiChevronDown', .8) : caret });
+    }
+    function BeforeAfter(mode) {
+        let res;
+        if (mode === 'after' && type === 'password' && rootProps.preview) {
+            res = _jsx("div", { className: 'aio-input-password-preview', onClick: () => setShowPassword(), children: I(showPassword ? 'mdiEyeOff' : 'mdiEye', .8) }, `layout${mode}`);
+        }
+        else {
+            let v = properties[mode];
+            res = typeof v === 'function' ? v() : v;
+        }
+        if (res === undefined) {
+            return null;
+        }
+        return _jsx("div", { className: cls(mode), children: res }, 'layout' + mode);
+    }
+    function Loading() {
+        let { loading } = properties;
+        let elem;
+        if (!loading) {
+            return null;
+        }
+        else if (loading === true) {
+            elem = I('mdiLoading', 0.8, { spin: .8 });
+        }
+        else {
+            elem = loading;
+        }
+        return _jsx("div", { className: cls('loading'), children: elem });
+    }
+    function getProps() {
+        let { attrs, disabled, draggable, style } = properties;
+        let zIndex;
+        if (!!popup.getModals().length && !option && ['text', 'number', 'textarea'].indexOf(type) !== -1) {
+            zIndex = 100000;
+        }
+        let onClick;
+        //ممکنه این یک آپشن باشه باید دیزیبل پرنتش هم چک بشه تا دیزیبل بشه
+        if (!disabled) {
+            if (option === undefined) {
+                onClick = (e) => { e.stopPropagation(); click(e, dom); };
+            }
+            else {
+                onClick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if ((props.properties || {}).onClick) {
+                        props.properties.onClick();
+                    }
+                    else {
+                        optionClick(option);
+                    }
+                };
+            }
+        }
+        attrs = AddToAttrs(attrs, {
+            className: getClassName(),
+            style: Object.assign(Object.assign({}, style), { zIndex })
+        });
+        let p = Object.assign(Object.assign({ tabIndex: option ? undefined : 1, onKeyDown: keyDown }, attrs), { onClick, ref: dom, disabled });
+        let options = typeof rootProps.options === 'function' ? rootProps.options() : (rootProps.options || []);
+        if (draggable) {
+            p = Object.assign(Object.assign(Object.assign({}, p), DragOptions.getDragAttrs({ fromIndex: index || 0 })), DragOptions.getDropAttrs({ options, toIndex: index || 0 }));
+        }
+        if (index) {
+            p['data-index'] = index;
+        }
+        return p;
+    }
+    function getProperties() {
+        let p = props.properties || {};
+        let obj = option || rootProps; //اگر آپشن بود از آپشن وگر نه از پروپس بخون مقادیر رو
+        let { draggable = option ? option.draggable : false } = p;
+        let { placeholder = !option ? rootProps.placeholder : undefined } = p;
+        let { checked = option ? option.checked : (type === 'checkbox' ? !!rootProps.value : undefined) } = p;
+        let { disabled = obj.disabled } = p;
+        let { text = obj.text } = p;
+        let { subtext = obj.subtext } = p;
+        let { justify = obj.justify } = p;
+        let { loading = obj.loading } = p;
+        let { attrs = obj.attrs || {} } = p;
+        let style = Object.assign(Object.assign({}, (obj.style || {})), p.style);
+        let { before = obj.before } = p;
+        let { after = obj.after } = p;
+        let classNames = [obj.className, p.className].filter((o) => !!o);
+        let className = classNames.length ? classNames.join(' ') : undefined;
+        return { disabled, draggable, text, subtext, placeholder, justify, checked, loading, attrs, style, before, after, className };
+    }
+    function startVoice() {
+        recognition.start();
+    }
+    function voice() {
+        if (!recognition) {
+            return null;
+        }
+        return _jsx("div", { className: 'aio-input-voice', onClick: () => startVoice(), children: I('mdiMicrophoneOutline', 0.8) });
+    }
+    let properties = getProperties();
+    let content = (_jsxs(_Fragment, { children: [DragIcon(), typeof properties.checked === 'boolean' &&
+                _jsx(CheckIcon, { round: !rootProps.multiple && type === 'radio', checked: properties.checked, checkIcon: rootProps.checkIcon, row: option || {}, switch: rootProps.switch }), BeforeAfter('before'), Text(), BeforeAfter('after'), Loading(), voice(), Caret()] }));
+    let p = getProps();
+    if (type === 'file') {
+        return (_jsxs("label", Object.assign({}, p, { children: [content, _jsx(InputFile, {})] })));
+    }
+    return (_jsxs("div", Object.assign({}, p, { children: [content, !!option && type === 'tabs' && _jsx("div", { className: 'aio-input-tabs-option-bar' })] })));
+};
+function List() {
+    let { rootProps, options } = useContext(AICTX);
+    let { attrs = {}, size = 36, listOptions = { count: 3, editable: true, stop: 3, decay: 8 }, onChange = () => { } } = rootProps;
+    let { count = 3, editable = true, stop = 3, decay = 8 } = listOptions;
+    let optionsLength = options.optionsList.length;
+    let [temp] = useState({
+        dom: createRef(),
+        activeIndex: 0,
+        interval: undefined,
+        moved: false,
+        lastY: 0,
+        deltaY: 0,
+        so: { y: 0, top: 0, limit: { top: 0, bottom: 0 } }
+    });
+    function getStyle() {
+        var height = count * (size);
+        return { height };
+    }
+    function getIndexByTop(top) { return Math.round(((count * size) - size - (2 * top)) / (2 * size)); }
+    function getTopByIndex(index) { return (count - 2 * index - 1) * size / 2; }
+    function getContainerStyle() { return { top: getTopByIndex(temp.activeIndex) }; }
+    function moveDown(e) {
+        e.preventDefault();
+        if (temp.activeIndex >= optionsLength - 1) {
+            return;
+        }
+        temp.activeIndex++;
+        let newTop = getTopByIndex(temp.activeIndex);
+        setStyle({ top: newTop });
+        setBoldStyle(temp.activeIndex);
+    }
+    function setBoldStyle(index) {
+        $(temp.dom.current).find('.aio-input-list-option').removeClass('active');
+        $(temp.dom.current).find('.aio-input-list-option[data-index=' + (index) + ']').addClass('active');
+    }
+    function moveUp() {
+        if (temp.activeIndex <= 0) {
+            return;
+        }
+        temp.activeIndex--;
+        let newTop = getTopByIndex(temp.activeIndex);
+        setStyle({ top: newTop });
+        setBoldStyle(temp.activeIndex);
+    }
+    function keyDown(e) {
+        if (!editable) {
+            return;
+        }
+        if (e.keyCode === 38) {
+            moveUp();
+        }
+        else if (e.keyCode === 40) {
+            moveDown(e);
+        }
+    }
+    function getLimit() { return { top: getTopByIndex(-1), bottom: getTopByIndex(optionsLength) }; }
+    function getTrueTop(top) {
+        let index = getIndexByTop(top);
+        if (index < 0) {
+            index = 0;
+        }
+        if (index > optionsLength - 1) {
+            index = optionsLength - 1;
+        }
+        return getTopByIndex(index);
+    }
+    function mouseDown(e) {
+        if (!editable) {
+            return;
+        }
+        EventHandler('window', 'mousemove', mouseMove, 'bind');
+        EventHandler('window', 'mouseup', mouseUp, 'bind');
+        clearInterval(temp.interval);
+        temp.moved = false;
+        let client = GetClient(e);
+        let y = client.y;
+        setStyle({ transition: 'unset' });
+        let top = getTop();
+        var index = getIndexByTop(top);
+        setBoldStyle(index);
+        setStyle({ top, transition: 'unset' });
+        onChange(options.optionsList[index].value, index);
+        temp.so = { y, top, limit: getLimit() };
+    }
+    function getTop() {
+        var top = parseInt($(temp.dom.current).find('.aio-input-list-options').css('top'));
+        return getTrueTop(top);
+    }
+    function fixTop(value) {
+        let { top, bottom } = temp.so.limit;
+        if (value > top) {
+            return top;
+        }
+        if (value < bottom) {
+            return bottom;
+        }
+        return value;
+    }
+    function mouseMove(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('move');
+        temp.moved = true;
+        var client = GetClient(e);
+        let y = client.y;
+        var offset = y - temp.so.y;
+        if (temp.lastY === undefined) {
+            temp.lastY = y;
+        }
+        temp.deltaY = y - temp.lastY;
+        temp.lastY = y;
+        if (Math.abs(offset) < 20) {
+            temp.deltaY = 3;
+        }
+        var newTop = fixTop(temp.so.top + offset);
+        let index = getIndexByTop(newTop);
+        temp.so.newTop = newTop;
+        setBoldStyle(index);
+        setStyle({ top: newTop });
+    }
+    function setStyle(obj) { $(temp.dom.current).find('.aio-input-list-options').css(obj); }
+    function mouseUp() {
+        EventHandler('window', 'mousemove', mouseMove, 'unbind');
+        EventHandler('window', 'mouseup', mouseUp, 'unbind');
+        if (!temp.moved) {
+            return;
+        }
+        temp.moved = false;
+        move(temp.deltaY, temp.so.newTop);
+    }
+    function move(deltaY, startTop = getTop()) {
+        if (decay < 0) {
+            decay = 0;
+        }
+        if (decay > 99) {
+            decay = 99;
+        }
+        decay = 1 + decay / 1000;
+        temp.interval = setInterval(() => {
+            startTop += deltaY;
+            let index = getIndexByTop(startTop);
+            setBoldStyle(index);
+            if (Math.abs(deltaY) < stop || index < 0 || index > optionsLength - 1) {
+                clearInterval(temp.interval);
+                if (index < 0) {
+                    index = 0;
+                }
+                if (index > optionsLength - 1) {
+                    index = optionsLength - 1;
+                }
+                let top = getTopByIndex(index);
+                setStyle({ top, transition: '0.3s' });
+                const option = options.optionsList[index];
+                onChange(option.value, option.details);
+                return;
+            }
+            deltaY /= decay;
+            setStyle({ top: startTop });
+        }, 20);
+    }
+    useEffect(() => { var _a; if ((_a = rootProps.listOptions) === null || _a === void 0 ? void 0 : _a.move) {
+        rootProps.listOptions.move(move);
+    } }, []);
+    useEffect(() => {
+        setBoldStyle(temp.activeIndex);
+    });
+    let fixedOptions = options.optionsList.map((o, i) => {
+        if (o.value === rootProps.value) {
+            temp.activeIndex = i;
+        }
+        return (_jsx(Layout, { option: o, index: i, properties: {
+                style: { height: size },
+                justify: true
+            } }, i));
+    });
+    return (_jsx("div", Object.assign({}, attrs, { ref: temp.dom, tabIndex: 0, onKeyDown: (e) => keyDown(e), className: 'aio-input-list' + (attrs.className ? ' ' + attrs.className : ''), style: Object.assign(Object.assign({}, attrs.style), getStyle()), children: _jsx("div", { className: 'aio-input-list-options', style: getContainerStyle(), onMouseDown: (e) => mouseDown(e), onTouchStart: (e) => mouseDown(e), children: fixedOptions }) })));
+}
+const AcardionContext = createContext({});
+export const Acardion = () => {
+    const { rootProps, options } = useContext(AICTX);
+    const { multiple, vertical = true, value } = rootProps;
+    function isOpen(id) {
+        if (!multiple) {
+            return id === value;
+        }
+        else {
+            return (value || []).indexOf(id) !== -1;
+        }
+    }
+    function getContext() {
+        let context = {
+            rootProps, isOpen
+        };
+        return context;
+    }
+    return (_jsx(AcardionContext.Provider, { value: getContext(), children: _jsx("div", { className: `aio-input-acardion aio-input-scroll${vertical ? ' aio-input-acardion-vertical' : ' aio-input-acardion-horizontal'}`, children: options.optionsList.map((option, i) => _jsx(AcardionItem, { option: option }, i)) }) }));
+};
+const AcardionItem = ({ option }) => {
+    const active = !!option.details.active;
+    let [timeout] = useState();
+    let Attrs = AddToAttrs(option.attrs, { className: `aio-input-acardion-item` });
+    return (_jsxs("div", Object.assign({}, Attrs, { children: [_jsx(Layout, { option: option }), !!active && _jsx(AcardionBody, { option: option })] })));
+};
+const AcardionBody = ({ option }) => {
+    const { rootProps } = useContext(AcardionContext);
+    let { body = () => { } } = rootProps;
+    let { html, attrs } = body(option.optionOrg, option.details) || { html: '' };
+    let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`] });
+    return _jsx("div", Object.assign({}, Attrs, { children: html }));
+};
+const TreeContext = createContext({});
+const Tree = () => {
+    let { rootProps, types } = useContext(AICTX);
+    let { onAdd, onRemove, value = [], onChange, size = Def('tree-size'), attrs } = rootProps;
+    let [openDic, setOpenDic] = useState({});
+    const openDicRef = useRef(openDic);
+    openDicRef.current = openDic;
+    let [mountedDic, setMountedDic] = useState({});
+    const mountedDicRef = useRef(mountedDic);
+    mountedDicRef.current = mountedDic;
+    let [indent] = useState(getIndent);
+    function SetMounted(id) { setMountedDic(Object.assign(Object.assign({}, mountedDicRef.current), { [id]: !mountedDicRef.current[id] })); }
+    function SetOpen(id) { setOpenDic(Object.assign(Object.assign({}, openDicRef.current), { [id]: !openDicRef.current[id] })); }
+    function getIndent() {
+        let { indent = 24 } = rootProps;
+        if (typeof indent !== 'number') {
+            indent = 12;
+        }
+        indent = Math.round(indent / 6) * 6;
+        if (indent < 0) {
+            indent = 0;
+        }
+        if (indent > 60) {
+            indent = 60;
+        }
+        return indent;
+    }
+    function toggle(id) {
+        let open = !!openDic[id], time = 300;
+        if (!open) {
+            SetOpen(id);
+            setTimeout(() => SetMounted(id), 0);
+        }
+        else {
+            SetMounted(id);
+            setTimeout(() => SetOpen(id), time);
+        }
+    }
+    useEffect(() => {
+        if (rootProps.toggleRef) {
+            rootProps.toggleRef.current = (id) => toggle(id);
+        }
+    }, [toggle]);
+    useEffect(() => {
+        if (rootProps.onToggle) {
+            rootProps.onToggle(openDic);
+        }
+    }, [openDic]);
+    function change(row, newRow) {
+        for (let prop in newRow) {
+            row[prop] = newRow[prop];
+        }
+        if (rootProps.onChange) {
+            rootProps.onChange(rootProps.value);
+        }
+    }
+    function getChilds(p) {
+        let { row, details } = p;
+        let childs = [];
+        try {
+            if (rootProps.getChilds) {
+                childs = rootProps.getChilds({ row, details });
+            }
+            else {
+                childs = row.childs || [];
+            }
+        }
+        catch (_a) {
+            childs = [];
+        }
+        return childs || [];
+    }
+    function setChilds(p) {
+        let { row, childs } = p;
+        try {
+            if (rootProps.setChilds) {
+                rootProps.setChilds(p);
+            }
+            else {
+                row.childs = childs;
+            }
+        }
+        catch (_a) { }
+    }
+    function add(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let newRow;
+            if (typeof onAdd === 'function') {
+                newRow = yield onAdd(p);
+            }
+            else {
+                newRow = onAdd;
+            }
+            if (!newRow) {
+                return;
+            }
+            if (p) {
+                let parentChilds = getChilds({ row: p.parent, details: p.parentDetails });
+                setChilds({ row: p.parent, childs: parentChilds.concat(newRow), details: p.parentDetails });
+            }
+            else {
+                value.push(newRow);
+            }
+            if (onChange) {
+                onChange(value);
+            }
+        });
+    }
+    function remove(p) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let { index } = p;
+            let res;
+            if (typeof onRemove === 'function') {
+                res = (yield onRemove(p));
+            }
+            else {
+                res = true;
+            }
+            if (!res) {
+                return;
+            }
+            const details = { index, active: false, toggle: () => { } };
+            const { option: optionProp = {} } = rootProps;
+            if (!p.parent) {
+                value = value.filter((o) => {
+                    let rowValue = GetOptionProps({ key: 'value', optionProp, optionOrg: p.row, optionDetails: Object.assign(Object.assign({}, details), { rootProps }) });
+                    let oValue = GetOptionProps({ key: 'value', optionProp, optionOrg: o, optionDetails: Object.assign(Object.assign({}, details), { rootProps }) });
+                    return rowValue !== oValue;
+                });
+            }
+            else {
+                let parentChilds = getChilds({ row: p.parent, details: p.parentDetails });
+                let newChilds = parentChilds.filter((o) => {
+                    let rowValue = GetOptionProps({ key: 'value', optionProp, optionOrg: p.row, optionDetails: Object.assign(Object.assign({}, details), { rootProps }) });
+                    let oValue = GetOptionProps({ key: 'value', optionProp, optionOrg: o, optionDetails: Object.assign(Object.assign({}, details), { rootProps }) });
+                    return rowValue !== oValue;
+                });
+                setChilds({ row: p.parent, details: p.parentDetails, childs: newChilds });
+            }
+            if (onChange) {
+                onChange(value);
+            }
+        });
+    }
+    function getContext() { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent, size, change, getChilds }; }
+    let Attrs = AddToAttrs(attrs, { className: ['aio-input-tree', rootProps.className, rootProps.rtl ? 'aio-input-tree-rtl' : undefined], style: rootProps.style });
+    return (_jsx(TreeContext.Provider, { value: getContext(), children: _jsxs("div", Object.assign({}, Attrs, { children: [_jsx(TreeHeader, {}), _jsx(TreeBody, { rows: value, level: 0 })] })) }));
+};
+const TreeHeader = () => {
+    const { rootProps, add } = useContext(TreeContext);
+    let { addText = 'add', onAdd } = rootProps;
+    if (!onAdd) {
+        return null;
+    }
+    addText = (typeof addText === 'function' ? addText('header') : addText) || 'add';
+    return (_jsx("div", { className: "aio-input-tree-header", children: _jsxs("button", { onClick: () => add(), children: [I('mdiPlusThick', .8), addText] }) }));
+};
+const TreeActions = (props) => {
+    let { row, index, parent, rowDetails, parentDetails } = props;
+    let { rootProps, add, remove } = useContext(TreeContext);
+    let { onAdd, onRemove, removeText = 'Remove' } = rootProps;
+    let addText = (typeof rootProps.addText === 'function' ? rootProps.addText(row) : rootProps.addText) || 'Add';
+    let options = typeof rootProps.actions === 'function' ? rootProps.actions(row, parent) : rootProps.actions;
+    function getOptions() {
+        let res = [];
+        if (onAdd) {
+            res.push({ text: addText, value: 'add', before: I('mdiPlusThick', 0.7), onClick: () => add({ parent: row, parentDetails: rowDetails }) });
+        }
+        let Options = (options || []).map((o) => { return Object.assign(Object.assign({}, o), { onClick: () => { if (o.onClick) {
+                o.onClick(row, parent);
+            } } }); });
+        res = [...res, ...Options];
+        if (onRemove) {
+            res.push({ text: removeText, value: 'remove', before: I('mdiDelete', 0.7), onClick: () => remove({ row, index, parent, parentDetails }) });
+        }
+        return res;
+    }
+    let Options = getOptions();
+    if (!Options.length) {
+        return null;
+    }
+    let p = { type: 'select', caret: false, popover: { limitTo: '.aio-input-tree' }, className: 'aio-input-tree-options-button', options: Options, text: I('mdiDotsHorizontal', 0.7) };
+    return _jsx(AIOInput, Object.assign({}, p));
+};
+const TreeBody = (props) => {
+    let { rootProps, types, openDic, mountedDic, indent, size, change, getChilds, toggle } = useContext(TreeContext);
+    let { rows, level, parent, parentId, parentIndent, parentDetails } = props;
+    let parentOpen = parentId === undefined ? true : !!openDic[parentId];
+    let mounted = parentId == undefined ? true : mountedDic[parentId];
+    let { onAdd, onRemove, actions } = rootProps;
+    let { optionsList } = GetOptions({
+        rootProps, types, options: rows, level, isOpen: (id) => !!openDic[id],
+        change: (row, newRow) => change(row, newRow), optionProp: rootProps.option || {}
+    });
+    if (!!onAdd || !!onRemove || !!actions) {
+        optionsList = optionsList.map((o) => {
+            let { index, level = 0 } = o.details;
+            let isFirstChild = index === 0;
+            let isLastChild = index === rows.length - 1;
+            let details = { index, level, isFirstChild, isLastChild };
+            let after = _jsx(TreeActions, { row: o.optionOrg, index: index, parent: parent, rowDetails: details, parentDetails: parentDetails });
+            return Object.assign(Object.assign({}, o), { after });
+        });
+    }
+    function getClassName() {
+        let className = 'aio-input-tree-body';
+        if (!parent) {
+            className += ' aio-input-tree-root';
+        }
+        if (parentOpen) {
+            className += ' open';
+        }
+        className += !mounted ? ' not-mounted' : ' mounted';
+        className += ` aio-input-tree-body-level-${level}`;
+        return className;
+    }
+    return (_jsx("div", { className: getClassName(), children: optionsList.map((option, index) => {
+            let row = rows[index];
+            let id = option.value;
+            let details = { level, index, isLastChild: index === optionsList.length - 1, isFirstChild: index === 0 };
+            let childs = getChilds({ row, details });
+            let open = !!openDic[id];
+            let item = {
+                row, option, parent, parentId, id, parentOpen, open, details,
+                indent: Object.assign({ height: size, childsLength: childs.length, size: indent, parentIndent }, details)
+            };
+            return _jsxs(Fragment, { children: [_jsx(TreeRow, { item: item }), _jsx(TreeChilds, { item: item })] }, index);
+        }) }));
+};
+const TreeRow = (props) => {
+    let { openDic, getChilds, toggle, rootProps } = useContext(TreeContext);
+    let { item } = props;
+    let childs = getChilds(item);
+    let open = !childs.length ? undefined : (!!openDic[item.id] ? true : false);
+    const { row, indent, option } = item;
+    const { level, size, height } = indent;
+    const { checked } = option;
+    const getBefore = () => {
+        var _a;
+        return [
+            _jsx(Indent, { row: row, width: size, height: height, level: level, isLastChild: item.indent.isLastChild, isLeaf: !childs || !childs.length, isParentLastChild: !!((_a = item.indent.parentIndent) === null || _a === void 0 ? void 0 : _a.isLastChild), rtl: !!rootProps.rtl, toggleIcon: rootProps.toggleIcon, open: open, onToggle: () => toggle(item.id) }),
+            _jsx(_Fragment, { children: checked === undefined ? null : _jsx(CheckIcon, { checked: checked, checkIcon: rootProps.checkIcon, row: row }) }),
+            _jsx(_Fragment, { children: item.option.before || null })
+        ];
+    };
+    let p = { option: Object.assign(Object.assign({}, item.option), { before: getBefore(), checked: undefined }) };
+    return _jsx(Layout, Object.assign({}, p));
+};
+const TreeChilds = (props) => {
+    let { getChilds } = useContext(TreeContext);
+    let { row, id, open, indent, details } = props.item, childs = getChilds(props.item);
+    if (!open || !childs || !childs.length) {
+        return null;
+    }
+    return _jsx(TreeBody, { rows: childs, level: indent.level + 1, parent: row, parentId: id, parentIndent: indent, parentDetails: details });
+};
+const DPContext = createContext({});
+export function Calendar(props) {
+    let { rootProps, DATE } = useContext(AICTX);
+    let { onClose } = props;
+    let { multiple, unit = Def('date-unit'), jalali, value, disabled, size = 12, theme = Def('theme'), translate, onChange = () => { }, option = {} } = rootProps;
+    let [months] = useState(DATE.getMonths(jalali));
+    let [today] = useState(DATE.getToday(jalali));
+    let [todayWeekDay] = useState(DATE.getWeekDay(today).weekDay);
+    let [thisMonthString] = useState(months[today[1] - 1]);
+    let [activeDate, setActiveDate] = useState(getActiveDate);
+    const [popup, setPopup] = useState(null);
+    let [popupMounted, setPopupMounted] = useState(false);
+    function getDate() {
+        let date;
+        if (multiple) {
+            date = value.length ? value[value.length - 1] : undefined;
+        }
+        else {
+            date = value;
+        }
+        return date;
+    }
+    function getActiveDate() {
+        let date = getDate();
+        date = !date || date === null ? today : date;
+        let [year, month, day] = DATE.convertToArray(date);
+        return { year, month, day };
+    }
+    let adRef = useRef(activeDate);
+    adRef.current = activeDate;
+    function trans(text) {
+        if (translate) {
+            const res = translate(text);
+            if (res) {
+                return res;
+            }
+        }
+        if (text === 'Today') {
+            if (unit === 'month') {
+                text = 'This Month';
+            }
+            else if (unit === 'hour') {
+                text = 'This Hour';
+            }
+        }
+        let obj = { 'Clear': 'حذف', 'This Hour': 'ساعت کنونی', 'Today': 'امروز', 'This Month': 'ماه جاری', 'Select Year': 'انتخاب سال', 'Close': 'بستن' };
+        let res = text;
+        if (jalali && obj[text]) {
+            res = obj[text];
+        }
+        return res;
+    }
+    function changePopup(popup) {
+        popupMounted = false;
+        if (popup === null) {
+            setPopupMounted(false);
+            setTimeout(() => setPopup(null), 300);
+        }
+        else {
+            setPopup(popup);
+            setTimeout(() => setPopupMounted(true), 0);
+        }
+    }
+    function changeActiveDate(obj) {
+        let newActiveDate;
+        if (obj === 'today') {
+            let [year, month, day] = today;
+            newActiveDate = { year, month, day: unit === 'month' ? 1 : day };
+        }
+        else {
+            newActiveDate = Object.assign(Object.assign({}, activeDate), obj);
+        }
+        setActiveDate(newActiveDate);
+    }
+    function getPopupStyle() {
+        return {
+            fontSize: size, background: theme[1], color: theme[0], stroke: theme[0],
+            cursor: disabled === true ? 'not-allowed' : undefined,
+        };
+    }
+    function getSplitter() {
+        let date = getDate();
+        return typeof date === 'string' ? DATE.getSplitter(date) : '/';
+    }
+    function getContext() {
+        let context = {
+            changeActiveDate, DATE, changePopup,
+            translate: trans, rootProps, activeDate: adRef.current,
+            today, todayWeekDay, thisMonthString, months,
+            onChange: (p) => {
+                let { year = 1000, month = 1, day = 1, hour = 0 } = p;
+                let dateArray = [year, month, day, hour];
+                let jalaliDateArray = !jalali ? DATE.toJalali(dateArray) : dateArray;
+                let gregorianDateArray = jalali ? DATE.toGregorian(dateArray) : dateArray;
+                let { weekDay, index: weekDayIndex } = unit === 'month' ? { weekDay: '', index: 0 } : DATE.getWeekDay(dateArray);
+                let get2digit = (v) => {
+                    if (v === undefined) {
+                        return;
+                    }
+                    let vn = v.toString();
+                    return vn.length === 1 ? `0${vn}` : vn;
+                };
+                let dateString = '';
+                let splitter = getSplitter();
+                if (unit === 'month') {
+                    dateString = `${year}${splitter}${get2digit(month)}`;
+                }
+                else if (unit === 'day') {
+                    dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}`;
+                }
+                else if (unit === 'hour') {
+                    dateString = `${year}${splitter}${get2digit(month)}${splitter}${get2digit(day)}${splitter}${get2digit(hour)}`;
+                }
+                let monthString = months[month - 1];
+                let jalaliMonthString = !jalali ? DATE.getMonths(true)[month - 1] : monthString;
+                let gregorianMonthString = jalali ? DATE.getMonths(false)[month - 1] : monthString;
+                let props = {
+                    months, jalaliDateArray, gregorianDateArray, dateArray, weekDay, weekDayIndex, dateString,
+                    year, month, day, hour, monthString, jalaliMonthString, gregorianMonthString
+                };
+                let newValue, index = 0;
+                if (multiple) {
+                    let current = [];
+                    if (value) {
+                        if (!Array.isArray(value)) {
+                            current = [value];
+                        }
+                        else {
+                            current = [...value];
+                        }
+                    }
+                    else {
+                        current = [];
+                    }
+                    let index = current.indexOf(dateString);
+                    if (index === -1) {
+                        newValue = [...current, dateString];
+                    }
+                    else {
+                        newValue = current.filter((o) => o !== dateString);
+                    }
+                    if (typeof multiple === 'number') {
+                        while (newValue.length > multiple) {
+                            newValue = newValue.slice(1, newValue.length);
+                        }
+                    }
+                    index = newValue.length - 1;
+                }
+                else {
+                    index = 0;
+                    newValue = dateString;
+                }
+                onChange(newValue, props);
+                if (onClose) {
+                    if (typeof option.close === 'function') {
+                        if (option.close(undefined, { index, rootProps })) {
+                            onClose();
+                        }
+                    }
+                }
+            }
+        };
+        return context;
+    }
+    return (_jsxs(DPContext.Provider, { value: getContext(), children: [_jsxs("div", { className: 'aio-input-date-container aio-input-date-theme-bg', style: { display: 'flex', fontSize: size }, children: [_jsxs("div", { className: 'aio-input-date-calendar', style: getPopupStyle(), children: [_jsx(DPHeader, {}), _jsx(DPBody, {}), _jsx(DPFooter, {})] }), _jsx(DPToday, {})] }), _jsx("div", { className: `aio-input-date-popup-container ${popupMounted ? 'mounted' : 'not-mounted'}`, children: popup })] }));
+}
+function DPToday() {
+    let { rootProps, translate, today, todayWeekDay, thisMonthString } = useContext(DPContext);
+    let { theme = Def('theme'), jalali, unit = Def('date-unit') } = rootProps;
+    return (_jsxs("div", { className: 'aio-input-date-today aio-input-date-theme-active', style: { color: theme[1], background: theme[0] }, children: [_jsx("div", { className: 'aio-input-date-today-label', children: translate('Today') }), unit !== 'month' && _jsx("div", { className: 'aio-input-date-today-weekday', children: !jalali ? todayWeekDay.slice(0, 3) : todayWeekDay }), unit !== 'month' && _jsx("div", { className: 'aio-input-date-today-day', children: today[2] }), _jsx("div", { className: 'aio-input-date-today-month', children: !jalali ? thisMonthString.slice(0, 3) : thisMonthString }), _jsx("div", { className: 'aio-input-date-today-year', children: today[0] }), unit === 'hour' && _jsx("div", { className: 'aio-input-date-today-year', children: today[3] + ':00' })] }));
+}
+function DPFooter() {
+    let { rootProps, changeActiveDate, translate } = useContext(DPContext);
+    let { disabled, onChange = () => { }, deSelect, multiple, now = true } = rootProps;
+    if (disabled) {
+        return null;
+    }
+    const buttonClassName = 'aio-input-date-theme-color';
+    function clear() {
+        if (typeof deSelect === 'function') {
+            deSelect();
+        }
+        else {
+            onChange(multiple ? [] : undefined);
+        }
+    }
+    return (_jsxs("div", { className: 'aio-input-date-footer', children: [!!deSelect && _jsx("button", { onClick: () => clear(), className: buttonClassName, children: translate('Clear') }), !!now && _jsx("button", { onClick: () => changeActiveDate('today'), className: buttonClassName, children: translate('Today') })] }));
+}
+function DPBody() {
+    let { rootProps, activeDate } = useContext(DPContext);
+    let { unit = Def('date-unit'), jalali } = rootProps;
+    function getClassName() {
+        let res = 'aio-input-date-body';
+        res += ` aio-input-date-body-${unit}`;
+        res += ` aio-input-date-${jalali ? 'rtl' : 'ltr'}`;
+        //var columnCount = { hour: 4, day: 7, month: 3, year: 1 }[unit as AI_date_unit];
+        //var rowCount = { hour: 6, day: 7, month: 4, year: 1 }[unit as AI_date_unit];
+        return res;
+    }
+    return (_jsxs("div", { className: getClassName(), children: [unit === 'hour' && GetArray(24, (i) => _jsx(DPCell, { dateArray: [activeDate.year, activeDate.month, activeDate.day, i] }, 'cell' + i)), unit === 'day' && _jsx(DPBodyDay, {}), unit === 'month' && GetArray(12, (i) => _jsx(DPCell, { dateArray: [activeDate.year, i + 1] }, 'cell' + i))] }));
+}
+function DPBodyDay() {
+    let { rootProps, activeDate, DATE } = useContext(DPContext);
+    let { theme = Def('theme'), jalali } = rootProps;
+    let firstDayWeekDayIndex = DATE.getWeekDay([activeDate.year, activeDate.month, 1]).index;
+    let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
+    let weekDays = DATE.getWeekDays(jalali);
+    return (_jsxs(_Fragment, { children: [weekDays.map((weekDay, i) => _jsx(DPCellWeekday, { weekDay: weekDay }, 'weekday' + i)), GetArray(firstDayWeekDayIndex, (i) => _jsx("div", { className: 'aio-input-date-space aio-input-date-cell', style: { background: theme[1] } }, 'space' + i)), GetArray(daysLength, (i) => _jsx(DPCell, { dateArray: [activeDate.year || 0, activeDate.month || 0, i + 1] }, 'cell' + i)), GetArray(42 - (firstDayWeekDayIndex + daysLength), (i) => _jsx("div", { className: 'aio-input-date-space aio-input-date-cell', style: { background: theme[1] } }, 'endspace' + i))] }));
+}
+const DPCellWeekday = (props) => {
+    let { rootProps, translate } = useContext(DPContext);
+    let { theme = Def('theme'), jalali } = rootProps;
+    let { weekDay } = props;
+    return (_jsx("div", { className: 'aio-input-date-weekday aio-input-date-cell aio-input-date-theme-color', style: { background: theme[1], color: theme[0] }, children: _jsx("span", { children: translate(weekDay.slice(0, !jalali ? 2 : 1)) }) }));
+};
+function DPCell(props) {
+    let { rootProps, translate, onChange, DATE } = useContext(DPContext);
+    let { disabled, dateAttrs, theme = Def('theme'), value, jalali, unit = Def('date-unit'), multiple } = rootProps;
+    let { dateArray } = props;
+    function IsActive() {
+        if (multiple) {
+            return !value.length ? false : !!value.find((o) => DATE.isEqual(dateArray, o));
+        }
+        else {
+            return !value ? false : DATE.isEqual(dateArray, value);
+        }
+    }
+    function getClassName(isActive, isToday, isDisabled, className) {
+        var str = 'aio-input-date-cell';
+        if (isDisabled) {
+            str += ' aio-input-date-disabled';
+        }
+        if (isActive) {
+            str += ' aio-input-date-active aio-input-date-theme-active';
+        }
+        else {
+            str += ' aio-input-date-theme-color';
+        }
+        if (isToday) {
+            str += ' today aio-input-date-theme-border';
+        }
+        if (className) {
+            str += ` ${className}`;
+        }
+        return str;
+    }
+    let isActive = IsActive();
+    let isToday = DATE.isEqual(dateArray, DATE.getToday(jalali));
+    let isFuture = DATE.isGreater(dateArray, DATE.getToday(jalali));
+    let Attrs = {};
+    if (dateAttrs) {
+        const { unit = 'day' } = rootProps;
+        let weekDay = null, weekDayIndex = null, monthString = '';
+        if (unit === 'day') {
+            const a = DATE.getWeekDay(dateArray);
+            weekDay = a.weekDay;
+            weekDayIndex = a.index;
+        }
+        else if (unit === 'month') {
+            const months = DATE.getMonths(jalali);
+            monthString = months[dateArray[1] - 1];
+        }
+        Attrs = dateAttrs({ dateArray, isToday, isActive, isFuture, weekDayIndex, weekDay, monthString });
+        Attrs = Attrs || {};
+    }
+    let isDisabled = disabled === true || Attrs.disabled === true;
+    let className = getClassName(isActive, isToday, isDisabled, Attrs.className);
+    let onClick = isDisabled ? undefined : () => { onChange({ year: dateArray[0], month: dateArray[1], day: dateArray[2], hour: dateArray[3] }); };
+    let style = {};
+    if (!isDisabled) {
+        style.background = theme[1];
+        style.color = theme[0];
+    }
+    if (className.indexOf('aio-input-date-active') !== -1) {
+        style.background = theme[0];
+        style.color = theme[1];
+    }
+    if (className.indexOf('today') !== -1) {
+        style.border = `1px solid ${theme[0]}`;
+    }
+    style = Object.assign(Object.assign({}, style), Attrs.style);
+    let text;
+    if (unit === 'hour') {
+        text = dateArray[3] + ':00';
+    }
+    else if (unit === 'day') {
+        text = dateArray[2];
+    }
+    else if (unit === 'month') {
+        let months = DATE.getMonths(jalali);
+        text = translate(!jalali ? months[dateArray[1] - 1].slice(0, 3) : months[dateArray[1] - 1]);
+    }
+    return _jsx("div", { style: style, onClick: onClick, className: className, children: isDisabled ? _jsx("del", { children: text }) : text });
+}
+function DPHeaderItem(props) {
+    let { unit } = props;
+    let { rootProps, activeDate, months, changePopup } = useContext(DPContext);
+    let { theme = Def('theme'), jalali } = rootProps;
+    if (!activeDate || !activeDate[unit]) {
+        return null;
+    }
+    let text = unit === 'year' ? activeDate.year : months[activeDate[unit] - 1].substring(0, jalali ? 10 : 3);
+    return (_jsx("button", { type: 'button', className: "aio-input-date-dropdown aio-input-date-theme-color", style: { color: theme[0], background: theme[1] }, onClick: () => changePopup(_jsx(DPHeaderPopup, { onClose: () => changePopup(null), unit: unit })), children: text }));
+}
+const DPHeaderPopup = (props) => {
+    let { onClose, unit } = props;
+    let { rootProps, DATE, translate, activeDate, changeActiveDate } = useContext(DPContext);
+    let { jalali, theme = Def('theme') } = rootProps;
+    let [months] = useState(DATE.getMonths(jalali));
+    let [start, setStart] = useState(Math.floor(activeDate.year / 10) * 10);
+    let [year, setYear] = useState(activeDate.year);
+    let [month, setMonth] = useState(activeDate.month);
+    useEffect(() => {
+        setYear(activeDate.year);
+        setMonth(activeDate.month);
+    }, [activeDate.year, activeDate.month]);
+    function changeValue(v) {
+        if (unit === 'year') {
+            setYear(v);
+            changeActiveDate({ year: v });
+        }
+        else {
+            setMonth(v);
+            changeActiveDate({ month: v });
+        }
+        onClose();
+    }
+    function changePage(dir) {
+        let newStart = start + (dir * 10);
+        setStart(newStart);
+    }
+    function getCells() {
+        let cells = [];
+        const getCls = (active) => {
+            let className = 'aio-input-date-cell';
+            if (active) {
+                className += ' aio-input-date-active aio-input-date-theme-active';
+            }
+            else {
+                className += ' aio-input-date-theme-color';
+            }
+            return className;
+        };
+        if (unit === 'year') {
+            for (let i = start; i < start + 10; i++) {
+                let active = i === year;
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className: getCls(active), onClick: () => changeValue(i) };
+                cells.push(_createElement("div", Object.assign({}, p, { key: i }), i));
+            }
+        }
+        else {
+            for (let i = 1; i <= 12; i++) {
+                let active = i === month;
+                let p = { style: active ? { background: theme[0], color: theme[1] } : { background: theme[1], color: theme[0] }, className: getCls(active), onClick: () => changeValue(i) };
+                let text = months[i - 1];
+                if (!jalali) {
+                    text = `${text.slice(0, 3)} (${i})`;
+                }
+                cells.push(_createElement("div", Object.assign({}, p, { key: i }), text));
+            }
+        }
+        return cells;
+    }
+    function header_node() {
+        if (unit !== 'year') {
+            return null;
+        }
+        return (_jsxs("div", { className: 'aio-input-date-popup-header', children: [_jsx(DPArrow, { type: 'minus', onClick: () => changePage(-1) }), _jsx("div", { className: 'aio-input-date-popup-label', children: translate('Select Year') }), _jsx(DPArrow, { type: 'plus', onClick: () => changePage(1) })] }));
+    }
+    function body_node() { return _jsx("div", { className: 'aio-input-date-popup-body', children: getCells() }); }
+    function footer_node() {
+        const closeText = translate('Close');
+        return (_jsx("div", { className: 'aio-input-date-popup-footer', children: _jsx("button", { className: 'aio-input-date-theme-color', onClick: () => onClose(), children: closeText }) }));
+    }
+    return (_jsxs("div", { style: { background: theme[0], color: theme[1] }, className: 'aio-input-date-popup aio-input-date-theme-bg' + (jalali ? ' aio-input-date-rtl' : ' aio-input-date-ltr'), children: [header_node(), body_node(), footer_node()] }));
+};
+function DPHeader() {
+    let { rootProps, activeDate, changeActiveDate, DATE } = useContext(DPContext);
+    let { unit = Def('date-unit') } = rootProps;
+    function getDays() {
+        if (!activeDate || !activeDate.year || !activeDate.month) {
+            return null;
+        }
+        let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
+        let options = GetArray(daysLength, (i) => ({ text: (i + 1).toString(), value: i + 1 }));
+        let p = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) };
+        return _jsx(DPHeaderDropdown, Object.assign({}, p));
+    }
+    return (_jsxs("div", { className: 'aio-input-date-header', children: [_jsx(DPArrow, { type: 'minus' }), _jsxs("div", { className: 'aio-input-date-select', children: [_jsx(DPHeaderItem, { unit: 'year' }), unit !== 'month' ? _jsx(DPHeaderItem, { unit: 'month' }) : null, unit === 'hour' ? getDays() : null] }), _jsx(DPArrow, { type: 'plus' })] }));
+}
+function DPHeaderDropdown(props) {
+    let { rootProps } = useContext(DPContext);
+    let { value, options, onChange } = props;
+    let { theme = Def('theme') } = rootProps;
+    let p = {
+        value, options, onChange, caret: false, type: 'select',
+        attrs: { className: 'aio-input-date-dropdown aio-input-date-theme-color' },
+        option: { style: () => { return { background: theme[1], color: theme[0] }; } },
+    };
+    return (_jsx(AIOInput, Object.assign({}, p)));
+}
+function DPArrow(props) {
+    let { rootProps, changeActiveDate, activeDate, DATE } = useContext(DPContext);
+    let { type, onClick } = props;
+    let { jalali, unit = Def('date-unit'), theme = Def('theme') } = rootProps;
+    function change() {
+        if (onClick) {
+            onClick();
+            return;
+        }
+        let offset = type === 'minus' ? -1 : 1;
+        let date = [activeDate.year, activeDate.month, activeDate.day];
+        if (unit === 'month') {
+            changeActiveDate({ year: activeDate.year + offset });
+        }
+        if (unit === 'day') {
+            let newDate = [];
+            if (date[1] === 1 && offset === -1) {
+                newDate = [date[0] - 1, 12];
+            }
+            else if (date[1] === 12 && offset === 1) {
+                newDate = [date[0] + 1, 1];
+            }
+            else {
+                newDate = [date[0], date[1] + offset];
+            }
+            changeActiveDate({ year: newDate[0], month: newDate[1] });
+        }
+        if (unit === 'hour') {
+            let next = DATE.getNextTime(date, offset * 24 * 60 * 60 * 1000, jalali);
+            changeActiveDate({ year: next[0], month: next[1], day: next[2] });
+        }
+    }
+    function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1, { color: theme[0] }); }
+    return (_jsx("div", { className: 'aio-input-date-arrow aio-input-date-theme-color', onClick: () => change(), children: getIcon() }));
+}
+const AITableContext = createContext({});
+function Table() {
+    let { rootProps, DATE } = useContext(AICTX);
+    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs, onChangeSort, className, style } = rootProps;
+    let [dom] = useState(createRef());
+    let [searchValue, setSearchValue] = useState('');
+    let [columns, setColumns] = useState([]);
+    let [searchColumns, setSearchColumns] = useState([]);
+    let [excelColumns, setExcelColumns] = useState([]);
+    let [temp] = useState({});
+    let [DragRows] = useState(!onSwap ? false : new DragClass({
+        callback: (dragData, dropData) => {
+            if (DragRows === false) {
+                return;
+            }
+            const { dragIndex } = dragData;
+            const { dropIndex, rows } = dropData;
+            const newRows = DragRows.reOrder(rows, dragIndex, dropIndex);
+            const from = rows[dragIndex];
+            const to = rows[dropIndex];
+            if (typeof onSwap === 'function') {
+                onSwap(newRows, from, to);
+            }
+            else {
+                onChange(newRows);
+            }
+        }
+    }));
+    let [sorts, setSorts] = useState([]);
+    function getColumns() {
+        let { columns = [] } = rootProps;
+        columns = typeof columns === 'function' ? columns() : columns;
+        let searchColumns = [], excelColumns = [];
+        let updatedColumns = columns.map((o) => {
+            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
+            let column = Object.assign(Object.assign({}, o), { _id: id });
+            if (search) {
+                searchColumns.push(column);
+            }
+            if (excel) {
+                excelColumns.push(column);
+            }
+            return column;
+        });
+        setColumns(updatedColumns);
+        setSearchColumns(searchColumns);
+        setExcelColumns(excelColumns);
+        return updatedColumns;
+    }
+    function getSorts(columns) {
+        let sorts = [];
+        for (let i = 0; i < columns.length; i++) {
+            let column = columns[i];
+            let { _id, input } = column;
+            let sort = column.sort === true ? {} : column.sort;
+            if (!sort) {
+                continue;
+            }
+            let { active = false, dir = 'dec' } = sort;
+            let getValue;
+            if (sort.getValue) {
+                getValue = sort.getValue;
+            }
+            else {
+                getValue = (row) => {
+                    let value = getDynamics({ value: column.value, row, column });
+                    if (input && input.type === 'date') {
+                        value = DATE.getTime(value);
+                    }
+                    return value;
+                };
+            }
+            let type;
+            if (input && ['number', 'date', 'range'].indexOf(input.type) !== -1) {
+                type = 'number';
+            }
+            else {
+                type = sort.type || 'string';
+            }
+            let sortItem = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue };
+            sorts.push(sortItem);
+        }
+        setSorts(sorts);
+    }
+    function getDynamics(p) {
+        let { value, row, column, def, rowIndex } = p;
+        if (paging) {
+            let { number, size } = paging;
+            if (rowIndex)
+                rowIndex += ((number - 1) * size);
+        }
+        let type = typeof value;
+        if (type === 'string') {
+            let result = value;
+            let param = { row, column: column, rowIndex: rowIndex };
+            if (getValue[value]) {
+                result = getValue[value](param);
+            }
+            else if (value.indexOf('row.') !== -1) {
+                try {
+                    eval(`result = ${value}`);
+                }
+                catch (_a) {
+                    result = '';
+                }
+            }
+            return result === undefined ? def : result;
+        }
+        if (type === 'undefined') {
+            return def;
+        }
+        if (type === 'function') {
+            return value({ row, column, rowIndex });
+        }
+        return value === undefined ? def : value;
+    }
+    useEffect(() => {
+        let columns = getColumns();
+        getSorts(columns);
+    }, []);
+    function add() { typeof onAdd === 'function' ? onAdd() : onChange([Object.assign({}, onAdd), ...value]); }
+    function remove(row, index) {
+        let action = () => onChange(value.filter((o) => o._id !== row._id));
+        typeof onRemove === 'function' ? onRemove({ row, action, rowIndex: index }) : action();
+    }
+    function exportToExcel() {
+        let list = [];
+        if (typeof rootProps.excel === 'function') {
+            list = rootProps.excel(value);
+        }
+        else {
+            for (let i = 0; i < value.length; i++) {
+                let row = value[i], json = {};
+                for (let j = 0; j < excelColumns.length; j++) {
+                    let column = excelColumns[j], { excel, value } = column;
+                    let key = '';
+                    if (excel === true) {
+                        if (typeof column.title === 'string') {
+                            key = column.title;
+                        }
+                        else {
+                            key = 'untitle';
+                        }
+                    }
+                    else if (typeof excel === 'string') {
+                        key = excel;
+                    }
+                    else {
+                        continue;
+                    }
+                    json[key] = getDynamics({ value, row, column, rowIndex: i });
+                }
+                list.push(json);
+            }
+        }
+        ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' });
+    }
+    function getSearchedRows(rows) {
+        if (onSearch !== true) {
+            return rows;
+        }
+        if (!searchColumns.length || !searchValue) {
+            return rows;
+        }
+        return AIOInputSearch(rows, searchValue, (row, index) => {
+            let str = '';
+            for (let i = 0; i < searchColumns.length; i++) {
+                let column = searchColumns[i];
+                let value = getDynamics({ value: column.value, row, def: '', column, rowIndex: index });
+                if (value) {
+                    str += value + ' ';
+                }
+            }
+            return str;
+        });
+    }
+    function sortRows(rows, sorts) {
+        if (!rows) {
+            return [];
+        }
+        if (!sorts || !sorts.length) {
+            return rows;
+        }
+        return rows.sort((a, b) => {
+            for (let i = 0; i < sorts.length; i++) {
+                let { dir, getValue } = sorts[i];
+                if (!getValue) {
+                    return 0;
+                }
+                let aValue = getValue(a), bValue = getValue(b);
+                if (aValue < bValue) {
+                    return -1 * (dir === 'dec' ? -1 : 1);
+                }
+                if (aValue > bValue) {
+                    return 1 * (dir === 'dec' ? -1 : 1);
+                }
+                if (i === sorts.length - 1) {
+                    return 0;
+                }
+            }
+            return 0;
+        });
+    }
+    function getSortedRows(rows) {
+        if (temp.isInitSortExecuted) {
+            return rows;
+        }
+        if (onChangeSort) {
+            return rows;
+        }
+        let activeSorts = sorts.filter((sort) => sort.active !== false);
+        if (!activeSorts.length || !rows.length) {
+            return rows;
+        }
+        temp.isInitSortExecuted = true;
+        let sortedRows = sortRows(rows, activeSorts);
+        onChange(sortedRows);
+        return sortedRows;
+    }
+    function getRows() {
+        let searchedRows = getSearchedRows(value);
+        let sortedRows = getSortedRows(searchedRows);
+        let pagedRows = paging && !paging.serverSide ? sortedRows.slice((paging.number - 1) * paging.size, paging.number * paging.size) : sortedRows;
+        return { rows: value, searchedRows, sortedRows, pagedRows };
+    }
+    //calculate style of cells and title cells
+    function getCellStyle(column) {
+        let width = getDynamics({ value: column.width });
+        let minWidth = getDynamics({ value: column.minWidth });
+        return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth };
+    }
+    function getCellAttrs(p) {
+        let { row, rowIndex, column, type } = p;
+        let { cellAttrs, titleAttrs } = column;
+        let attrs = getDynamics({ value: type === 'title' ? titleAttrs : cellAttrs, column, def: {}, row, rowIndex });
+        let justify = getDynamics({ value: column.justify, def: false });
+        let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '');
+        attrs = AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
+        if (type === 'title') {
+            attrs.title = getDynamics({ value: column.title, def: '' });
+        }
+        return Object.assign({}, attrs);
+    }
+    function getRowAttrs(row, rowIndex) {
+        let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
+        let obj = AddToAttrs(attrs, { className: 'aio-input-table-row' });
+        if (DragRows !== false) {
+            obj = Object.assign(Object.assign(Object.assign({}, obj), DragRows.getDragAttrs({ dragIndex: rowIndex })), DragRows.getDropAttrs({ dropIndex: rowIndex, rows: value }));
+        }
+        return obj;
+    }
+    function search(searchValue) {
+        if (onSearch === true) {
+            setSearchValue(searchValue);
+        }
+        else if (typeof onSearch === 'function') {
+            onSearch(searchValue);
+        }
+    }
+    function getContext(ROWS) {
+        let context = {
+            ROWS, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
+            add, remove, search, exportToExcel, getDynamics
+        };
+        return context;
+    }
+    let ROWS = getRows();
+    let attrs = AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } });
+    return (_jsx(AITableContext.Provider, { value: getContext(ROWS), children: _jsxs("div", Object.assign({}, attrs, { children: [_jsx(TableToolbar, {}), _jsxs("div", { className: 'aio-input-table-unit aio-input-scroll', children: [_jsx(TableHeader, {}), _jsx(TableRows, {})] }), paging ? _jsx(TablePaging, {}) : ''] })) }));
+}
+function TableGap(props) {
+    let { rootProps } = useContext(AITableContext);
+    let { rowGap, columnGap } = rootProps;
+    let { dir } = props;
+    let style;
+    if (dir === 'h') {
+        style = { height: rowGap };
+    }
+    else {
+        style = { width: columnGap };
+    }
+    return _jsx("div", { className: `aio-input-table-border-${dir}`, style: style });
+}
+function TablePaging() {
+    let { ROWS, rootProps } = useContext(AITableContext);
+    let [temp] = useState({ timeout: undefined, start: undefined, end: undefined, pages: 0 });
+    function fix(paging) {
+        if (typeof rootProps.onChangePaging !== 'function') {
+            alert('aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input');
+            return { number: 0, size: 0 };
+        }
+        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging;
+        if (!serverSide) {
+            length = ROWS.sortedRows.length;
+        }
+        if (sizes.indexOf(size) === -1) {
+            size = sizes[0];
+        }
+        let pages = Math.ceil(length / size);
+        number = number > pages ? pages : number;
+        number = number < 1 ? 1 : number;
+        let start = number - 3, end = number + 3;
+        temp.start = start;
+        temp.end = end;
+        temp.pages = pages;
+        return Object.assign(Object.assign({}, paging), { length, number, size, sizes });
+    }
+    let [paging, setPaging] = useState(fix(rootProps.paging || { size: 0, number: 0 }));
+    useEffect(() => {
+        if (rootProps.paging) {
+            setPaging(fix(rootProps.paging));
+        }
+    }, [(rootProps.paging || { size: 0, number: 0, length: 0 }).size, (rootProps.paging || { size: 0, number: 0, length: 0 }).number, (rootProps.paging || { size: 0, number: 0, length: 0 }).length]);
+    function changePaging(obj) {
+        let newPaging = fix(Object.assign(Object.assign({}, paging), obj));
+        setPaging(newPaging);
+        if (rootProps.onChangePaging) {
+            if (newPaging.serverSide) {
+                clearTimeout(temp.timeout);
+                temp.timeout = setTimeout(() => {
+                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
+                    if (rootProps.onChangePaging) {
+                        rootProps.onChangePaging(newPaging);
+                    }
+                }, 800);
+            }
+            else {
+                rootProps.onChangePaging(newPaging);
+            }
+        }
+    }
+    let { number, size, sizes } = paging;
+    let buttons = [];
+    let isFirst = true;
+    for (let i = temp.start; i <= temp.end; i++) {
+        if (i < 1 || i > temp.pages) {
+            buttons.push(_jsx("button", { className: 'aio-input-table-paging-button aio-input-table-paging-button-hidden', children: i }, i));
+        }
+        else {
+            let index;
+            if (isFirst) {
+                index = 1;
+                isFirst = false;
+            }
+            else if (i === Math.min(temp.end, temp.pages)) {
+                index = temp.pages;
+            }
+            else {
+                index = i;
+            }
+            buttons.push(_jsx("button", { className: 'aio-input-table-paging-button' + (index === number ? ' active' : ''), onClick: () => changePaging({ number: index }), children: index }, index));
+        }
+    }
+    function changeSizeButton() {
+        if (!sizes || !sizes.length) {
+            return null;
+        }
+        let p = {
+            attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
+            type: 'select', value: size, options: sizes, option: { text: 'option', value: 'option' },
+            onChange: (value) => changePaging({ size: value }),
+            popover: { fitHorizontal: true },
+        };
+        return (_jsx(AIOInput, Object.assign({}, p)));
+    }
+    return (_jsxs("div", { className: 'aio-input-table-paging', children: [buttons, changeSizeButton()] }));
+}
+function TableRows() {
+    let { ROWS, rootProps } = useContext(AITableContext);
+    let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
+    let rows = ROWS.pagedRows || [];
+    let content;
+    if (rowsTemplate) {
+        content = rowsTemplate(rows);
+    }
+    else if (rows.length) {
+        content = rows.map((o, i) => {
+            let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;
+            o._id = o._id === undefined ? id : o._id;
+            let isLast = i === rows.length - 1, Row;
+            if (rowTemplate) {
+                Row = rowTemplate({ row: o, rowIndex: i, isLast });
+            }
+            else {
+                Row = _jsx(TableRow, { row: o, rowIndex: i, isLast: isLast }, o._id);
+            }
+            return (_jsxs(Fragment, { children: [rowBefore({ row: o, rowIndex: i }), Row, rowAfter({ row: o, rowIndex: i })] }, o._id));
+        });
+    }
+    else if (placeholder) {
+        content = _jsx("div", { style: { width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }, children: placeholder });
+    }
+    else {
+        return null;
+    }
+    return _jsx("div", { className: 'aio-input-table-rows', children: content });
+}
+function TableToolbar() {
+    let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns } = useContext(AITableContext);
+    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value, addText } = rootProps;
+    toolbarAttrs = AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' });
+    if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) {
+        return null;
+    }
+    function changeSort(sortId, changeObject) {
+        let newSorts = sorts.map((sort) => {
+            if (sort.sortId === sortId) {
+                let newSort = Object.assign(Object.assign({}, sort), changeObject);
+                return newSort;
+            }
+            return sort;
+        });
+        changeSorts(newSorts);
+    }
+    function changeSorts(sorts) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (onChangeSort) {
+                let res = yield onChangeSort(sorts);
+                if (res !== false) {
+                    setSorts(sorts);
+                }
+            }
+            else {
+                setSorts(sorts);
+                let activeSorts = sorts.filter((sort) => sort.active !== false);
+                if (activeSorts.length) {
+                    onChange(sortRows(value, activeSorts));
+                }
+            }
+        });
+    }
+    function button() {
+        if (!sorts.length) {
+            return null;
+        }
+        let p = {
+            popover: {
+                header: { title: 'Sort', onClose: false },
+                setAttrs: (key) => { if (key === 'header') {
+                    return { className: 'aio-input-table-toolbar-popover-header' };
+                } },
+                limitTo: '.aio-input-table'
+            },
+            caret: false, type: 'select', options: sorts,
+            option: {
+                text: 'option.title',
+                checked: '!!option.active',
+                close: () => false,
+                value: 'option.sortId',
+                after: (option) => {
+                    let { dir = 'dec', sortId } = option;
+                    return (_jsx("div", { onClick: (e) => {
+                            e.stopPropagation();
+                            changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' });
+                        }, children: I(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8) }));
+                }
+            },
+            attrs: { className: 'aio-input-table-toolbar-button' },
+            text: I('mdiSort', 0.7),
+            onSwap: (newSorts, from, to) => changeSorts(newSorts),
+            onChange: (value, option) => changeSort(value, { active: !option.checked })
+        };
+        return (_createElement(AIOInput, Object.assign({}, p, { key: 'sortbutton' })));
+    }
+    function getAddText() {
+        let { addText } = rootProps;
+        if (!rootProps.addText) {
+            return I('mdiPlusThick', 0.8);
+        }
+        if (typeof addText === 'function') {
+            return addText(value);
+        }
+        return addText;
+    }
+    return (_jsxs(_Fragment, { children: [_jsxs("div", Object.assign({}, toolbarAttrs, { children: [toolbar && _jsx("div", { className: 'aio-input-table-toolbar-content', children: typeof toolbar === 'function' ? toolbar() : toolbar }), _jsx("div", { className: 'aio-input-table-search', children: !!onSearch && _jsx(AIOInput, { type: 'text', onChange: (value) => search(value), after: I('mdiMagnify', 0.7) }) }), button(), !!excelColumns.length && _jsx("div", { className: 'aio-input-table-toolbar-button', onClick: () => exportToExcel(), children: I('mdiFileExcel', 0.8) }), !!onAdd && _jsx("div", { className: 'aio-input-table-toolbar-button', onClick: () => add(), children: getAddText() })] })), _jsx(TableGap, { dir: 'h' })] }));
+}
+function TableHeader() {
+    let { rootProps, columns } = useContext(AITableContext);
+    let { headerAttrs, onRemove } = rootProps;
+    headerAttrs = AddToAttrs(headerAttrs, { className: 'aio-input-table-header' });
+    let Titles = columns.map((o, i) => _jsx(TableTitle, { column: o, isLast: i === columns.length - 1 }, o._id));
+    let RemoveTitle = !onRemove ? null : _jsxs(_Fragment, { children: [_jsx(TableGap, { dir: 'v' }), _jsx("div", { className: 'aio-input-table-remove-title' })] });
+    return _jsxs("div", Object.assign({}, headerAttrs, { children: [Titles, RemoveTitle, _jsx(TableGap, { dir: 'h' })] }));
+}
+function TableTitle(p) {
+    let { column, isLast } = p;
+    let { getCellAttrs } = useContext(AITableContext);
+    let attrs = getCellAttrs({ column, type: 'title' });
+    return (_jsxs(_Fragment, { children: [_jsx("div", Object.assign({}, attrs, { children: attrs.title })), !isLast && _jsx(TableGap, { dir: 'v' })] }));
+}
+function TableRow(p) {
+    let { row, isLast, rowIndex } = p;
+    let { remove, rootProps, columns, getRowAttrs } = useContext(AITableContext);
+    function getCells() {
+        return columns.map((column, i) => {
+            let key = row._id + ' ' + column._id;
+            let isLast = i === columns.length - 1;
+            return (_jsx(TableCell, { isLast: isLast, row: row, rowIndex: rowIndex, column: column }, key));
+        });
+    }
+    let { onRemove } = rootProps;
+    return (_jsxs(_Fragment, { children: [_jsxs("div", Object.assign({}, getRowAttrs(row, rowIndex), { children: [getCells(), onRemove ? _jsxs(_Fragment, { children: [_jsx(TableGap, { dir: 'v' }), _jsx("button", { className: 'aio-input-table-remove', onClick: () => remove(row, rowIndex), children: I('mdiClose', 0.8) })] }) : null] }), row._id), _jsx(TableGap, { dir: 'h' })] }));
+}
+const TableCell = (p) => {
+    let { row, rowIndex, column, isLast } = p;
+    let { getCellAttrs, rootProps, getDynamics } = useContext(AITableContext);
+    let { onChange = () => { }, value = [] } = rootProps;
+    function setCell(row, column, cellNewValue) {
+        if (column.input && column.input.onChange) {
+            column.input.onChange({ value: cellNewValue, row, column });
+        }
+        else {
+            row = JSON.parse(JSON.stringify(row));
+            eval(`${column.value} = cellNewValue`);
+            onChange(value.map((o) => o._id !== row._id ? o : row));
+        }
+    }
+    let contentProps = { row, rowIndex, column, onChange: column.input ? (value) => setCell(row, column, value) : undefined };
+    let key = row._id + ' ' + column._id;
+    return (_jsxs(Fragment, { children: [_jsx("div", Object.assign({}, getCellAttrs({ row, rowIndex, column, type: 'cell' }), { children: _createElement(TableCellContent, Object.assign({}, contentProps, { key: key })) })), !isLast && _jsx(TableGap, { dir: 'v' })] }, key));
+};
+function TableCellContent(props) {
+    let { row, column, rowIndex, onChange } = props;
+    let { getDynamics } = useContext(AITableContext);
+    let template = getDynamics({ value: column.template, row, rowIndex, column });
+    if (template !== undefined) {
+        return template;
+    }
+    let input = getDynamics({ value: column.input, row, rowIndex, column });
+    let value = getDynamics({ value: column.value, row, rowIndex, column });
+    if (!input) {
+        return typeof value === 'object' ? '' : value;
+    }
+    //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
+    input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
+    let convertedInput = { type: 'text' };
+    for (let property in input) {
+        let prop = property;
+        let res = input[prop];
+        if (['onChange', 'onClick'].indexOf(prop) !== -1) {
+            convertedInput[prop] = res;
+        }
+        else {
+            convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column });
+        }
+    }
+    let p = Object.assign(Object.assign({}, convertedInput), { value, onChange, type: input.type });
+    return (_createElement(AIOInput, Object.assign({}, p, { key: row._id + ' ' + column._id })));
+}
+function AIOInputSearch(items, searchValue, getValue) {
+    if (!searchValue) {
+        return items;
+    }
+    function isMatch(keys, value) {
+        for (let i = 0; i < keys.length; i++) {
+            if (value.indexOf(keys[i]) === -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    let keys = searchValue.split(' ');
+    return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o));
+}
+const RangeContext = createContext({});
+const Range = () => {
+    let { rootProps } = useContext(AICTX);
+    const rootPropsRef = useRef(rootProps);
+    rootPropsRef.current = rootProps;
+    let { start = 0, end = 360, min = start, max = end, step = 1, reverse, round, vertical, multiple, text, onChange, size = Def('range-size'), disabled, className, labels = [], rotate = 0 } = rootProps;
+    let [temp] = useState({ dom: createRef(), start: 0, index: false });
+    function getValidValue(value) {
+        if (!Array.isArray(value)) {
+            value = [value || 0];
+        }
+        for (let i = 0; i < value.length; i++) {
+            let point = value[i] || 0;
+            point = Math.round((point - start) / step) * step + start;
+            point = +point.toFixed(GetPrecisionCount(step));
+            if (point < min) {
+                point = min;
+            }
+            if (point > max) {
+                point = max;
+            }
+            value[i] = point;
+        }
+        return value;
+    }
+    let value = getValidValue(rootProps.value);
+    let valueRef = useRef(value);
+    valueRef.current = value;
+    let [disabledDic, setDisabledDic] = useState(getDisabledDic());
+    function getDisabledDic() {
+        if (!Array.isArray(disabled)) {
+            return {};
+        }
+        let res = {};
+        for (let i = 0; i < disabled.length; i++) {
+            let key = 'a' + disabled[i];
+            res[key] = true;
+        }
+        return res;
+    }
+    useEffect(() => { setDisabledDic(getDisabledDic()); }, [JSON.stringify(disabled)]);
+    useEffect(() => {
+        if (!onChange) {
+            return;
+        }
+        clearTimeout(temp.timeOut);
+        temp.timeOut = setTimeout(() => {
+            new Swip({
+                reverseX: !!reverse,
+                //vertical condition
+                reverseY: !!reverse && !!vertical,
+                dom: () => $(temp.dom.current),
+                start: (p) => {
+                    const { disabled } = rootPropsRef.current;
+                    if (disabled === true) {
+                        return false;
+                    }
+                    let { event } = p;
+                    if (event.target !== null) {
+                        let target = $(event.target);
+                        if (HasClass(target, 'ai-range-point')) {
+                            let index = target.attr('data-index') || '0';
+                            temp.index = +index;
+                        }
+                        else {
+                            temp.index = false;
+                        }
+                        temp.start = [...valueRef.current];
+                    }
+                    return [0, 0];
+                },
+                move: (p) => {
+                    let { change, mousePosition } = p;
+                    if (change) {
+                        changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle });
+                    }
+                },
+                onClick: function (p) {
+                    const { disabled } = rootPropsRef.current;
+                    if (disabled) {
+                        return;
+                    }
+                    click(p.mousePosition);
+                }
+            });
+        }, 100);
+    }, [changeHandle]);
+    function getDefaultOffset(type) {
+        if (type === 'point') {
+            return round ? 100 : 0;
+        }
+        if (type === 'label') {
+            return round ? 116 : 14;
+        }
+        if (type === 'scale') {
+            return round ? 100 : 14;
+        }
+        return 0;
+    }
+    function changeValue(newValue) {
+        if (!onChange) {
+            return;
+        }
+        newValue = getValidValue(newValue);
+        onChange(!!multiple ? newValue : newValue[0]);
+    }
+    function click(mousePosition) {
+        if (disabled === true || temp.index !== false) {
+            return;
+        }
+        let value = valueRef.current;
+        let clickedValue;
+        //vertical condition
+        if (round) {
+            clickedValue = getValueByAngle(mousePosition.centerAngle);
+        }
+        else {
+            clickedValue = getValueByXP(mousePosition[vertical ? 'yp' : 'xp']);
+        }
+        if (clickedValue < value[value.length - 1] && clickedValue > value[0]) {
+            return;
+        }
+        if (clickedValue < value[0]) {
+            change1Unit(-1);
+        }
+        else {
+            change1Unit(1);
+        }
+    }
+    function isValueValid(value) {
+        for (let i = 0; i < value.length; i++) {
+            if (isValueDisabled(value[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    const sbp = (value, p = {}) => {
+        let { half = false, range = size / (half ? 2 : 1) } = p;
+        let res = range * value / 100;
+        let { min, max } = p;
+        if (min !== undefined && res < min) {
+            res = min;
+        }
+        if (max !== undefined && res > max) {
+            res = max;
+        }
+        return res;
+    };
+    const getCircleByStr = (rc, type) => {
+        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000', className = rc.className;
+        try {
+            let thicknessValue = thickness;
+            if (isNaN(thicknessValue)) {
+                thicknessValue = 1;
+            }
+            thickness = thicknessValue;
+            let offsetValue = offset;
+            if (isNaN(offsetValue)) {
+                offsetValue = 0;
+            }
+            let defaultRadius = size / 2 - thickness / 2;
+            if (type === 'offset') {
+                radius = defaultRadius - offsetValue;
+            }
+            else {
+                radius = offsetValue;
+            }
+            if (radius > defaultRadius) {
+                radius = defaultRadius;
+            }
+            if (radius < thickness / 2) {
+                radius = thickness / 2;
+            }
+            else {
+                roundCap = false;
+            }
+        }
+        catch (_a) { }
+        return { thickness, radius, color, roundCap, full, className };
+    };
+    const getRectByStr = (range) => {
+        let { thickness = 1, offset = 0, color = '#000', roundCap = false, className } = range;
+        try {
+            let thicknessValue = thickness;
+            if (isNaN(thicknessValue)) {
+                thicknessValue = 1;
+            }
+            thickness = thicknessValue;
+            let offsetValue = offset;
+            if (isNaN(offsetValue)) {
+                offsetValue = 0;
+            }
+            let defaultOffset = (size / 2) - (thickness / 2);
+            offset = defaultOffset - offsetValue;
+            if (offset > size - thickness / 2) {
+                offset = size - thickness / 2;
+            }
+            if (offset < thickness / 2) {
+                offset = thickness / 2;
+            }
+        }
+        catch (_a) { }
+        return { thickness, offset, color, roundCap, className };
+    };
+    function change1Unit(dir) {
+        let value = valueRef.current;
+        let newValue = [...value];
+        let lastValue = JSON.stringify(newValue);
+        newValue = moveAll(newValue, dir * step);
+        while (!isValueValid(newValue) && JSON.stringify(newValue) !== lastValue) {
+            lastValue = JSON.stringify(newValue);
+            newValue = moveAll(newValue, dir * step);
+        }
+        changeValue(newValue);
+    }
+    function changeHandle(obj) {
+        if (disabled === true) {
+            return;
+        }
+        let newValue = getChangedValue(obj);
+        changeValue(newValue);
+    }
+    function getIndexLimit(index) {
+        let value = valueRef.current;
+        let before, after;
+        if (index === 0) {
+            before = start;
+        }
+        else {
+            before = value[index - 1];
+        }
+        if (index === value.length - 1) {
+            after = end;
+        }
+        else {
+            after = value[index + 1];
+        }
+        return { before, after };
+    }
+    function moveAll(newValue, offset, ifFailedReturnOriginalValue) {
+        let res = newValue.map((o) => o + offset);
+        if (res[0] < start || res[res.length - 1] > end) {
+            return ifFailedReturnOriginalValue ? valueRef.current : newValue;
+        }
+        return res;
+    }
+    function getChangedValue(obj) {
+        let { dx, dy, deltaCenterAngle, centerAngle } = obj;
+        let startValue = [...temp.start];
+        let index = temp.index;
+        //agar faghat yek point darim har koja mousedown shod farz kon rooye oon point mousedown karde im
+        if (startValue.length === 1 && index === false) {
+            index = 0;
+        }
+        let res;
+        if (index === false) {
+            let deltaValue;
+            if (round) {
+                let v = deltaCenterAngle * (end - start) / 360;
+                v = Math.round(v / step) * step;
+                deltaValue = v;
+            }
+            else {
+                deltaValue = Math.round(getValueByXP(getXPByX(vertical ? dy : dx)) / step) * step;
+            }
+            let newValue = moveAll(startValue, deltaValue, true);
+            res = !isValueValid(newValue) ? valueRef.current : newValue;
+        }
+        else {
+            let { before, after } = getIndexLimit(index);
+            let newUnitValue;
+            if (round) {
+                newUnitValue = Math.round(getValueByAngle(centerAngle) / step) * step;
+            }
+            else {
+                let deltaValue = Math.round(getValueByXP(getXPByX(vertical ? dy : dx)) / step) * step;
+                newUnitValue = startValue[index] + deltaValue;
+            }
+            if (newUnitValue > after) {
+                newUnitValue = after;
+            }
+            if (newUnitValue < before) {
+                newUnitValue = before;
+            }
+            if (isValueDisabled(newUnitValue)) {
+                newUnitValue = valueRef.current[index];
+            }
+            startValue[index] = newUnitValue;
+            res = startValue;
+        }
+        return res;
+    }
+    function getSide() {
+        if (vertical) {
+            return reverse ? 'bottom' : 'top';
+        }
+        return reverse ? 'right' : 'left';
+    }
+    function getOffset() {
+        return vertical ? 'left' : 'top';
+    }
+    function isValueDisabled(value) { return !!disabledDic[`a${value}`]; }
+    function getRootClassName() {
+        let cls = 'ai-range';
+        if (round) {
+            cls += ' ai-range-round';
+        }
+        else {
+            cls += ` ai-range-${vertical ? 'vertical' : 'horizontal'}`;
+        }
+        if (className) {
+            cls += ' ' + className;
+        }
+        if (reverse) {
+            cls += ' ai-range-reverse';
+        }
+        return cls;
+    }
+    function getRootStyle() {
+        let { style } = rootProps;
+        let res;
+        if (round) {
+            res = { width: size, height: size };
+        }
+        else if (vertical) {
+            res = { width: size };
+        }
+        else {
+            res = { height: size };
+        }
+        return Object.assign(Object.assign({}, res), style);
+    }
+    function getRootProps() {
+        let { attrs = {} } = rootProps;
+        let rootStyle = getRootStyle();
+        return AddToAttrs(attrs, { className: getRootClassName(), style: rootStyle, attrs: { ref: temp.dom } });
+    }
+    function root_node() {
+        return (_jsxs("div", Object.assign({}, getRootProps(), { children: [_jsx(RangeGroove, {}), text !== undefined && _jsx("div", { className: 'ai-range-text', children: typeof text === 'function' ? text() : text }, 'rangetext'), !round && _jsxs(Fragment, { children: [_jsx(RangeRanges, {}), _jsx(RangeFills, {})] }, 'rangefill'), _jsx(RangeSvg, {}), labels.map((label, i) => _jsx(RangeLabel, { label: label }, i)), value.map((itemValue, i) => _jsx(RangeValueContainer, { index: i, itemValue: itemValue }, 'rangecontainervalue' + i))] })));
+    }
+    function fixValueInEmpty(value) {
+        round = round || 1;
+        let fill = round;
+        let empty = 1 - fill;
+        let emptyValue = empty * (end - start) / fill;
+        if (value > end + emptyValue / 2) {
+            value = start - emptyValue + value - end;
+        }
+        return value;
+    }
+    function getValueByAngle(angle) {
+        let fillAngle = 360 * (round || 1);
+        let emptyAngle = 360 - fillAngle;
+        if (reverse) {
+            angle = 180 - angle;
+        }
+        angle -= rotate;
+        angle -= emptyAngle / 2;
+        angle -= 90;
+        angle = fixAngle(angle);
+        let res = angle * (end - start) / fillAngle;
+        res = fixValueInEmpty(res);
+        return res;
+    }
+    function getAngleByValue(value, ang) {
+        let fillAngle = 360 * round;
+        let emptyAngle = 360 - fillAngle;
+        let res = value * fillAngle / (end - start);
+        res += 90;
+        res += emptyAngle / 2;
+        res += rotate;
+        res += (ang || 0);
+        return reverse ? res = 180 - res : res;
+    }
+    function fixAngle(angle) { angle = angle % 360; return angle < 0 ? angle = 360 + angle : angle; }
+    function getXPByValue(value) { return 100 * (value - start) / (end - start); }
+    function getValueByXP(xp) { return xp * (end - start) / 100; }
+    function getXPByX(x) { return x * 100 / $(temp.dom.current)[vertical ? 'height' : 'width'](); }
+    function getContext() {
+        let context = {
+            getXPByValue, rootProps, fixAngle, getAngleByValue, dom: temp.dom, getCircleByStr, getRectByStr,
+            isValueDisabled, value: valueRef.current, getSide, getOffset, getDefaultOffset, sbp
+        };
+        return context;
+    }
+    return (_jsx(RangeContext.Provider, { value: getContext(), children: root_node() }));
+};
+const RangeGroove = () => {
+    let { rootProps } = useContext(RangeContext);
+    const attrs = AddToAttrs(rootProps.grooveAttrs, { className: 'ai-range-groove' });
+    if (rootProps.round) {
+        return null;
+    }
+    else {
+        return _jsx("div", Object.assign({}, attrs));
+    }
+};
+const RangeSvg = () => {
+    let { rootProps, value } = useContext(RangeContext);
+    let { round, ranges = [], circles = [], size = Def('range-size'), end = 360 } = rootProps;
+    if (!round || (!(ranges || [0]).length && !circles.length)) {
+        return null;
+    }
+    let pathes = [_jsx(RangeCircles, {}), _jsx(RangeRanges, {})];
+    return (_jsx("svg", { style: { position: 'absolute', left: 0, top: 0 }, width: size, height: size, children: pathes }));
+};
+const RangeCircles = () => {
+    let { rootProps, getCircleByStr } = useContext(RangeContext);
+    let { start = 0, end = 360, circles = [], size = Def('range-size') } = rootProps;
+    let pathes = [];
+    for (let i = 0; i < circles.length; i++) {
+        let from = start, to = end;
+        let { thickness, color, radius, roundCap, full } = getCircleByStr(circles[i], 'radius');
+        let p = { thickness, color, from, to, radius, full, roundCap };
+        pathes.push(_jsx(RangeArc, Object.assign({}, p), 'rangecirclearc' + i));
+    }
+    return _jsx(_Fragment, { children: pathes });
+};
+const RangeFills = () => {
+    let { rootProps, value } = useContext(RangeContext);
+    let { start = 0, fill, round } = rootProps;
+    if (round || fill === false) {
+        return null;
+    }
+    let limit = value.length === 1 ? [start, value[0]] : [...value];
+    let res = [];
+    for (let i = 1; i < limit.length; i++) {
+        let { thickness, style, className: fillClassName, color } = (typeof fill === 'function' ? fill(i) : fill) || {};
+        let from = limit[i - 1];
+        let to = limit[i];
+        let className = 'ai-range-fill';
+        if (fillClassName) {
+            className += ' ' + fillClassName;
+        }
+        let p = { thickness, color, from, to, className, style };
+        res.push(_createElement(RangeRect, Object.assign({}, p, { key: 'fill' + i })));
+    }
+    return _jsx(_Fragment, { children: res });
+};
+const RangeRanges = () => {
+    let { rootProps, getCircleByStr, getRectByStr } = useContext(RangeContext);
+    let { start = 0, ranges = [], round, end } = rootProps;
+    let res = [], from = start, list = ranges;
+    for (let i = 0; i < list.length; i++) {
+        let [value, config] = list[i];
+        const isFirst = from === start;
+        let to = from + value;
+        const isLast = to === end;
+        let rangeItem;
+        if (round) {
+            let { thickness, color, radius, roundCap, className } = getCircleByStr(config, 'offset');
+            let p = { thickness, color, from, to, radius, roundCap, full: false, className };
+            rangeItem = _jsx(RangeArc, Object.assign({}, p), 'rangearc' + i);
+        }
+        else {
+            let { thickness, color, offset, roundCap, className } = getRectByStr(config);
+            const cls = classListToString(['ai-range-range', className, isFirst ? 'ai-range-range-first' : '', isLast ? 'ai-range-range-last' : '']);
+            let p = { thickness, color, from, to, offset, roundCap, className: cls };
+            rangeItem = _createElement(RangeRect, Object.assign({}, p, { key: 'range' + i }));
+        }
+        res.push(rangeItem);
+        from = to;
+    }
+    return _jsx(_Fragment, { children: res });
+};
+const RangeValueContainer = (props) => {
+    let { rootProps, isValueDisabled, fixAngle, getAngleByValue, getXPByValue, dom, getSide } = useContext(RangeContext);
+    let { itemValue, index } = props;
+    let { round } = rootProps;
+    let angle = fixAngle(getAngleByValue(itemValue));
+    function containerProps() {
+        let style;
+        if (!round) {
+            style = { [getSide()]: getXPByValue(itemValue) + '%' };
+        }
+        else {
+            style = { transform: `rotate(${angle}deg)` };
+        }
+        return { className: 'ai-range-value-container', draggable: false, style };
+    }
+    let PROPS = {
+        value: itemValue, index, disabled: isValueDisabled(itemValue),
+        angle, parentDom: dom
+    };
+    return (_jsxs("div", Object.assign({}, containerProps(), { children: [_createElement(RangeHandle, Object.assign({}, PROPS, { key: 'handle' })), " ", _createElement(RangePoint, Object.assign({}, PROPS, { key: 'point' }))] })));
+};
+const RangeRect = ({ thickness, color, from, to, className, style, offset, roundCap }) => {
+    let { getXPByValue, rootProps, getSide } = useContext(RangeContext);
+    let { vertical } = rootProps, startSide = getXPByValue(from), endSide = getXPByValue(to);
+    let bigSizeStyle = { [vertical ? 'height' : 'width']: (endSide - startSide) + '%' };
+    let smallSizeStyle = { [vertical ? 'width' : 'height']: thickness };
+    let mainSideStyle = { [getSide()]: startSide + '%' };
+    let otherSideStyle = offset ? { [vertical ? 'left' : 'top']: offset } : {};
+    let borderRadiusStyle = roundCap ? { borderRadius: '100%' } : {};
+    let colorStyle = { background: color };
+    let Style = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, bigSizeStyle), smallSizeStyle), mainSideStyle), otherSideStyle), borderRadiusStyle), colorStyle), style);
+    return _jsx("div", { className: className, style: Style });
+};
+const RangeArc = ({ thickness, color, from, to, radius, full, roundCap, className }) => {
+    let { fixAngle, getAngleByValue, rootProps } = useContext(RangeContext);
+    let { size = Def('range-size'), reverse } = rootProps;
+    let a, b;
+    let x = size / 2, y = size / 2;
+    if (full) {
+        a = 0;
+        b = 360;
+    }
+    else {
+        let startAngle = fixAngle(getAngleByValue(from) + 90);
+        let endAngle = fixAngle(getAngleByValue(to) + 90);
+        if (endAngle === 0) {
+            endAngle = 360;
+        }
+        a = startAngle;
+        b = endAngle;
+        if (reverse) {
+            b = startAngle;
+            a = endAngle;
+        }
+    }
+    return _jsx("path", { d: svgArc(x, y, radius, a, b), stroke: color, strokeWidth: thickness, fill: 'transparent', strokeLinecap: roundCap ? 'round' : undefined, className: className }, `from${from}to${to}`);
+};
+const RangePoint = (props) => {
+    let { rootProps, getOffset, sbp } = useContext(RangeContext);
+    let [temp] = useState({ dom: createRef() });
+    let { value, disabled, angle, index, parentDom } = props;
+    if (rootProps.point === false) {
+        return null;
+    }
+    let { round, size = Def('range-size') } = rootProps;
+    let point = (rootProps.point || (() => { }))({ disabled, angle, value, index }) || {};
+    let { attrs = {}, html = value, offset = 0 } = point;
+    let containerStyle, pointStyle = Object.assign({}, attrs.style);
+    if (round) {
+        containerStyle = { left: size / 2 + offset, transform: `rotate(${-angle}deg)` };
+    }
+    else {
+        containerStyle = { [getOffset()]: offset };
+    }
+    let containerProps = { ref: temp.dom, className: 'ai-range-point-container', style: containerStyle, draggable: false };
+    let pointProps = AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index } });
+    pointProps.onMouseDown = (e) => {
+        let containers = $(parentDom.current).find('ai-range-value-container');
+        containers.css({ zIndex: 10 });
+        containers.eq(index).css({ zIndex: 100 });
+        if (attrs.onMouseDown) {
+            attrs.onMouseDown(e);
+        }
+    };
+    return (_createElement("div", Object.assign({}, containerProps, { key: 'rangepoint' + index }),
+        _jsx("div", Object.assign({}, pointProps, { children: html }))));
+};
+const RangeHandle = (props) => {
+    let { rootProps, sbp } = useContext(RangeContext);
+    let { value, angle, disabled, index } = props;
+    let { handle = (() => { }), round } = rootProps;
+    if (handle === false || !round) {
+        return null;
+    }
+    if (handle && typeof handle !== 'function') {
+        alert(`aio-input error => in type round, handle props should be a function,
+        handle type = (value:number,{disabled:boolean,angle:number})=>{attrs:any}`);
+        return null;
+    }
+    let { sharp = false, thickness = 10, size: handleSize = 90, color = '#000', offset = 0 } = handle(value, { angle, disabled, value }) || {};
+    let width = sbp(handleSize, { half: true });
+    let height = sbp(thickness, { half: true });
+    function getStyle() {
+        if (sharp) {
+            return {
+                [width < 0 ? 'borderRight' : 'borderLeft']: `${Math.abs(width)}px solid ${color}`,
+                borderTop: `${height / 2}px solid transparent`,
+                borderBottom: `${height / 2}px solid transparent`,
+                left: offset
+            };
+        }
+        else {
+            return { width, height, left: offset, background: color };
+        }
+    }
+    let PROPS = AddToAttrs({}, {
+        className: 'aio-input-handle', style: getStyle(), attrs: { draggable: false }
+    });
+    return (_createElement("div", Object.assign({}, PROPS, { key: 'rangehandle' + index })));
+};
+const RangeLabel = (props) => {
+    let { dom, rootProps } = useContext(RangeContext);
+    let { label } = props;
+    let { zIndex, dynamic, step, list = [] } = label;
+    let { round, start = 0, end = 360, reverse, vertical } = rootProps;
+    let [def] = useState(getDef);
+    function getDef() { return RENDER(true); }
+    function getList() {
+        let res = [];
+        if (step) {
+            let { start: lstart = start, end: lend = end } = label;
+            for (let i = lstart; i <= lend; i += step) {
+                res.push(i);
+            }
+        }
+        for (let i = 0; i < list.length; i++) {
+            if (res.indexOf(list[i]) === -1) {
+                res.push(list[i]);
+            }
+        }
+        return res;
+    }
+    function updateLabels() {
+        if (round || !label.autoHide || vertical) {
+            return;
+        }
+        let container = $(dom.current);
+        let labels = container.find('.ai-range-label');
+        if (!labels.length) {
+            return;
+        }
+        let firstLabel = labels.eq(0);
+        let firstLabelHProp = firstLabel.attr('data-rotated') === 'yes' ? 'height' : 'width';
+        let end = firstLabel.offset().left + (!reverse ? firstLabel[firstLabelHProp]() : 0);
+        for (let i = 1; i < labels.length; i++) {
+            let label = labels.eq(i);
+            let hProp = label.attr('data-rotated') === 'yes' ? 'height' : 'width';
+            label.css({ display: 'flex' });
+            let left = label.offset().left;
+            let width = label[hProp]();
+            let right = left + width;
+            if (!reverse) {
+                if (left < end + 5) {
+                    label.css({ display: 'none' });
+                }
+                else {
+                    end = left + width;
+                }
+            }
+            else {
+                if (right > end - 5) {
+                    label.css({ display: 'none' });
+                }
+                else {
+                    end = left;
+                }
+            }
+        }
+    }
+    useEffect(() => { $(window).on('resize', updateLabels); }, []);
+    useEffect(() => { updateLabels(); });
+    function RENDER(init) {
+        if (!init && !dynamic) {
+            return def;
+        }
+        return (_jsx("div", { className: 'ai-range-labels', style: { zIndex }, children: getList().map((itemValue) => _jsx(RangeLabelItem, { label: label, itemValue: itemValue }, itemValue)) }));
+    }
+    return _jsx(_Fragment, { children: RENDER(false) });
+};
+const RangeLabelItem = (props) => {
+    let { rootProps, isValueDisabled, fixAngle, getAngleByValue, getXPByValue, getSide } = useContext(RangeContext);
+    let { label, itemValue } = props;
+    let { round, vertical, size = Def('range-size') } = rootProps;
+    let angle;
+    if (round) {
+        angle = fixAngle(getAngleByValue(itemValue));
+    }
+    let disabled = isValueDisabled(itemValue);
+    function getContainerStyle(distance) {
+        if (round) {
+            return { transform: `rotate(${angle}deg)` };
+        }
+        else {
+            return Object.assign({ [getSide()]: getXPByValue(itemValue) + '%' }, distance);
+        }
+    }
+    function getTextStyle(item, distance) {
+        let res = {};
+        if (round) {
+            res = Object.assign(Object.assign({}, res), distance);
+            if (item.fixAngle) {
+                res = Object.assign(Object.assign({}, res), { transform: `rotate(${-angle}deg)` });
+            }
+        }
+        return Object.assign({ width: 0, height: 0 }, res);
+    }
+    function getDetails() {
+        let item = label.setting(itemValue, { disabled, angle });
+        let { offset = 0, html = '' } = item;
+        let distance = { [round || vertical ? 'left' : 'top']: size / 2 + offset };
+        let containerStyle = getContainerStyle(distance);
+        let containerProps = { className: `ai-range-label-container`, style: containerStyle, draggable: false };
+        let textProps = AddToAttrs({}, { className: [`ai-range-label`], style: getTextStyle(item, distance), attrs: { draggable: false } });
+        return { html, textProps, containerProps };
+    }
+    let { html, textProps, containerProps } = getDetails();
+    return (_jsx("div", Object.assign({}, containerProps, { children: _jsx("div", Object.assign({}, textProps, { children: html })) })));
+};
+export const AISwitch = ({ colors = [], width = 24, padding = 1, value = false, borderSize = 2, buttonSize = 12, onChange = () => { }, grooveSize = 0, html = () => null, attrs }) => {
+    function getContainerStyle() {
+        return {
+            paddingRight: buttonSize + padding, paddingLeft: padding,
+            border: `${borderSize}px solid${colors[0] && colors[1] ? (` ${value ? colors[1] : colors[0]}`) : ''}`
+        };
+    }
+    function getOuterStyle() {
+        return { width: width - buttonSize - padding, height: buttonSize + (2 * padding) };
+    }
+    function getInnerStyle() {
+        return { width: buttonSize, height: buttonSize, top: `calc(50% - ${buttonSize / 2}px)`, background: value ? colors[1] : colors[0] };
+    }
+    function getGrooveStyle() {
+        return { position: 'absolute', top: `calc(50% - ${grooveSize / 2}px)`, width: `calc(100% - ${buttonSize + padding * 2}px)`, background: '#ddd', left: padding + buttonSize / 2, height: grooveSize };
+    }
+    const containerAttrs = AddToAttrs(attrs, {
+        className: ['aio-input-switch', !!value ? 'aio-input-main-color' : undefined, !!value ? 'active' : 'deactive'],
+        style: getContainerStyle(),
+        attrs: { onClick: () => onChange(!value) }
+    });
+    const innerAttrs = AddToAttrs({}, { className: ['aio-input-switch-inner', !!value ? 'aio-input-main-bg' : undefined, !!value ? 'active' : 'deactive'], style: getInnerStyle() });
+    return (_jsxs("div", Object.assign({}, containerAttrs, { children: [!!grooveSize && _jsx("div", { className: "aio-input-switch-groove", style: getGrooveStyle() }), _jsx("div", { className: "aio-input-switch-outer", style: getOuterStyle(), children: _jsx("div", Object.assign({}, innerAttrs, { children: html(!!value) })) })] })));
+};
+export function AIOInput_defaultProps(p) {
+    let storage = new Storage('aio-input-storage');
+    for (let prop in p) {
+        storage.save(prop, p[prop]);
+    }
+}
+function getTypes(props) {
+    function isDropdown() {
+        if (['select', 'date', 'time'].indexOf(type) !== -1) {
+            return true;
+        }
+        if (['text', 'number', 'textarea'].indexOf(type) !== -1 && props.options) {
+            return true;
+        }
+        if (type === 'button' && props.popover) {
+            return true;
+        }
+        return false;
+    }
+    let { type, multiple } = props;
+    let isMultiple;
+    if (type === 'table' || type === 'tags') {
+        isMultiple = true;
+    }
+    else if (['radio', 'range', 'file', 'buttons', 'select', 'date', 'acardion'].indexOf(type) !== -1) {
+        isMultiple = !!multiple;
+    }
+    else {
+        isMultiple = false;
+    }
+    ;
+    return {
+        isMultiple,
+        isInput: ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1,
+        isDropdown: isDropdown(),
+        hasOption: ['text', 'number', 'textarea', 'color', 'select', 'radio', 'tabs', 'list', 'buttons', 'tags'].indexOf(type) !== -1,
+        hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(type) !== -1,
+        hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(type) !== -1,
+        hasText: ['checkbox', 'button', 'select'].indexOf(type) !== -1,
+        hasSearch: ['table', 'select'].indexOf(type) !== -1
+    };
+}
+function getDefaultProps(props, types) {
+    let valueType = Array.isArray(props.value) ? 'array' : typeof props.value;
+    props = Object.assign({}, props);
+    if (props.type === 'select') {
+        if (!!props.multiple) {
+            if (props.text === undefined) {
+                props.text = 'Select Items';
+            }
+        }
+    }
+    else if (props.type === 'time') {
+        if (!props.value) {
+            props.value = {};
+        }
+    }
+    else if (props.type === 'acardion') {
+        props.deSelect = true;
+    }
+    else if (props.type === 'date') {
+        if (props.multiple) {
+            props.option = Object.assign(Object.assign({}, props.option), { text: 'option', value: 'option' });
+        }
+    }
+    if (props.loading === true) {
+        props.disabled = true;
+    }
+    if (types.isMultiple) {
+        if (!props.value) {
+            props.value = [];
+        }
+        else if (valueType !== 'array') {
+            props.value = [props.value];
+        }
+    }
+    else {
+        if (props.type === 'tree') { }
+        else if (valueType === 'array') {
+            props.value = props.value[0];
+        }
+    }
+    return props;
+}
+function Def(prop) {
+    let res = {
+        'theme': [],
+        'date-size': 180,
+        'tree-size': 36,
+        'range-size': 72,
+        'date-unit': 'day'
+    }[prop];
+    return res;
+}
+function I(path, size, p) { return new GetSvg().getIcon(path, size, p); }
+//isOpen ro baraye tashkhise active(open) boodane node haye tree mifrestim
+function GetOptions(p) {
+    let { options, rootProps, types, level, isOpen, change, optionProp } = p;
+    let { deSelect } = rootProps;
+    let result = [];
+    let dic = {};
+    let draggable = types.isDropdown && types.hasOption && !!rootProps.onSwap;
+    function getDefaultOptionChecked(v) {
+        if (rootProps.type === 'select' && types.isMultiple) {
+            return rootProps.value.indexOf(v) !== -1;
+        }
+        if (rootProps.type === 'radio') {
+            return types.isMultiple ? rootProps.value.indexOf(v) !== -1 : rootProps.value === v;
+        }
+    }
+    if (deSelect && typeof deSelect !== 'function' && deSelect !== true) {
+        options = [deSelect, ...options];
+    }
+    function isActive(optionValue) {
+        if (types.isMultiple) {
+            return rootProps.value.indexOf(optionValue) !== -1;
+        }
+        else {
+            return optionValue === rootProps.value;
+        }
+    }
+    for (let i = 0; i < options.length; i++) {
+        let option = options[i];
+        let optionDetails = {
+            index: i, active: false, level, rootProps,
+            change: change ? (newRow) => { if (change)
+                change(option, newRow); } : undefined,
+        };
+        let disabled = !!rootProps.disabled || !!rootProps.loading || !!GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'disabled' });
+        //ghabl az har chiz sharte namayesh ro check kon
+        let show = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'show' });
+        if (show === false) {
+            continue;
+        }
+        let optionValue = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'value' });
+        let active = isActive(optionValue);
+        let text = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'text' });
+        //hala ke value ro dari active ro rooye details set kon ta baraye gereftane ettelaat active boodan moshakhas bashe
+        optionDetails.active = active;
+        let attrs = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'attrs', def: {} });
+        let defaultChecked = getDefaultOptionChecked(optionValue);
+        let checked = GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'checked', def: defaultChecked });
+        //object:option => do not remove mutability to use original value of option in for example tree row
+        let obj = {
+            optionOrg: option, show, loading: rootProps.loading,
+            attrs, text, value: optionValue, disabled, draggable,
+            checked,
+            before: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'before' }),
+            after: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'after' }),
+            justify: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'justify' }),
+            subtext: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'subtext' }),
+            onClick: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'onClick', preventFunction: true }),
+            className: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'className' }),
+            style: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'style' }),
+            tagAttrs: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagAttrs' }),
+            tagBefore: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagBefore' }),
+            close: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'close', def: !types.isMultiple }),
+            tagAfter: GetOptionProps({ optionProp, optionOrg: option, optionDetails, key: 'tagAfter' }),
+            details: optionDetails
+        };
+        result.push(obj);
+        dic['a' + obj.value] = obj;
+    }
+    return { optionsList: result, optionsDic: dic };
+}
+function GetOptionProps(p) {
+    let { optionProp, key, def, preventFunction, optionDetails, optionOrg } = p;
+    let optionResult = typeof optionOrg[key] === 'function' && !preventFunction ? optionOrg[key](optionOrg, optionDetails) : optionOrg[key];
+    if (optionResult !== undefined) {
+        return optionResult;
+    }
+    let prop = optionProp[key];
+    if (typeof prop === 'string') {
+        try {
+            const option = optionOrg;
+            let value;
+            eval('value = ' + prop);
+            return value;
+        }
+        catch (_a) { }
+    }
+    if (typeof prop === 'function') {
+        if (!preventFunction) {
+            let res = prop(optionOrg, optionDetails);
+            return res === undefined ? def : res;
+        }
+        else {
+            return () => prop(optionOrg, optionDetails);
+        }
+    }
+    return prop !== undefined ? prop : def;
+}
+function getTimeByUnit(rootProps, justToday) {
+    let { value = {}, jalali, unit = { year: true, month: true, day: true } } = rootProps;
+    function getToday() {
+        let today = new AIODate().getToday(jalali);
+        return { year: today[0], month: today[1], day: today[2], hour: today[3], minute: today[4], second: today[5] };
+    }
+    let today = getToday();
+    let newValue = {};
+    let u;
+    for (u in unit) {
+        if (unit[u] === true) {
+            let v = value[u];
+            let min = { year: 1000, month: 1, day: 1, hour: 0, minute: 0, second: 0 }[u];
+            let max = { year: 3000, month: 12, day: 31, hour: 23, minute: 59, second: 59 }[u];
+            if (v !== undefined && typeof v !== 'number' || v < min || v > max) {
+                alert(`aio input error => in type time value.${u} should be an number between ${min} and ${max}`);
+            }
+            let res = v === undefined || justToday ? today[u] : v;
+            const step = rootProps.timeStep && rootProps.timeStep[u] ? rootProps.timeStep[u] : undefined;
+            if (step) {
+                res = Math.round(res / step) * step;
+            }
+            newValue[u] = res;
+        }
+    }
+    return newValue;
+}
+function getTimeText(rootProps) {
+    let value = getTimeByUnit(rootProps);
+    if (!value) {
+        if (typeof rootProps.placeholder === 'string') {
+            return rootProps.placeholder;
+        }
+        if (typeof rootProps.text === 'string') {
+            return rootProps.text;
+        }
+        return '';
+    }
+    if (rootProps.pattern) {
+        return new AIODate().getDateByPattern(value, rootProps.pattern);
+    }
+    if (rootProps.text !== undefined) {
+        return rootProps.text;
+    }
+    let text = [], dateArray = [];
+    if (value.year !== undefined) {
+        dateArray.push(Get2Digit(value.year));
+    }
+    if (value.month !== undefined) {
+        dateArray.push(Get2Digit(value.month));
+    }
+    if (value.day !== undefined) {
+        dateArray.push(Get2Digit(value.day));
+    }
+    if (dateArray.length) {
+        text.push(dateArray.join('/'));
+    }
+    let timeArray = [];
+    if (value.hour !== undefined) {
+        timeArray.push(Get2Digit(value.hour));
+    }
+    if (value.minute !== undefined) {
+        timeArray.push(Get2Digit(value.minute));
+    }
+    if (value.second !== undefined) {
+        timeArray.push(Get2Digit(value.second));
+    }
+    if (timeArray.length) {
+        text.push(timeArray.join(':'));
+    }
+    return text.join(' ');
+}
+export const MonthCalendar = ({ date, onClick = () => { }, dateAttrs = () => ({}) }) => {
+    const DATE = new AIODate();
+    const [jalali] = useState(DATE.isJalali(date));
+    const [monthStrings] = useState(DATE.getMonths(jalali));
+    const [firstDayIndex] = useState(DATE.getWeekDay([date[0], date[1], 1]).index);
+    const [monthDaysLength] = useState(DATE.getMonthDaysLength(date));
+    function weekDays_layout() { return DATE.getWeekDays(true).map((o) => _jsx("div", { className: "month-calendar-weekday", children: o[0] })); }
+    function spaces_layout() { return new Array(firstDayIndex).fill(0).map(() => _jsx("div", { className: "" })); }
+    function cells_layout() { return new Array(monthDaysLength).fill(0).map((o, i) => cell_layout([date[0], date[1], i + 1])); }
+    function cell_layout(dateArray) {
+        const attrs = AddToAttrs(dateAttrs(dateArray), { className: `month-calendar-day`, attrs: { onClick: () => onClick(dateArray) } });
+        return (_jsx("div", Object.assign({}, attrs, { children: dateArray[2] })));
+    }
+    return (_jsxs("div", { className: "month-calendar", children: [_jsx("div", { className: "month-calendar-title", children: monthStrings[date[1] - 1] }), _jsx("div", { className: "month-calendar-weekdays", children: weekDays_layout() }), _jsxs("div", { className: "month-calendar-days", children: [spaces_layout(), " ", cells_layout()] })] }));
+};
+export const Mask = (props) => {
+    const [dom] = useState(createRef());
+    // let pattern:I_mask_pattern = [
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['number',4],
+    //     ['-',1],
+    //     ['select',1,['a','b','c','d','e','f']],
+    //     ['-',1,<div style={{width:12,height:12,borderRadius:'100%',background:'red',marginRight:6}}></div>],
+    //     ['text',3],
+    // ]
+    const [value, setValue] = useState(props.value || '');
+    const [values, setValues] = useState(getValues(props.value || ''));
+    const valuesRef = useRef(values);
+    valuesRef.current = values;
+    useEffect(() => {
+        setValue(props.value || '');
+        setValues(getValues(props.value || ''));
+    }, [props.value]);
+    function getValues(value) {
+        let values = [];
+        let temp = value;
+        for (let o of props.pattern) {
+            if (o[0] === 'number' || o[0] === 'text' || o[0] === 'select') {
+                let length = +o[1];
+                let value = temp.slice(0, length);
+                values.push(value);
+                temp = temp.slice(length, temp.length);
+            }
+            else {
+                temp = temp.slice(o[1], temp.length);
+            }
+        }
+        return values;
+    }
+    function SetValue(values, inputIndex, patternIndex) {
+        let tempInputIndex = -1;
+        console.log(values);
+        let temp = '';
+        for (let i = 0; i < props.pattern.length; i++) {
+            let o = props.pattern[i];
+            if (o[0] === 'number' || o[0] === 'text' || o[0] === 'select') {
+                tempInputIndex++;
+                let length = +o[1];
+                let res = values[tempInputIndex];
+                let delta = length - res.length;
+                if (delta) {
+                    const emp = o[0] === 'number' ? '0' : 'x';
+                    for (let j = 0; j < delta; j++) {
+                        res = emp + res;
+                    }
+                    values[tempInputIndex] = res;
+                }
+                else if (patternIndex === i) {
+                    const inputs = $(dom.current).find('.aio-input');
+                    let length = inputs.length;
+                    inputIndex++;
+                    if (inputIndex > length) {
+                        inputIndex = 0;
+                    }
+                    let input = inputs.eq(inputIndex).find('input');
+                    if (input.length) {
+                        input.focus().select();
+                    }
+                }
+                temp += res;
+            }
+            else {
+                temp += o[0];
+            }
+        }
+        setValue(temp);
+        props.onChange(temp);
+        setValues(values);
+    }
+    function changeValue(value, inputIndex, patternIndex) {
+        let newValues = valuesRef.current.map((o, j) => inputIndex === j ? value : o);
+        SetValue(newValues, inputIndex, patternIndex);
+    }
+    function getList() {
+        let temp = 0;
+        return props.pattern.map((o, patternIndex) => {
+            let type = o[0];
+            let inputIndex = temp;
+            if (type === 'text' || type === 'number') {
+                let length = +o[1];
+                temp++;
+                return (_jsx(AIText, { style: { width: length * 10 }, placeholder: new Array(length).fill('x').join(''), maxLength: length, filter: type === 'number' ? ['number'] : undefined, value: valuesRef.current[inputIndex], onChange: (v) => changeValue(v, inputIndex, patternIndex) }));
+            }
+            else if (type === 'select') {
+                let options = o[2];
+                temp++;
+                return (_jsx(AISelect, { style: { width: 'fit-content' }, options: options, option: { text: 'option', value: 'option' }, value: valuesRef.current[inputIndex], onChange: (v) => changeValue(v, inputIndex, patternIndex) }));
+            }
+            else {
+                return _jsx("div", { className: 'aio-input-mask-gap', children: o[2] || o[0] });
+            }
+        });
+    }
+    return (_jsx("div", { className: 'example', children: _jsx("div", { className: 'aio-input-mask', ref: dom, title: value, children: getList() }) }));
+};
+export const RichText = () => {
+    const popup = usePopup();
+    const nestedIndexRef = useRef([]);
+    const items = {
+        tag: 'div', items: [
+            { tag: 'h1', html: 'this is my h1' },
+            {
+                tag: 'ul',
+                items: [
+                    { tag: 'li', html: 'item1' },
+                    { tag: 'li', html: 'item2' }
+                ]
+            }
+        ]
+    };
+    function inter(e) {
+        $('.rich-text-item').removeClass('rich-text-item-hover');
+        const target = $(e.target);
+        target.addClass('rich-text-item-hover');
+        const index = target.attr('data-index');
+        const nestedIndex = index ? index.split('-') : [];
+        nestedIndexRef.current = nestedIndex.map((o) => +o);
+    }
+    function itemToHtml(item, nestedIndex) {
+        const Tag = item.tag;
+        const content = item.html !== undefined ? item.html : (item.items || []).map((h, i) => itemToHtml(h, [...nestedIndex, i]));
+        const attrs = AddToAttrs(item.attrs, { className: 'rich-text-item', attrs: { 'data-index': nestedIndex.join('-') } });
+        return (_jsx(Tag, Object.assign({}, attrs, { onMouseOver: (e) => inter(e), onClick: (e) => { openModal(nestedIndex); }, children: content })));
+    }
+    function getItemByNestedIndex() {
+        let res = items;
+        for (let i = 0; i < nestedIndexRef.current.length; i++) {
+            const index = nestedIndexRef.current[i];
+            res = res.items[index];
+        }
+        return res;
+    }
+    function openModal(nestedIndex) {
+        if (nestedIndex.toString() !== nestedIndexRef.current.toString()) {
+            return;
+        }
+        const item = getItemByNestedIndex();
+        popup.addModal({
+            position: 'center',
+            body: (_jsxs("div", { className: "rich-text-options", children: [_jsx("div", { className: "rich-text-option-title", children: item.tag }), _jsx("div", { className: "rich-text-option", children: "Add Child" }), _jsx("div", { className: "rich-text-option", children: "Remove" }), _jsx("div", { className: "rich-text-option", children: "Move Up" }), _jsx("div", { className: "rich-text-option", children: "Move Down" })] }))
+        });
+    }
+    return (_jsxs("div", { className: "msf", children: [_jsx("div", { className: "msf" }), _jsx("div", { className: "msf", children: itemToHtml(items, []) }), _jsx(RichModal, { item: items }), popup.render()] }));
+};
+const RichModal = (props) => {
+    const [item, setItem] = useState(props.item);
+    return (_jsxs("div", { className: "rich-text-options", children: [_jsx("div", { className: "rich-text-option-title", children: item.tag }), _jsx(AIButtons, { justify: true, style: { border: '1px solid #ddd' }, options: [
+                    { text: 'none', value: undefined, },
+                    { text: 'v', value: 'align-v-' },
+                    { text: 'h', value: 'align-h-' },
+                    { text: 'vh', value: 'align-vh-' }
+                ], option: {
+                    text: 'none'
+                }, value: item.align, onChange: (align) => setItem(Object.assign(Object.assign({}, item), { align })) })] }));
+};
+export const JoyStick = (props) => {
+    const { scale = 1 } = props;
+    const [data, setData] = useState();
+    useEffect(() => {
+        const { x, y, angle, length } = props;
+        if (x !== undefined && y !== undefined) {
+            setData({ x, y });
+        }
+        if (angle !== undefined && length !== undefined) {
+            const { left, top } = getLeftAndTopByCenterAngleLength([props.size / 2, props.size / 2], angle, length);
+            setData({ x: left, y: top });
+        }
+    }, []);
+    if (!data) {
+        return null;
+    }
+    function change(data) {
+        let { x, y, length, angle } = data;
+        x /= scale;
+        y /= scale;
+        length /= scale;
+        props.onChange({ x, y, length, angle });
+    }
+    return _jsx(JOYSTICK, { x: data.x * scale, y: data.y * scale, size: props.size, onChange: change, centerOriented: props.centerOriented });
+};
+const JOYSTICK = ({ size, x, y, onChange, centerOriented }) => {
+    const [center] = useState([size / 2, size / 2]);
+    const [pos, setPos] = useState([center[0] + x, center[0] + y]);
+    const posRef = useRef(pos);
+    posRef.current = pos;
+    const [dom] = useState(createRef());
+    useEffect(() => { new Swip({ dom: () => $(dom.current), start, move, end, maxCenterDistance: size / 2 }); }, []);
+    function start() { return posRef.current; }
+    function end() { if (centerOriented) {
+        onChange({ x: 0, y: 0, length: 0, angle: 0 });
+        setPos(center);
+    } }
+    function move(p) {
+        let { x, y, centerAngle, centerDistance } = p.mousePosition;
+        setPos([x, y]);
+        x -= center[0];
+        y -= center[1];
+        onChange({ x, y, length: centerDistance, angle: centerAngle });
+    }
+    return (_jsx("div", { style: { width: size, height: size }, className: 'joy-stick', ref: dom, children: _jsx("div", { style: { left: posRef.current[0], top: posRef.current[1] }, className: 'joy-stick-button', children: _jsx("div", {}) }) }));
+};
+export const AIText = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'text' }));
+export const AINumber = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'number' }));
+export const AITextarea = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'textarea' }));
+export const AIPassword = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'password' }));
+export const AIColor = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'color' }));
+export const AISelect = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'select' }));
+export const AIRadio = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'radio' }));
+export const AITabs = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'tabs' }));
+export const AIButtons = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'buttons' }));
+export const AITags = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'tags' }));
+export const AITree = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'tree' }));
+export const AIImage = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'image' }));
+export const AIFile = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'file' }));
+export const AICheckbox = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'checkbox' }));
+export const AIDate = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'date' }));
+export const AITime = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'time' }));
+export const AISlider = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'slider' }));
+export const AISpinner = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'spinner' }));
+export const AIAcardion = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'acardion' }));
+export const AIList = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'list' }));
+export const AITable = (props) => _jsx(AIOInput, Object.assign({}, props, { type: 'table' }));
+export const useForm = (p) => {
+    function getInitData() { return JSON.parse(JSON.stringify(p.initData)); }
+    const [initData] = useState(getInitData);
+    const [timerDisabled, setTimerDisabled] = useState(false);
+    const fieldChangesRef = useRef({});
+    const errorsRef = useRef({});
+    const inputsRef = useRef({});
+    function setInputsRef(field, input) {
+        inputsRef.current = Object.assign(Object.assign({}, inputsRef.current), { [field]: input });
+    }
+    function getInputByField(field) { return inputsRef.current[field]; }
+    const hasError = () => {
+        const keys = Object.keys(errorsRef.current);
+        return !!keys.filter((o) => !!errorsRef.current[o]).length;
+    };
+    const isFieldChanged = (field) => !!fieldChangesRef.current[field];
+    const [data, setData] = useState(getInitData);
+    function getData() { return dataRef.current; }
+    const changeData = (data) => {
+        dataRef.current = data;
+        setData(data);
+    };
+    const changeByInput = (input, value) => {
+        let newData = Object.assign({}, dataRef.current);
+        fieldChangesRef.current = Object.assign(Object.assign({}, fieldChangesRef.current), { [input.field]: true });
+        getErrorByInput(input, value);
+        setValueByField(newData, input.field, value);
+        changeData(newData);
+    };
+    function changeByField(field, value) {
+        const input = getInputByField(field);
+        if (!input) {
+            return;
+        }
+        changeByInput(input, value);
+    }
+    const dataRef = useRef(data);
+    dataRef.current = data;
+    function setErrorByField(field, error) {
+        errorsRef.current = Object.assign(Object.assign({}, errorsRef.current), { [field]: error });
+    }
+    function getErrorByInput(input, value) {
+        const { required = true, label, validateType, field } = input;
+        if (required && value === undefined || value === '' || value === null) {
+            const error = p.fa ? `${label} ضروری است` : `${label} is required`;
+            setErrorByField(field, error);
+            return error;
+        }
+        if (validateType === 'email') {
+            const res = IsValidEmail(value);
+            if (!res) {
+                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
+                setErrorByField(field, error);
+                return error;
+            }
+        }
+        if (validateType === 'irMobile') {
+            const res = ValidateIrMobile({ value, label, fa: p.fa });
+            if (res) {
+                const error = res;
+                setErrorByField(field, error);
+                return error;
+            }
+        }
+        if (validateType === "irNationalCode") {
+            const res = IsValidIrNationalCode(value);
+            if (!res) {
+                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
+                setErrorByField(field, error);
+                return error;
+            }
+        }
+        if (input.validate) {
+            const res = input.validate({ data: dataRef.current, value, input, field: input.field });
+            if (res) {
+                const error = res;
+                setErrorByField(field, error);
+                return error;
+            }
+        }
+        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') {
+            const error = p.fa ? 'این مقدار مجاز نیست' : 'this value is forbidden';
+            setErrorByField(field, error);
+            return error;
+        }
+        setErrorByField(field, undefined);
+        return undefined;
+    }
+    function getValueByInput(input) {
+        const { field } = input;
+        let value;
+        if (input.value !== undefined) {
+            value = input.value;
+        }
+        else {
+            value = getValueByField(dataRef.current, field);
+        }
+        return value;
+    }
+    const getNodeStyle = (node, parentNode) => {
+        const res = { flex: node.flex };
+        if (parentNode && (parentNode.h || parentNode.v)) {
+            res[parentNode.v ? 'height' : 'width'] = node.size;
+        }
+        return Object.assign(Object.assign({}, res), node.style);
+    };
+    function getVisibilityClassNames(node) {
+        let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
+        if (node.show_xs) {
+            hide_xs = false;
+            hide_sm = true;
+            hide_md = true;
+            hide_lg = true;
+        }
+        if (node.hide_xs) {
+            hide_xs = true;
+        }
+        if (node.show_sm) {
+            hide_xs = true;
+            hide_sm = false;
+            hide_md = true;
+            hide_lg = true;
+        }
+        if (node.hide_sm) {
+            hide_sm = true;
+        }
+        if (node.show_md) {
+            hide_xs = true;
+            hide_sm = true;
+            hide_md = false;
+            hide_lg = true;
+        }
+        if (node.hide_md) {
+            hide_md = true;
+        }
+        if (node.show_lg) {
+            hide_xs = true;
+            hide_sm = true;
+            hide_md = true;
+            hide_lg = false;
+        }
+        if (node.hide_lg) {
+            hide_lg = true;
+        }
+        if (hide_xs) {
+            classNames.push('ai-form-hide-xs');
+        }
+        if (hide_sm) {
+            classNames.push('ai-form-hide-sm');
+        }
+        if (hide_md) {
+            classNames.push('ai-form-hide-md');
+        }
+        if (hide_lg) {
+            classNames.push('ai-form-hide-lg');
+        }
+        return classNames;
+    }
+    const getNodeClassNames = (node, className, isRoot) => {
+        let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined, visibilityClassNames = getVisibilityClassNames(node);
+        if (node.v) {
+            scrollClassName = `ai-form-scroll-v`;
+            if (node.align === 'v') {
+                alignClassName = 'ai-form-justify-center';
+            }
+            else if (node.align === 'h') {
+                alignClassName = 'ai-form-items-center';
+            }
+            else if (node.align === 'vh') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+            else if (node.align === 'hv') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+        }
+        else if (node.h) {
+            scrollClassName = `ai-form-scroll-h`;
+            if (node.align === 'v') {
+                alignClassName = 'ai-form-items-center';
+            }
+            else if (node.align === 'h') {
+                alignClassName = 'ai-form-justify-center';
+            }
+            else if (node.align === 'vh') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+            else if (node.align === 'hv') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+        }
+        else if (node.html) {
+            if (node.align === 'v') {
+                alignClassName = 'ai-form-items-center';
+            }
+            else if (node.align === 'h') {
+                alignClassName = 'ai-form-justify-center';
+            }
+            else if (node.align === 'vh') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+            else if (node.align === 'hv') {
+                alignClassName = 'ai-form-justify-center ai-form-items-center';
+            }
+        }
+        return [rootClassName, className, node.className, scrollClassName, alignClassName, ...visibilityClassNames];
+    };
+    const getNodeAttrs = (p) => {
+        const { node, parentNode, isRoot } = p;
+        let className = '';
+        if (node.v || node.h) {
+            className = `ai-form-${node.v ? 'v' : 'h'}`;
+        }
+        else if (node.html) {
+            className = 'ai-form-html';
+        }
+        return AddToAttrs(node.attrs, { className: getNodeClassNames(node, className, isRoot), style: getNodeStyle(node, parentNode) });
+    };
+    const reset = () => {
+        const newData = getInitData();
+        dataRef.current = newData;
+        errorsRef.current = {};
+        changeData(newData);
+    };
+    const getErrorsDic = () => errorsRef.current;
+    const getErrorsList = () => {
+        const errors = errorsRef.current;
+        const keys = Object.keys(errors);
+        const strs = keys.filter((o) => !!errors[o]);
+        return strs.map((o) => errors[o]);
+    };
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    const getContext = () => {
+        return {
+            rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, getErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
+            getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled, setInputsRef
+        };
+    };
+    const getLayout = () => {
+        if (!p.getLayout) {
+            return null;
+        }
+        const context = getContext();
+        const node = p.getLayout(context);
+        //@ts-ignore
+        return _jsx(AIFormNode, { node: node, context: context, level: 0, index: 0 });
+    };
+    const isSubmitDisabled = () => {
+        const dataChanged = isDataChanged();
+        const error = hasError();
+        const isTimerdisabled = !!timerDisabled;
+        return !dataChanged || error || !!isTimerdisabled;
+    };
+    const renderSubmitButton = (text, attrs) => {
+        if (p.onSubmit === undefined) {
+            console.error('useForm error => for use renderSubmitButton you should set onSubmit props in difinition of useForm hook');
+            return null;
+        }
+        const onClick = () => {
+            const onSubmit = p.onSubmit;
+            setTimerDisabled(true);
+            onSubmit(getData());
+            setTimeout(() => setTimerDisabled(false), 3000);
+        };
+        const disabled = isSubmitDisabled();
+        const allAttrs = Object.assign(Object.assign({ type: 'button' }, attrs), { disabled, onClick });
+        return _jsx("button", Object.assign({}, allAttrs, { children: text }));
+    };
+    const renderInput = (input, attrs) => {
+        return (_jsx(AIFormInputContainer, { context: getContext(), input: input, attrs: getNodeAttrs({ node: { input, attrs }, isRoot: false }) }));
+    };
+    const layout = getLayout();
+    return { data, changeData, getErrorsDic, getErrorsList, renderLayout: _jsx(_Fragment, { children: layout }), reset, renderSubmitButton, isSubmitDisabled, renderInput, changeByField };
+};
+const AIFormNode = ({ node, context, level, index, parentNode }) => {
+    const [dom, setDom] = useState(null);
+    let { show = true, isStatic } = node;
+    const getContent = () => {
+        if (!show) {
+            return null;
+        }
+        if (Array.isArray(node.h) || Array.isArray(node.v)) {
+            return _jsx(AIFormGroup, { node: node, context: context, level: level, index: index, parentNode: parentNode });
+        }
+        const { getNodeAttrs } = context;
+        if (node.html !== undefined) {
+            const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode });
+            return (_jsx("div", Object.assign({}, attrs, { children: node.html })));
+        }
+        if (node.input) {
+            const attrs = Object.assign(Object.assign({}, getNodeAttrs({ node, isRoot: false })), { 'data-label': node.input.label });
+            return _jsx(AIFormInputContainer, { attrs: attrs, input: node.input, context: context }, node.input.field);
+        }
+    };
+    useEffect(() => {
+        if (isStatic) {
+            setDom(getContent());
+        }
+    }, [isStatic]);
+    return isStatic ? _jsx(_Fragment, { children: dom }) : _jsx(_Fragment, { children: getContent() });
+};
+const AIFormGroup = ({ node, context, level, parentNode }) => {
+    let { tag = 'div', legend } = node;
+    const { getNodeAttrs } = context;
+    const content = (_jsxs(_Fragment, { children: [!!legend && tag === 'fieldset' && _jsx("legend", { children: legend }), node[node.v ? 'v' : 'h'].map((o, i) => {
+                return (_jsx(AIFormNode, { node: o, parentNode: node, context: context, level: level + 1, index: i }, `level-${level + 1}-index-${i}`));
+            })] }));
+    const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode });
+    if (level === 0) {
+        return (_jsx("form", Object.assign({}, attrs, { children: content })));
+    }
+    if (tag === 'section') {
+        return (_jsx("section", Object.assign({}, attrs, { children: content })));
+    }
+    if (tag === 'fieldset') {
+        return (_jsx("fieldset", Object.assign({}, attrs, { children: content })));
+    }
+    if (tag === 'p') {
+        return (_jsx("p", Object.assign({}, attrs, { children: content })));
+    }
+    if (tag === 'form') {
+        return (_jsx("p", Object.assign({}, attrs, { children: content })));
+    }
+    return (_jsx("div", Object.assign({}, attrs, { children: content })));
+};
+const AIFormInputContainer = ({ context, input, attrs }) => {
+    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef } = context;
+    const { inputAttrs, field } = input;
+    setInputsRef(field, input);
+    const value = getValueByInput(input);
+    const error = getErrorByInput(input, value);
+    return (_jsx(RenderInput, { value: value, error: error, input: input, context: context, inputProps: Object.assign(Object.assign({}, input), { inputAttrs: Object.assign(Object.assign({}, inputAttrs), { 'aria-label': field }), value, onChange: (v, details) => {
+                if (input.onChange) {
+                    input.onChange(v, details);
+                }
+                else {
+                    changeByInput(input, v);
+                }
+            } }), attrs: attrs }));
+};
+const RenderInput = (props) => {
+    const { context, attrs, input, inputProps, error } = props;
+    const { isFieldChanged, rootProps } = context;
+    const [dom, setDom] = useState(null);
+    useEffect(() => {
+        if (input.label === 'width') {
+            console.log('rerender input');
+            console.log('inputProps', inputProps);
+        }
+        const { field, label } = input;
+        setDom(_jsx(AIFormInput, { required: input.required, showLabel: rootProps.showLabel, input: _jsx(AIOInput, Object.assign({}, inputProps, { type: inputProps.type })), label: label, error: isFieldChanged(field) ? error : undefined, attrs: attrs }));
+    }, [JSON.stringify(inputProps), error]);
+    return _jsx(Fragment, { children: dom }, input.field);
+};
+export const AIFormInput = (props) => {
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style } = props;
+    const hasHeader = (!!label && !!showLabel) || !!action;
+    const Attrs = AddToAttrs(attrs, { className: ["ai-form-input", className], style });
+    return (_jsxs("div", Object.assign({}, Attrs, { children: [hasHeader === true &&
+                _jsxs("label", { className: "ai-form-input-header", htmlFor: id, children: [!!label && _jsxs("div", { className: "ai-form-input-label", children: [required ? _jsx("div", { className: "ai-form-required", children: "*" }) : null, label] }), !!action && _jsx("div", { className: "ai-form-input-action", onClick: action.fn ? () => action.fn() : (() => { }), children: action.text })] }), _jsx("div", { className: "ai-form-input-body", children: input }), !!error && _jsx("div", { className: "ai-form-input-error", children: error })] })));
+};

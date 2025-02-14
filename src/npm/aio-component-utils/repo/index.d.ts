@@ -1,4 +1,5 @@
-import { FC, ReactNode } from "react";
+import React, { FC, ReactNode } from "react";
+import "@pqina/flip/dist/flip.min.css";
 import './index.css';
 type AI_Indent = {
     level: number;
@@ -8,6 +9,7 @@ type AI_Indent = {
     isLastChild: boolean;
     isParentLastChild: boolean;
     row: any;
+    isLeaf: boolean;
     open?: boolean;
     onToggle?: () => void;
     toggleIcon?: false | ((p: {
@@ -34,6 +36,7 @@ export declare class GetSvg {
         spin?: number;
         color?: string;
     }) => JSX.Element;
+    mdiMenu: (color?: string) => JSX.Element;
     mdiClose: (color?: string) => JSX.Element;
     mdiLoading: (color?: string) => JSX.Element;
     mdiAttachment: (color?: string) => JSX.Element;
@@ -66,19 +69,34 @@ export declare const AIPanel: FC<I_AIPanel>;
 type I_AICard = {
     text: ReactNode;
     subtext?: ReactNode;
-    onClick: () => void;
+    onClick?: () => void;
     before?: ReactNode;
     after?: ReactNode;
+    attrs?: any;
+    className?: string;
+    style?: any;
 };
 export declare const AICard: FC<I_AICard>;
 type I_AIApp = {
+    appName?: string;
+    appId: string;
     attrs?: any;
-    bottomMenu: {
+    rtl?: boolean;
+    bottomMenu?: {
         options: AI_bottomMenuOption[];
         onChange: (v: string) => void;
     };
-    body: () => ReactNode;
-    header?: () => ReactNode | false;
+    sidenav?: {
+        items: AI_sidenavItem[];
+        indent?: number;
+        header?: (minimize: boolean) => ReactNode;
+        value?: string;
+        render?: () => ReactNode;
+        cache?: boolean;
+        attrs?: any;
+    };
+    body: (sidenavitem?: AI_sidenavItem) => ReactNode;
+    header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false;
     children?: ReactNode;
 };
 type AI_bottomMenuOption = {
@@ -92,6 +110,30 @@ type AI_bottomMenuOption = {
     active?: boolean;
 };
 export declare const AIApp: FC<I_AIApp>;
+export type AI_Sidenav = {
+    items: AI_sidenavItem[];
+    onChange: (item: AI_sidenavItem) => void;
+    className?: string;
+    style?: any;
+    attrs?: any;
+    rtl?: boolean;
+    indent?: number;
+    header?: (minimize: boolean) => ReactNode;
+    value?: string;
+    minimize?: boolean;
+};
+export type AI_sidenavItem = {
+    text: ReactNode;
+    subtext?: ReactNode;
+    value: string;
+    icon?: ReactNode;
+    items?: AI_sidenavItem[];
+    onClick?: () => void;
+    after?: ReactNode;
+    show?: boolean;
+    render?: () => ReactNode;
+};
+export declare const Sidenav: FC<AI_Sidenav>;
 export type I_MonthCells = {
     year: number;
     month: number;
@@ -101,4 +143,61 @@ export type I_MonthCells = {
 };
 export declare const MonthCells: FC<I_MonthCells>;
 export declare function Code(code: string, language?: 'js' | 'css', style?: any): JSX.Element;
+export type I_node = {
+    v?: I_node[];
+    h?: I_node[];
+    html?: ReactNode;
+    content?: any;
+    attrs?: any;
+    className?: string;
+    style?: any;
+    show?: boolean;
+    flex?: number;
+    size?: number;
+    scroll?: boolean;
+    tag?: 'fieldset' | 'section' | 'div' | 'p' | 'form';
+    legend?: ReactNode;
+    id?: string;
+    isStatic?: boolean;
+    align?: 'v' | 'h' | 'vh' | 'hv';
+    hide_xs?: boolean;
+    hide_sm?: boolean;
+    hide_md?: boolean;
+    hide_lg?: boolean;
+    show_xs?: boolean;
+    show_sm?: boolean;
+    show_md?: boolean;
+    show_lg?: boolean;
+};
+export declare const NodeAttrs: (p: {
+    node: I_node;
+    parentNode?: I_node;
+    isRoot?: boolean;
+}) => any;
+export declare const Node: FC<{
+    node: I_node;
+    parentNode?: I_node;
+    level: number;
+    index: number;
+    updateNode?: (p: {
+        node: I_node;
+        level: number;
+        parentNode?: I_node;
+    }) => I_node;
+}>;
+type I_Flip = {
+    value: string | number;
+    double?: boolean;
+    fontSize?: number;
+};
+export declare class Flip extends React.Component<I_Flip> {
+    ref: React.RefObject<any>;
+    inst: any;
+    constructor(props: I_Flip);
+    getValue(): any;
+    componentDidMount(): void;
+    componentDidUpdate(): void;
+    componentWillUnmount(): void;
+    render(): JSX.Element;
+}
 export {};

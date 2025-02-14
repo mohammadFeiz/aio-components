@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { createRef, useEffect, useState, createContext, useContext, useRef } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ReactDOM from 'react-dom';
@@ -216,7 +215,7 @@ const usePopup = (props) => {
                                 }
                                 promptTexts.current = newPromptTexts;
                             }
-                        }), disabled: !promptTexts.current[id], children: submitText })] }))
+                        }), children: submitText })] }))
         };
         addModal(config);
     };
@@ -517,7 +516,7 @@ const SnackebarBar = () => {
     return _jsx("div", { className: 'aio-popup-snackebar-bar', style: { transition: `${item.time || 8}s linear` } });
 };
 export function Alert(props) {
-    let { icon, type = '', text = '', subtext = '', time = 10, className, closeText = 'Close', onClose } = props;
+    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose, align = 'left' } = props;
     let $$ = {
         id: '',
         time: 0,
@@ -536,8 +535,8 @@ export function Alert(props) {
         <div class='aio-popup-alert aio-popup-alert-${type}'>
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
-            <div class='aio-popup-alert-text'>${ReactDOMServer.renderToStaticMarkup(text)}</div>
-            <div class='aio-popup-alert-subtext'>${subtext}</div>
+            <div class='aio-popup-alert-title'>${ReactDOMServer.renderToStaticMarkup(title)}</div>
+            <div class='aio-popup-alert-text' style="text-align:${align}">${text}</div>
           </div>
           <div class='aio-popup-alert-footer'>
             <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>

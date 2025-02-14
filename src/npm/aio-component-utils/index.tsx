@@ -1,5 +1,5 @@
 import React, { createRef, FC, ReactNode, useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray, Storage } from "./../../npm/aio-utils";
+import { AddToAttrs, GetArray, Storage } from "../aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import { AI_optionProp } from "../aio-input/repo";
@@ -8,11 +8,11 @@ import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
 import './repo/index.css';
 type AI_Indent = {
-    level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any,
+    level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any,isLeaf:boolean,
     open?: boolean, onToggle?: () => void, toggleIcon?: false | ((p: { row: any, open?: boolean, level: number }) => ReactNode)
 }
 export const Indent: FC<AI_Indent> = (props) => {
-    const { width, height, level, open, row, rtl, isLastChild, isParentLastChild } = props;
+    const { width, height, level, open, row, rtl, isLastChild, isParentLastChild,isLeaf } = props;
     const [indentPathes, setIndentPathes] = useState<ReactNode>(null)
     useEffect(() => { setIndentPathes(getIndentIcons()) }, [level, isLastChild, isParentLastChild])
     const [toggleIcon, setToggleIcon] = useState<ReactNode>(null)
@@ -47,7 +47,7 @@ export const Indent: FC<AI_Indent> = (props) => {
     const getToggleIcon = () => {
         return (
             <div className="ai-toggle" style={{ width }} onClick={(e) => { e.stopPropagation(); if (props.onToggle) { props.onToggle() } }}>
-                <div className='ai-toggle-icon'>{toggleSvg}</div>
+                <div className={`ai-toggle-icon${isLeaf?' ai-leaf-icon':''}`}>{toggleSvg}</div>
                 {
                     open === true &&
                     <svg className='ai-toggle-line ai-indent-line'>
@@ -130,10 +130,11 @@ export const AIPanel: FC<I_AIPanel> = ({ text, subtext, before, after, body }) =
     function body_layout() { return (<div className="ai-panel-body">{body}</div>) }
     return (<div className="ai-panel">{header_layout()} {body_layout()}</div>)
 }
-type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick: () => void, before?: ReactNode, after?: ReactNode }
-export const AICard: FC<I_AICard> = ({ text, subtext, onClick, before, after }) => {
+type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick?: () => void, before?: ReactNode, after?: ReactNode,attrs?:any,className?:string,style?:any }
+export const AICard: FC<I_AICard> = ({ text, subtext, onClick = ()=>{}, before, after,attrs,className,style }) => {
+    const Attrs = AddToAttrs(attrs,{className:["ai-card",className],style}) 
     return (
-        <div className="ai-card">
+        <div {...Attrs}>
             {before !== undefined && <div className="ai-card-before" onClick={(e) => e.stopPropagation()}>{before}</div>}
             <div className="ai-card-body" onClick={onClick}>
                 <div className="ai-card-text">{text}</div>

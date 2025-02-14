@@ -1,8 +1,8 @@
 import {ReactNode} from "react";
-import { AI_sidenavItem, AIApp } from "../../npm/aio-components";
+import { AI_sidenavItem, AIApp } from "../../npm/aio-component-utils";
 import './index.css';
-export type I_DOC = {name:string,goToHome:()=>void,items:AI_sidenavItem[]}
-export default function DOC(props:I_DOC){
+export type I_DOC = {name:string,goToHome:()=>void}
+export default function DOC(props:I_DOC & {items:AI_sidenavItem[]}){
     let {items,name,goToHome} = props;
     return (
         <AIApp

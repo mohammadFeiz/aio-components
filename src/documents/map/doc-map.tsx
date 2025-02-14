@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import DOC from '../../resuse-components/Doc/index.tsx';
-import {Code} from './../../npm/aio-components';
+import {Code} from './../../npm/aio-component-utils';
 import { AISelect, AITabs } from '../../npm/aio-input';
 import AIMap from '../../npm/aio-map/index.tsx';
 type I_show_item = 'preview' | 'code' | 'both'

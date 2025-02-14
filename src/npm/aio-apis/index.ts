@@ -61,9 +61,9 @@ export default class AIOApis {
     setToken = (token: string) => {
         if (token && token === this.token) { Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; }
     }
-    addAlert = (p: { type: 'success' | 'error' | 'warning' | 'info', text: string, subtext?: string, time?: number }) => {
-        let { type, text, subtext, time } = p;
-        Alert({ type, text, subtext, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
+    addAlert = (p: { type: 'success' | 'error' | 'warning' | 'info', title?: string, text: string, time?: number }) => {
+        let { type, title, text, time } = p;
+        Alert({ type, title, text, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
     getUrlQueryParam = (params?: { [key: string]: string } | string) => {
         if (typeof params === 'string') { return `/${params}`; }
@@ -135,8 +135,8 @@ export default class AIOApis {
             if (typeof message === 'string') {
                 this.currentError = message
                 if(!isRetry){
-                    let text: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-                    this.addAlert({ type: 'error', text, subtext: message });
+                    let title: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
+                    this.addAlert({ type: 'error', title, text: message });
                 }
             }
         }

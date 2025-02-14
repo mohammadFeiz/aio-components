@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { AIOSchema, I_schemaDefinition } from "./aio-schema";
-import {Code} from './../../npm/aio-components';
+import {Code} from './../../npm/aio-component-utils';
 const DOC_AIOSchema:FC = ()=>{
     const [aioSchema] = useState<AIOSchema>(new AIOSchema())
     const s_user:I_schemaDefinition = {

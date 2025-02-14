@@ -50,12 +50,14 @@ type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => {
     roundCap: boolean;
     full: boolean;
     radius: number;
+    className?: string;
 };
 type AI_rbs = (range: I_rangeConfig) => {
     thickness: number;
     color: string;
     roundCap: boolean;
     offset: number;
+    className?: string;
 };
 export type I_rangeConfig = {
     thickness: number;
@@ -63,6 +65,7 @@ export type I_rangeConfig = {
     color: string;
     roundCap?: boolean;
     full?: boolean;
+    className?: string;
 };
 export type I_RangeContext = {
     getXPByValue: (value: number) => number;
@@ -83,34 +86,17 @@ export type I_RangeLabelItem = {
     label: AI_label;
     itemValue: number;
 };
-export type AI_Sidemenu = {
-    items: AI_Sidemenu_item[];
-    onChange: (item: AI_Sidemenu_item) => void;
-    option?: any;
-    type?: 'hover' | 'normal' | 'icon';
-    className?: string;
-    style?: any;
-    attrs?: any;
-};
-export type AI_Sidemenu_item = {
-    text: ReactNode;
-    value: string;
-    badge?: AI_Sidemenu_badge | AI_Sidemenu_badge[];
-    icon: ReactNode;
-    items?: AI_Sidemenu_item[];
-    onClick?: () => void;
-};
-export type AI_Sidemenu_badge = {
-    text: string;
-    circle?: boolean;
-    color: 'red' | 'green' | 'blue' | 'grey' | 'white' | 'orange' | 'yellow';
-};
-export declare const SideMenu: FC<AI_Sidemenu>;
 export declare const AISwitch: FC<{
-    size?: number[];
-    value: boolean;
+    value?: boolean;
     onChange?: (v: boolean) => void;
     colors?: string[];
+    borderSize?: number;
+    buttonSize?: number;
+    grooveSize?: number;
+    width?: number;
+    padding?: number;
+    attrs?: any;
+    html?: (v: boolean) => ReactNode;
 }>;
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second';
 export declare function AIOInput_defaultProps(p: {
@@ -135,7 +121,7 @@ type I_JoyStick_data = {
     x: number;
     y: number;
 };
-type I_JoyStick = {
+export declare const JoyStick: FC<{
     x?: number;
     y?: number;
     angle?: number;
@@ -144,8 +130,7 @@ type I_JoyStick = {
     size: number;
     onChange: (v: I_JoyStick_data) => void;
     centerOriented?: boolean;
-};
-export declare const JoyStick: FC<I_JoyStick>;
+}>;
 export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
     after?: ReactNode | ((p?: any) => ReactNode);
     attrs?: any;
@@ -171,6 +156,17 @@ export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboa
         checked: boolean;
         row: any;
     }) => ReactNode;
+    switch?: {
+        size?: number[];
+        value?: boolean;
+        onChange?: (v: boolean) => void;
+        colors?: string[];
+        borderSize?: number;
+        buttonSize?: number;
+        grooveSize?: number;
+        width?: number;
+        padding?: number;
+    };
     listOptions?: {
         decay?: number;
         stop?: number;
@@ -293,12 +289,6 @@ export type AI_range_handle_config = {
     color?: string;
     offset?: number;
     sharp?: boolean;
-};
-export type AI_fill = {
-    thickness?: number;
-    color?: string;
-    className?: string;
-    style?: any;
 };
 export type AI_getProp_param = {
     key: string;
@@ -526,7 +516,17 @@ type AI_isTable = {
 };
 type AI_isRange = {
     end?: number;
-    fill?: false | AI_fill | ((index: number) => AI_fill);
+    fill?: false | {
+        thickness?: number;
+        color?: string;
+        className?: string;
+        style?: any;
+    } | ((index: number) => {
+        thickness?: number;
+        color?: string;
+        className?: string;
+        style?: any;
+    });
     grooveAttrs?: {
         [key: string]: any;
     };
@@ -626,20 +626,21 @@ export type I_formInput<T> = AITYPE & {
         data: T;
         value: any;
         input: I_formInput<T>;
+        field: I_formField<T>;
     }) => string | undefined;
 };
 type I_useFormProps<T> = {
-    initData: T;
+    initData: Partial<T>;
     onSubmit?: (data: T) => void;
     fa?: boolean;
     showLabel?: boolean;
     getLayout?: (context: I_formContext<T>) => I_formNode<T>;
 };
-export type I_formField<T> = NestedKeys<T>;
+export type I_formField<T> = NestedKeys<T> | 'none';
 type NestedKeys<T> = {
     [K in keyof T]: T[K] extends object ? `${K & string}` | `${K & string}.${NestedKeys<T[K]>}` : `${K & string}`;
 }[keyof T];
-type I_formTag = 'fieldset' | 'section' | 'div' | 'p';
+type I_formTag = 'fieldset' | 'section' | 'div' | 'p' | 'form';
 export type I_formNode<T> = {
     v?: I_formNode<T>[];
     h?: I_formNode<T>[];
@@ -655,6 +656,7 @@ export type I_formNode<T> = {
     tag?: I_formTag;
     legend?: ReactNode;
     id?: string;
+    isStatic?: boolean;
     align?: 'v' | 'h' | 'vh' | 'hv';
     hide_xs?: boolean;
     hide_sm?: boolean;
@@ -677,8 +679,9 @@ export type I_formHook<T> = {
     renderSubmitButton: (text: string, attrs?: any) => ReactNode;
     isSubmitDisabled: () => boolean;
     renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode;
+    changeByField: (field: I_formField<T>, value: any) => void;
 };
-type I_formContext<T> = {
+export type I_formContext<T> = {
     changeData: (data: T) => void;
     changeByInput: (field: I_formInput<T>, value: any) => void;
     getErrorsDic: () => {
@@ -692,17 +695,15 @@ type I_formContext<T> = {
     isDataChanged: () => boolean;
     rootProps: I_useFormProps<T>;
     isFieldChanged: (field: I_formField<T>) => boolean;
-    getValueAndErrorByInput: (input: I_formInput<T>) => {
-        value: any;
-        error: string | undefined;
-    };
+    getValueByInput: (input: I_formInput<T>) => any;
+    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined;
     hasError: () => boolean;
     getNodeAttrs: (p: {
         node: I_formNode<T>;
-        type: 'group' | 'html' | 'input';
         isRoot: boolean;
         parentNode?: I_formNode<T>;
     }) => any;
+    setInputsRef: (field: I_formField<T>, input: I_formInput<T>) => void;
 };
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
 export declare const AIFormInput: FC<{
@@ -710,6 +711,8 @@ export declare const AIFormInput: FC<{
     showLabel?: boolean;
     input: ReactNode;
     attrs?: any;
+    className?: string;
+    style?: any;
     action?: {
         text: ReactNode;
         fn?: () => void;

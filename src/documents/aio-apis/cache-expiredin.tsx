@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import AIOApis from "../../npm/aio-apis";
-import { Code } from "../../npm/aio-components";
+import { Code } from "../../npm/aio-component-utils";
 import { I_mockMethod } from "../../npm/aio-utils";
 type I_data = { name: string, family: string,time:number }
 

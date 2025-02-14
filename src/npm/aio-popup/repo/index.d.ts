@@ -33,10 +33,11 @@ export type AP_modal = {
     setAttrs?: AP_setAttrs;
 };
 export type AP_alert = {
+    align?: 'left' | 'right' | 'center';
     icon?: false | ReactNode;
     type: 'success' | 'error' | 'warning' | 'info';
-    text?: ReactNode;
-    subtext?: string;
+    title?: ReactNode;
+    text: string;
     time?: number;
     className?: string;
     closeText?: string;

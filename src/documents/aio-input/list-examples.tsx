@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 import { AIList, AISlider } from "../../npm/aio-input"
-import {Code} from './../../npm/aio-components';
+import {Code} from './../../npm/aio-component-utils';
 import Example from "./example.tsx";
 const ListExamples:FC = ()=>{
     let [examples] = useState<any>([

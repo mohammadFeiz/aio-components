@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {Swip,I_Swip } from './../../npm/aio-utils';
 import DOC from '../../resuse-components/Doc/index';
-import {Code} from './../../npm/aio-components';
+import {Code} from './../../npm/aio-component-utils';
 import $ from 'jquery';
 export default function DOC_AIOValidation(props:any) {
     return (

@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import DOC from "../../resuse-components/Doc/index";
-import { Code, Sidenav } from "../../npm/aio-components";
+import { Code, Sidenav } from "../../npm/aio-component-utils";
 import Icon from "@mdi/react";
 import { mdiFile } from "@mdi/js";
 import './index.css';

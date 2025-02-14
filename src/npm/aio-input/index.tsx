@@ -14,7 +14,7 @@ import {
 
 } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
-import { Indent, GetSvg } from './../../npm/aio-components';
+import { Indent, GetSvg } from './../../npm/aio-component-utils';
 import $ from 'jquery';
 import './repo/index.css';
 const AICTX = createContext({} as any);
@@ -701,15 +701,38 @@ export type AI_Layout = {
     option?: AI_option, text?: ReactNode, index?: number,
     properties?: any
 }
-const CheckIcon: FC<{ checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode, checked?: boolean, round?: boolean, row: any }> = (props) => {
+const CheckIcon: FC<{ 
+    checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode, 
+    checked?: boolean, 
+    round?: boolean, 
+    row: any,
+    switch?:{ 
+        value?: boolean, 
+        onChange?: (v: boolean) => void, 
+        colors?: string[],
+        borderSize?:number,
+        buttonSize?:number,
+        grooveSize?:number,
+        width?:number,
+        padding?:number
+    } 
+}> = (props) => {
     if (props.checked === undefined) { return null }
     if (props.checkIcon) {
         const res = props.checkIcon({ checked: props.checked, row: props.row })
         return res === false ? null : <>{res}</>
     }
+    if(props.switch){
+        return (
+            <AISwitch
+                {...props.switch}
+                value={props.checked}
+            />
+        );    
+    }
     return (
         <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (props.round ? ' aio-input-check-round' : '')} style={{ background: 'none' }}>
-            {props.checked && <div className='aio-input-main-bg aio-input-check-in'></div>}
+            <div className='aio-input-main-bg aio-input-check-in'></div>
         </div>
     );
 }
@@ -888,7 +911,16 @@ const Layout: FC<AI_Layout> = (props) => {
     let properties = getProperties();
     let content = (<>
         {DragIcon()}
-        {typeof properties.checked === 'boolean' && <CheckIcon round={!rootProps.multiple && type === 'radio'} checked={properties.checked} checkIcon={rootProps.checkIcon} row={option || {}} />}
+        {
+            typeof properties.checked === 'boolean' && 
+            <CheckIcon 
+                round={!rootProps.multiple && type === 'radio'} 
+                checked={properties.checked} 
+                checkIcon={rootProps.checkIcon} 
+                row={option || {}}
+                switch={rootProps.switch}
+            />
+        }
         {BeforeAfter('before')}
         {Text()}
         {BeforeAfter('after')}
@@ -1318,7 +1350,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
     const getBefore = (): ReactNode => {
         return [
             <Indent
-                row={row} width={size} height={height} level={level} isLastChild={item.indent.isLastChild}
+                row={row} width={size} height={height} level={level} isLastChild={item.indent.isLastChild} isLeaf={!childs || !childs.length}
                 isParentLastChild={!!item.indent.parentIndent?.isLastChild} rtl={!!rootProps.rtl}
                 toggleIcon={rootProps.toggleIcon} open={open} onToggle={() => toggle(item.id)}
             />,
@@ -2826,23 +2858,44 @@ const RangeLabelItem: FC<I_RangeLabelItem> = (props) => {
     let { html, textProps, containerProps } = getDetails();
     return (<div {...containerProps}><div {...textProps}>{html}</div></div>)
 }
-export const AISwitch: FC<{ size?: number[], value: boolean, onChange?: (v: boolean) => void, colors?: string[] }> = ({ colors = ['#555', 'orange'], size = [16, 2, 3, 48], value, onChange = () => { } }) => {
+export const AISwitch: FC<{ 
+    value?: boolean, 
+    onChange?: (v: boolean) => void, 
+    colors?: string[],
+    borderSize?:number,
+    buttonSize?:number,
+    grooveSize?:number,
+    width?:number,
+    padding?:number,
+    attrs?:any,
+    html?:(v:boolean)=>ReactNode
+}> = ({ colors = [],width = 24,padding = 1,value = false,borderSize = 2,buttonSize = 12,onChange = () => { },grooveSize = 0,html = ()=>null,attrs }) => {
     function getContainerStyle() {
         return {
-            paddingRight: size[0] + size[1], paddingLeft: size[1],
-            border: `${size[2]}px solid ${value ? colors[1] : colors[0]}`
+            paddingRight: buttonSize + padding, paddingLeft: padding,
+            border: `${borderSize}px solid${colors[0] && colors[1]?(` ${value ? colors[1] : colors[0]}`):''}`
         }
     }
     function getOuterStyle() {
-        return { width: size[3] - size[0] - size[1], height: size[0] + (2 * size[1]) }
+        return { width: width - buttonSize - padding, height: buttonSize + (2 * padding) }
     }
     function getInnerStyle() {
-        return { width: size[0], height: size[0], top: `calc(50% - ${size[0] / 2}px)`, background: value ? colors[1] : colors[0] }
+        return { width: buttonSize, height: buttonSize, top: `calc(50% - ${buttonSize / 2}px)`, background: value ? colors[1] : colors[0] }
     }
+    function getGrooveStyle(){
+        return {position:'absolute',top:`calc(50% - ${grooveSize / 2}px)`,width:`calc(100% - ${buttonSize + padding * 2}px)`,background:'#ddd',left:padding + buttonSize/2,height:grooveSize}
+    }
+    const containerAttrs = AddToAttrs(attrs,{
+        className:['aio-input-switch',!!value?'aio-input-main-color':undefined,!!value?'active':'deactive'],
+        style:getContainerStyle(),
+        attrs:{onClick:()=>onChange(!value)}
+    })
+    const innerAttrs = AddToAttrs({},{className:['aio-input-switch-inner',!!value?'aio-input-main-bg':undefined,!!value?'active':'deactive'],style:getInnerStyle()})
     return (
-        <div className={`aio-input-switch${value ? ' active' : ''}`} style={getContainerStyle()} onClick={() => onChange(!value)}>
+        <div {...containerAttrs}>
+            {!!grooveSize && <div className="aio-input-switch-groove" style={getGrooveStyle() as any}></div>}
             <div className="aio-input-switch-outer" style={getOuterStyle()}>
-                <div className="aio-input-switch-inner" style={getInnerStyle()}></div>
+                <div {...innerAttrs}>{html(!!value)}</div> 
             </div>
         </div>
     )
@@ -3370,6 +3423,17 @@ export type AITYPE =
         value?: any,
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
+        switch?:{ 
+            size?: number[], 
+            value?: boolean, 
+            onChange?: (v: boolean) => void, 
+            colors?: string[],
+            borderSize?:number,
+            buttonSize?:number,
+            grooveSize?:number,
+            width?:number,
+            padding?:number
+        },
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
         hideTags?: boolean,//select
@@ -3598,7 +3662,7 @@ export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='ta
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
 export type I_formInput<T> = AITYPE & {
     label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
-    validate?: (p: { data: T, value: any, input: I_formInput<T> }) => string | undefined
+    validate?: (p: { data: T, value: any, input: I_formInput<T>,field:I_formField<T> }) => string | undefined
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
@@ -3720,7 +3784,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             }
         }
         if (input.validate) {
-            const res = input.validate({ data: dataRef.current, value, input })
+            const res = input.validate({ data: dataRef.current, value, input,field:input.field })
             if (res) {
                 const error = res
                 setErrorByField(field, error)
@@ -3732,6 +3796,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             setErrorByField(field, error)
             return error
         }
+        setErrorByField(field,undefined)
         return undefined
     }
     function getValueByInput(input: I_formInput<T>) {
@@ -3970,14 +4035,16 @@ export const AIFormInput: FC<{
     showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
+    className?:string,
+    style?:any,
     action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true,className,style } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
-    const Attrs = AddToAttrs(attrs, { className: "ai-form-input" })
+    const Attrs = AddToAttrs(attrs, { className: ["ai-form-input",className],style })
     return (
         <div {...Attrs}>
             {

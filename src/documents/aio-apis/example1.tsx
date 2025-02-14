@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import AIOApis, { AA_api } from "../../npm/aio-apis";
-import { Code } from "../../npm/aio-components";
+import { Code } from "../../npm/aio-component-utils";
 import { I_mockMethod } from "../../npm/aio-utils";
 import { AICheckbox } from "../../npm/aio-input";
 type I_data = { name: string, family: string }

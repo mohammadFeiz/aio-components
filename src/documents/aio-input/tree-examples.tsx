@@ -1,6 +1,6 @@
 import React, { FC, useContext, useRef, useState } from "react"
 import AIOInput, { AITree } from "../../npm/aio-input"
-import {Code} from './../../npm/aio-components';
+import {Code} from './../../npm/aio-component-utils';
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiCircleOutline, mdiDiamond, mdiEmoticonHappyOutline, mdiEye, mdiFolder, mdiGauge, mdiHeart, mdiMinusBoxMultiple, mdiMinusBoxOutline, mdiMinusThick, mdiPlusBoxOutline, mdiPlusThick } from "@mdi/js"
 import Icon from '@mdi/react';
 import Example, { ExampleContext, I_ExampleContext } from "./example.tsx";

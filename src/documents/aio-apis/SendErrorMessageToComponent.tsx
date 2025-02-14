@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 import AIOApis, { useInstance } from "../../npm/aio-apis"
-import { Code } from "../../npm/aio-components"
+import { Code } from "../../npm/aio-component-utils"
 
 type I_user = { name: string, family: string }
 const SendErrorMessageToComponent: FC = () => {

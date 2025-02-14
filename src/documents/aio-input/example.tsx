@@ -1,6 +1,6 @@
 import { createContext, FC, ReactNode, useState } from "react"
 import { AI_type, AICheckbox, AIRadio, AISelect } from "../../npm/aio-input"
-import { Code } from './../../npm/aio-components';
+import { Code } from './../../npm/aio-component-utils';
 import { Storage } from "../../npm/aio-utils"
 import { mdiMinusThick, mdiPlusThick } from "@mdi/js"
 import { Icon } from "@mdi/react"

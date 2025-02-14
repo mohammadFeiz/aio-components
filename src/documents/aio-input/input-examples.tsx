@@ -75,6 +75,7 @@ const InputExamples: FC<{ type: AI_type }> = ({ type }) => {
         ['multiple', () => <Multiple />, ['date', 'file'].indexOf(type) !== -1],
         ['multiple (number)', () => <MultipleNumber />, ['date', 'file'].indexOf(type) !== -1],
         ['checkIcon', () => <CheckIcon />, ['checkbox'].indexOf(type) !== -1],
+        ['switch', () => <Switch />, ['checkbox'].indexOf(type) !== -1],
         ['file value', () => <FileValue />, ['file'].indexOf(type) !== -1],
         ['file onRemove', () => <FileOnremove />, ['file'].indexOf(type) !== -1],
         ['voice', () => <Voice />, ['text','textarea'].indexOf(type) !== -1],
@@ -1113,6 +1114,35 @@ const CheckIcon: FC = () => {
     checkIcon={({checked})=>{
         return !checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd' />:
         <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff' />
+    }}
+/>
+        `)}
+        </div>
+    )
+}
+const Switch: FC = () => {
+    const { type, code }: I_ExampleContext = useContext(ExampleContext);
+    const [value, setValue] = useState<number>()
+    return (
+        <div className='example'>
+            <AIOInput
+                type={type} value={value}
+                onChange={(newValue) => setValue(newValue)}
+                switch={{
+                    grooveSize:4,
+                    borderSize:0,
+                    width:24
+                }}
+            />
+            {code(`
+<AIOInput
+    type='${type}' 
+    value='${value}'
+    onChange={(newValue)=>setValue(newValue)}
+    switch={{
+        grooveSize:4,
+        borderSize:0,
+        width:24
     }}
 />
         `)}

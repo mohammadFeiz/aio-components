@@ -554,7 +554,7 @@
 .aio-input-date,
 .aio-input-time,
 .aio-input-file {
-    padding: 0 6px;
+    padding: 0 12px;
     width: 100%;
     border: 1px solid #ddd;
     height: 36px;
@@ -630,6 +630,7 @@
 
 .aio-input-checkbox {
     border: 1px solid #ddd;
+    padding: 0;
 }
 
 
@@ -870,6 +871,18 @@
     opacity: 1;
 }
 
+.aio-input-date-calendar {
+    user-select: none;
+    -webkit-user-select: none;
+    direction: ltr;
+    display: flex;
+    flex-direction: column;
+    stroke: #333;
+    color: #333;
+    padding: 1em;
+    flex: 1;
+}
+
 .aio-input-date-today {
     display: flex;
     flex-direction: column;
@@ -877,7 +890,7 @@
     align-items: center;
     position: relative;
     width: fit-content;
-    padding: 1em;
+    padding: 0.8em;
     box-sizing: border-box;
     gap: 6px;
 }
@@ -903,17 +916,6 @@
     font-size: 1.2em;
 }
 
-.aio-input-date-calendar {
-    user-select: none;
-    -webkit-user-select: none;
-    direction: ltr;
-    display: flex;
-    flex-direction: column;
-    stroke: #333;
-    color: #333;
-    padding: 1em;
-    flex: 1;
-}
 
 .aio-input-date-header {
     display: flex;
@@ -1058,7 +1060,7 @@
     justify-content: center;
     position: relative;
     outline: none;
-    font-size: 0.78rem;
+    font-size: 1em;
 }
 
 .aio-input-date-cell.aio-input-date-disabled {
@@ -1139,7 +1141,7 @@
     cursor: pointer;
     display: inline-flex;
     font-family: CircularStd, sans-serif inherit;
-    font-size: 1rem;
+    font-size: 1em;
     height: auto;
     justify-content: center;
     line-height: 1.5;
@@ -1237,10 +1239,10 @@
     background-color: transparent;
     background-image: linear-gradient(to bottom, #fff, #f8eedb);
     border: 0 solid #e5e7eb;
-    border-radius: .5rem;
+    border-radius: .5em;
     box-sizing: border-box;
     color: #482307;
-    column-gap: 1rem;
+    column-gap: 1em;
     cursor: pointer;
     display: flex;
     font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -1249,7 +1251,7 @@
     line-height: 24px;
     margin: 0;
     outline: 2px solid transparent;
-    padding: 1rem 1.5rem;
+    padding: 1em 1.5em;
     text-align: center;
     text-transform: none;
     transition: all .1s cubic-bezier(.4, 0, .2, 1);
@@ -2321,24 +2323,30 @@ pre[class*="language-"]>code[class*="language-"] {
 .aio-input-switch {
     border-radius: 124px;
     cursor: pointer;
+    position: relative;
 }
-
 .aio-input-switch-outer {
     display: flex;
     align-items: center;
     position: relative;
+    
 }
-
+.aio-input-switch-inner.deactive{
+    background:#bbb;
+}
 .aio-input-switch-inner {
     left: 0%;
     position: absolute;
     border-radius: 100%;
-    transition: left .1s;
+    transition: left .3s;
+    display:flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .aio-input-switch.active .aio-input-switch-inner {
     left: 100%;
-    transition: left .1s;
+    transition: left .3s;
 }
 
 

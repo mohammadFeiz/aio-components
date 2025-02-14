@@ -1,7 +1,7 @@
 import { FC } from "react";
 import DOC from "../../resuse-components/Doc/index";
 import { I_formNode, useForm } from "../../npm/aio-input";
-import { Code } from "../../npm/aio-components";
+import { Code } from "../../npm/aio-component-utils";
 export default function DOC_UseForm(props: any) {
     return (
         <DOC

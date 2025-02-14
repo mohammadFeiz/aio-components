@@ -353,7 +353,7 @@
   overflow-y: auto;
 }
 
-.aio-popup-alert-text {
+.aio-popup-alert-title {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,9 +362,8 @@
   margin-bottom: 12px;
 }
 
-.aio-popup-alert-subtext {
+.aio-popup-alert-text {
   font-size: 12px;
-
 }
 
 .aio-popup-alert-footer {

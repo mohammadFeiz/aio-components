@@ -2,7 +2,7 @@ import { createContext, FC, ReactNode, useContext, useRef, useState } from "reac
 import { AIButtons, AICheckbox, AIDate, AINumber, AIPassword, AIRadio, AISelect, AITabs, AIText, AITextarea, AITime, AIFormInput } from "../../npm/aio-input";
 import usePopup, { I_usePopup } from "../../npm/aio-popup";
 import './index.css';
-import { Code } from './../../npm/aio-components';
+import { Code } from './../../npm/aio-component-utils';
 const CTX = createContext({} as any)
 type I_CTX = {
     popup: I_usePopup,

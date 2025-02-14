@@ -29,6 +29,7 @@ import DOC_UseForm from "./documents/use-form/index.tsx";
 import DOC_Sidenav from "./documents/sidenav/index.tsx";
 import Freelancer from './documents/freelancer';
 import Grid from './documents/data-grid'
+import Kits from "./documents/kits/kit1/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -57,6 +58,7 @@ export default function AIOComponents(){
     'sidenav':DOC_Sidenav,
     'Grid':Grid,
     'Freelancer':Freelancer,
+    'Kits':Kits,
     'tree-search':DOC_TreeSearch
   })
   function goToHome(){
