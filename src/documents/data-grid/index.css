@@ -1,10 +1,37 @@
 
 .data-grid{
     display:flex;
+    flex-direction: column;
     font-family:IRANSans-Light;
     direction:rtl;
-    overflow-x:auto;
     width: 100%;
+    padding:12px;
+    box-sizing: border-box;
+    gap:12px;
+    background:#eee;
+}
+.data-grid-header{
+    display:flex;
+    gap:12px;
+    align-items: center;
+    height:60px;
+    border-radius:6px;
+    background:#fff;
+    padding:0 12px;
+    border:1px solid #ddd;
+    box-sizing: border-box;
+}
+.data-grid-label{
+    font-size:12px;
+    white-space: nowrap;
+}
+.data-grid-body{
+    display:flex;
+    width:100%;
+    overflow-x:auto;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:6px;
 }
 .grid-parts{
     display:flex;
@@ -169,4 +196,27 @@
 .data-grid .ai-range-range-last{
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
+}
+.data-grid .aio-input-buttons{
+    width:fit-content;
+}
+.data-grid .aio-input-date{
+    width:fit-content;
+}
+.data-grid .aio-input-buttons-value{
+    border:1px solid #ddd;
+    padding:6px;
+    border-radius:4px;
+}
+.data-grid .aio-input-buttons-option{
+    height:24px;
+    border:none;
+}
+.data-grid .aio-input-buttons-option.active{
+    background:#eee;
+    color:#000;
+    border:1px solid #aaa;
+}
+.data-grid .aio-input-date-today{
+    background: #58606b;
 }

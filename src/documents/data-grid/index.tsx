@@ -1,8 +1,8 @@
 import { FC, createContext, useCallback, useContext, useState } from "react";
 import './index.css';
-import { AISlider } from "../../npm/aio-input";
+import { AIButtons, AIDate, AISlider } from "../../npm/aio-input";
 type I_status = 'not-started' | 'in-progress' | 'completed';
-type I_col = '0' | '1' | '2'
+type I_col = 'soft' | 'hard' | 'transport'
 type I_part = 'wall' | 'ceiling' | 'roof'
 
 type I_row = {
@@ -27,44 +27,44 @@ const data: I_grid = [
         floor: 'طبقه همکف', lastCapture: '1403/6/8',
         parts: {
             wall: {
-                '0': {
+                'soft': {
                     status: 'not-started',
                     progress: 0
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 90
                 },
-                '2': {
+                'transport': {
                     status: 'in-progress',
                     progress: 60
                 },
             },
             ceiling: {
-                '0': {
+                'soft': {
                     status: 'in-progress',
                     progress: 10
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 40
                 },
-                '2': {
+                'transport': {
                     status: 'completed',
                     progress: 100
                 },
 
             },
             roof: {
-                '0': {
+                'soft': {
                     status: 'in-progress',
                     progress: 20
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 80
                 },
-                '2': {
+                'transport': {
                     status: 'in-progress',
                     progress: 60
                 },
@@ -77,45 +77,45 @@ const data: I_grid = [
         floor: 'طبقه اول', lastCapture: '1403/6/12',
         parts: {
             wall: {
-                '0': {
+                'soft': {
                     status: 'not-started',
                     progress: 0
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 67
                 },
-                '2': {
+                'transport': {
                     status: 'completed',
                     progress: 100
                 },
 
             },
             ceiling: {
-                '0': {
+                'soft': {
                     status: 'in-progress',
                     progress: 20
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 80
                 },
-                '2': {
+                'transport': {
                     status: 'in-progress',
                     progress: 60
                 },
 
             },
             roof: {
-                '0': {
+                'soft': {
                     status: 'in-progress',
                     progress: 20
                 },
-                '1': {
+                'hard': {
                     status: 'in-progress',
                     progress: 80
                 },
-                '2': {
+                'transport': {
                     status: 'in-progress',
                     progress: 60
                 },
@@ -129,35 +129,91 @@ const data: I_grid = [
 const App: FC = () => {
     return (
         <div className="example">
-            <DataGrid data={data} />
+            <DataGrid
+                data={data}
+                cols={[
+                    { text: 'نازک کاری', value: 'soft' },
+                    { text: 'سفت کاری', value: 'hard' },
+                    { text: 'انتقال مصالح', value: 'transport' }
+                ]}
+                parts={[
+                    { text: 'دیوار', value: 'wall' },
+                    { text: 'کف', value: 'ceiling' },
+                    { text: 'سقف', value: 'roof' },
+                ]}
+                statuses={[
+                    { text: 'تکمیل شده', value: 'completed' },
+                    { text: 'در حال انجام', value: 'in-progress' },
+                    { text: 'شروع نشده', value: 'not-started' },
+                ]}
+            />
         </div>
     )
 }
 export default App
-type I_cellType = 'progress' | 'status'
-type I_GridContext = { cellType: I_cellType, dic: { [key: string]: string },statuses:I_status[] }
-const GridContext = createContext({ cellType: 'status' } as I_GridContext)
-const DataGrid: FC<{ data: I_grid }> = ({ data }) => {
-    const [cellType, setCellType] = useState<I_cellType>('status')
-    const statuses:I_status[] = ['completed','in-progress','not-started']
-    const dic = {
-        '0': 'نازک کاری',
-        '1': 'سفت کاری',
-        '2': 'انتقال مصالح',
-        'wall': 'دیوار',
-        'ceiling': 'کف',
-        'roof': 'سقف',
-        'completed':'تکمیل شده',
-        'in-progress':'در حال انجام',
-        'not-started':'شروع نشده',
+type I_GridContext = {
+    filter: I_filter,
+    statuses: { text: string, value: I_status }[],
+    cols: { text: string, value: I_col }[],
+    parts: { text: string, value: I_part }[],
+    changeFilter: (key: keyof I_filter, value: any) => void
+}
+type I_filter = {
+    cellType: 'progress' | 'status',
+    date:string
+}
+const GridContext = createContext({ filter: { cellType: 'status' } } as I_GridContext)
+const DataGrid: FC<{
+    data: I_grid,
+    cols: { text: string, value: I_col }[],
+    parts: { text: string, value: I_part }[],
+    statuses: { text: string, value: I_status }[]
+}> = ({ data, cols, parts, statuses }) => {
+    const [filter, setFilter] = useState<I_filter>({
+        cellType: 'status',
+        date:''
+    })
+    const changeFilter = (key: keyof I_filter, value: any) => {
+        setFilter({ ...filter, [key]: value })
     }
     return (
-        <GridContext.Provider value={{ cellType, dic,statuses }}>
+        <GridContext.Provider value={{ filter, changeFilter, statuses, cols, parts }}>
             <div className="data-grid">
-                <GridDetails data={data} />
-                <GridParts data={data} />
+                <DataGridHeader />
+                <div className="data-grid-body">
+                    <GridDetails data={data} />
+                    <GridParts data={data} />
+                </div>
             </div>
         </GridContext.Provider>
+    )
+}
+const DataGridHeader: FC = () => {
+    const { filter,changeFilter }: I_GridContext = useContext(GridContext)
+    const cellTypeOptions: I_filter["cellType"][] = ['status', 'progress']
+    const cellTypeDic: { [key in I_filter["cellType"]]: string } = {
+        'status': 'وضعیت',
+        'progress': 'پیشرفت'
+    }
+    return (
+        <div className="data-grid-header">
+            <div className="data-grid-label">نمایش بر اساس</div>
+            <AIButtons
+                options={cellTypeOptions}
+                option={{
+                    text: (option) => (cellTypeDic[option as I_filter["cellType"]]),
+                    value: (option) => option
+                }}
+                value={filter.cellType}
+                onChange={(cellType) =>changeFilter('cellType',cellType)}
+            />
+            <div className="data-grid-label">نمایش تا تاریخ</div>
+            <AIDate
+                jalali={true}
+                value={filter.date}
+                onChange={(date) =>changeFilter('date',date)}
+            />
+        </div>
     )
 }
 const GridDetails: FC<{ data: I_grid }> = ({ data }) => {
@@ -183,30 +239,33 @@ const GridDetails: FC<{ data: I_grid }> = ({ data }) => {
     )
 }
 const GridParts: FC<{ data: I_grid }> = ({ data }) => {
-    const cols: I_col[] = ['0', '1', '2']
-    const partNames: I_part[] = ['wall', 'ceiling', 'roof']
+    const { parts }: I_GridContext = useContext(GridContext)
     return (
         <div className="grid-parts">
             {
-                partNames.map((partName: I_part) => {
+                parts.map((part) => {
                     return (
-                        <GridPart part={partName} cols={cols} rows={data} />
+                        <GridPart
+                            key={part.value}
+                            partText={part.text}
+                            partValue={part.value}
+                            rows={data}
+                        />
                     )
                 })
             }
         </div>
     )
 }
-const GridPart: FC<{ part: I_part, rows: I_row[], cols: I_col[] }> = ({ part, cols, rows }) => {
-    const { dic }: I_GridContext = useContext(GridContext);
+const GridPart: FC<{ partText: string, partValue: I_part, rows: I_row[] }> = ({ partText, partValue, rows }) => {
     return (
         <div className="w-fit-">
-            <div className="grid-part">{dic[part]}</div>
-            <GridPartCols cols={cols as string[]} />
-            <GridPartTotalRow part={part} rows={rows} />
+            <div className="grid-part">{partText}</div>
+            <GridPartCols />
+            <GridPartTotalRow partValue={partValue} rows={rows} />
             {
                 rows.map((row: I_row) => {
-                    return <GridPartRow partData={row.parts[part] as I_partData} cols={cols} />
+                    return <GridPartRow partData={row.parts[partValue] as I_partData} />
                 })
             }
 
@@ -216,16 +275,16 @@ const GridPart: FC<{ part: I_part, rows: I_row[], cols: I_col[] }> = ({ part, co
 type I_grid_report = {
     [key in I_status]: number
 }
-const GridPartTotalRow: FC<{ part: I_part, rows: I_grid }> = ({ part, rows }) => {
-    const cols: I_col[] = ['0', '1', '2']
+const GridPartTotalRow: FC<{ partValue: I_part, rows: I_grid }> = ({ partValue, rows }) => {
+    const { cols }: I_GridContext = useContext(GridContext)
     return (
         <div className="grid-total-row">
-            {cols.map((col) => <GridTotalCell part={part} col={col} rows={rows} />)}
+            {cols.map((col) => <GridTotalCell partValue={partValue} colValue={col.value} rows={rows} />)}
         </div>
     )
 }
-const GridTotalCell: FC<{ part: I_part, col: I_col, rows: I_grid }> = ({ part, col, rows }) => {
-    const {statuses,dic}:I_GridContext = useContext(GridContext)
+const GridTotalCell: FC<{ partValue: I_part, colValue: I_col, rows: I_grid }> = ({ partValue, colValue, rows }) => {
+    const { statuses }: I_GridContext = useContext(GridContext)
     const getReport = (): I_grid_report => {
         let report: I_grid_report = {
             'completed': 0,
@@ -234,8 +293,8 @@ const GridTotalCell: FC<{ part: I_part, col: I_col, rows: I_grid }> = ({ part, c
         }
         for (let i = 0; i < rows.length; i++) {
             const row: I_row = rows[i];
-            const partData = row.parts[part]
-            const { status } = partData[col];
+            const partData = row.parts[partValue]
+            const { status } = partData[colValue];
             report[status] += 1
         }
         return report
@@ -258,14 +317,14 @@ const GridTotalCell: FC<{ part: I_part, col: I_col, rows: I_grid }> = ({ part, c
                 ]}
             />
             {
-                statuses.map((status:I_status)=>{
+                statuses.map((status) => {
                     return (
                         <div className="status-detail">
                             <div className="status-detail-label">
-                                {`${dic[status]} :`}
+                                {`${status.text} :`}
                             </div>
                             <div className={`status-detail-value color-${status}`}>
-                                {report[status]}
+                                {report[status.value]}
                             </div>
                         </div>
                     )
@@ -274,20 +333,25 @@ const GridTotalCell: FC<{ part: I_part, col: I_col, rows: I_grid }> = ({ part, c
         </div>
     )
 }
-const GridPartCols: FC<{ cols: string[] }> = ({ cols }) => {
-    const { dic }: I_GridContext = useContext(GridContext);
+const GridPartCols: FC = () => {
+    const { cols }: I_GridContext = useContext(GridContext);
     return (
         <div className="grid-cols">
-            {cols.map((col) => <div className="grid-col">{dic[col]}</div>)}
+            {cols.map((col) => <div className="grid-col">{col.text}</div>)}
         </div>
     )
 }
-const GridPartRow: FC<{ partData: I_partData, cols: I_col[] }> = ({ partData, cols }) => {
+const GridPartRow: FC<{ partData: I_partData }> = ({ partData }) => {
+    const { cols }: I_GridContext = useContext(GridContext);
     return (
         <div className="grid-row">
             {
-                cols.map((col: I_col) => {
-                    return <GridPartCell colData={partData[col] as I_colData} />
+                cols.map((col) => {
+                    return (
+                        <GridPartCell
+                            colData={partData[col.value] as I_colData}
+                        />
+                    )
                 })
             }
         </div>
@@ -295,13 +359,19 @@ const GridPartRow: FC<{ partData: I_partData, cols: I_col[] }> = ({ partData, co
 }
 const GridPartCell: FC<{ colData: I_colData }> = ({ colData }) => {
     const { status, progress } = colData;
-    const { cellType,dic }: I_GridContext = useContext(GridContext)
-    const getContent = () => {
-        if (cellType === "status") {
-            return (<div className={`cell-status color-${status} border-${status}`}>{dic[status]}</div>)
-        }
-        if (cellType === "progress") {
-            return (
+    const { filter, statuses }: I_GridContext = useContext(GridContext)
+    const statusObj = statuses.find((o) => o.value === status)
+    if (!statusObj) { return null }
+    return (
+        <div className="grid-cell">
+            {
+                filter.cellType === 'status' &&
+                <div
+                    className={`cell-status color-${status} border-${status}`}
+                >{statusObj.text}</div>
+            }
+            {
+                filter.cellType === 'progress' &&
                 <div className={`grid-slider grid-slider-${status}`}>
                     <AISlider
                         size={24}
@@ -311,10 +381,7 @@ const GridPartCell: FC<{ colData: I_colData }> = ({ colData }) => {
                     />
                     <div className="grid-slider-value">{`${progress}%`}</div>
                 </div>
-            )
-        }
-    }
-    return (
-        <div className="grid-cell">{getContent()}</div>
+            }
+        </div>
     )
 }
