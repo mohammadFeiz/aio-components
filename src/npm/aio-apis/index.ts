@@ -4,7 +4,7 @@ import { Alert, Loading } from './../../npm/aio-popup';
 import { Stall, Storage } from '../aio-utils';
 import { useRef } from 'react';
 
-export type AA_api<T> = {
+export type AA_api = {
     description: string,
     name: string,
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
@@ -15,13 +15,12 @@ export type AA_api<T> = {
     mock?: { delay: number, methodName: string },
     headers?: any,
     token?: string,
+    showError?:boolean,
     loader?: string, loadingParent?: string,
-    onSuccess: (data: any) => T,
-    onError?: (response: any, message: string) => string | false,
     retries?: number[]
 }
 type I_cachedApi<T> = {
-    api: AA_api<T>,
+    api: AA_api,
     value: any,
 }
 export default class AIOApis {
@@ -29,7 +28,7 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        onCatch: (err: any, api: AA_api<any>) => string,
+        handleErrorMessage: (err: any, api: AA_api) => string,
         headers?: any,
         lang?: 'en' | 'fa'
     };
@@ -44,7 +43,7 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        onCatch: (err: any, api: AA_api<any>) => string,
+        handleErrorMessage: (err: any, api: AA_api) => string,
         headers?: any,
         lang?: 'en' | 'fa'
     }) {
@@ -75,40 +74,40 @@ export default class AIOApis {
         }
         return '';
     }
-    private responseToResult = async <T>(api: AA_api<T>): Promise<{ result: T | false, errorMessage: string, success: boolean, response: any }> => {
-        const { headers = this.props.headers, onSuccess } = api;
-        const { onCatch } = this.props;
-        if (!onCatch) {
+    private responseToResult = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: any }> => {
+        const { headers = this.props.headers } = api;
+        const { handleErrorMessage } = this.props;
+        if (!handleErrorMessage) {
             const errorMessage = `
                 missing onCatch in api: ${api.description},
                 you should set onCatch in api or in props of AIOApis    
             `
-            return { result: false, errorMessage, success: false, response: {} }
+            return { errorMessage, success: false, response: false }
         }
         try {
             let response = await Axios({ method: api.method, url: api.url, data: api.body, headers })
-            try { return { result: onSuccess(response), success: true, response, errorMessage: '' } }
-            catch (err: any) { return { result: err.message, success: false, response, errorMessage: '' } }
+            try { return { success: true, response, errorMessage: '' } }
+            catch (err: any) { return { success: false, response, errorMessage: err.message } }
         }
         catch (response: any) {
-            try { return { result: false, errorMessage: onCatch(response, api), success: false, response } }
-            catch (err: any) { return { result: false, errorMessage: err.message, success: false, response } }
+            try { return { errorMessage: handleErrorMessage(response, api), success: false, response:false } }
+            catch (err: any) { return { errorMessage: err.message, success: false, response:false } }
         }
     }
-    private loading = (api: AA_api<any>, state: boolean) => {
+    private loading = (api: AA_api, state: boolean) => {
         const { loading = true, loader = this.props.loader, name, loadingParent } = api;
         if (loading) {
             const aioLoading = new Loading(loader)
             aioLoading[state ? 'show' : 'hide'](name, loadingParent)
         }
     }
-    private handleMock = (api: AA_api<any>) => {
+    private handleMock = (api: AA_api) => {
         if (api.mock && !!(this as any)[api.mock.methodName]) {
             const methodName = api.mock.methodName;
             handleMockApi({ url: api.url, delay: api.mock.delay, method: api.method, result: (config) => (this as any)[methodName](config) })
         }
     }
-    callCache = async (api: AA_api<any>): Promise<any> => {
+    callCache = async (api: AA_api): Promise<any> => {
         if (this.apisThatAreInLoadingTime[api.name]) { return false }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
@@ -117,21 +116,21 @@ export default class AIOApis {
         this.apisThatAreInLoadingTime[api.name] = false
         if (success) { return response }
     };
-    requestFn = async <T>(api: AA_api<T>,isRetry?:boolean): Promise<T | false> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return false }
+    requestFn = async <T>(api: AA_api,isRetry?:boolean): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return {success:false,response:{} as any,errorMessage:'request is in loading'} }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
         if (api.cache) {
             let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
-            if (cachedValue !== undefined) { return api.onSuccess(cachedValue) }
+            if (cachedValue !== undefined) { return cachedValue }
         }
         else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
-        let { result, errorMessage, success, response } = await this.responseToResult(api);
+        let { errorMessage = '', success, response } = await this.responseToResult(api);
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if (!success) {
             let message: string | false = errorMessage;
-            if (api.onError) { message = api.onError(response, message) }
+            if (api.showError === false) { message = false }
             if (typeof message === 'string') {
                 this.currentError = message
                 if(!isRetry){
@@ -141,16 +140,16 @@ export default class AIOApis {
             }
         }
         else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
-        return result;
+        return response;
     };
-    retries = async <T>(api:AA_api<T>,times:number[]): Promise<T | false> => {
+    retries = async <T>(api:AA_api,times:number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         const retries = [0, ...times] as number[]
         return await new Promise(async (resolve) => {
             for (let i = 0; i < retries.length; i++) {
                 await Stall(retries[i])
                 if (i < retries.length - 1) {
                     const res = await this.requestFn<T>(api,true)
-                    if (res !== false) { return resolve(res); break; }
+                    if (res.success === true) { return resolve(res); break; }
                     else {
                         console.log(`aio-apis => retries[${i}] failed`)
                         console.log(`api error is : ${this.currentError}`)
@@ -158,12 +157,12 @@ export default class AIOApis {
                 }
                 else { 
                     const res = await this.requestFn<T>(api)
-                    resolve(res) 
+                    return resolve(res) 
                 }
             }
         })
     }
-    request = async <T>(api: AA_api<T>): Promise<T | false> => {
+    request = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         if (api.retries) {return await this.retries(api,api.retries)}
         else {return await this.requestFn<T>(api)}
     }

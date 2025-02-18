@@ -42,22 +42,25 @@ class Apis extends AIOApis {
         super({
             id: 'apitest',
             token: props.token,
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         })
         this.base_url = props.base_url;
     }
     getUsers = async (onError:(message:string)=>void) => {
-        return await this.request<I_user[]>({
+        const {response,success} = await this.request<{data:I_user[],response:{data:{message:string}}}>({
             name: 'getUsers',
+            mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
-            url: ${'`${this.base_url}/users/getUser`'},
-            onSuccess: (response) => response.data,
-            onError:(response,message)=>{
-                onError(message)
-                return false
-            },
+            url: ${'`${this.base_url}/users/getUsers`'}
         })
+        if(!success){
+            onError(response.response.data.message)
+            return false
+        }
+        else{
+            return response.data
+        }
     }
 }
                     `)
@@ -112,7 +115,7 @@ class Apis extends AIOApis {
         super({
             id: 'apitest',
             token: props.token,
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         })
         this.base_url = props.base_url
     }
@@ -129,18 +132,19 @@ class Apis extends AIOApis {
         }
     }
     getUsers = async (onError:(message:string)=>void) => {
-        return await this.request<I_user[]>({
+        const {response,success} = await this.request<{data:I_user[],response:{data:{message:string}}}>({
             name: 'getUsers',
             mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
-            url: `${this.base_url}/users/getUsers`,
-            onError:(response,message)=>{
-                debugger
-                onError(message)
-                return false
-            },
-            onSuccess: (response) => response.data
+            url: `${this.base_url}/users/getUsers`
         })
+        if(!success){
+            onError(response.response.data.message)
+            return false
+        }
+        else{
+            return response.data
+        }
     }
 }

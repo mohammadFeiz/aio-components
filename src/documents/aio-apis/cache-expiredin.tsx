@@ -35,26 +35,26 @@ class APIS extends AIOApis {
             token: '',
             id: 'testaioapis2',
             lang: 'fa',
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         });
     }
     mockSuccess: I_mockMethod = () => {
         return { status: 200, data: { name: 'mohammad', family: 'feiz',time:new Date().getTime() } }
     }
     getData = async () => {
-        return await this.request<I_data>({
+        const {response,success} = await this.request<{data:I_data}>({
             name: 'getData',
             description: 'get data',
             url: '/api-url',
             method: 'get',
             mock: { delay: 2500, methodName: 'mockSuccess' },
-            onSuccess: (response: any) => response.data,
             cache:{
                 expiredIn:new Date().getTime() + (12000),
                 name:'data'
             }
-            
         })
+        if(success){return response.data}
+        else {return false}
     }
 }
 function classCode() {
@@ -66,21 +66,23 @@ class APIS extends AIOApis {
         super({
             token,
             id: 'testaioapis',
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         });
     }
     getData = async () => {
-        return await this.request<{name:string,family:string}>({
+        const {response,success} = await this.request<{data:I_data}>({
             name: 'getData',
             description: 'get data',
             url: '/api-url',
             method: 'get',
-            onSuccess: (response: any) => response.data,
+            mock: { delay: 2500, methodName: 'mockSuccess' },
             cache:{
                 expiredIn:new Date().getTime() + (12000),
                 name:'data'
             }
         })
+        if(success){return response.data}
+        else {return false}
     }
 }
 const GetResult: FC = () => {

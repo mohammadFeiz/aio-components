@@ -5,17 +5,17 @@ import { I_mockMethod } from "../../npm/aio-utils";
 import { AICheckbox } from "../../npm/aio-input";
 type I_data = { name: string, family: string }
 type I_mockType = 'mockError' | 'mockSuccess'
-type I_setting = { 
-    successMessage: boolean, 
-    errorMessage:boolean,
-    mockType: I_mockType ,
-    loading:boolean
+type I_setting = {
+    successMessage: boolean,
+    errorMessage: boolean,
+    mockType: I_mockType,
+    loading: boolean
 }
 const GetResult: FC = () => {
     const [apis] = useState<APIS>(new APIS())
     const [data, setData] = useState<I_data | string>()
     const [setting, setSetting] = useState<I_setting>({
-        successMessage: false, mockType: 'mockError',errorMessage:true,loading:true
+        successMessage: false, mockType: 'mockError', errorMessage: true, loading: true
     })
     const getData = async () => {
         const res = await apis.getData(setting)
@@ -25,9 +25,9 @@ const GetResult: FC = () => {
         <div className="example flex-col- gap-12-">
             {Code(classCode(setting))}
             <Responses type={setting.mockType} change={(mockType) => setSetting({ ...setting, mockType })} />
-            <AICheckbox value={!!setting.successMessage} onChange={(successMessage)=>setSetting({...setting,successMessage})} text="successMessage"/>
-            <AICheckbox value={!!setting.errorMessage} onChange={(errorMessage)=>setSetting({...setting,errorMessage})} text="errorMessage"/>
-            <AICheckbox value={!!setting.loading} onChange={(loading)=>setSetting({...setting,loading})} text="loading"/>
+            <AICheckbox value={!!setting.successMessage} onChange={(successMessage) => setSetting({ ...setting, successMessage })} text="successMessage" />
+            <AICheckbox value={!!setting.errorMessage} onChange={(errorMessage) => setSetting({ ...setting, errorMessage })} text="errorMessage" />
+            <AICheckbox value={!!setting.loading} onChange={(loading) => setSetting({ ...setting, loading })} text="loading" />
             <button className='w-fit-' onClick={() => getData()}>Call Api</button>
             {
                 !!data &&
@@ -83,7 +83,7 @@ class APIS extends AIOApis {
             token: '',
             id: 'testaioapis',
             lang: 'fa',
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         });
     }
     mockError: I_mockMethod = () => {
@@ -93,43 +93,47 @@ class APIS extends AIOApis {
         return { status: 200, data: { name: 'mohammad', family: 'feiz' } }
     }
     getData = async (p: I_setting) => {
-        return await this.request<I_data>({
+        const {response,success} = await this.request<{ data: I_data }>({
             name: 'getData',
             description: 'get data',
             url: '/api-url',
             method: 'get',
             mock: { delay: 2500, methodName: p.mockType },
-            onSuccess: (response: any) => {
-                if(p.successMessage){this.addAlert({type:'success',subtext:'عملیات با موفقیت انجام شد',text:'دریافت اطلاعات'})}
-                return response.data
-            },
-            onError:p.errorMessage?undefined:()=>false,
-            loading:p.loading?undefined:false
+            showError: !!p.errorMessage,
+            loading: p.loading ? undefined : false
         })
+        if (success) {
+            if (p.successMessage) { this.addAlert({ type: 'success', text: 'عملیات با موفقیت انجام شد', title: 'دریافت اطلاعات' }) }
+            return response.data
+        }
+        else { return false }
     }
 }
-function classCode(setting:I_setting) {
+function classCode(setting: I_setting) {
     return (
         `class APIS extends AIOApis {
     constructor(token:string) {
         super({
             token,
             id: 'testaioapis',
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         });
     }
-    getData = async () => {
-        return await this.request<{name:string,family:string}>({
-            name:'getData',
-            description:'get data',
-            onSuccess:(response)=>response.data,
-            url:'/api-url',
-            method:'get',
-            ${setting.loading === false?'loading:false,':''}
-            ${setting.successMessage?`successMessage:()=>'عملیات با موفقیت انجام شد',`:''}
-            ${setting.errorMessage === false?`errorMessage:()=>false,`:''}
-            
+    getData = async (p: I_setting) => {
+        const {response,success} = await this.request<{ data: I_data }>({
+            name: 'getData',
+            description: 'get data',
+            url: '/api-url',
+            method: 'get',
+            mock: { delay: 2500, methodName: p.mockType },
+            showError: !!p.errorMessage,
+            loading: p.loading ? undefined : false
         })
+        if (success) {
+            if (p.successMessage) { this.addAlert({ type: 'success', text: 'عملیات با موفقیت انجام شد', title: 'دریافت اطلاعات' }) }
+            return response.data
+        }
+        else { return false }
     }
 }
 

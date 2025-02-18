@@ -41,19 +41,21 @@ class Apis extends AIOApis {
         super({
             id: 'apitest',
             token: props.token,
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         })
         this.base_url = props.base_url;
     }
     getUsers = async () => {
-        return await this.request<I_user[]>({
+        const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
+            mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
-            url: ${'`${this.base_url}/users/getUser`'},
-            onSuccess: (response) => response.data,
+            url: ${'`${this.base_url}/users/getUsers`'},
             retries:[4000,5000,6000]
         })
+        if(success){return response.data}
+        else {return false}
     }
 }
                     `)
@@ -107,7 +109,7 @@ class Apis extends AIOApis {
         super({
             id: 'apitest',
             token: props.token,
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         })
         this.base_url = props.base_url
     }
@@ -124,14 +126,15 @@ class Apis extends AIOApis {
         }
     }
     getUsers = async () => {
-        return await this.request<I_user[]>({
+        const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
             mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
             url: `${this.base_url}/users/getUsers`,
-            onSuccess: (response) => response.data,
             retries:[4000,5000,6000]
         })
+        if(success){return response.data}
+        else {return false}
     }
 }

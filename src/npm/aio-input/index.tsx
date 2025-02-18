@@ -181,7 +181,7 @@ function AIOINPUT(props: AITYPE) {
         if (vertical) { return 'aio-input-range-vertical' }
         return 'aio-input-range-horizontal'
     }
-    let render: { [key in AI_type]: () => ReactNode } = {
+    const render: { [key in AI_type]: () => ReactNode } = {
         spinner: () => null,
         slider: () => null,
         acardion: () => <Acardion />,
@@ -207,26 +207,32 @@ function AIOINPUT(props: AITYPE) {
         color: () => <Layout properties={{ text: <Input /> }} />
     }
     if (!type || !render[type]) { return null }
-    return (<AICTX.Provider key={datauniqid} value={getContext()}>{render[type]()}{popup.render()}</AICTX.Provider>)
+    return (
+        <AICTX.Provider 
+            key={datauniqid} 
+            value={getContext()}
+        >
+            {render[type]()}
+            {popup.render()}
+        </AICTX.Provider>
+    )
 }
 function TimePopover(props: { onClose: () => void }) {
-    let { DATE, rootProps }: AI_context = useContext(AICTX)
-    let { jalali, onChange, size = 12 } = rootProps;
-    let { onClose } = props;
-    let [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
-    const [startYear] = useState<number | undefined>(value.year ? value.year - 10 : undefined);
-    const [endYear] = useState<number | undefined>(value.year ? value.year + 10 : undefined);
-    function change(obj: { [key in AI_timeUnits]?: number }) {
-        setValue({ ...value, ...obj })
-    }
+    const { DATE, rootProps }: AI_context = useContext(AICTX)
+    const { jalali, onChange, size = 12 } = rootProps;
+    const { onClose } = props;
+    const [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
+    const startYearRef = useRef<number | undefined>(value.year ? value.year - 10 : undefined);
+    const endYearRef = useRef<number | undefined>(value.year ? value.year + 10 : undefined);
+    const change = (obj: { [key in AI_timeUnits]?: number }) =>setValue({ ...value, ...obj })
     function translate(key: AI_timeUnits | 'Submit' | 'Now') {
         return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت', 'Now': 'اکنون' }[key] : key
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
-        //@ts-nocheck
         let { year, month, day } = value;
-        if (type === 'year' && startYear && endYear) {
-            return GetArray(endYear - startYear + 1, (i) => ({ text: i + startYear, value: i + startYear }), rootProps.timeStep?.year)
+        const sy = startYearRef.current,ey = endYearRef.current
+        if (type === 'year' && sy && ey) {
+            return GetArray(ey - sy + 1, (i) => ({ text: i + sy, value: i + sy }), rootProps.timeStep?.year)
         }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
@@ -449,10 +455,9 @@ const FileItem: FC<AI_FileItem> = (props) => {
     let option = optionsList[0]
     return <Layout option={option} />
 }
-function Select() {
+const Select:FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
-    let { value, hideTags } = rootProps;
-
+    let { value } = rootProps;
     let values: any[] = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : [])
     function getSelectText() {
         if (!values.length) { return }
@@ -464,7 +469,7 @@ function Select() {
         return (
             <div className={'aio-input-multiselect-container'}>
                 <Layout />
-                {!hideTags && !!values.length && <Tags />}
+                {!rootProps.hideTags && !!values.length && <Tags />}
             </div>
         )
     }
@@ -542,13 +547,11 @@ const Tag: FC<AI_Tag> = (props) => {
         </div>
     )
 }
-function Input() {
-    let { rootProps, types, showPassword, options }: AI_context = useContext(AICTX)
-    let { type, delay = 500 } = rootProps;
-    let {
-        min, max, swip, onChange, blurChange, maxLength = Infinity, filter = [], disabled, placeholder,
-        inputAttrs, spin = true, justify
-    } = rootProps;
+const Input:FC = () => {
+    const { rootProps, types, showPassword, options }: AI_context = useContext(AICTX)
+    const { type, delay = 500 } = rootProps;
+    const {maxLength = Infinity, spin = true} = rootProps;
+    let {filter = []} = rootProps;
     let [dom] = useState<any>(createRef())
     let [temp] = useState<any>({ atimeout: undefined, btimeout: undefined, clicked: false })
     let [datauniqid] = useState(`ac${Math.round(Math.random() * 100000)}`)
@@ -556,9 +559,9 @@ function Input() {
     let valueRef = useRef(value);
     valueRef.current = value;
     function setSwip() {
-        if (type === 'number' && swip) {
+        if (type === 'number' && rootProps.swip) {
             new Swip({
-                speedY: swip, reverseY: true, minY: min, maxY: max,
+                speedY: rootProps.swip, reverseY: true, minY: rootProps.min, maxY: rootProps.max,
                 dom: () => $(dom.current),
                 start: () => {
                     let vref = +valueRef.current
@@ -567,9 +570,9 @@ function Input() {
                 },
                 move: (p: I_Swip_parameter) => {
                     let { y } = p.change || { y: 0 };
-                    if (min !== undefined && y < min) { y = min; }
-                    if (max !== undefined && y > max) { y = max }
-                    change(y, onChange)
+                    if (rootProps.min !== undefined && y < rootProps.min) { y = rootProps.min; }
+                    if (rootProps.max !== undefined && y > rootProps.max) { y = rootProps.max }
+                    change(y, rootProps.onChange)
                 }
             })
         }
@@ -581,8 +584,8 @@ function Input() {
             if (v === '') { return undefined }//important because +('') is 0
             else if (!isNaN(+v)) {
                 v = +v;
-                if (typeof min === 'number' && v < min) { v = min }
-                else if (typeof max === 'number' && v > max) { v = max }
+                if (typeof rootProps.min === 'number' && v < rootProps.min) { v = rootProps.min }
+                else if (typeof rootProps.max === 'number' && v > rootProps.max) { v = rootProps.max }
             }
         }
         return v
@@ -603,7 +606,7 @@ function Input() {
             else { value = +value }
         }
         setValue(value);
-        if (!blurChange && onChange) {
+        if (!rootProps.blurChange && onChange) {
             clearTimeout(temp.btimeout);
             temp.btimeout = setTimeout(() => onChange(value), delay);
         }
@@ -616,18 +619,22 @@ function Input() {
     }
     function blur(onChange?: (value: any) => void) {
         temp.clicked = false
-        if (blurChange && onChange) { onChange(value) }
+        if (rootProps.blurChange && onChange) { onChange(value) }
     }
     function getInputAttrs() {
-        let InputAttrs = AddToAttrs(inputAttrs, {
-            className: !spin ? 'no-spin' : undefined,
-            style: justify ? { textAlign: 'center' } : undefined
-        })
+        let InputAttrs = AddToAttrs(
+            rootProps.inputAttrs, 
+            {
+                className: !spin ? 'no-spin' : undefined,
+                style: rootProps.justify ? { textAlign: 'center' } : undefined
+            }
+        )
         let p = {
-            ...InputAttrs, value, type, ref: dom, disabled, placeholder, list: rootProps.options ? datauniqid : undefined,
+            ...InputAttrs, 
+            value, type, ref: dom, disabled:rootProps.disabled, placeholder:rootProps.placeholder, list: rootProps.options ? datauniqid : undefined,
             onClick: (e: any) => click(),
-            onChange: onChange ? (e: any) => change(e.target.value, onChange) : undefined,
-            onBlur: () => blur(onChange)
+            onChange: rootProps.onChange ? (e: any) => change(e.target.value, rootProps.onChange) : undefined,
+            onBlur: () => blur(rootProps.onChange)
         }
         if (type === 'password' && showPassword) { p = { ...p, type: 'text', style: { ...p.style, textAlign: 'center' } } }
         if (filter.length === 1 && filter[0] === 'number') {
@@ -649,7 +656,7 @@ function Input() {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
-function Options() {
+const Options:FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     let [dom] = useState<any>(createRef())
