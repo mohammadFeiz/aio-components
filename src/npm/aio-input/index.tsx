@@ -1,18 +1,6 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
 import usePopup, { AP_modal, AP_usePopup } from "./../../npm/aio-popup";
-import {
-    Get2Digit, GetClient, EventHandler, DragClass, AddToAttrs, Storage, ExportToExcel,
-    svgArc, HasClass, FilePreview, DownloadFile, GetPrecisionCount, GetArray,
-    keyboard_filter,
-    setValueByField,
-    getValueByField,
-    Swip, I_Swip_parameter, I_Swip_mousePosition, getLeftAndTopByCenterAngleLength,
-    ValidateIrMobile,
-    IsValidEmail,
-    IsValidIrNationalCode,
-    classListToString
-
-} from './../../npm/aio-utils';
+import * as UT from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { Indent, GetSvg } from './../../npm/aio-component-utils';
 import $ from 'jquery';
@@ -80,8 +68,8 @@ function AIOINPUT(props: AITYPE) {
     let popup = usePopup({ rtl: props.rtl })
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
-    let [DragOptions] = useState<DragClass>(
-        new DragClass({
+    let [DragOptions] = useState<UT.DragClass>(
+        new UT.DragClass({
             callback: (fromData, toData) => {
                 if (typeof props.onSwap === 'function') {
                     const { fromIndex } = fromData;
@@ -112,7 +100,7 @@ function AIOINPUT(props: AITYPE) {
             getTarget: () => $(dom.current),
             setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
                 let attrs = (popover.setAttrs || (() => { return {} }))(key);
-                if (key === 'modal') { return AddToAttrs(attrs, { className }) }
+                if (key === 'modal') { return UT.AddToAttrs(attrs, { className }) }
             }
         }
         return obj;
@@ -232,15 +220,15 @@ function TimePopover(props: { onClose: () => void }) {
         let { year, month, day } = value;
         const sy = startYearRef.current,ey = endYearRef.current
         if (type === 'year' && sy && ey) {
-            return GetArray(ey - sy + 1, (i) => ({ text: i + sy, value: i + sy }), rootProps.timeStep?.year)
+            return UT.GetArray(ey - sy + 1, (i) => ({ text: i + sy, value: i + sy }), rootProps.timeStep?.year)
         }
         if (type === 'day' && day) {
             let length = !year || !month ? 31 : DATE.getMonthDaysLength([year, month]);
             if (day > length) { change({ day: 1 }) }
-            return GetArray(length, (i) => { return { text: i + 1, value: i + 1 } }, rootProps.timeStep?.day)
+            return UT.GetArray(length, (i) => { return { text: i + 1, value: i + 1 } }, rootProps.timeStep?.day)
         }
-        if (type === 'month') { return GetArray(12, (i) => ({ text: i + 1, value: i + 1 }), rootProps.timeStep?.month) }
-        return GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }), rootProps.timeStep ? rootProps.timeStep[type] : undefined)
+        if (type === 'month') { return UT.GetArray(12, (i) => ({ text: i + 1, value: i + 1 }), rootProps.timeStep?.month) }
+        return UT.GetArray(type === 'hour' ? 24 : 60, (i) => ({ text: i, value: i }), rootProps.timeStep ? rootProps.timeStep[type] : undefined)
     }
     function layout(type: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'): ReactNode {
         if (typeof value[type] !== 'number') { return null }
@@ -429,11 +417,11 @@ const FileItem: FC<AI_FileItem> = (props) => {
         onChange(newValue);
     }
     function download() {
-        DownloadFile(file)
+        UT.DownloadFile(file)
     }
     function getIcon() {
         let filePreview;
-        if (rootProps.preview) { filePreview = FilePreview(file, { onClick: () => download() }) }
+        if (rootProps.preview) { filePreview = UT.FilePreview(file, { onClick: () => download() }) }
         if (filePreview && filePreview !== null) {
             return filePreview;
         }
@@ -537,7 +525,7 @@ const Tag: FC<AI_Tag> = (props) => {
     let { attrs, before = I('mdiCircleMedium', 0.7), after, text, disabled, onClose = () => { } } = props;
     let close = disabled ? undefined : onClose
     let cls = 'aio-input-tag'
-    let Attrs = AddToAttrs(attrs, { className: [cls + ' aio-input-main-bg', disabled ? 'disabled' : undefined] })
+    let Attrs = UT.AddToAttrs(attrs, { className: [cls + ' aio-input-main-bg', disabled ? 'disabled' : undefined] })
     return (
         <div {...Attrs}>
             <div className={`${cls}-icon`}>{before}</div>
@@ -560,7 +548,7 @@ const Input:FC = () => {
     valueRef.current = value;
     function setSwip() {
         if (type === 'number' && rootProps.swip) {
-            new Swip({
+            new UT.Swip({
                 speedY: rootProps.swip, reverseY: true, minY: rootProps.min, maxY: rootProps.max,
                 dom: () => $(dom.current),
                 start: () => {
@@ -568,7 +556,7 @@ const Input:FC = () => {
                     vref = isNaN(vref) ? 0 : vref
                     return [0, vref]
                 },
-                move: (p: I_Swip_parameter) => {
+                move: (p: UT.I_Swip_parameter) => {
                     let { y } = p.change || { y: 0 };
                     if (rootProps.min !== undefined && y < rootProps.min) { y = rootProps.min; }
                     if (rootProps.max !== undefined && y > rootProps.max) { y = rootProps.max }
@@ -600,7 +588,7 @@ const Input:FC = () => {
     useEffect(() => { update() }, [rootProps.value])
     function change(value: any, onChange?: (value: any) => void) {
         if (!Array.isArray(filter)) { filter = [] }
-        if (types.hasKeyboard) { value = keyboard_filter(value, { maxLength, filter, toPersian: true }) }
+        if (types.hasKeyboard) { value = UT.keyboard_filter(value, { maxLength, filter, toPersian: true }) }
         if (rootProps.type === 'number') {
             if (value === '') { value = undefined }
             else { value = +value }
