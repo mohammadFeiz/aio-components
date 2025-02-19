@@ -547,12 +547,14 @@ const Justify: FC = () => {
             <AIOInput
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
+                text={type === 'checkbox'?'my text':undefined}
                 justify={true}
             />
             {code(`
 <AIOInput
     type='${type}' 
     value='${value}'
+    ${type === 'text'?`text=''`:''}
     onChange={(newValue)=>setValue(newValue)}
     justify={true}  
 />
