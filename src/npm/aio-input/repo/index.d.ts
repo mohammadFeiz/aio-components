@@ -1,6 +1,6 @@
 import { FC, ReactNode, MutableRefObject } from 'react';
 import { AP_modal, AP_usePopup } from "aio-popup";
-import { DragClass } from 'aio-utils';
+import * as UT from 'aio-utils';
 import AIODate from 'aio-date';
 import './index.css';
 declare const AIOInput: FC<AITYPE>;
@@ -306,7 +306,7 @@ export type AI_context = {
     popup: AP_usePopup;
     showPassword: boolean;
     setShowPassword: (v?: boolean) => void;
-    DragOptions: DragClass;
+    DragOptions: UT.DragClass;
     datauniqid: string;
     touch: boolean;
     click: (e: any, dom: any) => void;

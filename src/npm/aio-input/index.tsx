@@ -3749,7 +3749,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     }
     function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
         const { required = true, label, validateType, field } = input;
-        if (required && value === undefined || value === '' || value === null) {
+        if (required && (value === undefined || value === '' || value === null)) {
             const error = p.fa ? `${label} ضروری است` : `${label} is required`
             setErrorByField(field, error)
             return error

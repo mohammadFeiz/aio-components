@@ -1104,7 +1104,7 @@ const CheckIcon: FC = () => {
                 type={type} value={value}
                 onChange={(newValue) => setValue(newValue)}
                 checkIcon={({checked})=>{
-                    return !checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#ddd' />:
+                    return !checked?<Icon path={mdiCheckboxMarked} size={0.7} color='#5400ff' />:
                     <Icon path={mdiCheckboxBlankOutline} size={0.7} color='#5400ff' />
                 }}
             />
