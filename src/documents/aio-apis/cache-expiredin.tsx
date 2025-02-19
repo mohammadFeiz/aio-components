@@ -47,7 +47,8 @@ class APIS extends AIOApis {
             description: 'get data',
             url: '/api-url',
             method: 'get',
-            mock: { delay: 2500, methodName: 'mockSuccess' },
+            mockDelay:2500,
+            mock:this.mockSuccess,
             cache:{
                 expiredIn:new Date().getTime() + (12000),
                 name:'data'

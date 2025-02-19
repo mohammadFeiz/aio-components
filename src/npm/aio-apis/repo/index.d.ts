@@ -1,5 +1,5 @@
 import { Storage } from 'aio-utils';
-export type AA_api<T> = {
+export type AA_api = {
     description: string;
     name: string;
     method: 'post' | 'get' | 'delete' | 'put' | 'patch';
@@ -10,20 +10,20 @@ export type AA_api<T> = {
         name: string;
         expiredIn?: number;
     };
-    mock?: {
-        delay: number;
-        methodName: string;
+    mock?: (obj: any) => {
+        status: number;
+        data: any;
     };
+    mockDelay?: number;
     headers?: any;
     token?: string;
+    showError?: boolean;
     loader?: string;
     loadingParent?: string;
-    onSuccess: (data: any) => T;
-    onError?: (response: any, message: string) => string | false;
     retries?: number[];
 };
 type I_cachedApi<T> = {
-    api: AA_api<T>;
+    api: AA_api;
     value: any;
 };
 export default class AIOApis {
@@ -31,7 +31,7 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        onCatch: (err: any, api: AA_api<any>) => string;
+        handleErrorMessage: (err: any, api: AA_api) => string;
         headers?: any;
         lang?: 'en' | 'fa';
     };
@@ -48,7 +48,7 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        onCatch: (err: any, api: AA_api<any>) => string;
+        handleErrorMessage: (err: any, api: AA_api) => string;
         headers?: any;
         lang?: 'en' | 'fa';
     });
@@ -59,16 +59,28 @@ export default class AIOApis {
         text: string;
         time?: number;
     }) => void;
-    getUrlQueryParam: (params?: string | {
+    getUrlQueryParam: (params?: {
         [key: string]: string;
-    }) => string;
+    } | string) => string;
     private responseToResult;
     private loading;
     private handleMock;
-    callCache: (api: AA_api<any>) => Promise<any>;
-    requestFn: <T>(api: AA_api<T>, isRetry?: boolean) => Promise<false | T>;
-    retries: <T>(api: AA_api<T>, times: number[]) => Promise<false | T>;
-    request: <T>(api: AA_api<T>) => Promise<false | T>;
+    callCache: (api: AA_api) => Promise<any>;
+    requestFn: <T>(api: AA_api, isRetry?: boolean) => Promise<{
+        errorMessage?: string;
+        success: boolean;
+        response: T;
+    }>;
+    retries: <T>(api: AA_api, times: number[]) => Promise<{
+        errorMessage?: string;
+        success: boolean;
+        response: T;
+    }>;
+    request: <T>(api: AA_api) => Promise<{
+        errorMessage?: string;
+        success: boolean;
+        response: T;
+    }>;
 }
 export type I_mock = {
     url: string;

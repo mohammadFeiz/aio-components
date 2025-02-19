@@ -128,7 +128,8 @@ class Apis extends AIOApis {
     getUsers = async () => {
         const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
-            mock: { delay: 2000, methodName: 'mockError' },
+            mockDelay:2000,
+            mock:this.mockError,
             description: 'get users',
             method: 'get',
             url: `${this.base_url}/users/getUsers`,

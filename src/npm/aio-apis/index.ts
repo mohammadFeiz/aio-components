@@ -12,10 +12,11 @@ export type AA_api = {
     body?: any,
     loading?: boolean,
     cache?: { name: string, expiredIn?: number },//AA_cache
-    mock?: { delay: number, methodName: string },
+    mock?: (obj: any) => { status: number, data: any },
+    mockDelay?: number,
     headers?: any,
     token?: string,
-    showError?:boolean,
+    showError?: boolean,
     loader?: string, loadingParent?: string,
     retries?: number[]
 }
@@ -33,7 +34,7 @@ export default class AIOApis {
         lang?: 'en' | 'fa'
     };
     token: string;
-    currentError:string = '';
+    currentError: string = '';
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
     fetchCachedValue: Cache["fetchCachedValue"]
@@ -90,8 +91,8 @@ export default class AIOApis {
             catch (err: any) { return { success: false, response, errorMessage: err.message } }
         }
         catch (response: any) {
-            try { return { errorMessage: handleErrorMessage(response, api), success: false, response:false } }
-            catch (err: any) { return { errorMessage: err.message, success: false, response:false } }
+            try { return { errorMessage: handleErrorMessage(response, api), success: false, response: false } }
+            catch (err: any) { return { errorMessage: err.message, success: false, response: false } }
         }
     }
     private loading = (api: AA_api, state: boolean) => {
@@ -102,9 +103,33 @@ export default class AIOApis {
         }
     }
     private handleMock = (api: AA_api) => {
-        if (api.mock && !!(this as any)[api.mock.methodName]) {
-            const methodName = api.mock.methodName;
-            handleMockApi({ url: api.url, delay: api.mock.delay, method: api.method, result: (config) => (this as any)[methodName](config) })
+        if(!api.mock){return}
+        const mock = new MockAdapter(Axios);
+        mock.resetHandlers();
+        if (api.method === 'get') {
+            mock.onGet(api.url).replyOnce((config: any) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        if(!api.mock){return}
+                        const { status, data } = api.mock(config)
+                        resolve([status, data]);
+                        mock.restore();
+                    }, api.mockDelay || 3000);
+                });
+            });
+        }
+        else {
+            mock.resetHandlers();
+            mock.onPost(api.url).replyOnce((config: any) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        if(!api.mock){return}
+                        const { status, data } = api.mock(config)
+                        resolve([status, data]);
+                        mock.restore();
+                    }, api.mockDelay || 3000);
+                });
+            });
         }
     }
     callCache = async (api: AA_api): Promise<any> => {
@@ -116,8 +141,8 @@ export default class AIOApis {
         this.apisThatAreInLoadingTime[api.name] = false
         if (success) { return response }
     };
-    requestFn = async <T>(api: AA_api,isRetry?:boolean): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return {success:false,response:{} as any,errorMessage:'request is in loading'} }
+    requestFn = async <T>(api: AA_api, isRetry?: boolean): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return { success: false, response: {} as any, errorMessage: 'request is in loading' } }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
         if (api.cache) {
@@ -133,7 +158,7 @@ export default class AIOApis {
             if (api.showError === false) { message = false }
             if (typeof message === 'string') {
                 this.currentError = message
-                if(!isRetry){
+                if (!isRetry) {
                     let title: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
                     this.addAlert({ type: 'error', title, text: message });
                 }
@@ -142,66 +167,37 @@ export default class AIOApis {
         else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
         return response;
     };
-    retries = async <T>(api:AA_api,times:number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
+    retries = async <T>(api: AA_api, times: number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         const retries = [0, ...times] as number[]
         return await new Promise(async (resolve) => {
             for (let i = 0; i < retries.length; i++) {
                 await Stall(retries[i])
                 if (i < retries.length - 1) {
-                    const res = await this.requestFn<T>(api,true)
+                    const res = await this.requestFn<T>(api, true)
                     if (res.success === true) { return resolve(res); break; }
                     else {
                         console.log(`aio-apis => retries[${i}] failed`)
                         console.log(`api error is : ${this.currentError}`)
                     }
                 }
-                else { 
+                else {
                     const res = await this.requestFn<T>(api)
-                    return resolve(res) 
+                    return resolve(res)
                 }
             }
         })
     }
     request = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
-        if (api.retries) {return await this.retries(api,api.retries)}
-        else {return await this.requestFn<T>(api)}
+        if (api.retries) { return await this.retries(api, api.retries) }
+        else { return await this.requestFn<T>(api) }
     }
 }
 export type I_mock = {
-    url: string,delay: number,
+    url: string, delay: number,
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     result: ((body: any) => { status: number, data: any })
 }
-function handleMockApi(p: I_mock) {
-    // const methodRes = {'get':'onGet','post':'onPost'}[p.method]
-    // const fn = (mock as any)[methodRes]
-    const mock = new MockAdapter(Axios);
-    if (p.method === 'get') {
-        mock.resetHandlers();
-        mock.onGet(p.url).replyOnce((config: any) => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const { status, data } = p.result(config)
-                    resolve([status, data]);
-                    mock.restore();
-                }, p.delay);
-            });
-        });
-    }
-    if (p.method === 'post') {
-        mock.resetHandlers();
-        mock.onPost(p.url).replyOnce((config: any) => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const { status, data } = p.result(config)
-                    resolve([status, data]);
-                    mock.restore();
-                }, p.delay);
-            });
-        });
-    }
 
-}
 type I_callApi = (cachedApi: I_cachedApi<any>) => Promise<any>
 class Cache {
     private storage: Storage;
@@ -241,9 +237,9 @@ class Cache {
         }
     }
 }
-export const useInstance = <T extends Record<string, any>>(inst:T):T=>{
+export const useInstance = <T extends Record<string, any>>(inst: T): T => {
     let res = useRef<any>(null)
-    if(res.current === null){res.current = inst}
+    if (res.current === null) { res.current = inst }
     return res.current
 }
 

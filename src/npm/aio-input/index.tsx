@@ -463,7 +463,7 @@ const Select:FC = () => {
     }
     else { return <Layout properties={{ text: rootProps.text || getSelectText() }} /> }
 }
-function DateInput() {
+const DateInput:FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
     let { value, hideTags } = rootProps;
 
@@ -610,7 +610,7 @@ const Input:FC = () => {
         if (rootProps.blurChange && onChange) { onChange(value) }
     }
     function getInputAttrs() {
-        let InputAttrs = AddToAttrs(
+        let InputAttrs = UT.AddToAttrs(
             rootProps.inputAttrs, 
             {
                 className: !spin ? 'no-spin' : undefined,
@@ -861,7 +861,7 @@ const Layout: FC<AI_Layout> = (props) => {
                 }
             }
         }
-        attrs = AddToAttrs(attrs, {
+        attrs = UT.AddToAttrs(attrs, {
             className: getClassName(),
             style: { ...style, zIndex }
         })
@@ -933,7 +933,7 @@ const Layout: FC<AI_Layout> = (props) => {
     )
 }
 
-function List() {
+const List:FC = () => {
     let { rootProps, options }: AI_context = useContext(AICTX);
     let { attrs = {}, size = 36, listOptions = { count: 3, editable: true, stop: 3, decay: 8 }, onChange = () => { } } = rootProps;
     let { count = 3, editable = true, stop = 3, decay = 8 } = listOptions;
@@ -987,11 +987,11 @@ function List() {
     }
     function mouseDown(e: any) {
         if (!editable) { return }
-        EventHandler('window', 'mousemove', mouseMove, 'bind');
-        EventHandler('window', 'mouseup', mouseUp, 'bind');
+        UT.EventHandler('window', 'mousemove', mouseMove, 'bind');
+        UT.EventHandler('window', 'mouseup', mouseUp, 'bind');
         clearInterval(temp.interval);
         temp.moved = false;
-        let client = GetClient(e);
+        let client = UT.GetClient(e);
         let y = client.y
         setStyle({ transition: 'unset' });
         let top = getTop();
@@ -1016,7 +1016,7 @@ function List() {
         e.stopPropagation()
         console.log('move')
         temp.moved = true;
-        var client = GetClient(e);
+        var client = UT.GetClient(e);
         let y = client.y;
         var offset = y - temp.so.y;
         if (temp.lastY === undefined) { temp.lastY = y }
@@ -1031,8 +1031,8 @@ function List() {
     }
     function setStyle(obj: any) { $(temp.dom.current).find('.aio-input-list-options').css(obj); }
     function mouseUp() {
-        EventHandler('window', 'mousemove', mouseMove, 'unbind');
-        EventHandler('window', 'mouseup', mouseUp, 'unbind');
+        UT.EventHandler('window', 'mousemove', mouseMove, 'unbind');
+        UT.EventHandler('window', 'mouseup', mouseUp, 'unbind');
         if (!temp.moved) { return }
         temp.moved = false;
         move(temp.deltaY, temp.so.newTop)
@@ -1120,7 +1120,7 @@ type I_AcardionItem = { option: AI_option }
 const AcardionItem: FC<I_AcardionItem> = ({ option }) => {
     const active = !!option.details.active
     let [timeout] = useState<any>()
-    let Attrs = AddToAttrs(option.attrs, { className: `aio-input-acardion-item` })
+    let Attrs = UT.AddToAttrs(option.attrs, { className: `aio-input-acardion-item` })
     return (
         <div {...Attrs}>
             <Layout option={option} />
@@ -1133,7 +1133,7 @@ const AcardionBody: FC<I_AcardionBody> = ({ option }) => {
     const { rootProps }: I_AcardionContext = useContext(AcardionContext);
     let { body = () => { } } = rootProps;
     let { html, attrs } = body(option.optionOrg, option.details) || { html: '' }
-    let Attrs = AddToAttrs(attrs, { className: [`aio-input-acardion-body`] })
+    let Attrs = UT.AddToAttrs(attrs, { className: [`aio-input-acardion-body`] })
     return <div {...Attrs}>{html}</div>
 }
 type I_TreeContext = {
@@ -1254,7 +1254,7 @@ const Tree: FC = () => {
         if (onChange) { onChange(value) }
     }
     function getContext(): I_TreeContext { return { toggle, rootProps, mountedDic, openDic, add, remove, types, indent, size, change, getChilds } }
-    let Attrs = AddToAttrs(attrs, { className: ['aio-input-tree', rootProps.className, rootProps.rtl ? 'aio-input-tree-rtl' : undefined], style: rootProps.style })
+    let Attrs = UT.AddToAttrs(attrs, { className: ['aio-input-tree', rootProps.className, rootProps.rtl ? 'aio-input-tree-rtl' : undefined], style: rootProps.style })
     return (
         <TreeContext.Provider value={getContext()}>
             <div {...Attrs}><TreeHeader /><TreeBody rows={value} level={0} /></div>
@@ -1560,9 +1560,9 @@ function DPBody() {
     }
     return (
         <div className={getClassName()}>
-            {unit === 'hour' && GetArray(24, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, activeDate.month as number, activeDate.day as number, i]} />)}
+            {unit === 'hour' && UT.GetArray(24, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, activeDate.month as number, activeDate.day as number, i]} />)}
             {unit === 'day' && <DPBodyDay />}
-            {unit === 'month' && GetArray(12, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, i + 1]} />)}
+            {unit === 'month' && UT.GetArray(12, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year as number, i + 1]} />)}
         </div>
     )
 }
@@ -1574,9 +1574,9 @@ function DPBodyDay() {
     let weekDays = DATE.getWeekDays(jalali);
     return (<>
         {weekDays.map((weekDay: string, i: number) => <DPCellWeekday key={'weekday' + i} weekDay={weekDay} />)}
-        {GetArray(firstDayWeekDayIndex, (i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
-        {GetArray(daysLength, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
-        {GetArray(42 - (firstDayWeekDayIndex + daysLength), (i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
+        {UT.GetArray(firstDayWeekDayIndex, (i) => <div key={'space' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
+        {UT.GetArray(daysLength, (i) => <DPCell key={'cell' + i} dateArray={[activeDate.year || 0, activeDate.month || 0, i + 1]} />)}
+        {UT.GetArray(42 - (firstDayWeekDayIndex + daysLength), (i) => <div key={'endspace' + i} className='aio-input-date-space aio-input-date-cell' style={{ background: theme[1] }}></div>)}
     </>)
 }
 const DPCellWeekday: FC<{ weekDay: string }> = (props) => {
@@ -1739,7 +1739,7 @@ function DPHeader() {
     function getDays(): ReactNode {
         if (!activeDate || !activeDate.year || !activeDate.month) { return null }
         let daysLength = DATE.getMonthDaysLength([activeDate.year, activeDate.month]);
-        let options = GetArray(daysLength, (i) => ({ text: (i + 1).toString(), value: i + 1 }))
+        let options = UT.GetArray(daysLength, (i) => ({ text: (i + 1).toString(), value: i + 1 }))
         let p: I_DPHeaderDropdown = { value: activeDate.day, options, onChange: (day) => changeActiveDate({ day }) }
         return <DPHeaderDropdown {...p} />
     }
@@ -1801,7 +1801,7 @@ function Table() {
     let [searchColumns, setSearchColumns] = useState<AI_table_column[]>([]);
     let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
     let [temp] = useState<type_table_temp>({})
-    let [DragRows] = useState<DragClass | false>(!onSwap ? false : new DragClass({
+    let [DragRows] = useState<UT.DragClass | false>(!onSwap ? false : new UT.DragClass({
         callback: (dragData, dropData) => {
             if (DragRows === false) { return }
             const { dragIndex } = dragData;
@@ -1904,7 +1904,7 @@ function Table() {
                 list.push(json)
             }
         }
-        ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
+        UT.ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
     }
     function getSearchedRows(rows: { [key: string]: any }[]) {
         if (onSearch !== true) { return rows }
@@ -1962,13 +1962,13 @@ function Table() {
         let attrs = getDynamics({ value: type === 'title' ? titleAttrs : cellAttrs, column, def: {}, row, rowIndex });
         let justify = getDynamics({ value: column.justify, def: false });
         let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '')
-        attrs = AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
+        attrs = UT.AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
         if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
         return { ...attrs }
     }
     function getRowAttrs(row: any, rowIndex: number) {
         let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
-        let obj = AddToAttrs(attrs, { className: 'aio-input-table-row' })
+        let obj = UT.AddToAttrs(attrs, { className: 'aio-input-table-row' })
         if (DragRows !== false) {
             obj = {
                 ...obj,
@@ -1990,7 +1990,7 @@ function Table() {
         return context
     }
     let ROWS: AI_table_rows = getRows();
-    let attrs = AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } })
+    let attrs = UT.AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } })
     return (
         <AITableContext.Provider value={getContext(ROWS)}>
             <div {...attrs}>
@@ -2103,7 +2103,7 @@ function TableRows() {
 function TableToolbar() {
     let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
     let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value, addText } = rootProps;
-    toolbarAttrs = AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
+    toolbarAttrs = UT.AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
     if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
     function changeSort(sortId: string, changeObject: any) {
         let newSorts = sorts.map((sort) => {
@@ -2190,7 +2190,7 @@ function TableToolbar() {
 function TableHeader() {
     let { rootProps, columns }: type_table_context = useContext(AITableContext);
     let { headerAttrs, onRemove } = rootProps;
-    headerAttrs = AddToAttrs(headerAttrs, { className: 'aio-input-table-header' })
+    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-input-table-header' })
     let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
     let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
     return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
@@ -2310,7 +2310,7 @@ const Range: FC = () => {
         for (let i = 0; i < value.length; i++) {
             let point = value[i] || 0;
             point = Math.round((point - start) / step) * step + start;
-            point = +point.toFixed(GetPrecisionCount(step))
+            point = +point.toFixed(UT.GetPrecisionCount(step))
             if (point < min) { point = min; }
             if (point > max) { point = max; }
             value[i] = point;
@@ -2335,7 +2335,7 @@ const Range: FC = () => {
         if (!onChange) { return }
         clearTimeout(temp.timeOut)
         temp.timeOut = setTimeout(() => {
-            new Swip({
+            new UT.Swip({
                 reverseX: !!reverse,
                 //vertical condition
                 reverseY: !!reverse && !!vertical,
@@ -2346,7 +2346,7 @@ const Range: FC = () => {
                     let { event } = p;
                     if (event.target !== null) {
                         let target = $(event.target);
-                        if (HasClass(target, 'ai-range-point')) {
+                        if (UT.HasClass(target, 'ai-range-point')) {
                             let index: string = target.attr('data-index') || '0';
                             temp.index = +index;
                         }
@@ -2357,11 +2357,11 @@ const Range: FC = () => {
                     }
                     return [0, 0];
                 },
-                move: (p: I_Swip_parameter) => {
+                move: (p: UT.I_Swip_parameter) => {
                     let { change, mousePosition } = p;
                     if (change) { changeHandle({ dx: change.dx, dy: change.dy, deltaCenterAngle: change.deltaCenterAngle, centerAngle: mousePosition.centerAngle }) }
                 },
-                onClick: function (p: I_Swip_parameter) {
+                onClick: function (p: UT.I_Swip_parameter) {
                     const { disabled } = rootPropsRef.current;
                     if (disabled) { return }
                     click(p.mousePosition)
@@ -2380,7 +2380,7 @@ const Range: FC = () => {
         newValue = getValidValue(newValue)
         onChange(!!multiple ? newValue : newValue[0])
     }
-    function click(mousePosition: I_Swip_mousePosition) {
+    function click(mousePosition: UT.I_Swip_mousePosition) {
         if (disabled === true || temp.index !== false) { return }
         let value = valueRef.current;
         let clickedValue: number;
@@ -2535,7 +2535,7 @@ const Range: FC = () => {
     function getRootProps() {
         let { attrs = {} } = rootProps;
         let rootStyle = getRootStyle();
-        return AddToAttrs(attrs, { className: getRootClassName(), style: rootStyle, attrs: { ref: temp.dom } })
+        return UT.AddToAttrs(attrs, { className: getRootClassName(), style: rootStyle, attrs: { ref: temp.dom } })
     }
     function root_node(): ReactNode {
         return (
@@ -2595,7 +2595,7 @@ const Range: FC = () => {
 }
 const RangeGroove: FC = () => {
     let { rootProps }: I_RangeContext = useContext(RangeContext);
-    const attrs = AddToAttrs(rootProps.grooveAttrs, { className: 'ai-range-groove' })
+    const attrs = UT.AddToAttrs(rootProps.grooveAttrs, { className: 'ai-range-groove' })
     if (rootProps.round) {
         return null
     }
@@ -2658,7 +2658,7 @@ const RangeRanges: FC = () => {
         }
         else {
             let { thickness, color, offset, roundCap,className } = getRectByStr(config)
-            const cls = classListToString(['ai-range-range',className,isFirst?'ai-range-range-first':'',isLast?'ai-range-range-last':''])
+            const cls = UT.classListToString(['ai-range-range',className,isFirst?'ai-range-range-first':'',isLast?'ai-range-range-last':''])
             let p: I_RangeRect = { thickness, color, from, to, offset, roundCap, className: cls }
             rangeItem = <RangeRect {...p} key={'range' + i} />
         }
@@ -2713,7 +2713,7 @@ const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, ro
         b = endAngle;
         if (reverse) { b = startAngle; a = endAngle }
     }
-    return <path key={`from${from}to${to}`} d={svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} className={className}/>
+    return <path key={`from${from}to${to}`} d={UT.svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} className={className}/>
 }
 const RangePoint: FC<I_RangeValue> = (props) => {
     let { rootProps, getOffset, sbp }: I_RangeContext = useContext(RangeContext);
@@ -2727,7 +2727,7 @@ const RangePoint: FC<I_RangeValue> = (props) => {
     if (round) { containerStyle = { left: size / 2 + offset, transform: `rotate(${-angle}deg)` } }
     else { containerStyle = { [getOffset()]: offset } }
     let containerProps = { ref: temp.dom, className: 'ai-range-point-container', style: containerStyle, draggable: false }
-    let pointProps = AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index } })
+    let pointProps = UT.AddToAttrs(attrs, { className: ['ai-range-point'], style: pointStyle, attrs: { draggable: false, 'data-index': index } })
     pointProps.onMouseDown = (e: any) => {
         let containers = $(parentDom.current).find('ai-range-value-container');
         containers.css({ zIndex: 10 });
@@ -2760,7 +2760,7 @@ const RangeHandle: FC<I_RangeValue> = (props) => {
         }
         else { return { width, height, left: offset, background: color } }
     }
-    let PROPS = AddToAttrs({}, {
+    let PROPS = UT.AddToAttrs({}, {
         className: 'aio-input-handle', style: getStyle(), attrs: { draggable: false }
     })
     return (<div {...PROPS} key={'rangehandle' + index}></div>)
@@ -2847,7 +2847,7 @@ const RangeLabelItem: FC<I_RangeLabelItem> = (props) => {
         let distance = { [round || vertical ? 'left' : 'top']: size / 2 + offset }
         let containerStyle = getContainerStyle(distance);
         let containerProps = { className: `ai-range-label-container`, style: containerStyle, draggable: false };
-        let textProps = AddToAttrs({}, { className: [`ai-range-label`], style: getTextStyle(item, distance), attrs: { draggable: false } })
+        let textProps = UT.AddToAttrs({}, { className: [`ai-range-label`], style: getTextStyle(item, distance), attrs: { draggable: false } })
         return { html, textProps, containerProps }
     }
     let { html, textProps, containerProps } = getDetails();
@@ -2880,12 +2880,12 @@ export const AISwitch: FC<{
     function getGrooveStyle(){
         return {position:'absolute',top:`calc(50% - ${grooveSize / 2}px)`,width:`calc(100% - ${buttonSize + padding * 2}px)`,background:'#ddd',left:padding + buttonSize/2,height:grooveSize}
     }
-    const containerAttrs = AddToAttrs(attrs,{
+    const containerAttrs = UT.AddToAttrs(attrs,{
         className:['aio-input-switch',!!value?'aio-input-main-color':undefined,!!value?'active':'deactive'],
         style:getContainerStyle(),
         attrs:{onClick:()=>onChange(!value)}
     })
-    const innerAttrs = AddToAttrs({},{className:['aio-input-switch-inner',!!value?'aio-input-main-bg':undefined,!!value?'active':'deactive'],style:getInnerStyle()})
+    const innerAttrs = UT.AddToAttrs({},{className:['aio-input-switch-inner',!!value?'aio-input-main-bg':undefined,!!value?'active':'deactive'],style:getInnerStyle()})
     return (
         <div {...containerAttrs}>
             {!!grooveSize && <div className="aio-input-switch-groove" style={getGrooveStyle() as any}></div>}
@@ -2898,7 +2898,7 @@ export const AISwitch: FC<{
 
 export type AI_timeUnits = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
 export function AIOInput_defaultProps(p: { [key in keyof AITYPE]?: any }) {
-    let storage: Storage = new Storage('aio-input-storage');
+    let storage: UT.Storage = new UT.Storage('aio-input-storage');
     for (let prop in p) { storage.save(prop, (p as any)[prop]) }
 }
 function getTypes(props: AITYPE) {
@@ -3098,14 +3098,14 @@ function getTimeText(rootProps: AITYPE) {
     if (rootProps.pattern) { return new AIODate().getDateByPattern(value, rootProps.pattern as string) }
     if (rootProps.text !== undefined) { return rootProps.text as string }
     let text = [], dateArray = [];
-    if (value.year !== undefined) { dateArray.push(Get2Digit(value.year)) }
-    if (value.month !== undefined) { dateArray.push(Get2Digit(value.month)) }
-    if (value.day !== undefined) { dateArray.push(Get2Digit(value.day)) }
+    if (value.year !== undefined) { dateArray.push(UT.Get2Digit(value.year)) }
+    if (value.month !== undefined) { dateArray.push(UT.Get2Digit(value.month)) }
+    if (value.day !== undefined) { dateArray.push(UT.Get2Digit(value.day)) }
     if (dateArray.length) { text.push(dateArray.join('/')) }
     let timeArray = []
-    if (value.hour !== undefined) { timeArray.push(Get2Digit(value.hour)) }
-    if (value.minute !== undefined) { timeArray.push(Get2Digit(value.minute)) }
-    if (value.second !== undefined) { timeArray.push(Get2Digit(value.second)) }
+    if (value.hour !== undefined) { timeArray.push(UT.Get2Digit(value.hour)) }
+    if (value.minute !== undefined) { timeArray.push(UT.Get2Digit(value.minute)) }
+    if (value.second !== undefined) { timeArray.push(UT.Get2Digit(value.second)) }
     if (timeArray.length) { text.push(timeArray.join(':')) }
     return text.join(' ');
 }
@@ -3120,7 +3120,7 @@ export const MonthCalendar: FC<I_MonthCalendar> = ({ date, onClick = () => { }, 
     function spaces_layout() { return new Array(firstDayIndex).fill(0).map(() => <div className=""></div>) }
     function cells_layout() { return new Array(monthDaysLength).fill(0).map((o: number, i: number) => cell_layout([date[0], date[1], i + 1])) }
     function cell_layout(dateArray: number[]) {
-        const attrs = AddToAttrs(dateAttrs(dateArray), { className: `month-calendar-day`, attrs: { onClick: () => onClick(dateArray) } })
+        const attrs = UT.AddToAttrs(dateAttrs(dateArray), { className: `month-calendar-day`, attrs: { onClick: () => onClick(dateArray) } })
         return (<div {...attrs}>{dateArray[2]}</div>)
     }
     return (
@@ -3284,7 +3284,7 @@ export const RichText: FC = () => {
     function itemToHtml(item: I_richTextItem, nestedIndex: number[]): ReactNode {
         const Tag = item.tag as any;
         const content = item.html !== undefined ? item.html : (item.items || []).map((h, i) => itemToHtml(h, [...nestedIndex, i]))
-        const attrs = AddToAttrs(item.attrs, { className: 'rich-text-item', attrs: { 'data-index': nestedIndex.join('-') } })
+        const attrs = UT.AddToAttrs(item.attrs, { className: 'rich-text-item', attrs: { 'data-index': nestedIndex.join('-') } })
         return (<Tag {...attrs} onMouseOver={(e: any) => inter(e)} onClick={(e: any) => { openModal(nestedIndex) }}>{content}</Tag>)
     }
     function getItemByNestedIndex() {
@@ -3362,7 +3362,7 @@ export const JoyStick: FC<{
         const { x, y, angle, length } = props;
         if (x !== undefined && y !== undefined) { setData({ x, y }) }
         if (angle !== undefined && length !== undefined) {
-            const { left, top } = getLeftAndTopByCenterAngleLength([props.size / 2, props.size / 2], angle, length);
+            const { left, top } = UT.getLeftAndTopByCenterAngleLength([props.size / 2, props.size / 2], angle, length);
             setData({ x: left, y: top })
         }
     }, [])
@@ -3380,11 +3380,11 @@ const JOYSTICK: FC<{ x: number, y: number, size: number, onChange: (v: I_JoyStic
     const posRef = useRef(pos)
     posRef.current = pos;
     const [dom] = useState<any>(createRef())
-    useEffect(() => { new Swip({ dom: () => $(dom.current), start, move, end, maxCenterDistance: size / 2 }) }, [])
+    useEffect(() => { new UT.Swip({ dom: () => $(dom.current), start, move, end, maxCenterDistance: size / 2 }) }, [])
     function start() { return posRef.current }
     function end() { if (centerOriented) { onChange({ x: 0, y: 0, length: 0, angle: 0 }); setPos(center) } }
-    function move(p: I_Swip_parameter) {
-        let { x, y, centerAngle, centerDistance }: I_Swip_mousePosition = p.mousePosition;
+    function move(p: UT.I_Swip_parameter) {
+        let { x, y, centerAngle, centerDistance }: UT.I_Swip_mousePosition = p.mousePosition;
         setPos([x, y])
         x -= center[0]; y -= center[1];
         onChange({ x, y, length: centerDistance, angle: centerAngle })
@@ -3479,7 +3479,7 @@ export type AI_context = {
     popup: AP_usePopup,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
-    DragOptions: DragClass,
+    DragOptions: UT.DragClass,
     datauniqid: string,
     touch: boolean,
     click: (e: any, dom: any) => void,
@@ -3735,7 +3735,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         let newData = { ...dataRef.current };
         fieldChangesRef.current = { ...fieldChangesRef.current, [input.field]: true }
         getErrorByInput(input, value)
-        setValueByField(newData, input.field, value);
+        UT.setValueByField(newData, input.field, value);
         changeData(newData)
     }
     function changeByField(field: I_formField<T>, value: any) {
@@ -3755,7 +3755,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             return error
         }
         if (validateType === 'email') {
-            const res = IsValidEmail(value);
+            const res = UT.IsValidEmail(value);
             if (!res) {
                 const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
                 setErrorByField(field, error)
@@ -3763,7 +3763,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             }
         }
         if (validateType === 'irMobile') {
-            const res = ValidateIrMobile({ value, label, fa: p.fa });
+            const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
             if (res) {
                 const error = res
                 setErrorByField(field, error)
@@ -3771,7 +3771,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             }
         }
         if (validateType === "irNationalCode") {
-            const res = IsValidIrNationalCode(value);
+            const res = UT.IsValidIrNationalCode(value);
             if (!res) {
                 const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
                 setErrorByField(field, error)
@@ -3798,7 +3798,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         const { field } = input;
         let value: any;
         if (input.value !== undefined) { value = input.value }
-        else { value = getValueByField(dataRef.current, field) }
+        else { value = UT.getValueByField(dataRef.current, field) }
         return value
     }
     const getNodeStyle = (node: I_formNode<T>, parentNode?: I_formNode<T>) => {
@@ -3853,7 +3853,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         let className = '';
         if (node.v || node.h) { className = `ai-form-${node.v ? 'v' : 'h'}` }
         else if (node.html) { className = 'ai-form-html' }
-        return AddToAttrs(
+        return UT.AddToAttrs(
             node.attrs,
             {className: getNodeClassNames(node, className, isRoot),style: getNodeStyle(node, parentNode)}
         )
@@ -4039,7 +4039,7 @@ export const AIFormInput: FC<{
 }> = (props) => {
     const { label, input, action, error, attrs, id, required = true, showLabel = true,className,style } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
-    const Attrs = AddToAttrs(attrs, { className: ["ai-form-input",className],style })
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input",className],style })
     return (
         <div {...Attrs}>
             {

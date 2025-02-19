@@ -1,211 +1,549 @@
-# AIOApis Documentation
-AIOApis is a flexible JavaScript class for managing API requests in React applications.
+# aio-apis 🚀
 
-AIOApis component is indeed very useful and can greatly simplify the management of API requests in applications. It provides a centralized way to configure and handle API calls, reducing boilerplate code and making it easier to maintain and manage requests across an application.
+**aio-apis** is a lightweight and efficient micro-framework for managing API requests in JavaScript and TypeScript applications. It simplifies HTTP requests with built-in caching, error handling, loading indicators, and mock requests.
 
-## Here are some reasons why I believe AIOApis is beneficial:
+---
 
-- Centralized Configuration: With AIOApis, you can configure all your API requests in one place, making it easy to manage and update them as needed.
-- Error Handling: AIOApis allows you to define error handling logic globally, reducing the need to handle errors in every individual request function.
-- Loader Integration: It seamlessly integrates with loaders, allowing you to show loading indicators during API requests without duplicating code.
-- Custom Messages: You can define custom error and success messages for each API request, providing better feedback to users.
-- Caching: AIOApis supports caching of API responses, which can improve performance and reduce server load by serving cached responses when appropriate.
-- Overall, I believe AIOApis is a creative and valuable tool that can greatly benefit applications by streamlining the process of making API requests and handling their responses. It promotes cleaner code, reduces redundancy, and improves the overall developer experience.
+## 📦 Installation
 
-## Installation
-You can install AIOApis via npm:
-``` bash
+```sh
 npm install aio-apis
 ```
-## Usage
-1. Import the AIOApis class
-javascript
-``` javascript
+
+or
+
+```sh
+yarn add aio-apis
+```
+
+---
+
+## 🚀 Features
+
+- ✅ **Standard HTTP Requests** (GET, POST, PUT, DELETE, PATCH)
+- ✅ **Automatic Caching** to prevent duplicate requests
+- ✅ **Mock API Support** for testing without a backend
+- ✅ **Error Handling** with customizable messages
+- ✅ **Automatic Loading Indicators**
+- ✅ **Retry Mechanism** for failed requests
+
+---
+
+## 🚀 Why is aio-apis Useful?
+
+- ✅ **Cross Frontend Framework** Can use in React, Angular,Vue or any frontend frameworks.
+- ✅ **Modular Structure** Each API request collection can be written inside a JavaScript class.
+  - "With this approach, maintenance and development are very easy. For example, you can write all authentication-related APIs in a single class within your application."
+- ✅ **Reusability** Centralized API requests can be used across the entire application.
+- ✅ **Performance Optimization** Caching and the retry mechanism improve network request efficiency.
+- ✅ **Simplicity & Readability** Inheriting from AIOApis keeps the code clean and structured.
+
+If you want to manage API requests in a typed and organized way, aio-apis is an excellent choice. 🚀
+
+
+## Structure:
+```typescript
 import AIOApis from 'aio-apis';
+
+class APIS extends AIOApis {
+  constructor() {
+    super(
+      <requests set config> // Define API request configurations here
+    );
+  }
+
+  <request method> = async () => {
+    const { response, success, errorMessage } = await this.request(<api config>);
+    return success ? response : errorMessage; // Handle API response
+  };
+  ...
+}
+...
+const apis = new Apis();
+...
+const res = await apis.<request method>()
+...
 ```
-2. Create an instance of AIOApis
-``` javascript
-const apisInstance = new AIOApis({
-    id: 'my app',
-    getError: (response) => {
-        // Handle error messages
-    },
-    onCatch: (response) => {
-        // Handle caught errors
-    },
-    loader: () => <MyLoader />,
-    baseUrl: 'http://mydev.com/api/v1',
-    apis: apiFunctions
-});
-```
-3. Define API configurations
-``` javascript
-const apiFunctions = {
-    Get_User: {
-        method: 'get',
-        description: 'get users',
-        getUrl: (baseUrl) => `${baseUrl}/GetUsers`,
-        // More configuration properties...
-    },
-    Add_User: {
-        method: 'post',
-        description: 'adding user',
-        getUrl: (baseUrl) => `${baseUrl}/AddUser`,
-        // More configuration properties...
+🔹 In this structure, all API requests are organized within a single class. <br>
+🔹 API configurations are set during the class initialization. <br>
+🔹 Each request method sends the request and processes the response.
+
+## 📌 Usage
+
+### Creating a Class Inheriting from `aio-apis`
+- In aio-apis, API requests are structured as typed **methods** within a **class** that inherits from `AIOApis`. This allows for centralized request management, ensuring each API request follows a structured approach.
+- To create an API management class, we define a class that **extends** `AIOApis`. Inside the constructor, we pass essential configuration properties to **super()**. These settings define how all requests in this class will behave.
+- The generic type allows us to define the expected response structure, ensuring type safety and better code completion.The generic type defines the method's return type, ensuring the response matches the expected structure.
+#### Example
+
+```typescript
+import AIOApis from 'aio-apis';
+
+type I_user = { name: string; family: string };
+
+class APIS extends AIOApis {
+    constructor() {
+        super({
+            id: 'my-api',
+            token: 'your-token',
+            handleErrorMessage: (response) => response.response.data.message
+        });
     }
+
+    getUsers = async () => {
+        const { response, success,errorMessage } = await this.request<{ data: I_user[] }>({
+            name: 'getUsers',
+            description: 'Retrieve user list',
+            method: 'get',
+            url: '/api/users'
+        });
+        return success ? response.data : false;
+    };
+}
+```
+- ⚠ In this example, we defined a request method called getUsers, which can be called from anywhere in the application that has access to the Apis instance.
+- ⚠ We pass the API specifications to this.request. Therefore, to manage each API, we need to handle the object that we send to this.request properly.
+- ⚠ `this.request` always returns an object containing response, success, and errorMessage, so we can use it to build the API result and decide what to return if success is false.
+
+#### Create an Instance:
+```typescript
+const apis = new APIS();
+```
+#### Use Class Methods (by created class instance):
+```typescript
+const users = await apis.getUsers();
+if(users){
+    //use result in app
+}
+```
+
+### 🔍 Code Analysis
+- The `APIS` class inherits from AIOApis imported from 'aio-apis'.
+- In the `super()` constructor, global API settings such as token and handleErrorMessage are initialized.
+- The `getUsers()` method sends a GET request and returns the user data if the request is successful or false in fail.
+
+
+## Notice !!!
+> **Since each request is a method, you can make the request configuration fully dynamic by passing parameters to the method. For example, you can dynamically set values based on the input parameters.**
+
+for example in this example you can pass description of request as parameter and make it dynamic in diffrent places in your app:
+```typescript
+    ...
+    getUsers = async (description:string) => {
+        const { response, success,errorMessage } = await this.request<{ data: I_user[] }>({
+            name: 'getUsers',
+            description,
+            method: 'get',
+            url: '/api/users'
+        });
+        return success ? response.data : false;
+    };
+    ...
+```
+
+## Breakdown of Constructor Properties
+
+Property | Type | Description
+-------- | ---- | -----------
+id | string | A unique identifier for the API instance. Helps in isolate caches.
+token | string | Authorization token used for authenticated requests.
+lang | 'en' or 'fa'. default is 'en' (Optional) | Language setting for requests, useful for localization.
+handleErrorMessage | (response) => string | A function that extracts and returns the error message from the server response.
+
+```typescript
+constructor() {
+    super({
+        id: 'my-api',
+        token: 'your-token',
+        handleErrorMessage: (response) => response.response.data.message
+    });
+}
+```
+---
+
+## 🔹 API Configuration
+
+Each request follows this structure:
+
+```typescript
+type api_type = {
+    name: string; //required . unique name of api 
+    method: 'post' | 'get' | 'delete' | 'put' | 'patch';
+    url: string;
+    body?: any; //required if method is post
+    cache?: { name: string; expiredIn?: number }; //cache result by defined name
+    mock?: { delay: number; methodName: string }; // mock response
+    headers?: any; //set custom headers for request
+    token?: string; 
+    showError?: boolean; //Optional. default is true. use for prevent show error message automatically
+    loading?: boolean; //Optional. default is true.
+    retries?: number[]; // Optional. milisecond times foer retry in fail
 };
 ```
-4. Call API request functions
-``` javascript
-import React, { useContext } from 'react';
-import { AIOApisContext } from './AIOApisProvider';
+Property | type | default | Description
+-------- | ---- | ------- | -----------
+name     | string | Required | unique name of api 
+method   | 'get' or 'post' or 'delete' or 'patch' or 'put' | Required | Define request method 
+url | string | Required | Request URL
+body | any | required if method is post | request body
+cache | { name: string; expiredIn?: number } | Optional | save result in cache to prevent repeat request
+mock | (requestConfig)=>{status:number,data:any} | Optional | mock response
+mockDelay | number | 3000 | simulate request delay in mock mode
+headers | any | Optional | set custom headers for request
+token | string | Required | Authorization token 
+showError | boolean | true | use for prevent show error message automatically
+loading | boolean | true | automatically show loading indicator during requests.
+retries | number[] | Optional | Optional. milisecond times foer retry in fail
 
-const MyComponent = () => {
-  const apisInstance = useContext(AIOApisContext);
+---
 
-  // Example usage of request function
-  const getUsers = async () => {
-    const users = await apisInstance.Get_User();
-    console.log('Users:', users);
+
+## 📌 Features Explaination
+
+### 🗃 **Caching System**
+Enable caching to avoid redundant API calls.
+
+```typescript
+cache?: { name: string, expiredIn?: number }
+```
+- `name` : A unique identifier for caching the request response. This allows different caches for the same request by using different names.
+- `expiredIn` :  (Optional) The expiration timestamp in milliseconds. If set, the cache remains valid until the given timestamp.
+
+- Usage Example:
+
+```typescript
+const {response,success,errorMessage} = await apis.request({
+    ...
+    cache: {
+        name: 'users',
+        expiredIn: Date.now() + (24 * 60 * 60 * 1000)
+    }
+    ...
+});
+```
+---
+
+### 🛠 **Mocking API Requests**
+Test API calls without a real backend by using mock responses.
+
+```typescript
+mock: { delay: 2000, methodName: 'mockSuccess' }
+```
+```typescript
+class Apis extends AIOApis {
+    ...
+    mockResult = () => {
+        return { status: 400, data: { message: 'you cannot do this action' } }
+    }
+    getUsers = async () => {
+        const {response,success} = await this.request<{data:I_user[]}>({
+            ...
+            mock: this.mockResult,
+            mockDelay:3000,
+            ...
+        })
+        ...
+    }
+}
+```
+---
+
+### 🔄 **Retry Mechanism**
+Automatically retry failed requests:
+- The retries option allows automatic reattempts when a request fails. Each value in the retries array represents the delay in milliseconds before the next retry attempt.
+
+```typescript
+retries: number[]
+```
+
+```typescript
+const {response,success,errorMessage} = await this.request({
+    ...
+    retries: [3000, 4000, 5000]
+    ...
+});
+```
+
+---
+
+### ⏳ **Auto Loading Management**
+Automatically show loading status during requests and hide it afterward: ( **default is true** ) :
+
+```typescript
+const {response,success,errorMessage} = await this.request({
+    ...
+    loading: true,
+    ...
+});
+```
+
+---
+
+## 🔔 Usefull Class Methods
+
+### 💬 **Message Display(addAlert)**
+Show different types of messages:
+- Display different types of messages using addAlert. This can be called from anywhere that has access to the instantiated API object:
+```typescript
+apis.addAlert({type:'success', text:'Operation completed successfully',title:'Success'});
+apis.addAlert({type:'info', text:'New information received',title:''});
+apis.addAlert({type:'warning', text:'Warning: Data may be outdated',title:''});
+apis.addAlert({type:'error', text:'Error connecting to server',title:''});
+```
+
+### 🛠 **Cache Management**
+#### `fetchCachedValue` method
+- Retrieves a cached value by api name and cache name, refreshing it if expired.
+
+```typescript
+(apiName:string,cacheName:string)=>void
+```
+
+```typescript
+await apis.fetchCachedValue('getUsers','users');
+```
+> in this example we update cached response of getUsers api by 'users' cache name.
+> This means there is an API method named `'getUsers'` as api name that has a cache entry named `'users'` as cache name, and we are manually refreshing this cached response.
+
+
+#### `getCachedValue` method
+- get specific cache value defined with `api name` and `cache name`.
+- this will returns cached response of request
+```typescript
+(apiName:string,cacheName:string)=>any
+```
+
+```typescript
+const response = await apis.getCachedValue('getUsers','users');
+```
+#### `removeCache` method
+- Removes a cached entry by `api name` and `cache name`.
+```typescript
+(apiName:string,cacheName:string)=>any
+```
+
+```typescript
+await apis.removeCache('users');
+```
+
+
+# 🚀 A Small React App Example with aio-apis and TypeScript
+This example includes:
+- An API class in TypeScript to manage requests.
+- A React component with TypeScript that fetches and displays data.
+- TypeScript for better type safety and error prevention.
+
+## 📌 Project Structure
+```javascript
+/my-react-app
+ ├── /src
+ │   ├── /api
+ │   │   ├── Apis.ts
+ │   ├── /components
+ │   │   ├── UserList.tsx
+ │   ├── App.tsx
+ │   ├── index.tsx
+ ├── tsconfig.json
+```
+
+## 🔹 1. API Class (Apis.ts)
+Define an API class extending AIOApis to manage all API requests.
+
+```typescript
+import AIOApis from 'aio-apis';
+
+class Apis extends AIOApis {
+  constructor() {
+    super({
+      getUsers: { url: '/users', method: 'GET' },
+    });
+  }
+
+  getUsers = async () => {
+    const { response, success, errorMessage } = await this.request({ apiName: 'getUsers' });
+    return success ? response : Promise.reject(errorMessage);
   };
+}
 
-  // Set error handling using onCatch and getError props
-  apisInstance.onCatch((error) => {
-    console.error('Error message:', error);
-  });
-  apisInstance.getError((error) => {
-    console.error('Error message:', error);
-  });
+export default new Apis();
+```
+
+## 🔹 2. React Component (UserList.tsx)
+A component that fetches user data and displays it.
+
+```typescript
+import { useEffect, useState } from 'react';
+import Apis from '../api/Apis';
+
+const UserList = () => {
+  const [users, setUsers] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    Apis.getUsers()
+      .then(setUsers)
+      .catch(setError);
+  }, []);
+
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
-      <button onClick={getUsers}>Get Users</button>
+      <h2>User List</h2>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
     </div>
   );
 };
 
-export default MyComponent;
+export default UserList;
 ```
-## Configuration Properties
 
-- `id` : Unique identifier for the application.
-- `getError` : Function to handle errors caught during API requests.
-- `onCatch` : Function to handle errors when requests are caught.
-- `loader` : Function to render a loading indicator.
-- `baseUrl` : Base URL for API requests.
-- `apis` : Object containing definitions for individual API endpoints.
+## 🔹 3. Main App (App.tsx)
+The root component of the application.
 
-## API Configuration Properties
-- `method`: HTTP method of the request.
-- `description`: Description of the request.
-- `getUrl`: Function to generate the complete URL of the request.
-- `getBody`: Function to generate the request body.
-- `getResult`: Function to process the response and return final data.
-- `errorResult`: Default value to return in case of errors.
-- `loading`: Flag to show loader during the request.
-- `message`: Object containing error and success messages configuration.
-- `cache`: Object containing properties for caching the request response.
+```typescript
+import UserList from './components/UserList';
 
-## Message Property
-The message property within each API configuration allows for customizing error and success messages:
+const App = () => {
+  return (
+    <div>
+      <h1>My AIO-APIs App</h1>
+      <UserList />
+    </div>
+  );
+};
 
-- `error`: Specifies how error messages should be handled. It can be:
-    - A boolean value (true or false) to control the display of auto-generated error messages.
-    - A string value to set a custom error message.
-    - A function that generates a custom error message based on the response.
-- `success`: Specifies how success messages should be handled. It follows the same format as error.
+export default App;
+```
 
-## Cache Property
-The cache property within each API configuration allows for caching the response of the request:
+## 🔹 4. Entry Point (index.tsx)
+Rendering the app.
 
-- `name`: A unique identifier for the cache entry.
-- `time`: The duration for which the response will be cached, specified in milliseconds.
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
 
+## ✅ **How It Works**
+1. Apis.ts defines the getUsers API request.
+2. UserList.tsx calls Apis.getUsers() inside useEffect to fetch data.
+3. If successful, the user list is displayed; otherwise, an error message is shown.
+4. App.tsx renders UserList.
 
-## mock class
-the methods of the mock class named the same as the request functions allows for automatic mapping and invocation based on the requested API endpoint. Here are some additional points highlighting the benefits of this approach:
+This example demonstrates how aio-apis simplifies API management in React apps with TypeScript. 🚀
 
-- Automatic Invocation: With methods named identically to the request functions, developers don't need to manually invoke mock methods based on the requested API endpoint. AIOApis handles this mapping automatically, reducing the likelihood of errors and simplifying the testing process.
+### Updated Example with addUser and Cache Handling
+This example enhances the previous implementation by:
+✅ Adding a new API method (addUser) for adding a user. <br>
+✅ Caching getUsers response and refreshing it when a new user is added. <br>
 
-- Consistency: By maintaining consistent naming between the request functions and mock methods, developers can easily identify which mock method corresponds to which API endpoint. This consistency improves code readability and comprehension, making it easier for developers to understand and maintain the codebase.
+## 📌 Updated Apis.ts (API Class with Caching)
 
-- Simplified Testing: Automatic invocation of mock methods based on the requested API endpoint streamlines the testing process. Developers can focus on defining the behavior of mock methods without worrying about how they will be called during testing. This simplification accelerates the testing cycle and enables more comprehensive test coverage.
+```typescript
+import AIOApis from 'aio-apis';
 
-- Flexibility: The automatic mapping of mock methods based on request function names provides flexibility in defining mock behavior. Developers can easily create mock responses tailored to specific API endpoints, allowing them to simulate various scenarios and edge cases during testing without extra configuration or setup.
-
-- Reduced Boilerplate: Eliminating the need for manual mapping or configuration between request functions and mock methods reduces boilerplate code and simplifies the overall testing setup. Developers can focus on defining mock behavior without being burdened by unnecessary setup or maintenance tasks.
-
-``` javascript
-// Define the mock class
-class Mock {
-  Get_Users() {
-    return [
-      { id: 1, name: 'John Doe' },
-      { id: 2, name: 'Jane Smith' }
-    ];
+class Apis extends AIOApis {
+  constructor() {
+    super({
+      getUsers: { url: '/users', method: 'GET', cache: 'usersCache' },
+      addUser: { url: '/users', method: 'POST' },
+    });
   }
 
-  Add_User(user) {
-    // Simulate adding a user and returning the updated user list
-    return [
-      ...this.Get_Users(), // Get the current user list
-      { id: Math.random(), ...user } // Add the new user
-    ];
-  }
+  getUsers = async () => {
+    const { response, success, errorMessage } = await this.request({ apiName: 'getUsers' });
+    return success ? response : Promise.reject(errorMessage);
+  };
+
+  addUser = async (userData: { name: string; email: string }) => {
+    const { success, errorMessage } = await this.request({ apiName: 'addUser', body: userData });
+    if (success) {
+      await this.fetchCachedValue('getUsers', 'usersCache'); // Refresh cache
+    }
+    return success ? true : Promise.reject(errorMessage);
+  };
 }
 
-// Configure the APIs with mockResult set to true and the mock class
-const apiFunctions = {
-  Get_Users: {
-    method: 'get',
-    description: 'Get users',
-    getUrl: (baseUrl) => `${baseUrl}/users`,
-    getResult: (response) => response.data,
-    mockResult: true // Enable mock result for this request
-  },
-  Add_User: {
-    method: 'post',
-    description: 'Add a user',
-    getUrl: (baseUrl) => `${baseUrl}/users`,
-    getBody: (user) => JSON.stringify(user),
-    getResult: (response) => response.data,
-    mockResult: true // Enable mock result for this request
-  }
-};
-
-// Create an instance of AIOApis with the mock class and configure APIs
-const apisInstance = new AIOApis({
-  id: 'myApp',
-  baseUrl: 'https://api.example.com',
-  apis: apiFunctions,
-  mockClass: new Mock() // Provide the mock class instance
-});
-
-// Example usage of the request functions
-const fetchUsers = async () => {
-  const users = await apisInstance.Get_Users();
-  console.log('Users:', users); // Will log mock user data
-};
-
-const addUser = async () => {
-  const updatedUsers = await apisInstance.Add_User({ name: 'Alice' });
-  console.log('Updated users:', updatedUsers); // Will log updated mock user data
-};
-
-// Invoke the request functions
-fetchUsers();
-addUser();
+export default new Apis();
 ```
-In this example:
+## 📌 Updated UserList.tsx
+This component now includes a form for adding users and refreshes the user list when a user is added.
 
-- We define a Mock class with methods named Get_Users and Add_User, corresponding to the request functions in the API configuration.
-- We configure the APIs with mockResult: true to enable mock results for these requests.
-- We create an instance of AIOApis and provide the Mock class instance using the mockClass option.
-- When the request functions are invoked, they automatically call the corresponding methods of the Mock class to retrieve mock data.
+```typescript
+import { useEffect, useState } from 'react';
+import Apis from '../api/Apis';
 
+const UserList = () => {
+  const [users, setUsers] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [newUser, setNewUser] = useState({ name: '', email: '' });
 
+  const fetchUsers = () => {
+    Apis.getUsers()
+      .then(setUsers)
+      .catch(setError);
+  };
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
+  const handleAddUser = async () => {
+    try {
+      await Apis.addUser(newUser);
+      fetchUsers(); // Fetch updated users after adding
+      setNewUser({ name: '', email: '' }); // Clear form
+    } catch (err) {
+      setError(err as string);
+    }
+  };
 
+  return (
+    <div>
+      <h2>User List</h2>
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name} ({user.email})</li>
+        ))}
+      </ul>
+      <h3>Add User</h3>
+      <input 
+        type="text" 
+        placeholder="Name" 
+        value={newUser.name} 
+        onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} 
+      />
+      <input 
+        type="email" 
+        placeholder="Email" 
+        value={newUser.email} 
+        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} 
+      />
+      <button onClick={handleAddUser}>Add User</button>
+    </div>
+  );
+};
 
+export default UserList;
+```
+
+## ✅ **How It Works**
+
+1. getUsers API retrieves and caches the user list.
+2. addUser API sends user data and, if successful, refreshes the getUsers cache.
+3. The UI updates the user list automatically after adding a new user.
+
+This ensures **better performance** by using caching while keeping the UI up-to-date. 🚀

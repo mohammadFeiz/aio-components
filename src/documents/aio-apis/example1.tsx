@@ -98,7 +98,8 @@ class APIS extends AIOApis {
             description: 'get data',
             url: '/api-url',
             method: 'get',
-            mock: { delay: 2500, methodName: p.mockType },
+            mockDelay:2500,
+            mock: (this as any)[p.mockType],
             showError: !!p.errorMessage,
             loading: p.loading ? undefined : false
         })
