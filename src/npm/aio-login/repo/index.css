@@ -53,6 +53,7 @@
     background: #0069ff;
     color: #fff;
     font-family: inherit;
+    width:100%;
 }
 
 .ai-login-mode {

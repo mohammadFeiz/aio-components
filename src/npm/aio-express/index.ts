@@ -893,15 +893,16 @@ export class AIOSchema {
                 res += `
     ${apiName} = async (${bodyParamString.result})=>{
         ${this.getUrlString(name, path, queryString)}
-        return await this.request<${returnType}>({
+        const {response,success} = await this.request<{data:{value:${returnType}}}>({
             name:'${apiName}',
-            onSuccess:(response)=>{
-                ${onSuccessConfigStr}
-                return response.data.value
-            },
             url,description:"${description}",method:"${method}",${!api.body ? '' : `body,`}\n
             ${apiConfigStr}
         })
+        if(success){
+            ${onSuccessConfigStr}
+            return response.data.value
+        }
+        else {return false}
     }
                 `
             }
@@ -961,7 +962,7 @@ export default class APIS extends AIOApis {
             token: p.token,
             id: '${appName}',
             lang: 'fa',
-            onCatch: (response) => {
+            handleErrorMessage: (response) => {
                 if(response.status === 401 || response.data?.status === 401){p.logout()}
                 return response.response.data.message
             }

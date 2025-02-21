@@ -1,5 +1,5 @@
 import { FC, ReactNode } from "react";
-import { I_formInput } from "aio-input";
+import { I_validateType, I_formField, AITYPE } from "aio-input";
 import './index.css';
 type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber';
 export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton' | 'otpcodeButton' | 'registerTitle' | 'userpassTitle' | 'otpcodeTitle' | 'otpnumberTitle' | 'switchuserpass' | 'switchregister' | 'switchotpnumber' | 'repasswordMatch' | 'usernameRequired' | 'passwordRequired' | 'repasswordRequired' | 'otpnumberRequired' | 'otpcodeLength' | 'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError' | 'username' | 'password' | 'repassword' | 'otpnumber' | 'otpcode';
@@ -18,9 +18,6 @@ type I_login_model<T> = {
             [key in keyof T]?: T[key] | undefined;
         };
     };
-};
-type I_registerInputs = {
-    [field: string]: I_formInput;
 };
 type I_AILogin<T> = {
     app: FC<{
@@ -45,50 +42,61 @@ type I_AILogin<T> = {
         html: ReactNode;
         time: number;
     };
-    validate?: (p: {
-        field: string;
-        data: I_login_model<T>;
-        value: any;
-        input: I_formInput;
-    }) => string | undefined;
     otpnumber?: {
         path: string;
         method: 'post' | 'get';
-        body?: (data: I_login_model<T>) => any;
+        body?: (otpnumber: string) => any;
         onSuccess: (response: any) => Promise<{
             message?: string;
         }>;
+        validate?: (number: string) => string | undefined;
     };
     otpcode?: {
         length: number;
         method: 'post' | 'get';
-        body?: (data: I_login_model<T>) => any;
+        body?: (otpcode: string) => any;
         path: string;
         onSuccess: (response: any) => Promise<{
             user: T;
             token: string;
             message?: string;
         }>;
+        validate?: (code: string) => string | undefined;
     };
     userpass?: {
         path: string;
         method: 'post' | 'get';
-        body?: (data: I_login_model<T>) => any;
+        body?: (data: I_login_model<T>["userpass"]) => any;
         onSuccess: (response: any) => Promise<{
             user: T;
             token: string;
             message?: string;
         }>;
+        validate?: (p: {
+            field: 'username' | 'password';
+            value: string;
+            data: I_login_model<T>["userpass"];
+        }) => string | undefined;
     };
     register?: {
-        inputs?: (model: I_login_model<T>) => I_registerInputs;
+        inputs?: (model: I_login_model<T>["register"]) => (AITYPE & {
+            label: string;
+            required?: boolean;
+            validateType?: I_validateType;
+            field: I_formField<T>;
+        })[];
         path: string;
         method: 'post' | 'get';
-        body?: (data: I_login_model<T>) => any;
+        body?: (data: I_login_model<T>["register"]) => any;
         onSuccess: (response: any) => Promise<{
             message?: string;
         }>;
         defaultData?: any;
+        validate?: (p: {
+            data: I_login_model<T>["register"];
+            field: string;
+            value: any;
+        }) => string | undefined;
     };
     getStatus?: (response: any) => number;
     getMessage?: (response: any) => string;

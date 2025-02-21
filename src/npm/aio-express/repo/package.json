@@ -1,6 +1,6 @@
 {
   "name": "aio-express",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "" ,
   "main": "index.js",
   "types":"index.d.ts",

@@ -1,5 +1,5 @@
-import { FC, ReactNode, useEffect, useState } from "react"
-import { useForm,I_formInput, I_formHook, I_formInputs, I_formNode } from "./../../npm/aio-input"
+import { FC, ReactNode, useEffect, useRef, useState } from "react"
+import { useForm, I_formNode, I_validateType, I_formField, AITYPE } from "./../../npm/aio-input"
 import { AddToAttrs, FixUrl, Storage } from "./../../npm/aio-utils"
 import { Loading, Alert } from "./../../npm/aio-popup"
 import axios from "axios"
@@ -15,9 +15,8 @@ export type I_login_key = 'registerButton' | 'userpassButton' | 'otpnumberButton
     'registerError' | 'userpassError' | 'otpcodeError' | 'otpnumberError' |
     'username' | 'password' | 'repassword' | 'otpnumber' | 'otpcode'
 type I_login_model<T> = { userpass: { username: string, password: string }, otpnumber: string, otpcode: string, register: { username: string, password: string, repassword: string, properties: { [key in keyof T]?: T[key] | undefined } } }
-type I_registerInputs = { [field:string]: I_formInput }
 type I_AILogin<T> = {
-    app: FC<{user:T,token:string,base_url:string,logout:()=>void}>,
+    app: FC<{ user: T, token: string, base_url: string, logout: () => void }>,
     base_url: string,
     checkToken: { url: string, method?: 'post' | 'get', body?: any, getResult?: (response: any) => boolean },
     before?: (mode: I_loginMode) => ReactNode,
@@ -29,25 +28,30 @@ type I_AILogin<T> = {
         html: ReactNode,
         time: number
     },
-    validate?: (p:{ field:string, data:I_login_model<T>, value:any,input:I_formInput }) => string | undefined,
-    otpnumber?:{
-        path:string,method: 'post' | 'get',body?:(data:I_login_model<T>)=>any,
+    otpnumber?: {
+        path: string, method: 'post' | 'get', body?: (otpnumber: string) => any,
         onSuccess: (response: any) => Promise<{ message?: string }>,
+        validate?: (number: string) => string | undefined
     },
-    otpcode?:{
-        length:number,method: 'post' | 'get',body?:(data:I_login_model<T>)=>any,
-        path:string,
+    otpcode?: {
+        length: number, method: 'post' | 'get', body?: (otpcode: string) => any,
+        path: string,
         onSuccess: (response: any) => Promise<{ user: T, token: string, message?: string }>,
+        validate?: (code: string) => string | undefined
     }
     userpass?: {
-        path:string,method: 'post' | 'get', body?:(data:I_login_model<T>)=>any,
+        path: string, method: 'post' | 'get', body?: (data: I_login_model<T>["userpass"]) => any,
         onSuccess: (response: any) => Promise<{ user: T, token: string, message?: string }>,
+        validate?: (p: { field: 'username' | 'password', value: string, data: I_login_model<T>["userpass"] }) => string | undefined
     }
     register?: {
-        inputs?: (model: I_login_model<T>) => I_registerInputs
-        path:string,method: 'post' | 'get', body?:(data:I_login_model<T>)=>any,
+        inputs?: (model: I_login_model<T>["register"]) => (AITYPE & {
+            label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
+        })[],
+        path: string, method: 'post' | 'get', body?: (data: I_login_model<T>["register"]) => any,
         onSuccess: (response: any) => Promise<{ message?: string }>,
-        defaultData?:any
+        defaultData?: any,
+        validate?: (p: { data: I_login_model<T>["register"], field: string, value: any }) => string | undefined
     },
     getStatus?: (response: any) => number,
     getMessage?: (response: any) => string
@@ -71,7 +75,7 @@ type I_loginData<T> = { user: T, token: string }
 type I_loginHook<T> = {
     logout: () => void, storage: Storage, splashing: boolean, loading: Loading, data?: I_loginData<T>,
     setData: (v: I_loginData<T>) => void, checkingToken?: boolean, getMessage: (error: any, name: string) => string,
-    trans: (key: I_login_key) => string, formHook: I_formHook<I_login_model<T>>,
+    trans: (key: I_login_key) => string,
     mode: I_login_modeState,
     getMode: (mode?: I_loginMode) => I_login_modeState,
     setMode: (mode: I_login_modeState) => void,
@@ -81,86 +85,149 @@ type I_loginHook<T> = {
     renderLoginPage: () => ReactNode,
     renderApp: () => ReactNode
 }
-const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_loginHook<T> => {
-    const { register, translate = () => { }, fa, validate = () => { return undefined }, userpass, splash ,otpnumber,otpcode} = rootProps;
+const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_loginHook<T> => {
+    const { register, translate = () => { }, fa, userpass, splash, otpnumber, otpcode } = rootProps;
     const [storage] = useState<Storage>(new Storage('ai-login' + rootProps.id))
     const [loading] = useState<Loading>(new Loading())
     const [splashing, setSplashing] = useState<boolean>(!!rootProps.splash)
     const [data, setData] = useState<I_loginData<T>>()
     const [checkingToken, setCheckingToken] = useState<boolean>()
     const [mode, setMode] = useState<I_login_modeState>(getMode)
+    const modeRef = useRef<I_login_modeState>(mode)
+    modeRef.current = mode
     function getMode(mode?: I_loginMode): I_login_modeState {
-        let key:I_loginMode = 'userpass'
-        if(mode){key = mode}
+        let key: I_loginMode = 'userpass'
+        if (mode) { key = mode }
         else if (rootProps.mode) { key = rootProps.mode }
         else if (userpass) { key = 'userpass' }
         else if (otpnumber) { key = 'otpnumber' }
-        else {key = 'userpass'}
-        return { 
-            key, 
-            submitText: trans(key + 'Button' as I_login_key), 
+        else { key = 'userpass' }
+        return {
+            key,
+            submitText: trans(key + 'Button' as I_login_key),
             shouldReturnsUserAndToken: key === 'userpass' || key === 'otpcode',
-            title:<div className="ai-login-title">{trans(key + 'Title' as I_login_key)}</div>
+            title: <div className="ai-login-title">{trans(key + 'Title' as I_login_key)}</div>
         }
     }
-    const formHook: I_formHook<I_login_model<T>> = useForm<I_login_model<T>>({
-        initData: () => getModel(),fa,
-        isFieldActive:(field)=>mode.key === field.split('.')[0],
-        inputs: () => {
-            let inputs: I_formInputs<I_login_model<T>> = {
-                'userpass.username': { type: 'text', label: trans('username') },
-                'userpass.password': { type: 'password', preview: true, label: trans('password') },
-                'register.username': { type: 'text', label: trans('username')},
-                'register.password': { type: 'password', preview: true, label: trans('password') },
-                'register.repassword': { type: 'password', preview: true, label: trans('repassword') },
-                'otpnumber': { type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber') },
-                'otpcode': { type: 'text', maxLength: otpcode?.length || 4, filter: ['number'], label: trans('otpcode') }
-            }
-            if (register && register.inputs) {
-                const registerInputs = register.inputs({} as any)
-                for (let field in registerInputs) {
-                    const input = registerInputs[field];
-                    (inputs as any)[`register.properties.${field}`] = { ...input, inputProps: { ...input.inputAttrs, 'aria-label': `aio-login-${field}` } }
-                }
-            }
-            return inputs
+    const userpassHook = useForm<I_login_model<T>["userpass"]>({
+        initData: getModel().userpass,
+        getLayout: (context) => {
+            const { validate = () => { return undefined } } = userpass || {}
+            return getLayout<I_login_model<T>["userpass"]>({
+                scroll: true,
+                v: [
+                    {
+                        input: {
+                            field: 'username', type: 'text', label: trans('username'), 
+                            validate: ({ field, value, data }) => validate({ data, field: field as 'username' | 'password', value })
+                        }
+                    },
+                    {
+                        input: {
+                            field: 'password', type: 'password', preview: true, label: trans('password'), validate: ({ field, value, data }) => validate({ data, field: field as 'username' | 'password', value })
+                        }
+                    }
+                ]
+            },context)
         },
-        validate: ({ field, data, value,input }) => {
-            if (field === 'otpcode') {
-                if ((value || '').length !== (otpcode?.length || 4)) { return trans('otpcodeLength') }
-            }
-            if (!value) {
-                if (field === 'otpnumber') { return trans('otpnumberRequired') }
-                if (field === 'userpass.username') { return trans('usernameRequired') }
-                if (field === 'userpass.password') { return trans('passwordRequired') }
-                if (field === 'register.username') { return trans('usernameRequired') }
-                if (field === 'register.password') { return trans('passwordRequired') }
-                if (field === 'register.repassword') { return trans('repasswordRequired') }
-            }
-            if (field === 'register.repassword' && data.register.password !== value) { return trans('repasswordMatch'); }
-            return validate({ field, data, value,input })
-        },
-        onSubmit: async (data) => {
-            const {path,method,body = ()=>{},onSuccess} = (rootProps as any)[mode.key]
-            const {base_url} = rootProps;
-            const url = FixUrl(base_url,path)
-            loading.show('login0')
-            loading.hide('login0')
-            axios[method as 'post' | 'get'](url, body(data)).then(success).catch(response => {
-                const subtext = getMessage(response, mode.key)
-                Alert({ type: 'error', text: trans(`${mode.key}Error`), subtext })
-            });
-        }
-
+        onSubmit: (data)=>onSubmit<I_login_model<T>["userpass"]>(data)
     })
-    function changeMode(mode: I_loginMode) { formHook.setData(getModel()); setMode(getMode(mode)) }
+    // const otpnumberHook = useForm<{otpnumber:string}>({
+    //     initData: {otpnumber:''},
+    //     getLayout: (context) => {
+    //         const { validate = () => { return undefined } } = otpnumber || {}
+    //         const {title,submitText} = modeRef.current
+    //         return getLayout({
+    //             attrs: { className: "ai-login-form" },
+    //             v: [
+    //                 { html:title },
+    //                 {
+    //                     scroll: true,
+    //                     v: [
+    //                         {
+    //                             input: { field:'otpnumber',type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber'),validate:({value})=>validate(value) }
+    //                         }
+    //                     ]
+    //                 },
+    //                 { html: <div style={{ height: 24 }}></div>, size: 24, },
+    //                 { html: context.renderSubmitButton(submitText,{ className: 'ai-login-submit' })},
+    //                 { html: renderModes() }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<string>(data.otpnumber)
+    // })
+    // const otpcodeHook = useForm<{otpcode:string}>({
+    //     initData: {otpcode:''},
+    //     getLayout: (context) => {
+    //         const { validate = () => { return undefined } } = otpcode || {}
+    //         return getLayout({
+    //             scroll: true,
+    //             v: [
+    //                 {
+    //                     input: { field:'otpcode',type: 'text', maxLength: otpcode?.length || 4, filter: ['number'], label: trans('otpcode'),validate:({value})=>validate(value) }
+    //                 }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<string>(data.otpcode)
+    // })
+    // const registerHook = useForm<I_login_model<T>["register"]>({
+    //     initData: getModel().register,
+    //     getLayout: (context) => {
+    //         const { inputs = () => [],validate = ()=>{return undefined} } = register || {}
+    //         return getLayout<I_login_model<T>["register"]>({
+    //             scroll: true,
+    //             v: [
+    //                 { input: { field: 'username', type: 'text', label: trans('username') } },
+    //                 { input: { field: 'password', type: 'password', preview: true, label: trans('password') } },
+    //                 { input: { field: 'repassword', type: 'password', preview: true, label: trans('repassword') } },
+    //                 {
+    //                     v: inputs(context.getData()).map((input) => {
+    //                         return { input:{...input,field:`properties.${input.field}`,validate:({field,value,data})=>validate({data,field,value})} }
+    //                     })
+    //                 }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<I_login_model<T>["register"]>(data)
+    // })
+    async function onSubmit<P>(data:P){
+        const { path, method, body = () => { } } = (rootProps as any)[mode.key]
+            const { base_url } = rootProps;
+            const url = FixUrl(base_url, path)
+            loading.show('login0')
+            axios[method as 'post' | 'get'](url, body(data)).then(success).catch(response => {
+                const text = getMessage(response, mode.key)
+                loading.hide('login0')
+                Alert({ type: 'error', title: trans(`${mode.key}Error`), text })
+            });
+    }
+    function getLayout<P>(node:I_formNode<P>,context:any):I_formNode<P>{
+        const {title,submitText} = modeRef.current
+            return {
+                attrs: { className: "ai-login-form" },
+                v: [
+                    { html:title },
+                    node,
+                    { html: <div style={{ height: 24 }}></div>, size: 24, },
+                    { html: context.renderSubmitButton(submitText,{ className: 'ai-login-submit' })},
+                    { html: renderModes() }
+                ]
+            }
+    }
+    function changeMode(mode: I_loginMode) { 
+        if(mode === 'userpass'){userpassHook.changeData(getModel().userpass)}
+        //else if(mode === 'register'){registerHook.changeData(getModel().register)}
+        
+    }
     async function success_1(response: any, mode: 'userpass' | 'otpcode') {
         if (!rootProps[mode]) { return }
-        const {onSuccess} = rootProps[mode]
+        const { onSuccess } = rootProps[mode]
         loading.show('login0'); const res = await onSuccess(response); loading.hide('login0');
         if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') {
             const message = `onSuccess of props.${mode}.${mode === 'userpass' ? 'api' : 'codeApi'} should returns {user:any,token:string}`
-            Alert({ type: 'error', text: trans(`${mode}Error`), subtext: message })
+            Alert({ type: 'error', title: trans(`${mode}Error`), text: message })
         }
         else {
             if (res.message) { Alert({ type: 'success', text: res.message }) }
@@ -170,21 +237,21 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
     }
     async function success_2(response: any, mode: 'register' | 'otpnumber') {
         if (!rootProps[mode]) { return }
-        const {onSuccess} = rootProps[mode]
+        const { onSuccess } = rootProps[mode]
         loading.show('login0'); const res = await onSuccess(response); loading.hide('login0')
         if (res.message) { Alert({ type: 'success', text: res.message }) }
         if (mode === 'otpnumber') { setMode(getMode('otpcode')) }
         else { setTimeout(() => window.location.reload(), 1000) }
     }
     async function success(response: any) {
+        loading.hide('login0')
         if (mode.key === 'userpass' || mode.key === 'otpcode') { success_1(response, mode.key) }
         else { success_2(response, mode.key) }
     }
 
     const getStatus = (error: any, name: string) => {
-        let text = `${name} unknown status.`, subtext = 'please set getStatus props in useLogin for extracting status';
+        let title = `${name} unknown status.`, text = 'please set getStatus props in useLogin for extracting status';
         if (error.response) {
-            const data = error.response.data;
             let status = error.response.status
             if (typeof status !== 'number') {
                 const { getStatus = () => { } } = rootProps;
@@ -192,10 +259,10 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
                 if (typeof status === 'number') { return status }
             }
         }
-        Alert({ type: 'error', text, subtext })
+        Alert({ type: 'error', title, text })
     }
     const getMessage = (error: any, name: string) => {
-        let text = `${name} unknown message.`, subtext = 'please set getMessage props in useLogin for extracting message';
+        let title = `${name} unknown message.`, text = 'please set getMessage props in useLogin for extracting message';
         if (error.response) {
             const data = error.response.data;
             if (typeof data === 'string') { return data }
@@ -209,16 +276,16 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         }
         else if (typeof error.request === 'string') { return error.request }
         else if (typeof error.message === 'string') { return error.message }
-        Alert({ text, subtext, type: 'error' });
+        Alert({ title, text, type: 'error' });
         return 'unkown message'
     }
     const checkTokenCatch = (error: any) => {
         const status = getStatus(error, 'checking token');
         if (status === 401) { logout() }
         const message = getMessage(error, 'checking token');
-        let text = 'error in checking token';
-        if (rootProps.fa) { text = 'خطا در بررسی توکن' }
-        Alert({ type: 'error', text, subtext: message })
+        let title = 'error in checking token';
+        if (rootProps.fa) { title = 'خطا در بررسی توکن' }
+        Alert({ type: 'error', title, text: message })
     }
     const checkTokenThen = (response: any, user: T, token: string) => {
         const { checkToken } = rootProps;
@@ -226,7 +293,7 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         const res = getResult(response);
         if (res === true) { setData({ user, token }); setCheckingToken(true) }
         else if (res === false) { logout() }
-        else { Alert({ type: 'error', text: 'check token error', subtext: 'checkToken.getResult should returns boolean' }) }
+        else { Alert({ type: 'error', title: 'check token error', text: 'checkToken.getResult should returns boolean' }) }
     }
     async function CheckToken() {
         if (rootProps.splash) { setTimeout(() => { setSplashing(false) }, rootProps.splash.time); }
@@ -293,31 +360,12 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         }
         if (!register) { return model }
         if (register && register.inputs && register.defaultData) {
-            model.register.properties = {...register.defaultData}
+            model.register.properties = { ...register.defaultData }
         }
         return model
     }
-    const getFormNode = ():I_formNode<I_login_model<T>> => {
-        let registerInputs: any = {};
-        if (register && register.inputs) {
-            registerInputs = register.inputs(formHook.data)
-        }
-        const registerFields = Object.keys(registerInputs) as string[];
-        return {
-            scroll:true,
-            v: [
-                { input: 'userpass.username', show: mode.key === 'userpass' },
-                { input: 'userpass.password', show: mode.key === 'userpass' },
-                { input: 'register.username', show: mode.key === 'register' },
-                { input: 'register.password', show: mode.key === 'register' },
-                { input: 'register.repassword', show: mode.key === 'register' },
-                { input: 'otpnumber', show: mode.key === 'otpnumber' },
-                { input: 'otpcode', show: mode.key === 'otpcode' },
-                { v: registerFields.map((field: string) => ({ input: `register.properties.${field}` as any, show: mode.key === 'register' })) }
-            ]
-        }
-    }
     function renderMode(modeKey: I_loginMode) {
+        const mode = modeRef.current
         if (mode.key === modeKey) { return null }
         return <button className='ai-login-mode' onClick={() => changeMode(modeKey)}>{trans(`switch${modeKey}` as any)}</button>
     }
@@ -330,18 +378,13 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
             </div>
         )
     }
-    function renderLoginBox() {
-        const { title } = mode;
-        return formHook.render({
-            attrs:{className:"ai-login-form"},
-            v:[
-                {html:title},
-                getFormNode(),
-                {html:<div style={{height:24}}></div>,size:24,},
-                {submitButton:{text:mode.submitText,attrs:{ className: 'ai-login-submit' }}},
-                {html:renderModes()}
-            ]
-        })
+    function renderLoginBox():ReactNode {
+        const {key} = mode;
+        if(key === 'userpass'){return <>{userpassHook.renderLayout}</>}
+        //if(key === 'register'){return <>{registerHook.renderLayout}</>}
+        //if(key === 'otpnumber'){return <>{otpnumberHook.renderLayout}</>}
+        //if(key === 'otpcode'){return <>{otpcodeHook.renderLayout}</>}
+        return null
     }
     const bf_layout = (type: 'before' | 'after') => {
         const fn = rootProps[type];
@@ -373,7 +416,7 @@ const useLoading = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         splashing, loading, checkingToken,
         data, setData,
         getMessage, trans,
-        getModel, formHook,
+        getModel,
         mode, getMode, setMode, changeMode,
         renderApp, renderLoginBox, renderLoginPage
     }
@@ -382,7 +425,7 @@ export type I_AuthContext<T> = { user?: T, token?: string, logout: () => void, b
 
 const useLogin = <T extends Record<string, any>>(props: I_AILogin<T>) => {
     const render = () => {
-        const hook = useLoading(props)
+        const hook = useDetails(props)
         return (
             <Routes>
                 <Route path='/login' element={hook.renderLoginPage()} />

@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useEffect, useState } from "react";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "aio-input";
 import { AddToAttrs, FixUrl, Storage } from "aio-utils";
 import { Loading, Alert } from "aio-popup";
@@ -25,13 +25,15 @@ export function AIOLogin_updateCatchedUser(loginId, newUser) {
     return storage.save('data', newStoredData);
 }
 const useLoading = (rootProps) => {
-    const { register, translate = () => { }, fa, validate = () => { return undefined; }, userpass, splash, otpnumber, otpcode } = rootProps;
+    const { register, translate = () => { }, fa, userpass, splash, otpnumber, otpcode } = rootProps;
     const [storage] = useState(new Storage('ai-login' + rootProps.id));
     const [loading] = useState(new Loading());
     const [splashing, setSplashing] = useState(!!rootProps.splash);
     const [data, setData] = useState();
     const [checkingToken, setCheckingToken] = useState();
     const [mode, setMode] = useState(getMode);
+    const modeRef = useRef(mode);
+    modeRef.current = mode;
     function getMode(mode) {
         let key = 'userpass';
         if (mode) {
@@ -56,72 +58,121 @@ const useLoading = (rootProps) => {
             title: _jsx("div", { className: "ai-login-title", children: trans(key + 'Title') })
         };
     }
-    const formHook = useForm({
-        initData: () => getModel(), fa,
-        isFieldActive: (field) => mode.key === field.split('.')[0],
-        inputs: () => {
-            let inputs = {
-                'userpass.username': { type: 'text', label: trans('username') },
-                'userpass.password': { type: 'password', preview: true, label: trans('password') },
-                'register.username': { type: 'text', label: trans('username') },
-                'register.password': { type: 'password', preview: true, label: trans('password') },
-                'register.repassword': { type: 'password', preview: true, label: trans('repassword') },
-                'otpnumber': { type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber') },
-                'otpcode': { type: 'text', maxLength: (otpcode === null || otpcode === void 0 ? void 0 : otpcode.length) || 4, filter: ['number'], label: trans('otpcode') }
-            };
-            if (register && register.inputs) {
-                const registerInputs = register.inputs({});
-                for (let field in registerInputs) {
-                    const input = registerInputs[field];
-                    inputs[`register.properties.${field}`] = Object.assign(Object.assign({}, input), { inputProps: Object.assign(Object.assign({}, input.inputAttrs), { 'aria-label': `aio-login-${field}` }) });
-                }
-            }
-            return inputs;
+    const userpassHook = useForm({
+        initData: getModel().userpass,
+        getLayout: (context) => {
+            const { validate = () => { return undefined; } } = userpass || {};
+            return getLayout({
+                scroll: true,
+                v: [
+                    {
+                        input: {
+                            field: 'username', type: 'text', label: trans('username'),
+                            validate: ({ field, value, data }) => validate({ data, field: field, value })
+                        }
+                    },
+                    {
+                        input: {
+                            field: 'password', type: 'password', preview: true, label: trans('password'), validate: ({ field, value, data }) => validate({ data, field: field, value })
+                        }
+                    }
+                ]
+            }, context);
         },
-        validate: ({ field, data, value, input }) => {
-            if (field === 'otpcode') {
-                if ((value || '').length !== ((otpcode === null || otpcode === void 0 ? void 0 : otpcode.length) || 4)) {
-                    return trans('otpcodeLength');
-                }
-            }
-            if (!value) {
-                if (field === 'otpnumber') {
-                    return trans('otpnumberRequired');
-                }
-                if (field === 'userpass.username') {
-                    return trans('usernameRequired');
-                }
-                if (field === 'userpass.password') {
-                    return trans('passwordRequired');
-                }
-                if (field === 'register.username') {
-                    return trans('usernameRequired');
-                }
-                if (field === 'register.password') {
-                    return trans('passwordRequired');
-                }
-                if (field === 'register.repassword') {
-                    return trans('repasswordRequired');
-                }
-            }
-            if (field === 'register.repassword' && data.register.password !== value) {
-                return trans('repasswordMatch');
-            }
-            return validate({ field, data, value, input });
-        },
-        onSubmit: (data) => __awaiter(void 0, void 0, void 0, function* () {
-            const { path, method, body = () => { }, onSuccess } = rootProps[mode.key];
+        onSubmit: (data) => onSubmit(data)
+    });
+    // const otpnumberHook = useForm<{otpnumber:string}>({
+    //     initData: {otpnumber:''},
+    //     getLayout: (context) => {
+    //         const { validate = () => { return undefined } } = otpnumber || {}
+    //         const {title,submitText} = modeRef.current
+    //         return getLayout({
+    //             attrs: { className: "ai-login-form" },
+    //             v: [
+    //                 { html:title },
+    //                 {
+    //                     scroll: true,
+    //                     v: [
+    //                         {
+    //                             input: { field:'otpnumber',type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber'),validate:({value})=>validate(value) }
+    //                         }
+    //                     ]
+    //                 },
+    //                 { html: <div style={{ height: 24 }}></div>, size: 24, },
+    //                 { html: context.renderSubmitButton(submitText,{ className: 'ai-login-submit' })},
+    //                 { html: renderModes() }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<string>(data.otpnumber)
+    // })
+    // const otpcodeHook = useForm<{otpcode:string}>({
+    //     initData: {otpcode:''},
+    //     getLayout: (context) => {
+    //         const { validate = () => { return undefined } } = otpcode || {}
+    //         return getLayout({
+    //             scroll: true,
+    //             v: [
+    //                 {
+    //                     input: { field:'otpcode',type: 'text', maxLength: otpcode?.length || 4, filter: ['number'], label: trans('otpcode'),validate:({value})=>validate(value) }
+    //                 }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<string>(data.otpcode)
+    // })
+    // const registerHook = useForm<I_login_model<T>["register"]>({
+    //     initData: getModel().register,
+    //     getLayout: (context) => {
+    //         const { inputs = () => [],validate = ()=>{return undefined} } = register || {}
+    //         return getLayout<I_login_model<T>["register"]>({
+    //             scroll: true,
+    //             v: [
+    //                 { input: { field: 'username', type: 'text', label: trans('username') } },
+    //                 { input: { field: 'password', type: 'password', preview: true, label: trans('password') } },
+    //                 { input: { field: 'repassword', type: 'password', preview: true, label: trans('repassword') } },
+    //                 {
+    //                     v: inputs(context.getData()).map((input) => {
+    //                         return { input:{...input,field:`properties.${input.field}`,validate:({field,value,data})=>validate({data,field,value})} }
+    //                     })
+    //                 }
+    //             ]
+    //         },context)
+    //     },
+    //     onSubmit: (data)=>onSubmit<I_login_model<T>["register"]>(data)
+    // })
+    function onSubmit(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { path, method, body = () => { } } = rootProps[mode.key];
             const { base_url } = rootProps;
             const url = FixUrl(base_url, path);
             loading.show('login0');
-            loading.hide('login0');
             axios[method](url, body(data)).then(success).catch(response => {
-                const subtext = getMessage(response, mode.key);
-                Alert({ type: 'error', text: trans(`${mode.key}Error`), subtext });
+                const text = getMessage(response, mode.key);
+                loading.hide('login0');
+                Alert({ type: 'error', title: trans(`${mode.key}Error`), text });
             });
-        })
-    });
-    function changeMode(mode) { formHook.setData(getModel()); setMode(getMode(mode)); }
+        });
+    }
+    function getLayout(node, context) {
+        const { title, submitText } = modeRef.current;
+        return {
+            attrs: { className: "ai-login-form" },
+            v: [
+                { html: title },
+                node,
+                { html: _jsx("div", { style: { height: 24 } }), size: 24, },
+                { html: context.renderSubmitButton(submitText, { className: 'ai-login-submit' }) },
+                { html: renderModes() }
+            ]
+        };
+    }
+    function changeMode(mode) {
+        if (mode === 'userpass') {
+            userpassHook.changeData(getModel().userpass);
+        }
+        //else if(mode === 'register'){registerHook.changeData(getModel().register)}
+    }
     function success_1(response, mode) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!rootProps[mode]) {
@@ -133,7 +184,7 @@ const useLoading = (rootProps) => {
             loading.hide('login0');
             if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') {
                 const message = `onSuccess of props.${mode}.${mode === 'userpass' ? 'api' : 'codeApi'} should returns {user:any,token:string}`;
-                Alert({ type: 'error', text: trans(`${mode}Error`), subtext: message });
+                Alert({ type: 'error', title: trans(`${mode}Error`), text: message });
             }
             else {
                 if (res.message) {
@@ -167,6 +218,7 @@ const useLoading = (rootProps) => {
     }
     function success(response) {
         return __awaiter(this, void 0, void 0, function* () {
+            loading.hide('login0');
             if (mode.key === 'userpass' || mode.key === 'otpcode') {
                 success_1(response, mode.key);
             }
@@ -176,9 +228,8 @@ const useLoading = (rootProps) => {
         });
     }
     const getStatus = (error, name) => {
-        let text = `${name} unknown status.`, subtext = 'please set getStatus props in useLogin for extracting status';
+        let title = `${name} unknown status.`, text = 'please set getStatus props in useLogin for extracting status';
         if (error.response) {
-            const data = error.response.data;
             let status = error.response.status;
             if (typeof status !== 'number') {
                 const { getStatus = () => { } } = rootProps;
@@ -188,10 +239,10 @@ const useLoading = (rootProps) => {
                 }
             }
         }
-        Alert({ type: 'error', text, subtext });
+        Alert({ type: 'error', title, text });
     };
     const getMessage = (error, name) => {
-        let text = `${name} unknown message.`, subtext = 'please set getMessage props in useLogin for extracting message';
+        let title = `${name} unknown message.`, text = 'please set getMessage props in useLogin for extracting message';
         if (error.response) {
             const data = error.response.data;
             if (typeof data === 'string') {
@@ -217,7 +268,7 @@ const useLoading = (rootProps) => {
         else if (typeof error.message === 'string') {
             return error.message;
         }
-        Alert({ text, subtext, type: 'error' });
+        Alert({ title, text, type: 'error' });
         return 'unkown message';
     };
     const checkTokenCatch = (error) => {
@@ -226,11 +277,11 @@ const useLoading = (rootProps) => {
             logout();
         }
         const message = getMessage(error, 'checking token');
-        let text = 'error in checking token';
+        let title = 'error in checking token';
         if (rootProps.fa) {
-            text = 'خطا در بررسی توکن';
+            title = 'خطا در بررسی توکن';
         }
-        Alert({ type: 'error', text, subtext: message });
+        Alert({ type: 'error', title, text: message });
     };
     const checkTokenThen = (response, user, token) => {
         const { checkToken } = rootProps;
@@ -244,7 +295,7 @@ const useLoading = (rootProps) => {
             logout();
         }
         else {
-            Alert({ type: 'error', text: 'check token error', subtext: 'checkToken.getResult should returns boolean' });
+            Alert({ type: 'error', title: 'check token error', text: 'checkToken.getResult should returns boolean' });
         }
     };
     function CheckToken() {
@@ -327,27 +378,8 @@ const useLoading = (rootProps) => {
         }
         return model;
     }
-    const getFormNode = () => {
-        let registerInputs = {};
-        if (register && register.inputs) {
-            registerInputs = register.inputs(formHook.data);
-        }
-        const registerFields = Object.keys(registerInputs);
-        return {
-            scroll: true,
-            v: [
-                { input: 'userpass.username', show: mode.key === 'userpass' },
-                { input: 'userpass.password', show: mode.key === 'userpass' },
-                { input: 'register.username', show: mode.key === 'register' },
-                { input: 'register.password', show: mode.key === 'register' },
-                { input: 'register.repassword', show: mode.key === 'register' },
-                { input: 'otpnumber', show: mode.key === 'otpnumber' },
-                { input: 'otpcode', show: mode.key === 'otpcode' },
-                { v: registerFields.map((field) => ({ input: `register.properties.${field}`, show: mode.key === 'register' })) }
-            ]
-        };
-    };
     function renderMode(modeKey) {
+        const mode = modeRef.current;
         if (mode.key === modeKey) {
             return null;
         }
@@ -357,17 +389,14 @@ const useLoading = (rootProps) => {
         return (_jsxs("div", { className: "ai-login-modes", children: [userpass && renderMode('userpass'), register && renderMode('register'), otpnumber && renderMode('otpnumber')] }));
     }
     function renderLoginBox() {
-        const { title } = mode;
-        return formHook.render({
-            attrs: { className: "ai-login-form" },
-            v: [
-                { html: title },
-                getFormNode(),
-                { html: _jsx("div", { style: { height: 24 } }), size: 24, },
-                { submitButton: { text: mode.submitText, attrs: { className: 'ai-login-submit' } } },
-                { html: renderModes() }
-            ]
-        });
+        const { key } = mode;
+        if (key === 'userpass') {
+            return _jsx(_Fragment, { children: userpassHook.renderLayout });
+        }
+        //if(key === 'register'){return <>{registerHook.renderLayout}</>}
+        //if(key === 'otpnumber'){return <>{otpnumberHook.renderLayout}</>}
+        //if(key === 'otpcode'){return <>{otpcodeHook.renderLayout}</>}
+        return null;
     }
     const bf_layout = (type) => {
         const fn = rootProps[type];
@@ -404,7 +433,7 @@ const useLoading = (rootProps) => {
         splashing, loading, checkingToken,
         data, setData,
         getMessage, trans,
-        getModel, formHook,
+        getModel,
         mode, getMode, setMode, changeMode,
         renderApp, renderLoginBox, renderLoginPage
     };
