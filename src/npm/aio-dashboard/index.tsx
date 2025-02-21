@@ -6,52 +6,68 @@ import $ from 'jquery';
 import './index.css';
 import { AISlider, AISpinner, I_rangeConfig } from "./../../npm/aio-input";
 const ChartCtx = createContext({} as any)
-export type I_chart_range = [number, string][]
+export type I_chart_range = [number, string]
 export type I_chart_label = { offset: number, text: ReactNode }
 export type I_chart_size = { x: number, y: number }
-export type I_chart_axis = { start: number, end: number, size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
+export type I_chart_axis = { size: number, padding?: number[], getLabel: (v: number) => string, rotate?: number, gridLineColor?: string, zoom?: boolean }
+export type I_chart_key_axis = I_chart_axis & {count:number}
+export type I_chart_value_axis = I_chart_axis & {start:number,end:number}
 export type I_chart_label_detail = { text: ReactNode, offset: number }
-export type I_getPointStyle = (point: any) => I_chart_point_style;
-export type I_getLineStyle = () => I_chart_line_style
 export type I_chart_point_style = { lineWidth?: number, r?: number, dash?: number[], stroke?: string, fill?: string }
 export type I_chart_line_style = { lineWidth?: number, dash?: number[], stroke?: string }
 export type I_chart_data_detail = {
-    points: I_chart_point_detail[], type: 'line' | 'bar', lineStyle: I_chart_line_style, getPointText?: I_getPointText,
-    barCount: number, barIndex: number, areaPoints: number[][], areaColors?: [string, string]
+    dataOption:Required<I_chart_data_option>,type:'line' | 'bar',
+    points: I_chart_point_detail[],
+    barCount: number, barIndex: number, areaPoints: number[][], areaColors: string[]
 }
 export type I_rangeDetail = { offset: number, height: number, color: string,value:number }
 export type I_chart_point_detail = {
-    key:number,value:number,
     keyOffset:number,valueOffset:number,
     keyPercent:number,valuePercent:number,
-    keyText:ReactNode,valueText:ReactNode,
+    keyLabel:ReactNode,valueLabel:ReactNode,
     keyBarSize:number,
     valueBarSize:number,
-    pointStyle?: I_chart_point_style, rangeDetails: I_rangeDetail[]
+    rangeDetails: I_rangeDetail[],
+    dataOption:I_chart_data_option,
+    pointOption:I_chart_point_option,
+    data:I_chart_data,dataIndex:number,
+    point:any,pointIndex:number
 }
-export type I_getPointText = (point: I_chart_point_detail) => {
-    text: string,
-    style?: { fontSize?: number, rotate?: number, fill?: string, offset?: number }
-} | undefined
+export type I_chart_point_text_style = { fontSize?: number, rotate?: number, fill?: string, offset?: number }
+export type I_chart_data_option = {
+    style?:I_chart_line_style,
+    areaColors?: string[],
+    title?:string,
+    color?:string,
+}
+export type I_chart_point_option = {
+    value:number,
+    ranges?:I_chart_range[],
+    style?:I_chart_point_style,
+    text?:string,
+    textStyle?:I_chart_point_text_style,
+}
 export type I_chart_data = {
-    color?: string,
-    title?: string,
+    type:'line' | 'bar',
     points: any[],
-    getKey: (point: any,index:number) => number,
-    getValue: (point: any,index:number) => number,
-    getRanges?: (point: any) => I_chart_range | undefined,
-    getPointStyle?: I_getPointStyle,
-    getLineStyle?: I_getLineStyle,
-    getPointText?: I_getPointText,
-    type: 'line' | 'bar',
-    areaColors?: [string, string]
+    title?:string,
+    color?:string
 }
+export type I_axis_point_detail = { percent: number, offset: number, label: ReactNode, barSize: number }
 export type I_Chart = {
     datas: I_chart_data[],
-    keyAxis: I_chart_axis,
-    valueAxis: I_chart_axis,
+    keyAxis: I_chart_key_axis,
+    valueAxis: I_chart_value_axis,
     attrs?: any,
-    reverse?:boolean
+    reverse?:boolean,
+    dataOption?:(p:{data:I_chart_data,dataIndex:number})=>{
+        style?:I_chart_line_style,
+        areaColors?: string[],
+        title?:string,
+        color?:string
+    },
+    pointOption:(p:{data:I_chart_data,dataIndex:number,point:any,pointIndex:number})=>(Omit<I_chart_point_option,'point'> | undefined),
+    onPointClick?:(p:{data:I_chart_data,point:any,dataIndex:number,pointIndex:number})=>void
 }
 type I_filter = number[]
 type I_ctx = {
@@ -69,7 +85,7 @@ const Chart: FC<I_Chart> = (props) => {
     const dataDetailsRef = useRef<I_chart_data_detail[]>([])
     const labelDetailsRef = useRef<{ key: I_chart_label_detail[], value: I_chart_label_detail[] }>({ key: [], value: [] })
     const chartSizeRef = useRef<any>()
-    let [filter, setFilter] = useState<I_filter>([props.keyAxis.start, props.keyAxis.end])
+    let [filter, setFilter] = useState<I_filter>([0, props.keyAxis.count - 1])
     const filterRef = useRef(filter)
     filterRef.current = filter
     const [dic] = useState<I_dic>(getDic)
@@ -153,8 +169,8 @@ const Chart: FC<I_Chart> = (props) => {
         const res: I_chart_label_detail[] = [];
         const start = filter[0], end = filter[1];
         for (let key = start; key <= end; key++) {
-            const { offset, text } = chartClass.getPointDetail({ d: 'key', value: key })
-            res.push({ offset, text })
+            const { offset, label } = chartClass.getAxisPointDetail({ d: 'key', value: key })
+            res.push({ offset, text:label })
         }
         return res
     }
@@ -166,8 +182,8 @@ const Chart: FC<I_Chart> = (props) => {
         if (size[dic.value] < 240) { step *= 2 }
         const labels: I_chart_label_detail[] = [];
         for (let i = start; i <= end; i += step) {
-            const { offset, text } = chartClass.getPointDetail({ d: 'value', value: +i.toFixed(3) })
-            labels.push({ offset, text });
+            const { offset, label } = chartClass.getAxisPointDetail({ d: 'value', value: +i.toFixed(3) })
+            labels.push({ offset, text:label });
         }
         return labels;
     }
@@ -193,22 +209,38 @@ const Chart: FC<I_Chart> = (props) => {
     function getLineChartElements(detail: I_chart_data_detail): {
         pointElements: I_canvas_item[], lineElement: I_canvas_item, textElements: I_canvas_item[], areaElement?: I_canvas_item
     } {
-        const { lineWidth, dash, stroke } = detail.lineStyle;
+        const { lineWidth, dash, stroke } = detail.dataOption.style;
         const pointElements: I_canvas_item[] = []
         const textElements: I_canvas_item[] = [];
         const lineElement: I_canvas_item = { points: [], type: "Line", lineWidth, dash, stroke };
-        const areaElement: I_canvas_item | undefined = detail.areaColors ? getArea(detail.areaPoints, detail.areaColors) : undefined
+        const areaElement: I_canvas_item | undefined = detail.areaColors.length  ? getArea(detail.areaPoints, detail.areaColors) : undefined
         for (let i = 0; i < detail.points.length; i++) {
-            const p = detail.points[i];
+            const p:I_chart_point_detail = detail.points[i];
             const xOffset = p[`${dic.x}Offset`];
             const yOffset = p[`${dic.y}Offset`];
             (lineElement.points as any).push([xOffset, yOffset])
-            if (p.pointStyle) { pointElements.push({ type: 'Arc', x: xOffset, y: yOffset, ...p.pointStyle }) }
-            const text = detail.getPointText ? detail.getPointText(p) : undefined
-            if (text) {
-                const style = text.style || {}
+            pointElements.push({ type: 'Arc', x: xOffset, y: yOffset, ...p.pointOption.style,
+                data:{
+                    data:p.data,
+                    point:p.point,
+                    dataIndex:p.dataIndex,
+                    pointIndex:p.pointIndex
+                },
+                events: {
+                    onClick:props.onPointClick?(p:any)=>{
+                        if(props.onPointClick){
+                            const {data,point,dataIndex,pointIndex} = p.item.data
+                            props.onPointClick({data,point,dataIndex,pointIndex})
+                        }
+                    }:undefined
+                }
+            })
+            if (p.pointOption.text) {
+                const style = p.pointOption.textStyle || {}
                 const { fontSize = 12, offset = 12, fill = '#000', rotate = 0 } = style
-                textElements.push({ type: 'Text', text: text.text, x: xOffset, y: yOffset + offset, fontSize, rotate, fill, align: [0, 1] })
+                textElements.push({ type: 'Text', text: p.pointOption.text, x: xOffset, y: yOffset + offset, fontSize, rotate, fill, align: [0, 1],
+                    
+                })
             }
         }
         return { pointElements, lineElement, textElements, areaElement }
@@ -223,11 +255,18 @@ const Chart: FC<I_Chart> = (props) => {
             if (p.rangeDetails.length) {
                 for (let i = 0; i < p.rangeDetails.length; i++) {
                     const { offset, height, color } = p.rangeDetails[i];
-                    rectElements.push({ type: 'Rectangle', x: keyOffset, y: offset, width: p.keyBarSize, height, ...{ ...p.pointStyle, fill: color } })
+                    rectElements.push({ type: 'Rectangle', x: keyOffset, y: offset, width: p.keyBarSize, height, ...{ ...p.pointOption.style, fill: color } })
                 }
             }
             else {
-                const obj:any = { type: 'Rectangle', [props.reverse?'y':'x']: keyOffset, [props.reverse?'x':'y']: p.valueOffset, [props.reverse?'height':'width']: p.keyBarSize, [props.reverse?'width':'height']: p.valueBarSize, ...p.pointStyle }
+                const obj:any = { 
+                    type: 'Rectangle', 
+                    [props.reverse?'y':'x']: keyOffset, 
+                    [props.reverse?'x':'y']: p.valueOffset, 
+                    [props.reverse?'height':'width']: p.keyBarSize, 
+                    [props.reverse?'width':'height']: p.valueBarSize, 
+                    ...p.pointOption.style 
+                }
                 rectElements.push(obj)
             }
         }
@@ -258,7 +297,7 @@ const Chart: FC<I_Chart> = (props) => {
         setCanvasItems(items);
         setTimeout(() => updateLabels(), 5)
     }
-    function getArea(areaPoints: number[][], areaColor: [string, string]): I_canvas_item {
+    function getArea(areaPoints: number[][], areaColor: string[]): I_canvas_item {
         return { type: 'Line', points: areaPoints, fill: [0, 0, 0, -chartSizeRef.current.y, ['0 ' + areaColor[0], '1 ' + areaColor[1]]] as any };
     }
     function getLabelByCanvasPosition_axis(dir: 'x' | 'y', value: number): I_chart_label {
@@ -266,8 +305,8 @@ const Chart: FC<I_Chart> = (props) => {
         const Axis = props[`${dic[dir]}Axis`];
         const d = dic[dir];
         const { padding = dir === 'x' ? [36, 36] : [0, 0], getLabel = (v) => v } = Axis;
-        const start = dic[dir] === 'key' ? filter[0] : Axis.start
-        const end = dic[dir] === 'key' ? filter[1] : Axis.end
+        const start = dic[dir] === 'key' ? filter[0] : (Axis as I_chart_value_axis).start
+        const end = dic[dir] === 'key' ? filter[1] : (Axis as I_chart_value_axis).end
         if (value < padding[0]) { return labelDetailsRef.current[d][start] }
         if (value > chartSize - padding[1]) { return labelDetailsRef.current[d][end] }
         const step: number = (chartSize - (padding[0] + padding[1])) / (end - start)
@@ -295,6 +334,7 @@ const Chart: FC<I_Chart> = (props) => {
             items: canvasItems,
             //grid: [10, 10, '#eee'], 
             screenPosition: ['50%', '50%'],
+            
             attrs: {
                 onMouseMove: ({ mousePosition }) => {
                     if (chartSizeRef.current === undefined) { return }
@@ -307,7 +347,7 @@ const Chart: FC<I_Chart> = (props) => {
                 onMouseLeave: () => {
                     const container = $(aio_chart_ref.current)
                     chartClass.removeElements(container)
-                }
+                },
             }
         })
     }
@@ -372,7 +412,7 @@ const XLabels: FC<{ labelDetails: I_chart_label_detail[] }> = ({ labelDetails })
                 <AISlider
                     multiple={true} size={0}
                     style={{ background: 'none' }}
-                    start={Axis.start} end={Axis.end}
+                    start={0} end={(Axis as I_chart_key_axis).count - 1}
                     value={[...filter]}
                     onChange={(v) => changeFilter(v)}
                     fill={() => {
@@ -495,55 +535,88 @@ export const Pie: FC<I_Pie> = (props) => {
         />
     )
 }
-type I_chart_tooltip = { tooltipY: number, tooltipPoints: { color: string, text: ReactNode,rangeDetails:I_rangeDetail[] }[] }
+type I_chart_range_detail = { offset: number, height: number, color:string,value:number }
+type I_chart_tooltip = { tooltipY: number, tooltipPoints: { color: string, label: ReactNode,rangeDetails:I_rangeDetail[],dataOption:I_chart_data_option }[] }
 type I_ChartData = { getFilter: () => I_filter, getProps: () => I_Chart, getChartSize: () => { x: number, y: number },dic:I_dic }
 class ChartData {
     p: I_ChartData
-    tooltipDic: { [key: string]: { ys: number[], labels: { color: string, text: ReactNode,rangeDetails:I_rangeDetail[] }[] } } = {};
+    tooltipDic: { [key: string]: { ys: number[], labels: { color: string, label: ReactNode,rangeDetails:I_rangeDetail[],dataOption:I_chart_data_option }[] } } = {};
     constructor(p: I_ChartData) {
         this.p = p
     }
+    getDataOption = (p:{data:I_chart_data,dataIndex:number}):Required<I_chart_data_option>=>{
+        const {dataOption = ()=>{return {}}} = this.p.getProps();
+        const option:I_chart_data_option = dataOption(p);
+        const {style = {lineWidth:1, stroke:'#333'},areaColors = [],title = '',color = '#000'} = {...option}
+        const {lineWidth = 1,stroke = '#333',dash} = style
+        return {style:{lineWidth,stroke,dash},areaColors,title:p.data.title || title,color:p.data.color || color}
+    }
+    getPointOption = (p:{data:I_chart_data,dataIndex:number,point:any,pointIndex:number}):{pointOption:Required<I_chart_point_option>,rangeDetails:I_chart_range_detail[]}=>{
+        const {pointOption} = this.p.getProps();
+        const option = pointOption(p);
+        const {
+            style = {lineWidth:1, r:4, stroke:p.data.type === 'line' ? '#333' : undefined, fill:p.data.type === 'line' ? '#fff' : '#333' },
+            ranges = [],text = '',textStyle = { fontSize:12, offset:12, fill:'#000', rotate:0 },key = 0, value = 0
+        } = {...option}
+        const {lineWidth = 1, r = 4, dash, stroke = p.data.type === 'line' ? '#333' : undefined, fill = p.data.type === 'line' ? '#fff' : '#333' } = style
+        const { fontSize = 12, offset:textOffset = 12, fill:textFill = '#000', rotate = 0 } = textStyle
+        return {
+            pointOption:{style:{lineWidth,stroke,dash,fill,r},ranges,text,textStyle:{fontSize,offset:textOffset,fill:textFill,rotate},value},
+            rangeDetails:this.getRangeDetails(ranges)
+        }
+    }
+    getRangeDetails = (ranges:I_chart_range[]):I_chart_range_detail[] => {
+        if (!ranges) { return [] }
+        const res: any = []
+        let lastValue = 0;
+        for (let k = 0; k < ranges.length; k++) {
+            let [value = lastValue, color] = ranges[k];
+            if(value === undefined){continue}
+            const { offset: startOffset } = this.getAxisPointDetail({ d: 'value', value: lastValue })
+            const { offset: endOffset } = this.getAxisPointDetail({ d: 'value', value })
+            res.push({ offset: startOffset, height: endOffset - startOffset, color,value:value - lastValue });
+            lastValue = value;
+        }
+        return res
+    }
+    
     getDataDetails = (datas: I_chart_data[]): I_chart_data_detail[] => {
         const dic = this.p.dic
+        const filter = this.p.getFilter()
         let dataDetails: I_chart_data_detail[] = []
         const barCount = datas.filter((data) => data.type === 'bar').length;
         let barIndex = -1;
         this.tooltipDic = {}
-        for (let i = 0; i < datas.length; i++) {
-            const data = datas[i];
-            const { type, getPointText, getRanges = () => { return undefined }, areaColors, color: dataColor = '#000' } = data;
-            if (type === 'bar') { barIndex++; }
-            let dataDetail: I_chart_data_detail = { points: [], type, lineStyle: this.getDefaultLineStyle(data), getPointText, barCount, barIndex, areaPoints: [], areaColors }
-            const filteredPoints = this.getFilteredPoints(data)
-            for (let j = 0; j < filteredPoints.length; j++) {
-                const fp = filteredPoints[j];
-                const {percent:keyPercent,offset:keyOffset,text:keyText,barSize:keyBarSize} = this.getPointDetail({ d: 'key', data, value: fp.key })
-                const {percent:valuePercent,offset:valueOffset,text:valueText,barSize:valueBarSize} = this.getPointDetail({ d: 'value', data, value: fp.value })
-                const pointDetail: I_chart_point_detail = {
-                    key:fp.key,value:fp.value,
-                    keyPercent,valuePercent,
-                    keyOffset,valueOffset,
-                    keyText,valueText,
-                    keyBarSize,valueBarSize,
-                    pointStyle: this.getDefaultPointStyle(data, fp.point),
-                    rangeDetails: this.getRanges(data, getRanges, fp.point),
+        for (let dataIndex = 0; dataIndex < datas.length; dataIndex++) {
+            const data = datas[dataIndex];
+            const dataOption = this.getDataOption({data,dataIndex})
+            if (data.type === 'bar') { barIndex++; }
+            let dataDetail: I_chart_data_detail = { points: [], dataOption, barCount, barIndex, areaPoints: [],areaColors:dataOption.areaColors,type:data.type || 'line' }
+            for(let pointIndex = filter[0]; pointIndex < filter[1]; pointIndex++){
+                const point = data.points[pointIndex];
+                const {pointOption,rangeDetails} = this.getPointOption({data,point,dataIndex,pointIndex})
+                const {percent:keyPercent,offset:keyOffset,label:keyLabel,barSize:keyBarSize} = this.getAxisPointDetail({ d: 'key', data, value: pointIndex })
+                const {percent:valuePercent,offset:valueOffset,label:valueLabel,barSize:valueBarSize} = this.getAxisPointDetail({ d: 'value', data, value: pointOption.value })
+                const pointDetail:I_chart_point_detail = {
+                    keyPercent,valuePercent,keyOffset,valueOffset,keyLabel,valueLabel,keyBarSize,valueBarSize,
+                    rangeDetails,dataOption,pointOption,data,dataIndex,point,pointIndex
                 }
-                this.addPosition(pointDetail, dataColor)
-                if (areaColors) { dataDetail.areaPoints.push([pointDetail[`${dic.x}Offset`], pointDetail[`${dic.y}Offset`]]) }
                 dataDetail.points.push(pointDetail)
+                this.addPosition(pointDetail, dataOption.color)
+                if (dataOption.areaColors.length) { dataDetail.areaPoints.push([pointDetail[`${dic.x}Offset`], pointDetail[`${dic.y}Offset`]]) }
+                
             }
-            if (areaColors) { dataDetail.areaPoints = [[dataDetail.areaPoints[0][0], 0], ...dataDetail.areaPoints, [dataDetail.areaPoints[dataDetail.areaPoints.length - 1][0], 0]] }
+            if (dataOption.areaColors.length) { dataDetail.areaPoints = [[dataDetail.areaPoints[0][0], 0], ...dataDetail.areaPoints, [dataDetail.areaPoints[dataDetail.areaPoints.length - 1][0], 0]] }
             dataDetails.push(dataDetail)
         }
-        console.log(this.tooltipDic)
         return dataDetails
     }
     addPosition = (pointDetail: I_chart_point_detail, color: string) => {
-        const { keyOffset: x,valueOffset: y, valueText:text } = pointDetail;
+        const { keyOffset: x,valueOffset: y, valueLabel:label,dataOption } = pointDetail;
         const key = x.toString();
         this.tooltipDic[key] = this.tooltipDic[key] || { ys: [], labels: [] }
         this.tooltipDic[key].ys.push(y);
-        this.tooltipDic[key].labels.push({ color, text,rangeDetails:pointDetail.rangeDetails });
+        this.tooltipDic[key].labels.push({ color, label,rangeDetails:pointDetail.rangeDetails,dataOption });
     }
     getTooltip = (x: number, y: number): I_chart_tooltip => {
         const det = this.tooltipDic[x.toString()]
@@ -565,14 +638,15 @@ class ChartData {
                 <div class="aio-chart-tooltip">
                     <div class="aio-chart-tooltip-title">${xLabel.text}</div>
                     ${
-                        tooltipPoints.map(({ text, color,rangeDetails }) => {
+                        tooltipPoints.map(({ label,color,rangeDetails,dataOption }) => {
                             return (
                                 `
                                     ${
                                         !rangeDetails.length?
                                         `<div class='aio-chart-tooltip-item'>
                                             <div style="width:10px;height:10px;background:${color}"></div>
-                                            <div>${text}</div>
+                                            ${!!dataOption.title?`<div style='white-space:nowrap'>${dataOption.title}</div>`:''}
+                                            <div>${label}</div>
                                         </div>`
                                         :''
                                     }
@@ -614,56 +688,13 @@ class ChartData {
         container.find('.aio-chart-cursor-label-container').css({ display: 'none' })
         container.find('.aio-chart-tooltip-container').css({ display: 'none' })
     }
-    getRanges = (data: I_chart_data, getRanges: any, point: any) => {
-        const ranges = getRanges(point);
-        if (!ranges) { return [] }
-        const res: any = []
-        if (ranges) {
-            let lastValue = 0;
-            for (let k = 0; k < ranges.length; k++) {
-                let [value = lastValue, color] = ranges[k];
-                if(value === undefined){continue}
-                const { offset: startOffset } = this.getPointDetail({ d: 'value', value: lastValue })
-                const { offset: endOffset } = this.getPointDetail({ d: 'value', value })
-                res.push({ offset: startOffset, height: endOffset - startOffset, color,value:value - lastValue });
-                lastValue = value;
-            }
-        }
-        return res
-    }
-    getDefaultLineStyle = (data: I_chart_data): I_chart_line_style => {
-        const { getLineStyle = (() => ({})) } = data;
-        const lineStyle: I_chart_line_style = getLineStyle() || {};
-        const { lineWidth = 1, dash, stroke = '#333' } = lineStyle
-        return { lineWidth, dash, stroke }
-    }
-    getDefaultPointStyle = (data: I_chart_data, point: any): I_chart_point_style | undefined => {
-        const { getPointStyle } = data;
-        if (!getPointStyle) { return }
-        const pointStyle: I_chart_point_style = getPointStyle(point) || {};
-        const { lineWidth = 1, r = 4, dash, stroke = data.type === 'line' ? '#333' : undefined, fill = data.type === 'line' ? '#fff' : '#333' } = pointStyle
-        return { lineWidth, r, dash, stroke, fill }
-    }
-    getFilteredPoints = (data: I_chart_data):{key:number,value:number,point:any}[] => {
-        const { points } = data;
-        const filter = this.p.getFilter()
-        const newPoints = []
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i]
-            const key = data.getKey(point,i), value = data.getValue(point,i);
-            if (key < filter[0]) { continue }
-            if (key > filter[1]) { continue }
-            newPoints.push({ key, value, point })
-        }
-        return newPoints
-    }
-    getPointDetail = (p: { d: 'key' | 'value', data?: I_chart_data, value: number }): { percent: number, offset: number, text: ReactNode, barSize: number } => {
+    getAxisPointDetail = (p: { d: 'key' | 'value', data?: I_chart_data, value: number }): I_axis_point_detail => {
         const filter = this.p.getFilter()
         const props = this.p.getProps();
         const Axis = props[`${p.d}Axis`]
         const dir = this.p.dic[p.d]
         const { padding = p.d === 'key' ? [36, 36] : [0, 0] } = Axis;
-        const f = p.d === 'key'?filter:[Axis.start,Axis.end];
+        const f = p.d === 'key'?filter:[(Axis as I_chart_value_axis).start,(Axis as I_chart_value_axis).end];
         const start = f[0], end = f[1];
         const percent = GetPercentByValue(start, end, p.value);
         const avilSize = this.p.getChartSize()[dir] - (padding[0] + padding[1])
@@ -675,7 +706,7 @@ class ChartData {
         else {
             barSize = -offset
         }
-        return { percent, offset, text: Axis.getLabel(p.value), barSize }
+        return { percent, offset, label: Axis.getLabel(p.value), barSize }
     }
     getBarWidth = (data: I_chart_data) => {
         const dir = this.p.dic.key

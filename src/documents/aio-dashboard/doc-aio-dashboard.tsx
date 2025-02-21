@@ -27,6 +27,7 @@ export default function DOC_AIODashboard(props: any) {
                 { text: 'point style', value: 'pointstyle', render: () => <PointStyle /> },
                 { text: 'line style', value: 'linestyle', render: () => <LineStyle /> },
                 { text: 'point text', value: 'pointtext', render: () => <PointText /> },
+                { text: 'onPointClick', value: 'onPointClick', render: () => <OnPointClick /> },
                 { text: 'sample 1', value: 'sample1', render: () => <Sample1 /> },
                 { text: 'Basic Pie Chart', value: 'basicpie', render: () => <BasicPie /> },
                 { text: 'Pie Empty', value: 'pieempty', render: () => <PieEmpty /> },
@@ -41,18 +42,22 @@ export default function DOC_AIODashboard(props: any) {
 const LineChart: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count:12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    title:'data',
+                    color:'lightblue'
+                }
+            }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -62,18 +67,22 @@ const LineChart: FC = () => {
 const BarChart: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    title:'data',
+                    color:'lightblue'
+                }
+            }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'bar'
                 }
             ]}
@@ -84,18 +93,22 @@ const Reverse: FC = () => {
     return (
         <Chart
             reverse={true}
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    title:'data',
+                    color:'lightblue'
+                }
+            }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'bar'
                 }
             ]}
@@ -105,40 +118,31 @@ const Reverse: FC = () => {
 const MultiBarChart: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    title:'data',
+                    color:'lightblue'
+                }
+            }}
+            pointOption={({point,dataIndex})=>{
+                return {
+                    value:point.b,
+                    style:{fill:['red','blue','orange'][dataIndex]}
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-                            fill: 'red'
-                        }
-                    },
                     type: 'bar'
                 },
                 {
                     points: [{ a: 0, b: 12 }, { a: 1, b: 67 }, { a: 2, b: 78 }, { a: 3, b: 32 }, { a: 4, b: 12 }, { a: 5, b: 0 }, { a: 6, b: 90 }, { a: 7, b: 41 }, { a: 8, b: 45 }, { a: 9, b: 45 }, { a: 10, b: 22 }, { a: 11, b: 78 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-                            fill: 'blue'
-                        }
-                    },
                     type: 'bar'
                 },
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 41 }, { a: 2, b: 12 }, { a: 3, b: 55 }, { a: 4, b: 70 }, { a: 5, b: 21 }, { a: 6, b: 45 }, { a: 7, b: 70 }, { a: 8, b: 21 }, { a: 9, b: 88 }, { a: 10, b: 44 }, { a: 11, b: 12 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-                            fill: 'orange'
-                        }
-                    },
                     type: 'bar'
                 }
             ]}
@@ -148,8 +152,20 @@ const MultiBarChart: FC = () => {
 const GetRanges: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    title:'data',
+                    color:'lightblue'
+                }
+            }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b,
+                    ranges:point.ranges
+                }
+            }}
             datas={[
                 {
                     points: [
@@ -166,14 +182,6 @@ const GetRanges: FC = () => {
                         { a: 10, b: 55, ranges: [[15, 'red'], [30, 'orange'], [55, 'yellow']] },
                         { a: 11, b: 13, ranges: [[8, 'red'], [10, 'orange'], [13, 'yellow']] }
                     ],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getRanges: (point: any) => point.ranges,
-                    getPointStyle: (point: any) => {
-                        return {
-                            fill: 'red'
-                        }
-                    },
                     type: 'bar'
                 }
             ]}
@@ -183,30 +191,23 @@ const GetRanges: FC = () => {
 const ComboChart: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
-                    type: 'bar'
+                    type: 'bar',
+                    title:'data1'
                 },
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
-                    type: 'line'
+                    type: 'line',
+                    title:'data2'
                 }
             ]}
         />
@@ -215,20 +216,21 @@ const ComboChart: FC = () => {
 const AreaColors: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            dataOption={()=>{
+                return {
+                    areaColors: ['transparent', '#ffa500'],
+                    style:{stroke:'#ffa500'}
+                }
+            }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getLineStyle: () => {
-                        return {
-                            stroke: '#ffa500'
-                        }
-                    },
-                    type: 'line',
-                    areaColors: ['transparent', '#ffa500']
+                    type:'line'
                 }
             ]}
         />
@@ -237,18 +239,14 @@ const AreaColors: FC = () => {
 const AxisPadding: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString(), padding: [24, 48] }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString(), padding: [24, 48] }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), padding: [12, 24] }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -261,18 +259,14 @@ const AxisGetLabel: FC = () => {
     const monthes = DATE.getMonths()
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v] }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v] }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -284,18 +278,14 @@ const AxisRotate: FC = () => {
     const monthes = DATE.getMonths()
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v], rotate: 45 }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v], rotate: 45 }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -307,18 +297,14 @@ const AxisRotateRTL: FC = () => {
     const monthes = DATE.getMonths(true)
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => monthes[v], rotate: -45 }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v], rotate: -45 }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -329,18 +315,14 @@ const AxisRotateRTL: FC = () => {
 const AxisGridLineColor: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point: any) => {
-                        return {
-
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -355,13 +337,14 @@ const AxisZoom: FC = () => {
     }
     return (
         <Chart
-            keyAxis={{ start: 0, end: 100, size: 36, getLabel: (v) => v.toString(), zoom: true }}
+            keyAxis={{ count: 100, size: 36, getLabel: (v) => v.toString(), zoom: true }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
             datas={[
                 {
                     points,
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
                     type: 'line'
                 }
             ]}
@@ -371,18 +354,17 @@ const AxisZoom: FC = () => {
 const PointStyle: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b,
+                    style:{r: 12, lineWidth: 6, dash: [6, 3], fill: 'orange', stroke: '#0069ff'}
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointStyle: (point) => {
-                        return {
-                            r: 12, lineWidth: 6, dash: [6, 3], fill: 'orange', stroke: '#0069ff'
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -392,18 +374,23 @@ const PointStyle: FC = () => {
 const LineStyle: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
+            dataOption={()=>{
+                return {
+                    style:{
+                        lineWidth: 3, dash: [6, 3], stroke: 'orange'
+                    }
+                }
+            }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getLineStyle: () => {
-                        return {
-                            lineWidth: 3, dash: [6, 3], stroke: 'orange'
-                        }
-                    },
                     type: 'line'
                 }
             ]}
@@ -414,44 +401,63 @@ const LineStyle: FC = () => {
 const PointText: FC = () => {
     return (
         <Chart
-            keyAxis={{ start: 0, end: 11, size: 36, getLabel: (v) => v.toString() }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
+            pointOption={({point})=>{
+                return {
+                    value:point.b,
+                    text:point.b,
+                    textStyle:{ offset: 12, fill: '#0069ff', fontSize: 20, rotate: 0 }
+                }
+            }}
             datas={[
                 {
                     points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                    getKey: (point: any) => point.a,
-                    getValue: (point: any) => point.b,
-                    getPointText: (point: any) => {
-                        return {
-                            text: point.y.value.toString(),
-                            style: { offset: 12, fill: '#0069ff', fontSize: 20, rotate: 0 }
-                        }
-                    },
                     type: 'line'
                 }
             ]}
         />
     )
 }
-
+const OnPointClick: FC = () => {
+    const DATE = new AIODate();
+    const monthes = DATE.getMonths()
+    return (
+        <Chart
+            onPointClick={(p)=>{
+                alert(`dataIndex:${p.dataIndex},pointIndex:${p.pointIndex}`)
+            }}
+            keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v] }}
+            valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
+            pointOption={({point})=>{
+                return {value:point.b}
+            }}
+            datas={[
+                {
+                    points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
+                    type: 'line'
+                }
+            ]}
+        />
+    )
+}
 const Sample1: FC = () => {
     return (
         <div className='chart-sample-1-container'>
             <Chart
                 attrs={{ className: 'chart-sample-1' }}
-                keyAxis={{ start: 0, end: 11, size: 16, getLabel: (v) => v.toString() }}
+                keyAxis={{ count: 12, size: 16, getLabel: (v) => v.toString() }}
                 valueAxis={{ start: 0, end: 100, size: 20, getLabel: (v) => v.toString(), gridLineColor: '#8ae7df' }}
+                pointOption={({point})=>{
+                    return {
+                        value:point.b,
+                        style:{fill:'#fff'}
+                    }
+                }}
                 datas={[
                     {
                         points: [{ a: 0, b: 24 }, { a: 1, b: 27 }, { a: 2, b: 78 }, { a: 3, b: 24 }, { a: 4, b: 0 }, { a: 5, b: 90 }, { a: 6, b: 87 }, { a: 7, b: 34 }, { a: 8, b: 42 }, { a: 9, b: 70 }, { a: 10, b: 55 }, { a: 11, b: 13 }],
-                        getKey: (point: any) => point.a,
-                        getValue: (point: any) => point.b,
                         color: '#fff',
-                        getPointStyle: (point: any) => {
-                            return {
-                                fill: '#fff'
-                            }
-                        },
                         type: 'bar'
                     }
                 ]}

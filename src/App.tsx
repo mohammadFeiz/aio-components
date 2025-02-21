@@ -30,6 +30,7 @@ import DOC_Sidenav from "./documents/sidenav/index.tsx";
 import Freelancer from './documents/freelancer';
 import Grid from './documents/data-grid'
 import Kits from "./documents/kits/kit1/index.tsx";
+import NovaChart from './documents/novachart';
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -57,6 +58,7 @@ export default function AIOComponents(){
     'use-form':DOC_UseForm,
     'sidenav':DOC_Sidenav,
     'Grid':Grid,
+    'NovaChart':NovaChart,
     'Freelancer':Freelancer,
     'Kits':Kits,
     'tree-search':DOC_TreeSearch
