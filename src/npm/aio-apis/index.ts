@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
-import { Stall, Storage } from '../aio-utils';
+import { Stall, Storage } from './../../npm/aio-utils';
 import { useRef } from 'react';
 
 export type AA_api = {
@@ -103,14 +103,14 @@ export default class AIOApis {
         }
     }
     private handleMock = (api: AA_api) => {
-        if(!api.mock){return}
+        if (!api.mock) { return }
         const mock = new MockAdapter(Axios);
         mock.resetHandlers();
         if (api.method === 'get') {
             mock.onGet(api.url).replyOnce((config: any) => {
                 return new Promise((resolve) => {
                     setTimeout(() => {
-                        if(!api.mock){return}
+                        if (!api.mock) { return }
                         const { status, data } = api.mock(config)
                         resolve([status, data]);
                         mock.restore();
@@ -123,7 +123,7 @@ export default class AIOApis {
             mock.onPost(api.url).replyOnce((config: any) => {
                 return new Promise((resolve) => {
                     setTimeout(() => {
-                        if(!api.mock){return}
+                        if (!api.mock) { return }
                         const { status, data } = api.mock(config)
                         resolve([status, data]);
                         mock.restore();
@@ -160,12 +160,14 @@ export default class AIOApis {
                 this.currentError = message
                 if (!isRetry) {
                     let title: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-                    this.addAlert({ type: 'error', title, text: message });
+                    if (api.showError !== false) {
+                        this.addAlert({ type: 'error', title, text: message });
+                    }
                 }
             }
         }
         else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
-        return response;
+        return { response, success, errorMessage };
     };
     retries = async <T>(api: AA_api, times: number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         const retries = [0, ...times] as number[]
@@ -242,4 +244,3 @@ export const useInstance = <T extends Record<string, any>>(inst: T): T => {
     if (res.current === null) { res.current = inst }
     return res.current
 }
-

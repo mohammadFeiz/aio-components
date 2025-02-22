@@ -150,14 +150,16 @@ export default class AIOApis {
                     this.currentError = message;
                     if (!isRetry) {
                         let title = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-                        this.addAlert({ type: 'error', title, text: message });
+                        if (api.showError !== false) {
+                            this.addAlert({ type: 'error', title, text: message });
+                        }
                     }
                 }
             }
             else if (api.cache) {
                 this.cache.setCache(api.name, api.cache.name, { api, value: response });
             }
-            return response;
+            return { response, success, errorMessage };
         });
         this.retries = (api, times) => __awaiter(this, void 0, void 0, function* () {
             const retries = [0, ...times];
