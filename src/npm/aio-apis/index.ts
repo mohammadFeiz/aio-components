@@ -2,6 +2,7 @@ import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
 import { Stall, Storage } from './../../npm/aio-utils';
+import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
 
 export type AA_api = {
@@ -18,7 +19,7 @@ export type AA_api = {
     token?: string,
     showError?: boolean,
     loader?: string, loadingParent?: string,
-    retries?: number[]
+    retries?: number[],
 }
 type I_cachedApi<T> = {
     api: AA_api,
@@ -31,7 +32,9 @@ export default class AIOApis {
         loader?: string,
         handleErrorMessage: (err: any, api: AA_api) => string,
         headers?: any,
-        lang?: 'en' | 'fa'
+        lang?: 'en' | 'fa',
+        onBeforeRequest?:(api:AA_api)=>Promise<{api?:AA_api,result?:any}>,
+        onAfterRequest?:(api:AA_api,result:{success:boolean,response:any,errorMessage:string})=>{success:boolean,response:any,errorMessage:string} | undefined,
     };
     token: string;
     currentError: string = '';
@@ -40,6 +43,7 @@ export default class AIOApis {
     fetchCachedValue: Cache["fetchCachedValue"]
     removeCache: Cache["removeCache"]
     apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
+    private DATE:AIODate = new AIODate()
     constructor(props: {
         id: string,
         token: string,
@@ -58,6 +62,9 @@ export default class AIOApis {
         this.fetchCachedValue = this.cache.fetchCachedValue;
         this.removeCache = this.cache.removeCache;
     }
+    getNow = (jalali?:boolean):number[]=>{
+        return this.DATE.getToday(jalali)
+    }
     setToken = (token: string) => {
         if (token && token === this.token) { Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; }
     }
@@ -75,7 +82,7 @@ export default class AIOApis {
         }
         return '';
     }
-    private responseToResult = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: any }> => {
+    private responseToResult = async (api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: any }> => {
         const { headers = this.props.headers } = api;
         const { handleErrorMessage } = this.props;
         if (!handleErrorMessage) {
@@ -151,6 +158,11 @@ export default class AIOApis {
         }
         else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
+        if(this.props.onBeforeRequest){
+            const {api:newApi,result} = await this.props.onBeforeRequest(api);
+            if(result){return result}
+            if(newApi){api = newApi}
+        }
         let { errorMessage = '', success, response } = await this.responseToResult(api);
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if (!success) {
@@ -167,6 +179,11 @@ export default class AIOApis {
             }
         }
         else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
+        if(this.props.onAfterRequest){
+            const res = await this.props.onAfterRequest(api,{ response, success, errorMessage });
+            if(res){return res}
+        }
+        
         return { response, success, errorMessage };
     };
     retries = async <T>(api: AA_api, times: number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
@@ -239,7 +256,7 @@ class Cache {
         }
     }
 }
-export const useInstance = <T extends Record<string, any>>(inst: T): T => {
+export const createInstance = <T extends Record<string, any>>(inst: T): T => {
     let res = useRef<any>(null)
     if (res.current === null) { res.current = inst }
     return res.current

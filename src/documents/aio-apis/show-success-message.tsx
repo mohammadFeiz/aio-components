@@ -1,13 +1,13 @@
 import { FC, useState } from "react"
-import AIOApis, { useInstance } from "../../npm/aio-apis"
+import AIOApis, { createInstance } from "../../npm/aio-apis"
 import { Code } from "../../npm/aio-component-utils"
 
 type I_user = { name: string, family: string }
 const ShowSuccessMessage: FC = () => {
-    const token='fdyte646345345vfgvd'
+    const token = 'fdyte646345345vfgvd'
     const base_url = 'http://my-apis'
-    
-    const apis = useInstance<Apis>(new Apis({ token, base_url }))
+
+    const apis = createInstance<Apis>(new Apis({ token, base_url }))
     const [users, setUsers] = useState<I_user[]>()
     const getData = async () => {
         const res = await apis.getUsers()
@@ -90,23 +90,23 @@ const App: FC<{ token: string, base_url: string }> = ({ token, base_url }) => {
             <button className='w-fit-' onClick={() => getData()}>Call Api</button>
             {
                 !!users &&
-                JSON.stringify(users,null,4)
+                JSON.stringify(users, null, 4)
             }
             {
                 !users && <div>users not fetched</div>
             }
-            
+
         </div>
     )
 }
 export default ShowSuccessMessage
 class Apis extends AIOApis {
-    base_url:string;
+    base_url: string;
     constructor(props: { token: string, base_url: string }) {
         super({
             id: 'apitest',
             token: props.token,
-            onCatch: (response) => response.response.data.message
+            handleErrorMessage: (response) => response.response.data.message
         })
         this.base_url = props.base_url
     }
@@ -114,25 +114,28 @@ class Apis extends AIOApis {
         return { status: 400, data: { message: 'you cannot do this action' } }
     }
     mockSuccess = () => {
-        return { 
-            status: 200, 
+        return {
+            status: 200,
             data: [
                 { name: 'david', family: 'anderson' },
-                { name:'john',family:'doe'}
+                { name: 'john', family: 'doe' }
             ]
         }
     }
     getUsers = async () => {
-        return await this.request<I_user[]>({
+        const { response, success, errorMessage } = await this.request<{data:I_user[]}>({
             name: 'getUsers',
-            mock: { delay: 2000, methodName: 'mockSuccess' },
+            mockDelay: 2000,
+            mock: this.mockSuccess,
             description: 'get users',
             method: 'get',
             url: `${this.base_url}/users/getUsers`,
-            onSuccess: (response) => {
-                this.addAlert({type:'success',text:'ُSuccess',subtext:'operation was successfull'})
-                return response.data
-            }
         })
+        if (success) {
+            this.addAlert({ type: 'success', title: 'ُSuccess', text: 'operation was successfull' })
+            return response.data
+        }
+        else {return false}
+
     }
 }

@@ -1,13 +1,13 @@
 import { FC, useState } from "react"
-import AIOApis, { useInstance } from "../../npm/aio-apis"
+import AIOApis, { createInstance } from "../../npm/aio-apis"
 import { Code } from "../../npm/aio-component-utils"
 
 type I_user = { name: string, family: string }
-const OnCatch: FC = () => {
+const HandleErrorMessage: FC = () => {
     const token='fdyte646345345vfgvd'
     const base_url = 'http://my-apis'
         
-    const apis = useInstance<Apis>(new Apis({ token, base_url }))
+    const apis = createInstance<Apis>(new Apis({ token, base_url }))
     const [users, setUsers] = useState<I_user[]>()
     const getData = async () => {
         const res = await apis.getUsers()
@@ -56,7 +56,6 @@ class Apis extends AIOApis {
     getUsers = async () => {
         const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
-            mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
             url: ${'`${this.base_url}/users/getUsers`'}
@@ -100,7 +99,7 @@ const App: FC = () => {
         </div>
     )
 }
-export default OnCatch
+export default HandleErrorMessage
 class Apis extends AIOApis {
     base_url:string;
     constructor(props: { token: string, base_url: string }) {
