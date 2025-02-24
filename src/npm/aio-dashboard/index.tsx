@@ -3,8 +3,8 @@ import { AddToAttrs, GetArray, GetPercentByValue } from "./../../npm/aio-utils";
 import Canvas from './../../npm/aio-canvas';
 import { I_canvas_item, I_canvas_props } from "./../../npm/aio-canvas/types";
 import $ from 'jquery';
-import './index.css';
 import { AISlider, AISpinner, I_rangeConfig } from "./../../npm/aio-input";
+import './repo/index.css';
 const ChartCtx = createContext({} as any)
 export type I_chart_range = [number, string]
 export type I_chart_label = { offset: number, text: ReactNode }
@@ -493,7 +493,7 @@ type I_pieRange = {
     roundCap?:boolean,
     color:string
 }
-type I_Pie = { 
+export const Pie: FC<{ 
     start: number, 
     size?:number,
     end: number, 
@@ -503,8 +503,7 @@ type I_Pie = {
     offset?:number,
     roundCap?:boolean,
     rangeStyle?: I_pieRange_style 
-}
-export const Pie: FC<I_Pie> = (props) => {
+}> = (props) => {
     function getRange(r: I_pieRange): [value: number, config: I_rangeConfig] {
         const { 
             value,
