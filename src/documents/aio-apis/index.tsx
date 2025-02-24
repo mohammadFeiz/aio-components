@@ -2,7 +2,7 @@ import DOC from '../../resuse-components/Doc/index.tsx';
 import './index.css';
 import CacheExpiredIn from './cache-expiredin.tsx';
 import EditCache from './edit-cache.tsx';
-import OnCatch from './onCatch.tsx';
+import HandleErrorMessage from './handleErrorMessage.tsx';
 import OnSuccess from './onSuccess.tsx';
 import ShowSuccessMessage from './show-success-message.tsx';
 import PreventErrorMessage from './prevent-error-message.tsx';
@@ -13,7 +13,7 @@ export default function DOC_AIOApis(props: any) {
         <DOC
             name={props.name} goToHome={props.goToHome}
             items={[
-                { text: 'onCatch', value: 'onCatch', render: () => <OnCatch/> },
+                { text: 'handleErrorMessage', value: 'ham', render: () => <HandleErrorMessage/> },
                 { text: 'onSuccess', value: 'onSuccess', render: () => <OnSuccess/> },
                 { text: 'show success message', value: 'ssm', render: () => <ShowSuccessMessage/> },
                 { text: 'prevent error message', value: 'pem', render: () => <PreventErrorMessage/> },

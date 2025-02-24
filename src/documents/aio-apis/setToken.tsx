@@ -3,7 +3,7 @@ import AIOApis, { createInstance } from "../../npm/aio-apis"
 import { Code } from "../../npm/aio-component-utils"
 
 type I_user = { name: string, family: string }
-const Retries: FC = () => {
+const HandleErrorMessage: FC = () => {
     const token='fdyte646345345vfgvd'
     const base_url = 'http://my-apis'
         
@@ -15,6 +15,14 @@ const Retries: FC = () => {
     }
     return (
         <div className="example flex-col- gap-12-">
+            <button className='w-fit-' onClick={() => getData()}>Call Api</button>
+            {
+                !!users &&
+                JSON.stringify(users,null,4)
+            }
+            {
+                !users && <div>users not fetched</div>
+            }
             <h3>In this example response is</h3>
             {
                 Code(`
@@ -48,11 +56,9 @@ class Apis extends AIOApis {
     getUsers = async () => {
         const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
-            mock: { delay: 2000, methodName: 'mockError' },
             description: 'get users',
             method: 'get',
-            url: ${'`${this.base_url}/users/getUsers`'},
-            retries:[4000,5000,6000]
+            url: ${'`${this.base_url}/users/getUsers`'}
         })
         if(success){return response.data}
         else {return false}
@@ -90,19 +96,10 @@ const App: FC = () => {
                     
                 `)
             }
-            <button className='w-fit-' onClick={() => getData()}>Call Api</button>
-            {
-                !!users &&
-                JSON.stringify(users,null,4)
-            }
-            {
-                !users && <div>users not fetched</div>
-            }
-            
         </div>
     )
 }
-export default Retries
+export default HandleErrorMessage
 class Apis extends AIOApis {
     base_url:string;
     constructor(props: { token: string, base_url: string }) {
@@ -128,12 +125,10 @@ class Apis extends AIOApis {
     getUsers = async () => {
         const {response,success} = await this.request<{data:I_user[]}>({
             name: 'getUsers',
-            mockDelay:2000,
-            mock:this.mockError,
+            mock: this.mockError,
             description: 'get users',
             method: 'get',
-            url: `${this.base_url}/users/getUsers`,
-            retries:[4000,5000,6000]
+            url: `${this.base_url}/users/getUsers`
         })
         if(success){return response.data}
         else {return false}
