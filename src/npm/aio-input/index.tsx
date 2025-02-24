@@ -465,7 +465,7 @@ const Select:FC = () => {
 }
 const DateInput:FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { value, hideTags } = rootProps;
+    let { value, hideTags,calendarMode } = rootProps;
 
     let values: any[] = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : [])
     function getDateText() {
@@ -489,6 +489,9 @@ const DateInput:FC = () => {
             return <div style={{ direction: 'ltr', width: 'fit-content' }}>{content}</div>
         }
         return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
+    }
+    if(calendarMode){
+        return <Calendar />
     }
     if (types.isMultiple) {
         return (
@@ -3527,6 +3530,7 @@ export type AI_date_cell_param = {
 type AI_isDate = {
     dateAttrs?: (p: AI_date_cell_param) => any,
     jalali?: boolean,
+    calendarMode?:boolean,
     now?: boolean,
     pattern?: string,
     theme?: string[],

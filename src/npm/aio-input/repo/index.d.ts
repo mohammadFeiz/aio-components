@@ -438,6 +438,7 @@ export type AI_date_cell_param = {
 type AI_isDate = {
     dateAttrs?: (p: AI_date_cell_param) => any;
     jalali?: boolean;
+    calendarMode?: boolean;
     now?: boolean;
     pattern?: string;
     theme?: string[];

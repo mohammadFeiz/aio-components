@@ -860,7 +860,7 @@
 }
 
 .aio-input-table-paging-size {
-    width: 60px;
+    min-width: 60px;
 }
 
 .aio-input-table-paging-button.active {
@@ -873,7 +873,6 @@
 .aio-input-date-calendar {
     user-select: none;
     -webkit-user-select: none;
-    direction: ltr;
     display: flex;
     flex-direction: column;
     stroke: #333;
@@ -981,7 +980,9 @@
     align-items: center;
 
 }
-
+.aio-input-date-container{
+    overflow:hidden
+}
 .aio-input-date-calendar svg {
     cursor: pointer;
 }
