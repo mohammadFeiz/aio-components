@@ -428,7 +428,7 @@ class ChartData {
                     barIndex++;
                 }
                 let dataDetail = { points: [], dataOption, barCount, barIndex, areaPoints: [], areaColors: dataOption.areaColors, type: data.type || 'line' };
-                for (let pointIndex = filter[0]; pointIndex < filter[1]; pointIndex++) {
+                for (let pointIndex = filter[0]; pointIndex <= filter[1]; pointIndex++) {
                     const point = data.points[pointIndex];
                     const { pointOption, rangeDetails } = this.getPointOption({ data, point, dataIndex, pointIndex });
                     const { percent: keyPercent, offset: keyOffset, label: keyLabel, barSize: keyBarSize } = this.getAxisPointDetail({ d: 'key', data, value: pointIndex });

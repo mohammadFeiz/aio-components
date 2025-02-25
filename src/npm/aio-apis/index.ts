@@ -256,7 +256,8 @@ class Cache {
         }
     }
 }
-export const createInstance = <T extends Record<string, any>>(inst: T): T => {
+export const CreateInstance = <T extends Record<string, any>>(inst: T): T => {
+    
     let res = useRef<any>(null)
     if (res.current === null) { res.current = inst }
     return res.current

@@ -33,6 +33,8 @@ export default function DOC_AIODashboard(props: any) {
                 { text: 'Pie Empty', value: 'pieempty', render: () => <PieEmpty /> },
                 { text: 'Pie Size', value: 'piesize', render: () => <PieSize /> },
                 { text: 'Pie Thickness', value: 'piethickness', render: () => <PieThickness /> },
+                { text: 'Pie Range Thickness', value: 'pieRangethickness', render: () => <PieRangeThickness /> },
+                { text: 'Pie circles', value: 'pieCircles', render: () => <PieCircles /> },
                 { text: 'Pie Generator', value: 'piegenerator', render: () => <PieGenerator /> },
             ]}
         />
@@ -469,7 +471,7 @@ const BasicPie: FC = () => {
     return (
         <Pie
             start={0}
-            end={100}
+            end={200}
             ranges={[
                 { value: 20, color: 'red' },
                 { value: 40, color: 'orange' },
@@ -483,14 +485,14 @@ const PieEmpty: FC = () => {
     return (
         <Pie
             start={0}
-            end={100}
+            end={200}
             ranges={[
                 { value: 20, color: 'red' },
                 { value: 40, color: 'orange' },
                 { value: 50, color: 'yellow' },
-                { value: 90, color: 'green' },
+                { value: 90, color: '#eee' },
             ]}
-            empty={{ color: '#eee' }}
+            
         />
     )
 }
@@ -498,7 +500,7 @@ const PieSize: FC = () => {
     return (
         <Pie
             start={0}
-            end={100}
+            end={200}
             ranges={[
                 { value: 20, color: 'red' },
                 { value: 40, color: 'orange' },
@@ -513,8 +515,8 @@ const PieThickness: FC = () => {
     return (
         <Pie
             start={0}
-            end={100}
-            thickness={120}
+            end={300}
+            thickness={80}
             roundCap={true}
             ranges={[
                 { value: 20, color: 'red' },
@@ -524,6 +526,45 @@ const PieThickness: FC = () => {
                 { value: 100, color: 'blue' },
             ]}
             size={240}
+        />
+    )
+}
+const PieRangeThickness: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={300}
+            thickness={20}
+            roundCap={true}
+            ranges={[
+                { value: 20, color: 'red',thickness:30,offset:40 },
+                { value: 40, color: 'orange',thickness:40,offset:30 },
+                { value: 50, color: 'yellow',thickness:50, roundCap: true,offset:20 },
+                { value: 90, color: 'green',thickness:60,offset:10 },
+                { value: 100, color: 'blue',thickness:70 },
+            ]}
+            size={300}
+        />
+    )
+}
+const PieCircles: FC = () => {
+    return (
+        <Pie
+            start={0}
+            end={300}
+            thickness={20}
+            roundCap={true}
+            circles={[
+                {thickness:10,color:'rgba(0,0,0,0.2)',offset:10}
+            ]}
+            ranges={[
+                { value: 20, color: 'red',thickness:30 },
+                { value: 40, color: 'orange',thickness:40 },
+                { value: 50, color: 'yellow',thickness:50, roundCap: true },
+                { value: 90, color: 'green',thickness:60 },
+                { value: 100, color: 'blue',thickness:70 },
+            ]}
+            size={300}
         />
     )
 }

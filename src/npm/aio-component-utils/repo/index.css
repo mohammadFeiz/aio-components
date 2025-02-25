@@ -257,7 +257,9 @@ code[class*="language-"] *::selection {
     color:#fff;
     height:100%;
     position: relative;
-    
+    overflow:hidden;
+    display:flex;
+    flex-direction: column;
 }
 .ai-sidenav-minimize{
     transition: width 0.3s;
@@ -294,6 +296,11 @@ code[class*="language-"] *::selection {
 .ai-sidenav .aio-input-tree-body .aio-input-tree-body{
     background:rgba(0,0,0,0.08);
     padding:12px 0;
+}
+.ai-sidenav-body{
+    flex:1;
+    overflow-y: auto;
+    z-index:10;
 }
 .ai-sidenav-tree{
     background:none ;

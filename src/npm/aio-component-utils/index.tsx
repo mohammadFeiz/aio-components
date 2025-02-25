@@ -8,11 +8,11 @@ import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
 import './repo/index.css';
 type AI_Indent = {
-    level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any,isLeaf:boolean,
+    level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any, isLeaf: boolean,
     open?: boolean, onToggle?: () => void, toggleIcon?: false | ((p: { row: any, open?: boolean, level: number }) => ReactNode)
 }
 export const Indent: FC<AI_Indent> = (props) => {
-    const { width, height, level, open, row, rtl, isLastChild, isParentLastChild,isLeaf } = props;
+    const { width, height, level, open, row, rtl, isLastChild, isParentLastChild, isLeaf } = props;
     const [indentPathes, setIndentPathes] = useState<ReactNode>(null)
     useEffect(() => { setIndentPathes(getIndentIcons()) }, [level, isLastChild, isParentLastChild])
     const [toggleIcon, setToggleIcon] = useState<ReactNode>(null)
@@ -47,7 +47,7 @@ export const Indent: FC<AI_Indent> = (props) => {
     const getToggleIcon = () => {
         return (
             <div className="ai-toggle" style={{ width }} onClick={(e) => { e.stopPropagation(); if (props.onToggle) { props.onToggle() } }}>
-                <div className={`ai-toggle-icon${isLeaf?' ai-leaf-icon':''}`}>{toggleSvg}</div>
+                <div className={`ai-toggle-icon${isLeaf ? ' ai-leaf-icon' : ''}`}>{toggleSvg}</div>
                 {
                     open === true &&
                     <svg className='ai-toggle-line ai-indent-line'>
@@ -130,9 +130,9 @@ export const AIPanel: FC<I_AIPanel> = ({ text, subtext, before, after, body }) =
     function body_layout() { return (<div className="ai-panel-body">{body}</div>) }
     return (<div className="ai-panel">{header_layout()} {body_layout()}</div>)
 }
-type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick?: () => void, before?: ReactNode, after?: ReactNode,attrs?:any,className?:string,style?:any }
-export const AICard: FC<I_AICard> = ({ text, subtext, onClick = ()=>{}, before, after,attrs,className,style }) => {
-    const Attrs = AddToAttrs(attrs,{className:["ai-card",className],style}) 
+type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick?: () => void, before?: ReactNode, after?: ReactNode, attrs?: any, className?: string, style?: any }
+export const AICard: FC<I_AICard> = ({ text, subtext, onClick = () => { }, before, after, attrs, className, style }) => {
+    const Attrs = AddToAttrs(attrs, { className: ["ai-card", className], style })
     return (
         <div {...Attrs}>
             {before !== undefined && <div className="ai-card-before" onClick={(e) => e.stopPropagation()}>{before}</div>}
@@ -156,7 +156,7 @@ type I_AIApp = {
     sidenav?: {
         items: AI_sidenavItem[],
         indent?: number,
-        header?:(minimize:boolean)=> ReactNode,
+        header?: (minimize: boolean) => ReactNode,
         value?: string,
         render?: () => ReactNode,
         cache?: boolean,
@@ -287,7 +287,7 @@ export type AI_Sidenav = {
     attrs?: any,
     rtl?: boolean,
     indent?: number,
-    header?: (minimize:boolean)=>ReactNode,
+    header?: (minimize: boolean) => ReactNode,
     value?: string,
     minimize?: boolean
 
@@ -351,7 +351,7 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         ...defaultOption,
         className: (option, { level }) => `ai-sidenav-${level === 0 ? 'item' : 'sub-item'}${value !== undefined && option.value === value ? ' active' : ''}`
     }
-    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className,!!minimize?'ai-sidenav-minimize':undefined] })
+    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] })
     return (
         <div {...attrs}>
             {
@@ -360,21 +360,23 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
             }
             {
                 !!props.minimize &&
-                <div className="ai-sidenav-minimize-button" onClick={()=>setMinimize(!minimize)}>
+                <div className="ai-sidenav-minimize-button" onClick={() => setMinimize(!minimize)}>
                     <div className="ai-sidenav-minimize-icon">{icons.getIcon('mdiMenu', 1)}</div>
                 </div>
             }
-            <AITree
-                {...attrs}
-                toggleIcon={() => false}
-                className={'ai-sidenav-tree'}
-                size={48}
-                toggleRef={toggleRef}
-                value={[...items]}
-                getChilds={(p: { row: AI_sidenavItem }) => p.row.items || []}
-                option={finalOptions}
-                indent={0}
-            />
+            <div className="ai-sidenav-body">
+                <AITree
+                    {...attrs}
+                    toggleIcon={() => false}
+                    className={'ai-sidenav-tree'}
+                    size={48}
+                    toggleRef={toggleRef}
+                    value={[...items]}
+                    getChilds={(p: { row: AI_sidenavItem }) => p.row.items || []}
+                    option={finalOptions}
+                    indent={0}
+                />
+            </div>
         </div>
     )
 }
@@ -544,52 +546,52 @@ const NodeGroup: FC<{
     if (tag === 'form') { return (<p {...attrs}>{content}</p>) }
     return (<div {...attrs}>{content}</div>)
 }
-type I_Flip = {value:string | number,double?:boolean,fontSize?:number}
+type I_Flip = { value: string | number, double?: boolean, fontSize?: number }
 
 export class Flip extends React.Component<I_Flip> {
-  ref:React.RefObject<any>;
-  inst:any;
-  constructor(props:I_Flip) {
-    super(props);
-    this.ref = React.createRef();
-  }
-  getValue(){
-    let value = this.props.value
-    if(this.props.double){
-      let str = '';
-      try {str = value.toString()} catch{}
-      if(str.length === 0){str = '00'}
-      else if (str.length === 1){str = '0' + str}
-      value = str
+    ref: React.RefObject<any>;
+    inst: any;
+    constructor(props: I_Flip) {
+        super(props);
+        this.ref = React.createRef();
     }
-    return value
-  }
-  componentDidMount() {
-    this.inst = Tick.DOM.create(this.ref.current, {
-      value: this.getValue()
-    });
-  }
-
-  componentDidUpdate() {
-    if (this.inst) {
-        this.inst.value = this.getValue();
+    getValue() {
+        let value = this.props.value
+        if (this.props.double) {
+            let str = '';
+            try { str = value.toString() } catch { }
+            if (str.length === 0) { str = '00' }
+            else if (str.length === 1) { str = '0' + str }
+            value = str
+        }
+        return value
     }
-    
-  }
+    componentDidMount() {
+        this.inst = Tick.DOM.create(this.ref.current, {
+            value: this.getValue()
+        });
+    }
 
-  componentWillUnmount() {
-    if (!this.inst) return;
-    Tick.DOM.destroy(this.ref.current);
-  }
+    componentDidUpdate() {
+        if (this.inst) {
+            this.inst.value = this.getValue();
+        }
 
-  render() {
-    let {fontSize = 24} = this.props;
-    return (
-      <div ref={this.ref} className="tick" style={{fontSize}}>
-        <div data-repeat="true" aria-hidden="true">
-          <span data-view="flip">Tick</span>
-        </div>
-      </div>
-    );
-  }
+    }
+
+    componentWillUnmount() {
+        if (!this.inst) return;
+        Tick.DOM.destroy(this.ref.current);
+    }
+
+    render() {
+        let { fontSize = 24 } = this.props;
+        return (
+            <div ref={this.ref} className="tick" style={{ fontSize }}>
+                <div data-repeat="true" aria-hidden="true">
+                    <span data-view="flip">Tick</span>
+                </div>
+            </div>
+        );
+    }
 }

@@ -498,11 +498,14 @@ export const Pie: FC<{
     size?:number,
     end: number, 
     ranges: I_pieRange[],
-    empty?:Omit<I_pieRange,'value'>,
     thickness?:number,
     offset?:number,
     roundCap?:boolean,
-    rangeStyle?: I_pieRange_style 
+    rangeStyle?: I_pieRange_style,
+    attrs?:any,
+    style?:any,
+    className?:string,
+    circles?:I_rangeConfig[]
 }> = (props) => {
     function getRange(r: I_pieRange): [value: number, config: I_rangeConfig] {
         const { 
@@ -517,13 +520,13 @@ export const Pie: FC<{
     function getRanges(){
         const {end,ranges} = props;
         const res = ranges.map((o) => getRange(o))
-        if(props.empty && ranges[ranges.length - 1].value < end){
-            res.push(getRange({...props.empty,value:end}))
-        }
         return res
     }
+    const Attrs = AddToAttrs(props.attrs,{className:['aio-chart-pie',props.className],style:props.style})
     return (
         <AISpinner
+            attrs={Attrs}
+            circles={props.circles}
             size={props.size}
             start={props.start}
             end={props.end}
@@ -591,7 +594,7 @@ class ChartData {
             const dataOption = this.getDataOption({data,dataIndex})
             if (data.type === 'bar') { barIndex++; }
             let dataDetail: I_chart_data_detail = { points: [], dataOption, barCount, barIndex, areaPoints: [],areaColors:dataOption.areaColors,type:data.type || 'line' }
-            for(let pointIndex = filter[0]; pointIndex < filter[1]; pointIndex++){
+            for(let pointIndex = filter[0]; pointIndex <= filter[1]; pointIndex++){
                 const point = data.points[pointIndex];
                 const {pointOption,rangeDetails} = this.getPointOption({data,point,dataIndex,pointIndex})
                 const {percent:keyPercent,offset:keyOffset,label:keyLabel,barSize:keyBarSize} = this.getAxisPointDetail({ d: 'key', data, value: pointIndex })

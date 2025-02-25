@@ -1,6 +1,6 @@
 {
   "name": "aio-dashboard",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "all in one dashboard elements",
   "main": "index.js",
   "scripts": {
