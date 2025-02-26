@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { I_formField, I_formNode, useForm } from "../../npm/aio-input";
+import { useForm } from "../../npm/aio-input";
 import './index.css';
 type I_noeHamkari = '0' | '1'
 type I_jensiat = '0' | '1'
