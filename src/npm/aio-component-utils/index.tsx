@@ -150,8 +150,21 @@ type I_AIApp = {
     attrs?: any,
     rtl?: boolean,
     bottomMenu?: {
-        options: AI_bottomMenuOption[],
-        onChange: (v: string) => void
+        options: any[],
+        option:{
+            value?:(option:string)=>string,
+            text?:(option:string)=>ReactNode,
+            uptext?:(option:string)=>ReactNode,
+            subtext?:(option:string)=>ReactNode,
+            before?:(option:string)=>ReactNode,
+            after?:(option:string)=>ReactNode,
+            show?:(option:string)=>boolean,
+            active?:(option:string)=>boolean,
+            onClick?:(option:string)=>boolean | undefined,
+            attrs?:(option:string)=>any,
+            className?:(option:string)=>string | undefined,
+            style?:(option:string)=>any
+        }
     }
     sidenav?: {
         items: AI_sidenavItem[],
@@ -166,7 +179,6 @@ type I_AIApp = {
     header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false,
     children?: ReactNode
 }
-type AI_bottomMenuOption = { text?: ReactNode, uptext?: ReactNode, subtext?: ReactNode, value: string, before?: ReactNode, after?: ReactNode, show?: boolean, active?: boolean }
 export const AIApp: FC<I_AIApp> = (props) => {
     const [storage] = useState<Storage>(getStorage)
     function getStorage(): Storage { return new Storage('aiapp' + props.appId) }
@@ -252,24 +264,35 @@ const useSidenav = (props: { sidenav?: I_AIApp["sidenav"], appId: string, storag
 }
 type AI_BottomMenu = { bottomMenu: NonNullable<I_AIApp["bottomMenu"]> }
 const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
-    const { options, onChange } = bottomMenu
-    function item_layout(item: AI_bottomMenuOption) {
-        if (item.show === false) { return null }
+    const { options,option } = bottomMenu
+    function getProps(item:any,props:string[]):any{
+        const res:{[key:string]:any} = {}
+        for(let prop of props){
+            res[prop] = (option as any)[prop]?(option as any)[prop](item):undefined 
+        }
+        return res
+    }
+    function item_layout(item: any) {
+        if (getProps(item,['show']).show === false) { return null }
+        const {value,text,uptext,subtext,active,before,after,attrs,className,style} = getProps(item,['value','text','uptext','subtext','active','before','after','show','attrs','className','style'])
+        const Attrs = AddToAttrs(attrs,{
+            className:['ai-app-bottom-menu-option',active?'active':undefined,className],
+            style,attrs:{onClick:()=>{if(option.onClick){option.onClick(item)}}}
+        })
         return (
-            <div key={item.value} className={`ai-app-bottom-menu-option${item.active ? ' active' : ''}`} onClick={() => onChange(item.value)}>
-                {!!item.before && item.before}
+            <div key={value} {...Attrs}>
+                {!!before && before}
                 <div className="ai-app-bottom-menu-option-body">
-                    {item.text !== undefined && item.text}
+                    {text !== undefined && text}
                     {
-                        item.text === undefined &&
+                        text === undefined &&
                         <>
-                            <div className="ai-app-bottom-menu-uptext">{item.uptext}</div>
-                            <div className="ai-app-bottom-menu-subtext">{item.subtext}</div>
+                            <div className="ai-app-bottom-menu-uptext">{uptext}</div>
+                            <div className="ai-app-bottom-menu-subtext">{subtext}</div>
                         </>
                     }
                 </div>
-                {!!item.after && item.after}
-
+                {!!after && after}
             </div>
         )
     }
@@ -311,7 +334,7 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
     function getAfter(option: AI_sidenavItem, active: boolean) {
         let { items = [], after } = option;
         return (
-            <div className={`ai-sidenav-after`}>
+            <div className={`ai-sidenav-item-after`}>
                 {!!after && after}
                 {
                     !!items.length &&
@@ -323,12 +346,12 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         )
     }
     function getBefore(option: any, level: number) {
-        let { icon } = option;
-        if (level > 0 && !icon) { icon = icons.getIcon('mdiCircleMedium', 0.6) }
-        if (!icon) { return null }
+        let { before } = option;
+        if (level > 0 && !before) { before = icons.getIcon('mdiCircleMedium', 0.6) }
+        if (!before) { return null }
         return (
-            <div className={`ai-sidenav-item-icon`}>
-                {icon}
+            <div className={`ai-sidenav-item-before`}>
+                {before}
             </div>
         )
     }

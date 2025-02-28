@@ -308,7 +308,7 @@ code[class*="language-"] *::selection {
 .ai-sidenav-item.active{
     background:#637da0
 }
-.ai-sidenav-item .ai-sidenav-item-icon{
+.ai-sidenav-item .ai-sidenav-item-before{
     width:36px;
     height:36px;
     display:flex;
@@ -323,7 +323,7 @@ code[class*="language-"] *::selection {
 .ai-sidenav-sub-item.active{
     background:#637da0
 }
-.ai-sidenav-sub-item .ai-sidenav-item-icon{
+.ai-sidenav-sub-item .ai-sidenav-item-before{
     width:36px;
     height:36px;
     display:flex;

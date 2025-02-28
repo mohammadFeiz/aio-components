@@ -44,13 +44,24 @@ function getMediaCss() {
     const mediaSizes = [768, 992, 1200];
     const mediaNames = ['xs', 'sm', 'md', 'lg']
     for (let i = 0; i < mediaNames.length; i++) {
-        const s = mediaSizes[i];
+        const s = mediaSizes[i] || mediaSizes[i - 1];
         const n = mediaNames[i];
-        if (i === 0) { res += `
-@media screen and (max-width: ${mediaSizes[0]}px) {.hide-${mediaNames[0]}- {display: none !important;}}` 
-}
-        else if (i === mediaNames.length - 1) { res += `@media screen and (min-width: ${s}px) {.hide-${n}- {display: none !important;}} ` }
-        else { res += `@media screen and (min-width: ${mediaSizes[i - 1]}px) and (max-width: ${mediaSizes[i]}px) {.hide-${n}- {display: none !important;}} ` }
+        if (i === 0) { 
+            res += `
+                @media screen and (max-width: ${mediaSizes[0]}px) {
+                    .hide-${mediaNames[0]}- {
+                        display: none !important;
+                    }
+                }
+            ` 
+        }
+        else if (i === mediaNames.length - 1) { 
+            res += `
+                @media screen and (min-width: ${s}px) {
+                    .hide-${n}- {display: none !important;}
+                }
+            `}
+        else { res += `@media screen and (min-width: ${mediaSizes[i - 1]}px) and (max-width: ${s}px) {.hide-${n}- {display: none !important;}} ` }
     }
     return res
 }
@@ -139,12 +150,20 @@ function getSizesCss() {
     for (let n of percents) {
         const val = n + '%'
         res += `.w-p${n}-{width:${val} !important;}`;
+        res += `.max-w-p${n}-{max-width:${val} !important;}`;
+        res += `.min-w-p${n}-{min-width:${val} !important;}`;
         res += `.h-p${n}-{height:${val} !important;}`;
+        res += `.max-h-p${n}-{max-height:${val} !important;}`;
+        res += `.min-h-p${n}-{min-height:${val} !important;}`;
     }
     res += `.w-100-{width:100% !important;}`;
+    res += `.max-w-100-{max-width:100% !important;}`;
     res += `.h-100-{height:100% !important;}`;
+    res += `.max-h-100-{max-height:100% !important;}`;
     res += `.w-fit-{width:fit-content !important;}`;
+    res += `.max-w-fit-{max-width:fit-content !important;}`;
     res += `.h-fit-{height:fit-content !important;}`;
+    res += `.max-h-fit-{max-height:fit-content !important;}`;
     return res
 }
 function getFontSizeCss() {
@@ -171,7 +190,7 @@ function getColorsCss() {
         res += `.bg-${index}-{background:${val} !important;}`;
         res += `.c-${index}-{color:${val} !important;} `;
     }
-    const percents = ['0', '5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
+    const percents = ['0','1','3','5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
     for (let n of percents) {
         const val = n === '5'?'05':n
         res += `.bg-l-${n}-{background:rgba(255, 255, 255, .${val}) !important;}`;

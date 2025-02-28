@@ -49,12 +49,8 @@ const LineChart: FC = () => {
             dataOption={()=>{
                 return {
                     title:'data',
-                    color:'lightblue'
-                }
-            }}
-            pointOption={({point})=>{
-                return {
-                    value:point.b
+                    color:'lightblue',
+                    pointValue:(point)=>point.b
                 }
             }}
             datas={[
@@ -74,12 +70,8 @@ const BarChart: FC = () => {
             dataOption={()=>{
                 return {
                     title:'data',
-                    color:'lightblue'
-                }
-            }}
-            pointOption={({point})=>{
-                return {
-                    value:point.b
+                    color:'lightblue',
+                    pointValue:(point)=>point.b
                 }
             }}
             datas={[
@@ -100,12 +92,8 @@ const Reverse: FC = () => {
             dataOption={()=>{
                 return {
                     title:'data',
-                    color:'lightblue'
-                }
-            }}
-            pointOption={({point})=>{
-                return {
-                    value:point.b
+                    color:'lightblue',
+                    pointValue:(point)=>point.b
                 }
             }}
             datas={[
@@ -125,13 +113,8 @@ const MultiBarChart: FC = () => {
             dataOption={()=>{
                 return {
                     title:'data',
-                    color:'lightblue'
-                }
-            }}
-            pointOption={({point,dataIndex})=>{
-                return {
-                    value:point.b,
-                    style:{fill:['red','blue','orange'][dataIndex]}
+                    color:'lightblue',
+                    pointValue:(point)=>point.b
                 }
             }}
             datas={[
@@ -159,13 +142,9 @@ const GetRanges: FC = () => {
             dataOption={()=>{
                 return {
                     title:'data',
-                    color:'lightblue'
-                }
-            }}
-            pointOption={({point})=>{
-                return {
-                    value:point.b,
-                    ranges:point.ranges
+                    color:'lightblue',
+                    pointValue:(point)=>point.b,
+                    pointRanges:(point)=>point.ranges
                 }
             }}
             datas={[
@@ -195,9 +174,9 @@ const ComboChart: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
-            pointOption={({point})=>{
+            dataOption={()=>{
                 return {
-                    value:point.b
+                    pointValue:(point)=>point.b,
                 }
             }}
             datas={[
@@ -223,11 +202,9 @@ const AreaColors: FC = () => {
             dataOption={()=>{
                 return {
                     areaColors: ['transparent', '#ffa500'],
-                    style:{stroke:'#ffa500'}
+                    style:{stroke:'#ffa500'},
+                    pointValue:(point)=>point.b
                 }
-            }}
-            pointOption={({point})=>{
-                return {value:point.b}
             }}
             datas={[
                 {
@@ -243,8 +220,10 @@ const AxisPadding: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString(), padding: [24, 48] }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), padding: [12, 24] }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -263,8 +242,10 @@ const AxisGetLabel: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v] }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -282,8 +263,10 @@ const AxisRotate: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v], rotate: 45 }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -301,8 +284,10 @@ const AxisRotateRTL: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v], rotate: -45 }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -319,8 +304,10 @@ const AxisGridLineColor: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -341,8 +328,10 @@ const AxisZoom: FC = () => {
         <Chart
             keyAxis={{ count: 100, size: 36, getLabel: (v) => v.toString(), zoom: true }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -358,10 +347,10 @@ const PointStyle: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
-            pointOption={({point})=>{
+            dataOption={()=>{
                 return {
-                    value:point.b,
-                    style:{r: 12, lineWidth: 6, dash: [6, 3], fill: 'orange', stroke: '#0069ff'}
+                    pointValue:(point)=>point.b,
+                    pointStyle:(point)=>({r: 12, lineWidth: 6, dash: [6, 3], fill: 'orange', stroke: '#0069ff'})
                 }
             }}
             datas={[
@@ -380,14 +369,8 @@ const LineStyle: FC = () => {
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
             dataOption={()=>{
                 return {
-                    style:{
-                        lineWidth: 3, dash: [6, 3], stroke: 'orange'
-                    }
-                }
-            }}
-            pointOption={({point})=>{
-                return {
-                    value:point.b
+                    lineStyle:{lineWidth: 3, dash: [6, 3], stroke: 'orange'},
+                    pointValue:(point)=>point.b
                 }
             }}
             datas={[
@@ -405,11 +388,11 @@ const PointText: FC = () => {
         <Chart
             keyAxis={{ count: 12, size: 36, getLabel: (v) => v.toString() }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString(), gridLineColor: '#ddd' }}
-            pointOption={({point})=>{
+            dataOption={()=>{
                 return {
-                    value:point.b,
-                    text:point.b,
-                    textStyle:{ offset: 12, fill: '#0069ff', fontSize: 20, rotate: 0 }
+                    pointValue:(point)=>point.b,
+                    pointText:(point)=>point.b,
+                    pointTextStyle:()=>({ offset: 12, fill: '#0069ff', fontSize: 20, rotate: 0 })
                 }
             }}
             datas={[
@@ -431,8 +414,10 @@ const OnPointClick: FC = () => {
             }}
             keyAxis={{ count: 12, size: 36, getLabel: (v) => monthes[v] }}
             valueAxis={{ start: 0, end: 100, size: 60, getLabel: (v) => v.toString() }}
-            pointOption={({point})=>{
-                return {value:point.b}
+            dataOption={()=>{
+                return {
+                    pointValue:(point)=>point.b
+                }
             }}
             datas={[
                 {
@@ -450,10 +435,10 @@ const Sample1: FC = () => {
                 attrs={{ className: 'chart-sample-1' }}
                 keyAxis={{ count: 12, size: 16, getLabel: (v) => v.toString() }}
                 valueAxis={{ start: 0, end: 100, size: 20, getLabel: (v) => v.toString(), gridLineColor: '#8ae7df' }}
-                pointOption={({point})=>{
+                dataOption={()=>{
                     return {
-                        value:point.b,
-                        style:{fill:'#fff'}
+                        pointValue:(point)=>point.b,
+                        pointStyle:()=>({fill:'#fff'})
                     }
                 }}
                 datas={[
