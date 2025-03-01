@@ -192,7 +192,7 @@ function getColorsCss() {
     }
     const percents = ['0','1','3','5', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
     for (let n of percents) {
-        const val = n === '5'?'05':n
+        const val = n.length === 1?`0${n}`:n
         res += `.bg-l-${n}-{background:rgba(255, 255, 255, .${val}) !important;}`;
         res += `.bg-d-${n}-{background:rgba(0, 0, 0, .${val}) !important;}`;
         res += `.c-l-${n}-{color:rgba(255, 255, 255, .${val}) !important;}`;

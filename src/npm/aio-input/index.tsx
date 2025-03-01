@@ -1,4 +1,4 @@
-import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject } from 'react';
+import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
 import usePopup, { AP_modal, AP_usePopup } from "./../../npm/aio-popup";
 import * as UT from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
@@ -295,7 +295,7 @@ function Image() {
     function openPopup() {
         popup.addModal({
             position: 'center', header: { title: '', onClose: () => popup.removeModal() },
-            body: <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} alt={placeholder as string} /></div>
+            body: <div className='aio-input-image-preview-popup'><img src={$(dom.current).attr('src')} /></div>
         })
     }
     let IMG = url ? (
@@ -303,7 +303,6 @@ function Image() {
             <img
                 ref={dom as any}
                 src={url}
-                alt={placeholder as string}
                 style={{ objectFit: 'contain', cursor: !onChange ? 'default' : undefined }}
                 onClick={!!onChange ? undefined : onPreview}
                 height='100%'
@@ -3422,7 +3421,6 @@ export type AITYPE =
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
         switch?:{ 
-            size?: number[], 
             value?: boolean, 
             onChange?: (v: boolean) => void, 
             colors?: string[],
@@ -3666,6 +3664,7 @@ export type I_formInput<T> = AITYPE & {
 type I_useFormProps<T> = {
     initData: Partial<T>;
     onSubmit?: (data: T) => void;
+    liveSubmit?:boolean;
     fa?: boolean;
     showLabel?: boolean,
     getLayout?: (context: I_formContext<T>) => I_formNode<T>
@@ -3733,7 +3732,10 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     const [data, setData] = useState<T>(getInitData);
     function getData() { return dataRef.current }
     const changeData = (data: T) => {
-        dataRef.current = data; setData(data)
+        dataRef.current = data; setData(data);
+        if(p.liveSubmit && p.onSubmit){
+            p.onSubmit(data)
+        }
     }
     const changeByInput = (input: I_formInput<T>, value: any) => {
         let newData = { ...dataRef.current };
@@ -4026,7 +4028,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={attrs}
             />
         )
-    }, [JSON.stringify(inputProps), error])
+    }, [JSON.stringify(inputProps,(key: string, value: any) => isValidElement(value)?undefined:value), error])
     return <Fragment key={input.field}>{dom}</Fragment>;
 }
 export const AIFormInput: FC<{

@@ -1,390 +1,134 @@
-import { FC } from "react";
-import { useForm } from "../../npm/aio-input";
+import { FC, useContext, useState } from "react";
+import { I_CTX, I_filter, I_row } from "./types";
 import './index.css';
-type I_noeHamkari = '0' | '1'
-type I_jensiat = '0' | '1'
+import { AITable } from "../../npm/aio-input";
+import Header from "./header";
+import { CTX } from "./context";
+import usePopup from "../../npm/aio-popup";
+import AddForm from "./add-form";
+
 const App: FC = () => {
-    const dic: {
-        noeHamkari: { [key in I_noeHamkari]: string },
-        jensiat: { [key in I_jensiat]: string }
-    } = {
-        noeHamkari: {
-            '0': 'اصلاح کننده آدرس',
-            '1': 'راننده فریلنسر'
-        },
-        jensiat: {
-            '0': 'مرد',
-            '1': 'زن'
-        }
-    }
-    const options: {
-        noeHamkari: I_noeHamkari[],
-        tab_pinKoneAdres: I_tab_pinKoneAdres[],
-        jensiat: I_jensiat[]
-    } = {
-        noeHamkari: ['0', '1'],
-        tab_pinKoneAdres: ['اطلاعات فردی', 'شهر های منتسب'],
-        jensiat: ['0', '1']
-    }
-    const noeHamkari_form = useForm<{ noeHamkari: I_noeHamkari }>({
-        initData: {},
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        className: 'fs-12- m-b-12-', html: 'نوع همکاری را انتخاب کنید'
-                    },
-                    {
-                        input: {
-                            type: 'buttons', field: 'noeHamkari', label: '', required: true,
-                            options: options.noeHamkari,
-                            option: {
-                                text: (option: I_noeHamkari) => dic.noeHamkari[option],
-                                value: (option) => option
-                            }
-                        }
-                    },
-
-                ]
-            }
-        }
+    const popup = usePopup()
+    const [filter, setFilter] = useState<I_filter>({
+        advanced: {}
     })
+    const [data, setData] = useState<I_row[]>([
+        {
+            selectRoles: [{ id: 0, text: 'فریلنسر' }],
+            name: 'محمد شریف',
+            nationalCode: '0386481784',
+            mobile: '09123534314',
+            email: 'feiz.ms@gmail.com',
+            createDate: {
+                day: 4,
+                month: 4,
+                year: 1364,
+                hour: '',
+                minute: ''
+            },
+            username: 'msf1364',
+            isActive: true
+        }
+    ])
+    const openAddModal = ()=>{
+        popup.addModal({
+            header:{
+                title:'ثبت نام راننده',
+            },
+            body:<AddForm/>
+        })
+    }
+    const getContext = (): I_CTX => {
+        return { 
+            filter, changeFilter: (v: I_filter) => setFilter(v),
+            data,openAddModal
+        }
+    }
     return (
-        <div className="fullscreen- flex-col- rtl- p-24- boxit-freelancer">
-            <div className="fs-16- bold- m-b-24-">افزودن پرسنل خارج از سازمان</div>
-            {noeHamkari_form.renderLayout}
-            <EslahKonadeyeAddressEttelaateFardi />
-
-        </div>
+        <CTX.Provider value={getContext()}>
+            <div className="fullscreen- flex-col- rtl- p-12- fs-12-">
+                <div className="h-48- flex-row- align-v- p-h-12-">مدیریت پرسنل / پرسنل خارج از سازمان</div>
+                <Header />
+                <div className="h-12-"></div>
+                <Table />
+                {popup.render()}
+            </div>
+        </CTX.Provider>
     )
 }
 export default App
-type I_tab_pinKoneAdres = 'اطلاعات فردی' | 'شهر های منتسب'
 
-type I_eslahKonandeyeAddress_ettelaateFardi = {
-    name?: string,
-    codeMelli?: string,
-    mobile?: string,
-    namePedar?: string,
-    email?: string,
-    tarikheTavallod?: string,
-    jensiat?: I_jensiat,
-    phone?: string,
-    shomareZarori?: string,
-    shahr?: string,
-    faal?: boolean,
-    address?: string,
-}
 
-const EslahKonadeyeAddressEttelaateFardi: FC = () => {
-    const options = {
-        tab: ['اطلاعات فردی', 'شهر های منتسب'],
-        shahr: [
-            { text: 'تهران - تهران', id: '0' },
-            { text: 'تهران - ورامین', id: '1' },
-            { text: 'تهران - اندیشه', id: '2' }
-        ],
-        jensiat: [
-            { text: 'مرد', id: '0' },
-            { text: 'زن', id: '1' }
-        ]
-    }
-    const option = { text: 'option.text', value: 'option.id' }
-    const form = useForm<I_eslahKonandeyeAddress_ettelaateFardi>({
-        initData: { faal: false }, fa: true,
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'name', type: 'text', required: true } },
-                            { flex: 1, input: { label: 'کد ملی', field: 'codeMelli', type: 'text', required: true, validateType: "irNationalCode" } },
-                            { flex: 1, input: { label: 'شماره موبایل', field: 'mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] } },
-                            { flex: 1, input: { label: 'نام پدر', field: 'namePedar', type: 'text', required: true } }
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'پست الکترونیکی', field: 'email', type: 'text', validateType: 'email' } },
-                            { flex: 1, input: { label: 'تاریخ تولد', field: 'tarikheTavallod', type: 'text' } },
-                            {
-                                flex: 1,
-                                input: {
-                                    label: 'جنسیت', field: 'jensiat', type: 'select', required: true,
-                                    options: options.jensiat, option: { text: 'option.text', value: 'option.id' }
-                                }
-                            },
-                            { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'phone', type: 'text', required: true } },
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-', h: [
-                            { flex: 1, input: { label: 'شماره ضروری', field: 'shomareZarori', type: 'text', required: true } },
-                            { input: { label: 'شهر', field: 'shahr', type: 'select', options: options.shahr, option } },
-                            { flex: 1, input: { label: 'فعال', field: 'faal', type: 'checkbox', required: true } },
-                            { flx: 1, html: '' }
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'آدرس محل سکونت', field: 'address', type: 'text', required: true } }
-                        ]
+const Table: FC = () => {
+    const {data}:I_CTX = useContext(CTX)
+    return (
+        <AITable
+            value={data}
+            headerAttrs={{
+                style:{
+                    background:'#FFEAE9'
+                }
+            }}
+            rowAttrs={({rowIndex})=>({
+                style:{
+                    height:48,
+                    background:rowIndex % 2 !== 0?'#f8f8f8':'#fff'
+                }
+            })}
+            columns={[
+                {
+                    title: 'نوع همکاری', value: 'row.selectRoles', width: 100,justify:true, template: ({ row }) => {
+                        return row.selectRoles[0].text
                     }
-                ]
-            }
-        }
-    })
-    return <>{form.renderLayout}</>
-}
-type I_eslahKonandeyeAddress_shahrHayeMontasab = {
-    ostan?: string,
-    shahr?: string
-}
-
-const EslahKonadeyeAddressShahrHayeMontasab: FC = () => {
-    const options = {
-        tab: ['اطلاعات فردی', 'شهر های منتسب'],
-        shahr: [
-            { text: 'تهران - تهران', id: '0' },
-            { text: 'تهران - ورامین', id: '1' },
-            { text: 'تهران - اندیشه', id: '2' }
-        ],
-        ostan: [
-            { text: 'تهران', id: '0' },
-            { text: 'اصفهان', id: '1' }
-        ]
-    }
-    const form = useForm<I_eslahKonandeyeAddress_shahrHayeMontasab>({
-        initData: {}, fa: true,
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            {
-                                flex: 1,
-                                input: {
-                                    label: 'نام و نام خانوادگی', field: 'ostan', type: 'select', multiple: true, required: true,
-                                    options: options.ostan, option: { text: 'option.text', value: 'option.id' }
-                                }
-                            },
-                            {
-                                flex: 1,
-                                input: {
-                                    label: 'شهر', field: 'shahr', type: 'select', multiple: true, required: true,
-                                    options: options.shahr, option: { text: 'option.text', value: 'option.id' }
-                                }
-                            }
-                        ]
+                },
+                { title: 'نام و نام خانوادگی', value: 'row.name', minWidth: 160,justify:true },
+                { title: 'کد ملی', value: 'row.nationalCode', width: 100,justify:true },
+                { title: 'موبایل', value: 'row.mobile', width: 100,justify:true },
+                { title: 'پست الکترونیک', value: 'row.email', width: 160 },
+                {
+                    title: 'تاریخ ایجاد', value: 'row.createDate', width: 100,justify:true, template: ({ row }) => {
+                        const { year, month, day } = row.createDate;
+                        return `${year}/${month}/${day}`
                     }
-                ]
-            }
-        }
-    })
-    return <>{form.renderLayout}</>
-}
-type I_freelancer_ettelaate_fardi = {
-    name?: string,
-    codeMelli?: string,
-    mobile?: string,
-    namePedar?: string,
-    email?: string,
-    tarikheTavallod?: string,
-    jensiat?: { id: string },
-    telefoneSabet?: string,
-    telefoneZaroori?: string,
-    shahr?: { id: string },
-    hub?: {
-        id: string
-    },
-    faal: boolean,
-    address?: string,
-    shomareGavahiname?: string,
-    shomareSheba?: string,
-    shomareSafte?: string,
-    shomareGharardad?: string
-}
-
-const Freelancer_Ettelaate_Fardi: FC = () => {
-    const options = {
-        tab: ['اطلاعات فردی', 'شهر های منتسب'],
-        shahr: [
-            { text: 'تهران - تهران', id: '0' },
-            { text: 'تهران - ورامین', id: '1' },
-            { text: 'تهران - اندیشه', id: '2' }
-        ],
-        hub: [
-            { text: 'تهران', id: '0' },
-            { text: 'اصغهان', id: '1' }
-        ],
-        jensiat: [
-            { text: 'مرد', id: '0' },
-            { text: 'زن', id: '1' }
-        ]
-    }
-    const form = useForm<I_freelancer_ettelaate_fardi>({
-        initData: { faal: true, jensiat: { id: '0' } }, fa: true,
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'name', type: 'text', required: true } },
-                            { flex: 1, input: { label: 'کد ملی', field: 'codeMelli', type: 'text', required: true, validateType: "irNationalCode" } },
-                            { flex: 1, input: { label: 'شماره موبایل', field: 'mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] } },
-                            { flex: 1, input: { label: 'نام پدر', field: 'namePedar', type: 'text', required: true } }
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'پست الکترونیکی', field: 'email', type: 'text', validateType: 'email' } },
-                            { flex: 1, input: { label: 'تاریخ تولد', field: 'tarikheTavallod', type: 'text' } },
-                            {
-                                flex: 1,
-                                input: {
-                                    label: 'جنسیت', field: 'jensiat.id' as any, type: 'select', required: true,
-                                    options: options.jensiat, option: { text: 'option.text', value: 'option.id' }
-                                }
-                            },
-                            { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'telefoneSabet', type: 'text', required: true } },
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-', h: [
-                            { flex: 1, input: { label: 'شماره ضروری', field: 'telefoneZaroori', type: 'text', required: true } },
-                            { flex: 1, input: { label: 'شهر', field: 'shahr', type: 'select', options: options.shahr, option: { text: 'option.text', value: 'option.id' } } },
-                            { flex: 1, input: { label: 'هاب', field: "hub.id" as any, type: 'select', options: options.hub, option: { text: 'option.text', value: 'option.id' } } },
-                            { flex: 1, input: { label: 'فعال', field: 'faal', type: 'checkbox', required: true } },
-
-                        ]
-                    },
-                    {
-                        className: 'p-v-12- gap-16-',
-                        h: [
-                            { flex: 1, input: { label: 'آدرس محل سکونت', field: 'address', type: 'text', required: true } }
-                        ]
-                    },
-                    {
-                        h: [
-                            { flex: 1, input: { field: 'shomareGavahiname', label: 'شماره گواهینامه', required: true, type: 'text' } },
-                            { flex: 1, input: { field: 'shomareSheba', label: 'شماره شبا', required: true, type: 'text' } },
-                            { flex: 1, input: { field: 'shomareSafte', label: 'شماره سفته', required: true, type: 'text' } },
-                            { flex: 1, input: { field: 'shomareGharardad', label: 'شماره قرارداد', required: true, type: 'text' } }
-                        ]
-                    },
-
-                ]
-            }
-        }
-    })
-    return <>{form.renderLayout}</>
-}
-type I_freelancer_ettelaate_khodro = {
-    noeVasileNaghlie?: { id: number },
-    modeleVasileNaghlie?: { id: number },
-    pelak?: string,
-    vin?: string,
-    tarikheEtebareBimeName?: string
-}
-const Freelancer_Ettelaate_Khodro: FC = () => {
-    const options = {
-        noeVasileNaghlie: [
-            { text: 'ماشین', id: '0' },
-            { text: 'موتور', id: '1' },
-        ],
-        modeleVasileNaghlie: [
-            { text: 'پراید', id: '0' },
-            { text: 'پژو', id: '1' },
-        ]
-    }
-    const option = { text: 'option.text', value: 'option.id' }
-    const form = useForm<I_freelancer_ettelaate_khodro>({
-        initData: {}, fa: true,
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        h: [
-                            { input: { label: 'نوع وسیله نقلیه', field: 'noeVasileNaghlie.id' as any, type: 'select', required: true, options: options.noeVasileNaghlie, option } },
-                            { input: { label: 'مدل وسیله نقلیه', field: 'modeleVasileNaghlie.id' as any, type: 'select', required: true, options: options.modeleVasileNaghlie, option } },
-                            { flex: 1, input: { label: 'پلاک', field: 'pelak', type: 'text', required: true } },
-                            { flex: 1, input: { label: 'شماره VIN', type: 'text', field: 'vin', required: true } }
-                        ]
-                    },
-                    {
-                        h: [
-                            { flex: 1, input: { label: 'تاریخ اعتبار بیمه نامه', field: 'tarikheEtebareBimeName', type: 'text' } },
-                            { flex: 3, html: '' }
-                        ]
+                },
+                { title: 'نام کاربری', value: 'row.username', width: 100 },
+                {
+                    title: 'وضعیت', value: 'row.isActive', width: 100,justify:true, template: ({ row }) => {
+                        return row.isActive ? 'فعال' : 'غیر فعال'
                     }
-
-                ]
-            }
-        }
-    })
-    return <>{form.renderLayout}</>
-}
-type I_freelancer_tasvire_madarek = {
-    rooyeCarteMelli: any,
-    poshteCarteMelli: any,
-    rooyeGavahiname: any,
-    poshteGavahiname: any,
-    rooyeCarteVasileNaghlie: any,
-    poshteCarteVasileNaghlie: any,
-    bimename: any,
-    safte: any,
-    gharardad: any,
-}
-const Freelancer_Tasvire_Madarek: FC = () => {
-    const options = {
-        noeVasileNaghlie: [
-            { text: 'ماشین', id: '0' },
-            { text: 'موتور', id: '1' },
-        ],
-        modeleVasileNaghlie: [
-            { text: 'پراید', id: '0' },
-            { text: 'پژو', id: '1' },
-        ]
-    }
-    const option = { text: 'option.text', value: 'option.id' }
-    const form = useForm<I_freelancer_tasvire_madarek>({
-        initData: {}, fa: true,
-        getLayout: (context) => {
-            return {
-                v: [
-                    {
-                        h: [
-                            { flex: 1, input: { label: 'تصویر روی کارت ملی', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر پشت کارت ملی', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر روی گواهینامه', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر پشت گواهینامه', field: 'rooyeCarteMelli', type: 'image' } },
-                        ]
-                    },
-                    {
-                        h: [
-                            { flex: 1, input: { label: 'تصویر روی کارت وسیله نقلیه', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر پشت کارت وسیله نقلیه', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر بیمه نامه', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر سفته', field: 'rooyeCarteMelli', type: 'image' } },
-                        ]
-                    },
-                    {
-                        h: [
-                            { flex: 1, input: { label: 'تصویر قرارداد', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 1, input: { label: 'تصویر راننده', field: 'rooyeCarteMelli', type: 'image' } },
-                            { flex: 2, html: '' }
-                        ]
+                },
+                {
+                    title: 'عملیات', value: '', width: 100,justify:true, template: ({ row }) => {
+                        return (
+                            <div className="flex-row- align-v- gap-6-">
+                                <div className="msf">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.25 16.75H12.75V11H11.25V16.75ZM12 9.2885C12.2288 9.2885 12.4207 9.21108 12.5755 9.05625C12.7303 8.90142 12.8077 8.70958 12.8077 8.48075C12.8077 8.25192 12.7303 8.06008 12.5755 7.90525C12.4207 7.75058 12.2288 7.67325 12 7.67325C11.7712 7.67325 11.5793 7.75058 11.4245 7.90525C11.2697 8.06008 11.1923 8.25192 11.1923 8.48075C11.1923 8.70958 11.2697 8.90142 11.4245 9.05625C11.5793 9.21108 11.7712 9.2885 12 9.2885ZM12.0017 21.5C10.6877 21.5 9.45267 21.2507 8.2965 20.752C7.14033 20.2533 6.13467 19.5766 5.2795 18.7218C4.42433 17.8669 3.74725 16.8617 3.24825 15.706C2.74942 14.5503 2.5 13.3156 2.5 12.0017C2.5 10.6877 2.74933 9.45267 3.248 8.2965C3.74667 7.14033 4.42342 6.13467 5.27825 5.2795C6.13308 4.42433 7.13833 3.74725 8.294 3.24825C9.44967 2.74942 10.6844 2.5 11.9983 2.5C13.3123 2.5 14.5473 2.74933 15.7035 3.248C16.8597 3.74667 17.8653 4.42342 18.7205 5.27825C19.5757 6.13308 20.2528 7.13833 20.7518 8.294C21.2506 9.44967 21.5 10.6844 21.5 11.9983C21.5 13.3123 21.2507 14.5473 20.752 15.7035C20.2533 16.8597 19.5766 17.8653 18.7218 18.7205C17.8669 19.5757 16.8617 20.2528 15.706 20.7518C14.5503 21.2506 13.3156 21.5 12.0017 21.5ZM12 20C14.2333 20 16.125 19.225 17.675 17.675C19.225 16.125 20 14.2333 20 12C20 9.76667 19.225 7.875 17.675 6.325C16.125 4.775 14.2333 4 12 4C9.76667 4 7.875 4.775 6.325 6.325C4.775 7.875 4 9.76667 4 12C4 14.2333 4.775 16.125 6.325 17.675C7.875 19.225 9.76667 20 12 20Z" fill="#666666" />
+                                    </svg>
+                                </div>
+                                <div className="msf">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clipPath="url(#clip0_2467_875)">
+                                            <path d="M2 24V21H22V24H2ZM6 16.4135H7.2365L15.5365 8.12875L14.9078 7.4905L14.2848 6.877L6 15.177V16.4135ZM4.5 17.9135V14.5385L16.7885 2.2655L20.1327 5.65575L7.875 17.9135H4.5ZM15.5365 8.12875L14.9078 7.4905L14.2848 6.877L15.5365 8.12875Z" fill="#666666" />
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_2467_875">
+                                                <rect width="24" height="24" fill="white" />
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                </div>
+                                <div className="msf">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5.5 20.5V5.99998H4.5V4.49998H9V3.61548H15V4.49998H19.5V5.99998H18.5V20.5H5.5ZM7 19H17V5.99998H7V19ZM9.404 17H10.9037V7.99998H9.404V17ZM13.0962 17H14.596V7.99998H13.0962V17Z" fill="#666666" />
+                                    </svg>
+                                </div>
+                            </div>
+                        )
                     }
+                },
 
-                ]
-            }
-        }
-    })
-    return <>{form.renderLayout}</>
+            ]}
+        />
+    )
 }

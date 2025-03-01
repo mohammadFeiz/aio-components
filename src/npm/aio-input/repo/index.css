@@ -231,6 +231,7 @@
     padding:6px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    justify-content: center;
 }
 
 .aio-input-buttons-option.active {
@@ -342,6 +343,9 @@
 
 .aio-input-image .aio-input-file-container {
     height: 100%;
+}
+.aio-input-image .aio-input-file {
+    border:none;
 }
 
 .aio-input-image .aio-input-file-value {
