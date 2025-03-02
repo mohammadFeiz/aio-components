@@ -24,10 +24,6 @@ export default function DOC(props:I_DOC & {items:AI_sidenavItem[]}){
                     </div>
                 )
             }}
-            body={(activeSidenav)=>{
-                if(!activeSidenav || !activeSidenav.render){return null}
-                return activeSidenav.render()
-            }}
         />
     )
 }

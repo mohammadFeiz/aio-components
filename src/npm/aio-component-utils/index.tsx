@@ -152,30 +152,28 @@ type I_AIApp = {
     bottomMenu?: {
         options: any[],
         option:{
-            value?:(option:string)=>string,
-            text?:(option:string)=>ReactNode,
-            uptext?:(option:string)=>ReactNode,
-            subtext?:(option:string)=>ReactNode,
-            before?:(option:string)=>ReactNode,
-            after?:(option:string)=>ReactNode,
-            show?:(option:string)=>boolean,
-            active?:(option:string)=>boolean,
-            onClick?:(option:string)=>boolean | undefined,
-            attrs?:(option:string)=>any,
-            className?:(option:string)=>string | undefined,
-            style?:(option:string)=>any
+            value?:(option:any)=>string,
+            text?:(option:any)=>ReactNode,
+            uptext?:(option:any)=>ReactNode,
+            subtext?:(option:any)=>ReactNode,
+            before?:(option:any)=>ReactNode,
+            after?:(option:any)=>ReactNode,
+            show?:(option:any)=>boolean,
+            active?:(option:any)=>boolean,
+            onClick?:(option:any)=>void,
+            attrs?:(option:any)=>any,
+            className?:(option:any)=>string | undefined,
+            style?:(option:any)=>any
         }
     }
     sidenav?: {
         items: AI_sidenavItem[],
-        indent?: number,
         header?: (minimize: boolean) => ReactNode,
         value?: string,
-        render?: () => ReactNode,
         cache?: boolean,
         attrs?: any
     },
-    body: (sidenavitem?: AI_sidenavItem) => ReactNode,
+    body?: ReactNode,
     header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false,
     children?: ReactNode
 }
@@ -189,8 +187,14 @@ export const AIApp: FC<I_AIApp> = (props) => {
         if (header === false) { return null }
         return header
     }
+    function getcontent(){
+        if(sidenav.active){
+            if(sidenav.active.render){return sidenav.active.render()}
+        }
+        return props.body || null
+    }
     function body_layout() {
-        const content = props.body(sidenav.active)
+        const content = getcontent()
         return (
             <div className='ai-app-content'>
                 {

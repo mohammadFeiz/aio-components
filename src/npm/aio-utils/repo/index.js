@@ -38,8 +38,8 @@ export function DownloadFile(file) {
 export function GetFileUrl(file) {
     return window.URL.createObjectURL(file);
 }
-export function Stall() {
-    return __awaiter(this, arguments, void 0, function* (stallTime = 3000) {
+export function Stall(stallTime = 3000) {
+    return __awaiter(this, void 0, void 0, function* () {
         yield new Promise(resolve => setTimeout(resolve, stallTime));
     });
 }
@@ -1557,7 +1557,11 @@ export function FakeName(p) {
         const index = GetRandomNumber(0, firstnames.length - 1);
         return firstnames[index];
     };
-    const getlastname = () => { return names[`lastname_${p.lang}`]; };
+    const getlastname = () => {
+        const lastnames = names[`lastname_${p.lang}`];
+        const index = GetRandomNumber(0, lastnames.length - 1);
+        return lastnames[index];
+    };
     if (p.type === "firstname") {
         return getfirstname();
     }

@@ -154,7 +154,7 @@ const Chart = (props) => {
         return [...gridLines, ...areas, ...rects, ...lines, ...points, ...texts];
     }
     function getLineChartElements(detail) {
-        const { lineWidth, dash, stroke } = detail.dataOption.style;
+        const { lineWidth, dash, stroke } = detail.dataOption.lineStyle;
         const pointElements = [];
         const textElements = [];
         const lineElement = { points: [], type: "Line", lineWidth, dash, stroke };
@@ -164,7 +164,7 @@ const Chart = (props) => {
             const xOffset = p[`${dic.x}Offset`];
             const yOffset = p[`${dic.y}Offset`];
             lineElement.points.push([xOffset, yOffset]);
-            pointElements.push(Object.assign(Object.assign({ type: 'Arc', x: xOffset, y: yOffset }, p.pointOption.style), { data: {
+            pointElements.push(Object.assign(Object.assign({ type: 'Arc', x: xOffset, y: yOffset }, p.pointStyle), { data: {
                     data: p.data,
                     point: p.point,
                     dataIndex: p.dataIndex,
@@ -177,10 +177,11 @@ const Chart = (props) => {
                         }
                     } : undefined
                 } }));
-            if (p.pointOption.text) {
-                const style = p.pointOption.textStyle || {};
+            if (p.pointText) {
+                const style = p.pointTextStyle || {};
                 const { fontSize = 12, offset = 12, fill = '#000', rotate = 0 } = style;
-                textElements.push({ type: 'Text', text: p.pointOption.text, x: xOffset, y: yOffset + offset, fontSize, rotate, fill, align: [0, 1],
+                textElements.push({
+                    type: 'Text', text: p.pointText, x: xOffset, y: yOffset + offset, fontSize, rotate, fill, align: [0, 1],
                 });
             }
         }
@@ -196,11 +197,11 @@ const Chart = (props) => {
             if (p.rangeDetails.length) {
                 for (let i = 0; i < p.rangeDetails.length; i++) {
                     const { offset, height, color } = p.rangeDetails[i];
-                    rectElements.push(Object.assign({ type: 'Rectangle', x: keyOffset, y: offset, width: p.keyBarSize, height }, Object.assign(Object.assign({}, p.pointOption.style), { fill: color })));
+                    rectElements.push(Object.assign({ type: 'Rectangle', x: keyOffset, y: offset, width: p.keyBarSize, height }, Object.assign(Object.assign({}, p.pointStyle), { fill: color })));
                 }
             }
             else {
-                const obj = Object.assign({ type: 'Rectangle', [props.reverse ? 'y' : 'x']: keyOffset, [props.reverse ? 'x' : 'y']: p.valueOffset, [props.reverse ? 'height' : 'width']: p.keyBarSize, [props.reverse ? 'width' : 'height']: p.valueBarSize }, p.pointOption.style);
+                const obj = Object.assign({ type: 'Rectangle', [props.reverse ? 'y' : 'x']: keyOffset, [props.reverse ? 'x' : 'y']: p.valueOffset, [props.reverse ? 'height' : 'width']: p.keyBarSize, [props.reverse ? 'width' : 'height']: p.valueBarSize }, p.pointStyle);
                 rectElements.push(obj);
             }
         }
@@ -368,32 +369,53 @@ export const Pie = (props) => {
     function getRanges() {
         const { end, ranges } = props;
         const res = ranges.map((o) => getRange(o));
-        if (props.empty && ranges[ranges.length - 1].value < end) {
-            res.push(getRange(Object.assign(Object.assign({}, props.empty), { value: end })));
-        }
         return res;
     }
-    return (_jsx(AISpinner, { size: props.size, start: props.start, end: props.end, ranges: getRanges(), handle: false, point: false, style: { border: 'none' } }));
+    const Attrs = AddToAttrs(props.attrs, { className: ['aio-chart-pie', props.className], style: props.style });
+    return (_jsx(AISpinner, { attrs: Attrs, circles: props.circles, size: props.size, start: props.start, end: props.end, ranges: getRanges(), handle: false, point: false, style: { border: 'none' } }));
 };
 class ChartData {
     constructor(p) {
         this.tooltipDic = {};
-        this.getDataOption = (p) => {
+        this.getDataOption = (data, dataIndex) => {
             const { dataOption = () => { return {}; } } = this.p.getProps();
-            const option = dataOption(p);
-            const { style = { lineWidth: 1, stroke: '#333' }, areaColors = [], title = '', color = '#000' } = Object.assign({}, option);
-            const { lineWidth = 1, stroke = '#333', dash } = style;
-            return { style: { lineWidth, stroke, dash }, areaColors, title: p.data.title || title, color: p.data.color || color };
-        };
-        this.getPointOption = (p) => {
-            const { pointOption } = this.p.getProps();
-            const option = pointOption(p);
-            const { style = { lineWidth: 1, r: 4, stroke: p.data.type === 'line' ? '#333' : undefined, fill: p.data.type === 'line' ? '#fff' : '#333' }, ranges = [], text = '', textStyle = { fontSize: 12, offset: 12, fill: '#000', rotate: 0 }, key = 0, value = 0 } = Object.assign({}, option);
-            const { lineWidth = 1, r = 4, dash, stroke = p.data.type === 'line' ? '#333' : undefined, fill = p.data.type === 'line' ? '#fff' : '#333' } = style;
-            const { fontSize = 12, offset: textOffset = 12, fill: textFill = '#000', rotate = 0 } = textStyle;
+            const option = dataOption(data, dataIndex);
+            const title = data.title || option.title || '';
+            const color = data.color || option.color || '#000';
+            const areaColors = data.areaColors || option.areaColors || [];
+            const lineStyle = Object.assign(Object.assign({}, option.lineStyle), data.lineStyle);
+            const { lineWidth = 1, stroke = '#333', dash } = lineStyle;
+            const pointStyle = (point, pointIndex) => {
+                const dataOptionPointStyle = (option.pointStyle || (() => { }))(point, pointIndex);
+                const dataPointStyle = (data.pointStyle || (() => { }))(point, pointIndex);
+                const pointStyle = Object.assign(Object.assign({}, dataOptionPointStyle), dataPointStyle);
+                const { lineWidth = 1, r = 4, dash, stroke = data.type === 'line' ? '#333' : undefined, fill = data.type === 'line' ? '#fff' : '#333' } = pointStyle;
+                return { lineWidth, r, dash, stroke, fill };
+            };
+            const pointText = (point, pointIndex) => {
+                return (data.pointText || (() => { }))(point, pointIndex) || (option.pointText || (() => { }))(point, pointIndex) || '';
+            };
+            const pointValue = (point, pointIndex) => {
+                return (data.pointValue || (() => { }))(point, pointIndex) || (option.pointValue || (() => { }))(point, pointIndex) || 0;
+            };
+            const pointRanges = (point, pointIndex) => {
+                return (data.pointRanges || (() => { }))(point, pointIndex) || (option.pointRanges || (() => { }))(point, pointIndex) || [];
+            };
+            const pointTextStyle = (point, pointIndex) => {
+                const dataOptionPointTextStyle = (option.pointTextStyle || (() => { }))(point, pointIndex);
+                const dataPointTextStyle = (data.pointTextStyle || (() => { }))(point, pointIndex);
+                const pointTextStyle = Object.assign(Object.assign({}, dataOptionPointTextStyle), dataPointTextStyle);
+                const { fontSize = 12, offset = 12, fill = '#000', rotate = 0 } = pointTextStyle;
+                return { fontSize, offset, fill, rotate };
+            };
             return {
-                pointOption: { style: { lineWidth, stroke, dash, fill, r }, ranges, text, textStyle: { fontSize, offset: textOffset, fill: textFill, rotate }, value },
-                rangeDetails: this.getRangeDetails(ranges)
+                pointStyle,
+                pointText,
+                pointTextStyle,
+                pointValue,
+                pointRanges,
+                lineStyle: { lineWidth, stroke, dash },
+                areaColors, title, color, type: data.type, points: data.points
             };
         };
         this.getRangeDetails = (ranges) => {
@@ -423,19 +445,23 @@ class ChartData {
             this.tooltipDic = {};
             for (let dataIndex = 0; dataIndex < datas.length; dataIndex++) {
                 const data = datas[dataIndex];
-                const dataOption = this.getDataOption({ data, dataIndex });
+                const dataOption = this.getDataOption(data, dataIndex);
                 if (data.type === 'bar') {
                     barIndex++;
                 }
                 let dataDetail = { points: [], dataOption, barCount, barIndex, areaPoints: [], areaColors: dataOption.areaColors, type: data.type || 'line' };
                 for (let pointIndex = filter[0]; pointIndex <= filter[1]; pointIndex++) {
                     const point = data.points[pointIndex];
-                    const { pointOption, rangeDetails } = this.getPointOption({ data, point, dataIndex, pointIndex });
+                    const rangeDetails = this.getRangeDetails(dataOption.pointRanges(point, pointIndex));
                     const { percent: keyPercent, offset: keyOffset, label: keyLabel, barSize: keyBarSize } = this.getAxisPointDetail({ d: 'key', data, value: pointIndex });
-                    const { percent: valuePercent, offset: valueOffset, label: valueLabel, barSize: valueBarSize } = this.getAxisPointDetail({ d: 'value', data, value: pointOption.value });
+                    const { percent: valuePercent, offset: valueOffset, label: valueLabel, barSize: valueBarSize } = this.getAxisPointDetail({ d: 'value', data, value: dataOption.pointValue(point, pointIndex) });
                     const pointDetail = {
                         keyPercent, valuePercent, keyOffset, valueOffset, keyLabel, valueLabel, keyBarSize, valueBarSize,
-                        rangeDetails, dataOption, pointOption, data, dataIndex, point, pointIndex
+                        rangeDetails, dataOption,
+                        data, dataIndex, point, pointIndex,
+                        pointStyle: dataOption.pointStyle(point, pointIndex),
+                        pointText: dataOption.pointText(point, pointIndex),
+                        pointTextStyle: dataOption.pointTextStyle(point, pointIndex)
                     };
                     dataDetail.points.push(pointDetail);
                     this.addPosition(pointDetail, dataOption.color);

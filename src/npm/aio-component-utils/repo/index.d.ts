@@ -83,8 +83,21 @@ type I_AIApp = {
     attrs?: any;
     rtl?: boolean;
     bottomMenu?: {
-        options: AI_bottomMenuOption[];
-        onChange: (v: string) => void;
+        options: any[];
+        option: {
+            value?: (option: any) => string;
+            text?: (option: any) => ReactNode;
+            uptext?: (option: any) => ReactNode;
+            subtext?: (option: any) => ReactNode;
+            before?: (option: any) => ReactNode;
+            after?: (option: any) => ReactNode;
+            show?: (option: any) => boolean;
+            active?: (option: any) => boolean;
+            onClick?: (option: any) => void;
+            attrs?: (option: any) => any;
+            className?: (option: any) => string | undefined;
+            style?: (option: any) => any;
+        };
     };
     sidenav?: {
         items: AI_sidenavItem[];
@@ -95,19 +108,9 @@ type I_AIApp = {
         cache?: boolean;
         attrs?: any;
     };
-    body: (sidenavitem?: AI_sidenavItem) => ReactNode;
+    body: ReactNode;
     header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false;
     children?: ReactNode;
-};
-type AI_bottomMenuOption = {
-    text?: ReactNode;
-    uptext?: ReactNode;
-    subtext?: ReactNode;
-    value: string;
-    before?: ReactNode;
-    after?: ReactNode;
-    show?: boolean;
-    active?: boolean;
 };
 export declare const AIApp: FC<I_AIApp>;
 export type AI_Sidenav = {

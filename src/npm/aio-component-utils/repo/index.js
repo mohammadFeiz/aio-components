@@ -131,7 +131,7 @@ export const AIApp = (props) => {
     }
     function body_layout() {
         var _a;
-        const content = props.body(sidenav.active);
+        const content = props.body;
         return (_jsxs("div", { className: 'ai-app-content', children: [!!props.sidenav &&
                     _jsx("div", { className: "ai-app-side", children: _jsx(Sidenav, { rtl: props.rtl, attrs: props.sidenav.attrs, items: props.sidenav.items, header: props.sidenav.header, value: (_a = sidenav.active) === null || _a === void 0 ? void 0 : _a.value, onChange: (v) => sidenav.changeActive(v) }) }), _jsxs("div", { className: "ai-app-center", children: [header_layout(), _jsx("div", { className: "ai-app-body", children: content })] })] }));
     }
@@ -196,13 +196,27 @@ const useSidenav = (props) => {
     return { active, changeActive };
 };
 const AIBottomMenu = ({ bottomMenu }) => {
-    const { options, onChange } = bottomMenu;
+    const { options, option } = bottomMenu;
+    function getProps(item, props) {
+        const res = {};
+        for (let prop of props) {
+            res[prop] = option[prop] ? option[prop](item) : undefined;
+        }
+        return res;
+    }
     function item_layout(item) {
-        if (item.show === false) {
+        if (getProps(item, ['show']).show === false) {
             return null;
         }
-        return (_jsxs("div", { className: `ai-app-bottom-menu-option${item.active ? ' active' : ''}`, onClick: () => onChange(item.value), children: [!!item.before && item.before, _jsxs("div", { className: "ai-app-bottom-menu-option-body", children: [item.text !== undefined && item.text, item.text === undefined &&
-                            _jsxs(_Fragment, { children: [_jsx("div", { className: "ai-app-bottom-menu-uptext", children: item.uptext }), _jsx("div", { className: "ai-app-bottom-menu-subtext", children: item.subtext })] })] }), !!item.after && item.after] }, item.value));
+        const { value, text, uptext, subtext, active, before, after, attrs, className, style } = getProps(item, ['value', 'text', 'uptext', 'subtext', 'active', 'before', 'after', 'show', 'attrs', 'className', 'style']);
+        const Attrs = AddToAttrs(attrs, {
+            className: ['ai-app-bottom-menu-option', active ? 'active' : undefined, className],
+            style, attrs: { onClick: () => { if (option.onClick) {
+                    option.onClick(item);
+                } } }
+        });
+        return (_jsxs("div", Object.assign({}, Attrs, { children: [!!before && before, _jsxs("div", { className: "ai-app-bottom-menu-option-body", children: [text !== undefined && text, text === undefined &&
+                            _jsxs(_Fragment, { children: [_jsx("div", { className: "ai-app-bottom-menu-uptext", children: uptext }), _jsx("div", { className: "ai-app-bottom-menu-subtext", children: subtext })] })] }), !!after && after] }), value));
     }
     return (_jsx("div", { className: "ai-app-bottom-menu", children: options.map((o, i) => item_layout(o)) }));
 };
@@ -213,18 +227,18 @@ export const Sidenav = (props) => {
     const toggleRef = useRef((id) => { });
     function getAfter(option, active) {
         let { items = [], after } = option;
-        return (_jsxs("div", { className: `ai-sidenav-after`, children: [!!after && after, !!items.length &&
+        return (_jsxs("div", { className: `ai-sidenav-item-after`, children: [!!after && after, !!items.length &&
                     _jsx("div", { className: "ai-sidenav-toggle", children: icons.getIcon(active ? 'mdiChevronDown' : (rtl ? 'mdiChevronRight' : 'mdiChevronLeft'), 0.7) })] }));
     }
     function getBefore(option, level) {
-        let { icon } = option;
-        if (level > 0 && !icon) {
-            icon = icons.getIcon('mdiCircleMedium', 0.6);
+        let { before } = option;
+        if (level > 0 && !before) {
+            before = icons.getIcon('mdiCircleMedium', 0.6);
         }
-        if (!icon) {
+        if (!before) {
             return null;
         }
-        return (_jsx("div", { className: `ai-sidenav-item-icon`, children: icon }));
+        return (_jsx("div", { className: `ai-sidenav-item-before`, children: before }));
     }
     const defaultOption = {
         text: 'option.text',
@@ -249,7 +263,7 @@ export const Sidenav = (props) => {
     const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] });
     return (_jsxs("div", Object.assign({}, attrs, { children: [!!header &&
                 _jsx("div", { className: "ai-sidenav-header", children: header(minimize) }), !!props.minimize &&
-                _jsx("div", { className: "ai-sidenav-minimize-button", onClick: () => setMinimize(!minimize), children: _jsx("div", { className: "ai-sidenav-minimize-icon", children: icons.getIcon('mdiMenu', 1) }) }), _jsx(AITree, Object.assign({}, attrs, { toggleIcon: () => false, className: 'ai-sidenav-tree', size: 48, toggleRef: toggleRef, value: [...items], getChilds: (p) => p.row.items || [], option: finalOptions, indent: 0 }))] })));
+                _jsx("div", { className: "ai-sidenav-minimize-button", onClick: () => setMinimize(!minimize), children: _jsx("div", { className: "ai-sidenav-minimize-icon", children: icons.getIcon('mdiMenu', 1) }) }), _jsx("div", { className: "ai-sidenav-body", children: _jsx(AITree, Object.assign({}, attrs, { toggleIcon: () => false, className: 'ai-sidenav-tree', size: 48, toggleRef: toggleRef, value: [...items], getChilds: (p) => p.row.items || [], option: finalOptions, indent: 0 })) })] })));
 };
 export const MonthCells = ({ year, month, cellContent, weekDayContent }) => {
     const [DATE] = useState(new AIODate());

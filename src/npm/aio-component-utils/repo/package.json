@@ -1,6 +1,6 @@
 {
     "name": "aio-component-utils",
-    "version": "2.0.2",
+    "version": "2.0.6",
     "description": "small and usable components",
     "main": "index.js",
     "dependencies": {

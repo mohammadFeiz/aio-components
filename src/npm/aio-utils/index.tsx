@@ -1267,7 +1267,11 @@ export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gende
         const index = GetRandomNumber(0, firstnames.length - 1);
         return firstnames[index];
     }
-    const getlastname = () => { return names[`lastname_${p.lang}`] }
+    const getlastname = () => { 
+        const lastnames = names[`lastname_${p.lang}`] 
+        const index = GetRandomNumber(0, lastnames.length - 1);
+        return lastnames[index]
+    }
     if (p.type === "firstname") { return getfirstname() }
     if (p.type === "lastname") { return getlastname() }
     return `${getfirstname()} ${getlastname()}`
