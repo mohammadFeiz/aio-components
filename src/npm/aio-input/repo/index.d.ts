@@ -157,7 +157,6 @@ export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboa
         row: any;
     }) => ReactNode;
     switch?: {
-        size?: number[];
         value?: boolean;
         onChange?: (v: boolean) => void;
         colors?: string[];
@@ -633,6 +632,7 @@ export type I_formInput<T> = AITYPE & {
 type I_useFormProps<T> = {
     initData: Partial<T>;
     onSubmit?: (data: T) => void;
+    liveSubmit?: boolean;
     fa?: boolean;
     showLabel?: boolean;
     getLayout?: (context: I_formContext<T>) => I_formNode<T>;

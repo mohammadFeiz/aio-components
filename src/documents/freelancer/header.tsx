@@ -1,12 +1,16 @@
 import { FC, useContext } from "react"
 import { I_CTX, I_filter } from "./types"
-import {CTX} from "./context"
+import { CTX } from "./context"
 import { useForm } from "../../npm/aio-input"
+import usePopup from "../../npm/aio-popup"
 
 const Header: FC = () => {
-    const { filter,openAddModal }: I_CTX = useContext(CTX)
+    const { filter, openAddModal,changeFilter }: I_CTX = useContext(CTX)
+    const popup = usePopup()
     const form = useForm<I_filter>({
         initData: filter,
+        onSubmit:(data)=>changeFilter({...filter,...data}),
+        liveSubmit:true,
         getLayout: () => {
             return {
                 v: [
@@ -30,15 +34,40 @@ const Header: FC = () => {
                                 }
                             },
                             { html: '', flex: 1 },
-                            { html: <div className="nowrap-">جستجوی پیشرفته</div>, },
                             {
-                                html: (
-                                    <div className="w-36- h-36- br-6- bg-14- flex-row- align-vh-">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.25 20.75V15.25H12.75V17.25H20.75V18.75H12.75V20.75H11.25ZM3.25 18.75V17.25H8.75V18.75H3.25ZM7.25 14.75V12.75H3.25V11.25H7.25V9.25H8.75V14.75H7.25ZM11.25 12.75V11.25H20.75V12.75H11.25ZM15.25 8.75V3.25H16.75V5.25H20.75V6.75H16.75V8.75H15.25ZM3.25 6.75V5.25H12.75V6.75H3.25Z" fill="#5F6368" />
-                                        </svg>
-                                    </div>
-                                )
+                                size:300,align:'v',
+                                attrs:{
+                                    onClick:()=>{
+                                        popup.addModal({
+                                            position:'center',
+                                            header:{title:'جستجوی پیشرفته'},
+                                            setAttrs:(key)=>{
+                                                if(key === 'modal'){
+                                                    return {
+                                                        style:{
+                                                            minWidth:300,
+                                                            borderRadius:12,
+                                                            overflow:'hidden'
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            body:<AdvancedSearch/>
+                                        })
+                                    }
+                                },
+                                h: [
+                                    { html: <div className="nowrap-">جستجوی پیشرفته</div>, },
+                                    {
+                                        html: (
+                                            <div className="w-36- h-36- br-6- bg-14- flex-row- align-vh-">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M11.25 20.75V15.25H12.75V17.25H20.75V18.75H12.75V20.75H11.25ZM3.25 18.75V17.25H8.75V18.75H3.25ZM7.25 14.75V12.75H3.25V11.25H7.25V9.25H8.75V14.75H7.25ZM11.25 12.75V11.25H20.75V12.75H11.25ZM15.25 8.75V3.25H16.75V5.25H20.75V6.75H16.75V8.75H15.25ZM3.25 6.75V5.25H12.75V6.75H3.25Z" fill="#5F6368" />
+                                                </svg>
+                                            </div>
+                                        )
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -46,11 +75,11 @@ const Header: FC = () => {
                     {
                         html: (
                             <div className="flex-row- align-v- gap-16- w-100-">
-                                <button 
-                                    className="br-6- brd-none- p-h-24- p-v-6- flex-row- align-v-" 
+                                <button
+                                    className="br-6- brd-none- p-h-24- p-v-6- flex-row- align-v-"
                                     style={{ background: '#EF5644', color: '#fff' }}
                                     type='button'
-                                    onClick={()=>{
+                                    onClick={() => {
                                         openAddModal()
                                     }}
                                 > + افزودن</button>
@@ -80,6 +109,33 @@ const Header: FC = () => {
             }
         }
     })
-    return (<>{form.renderLayout}</>)
+    return (<>
+        {form.renderLayout}
+        {popup.render()}
+    </>)
 }
 export default Header
+
+
+
+
+
+
+const AdvancedSearch:FC = ()=>{
+    const {filter,changeFilter}:I_CTX = useContext(CTX)
+    const form = useForm<I_filter["advanced"]>({
+        initData:filter.advanced,
+        onSubmit:(data)=>changeFilter({...filter,advanced:data}),
+        liveSubmit:true,
+        getLayout:()=>{
+            return {
+                style:{padding:12},
+                v:[
+                    {input:{label:'شماره موبایل',field:'mobile',type:'text',validateType:"irMobile",filter:['number']}},
+                    {input:{label:'کد ملی',field:'codeMelli',type:'text',validateType:"irNationalCode",filter:['number']}},
+                ]
+            }
+        }
+    })
+    return <>{form.renderLayout}</>
+}

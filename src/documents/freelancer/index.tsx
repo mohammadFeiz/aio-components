@@ -6,7 +6,8 @@ import Header from "./header";
 import { CTX } from "./context";
 import usePopup from "../../npm/aio-popup";
 import AddForm from "./add-form";
-
+//http://192.168.78.243:8090/swagger-ui/index.html#/public-api/commonObjects
+//http://192.168.78.243:20000/swagger-ui/index.html#/employee-api/create_2
 const App: FC = () => {
     const popup = usePopup()
     const [filter, setFilter] = useState<I_filter>({
@@ -44,6 +45,7 @@ const App: FC = () => {
             data,openAddModal
         }
     }
+    console.log(filter)
     return (
         <CTX.Provider value={getContext()}>
             <div className="fullscreen- flex-col- rtl- p-12- fs-12-">
