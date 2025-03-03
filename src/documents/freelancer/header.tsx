@@ -19,14 +19,15 @@ const Header: FC = () => {
                         className: 'gap-16-',
                         h: [
                             {
-                                style: { width: 240 },
+                                size:120,
                                 input: { type: 'text', label: 'نوع همکاری', field: 'noeHamkari' }
                             },
                             {
-                                style: { width: 240 },
+                                size:120,
                                 input: { type: 'text', label: 'نام و نام خانوادگی', field: 'name' }
                             },
                             {
+                                size:120,
                                 input: {
                                     className: 'p-t-24-',
                                     type: 'checkbox', label: '', field: 'faal', text: 'فعال',
@@ -35,7 +36,7 @@ const Header: FC = () => {
                             },
                             { html: '', flex: 1 },
                             {
-                                size:300,align:'v',
+                                size:144,align:'v',
                                 attrs:{
                                     onClick:()=>{
                                         popup.addModal({

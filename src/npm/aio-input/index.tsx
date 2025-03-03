@@ -1867,7 +1867,9 @@ function Table() {
         if (type === 'string') {
             let result = value;
             let param: AI_table_param = { row, column: column as AI_table_column, rowIndex: rowIndex as number }
-            if (getValue[value]) { result = getValue[value](param) }
+            if (getValue[value]) { 
+                result = getValue[value](param) 
+            }
             else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
             return result === undefined ? def : result;
         }
@@ -2257,7 +2259,7 @@ function TableCellContent(props: AI_TableCellContent) {
     if (template !== undefined) { return template }
     let input: AITYPE = getDynamics({ value: column.input, row, rowIndex, column });
     let value = getDynamics({ value: column.value, row, rowIndex, column })
-    if (!input) { return typeof value === 'object' ? '' : value }
+    if (!input) { return value }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
     let convertedInput: any = { type: 'text' }
@@ -3941,7 +3943,7 @@ const AIFormNode: FC<{
         }
         if (node.input) {
             const attrs = {...getNodeAttrs({ node, isRoot: false }),'data-label':node.input.label}
-            return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} />
+            return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} size={node.size} />
         }
     }
     useEffect(() => {
@@ -3982,7 +3984,8 @@ const AIFormInputContainer: FC<{
     input: I_formInput<any>,
     attrs?: any,
     context: I_formContext<any>,
-}> = ({ context, input, attrs }) => {
+    size?:number
+}> = ({ context, input, attrs,size }) => {
     const { getValueByInput, getErrorByInput, changeByInput, setInputsRef } = context;
     const { inputAttrs, field } = input;
     setInputsRef(field, input);
@@ -3990,7 +3993,7 @@ const AIFormInputContainer: FC<{
     const error = getErrorByInput(input, value)
     return (
         <RenderInput
-            value={value} error={error} input={input} context={context}
+            value={value} error={error} input={input} context={context} size={size}
             inputProps={{
                 ...input,
                 inputAttrs: { ...inputAttrs, 'aria-label': field },
@@ -4011,9 +4014,10 @@ type I_renderInput = {
     input: I_formInput<any>,
     context: I_formContext<any>,
     inputProps: any,
+    size?:number
 }
 const RenderInput: FC<I_renderInput> = (props) => {
-    const { context, attrs, input, inputProps, error } = props;
+    const { context, attrs, input, inputProps, error,size } = props;
     const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
@@ -4025,7 +4029,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
         setDom(
             <AIFormInput required={input.required} showLabel={rootProps.showLabel}
                 input={<AIOInput {...inputProps} type={inputProps.type} />}
-                label={label} error={isFieldChanged(field) ? error : undefined} attrs={attrs}
+                label={label} error={isFieldChanged(field) ? error : undefined} attrs={{...attrs,style:{width:size?size:undefined,...attrs.style}}}
             />
         )
     }, [JSON.stringify(inputProps,(key: string, value: any) => isValidElement(value)?undefined:value), error])
