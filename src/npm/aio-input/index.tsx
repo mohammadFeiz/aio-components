@@ -712,7 +712,7 @@ const CheckIcon: FC<{
         grooveSize?:number,
         width?:number,
         padding?:number
-    } 
+    }
 }> = (props) => {
     if (props.checked === undefined) { return null }
     if (props.checkIcon) {
@@ -3401,6 +3401,16 @@ const JOYSTICK: FC<{ x: number, y: number, size: number, onChange: (v: I_JoyStic
         </div>
     )
 }
+export type AI_switch = { 
+    value?: boolean, 
+    onChange?: (v: boolean) => void, 
+    colors?: string[],
+    borderSize?:number,
+    buttonSize?:number,
+    grooveSize?:number,
+    width?:number,
+    padding?:number
+}
 export type AITYPE =
     AI_hasOption & AI_isDropdown & AI_isMultiple &
     AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
@@ -3422,16 +3432,7 @@ export type AITYPE =
         value?: any,
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
-        switch?:{ 
-            value?: boolean, 
-            onChange?: (v: boolean) => void, 
-            colors?: string[],
-            borderSize?:number,
-            buttonSize?:number,
-            grooveSize?:number,
-            width?:number,
-            padding?:number
-        },
+        switch?:AI_switch,
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
         hideTags?: boolean,//select

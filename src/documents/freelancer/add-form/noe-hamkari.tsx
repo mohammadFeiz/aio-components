@@ -1,7 +1,7 @@
 import { FC, useContext } from "react";
-import { useForm } from "../../npm/aio-input";
-import { I_AddEmployeeContext } from "./types";
-import { AddEmployeeContext } from "./context";
+import { useForm } from "../../../npm/aio-input";
+import { I_AddEmployeeContext } from "./../types";
+import { AddEmployeeContext } from "./../context";
 
 const NoeHamkari: FC = () => {
     const {addEmployeeModel,changeAddEmployeeModel,options}:I_AddEmployeeContext = useContext(AddEmployeeContext)

@@ -1,9 +1,10 @@
 import { FC, useContext } from "react"
-import { I_AddEmployeeContext, I_addEmployeeModel } from "../types"
-import { AddEmployeeContext } from "../context"
-import { useForm } from "../../../npm/aio-input"
+import { I_AddEmployeeContext, I_addEmployeeModel } from "../../types"
+import { AddEmployeeContext, CTX } from "../../context"
+import { useForm } from "../../../../npm/aio-input"
 
 const EslahKonadeyeAddress_EttelaateFardi: FC = () => {
+    const {switchConfig} = useContext(CTX)
     const { addEmployeeModel, changeAddEmployeeModel, options }: I_AddEmployeeContext = useContext(AddEmployeeContext)
     const form = useForm<I_addEmployeeModel["eslahKonandeyeAddress"]["ettelaateFardi"]>({
         initData: addEmployeeModel.eslahKonandeyeAddress.ettelaateFardi, fa: true,
@@ -11,6 +12,7 @@ const EslahKonadeyeAddress_EttelaateFardi: FC = () => {
         liveSubmit: true,
         getLayout: (context) => {
             return {
+                className:'gap-16-',
                 v: [
                     {
                         className: 'p-v-12- gap-16-',
@@ -41,10 +43,10 @@ const EslahKonadeyeAddress_EttelaateFardi: FC = () => {
                             { flex: 1, input: { label: 'شماره ضروری', field: 'shomareZarori', type: 'text', required: true, filter: ['number'] } },
                             { flex: 1, input: { label: 'شهر', field: 'shahr', type: 'select', options: options.shahr, popover: { fitHorizontal: true } } },
                             {
-                                flex: 2, attrs: { style: { paddingTop: 6 } },
+                                flex: 2,
                                 input: {
                                     field: 'faal', label: '', type: 'checkbox', required: false,
-                                    switch: { borderSize: 1, colors: ['#aaa', '#EF5644'] },
+                                    switch: switchConfig,
                                     text: 'فعال'
                                 }
                             },

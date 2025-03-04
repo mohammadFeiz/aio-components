@@ -1,7 +1,7 @@
 import { FC, useContext } from "react"
-import { useForm } from "../../../npm/aio-input"
-import { I_AddEmployeeContext, I_addEmployeeModel } from "../types"
-import { AddEmployeeContext } from "../context"
+import { useForm } from "../../../../npm/aio-input"
+import { I_AddEmployeeContext, I_addEmployeeModel } from "../../types"
+import { AddEmployeeContext } from "../../context"
 
 const EslahKonadeyeAddress_ShahrHayeMontasab: FC = () => {
     const { addEmployeeModel, options }: I_AddEmployeeContext = useContext(AddEmployeeContext)
@@ -9,6 +9,7 @@ const EslahKonadeyeAddress_ShahrHayeMontasab: FC = () => {
         initData: addEmployeeModel.eslahKonandeyeAddress.shahrHayeMontasab, fa: true,
         getLayout: (context) => {
             return {
+                className:'gap-16-',
                 v: [
                     {
                         className: 'p-v-12- gap-16-',

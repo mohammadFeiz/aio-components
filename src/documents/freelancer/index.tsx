@@ -1,18 +1,52 @@
-import { FC, useContext, useState } from "react";
-import { I_CTX, I_filter, I_row } from "./types";
+import { FC, useContext, useEffect, useRef, useState } from "react";
+import { I_filter, I_hub, I_row } from "./types";
 import './index.css';
-import { AITable } from "../../npm/aio-input";
+import { AI_switch, AITable } from "../../npm/aio-input";
 import Header from "./header";
-import { CTX } from "./context";
+import { CTX, I_CTX } from "./context";
 import usePopup from "../../npm/aio-popup";
 import AddForm from "./add-form";
+import Apis from "./apis";
 //http://192.168.78.243:8090/swagger-ui/index.html#/public-api/commonObjects
 //http://192.168.78.243:20000/swagger-ui/index.html#/employee-api/create_2
-const App: FC = () => {
-    const popup = usePopup()
+const Provider: FC = () => {
+    const base_url = 'http://boxi:40000'
+    const token = 'eyJraWQiOiIwY2Y0OTI5ZS1hYTAzLTRkOTQtYTQ2MC1mMjIyMTMzM2U2NzQiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJoLmJhcmF0aSIsInJvbGUiOlsiMTcwODE4NDY5ODg3MjI5MyJdLCJpc3MiOiJodHRwOlwvXC9ib3hpOjIwMDAwIiwibW9iaWxlIjoiMDk5MTc2MjI3NDUiLCJwbGF0Zm9ybSI6IlBMQVRGT1JNX0FETUlOIiwic3VwIjoieWVzIiwiYXVkIjoiZ2F0ZXdheS1jbGllbnQtaWQiLCJuYmYiOjE3NDEwODMwNTUsInNjb3BlIjpbInByb2ZpbGUiXSwiaWQiOiI1NjEiLCJleHAiOjE3NDExNjk0NTUsImlhdCI6MTc0MTA4MzA1NSwidXNlcm5hbWUiOiJoLmJhcmF0aSIsInN0YXR1cyI6IkVOQUJMRSJ9.BUFdWGoPQtHTch1Cdk00gXlZcLEcgDPwPeQX_jlpwbe7zYbpR9nNKWJuga6MpX3DhxgdXbKKIBWGbBN-IJoH2gHNwIllYHeS92G1lAvj1xmpwcDDw9e3Oqq_KYR1irgwPOuvR_Wp4GQxxvudFTMj3VMUjIeUHCT6_Z18Yr5V8zagFR0vN1nqk1T6hahztszHHo56ApfBMUezmqZ7VVPJOgFtYBhHm14Lw_wKoF7CY_ca3kX1BxwdgU62NNO3LDustQgrp1zLdT0Q9usQSD3Ygesa6BIkIaZlriFLQv-kusz0CwFF9PHHsieVYOjcx5nbdGHFeVqJVSiyJ2tue6WxYg'
+    const currenthub: I_hub = {
+        "id": 2,
+        "text": "هاب تهران",
+    }
+    const apisRef = useRef<Apis>(new Apis({ base_url, token }))
+    const apis = apisRef.current
+    const [options, setOptions] = useState<any>({})
+    const fetchOptions = async () => {
+        const res = await apis.enums()
+        if (res) {
+            debugger
+            setOptions(res)
+        }
+    }
+    useEffect(() => {
+        fetchOptions()
+    }, [])
+    if (!options) { return null }
+    return <App apis={apis} options={options} currenthub={currenthub} />
+}
+export default Provider
+
+const App: FC<{ apis: Apis, options: any, currenthub: I_hub }> = ({ apis, options, currenthub }) => {
     const [filter, setFilter] = useState<I_filter>({
+        hubId: currenthub.id,
         advanced: {}
     })
+    const popup = usePopup()
+    const [grid, setGrid] = useState<I_row[]>([])
+    const fetchGrid = async () => {
+        const res = await apis.grid(filter)
+    }
+    useEffect(() => {
+        fetchGrid()
+    }, [])
     const [data, setData] = useState<I_row[]>([
         {
             selectRoles: [{ id: 0, text: 'فریلنسر' }],
@@ -39,16 +73,18 @@ const App: FC = () => {
             body: <AddForm />
         })
     }
+    const switchConfig: AI_switch = { borderSize: 1, colors: ['#aaa', '#EF5644'] }
     const getContext = (): I_CTX => {
         return {
-            filter, changeFilter: (v: I_filter) => setFilter(v),
+            filter, switchConfig, options,
+            changeFilter: (v: I_filter) => setFilter(v),
+            resetFilter: () => setFilter({ hubId: 0, advanced: {} }),
             data, openAddModal
         }
     }
-    console.log(filter)
     return (
         <CTX.Provider value={getContext()}>
-            <div className="fullscreen- flex-col- rtl- p-12- fs-12-">
+            <div className="freelancer-grid fullscreen- flex-col- rtl- p-12- fs-12-">
                 <div className="h-48- flex-row- align-v- p-h-12-">مدیریت پرسنل / پرسنل خارج از سازمان</div>
                 <Header />
                 <div className="h-12-"></div>
@@ -58,7 +94,6 @@ const App: FC = () => {
         </CTX.Provider>
     )
 }
-export default App
 
 
 const Table: FC = () => {
@@ -78,11 +113,11 @@ const Table: FC = () => {
                 }
             })}
             getValue={{
-                date: ({row}) => {
+                date: ({ row }) => {
                     const { year, month, day } = row.createDate;
                     return <>{`${year}/${month}/${day}`}</>
                 },
-                actions:({row})=>{
+                actions: ({ row }) => {
                     return (
                         <div className="flex-row- align-v- gap-6-">
                             <div className="msf"><SVG3 /></div>

@@ -1,3 +1,7 @@
+export type I_hub = {
+    id: number,
+    text: string
+}
 export type I_addEmployeeModel = {
     noeHamkari: number,
     eslahKonandeyeAddress: {
@@ -62,25 +66,28 @@ export type I_addEmployeeModel = {
         }
     }
 }
-export type I_CTX = {
-    openAddModal:()=>void,
-    filter: I_filter,
-    changeFilter: (v: I_filter) => void,
-    data:I_row[]
-}
 export type I_AddEmployeeContext = {
     addEmployeeModel:I_addEmployeeModel,
     changeAddEmployeeModel:(v:I_addEmployeeModel)=>void,
     options: any,
 }
 export type I_filter = {
-    noeHamkari?: string,
+    hubId:number,
+    noeHamkari?: number,
     name?: string,
     faal?: boolean,
     advanced: {
         mobile?: string,
         codeMelli?: string
     }
+}
+export type I_serverFilter = {
+    employeeType?:number,
+    name?:string,
+    isActive?:boolean,
+    mobile?:string,
+    email?:string,
+    hublist:{id:number}[]
 }
 export type I_row = {
     selectRoles: { id: number, text: string }[]

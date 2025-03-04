@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
-import { I_AddEmployeeContext, I_addEmployeeModel,  } from "./types";
-import { AddEmployeeContext } from "./context";
+import { I_AddEmployeeContext, I_addEmployeeModel,  } from "../types";
+import { AddEmployeeContext } from "../context";
 import NoeHamkari from "./noe-hamkari";
 import EslahKonandeyeAddress from "./eslah-konandeye-address";
 import Freelancer from "./freelancer";

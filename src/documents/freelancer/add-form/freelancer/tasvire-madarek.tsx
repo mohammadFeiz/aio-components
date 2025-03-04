@@ -1,11 +1,11 @@
 import { FC } from "react"
-import { I_formNode, useForm } from "../../../npm/aio-input"
-import { I_addEmployeeModel } from "../types"
+import { I_formNode, useForm } from "../../../../npm/aio-input"
+import { I_addEmployeeModel } from "../../types"
 
 const Freelancer_TasvireMadarek: FC = () => {
     const getLayout = (label: string, field: keyof I_addEmployeeModel["freelancer"]["tasvireMadarek"]): I_formNode<I_addEmployeeModel["freelancer"]["tasvireMadarek"]> => {
         return {
-            flex: 1,
+            className:'gap-16- flex-1-',
             v: [
                 { html: label, align: 'vh', className: 'fs-12-' },
                 {

@@ -1,14 +1,16 @@
 import { FC, useContext } from "react"
-import { I_AddEmployeeContext, I_addEmployeeModel } from "../types"
-import {AddEmployeeContext} from "../context"
-import { useForm } from "../../../npm/aio-input"
+import { I_AddEmployeeContext, I_addEmployeeModel } from "../../types"
+import {AddEmployeeContext, CTX} from "../../context"
+import { useForm } from "../../../../npm/aio-input"
 
 const Freelancer_EttelaateFardi: FC = () => {
+    const {switchConfig} = useContext(CTX)
     const { addEmployeeModel ,options }: I_AddEmployeeContext = useContext(AddEmployeeContext)
     const form = useForm<I_addEmployeeModel["freelancer"]["ettelaateFardi"]>({
         initData: addEmployeeModel.freelancer.ettelaateFardi, fa: true,
         getLayout: (context) => {
             return {
+                className:'gap-16-',
                 v: [
                     {
                         className: 'p-v-12- gap-16-',
@@ -39,7 +41,7 @@ const Freelancer_EttelaateFardi: FC = () => {
                             { flex: 1, input: { label: 'شماره ضروری', field: 'telefoneZaroori', type: 'text', required: true } },
                             { flex: 1, input: { label: 'شهر', field: 'shahr', type: 'select', options: options.shahr, option: { text: 'option.text', value: 'option.id' } } },
                             { flex: 1, input: { label: 'هاب', field: "hub.id" as any, type: 'select', options: options.hub, option: { text: 'option.text', value: 'option.id' } } },
-                            { flex: 1, input: { label: 'فعال', field: 'faal', type: 'checkbox', required: true } },
+                            { flex: 1, input: { field: 'faal', label:'',type: 'checkbox', required: true,switch:switchConfig,text:'فعال' } },
 
                         ]
                     },
@@ -50,6 +52,7 @@ const Freelancer_EttelaateFardi: FC = () => {
                         ]
                     },
                     {
+                        className: 'p-v-12- gap-16-',
                         h: [
                             { flex: 1, input: { field: 'shomareGavahiname', label: 'شماره گواهینامه', required: true, type: 'text' } },
                             { flex: 1, input: { field: 'shomareSheba', label: 'شماره شبا', required: true, type: 'text' } },
