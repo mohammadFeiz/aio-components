@@ -5,7 +5,7 @@ import NoeHamkari from "./noe-hamkari";
 import EslahKonandeyeAddress from "./eslah-konandeye-address";
 import Freelancer from "./freelancer";
 
-const AddForm: FC = () => {
+const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({onSubmit,onClose}) => {
     const options: any = {
         shahr: [
             { text: 'تهران - تهران', value: 0 },
@@ -65,6 +65,10 @@ const AddForm: FC = () => {
 
         }
     })
+    const submit = ()=>{
+        onSubmit(addEmployeeModel);
+        onClose()
+    }
     const changeAddEmployeeModel = (addEmployeeModel:I_addEmployeeModel)=>{
         setAddEmployeeModel(addEmployeeModel)
     }
@@ -82,3 +86,5 @@ const AddForm: FC = () => {
     )
 }
 export default AddForm
+
+

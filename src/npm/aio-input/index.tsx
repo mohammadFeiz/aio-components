@@ -196,8 +196,8 @@ function AIOINPUT(props: AITYPE) {
     }
     if (!type || !render[type]) { return null }
     return (
-        <AICTX.Provider 
-            key={datauniqid} 
+        <AICTX.Provider
+            key={datauniqid}
             value={getContext()}
         >
             {render[type]()}
@@ -212,13 +212,13 @@ function TimePopover(props: { onClose: () => void }) {
     const [value, setValue] = useState<type_time_value>(getTimeByUnit(rootProps))
     const startYearRef = useRef<number | undefined>(value.year ? value.year - 10 : undefined);
     const endYearRef = useRef<number | undefined>(value.year ? value.year + 10 : undefined);
-    const change = (obj: { [key in AI_timeUnits]?: number }) =>setValue({ ...value, ...obj })
+    const change = (obj: { [key in AI_timeUnits]?: number }) => setValue({ ...value, ...obj })
     function translate(key: AI_timeUnits | 'Submit' | 'Now') {
         return !!jalali ? { 'year': 'سال', 'month': 'ماه', 'day': 'روز', 'hour': 'ساعت', 'minute': 'دقیقه', 'second': 'ثانیه', 'Submit': 'ثبت', 'Now': 'اکنون' }[key] : key
     }
     function getTimeOptions(type: AI_timeUnits): { text: number, value: number }[] {
         let { year, month, day } = value;
-        const sy = startYearRef.current,ey = endYearRef.current
+        const sy = startYearRef.current, ey = endYearRef.current
         if (type === 'year' && sy && ey) {
             return UT.GetArray(ey - sy + 1, (i) => ({ text: i + sy, value: i + sy }), rootProps.timeStep?.year)
         }
@@ -442,7 +442,7 @@ const FileItem: FC<AI_FileItem> = (props) => {
     let option = optionsList[0]
     return <Layout option={option} />
 }
-const Select:FC = () => {
+const Select: FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
     let { value } = rootProps;
     let values: any[] = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : [])
@@ -462,9 +462,9 @@ const Select:FC = () => {
     }
     else { return <Layout properties={{ text: rootProps.text || getSelectText() }} /> }
 }
-const DateInput:FC = () => {
+const DateInput: FC = () => {
     let { rootProps, types }: AI_context = useContext(AICTX);
-    let { value, hideTags,calendarMode } = rootProps;
+    let { value, hideTags, calendarMode } = rootProps;
 
     let values: any[] = Array.isArray(value) ? [...value] : (value !== undefined ? [value] : [])
     function getDateText() {
@@ -489,7 +489,7 @@ const DateInput:FC = () => {
         }
         return placeholder || (!jalali ? 'Select Date' : 'انتخاب تاریخ')
     }
-    if(calendarMode){
+    if (calendarMode) {
         return <Calendar />
     }
     if (types.isMultiple) {
@@ -537,11 +537,11 @@ const Tag: FC<AI_Tag> = (props) => {
         </div>
     )
 }
-const Input:FC = () => {
+const Input: FC = () => {
     const { rootProps, types, showPassword, options }: AI_context = useContext(AICTX)
     const { type, delay = 500 } = rootProps;
-    const {maxLength = Infinity, spin = true} = rootProps;
-    let {filter = []} = rootProps;
+    const { maxLength = Infinity, spin = true } = rootProps;
+    let { filter = [] } = rootProps;
     let [dom] = useState<any>(createRef())
     let [temp] = useState<any>({ atimeout: undefined, btimeout: undefined, clicked: false })
     let [datauniqid] = useState(`ac${Math.round(Math.random() * 100000)}`)
@@ -613,15 +613,15 @@ const Input:FC = () => {
     }
     function getInputAttrs() {
         let InputAttrs = UT.AddToAttrs(
-            rootProps.inputAttrs, 
+            rootProps.inputAttrs,
             {
                 className: !spin ? 'no-spin' : undefined,
                 style: rootProps.justify ? { textAlign: 'center' } : undefined
             }
         )
         let p = {
-            ...InputAttrs, 
-            value, type, ref: dom, disabled:rootProps.disabled, placeholder:rootProps.placeholder, list: rootProps.options ? datauniqid : undefined,
+            ...InputAttrs,
+            value, type, ref: dom, disabled: rootProps.disabled, placeholder: rootProps.placeholder, list: rootProps.options ? datauniqid : undefined,
             onClick: (e: any) => click(),
             onChange: rootProps.onChange ? (e: any) => change(e.target.value, rootProps.onChange) : undefined,
             onBlur: () => blur(rootProps.onChange)
@@ -646,7 +646,7 @@ const Input:FC = () => {
     else if (type === 'textarea') { return <textarea {...attrs} /> }
     else { return (<input {...attrs} />) }
 }
-const Options:FC = () => {
+const Options: FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     let [dom] = useState<any>(createRef())
@@ -698,20 +698,20 @@ export type AI_Layout = {
     option?: AI_option, text?: ReactNode, index?: number,
     properties?: any
 }
-const CheckIcon: FC<{ 
-    checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode, 
-    checked?: boolean, 
-    round?: boolean, 
+const CheckIcon: FC<{
+    checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode,
+    checked?: boolean,
+    round?: boolean,
     row: any,
-    switch?:{ 
-        value?: boolean, 
-        onChange?: (v: boolean) => void, 
+    switch?: {
+        value?: boolean,
+        onChange?: (v: boolean) => void,
         colors?: string[],
-        borderSize?:number,
-        buttonSize?:number,
-        grooveSize?:number,
-        width?:number,
-        padding?:number
+        borderSize?: number,
+        buttonSize?: number,
+        grooveSize?: number,
+        width?: number,
+        padding?: number
     }
 }> = (props) => {
     if (props.checked === undefined) { return null }
@@ -719,13 +719,13 @@ const CheckIcon: FC<{
         const res = props.checkIcon({ checked: props.checked, row: props.row })
         return res === false ? null : <>{res}</>
     }
-    if(props.switch){
+    if (props.switch) {
         return (
             <AISwitch
                 {...props.switch}
                 value={props.checked}
             />
-        );    
+        );
     }
     return (
         <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (props.round ? ' aio-input-check-round' : '')} style={{ background: 'none' }}>
@@ -909,11 +909,11 @@ const Layout: FC<AI_Layout> = (props) => {
     let content = (<>
         {DragIcon()}
         {
-            typeof properties.checked === 'boolean' && 
-            <CheckIcon 
-                round={!rootProps.multiple && type === 'radio'} 
-                checked={properties.checked} 
-                checkIcon={rootProps.checkIcon} 
+            typeof properties.checked === 'boolean' &&
+            <CheckIcon
+                round={!rootProps.multiple && type === 'radio'}
+                checked={properties.checked}
+                checkIcon={rootProps.checkIcon}
                 row={option || {}}
                 switch={rootProps.switch}
             />
@@ -935,7 +935,7 @@ const Layout: FC<AI_Layout> = (props) => {
     )
 }
 
-const List:FC = () => {
+const List: FC = () => {
     let { rootProps, options }: AI_context = useContext(AICTX);
     let { attrs = {}, size = 36, listOptions = { count: 3, editable: true, stop: 3, decay: 8 }, onChange = () => { } } = rootProps;
     let { count = 3, editable = true, stop = 3, decay = 8 } = listOptions;
@@ -1867,8 +1867,8 @@ function Table() {
         if (type === 'string') {
             let result = value;
             let param: AI_table_param = { row, column: column as AI_table_column, rowIndex: rowIndex as number }
-            if (getValue[value]) { 
-                result = getValue[value](param) 
+            if (getValue[value]) {
+                result = getValue[value](param)
             }
             else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
             return result === undefined ? def : result;
@@ -2284,9 +2284,9 @@ function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, i
     return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
 }
 type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number, range?: number }) => number;
-type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number,className?:string }
-type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number,className?:string }
-export type I_rangeConfig = { thickness: number, offset: number, color: string, roundCap?: boolean, full?: boolean,className?:string }
+type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number, className?: string }
+type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number, className?: string }
+export type I_rangeConfig = { thickness: number, offset: number, color: string, roundCap?: boolean, full?: boolean, className?: string }
 export type I_RangeContext = {
     getXPByValue: (value: number) => number,
     fixAngle: (angle: number) => number,
@@ -2408,7 +2408,7 @@ const Range: FC = () => {
         return res
     }
     const getCircleByStr: AI_cbs = (rc: I_rangeConfig, type) => {
-        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000',className = rc.className;
+        let thickness = rc.thickness || 1, radius = 0, roundCap = rc.roundCap || false, full = rc.full || false, offset = rc.offset, color = rc.color || '#000', className = rc.className;
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -2423,10 +2423,10 @@ const Range: FC = () => {
             else { roundCap = false }
         }
         catch { }
-        return { thickness, radius, color, roundCap, full,className }
+        return { thickness, radius, color, roundCap, full, className }
     }
     const getRectByStr: AI_rbs = (range) => {
-        let { thickness = 1, offset = 0, color = '#000', roundCap = false,className } = range;
+        let { thickness = 1, offset = 0, color = '#000', roundCap = false, className } = range;
         try {
             let thicknessValue = thickness;
             if (isNaN(thicknessValue)) { thicknessValue = 1 }
@@ -2439,7 +2439,7 @@ const Range: FC = () => {
             if (offset < thickness / 2) { offset = thickness / 2 }
         }
         catch { }
-        return { thickness, offset, color, roundCap,className }
+        return { thickness, offset, color, roundCap, className }
     }
     function change1Unit(dir: 1 | -1): void {
         let value = valueRef.current;
@@ -2647,7 +2647,7 @@ const RangeFills: FC = () => {
 }
 const RangeRanges: FC = () => {
     let { rootProps, getCircleByStr, getRectByStr }: I_RangeContext = useContext(RangeContext);
-    let { start = 0, ranges = [], round,end } = rootProps;
+    let { start = 0, ranges = [], round, end } = rootProps;
     let res = [], from = start, list = ranges;
     for (let i = 0; i < list.length; i++) {
         let [value, config] = list[i];
@@ -2656,13 +2656,13 @@ const RangeRanges: FC = () => {
         const isLast = to === end
         let rangeItem: ReactNode
         if (round) {
-            let { thickness, color, radius, roundCap,className } = getCircleByStr(config, 'offset')
-            let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false,className }
+            let { thickness, color, radius, roundCap, className } = getCircleByStr(config, 'offset')
+            let p: I_RangeArc = { thickness, color, from, to, radius, roundCap, full: false, className }
             rangeItem = <RangeArc key={'rangearc' + i} {...p} />
         }
         else {
-            let { thickness, color, offset, roundCap,className } = getRectByStr(config)
-            const cls = UT.classListToString(['ai-range-range',className,isFirst?'ai-range-range-first':'',isLast?'ai-range-range-last':''])
+            let { thickness, color, offset, roundCap, className } = getRectByStr(config)
+            const cls = UT.classListToString(['ai-range-range', className, isFirst ? 'ai-range-range-first' : '', isLast ? 'ai-range-range-last' : ''])
             let p: I_RangeRect = { thickness, color, from, to, offset, roundCap, className: cls }
             rangeItem = <RangeRect {...p} key={'range' + i} />
         }
@@ -2702,8 +2702,8 @@ const RangeRect: FC<I_RangeRect> = ({ thickness, color, from, to, className, sty
     let Style: any = { ...bigSizeStyle, ...smallSizeStyle, ...mainSideStyle, ...otherSideStyle, ...borderRadiusStyle, ...colorStyle, ...style }
     return <div className={className} style={Style} />
 }
-type I_RangeArc = { thickness: number, color: string, from: number, to: number, radius: number, full?: boolean, roundCap?: boolean,className?:string }
-const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, roundCap,className }) => {
+type I_RangeArc = { thickness: number, color: string, from: number, to: number, radius: number, full?: boolean, roundCap?: boolean, className?: string }
+const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, roundCap, className }) => {
     let { fixAngle, getAngleByValue, rootProps }: I_RangeContext = useContext(RangeContext);
     let { size = Def('range-size'), reverse } = rootProps;
     let a, b;
@@ -2717,7 +2717,7 @@ const RangeArc: FC<I_RangeArc> = ({ thickness, color, from, to, radius, full, ro
         b = endAngle;
         if (reverse) { b = startAngle; a = endAngle }
     }
-    return <path key={`from${from}to${to}`} d={UT.svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} className={className}/>
+    return <path key={`from${from}to${to}`} d={UT.svgArc(x, y, radius, a, b)} stroke={color} strokeWidth={thickness} fill='transparent' strokeLinecap={roundCap ? 'round' : undefined} className={className} />
 }
 const RangePoint: FC<I_RangeValue> = (props) => {
     let { rootProps, getOffset, sbp }: I_RangeContext = useContext(RangeContext);
@@ -2857,22 +2857,22 @@ const RangeLabelItem: FC<I_RangeLabelItem> = (props) => {
     let { html, textProps, containerProps } = getDetails();
     return (<div {...containerProps}><div {...textProps}>{html}</div></div>)
 }
-export const AISwitch: FC<{ 
-    value?: boolean, 
-    onChange?: (v: boolean) => void, 
+export const AISwitch: FC<{
+    value?: boolean,
+    onChange?: (v: boolean) => void,
     colors?: string[],
-    borderSize?:number,
-    buttonSize?:number,
-    grooveSize?:number,
-    width?:number,
-    padding?:number,
-    attrs?:any,
-    html?:(v:boolean)=>ReactNode
-}> = ({ colors = [],width = 24,padding = 1,value = false,borderSize = 2,buttonSize = 12,onChange = () => { },grooveSize = 0,html = ()=>null,attrs }) => {
+    borderSize?: number,
+    buttonSize?: number,
+    grooveSize?: number,
+    width?: number,
+    padding?: number,
+    attrs?: any,
+    html?: (v: boolean) => ReactNode
+}> = ({ colors = [], width = 24, padding = 1, value = false, borderSize = 2, buttonSize = 12, onChange = () => { }, grooveSize = 0, html = () => null, attrs }) => {
     function getContainerStyle() {
         return {
             paddingRight: buttonSize + padding, paddingLeft: padding,
-            border: `${borderSize}px solid${colors[0] && colors[1]?(` ${value ? colors[1] : colors[0]}`):''}`
+            border: `${borderSize}px solid${colors[0] && colors[1] ? (` ${value ? colors[1] : colors[0]}`) : ''}`
         }
     }
     function getOuterStyle() {
@@ -2881,20 +2881,20 @@ export const AISwitch: FC<{
     function getInnerStyle() {
         return { width: buttonSize, height: buttonSize, top: `calc(50% - ${buttonSize / 2}px)`, background: value ? colors[1] : colors[0] }
     }
-    function getGrooveStyle(){
-        return {position:'absolute',top:`calc(50% - ${grooveSize / 2}px)`,width:`calc(100% - ${buttonSize + padding * 2}px)`,background:'#ddd',left:padding + buttonSize/2,height:grooveSize}
+    function getGrooveStyle() {
+        return { position: 'absolute', top: `calc(50% - ${grooveSize / 2}px)`, width: `calc(100% - ${buttonSize + padding * 2}px)`, background: '#ddd', left: padding + buttonSize / 2, height: grooveSize }
     }
-    const containerAttrs = UT.AddToAttrs(attrs,{
-        className:['aio-input-switch',!!value?'aio-input-main-color':undefined,!!value?'active':'deactive'],
-        style:getContainerStyle(),
-        attrs:{onClick:()=>onChange(!value)}
+    const containerAttrs = UT.AddToAttrs(attrs, {
+        className: ['aio-input-switch', !!value ? 'aio-input-main-color' : undefined, !!value ? 'active' : 'deactive'],
+        style: getContainerStyle(),
+        attrs: { onClick: () => onChange(!value) }
     })
-    const innerAttrs = UT.AddToAttrs({},{className:['aio-input-switch-inner',!!value?'aio-input-main-bg':undefined,!!value?'active':'deactive'],style:getInnerStyle()})
+    const innerAttrs = UT.AddToAttrs({}, { className: ['aio-input-switch-inner', !!value ? 'aio-input-main-bg' : undefined, !!value ? 'active' : 'deactive'], style: getInnerStyle() })
     return (
         <div {...containerAttrs}>
             {!!grooveSize && <div className="aio-input-switch-groove" style={getGrooveStyle() as any}></div>}
             <div className="aio-input-switch-outer" style={getOuterStyle()}>
-                <div {...innerAttrs}>{html(!!value)}</div> 
+                <div {...innerAttrs}>{html(!!value)}</div>
             </div>
         </div>
     )
@@ -3401,15 +3401,15 @@ const JOYSTICK: FC<{ x: number, y: number, size: number, onChange: (v: I_JoyStic
         </div>
     )
 }
-export type AI_switch = { 
-    value?: boolean, 
-    onChange?: (v: boolean) => void, 
+export type AI_switch = {
+    value?: boolean,
+    onChange?: (v: boolean) => void,
     colors?: string[],
-    borderSize?:number,
-    buttonSize?:number,
-    grooveSize?:number,
-    width?:number,
-    padding?:number
+    borderSize?: number,
+    buttonSize?: number,
+    grooveSize?: number,
+    width?: number,
+    padding?: number
 }
 export type AITYPE =
     AI_hasOption & AI_isDropdown & AI_isMultiple &
@@ -3432,7 +3432,7 @@ export type AITYPE =
         value?: any,
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
         checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
-        switch?:AI_switch,
+        switch?: AI_switch,
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
         hideTags?: boolean,//select
@@ -3531,7 +3531,7 @@ export type AI_date_cell_param = {
 type AI_isDate = {
     dateAttrs?: (p: AI_date_cell_param) => any,
     jalali?: boolean,
-    calendarMode?:boolean,
+    calendarMode?: boolean,
     now?: boolean,
     pattern?: string,
     theme?: string[],
@@ -3662,12 +3662,12 @@ export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='ta
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
 export type I_formInput<T> = AITYPE & {
     label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
-    validate?: (p: { data: T, value: any, input: I_formInput<T>,field:I_formField<T> }) => string | undefined
+    validate?: (p: { data: T, value: any, input: I_formInput<T>, field: I_formField<T> }) => string | undefined
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
     onSubmit?: (data: T) => void;
-    liveSubmit?:boolean;
+    liveSubmit?: boolean;
     fa?: boolean;
     showLabel?: boolean,
     getLayout?: (context: I_formContext<T>) => I_formNode<T>
@@ -3736,7 +3736,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     function getData() { return dataRef.current }
     const changeData = (data: T) => {
         dataRef.current = data; setData(data);
-        if(p.liveSubmit && p.onSubmit){
+        if (p.liveSubmit && p.onSubmit) {
             p.onSubmit(data)
         }
     }
@@ -3763,32 +3763,34 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             setErrorByField(field, error)
             return error
         }
-        if (validateType === 'email') {
-            const res = UT.IsValidEmail(value);
-            if (!res) {
-                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
-                setErrorByField(field, error)
-                return error
+        if (!!value) {
+            if (validateType === 'email') {
+                const res = UT.IsValidEmail(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
+                    setErrorByField(field, error)
+                    return error
+                }
             }
-        }
-        if (validateType === 'irMobile') {
-            const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
-            if (res) {
-                const error = res
-                setErrorByField(field, error)
-                return error
+            if (validateType === 'irMobile') {
+                const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
+                if (res) {
+                    const error = res
+                    setErrorByField(field, error)
+                    return error
+                }
             }
-        }
-        if (validateType === "irNationalCode") {
-            const res = UT.IsValidIrNationalCode(value);
-            if (!res) {
-                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
-                setErrorByField(field, error)
-                return error
+            if (validateType === "irNationalCode") {
+                const res = UT.IsValidIrNationalCode(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
+                    setErrorByField(field, error)
+                    return error
+                }
             }
         }
         if (input.validate) {
-            const res = input.validate({ data: dataRef.current, value, input,field:input.field })
+            const res = input.validate({ data: dataRef.current, value, input, field: input.field })
             if (res) {
                 const error = res
                 setErrorByField(field, error)
@@ -3800,7 +3802,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
             setErrorByField(field, error)
             return error
         }
-        setErrorByField(field,undefined)
+        setErrorByField(field, undefined)
         return undefined
     }
     function getValueByInput(input: I_formInput<T>) {
@@ -3864,7 +3866,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         else if (node.html) { className = 'ai-form-html' }
         return UT.AddToAttrs(
             node.attrs,
-            {className: getNodeClassNames(node, className, isRoot),style: getNodeStyle(node, parentNode)}
+            { className: getNodeClassNames(node, className, isRoot), style: getNodeStyle(node, parentNode) }
         )
     }
     const reset = () => {
@@ -3943,7 +3945,7 @@ const AIFormNode: FC<{
             return (<div {...attrs}>{node.html}</div>)
         }
         if (node.input) {
-            const attrs = {...getNodeAttrs({ node, isRoot: false }),'data-label':node.input.label}
+            const attrs = { ...getNodeAttrs({ node, isRoot: false }), 'data-label': node.input.label }
             return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} size={node.size} />
         }
     }
@@ -3985,8 +3987,8 @@ const AIFormInputContainer: FC<{
     input: I_formInput<any>,
     attrs?: any,
     context: I_formContext<any>,
-    size?:number
-}> = ({ context, input, attrs,size }) => {
+    size?: number
+}> = ({ context, input, attrs, size }) => {
     const { getValueByInput, getErrorByInput, changeByInput, setInputsRef } = context;
     const { inputAttrs, field } = input;
     setInputsRef(field, input);
@@ -4015,10 +4017,10 @@ type I_renderInput = {
     input: I_formInput<any>,
     context: I_formContext<any>,
     inputProps: any,
-    size?:number
+    size?: number
 }
 const RenderInput: FC<I_renderInput> = (props) => {
-    const { context, attrs, input, inputProps, error,size } = props;
+    const { context, attrs, input, inputProps, error, size } = props;
     const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
@@ -4030,10 +4032,10 @@ const RenderInput: FC<I_renderInput> = (props) => {
         setDom(
             <AIFormInput required={input.required} showLabel={rootProps.showLabel}
                 input={<AIOInput {...inputProps} type={inputProps.type} />}
-                label={label} error={isFieldChanged(field) ? error : undefined} attrs={{...attrs,style:{width:size?size:undefined,...attrs.style}}}
+                label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
         )
-    }, [JSON.stringify(inputProps,(key: string, value: any) => isValidElement(value)?undefined:value), error])
+    }, [JSON.stringify(inputProps, (key: string, value: any) => isValidElement(value) ? undefined : value), error])
     return <Fragment key={input.field}>{dom}</Fragment>;
 }
 export const AIFormInput: FC<{
@@ -4041,16 +4043,16 @@ export const AIFormInput: FC<{
     showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
-    className?:string,
-    style?:any,
+    className?: string,
+    style?: any,
     action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true,className,style } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
-    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input",className],style })
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className], style })
     return (
         <div {...Attrs}>
             {

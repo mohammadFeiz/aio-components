@@ -1794,7 +1794,9 @@
 
 .aio-input-select-value {
     display: flex;
-    justify-content: flex-start;
+    line-height: 16px;
+    height: 100%;
+    justify-content: center;
 }
 
 .aio-input-tree {

@@ -154,7 +154,7 @@ export default class AIOApis {
         this.handleMock(api)
         if (api.cache) {
             let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
-            if (cachedValue !== undefined) { return cachedValue }
+            if (cachedValue !== undefined) { return {success:true,response:cachedValue} }
         }
         else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;

@@ -1,48 +1,16 @@
-.boxit-freelancer{
-    color:#000;
-}
-.boxit-freelancer .aio-input{
-    border-radius:8px;
-}
-.boxit-freelancer .aio-input-text,
-.boxit-freelancer .aio-input-number,
-.boxit-freelancer .aio-input-date,
-.boxit-freelancer .aio-input-password
-{
-    border-radius:8px;
-    border:1px solid #999;
-}
-.boxit-freelancer .aio-input-main-bg{
-    background:#EF5644;
-}
-.boxit-freelancer .aio-input-main-color{
-    color:#EF5644;
-}
-.boxit-freelancer .ai-form-input-label{
-    background:#fff;
-    height:12px !important;
-    position: absolute;
-    z-index:10;
-    top:-10px;
-    width: fit-content;
-    padding:0 6px;
-    right:12px;
-    color:#666;
+
+.freelancer-grid .aio-input{
     font-size:12px;
 }
-.boxit-freelancer .aio-input-tag{
-    border-radius:24px;
-}
-
 .freelancer-grid .aio-input-text{
     border-radius:12px;
     border:1px solid #aaa;
-    height: 36px;
+    height: 40px;
 }
 .freelancer-grid .aio-input-select{
     border-radius:12px;
     border:1px solid #aaa;
-    height: 36px;
+    height: 40px;
 }
 .freelancer-grid .aio-input-checkbox{
     height: 36px;
@@ -54,7 +22,7 @@
     position: absolute;
     z-index: 10;
     font-size: 10px;
-    top: -12px;
+    top: -10px;
     right:12px;
     width:fit-content;
 }
@@ -65,4 +33,35 @@
     flex:none;
     color:#666;
     padding:0 6px;
+    height:12px;
+}
+.freelancer-grid .aio-input-table-paging-button.active{
+    background:#ef5644 !important;
+    border:rgb(239, 86, 68) !important;
+}
+.freelancer-grid .aio-input-table{
+    color:#222;
+}
+.fl-button-1{
+    border:none;
+    display: flex;
+    align-items: center;
+    height:36px;
+    border-radius:6px;
+    padding:0 24px;
+    background:#ef5644;
+    color:#fff;
+    font-size:14px;
+}
+.fl-button-2{
+    border:none;
+    display: flex;
+    align-items: center;
+    height:36px;
+    border-radius:6px;
+    color:#ef5644;
+    padding:0 24px;
+    background:none;
+    font-weight: bold;
+    font-size:14px;
 }

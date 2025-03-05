@@ -71,11 +71,14 @@ export type I_AddEmployeeContext = {
     changeAddEmployeeModel:(v:I_addEmployeeModel)=>void,
     options: any,
 }
-export type I_filter = {
+export type I_gridFilter = {
     hubId:number,
     noeHamkari?: number,
     name?: string,
     faal?: boolean,
+    pageSize:number,
+    pageNumber:number,
+    rowsLength:number,
     advanced: {
         mobile?: string,
         codeMelli?: string
@@ -87,7 +90,7 @@ export type I_serverFilter = {
     isActive?:boolean,
     mobile?:string,
     email?:string,
-    hublist:{id:number}[]
+    selectHub:{id:number}
 }
 export type I_row = {
     selectRoles: { id: number, text: string }[]

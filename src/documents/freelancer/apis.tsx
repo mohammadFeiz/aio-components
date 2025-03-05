@@ -41,9 +41,7 @@ export default class Apis extends AIOApis {
             "employeeType": "0"
         }
         const res: I_serverFilter = {
-            hublist:[
-                {id:filter.hubId}
-            ]
+            selectHub:{id:filter.hubId}
         }
         if (filter.noeHamkari) {res.employeeType = filter.noeHamkari}
         if (filter.name) {res.name = filter.name}
@@ -68,13 +66,19 @@ export default class Apis extends AIOApis {
     }
     grid = async (filter:I_filter) => {
         const body = this.getGridServerFilter(filter)
-        const { response, success } = await this.request<any>({
+        const { response, success } = await this.request<{data:{payload:{content:any[],totalElements:number}}}>({
             name:'grid',
             method: 'post',
-            description: 'دریافت اطلاعات جدول پرسنل',
-            url: `${this.base_url}/resource-api/employee/filter?pageNumber=${1}&pageSize=${10}`,
+            description: 'دریافت اطلاعات جدول پرسنل',loading:true,
+            url: `${this.base_url}/resource-api/employee/filter?pageNumber=${filter.pageNumber}&pageSize=${filter.pageSize}`,
             body
         })
-        debugger
+        if(success){
+            return {
+                rows:response.data.payload.content,
+                length:response.data.payload.totalElements
+            }
+        }
+        return false
     }
 }
