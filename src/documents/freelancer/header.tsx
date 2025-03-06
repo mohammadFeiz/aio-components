@@ -9,6 +9,7 @@ const Header: FC = () => {
     const popup = usePopup()
     const form = useForm<I_gridFilter>({
         initData: gridHook.gridFilter,
+        inlineLabel:true,
         onSubmit: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, ...data }),
         liveSubmit: true,
         getLayout: () => {
@@ -152,7 +153,7 @@ const AdvancedSearchButton: FC<{popup:I_usePopup}> = ({popup}) => {
 const AdvancedSearchModal: FC = () => {
     const { gridHook } = useFreelancer()
     const form = useForm<I_gridFilter["advanced"]>({
-        initData: gridHook.gridFilter.advanced,fa:true,
+        initData: gridHook.gridFilter.advanced,fa:true,inlineLabel:true,
         onSubmit: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, advanced: data }),
         liveSubmit: true,
         getLayout: () => {

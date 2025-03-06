@@ -2000,7 +2000,7 @@ function Table() {
             <div {...attrs}>
                 <TableToolbar />
                 <div className='aio-input-table-unit aio-input-scroll'><TableHeader /><TableRows /></div>
-                {paging ? <TablePaging /> : ''}
+                {!!paging && !!ROWS.rows.length ? <TablePaging /> : ''}
             </div>
         </AITableContext.Provider>
     )
@@ -3666,6 +3666,7 @@ export type I_formInput<T> = AITYPE & {
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
+    inlineLabel?:boolean;
     onSubmit?: (data: T) => void;
     liveSubmit?: boolean;
     fa?: boolean;
@@ -3987,16 +3988,16 @@ const AIFormInputContainer: FC<{
     input: I_formInput<any>,
     attrs?: any,
     context: I_formContext<any>,
-    size?: number
+    size?: number,
 }> = ({ context, input, attrs, size }) => {
-    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef } = context;
+    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef,rootProps } = context;
     const { inputAttrs, field } = input;
     setInputsRef(field, input);
     const value = getValueByInput(input);
     const error = getErrorByInput(input, value)
     return (
         <RenderInput
-            value={value} error={error} input={input} context={context} size={size}
+            value={value} error={error} input={input} context={context} size={size} inlineLabel={rootProps.inlineLabel}
             inputProps={{
                 ...input,
                 inputAttrs: { ...inputAttrs, 'aria-label': field },
@@ -4017,10 +4018,11 @@ type I_renderInput = {
     input: I_formInput<any>,
     context: I_formContext<any>,
     inputProps: any,
-    size?: number
+    size?: number,
+    inlineLabel?:boolean
 }
 const RenderInput: FC<I_renderInput> = (props) => {
-    const { context, attrs, input, inputProps, error, size } = props;
+    const { context, attrs, input, inputProps, error, size,inlineLabel } = props;
     const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
@@ -4030,7 +4032,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
         }
         const { field, label } = input;
         setDom(
-            <AIFormInput required={input.required} showLabel={rootProps.showLabel}
+            <AIFormInput required={input.required} showLabel={rootProps.showLabel} inlineLabel={inlineLabel}
                 input={<AIOInput {...inputProps} type={inputProps.type} />}
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
@@ -4040,6 +4042,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
 }
 export const AIFormInput: FC<{
     label?: string,
+    inlineLabel?:boolean,
     showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
@@ -4048,11 +4051,14 @@ export const AIFormInput: FC<{
     action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
+    before?:ReactNode,
+    after?:ReactNode,
+    subtext?:string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style,inlineLabel } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
-    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className], style })
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className,inlineLabel?'ai-form-input-inline-label':undefined], style })
     return (
         <div {...Attrs}>
             {
@@ -4062,7 +4068,11 @@ export const AIFormInput: FC<{
                     {!!action && <div className="ai-form-input-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
                 </label>
             }
-            <div className="ai-form-input-body">{input}</div>
+            <div className="ai-form-input-body">
+                {!!props.before && <div className="ai-form-input-body-before"></div>}
+                <div className="ai-form-input-body-input" data-subtext={!!props.subtext?props.subtext:undefined}>{input}</div>
+                {!!props.after && <div className="ai-form-input-body-after"></div>}
+            </div>
             {!!error && <div className="ai-form-input-error">{error}</div>}
         </div>
     )

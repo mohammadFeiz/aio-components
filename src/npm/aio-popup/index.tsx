@@ -30,7 +30,7 @@ export type AP_modal = {
     setAttrs?: AP_setAttrs
 }
 export type AP_alert = {
-    align?:'left' | 'right' | 'center',
+    rtl?:boolean,
     icon?: false | ReactNode,
     type: 'success' | 'error' | 'warning' | 'info',
     title?: ReactNode,
@@ -225,7 +225,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
         setSnackebarItems(newItems)
         if (typeof item.onClose === 'function') { item.onClose() }
     }
-    const addAlert: AP_addAlert = (obj) => Alert(obj)
+    const addAlert: AP_addAlert = (obj) => Alert({rtl:props?.rtl,...obj})
     const addHighlight: AP_addHighlight = (highlight) => setHighlight(highlight)
     const removeHighlight: AP_removeHighlight = () => setHighlight(undefined)
     const addConfirm: AP_addConfirm = (obj) => {
@@ -571,7 +571,7 @@ const SnackebarBar: FC = () => {
     return <div className='aio-popup-snackebar-bar' style={{ transition: `${item.time || 8}s linear` }}></div>
 }
 export function Alert(props: AP_alert) {
-    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose,align = 'left' } = props;
+    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose,rtl } = props;
     let $$ = {
         id: '',
         time: 0,
@@ -591,7 +591,7 @@ export function Alert(props: AP_alert) {
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
             <div class='aio-popup-alert-title'>${ReactDOMServer.renderToStaticMarkup(title as any)}</div>
-            <div class='aio-popup-alert-text' style="text-align:${align}">${text}</div>
+            <div class='aio-popup-alert-text' style="text-align:${rtl?'right':'left'}">${text}</div>
           </div>
           <div class='aio-popup-alert-footer'>
             <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>

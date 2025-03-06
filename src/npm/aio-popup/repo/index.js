@@ -155,7 +155,7 @@ const usePopup = (props) => {
             item.onClose();
         }
     };
-    const addAlert = (obj) => Alert(obj);
+    const addAlert = (obj) => Alert(Object.assign({ rtl: props === null || props === void 0 ? void 0 : props.rtl }, obj));
     const addHighlight = (highlight) => setHighlight(highlight);
     const removeHighlight = () => setHighlight(undefined);
     const addConfirm = (obj) => {
@@ -516,7 +516,7 @@ const SnackebarBar = () => {
     return _jsx("div", { className: 'aio-popup-snackebar-bar', style: { transition: `${item.time || 8}s linear` } });
 };
 export function Alert(props) {
-    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose, align = 'left' } = props;
+    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose, rtl } = props;
     let $$ = {
         id: '',
         time: 0,
@@ -536,7 +536,7 @@ export function Alert(props) {
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
             <div class='aio-popup-alert-title'>${ReactDOMServer.renderToStaticMarkup(title)}</div>
-            <div class='aio-popup-alert-text' style="text-align:${align}">${text}</div>
+            <div class='aio-popup-alert-text' style="text-align:${rtl ? 'right' : 'left'}">${text}</div>
           </div>
           <div class='aio-popup-alert-footer'>
             <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>
