@@ -1,9 +1,9 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react"
-import { useForm, I_formNode, I_validateType, I_formField, AITYPE } from "./../../npm/aio-input"
-import { AddToAttrs, FixUrl, Storage } from "./../../npm/aio-utils"
-import { Loading, Alert } from "./../../npm/aio-popup"
+import { useForm, I_formNode, I_validateType, I_formField, AITYPE } from "aio-input"
+import { AddToAttrs, FixUrl, Storage } from "aio-utils"
+import { Loading, Alert } from "aio-popup"
 import axios from "axios"
-import './repo/index.css';
+import './index.css';
 import { Navigate, Route, Routes } from "react-router-dom"
 
 type I_loginMode = 'userpass' | 'register' | 'otpcode' | 'otpnumber'
@@ -21,6 +21,8 @@ type I_AILogin<T> = {
     checkToken: { url: string, method?: 'post' | 'get', body?: any, getResult?: (response: any) => boolean },
     before?: (mode: I_loginMode) => ReactNode,
     after?: (mode: I_loginMode) => ReactNode,
+    formBefore?: (mode: I_loginMode) => ReactNode,
+    formAfter?: (mode: I_loginMode) => ReactNode,
     translate?: (key: I_login_key) => string | undefined,
     fa?: boolean,
     id: string,
@@ -126,72 +128,65 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
                         input: {
                             field: 'password', type: 'password', preview: true, label: trans('password'), validate: ({ field, value, data }) => validate({ data, field: field as 'username' | 'password', value })
                         }
-                    }
+                    },
+                    {
+                        html:(rootProps.formAfter || (()=>null))(mode.key)
+                    },
                 ]
             },context)
         },
         onSubmit: (data)=>onSubmit<I_login_model<T>["userpass"]>(data)
     })
-    // const otpnumberHook = useForm<{otpnumber:string}>({
-    //     initData: {otpnumber:''},
-    //     getLayout: (context) => {
-    //         const { validate = () => { return undefined } } = otpnumber || {}
-    //         const {title,submitText} = modeRef.current
-    //         return getLayout({
-    //             attrs: { className: "ai-login-form" },
-    //             v: [
-    //                 { html:title },
-    //                 {
-    //                     scroll: true,
-    //                     v: [
-    //                         {
-    //                             input: { field:'otpnumber',type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber'),validate:({value})=>validate(value) }
-    //                         }
-    //                     ]
-    //                 },
-    //                 { html: <div style={{ height: 24 }}></div>, size: 24, },
-    //                 { html: context.renderSubmitButton(submitText,{ className: 'ai-login-submit' })},
-    //                 { html: renderModes() }
-    //             ]
-    //         },context)
-    //     },
-    //     onSubmit: (data)=>onSubmit<string>(data.otpnumber)
-    // })
-    // const otpcodeHook = useForm<{otpcode:string}>({
-    //     initData: {otpcode:''},
-    //     getLayout: (context) => {
-    //         const { validate = () => { return undefined } } = otpcode || {}
-    //         return getLayout({
-    //             scroll: true,
-    //             v: [
-    //                 {
-    //                     input: { field:'otpcode',type: 'text', maxLength: otpcode?.length || 4, filter: ['number'], label: trans('otpcode'),validate:({value})=>validate(value) }
-    //                 }
-    //             ]
-    //         },context)
-    //     },
-    //     onSubmit: (data)=>onSubmit<string>(data.otpcode)
-    // })
-    // const registerHook = useForm<I_login_model<T>["register"]>({
-    //     initData: getModel().register,
-    //     getLayout: (context) => {
-    //         const { inputs = () => [],validate = ()=>{return undefined} } = register || {}
-    //         return getLayout<I_login_model<T>["register"]>({
-    //             scroll: true,
-    //             v: [
-    //                 { input: { field: 'username', type: 'text', label: trans('username') } },
-    //                 { input: { field: 'password', type: 'password', preview: true, label: trans('password') } },
-    //                 { input: { field: 'repassword', type: 'password', preview: true, label: trans('repassword') } },
-    //                 {
-    //                     v: inputs(context.getData()).map((input) => {
-    //                         return { input:{...input,field:`properties.${input.field}`,validate:({field,value,data})=>validate({data,field,value})} }
-    //                     })
-    //                 }
-    //             ]
-    //         },context)
-    //     },
-    //     onSubmit: (data)=>onSubmit<I_login_model<T>["register"]>(data)
-    // })
+    const otpnumberHook = useForm<{otpnumber:string}>({
+        initData: {otpnumber:''},
+        getLayout: (context) => {
+            const { validate = () => { return undefined } } = otpnumber || {}
+            return getLayout({
+                scroll: true,
+                v: [
+                    {
+                        input: { field:'otpnumber',type: 'text', maxLength: 11, filter: ['number'], label: trans('otpnumber'),validate:({value})=>validate(value) }
+                    }
+                ]
+            },context)
+        },
+        onSubmit: (data)=>onSubmit<string>(data.otpnumber)
+    })
+    const otpcodeHook = useForm<{otpcode:string}>({
+        initData: {otpcode:''},
+        getLayout: (context) => {
+            const { validate = () => { return undefined } } = otpcode || {}
+            return getLayout({
+                scroll: true,
+                v: [
+                    {
+                        input: { field:'otpcode',type: 'text', maxLength: otpcode?.length || 4, filter: ['number'], label: trans('otpcode'),validate:({value})=>validate(value) }
+                    }
+                ]
+            },context)
+        },
+        onSubmit: (data)=>onSubmit<string>(data.otpcode)
+    })
+    const registerHook = useForm<I_login_model<T>["register"]>({
+        initData: getModel().register,
+        getLayout: (context) => {
+            const { inputs = () => [],validate = ()=>{return undefined} } = register || {}
+            return getLayout<I_login_model<T>["register"]>({
+                scroll: true,
+                v: [
+                    { input: { field: 'username', type: 'text', label: trans('username') } },
+                    { input: { field: 'password', type: 'password', preview: true, label: trans('password') } },
+                    { input: { field: 'repassword', type: 'password', preview: true, label: trans('repassword') } },
+                    {
+                        v: inputs(context.getData()).map((input) => {
+                            return { input:{...input,field:`properties.${input.field}`,validate:({field,value,data})=>validate({data,field,value})} }
+                        })
+                    }
+                ]
+            },context)
+        },
+        onSubmit: (data)=>onSubmit<I_login_model<T>["register"]>(data)
+    })
     async function onSubmit<P>(data:P){
         const { path, method, body = () => { } } = (rootProps as any)[mode.key]
             const { base_url } = rootProps;
@@ -200,7 +195,7 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
             axios[method as 'post' | 'get'](url, body(data)).then(success).catch(response => {
                 const text = getMessage(response, mode.key)
                 loading.hide('login0')
-                Alert({ type: 'error', title: trans(`${mode.key}Error`), text })
+                Alert({ type: 'error', title: trans(`${mode.key}Error`), text,closeText:rootProps.fa?'بستن':'Close' })
             });
     }
     function getLayout<P>(node:I_formNode<P>,context:any):I_formNode<P>{
@@ -208,11 +203,17 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
             return {
                 attrs: { className: "ai-login-form" },
                 v: [
+                    {
+                        html:(rootProps.formBefore || (()=>null))(mode.key)
+                    },
                     { html:title },
                     node,
                     { html: <div style={{ height: 24 }}></div>, size: 24, },
                     { html: context.renderSubmitButton(submitText,{ className: 'ai-login-submit' })},
-                    { html: renderModes() }
+                    { html: renderModes() },
+                    {
+                        html:(rootProps.formAfter || (()=>null))(mode.key)
+                    },
                 ]
             }
     }
@@ -227,10 +228,10 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         loading.show('login0'); const res = await onSuccess(response); loading.hide('login0');
         if (typeof res !== 'object' || !res.user || typeof res.token !== 'string') {
             const message = `onSuccess of props.${mode}.${mode === 'userpass' ? 'api' : 'codeApi'} should returns {user:any,token:string}`
-            Alert({ type: 'error', title: trans(`${mode}Error`), text: message })
+            Alert({ type: 'error', title: trans(`${mode}Error`), text: message,closeText:rootProps.fa?'بستن':'Close' })
         }
         else {
-            if (res.message) { Alert({ type: 'success', text: res.message }) }
+            if (res.message) { Alert({ type: 'success', text: res.message,closeText:rootProps.fa?'بستن':'Close' }) }
             const { user, token } = res;
             storage.save('data', { user, token }); setData({ user, token })
         }
@@ -239,7 +240,7 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         if (!rootProps[mode]) { return }
         const { onSuccess } = rootProps[mode]
         loading.show('login0'); const res = await onSuccess(response); loading.hide('login0')
-        if (res.message) { Alert({ type: 'success', text: res.message }) }
+        if (res.message) { Alert({ type: 'success', text: res.message,closeText:rootProps.fa?'بستن':'Close' }) }
         if (mode === 'otpnumber') { setMode(getMode('otpcode')) }
         else { setTimeout(() => window.location.reload(), 1000) }
     }
@@ -254,12 +255,25 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         if (error.response) {
             let status = error.response.status
             if (typeof status !== 'number') {
-                const { getStatus = () => { } } = rootProps;
+                const { getStatus } = rootProps;
+                if(!getStatus){
+                    const text = 'unable auto detect status.please set getStatus props in useLogin for extracting status'
+                    Alert({ type: 'error', title, text,closeText:rootProps.fa?'بستن':'Close' });
+                    return
+                }
                 status = getStatus(error);
                 if (typeof status === 'number') { return status }
+                else {
+                    const text = 'getStatus props should return number'
+                    Alert({ type: 'error', title, text,closeText:rootProps.fa?'بستن':'Close' });
+                    return
+                }
+            }
+            else {
+                return status
             }
         }
-        Alert({ type: 'error', title, text })
+        Alert({ type: 'error', title, text,closeText:rootProps.fa?'بستن':'Close' })
     }
     const getMessage = (error: any, name: string) => {
         let title = `${name} unknown message.`, text = 'please set getMessage props in useLogin for extracting message';
@@ -276,7 +290,7 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         }
         else if (typeof error.request === 'string') { return error.request }
         else if (typeof error.message === 'string') { return error.message }
-        Alert({ title, text, type: 'error' });
+        Alert({ title, text, type: 'error',closeText:rootProps.fa?'بستن':'Close' });
         return 'unkown message'
     }
     const checkTokenCatch = (error: any) => {
@@ -285,7 +299,7 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         const message = getMessage(error, 'checking token');
         let title = 'error in checking token';
         if (rootProps.fa) { title = 'خطا در بررسی توکن' }
-        Alert({ type: 'error', title, text: message })
+        Alert({ type: 'error', title, text: message,closeText:rootProps.fa?'بستن':'Close' })
     }
     const checkTokenThen = (response: any, user: T, token: string) => {
         const { checkToken } = rootProps;
@@ -293,7 +307,7 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
         const res = getResult(response);
         if (res === true) { setData({ user, token }); setCheckingToken(true) }
         else if (res === false) { logout() }
-        else { Alert({ type: 'error', title: 'check token error', text: 'checkToken.getResult should returns boolean' }) }
+        else { Alert({ type: 'error', title: 'check token error', text: 'checkToken.getResult should returns boolean',closeText:rootProps.fa?'بستن':'Close' }) }
     }
     async function CheckToken() {
         if (rootProps.splash) { setTimeout(() => { setSplashing(false) }, rootProps.splash.time); }
@@ -381,9 +395,9 @@ const useDetails = <T extends Record<string, any>>(rootProps: I_AILogin<T>): I_l
     function renderLoginBox():ReactNode {
         const {key} = mode;
         if(key === 'userpass'){return <>{userpassHook.renderLayout}</>}
-        //if(key === 'register'){return <>{registerHook.renderLayout}</>}
-        //if(key === 'otpnumber'){return <>{otpnumberHook.renderLayout}</>}
-        //if(key === 'otpcode'){return <>{otpcodeHook.renderLayout}</>}
+        if(key === 'register'){return <>{registerHook.renderLayout}</>}
+        if(key === 'otpnumber'){return <>{otpnumberHook.renderLayout}</>}
+        if(key === 'otpcode'){return <>{otpcodeHook.renderLayout}</>}
         return null
     }
     const bf_layout = (type: 'before' | 'after') => {

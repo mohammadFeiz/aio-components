@@ -814,7 +814,7 @@
   } */
   .aio-loading {
     z-index: 100000000000000000000000000000;
-    position: absolute;
+    position: fixed;
     direction: ltr;
     width: 100%;
     height: 100%;
