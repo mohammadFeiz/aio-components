@@ -48,7 +48,7 @@ const Header: FC = () => {
                             {
                                 size: 120,
                                 input: {
-                                    type: 'checkbox', label: '', field: 'faal', text: 'فعال', className:'brd-none-',required:false,
+                                    type: 'checkbox', label: '', field: 'isActive', text: 'فعال', className:'brd-none-',required:false,
                                     switch: { borderSize: 1, colors: ['#aaa', '#EF5644'] },
                                 }
                             },
@@ -161,7 +161,7 @@ const AdvancedSearchModal: FC = () => {
                 className:'p-12- gap-16-',
                 v: [
                     { input: { label: 'شماره موبایل', field: 'mobile', type: 'text', validateType: "irMobile",maxLength:11, filter: ['number'],required:false } },
-                    { input: { label: 'کد ملی', field: 'codeMelli', type: 'text', validateType: "irNationalCode",maxLength:10, filter: ['number'],required:false } },
+                    { input: { label: 'کد ملی', field: 'nationalCode', type: 'text', validateType: "irNationalCode",maxLength:10, filter: ['number'],required:false } },
                 ]
             }
         }

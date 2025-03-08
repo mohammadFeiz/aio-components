@@ -2,24 +2,26 @@ export type I_hub = {
     id: number,
     text: string
 }
+export type I_ettelaateFardi = {
+    name?: string,
+    nationalCode?: string,
+    mobile?: string,
+    fatherName?: string,
+    email?: string,
+    birthDate?: string,
+    gender?: number,
+    phone?: string,
+    essentialPhone?: string,
+    shahr?: number,
+    isActive?: boolean,
+    address?: string,
+            
+}
 export type I_addEmployeeModel = {
     noeHamkari: number,
     eslahKonandeyeAddress: {
         tab: number,
-        ettelaateFardi: {
-            name?: string,
-            codeMelli?: string,
-            mobile?: string,
-            namePedar?: string,
-            email?: string,
-            tarikheTavallod?: string,
-            jensiat?: number,
-            phone?: string,
-            shomareZarori?: string,
-            shahr?: string,
-            faal?: boolean,
-            address?: string,
-        },
+        ettelaateFardi: I_ettelaateFardi,
         shahrHayeMontasab: {
             shahr?: number,
             ostan?: number
@@ -28,24 +30,12 @@ export type I_addEmployeeModel = {
     freelancer: {
         tab: number,
         ettelaateFardi: {
-            name?: string,
-            codeMelli?: string,
-            mobile?: string,
-            namePedar?: string,
-            email?: string,
-            tarikheTavallod?: string,
-            jensiat?: number,
-            telefoneSabet?: string,
-            telefoneZaroori?: string,
-            shahr?: number,
             hub?: number,
-            faal: boolean,
-            address?: string,
             shomareGavahiname?: string,
             shomareSheba?: string,
             shomareSafte?: string,
             shomareGharardad?: string
-        },
+        } & I_ettelaateFardi,
         ettelaateKhodro: {
             noeVasileNaghlie?: number,
             modeleVasileNaghlie?: number,
@@ -75,16 +65,16 @@ export type I_gridFilter = {
     hubId:number,
     noeHamkari?: number,
     name?: string,
-    faal?: boolean,
+    isActive?: boolean,
     pageSize:number,
     pageNumber:number,
     rowsLength:number,
     advanced: {
         mobile?: string,
-        codeMelli?: string
+        nationalCode?: string
     }
 }
-export type I_serverFilter = {
+export type I_gridServerFilter = {
     employeeType?:number,
     name?:string,
     isActive?:boolean,

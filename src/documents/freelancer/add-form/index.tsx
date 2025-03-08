@@ -29,7 +29,7 @@ const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({
             { text: 'اطلاعات خودرو', value: 1 },
             { text: 'تصویر مدارک', value: 2 }
         ],
-        jensiat: [
+        gender: [
             { text: 'مرد', value: 0 },
             { text: 'زن', value: 1 },
         ],
@@ -45,7 +45,7 @@ const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({
         eslahKonandeyeAddress: {
             tab: 0,
             ettelaateFardi: {
-                faal: true,
+                isActive: true,
             },
             shahrHayeMontasab: {
 
@@ -54,7 +54,7 @@ const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({
         freelancer: {
             tab: 0,
             ettelaateFardi: {
-                faal: true
+                isActive: true
             },
             ettelaateKhodro: {
 

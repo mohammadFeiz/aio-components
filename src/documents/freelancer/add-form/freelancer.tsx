@@ -44,33 +44,33 @@ const Freelancer: FC = () => {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'ettelaateFardi.name', type: 'text', required: true } },
-                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.codeMelli', type: 'text', required: true, validateType: "irNationalCode" } },
+                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.nationalCode', type: 'text', required: true, validateType: "irNationalCode" } },
                                     { flex: 1, input: { label: 'شماره موبایل', field: 'ettelaateFardi.mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] } },
-                                    { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.namePedar', type: 'text', required: true } }
+                                    { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.fatherName', type: 'text', required: true } }
                                 ]
                             },
                             {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'پست الکترونیکی', field: 'ettelaateFardi.email', type: 'text', validateType: 'email' } },
-                                    { flex: 1, input: { label: 'تاریخ تولد', field: 'ettelaateFardi.tarikheTavallod', type: 'text' } },
+                                    { flex: 1, input: { label: 'تاریخ تولد', field: 'ettelaateFardi.birthDate', type: 'text' } },
                                     {
                                         flex: 1,
                                         input: {
-                                            label: 'جنسیت', field: 'ettelaateFardi.jensiat.id' as any, type: 'select', required: true,
-                                            options: options.jensiat, option: { text: 'option.text', value: 'option.id' }
+                                            label: 'جنسیت', field: 'ettelaateFardi.gender' as any, type: 'select', required: true,
+                                            options: options.gender, option: { text: 'option.text', value: 'option.id' }
                                         }
                                     },
-                                    { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'ettelaateFardi.telefoneSabet', type: 'text', required: true } },
+                                    { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'ettelaateFardi.phone', type: 'text', required: true } },
                                 ]
                             },
                             {
                                 className: rowCls,
                                 h: [
-                                    { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.telefoneZaroori', type: 'text', required: true } },
+                                    { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.essentialPhone', type: 'text', required: true } },
                                     { flex: 1, input: { label: 'شهر', field: 'ettelaateFardi.shahr', type: 'select', options: options.shahr, option: { text: 'option.text', value: 'option.id' } } },
                                     { flex: 1, input: { label: 'هاب', field: "ettelaateFardi.hub.id" as any, type: 'select', options: options.hub, option: { text: 'option.text', value: 'option.id' } } },
-                                    { flex: 1, input: { field: 'ettelaateFardi.faal', label: '', type: 'checkbox', required: true, switch: switchConfig, text: 'فعال' } },
+                                    { flex: 1, input: { field: 'ettelaateFardi.isActive', label: '', type: 'checkbox', required: true, switch: switchConfig, text: 'فعال' } },
 
                                 ]
                             },

@@ -22,21 +22,21 @@ const EslahKonandeyeAddress: FC = () => {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'ettelaateFardi.name', type: 'text', required: true } },
-                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.codeMelli', type: 'text', required: true, validateType: "irNationalCode", filter: ['number'] } },
+                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.nationalCode', type: 'text', required: true, validateType: "irNationalCode", filter: ['number'] } },
                                     { flex: 1, input: { label: 'شماره موبایل', field: 'ettelaateFardi.mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] } },
-                                    { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.namePedar', type: 'text', required: true } }
+                                    { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.fatherName', type: 'text', required: true } }
                                 ]
                             },
                             {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'پست الکترونیکی', field: 'ettelaateFardi.email', type: 'text', validateType: 'email' } },
-                                    { flex: 1, input: { label: 'تاریخ تولد', field: 'ettelaateFardi.tarikheTavallod', type: 'text' } },
+                                    { flex: 1, input: { label: 'تاریخ تولد', field: 'ettelaateFardi.birthDate', type: 'text' } },
                                     {
                                         flex: 1,
                                         input: {
-                                            label: 'جنسیت', field: 'ettelaateFardi.jensiat', type: 'select', required: true,
-                                            options: options.jensiat
+                                            label: 'جنسیت', field: 'ettelaateFardi.gender', type: 'select', required: true,
+                                            options: options.gender //notice
                                         }
                                     },
                                     { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'ettelaateFardi.phone', type: 'text', required: true, filter: ['number'] } },
@@ -45,12 +45,12 @@ const EslahKonandeyeAddress: FC = () => {
                             {
                                 className: rowCls,
                                 h: [
-                                    { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.shomareZarori', type: 'text', required: true, filter: ['number'] } },
+                                    { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.essentialPhone', type: 'text', required: true, filter: ['number'] } },
                                     { flex: 1, input: { label: 'شهر', field: 'ettelaateFardi.shahr', type: 'select', options: options.shahr, popover: { fitHorizontal: true } } },
                                     {
                                         flex: 2,
                                         input: {
-                                            field: 'ettelaateFardi.faal', label: '', type: 'checkbox', required: false,
+                                            field: 'ettelaateFardi.isActive', label: '', type: 'checkbox', required: false,
                                             switch: switchConfig,
                                             text: 'فعال'
                                         }
