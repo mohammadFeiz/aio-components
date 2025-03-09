@@ -34,8 +34,8 @@ const EslahKonandeyeAddress: FC = () => {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'ettelaateFardi.name', type: 'text', required: true } },
-                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.nationalCode', type: 'text', required: true, validateType: "irNationalCode", filter: ['number'] } },
-                                    { flex: 1, input: { label: 'شماره موبایل', field: 'ettelaateFardi.mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] } },
+                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.nationalCode', type: 'text', required: true, validateType: "irNationalCode", filter: ['number'],maxLength:10 } },
+                                    { flex: 1, input: { label: 'شماره موبایل', field: 'ettelaateFardi.mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] },maxLength:11 },
                                     { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.fatherName', type: 'text', required: true } }
                                 ]
                             },

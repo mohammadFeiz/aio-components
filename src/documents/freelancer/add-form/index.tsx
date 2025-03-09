@@ -14,10 +14,19 @@ const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({
                 tab: 0,
                 ettelaateFardi: {
                     isActive: true,
+                    email:'feiz.ms@gmail.com',
+                    mobile:'09123534314',
+                    phone:'02188050006',
+                    address:'شیخ بهایی شمالی نوربخش پلاک 30',
+                    nationalCode:'0386481784',
+                    fatherName:'علی محمد',
+                    essentialPhone:'09123445676',
+                    gender:0,
+                    birthDate:'1364/4/4'
+                    
                 },
-                shahrHayeMontasab: {
-    
-                }
+                shahrHayeMontasab: {},
+
             },
             freelancer: {
                 tab: 0,
