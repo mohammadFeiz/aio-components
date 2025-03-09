@@ -2201,7 +2201,7 @@ function Table() {
     }
     let ROWS = getRows();
     let attrs = UT.AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } });
-    return (_jsx(AITableContext.Provider, { value: getContext(ROWS), children: _jsxs("div", Object.assign({}, attrs, { children: [_jsx(TableToolbar, {}), _jsxs("div", { className: 'aio-input-table-unit aio-input-scroll', children: [_jsx(TableHeader, {}), _jsx(TableRows, {})] }), paging ? _jsx(TablePaging, {}) : ''] })) }));
+    return (_jsx(AITableContext.Provider, { value: getContext(ROWS), children: _jsxs("div", Object.assign({}, attrs, { children: [_jsx(TableToolbar, {}), _jsxs("div", { className: 'aio-input-table-unit aio-input-scroll', children: [_jsx(TableHeader, {}), _jsx(TableRows, {})] }), !!paging && !!ROWS.rows.length ? _jsx(TablePaging, {}) : ''] })) }));
 }
 function TableGap(props) {
     let { rootProps } = useContext(AITableContext);
@@ -2464,7 +2464,7 @@ function TableCellContent(props) {
     let input = getDynamics({ value: column.input, row, rowIndex, column });
     let value = getDynamics({ value: column.value, row, rowIndex, column });
     if (!input) {
-        return typeof value === 'object' ? '' : value;
+        return value;
     }
     //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
     input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
@@ -3777,28 +3777,30 @@ export const useForm = (p) => {
             setErrorByField(field, error);
             return error;
         }
-        if (validateType === 'email') {
-            const res = UT.IsValidEmail(value);
-            if (!res) {
-                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
-                setErrorByField(field, error);
-                return error;
+        if (!!value) {
+            if (validateType === 'email') {
+                const res = UT.IsValidEmail(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
+                    setErrorByField(field, error);
+                    return error;
+                }
             }
-        }
-        if (validateType === 'irMobile') {
-            const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
-            if (res) {
-                const error = res;
-                setErrorByField(field, error);
-                return error;
+            if (validateType === 'irMobile') {
+                const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
+                if (res) {
+                    const error = res;
+                    setErrorByField(field, error);
+                    return error;
+                }
             }
-        }
-        if (validateType === "irNationalCode") {
-            const res = UT.IsValidIrNationalCode(value);
-            if (!res) {
-                const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
-                setErrorByField(field, error);
-                return error;
+            if (validateType === "irNationalCode") {
+                const res = UT.IsValidIrNationalCode(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`;
+                    setErrorByField(field, error);
+                    return error;
+                }
             }
         }
         if (input.validate) {
@@ -4019,7 +4021,7 @@ const AIFormNode = ({ node, context, level, index, parentNode }) => {
         }
         if (node.input) {
             const attrs = Object.assign(Object.assign({}, getNodeAttrs({ node, isRoot: false })), { 'data-label': node.input.label });
-            return _jsx(AIFormInputContainer, { attrs: attrs, input: node.input, context: context }, node.input.field);
+            return _jsx(AIFormInputContainer, { attrs: attrs, input: node.input, context: context, size: node.size }, node.input.field);
         }
     };
     useEffect(() => {
@@ -4053,13 +4055,13 @@ const AIFormGroup = ({ node, context, level, parentNode }) => {
     }
     return (_jsx("div", Object.assign({}, attrs, { children: content })));
 };
-const AIFormInputContainer = ({ context, input, attrs }) => {
-    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef } = context;
+const AIFormInputContainer = ({ context, input, attrs, size }) => {
+    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef, rootProps } = context;
     const { inputAttrs, field } = input;
     setInputsRef(field, input);
     const value = getValueByInput(input);
     const error = getErrorByInput(input, value);
-    return (_jsx(RenderInput, { value: value, error: error, input: input, context: context, inputProps: Object.assign(Object.assign({}, input), { inputAttrs: Object.assign(Object.assign({}, inputAttrs), { 'aria-label': field }), value, onChange: (v, details) => {
+    return (_jsx(RenderInput, { value: value, error: error, input: input, context: context, size: size, inlineLabel: rootProps.inlineLabel, inputProps: Object.assign(Object.assign({}, input), { inputAttrs: Object.assign(Object.assign({}, inputAttrs), { 'aria-label': field }), value, onChange: (v, details) => {
                 if (input.onChange) {
                     input.onChange(v, details);
                 }
@@ -4069,7 +4071,7 @@ const AIFormInputContainer = ({ context, input, attrs }) => {
             } }), attrs: attrs }));
 };
 const RenderInput = (props) => {
-    const { context, attrs, input, inputProps, error } = props;
+    const { context, attrs, input, inputProps, error, size, inlineLabel } = props;
     const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState(null);
     useEffect(() => {
@@ -4078,14 +4080,30 @@ const RenderInput = (props) => {
             console.log('inputProps', inputProps);
         }
         const { field, label } = input;
-        setDom(_jsx(AIFormInput, { required: input.required, showLabel: rootProps.showLabel, input: _jsx(AIOInput, Object.assign({}, inputProps, { type: inputProps.type })), label: label, error: isFieldChanged(field) ? error : undefined, attrs: attrs }));
+        setDom(_jsx(AIFormInput, { required: input.required, showLabel: rootProps.showLabel, inlineLabel: inlineLabel, input: _jsx(AIOInput, Object.assign({}, inputProps, { type: inputProps.type, className: 'ai-form-aio-input' })), label: label, error: isFieldChanged(field) ? error : undefined, attrs: Object.assign(Object.assign({}, attrs), { style: Object.assign({ width: size ? size : undefined }, attrs.style) }) }));
     }, [JSON.stringify(inputProps, (key, value) => isValidElement(value) ? undefined : value), error]);
     return _jsx(Fragment, { children: dom }, input.field);
 };
 export const AIFormInput = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style, inlineLabel } = props;
     const hasHeader = (!!label && !!showLabel) || !!action;
-    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className], style });
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className, inlineLabel ? 'ai-form-input-inline-label' : undefined], style });
     return (_jsxs("div", Object.assign({}, Attrs, { children: [hasHeader === true &&
-                _jsxs("label", { className: "ai-form-input-header", htmlFor: id, children: [!!label && _jsxs("div", { className: "ai-form-input-label", children: [required ? _jsx("div", { className: "ai-form-required", children: "*" }) : null, label] }), !!action && _jsx("div", { className: "ai-form-input-action", onClick: action.fn ? () => action.fn() : (() => { }), children: action.text })] }), _jsx("div", { className: "ai-form-input-body", children: input }), !!error && _jsx("div", { className: "ai-form-input-error", children: error })] })));
+                _jsxs("label", { className: "ai-form-input-header", htmlFor: id, children: [!!label && _jsxs("div", { className: "ai-form-input-label", children: [required ? _jsx("div", { className: "ai-form-required", children: "*" }) : null, label] }), !!action && _jsx("div", { className: "ai-form-input-action", onClick: action.fn ? () => action.fn() : (() => { }), children: action.text })] }), _jsxs("div", { className: "ai-form-input-body", children: [!!props.before && _jsx("div", { className: "ai-form-input-body-before" }), _jsx("div", { className: "ai-form-input-body-input", "data-subtext": !!props.subtext ? props.subtext : undefined, children: input }), !!props.after && _jsx("div", { className: "ai-form-input-body-after" })] }), !!error && _jsx("div", { className: "ai-form-input-error", children: error })] })));
+};
+export const Plate = ({ type, value, onChange, label }) => {
+    const change = (v, index) => {
+        const newValue = [];
+        for (let i = 0; i < 4; i++) {
+            if (index === i) {
+                newValue.push(v);
+            }
+            else {
+                newValue.push(value[i] || '');
+            }
+        }
+        onChange(newValue);
+    };
+    return (_jsxs("div", { className: "aio-input-plate", children: [!!label && _jsx("div", { className: "aio-input-plate-label", children: label }), type === 'car' &&
+                _jsxs(_Fragment, { children: [_jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[0], onChange: (v) => change(v, 0) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AISelect, { options: ['الف', 'ب', 'ت', 'ج', 'ح', 'د', 'ر', 'ز', 'ژ', 'س', 'ص', 'ط', 'ع', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه'], option: { text: 'option', value: 'option' }, value: value[1], onChange: (v) => change(v, 1) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 3, filter: ['number'], value: value[2], onChange: (v) => change(v, 2) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[3], onChange: (v) => change(v, 3) }) })] })] }));
 };

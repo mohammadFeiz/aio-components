@@ -1,5 +1,5 @@
 import { FC, ReactNode, MutableRefObject } from 'react';
-import { AP_modal, AP_usePopup } from "aio-popup";
+import { AP_modal, AP_usePopup } from "../../aio-popup";
 import * as UT from 'aio-utils';
 import AIODate from 'aio-date';
 import './index.css';
@@ -131,6 +131,16 @@ export declare const JoyStick: FC<{
     onChange: (v: I_JoyStick_data) => void;
     centerOriented?: boolean;
 }>;
+export type AI_switch = {
+    value?: boolean;
+    onChange?: (v: boolean) => void;
+    colors?: string[];
+    borderSize?: number;
+    buttonSize?: number;
+    grooveSize?: number;
+    width?: number;
+    padding?: number;
+};
 export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
     after?: ReactNode | ((p?: any) => ReactNode);
     attrs?: any;
@@ -156,16 +166,7 @@ export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboa
         checked: boolean;
         row: any;
     }) => ReactNode;
-    switch?: {
-        value?: boolean;
-        onChange?: (v: boolean) => void;
-        colors?: string[];
-        borderSize?: number;
-        buttonSize?: number;
-        grooveSize?: number;
-        width?: number;
-        padding?: number;
-    };
+    switch?: AI_switch;
     listOptions?: {
         decay?: number;
         stop?: number;
@@ -631,6 +632,7 @@ export type I_formInput<T> = AITYPE & {
 };
 type I_useFormProps<T> = {
     initData: Partial<T>;
+    inlineLabel?: boolean;
     onSubmit?: (data: T) => void;
     liveSubmit?: boolean;
     fa?: boolean;
@@ -709,6 +711,7 @@ export type I_formContext<T> = {
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
 export declare const AIFormInput: FC<{
     label?: string;
+    inlineLabel?: boolean;
     showLabel?: boolean;
     input: ReactNode;
     attrs?: any;
@@ -720,5 +723,14 @@ export declare const AIFormInput: FC<{
     };
     error?: string;
     id?: string;
+    before?: ReactNode;
+    after?: ReactNode;
+    subtext?: string;
     required?: boolean;
+}>;
+export declare const Plate: FC<{
+    type: 'motor_cycle' | 'car';
+    value: string[];
+    onChange: (v: string[]) => void;
+    label?: string;
 }>;

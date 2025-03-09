@@ -3666,7 +3666,7 @@ export type I_formInput<T> = AITYPE & {
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
-    inlineLabel?:boolean;
+    inlineLabel?: boolean;
     onSubmit?: (data: T) => void;
     liveSubmit?: boolean;
     fa?: boolean;
@@ -3730,6 +3730,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     function getInputByField(field: I_formField<T>): I_formInput<T> | undefined { return inputsRef.current[field] }
     const hasError = () => {
         const keys = Object.keys(errorsRef.current) as any
+        console.log(errorsRef.current)
         return !!keys.filter((o: I_formField<T>) => !!errorsRef.current[o]).length
     }
     const isFieldChanged = (field: I_formField<T>) => !!fieldChangesRef.current[field]
@@ -3990,7 +3991,7 @@ const AIFormInputContainer: FC<{
     context: I_formContext<any>,
     size?: number,
 }> = ({ context, input, attrs, size }) => {
-    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef,rootProps } = context;
+    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef, rootProps } = context;
     const { inputAttrs, field } = input;
     setInputsRef(field, input);
     const value = getValueByInput(input);
@@ -4019,10 +4020,10 @@ type I_renderInput = {
     context: I_formContext<any>,
     inputProps: any,
     size?: number,
-    inlineLabel?:boolean
+    inlineLabel?: boolean
 }
 const RenderInput: FC<I_renderInput> = (props) => {
-    const { context, attrs, input, inputProps, error, size,inlineLabel } = props;
+    const { context, attrs, input, inputProps, error, size, inlineLabel } = props;
     const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
@@ -4033,7 +4034,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
         const { field, label } = input;
         setDom(
             <AIFormInput required={input.required} showLabel={rootProps.showLabel} inlineLabel={inlineLabel}
-                input={<AIOInput {...inputProps} type={inputProps.type} />}
+                input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input'/>}
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
         )
@@ -4042,7 +4043,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
 }
 export const AIFormInput: FC<{
     label?: string,
-    inlineLabel?:boolean,
+    inlineLabel?: boolean,
     showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
@@ -4051,14 +4052,14 @@ export const AIFormInput: FC<{
     action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
-    before?:ReactNode,
-    after?:ReactNode,
-    subtext?:string,
+    before?: ReactNode,
+    after?: ReactNode,
+    subtext?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style,inlineLabel } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style, inlineLabel } = props;
     const hasHeader = (!!label && !!showLabel) || !!action
-    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className,inlineLabel?'ai-form-input-inline-label':undefined], style })
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className, inlineLabel ? 'ai-form-input-inline-label' : undefined], style })
     return (
         <div {...Attrs}>
             {
@@ -4070,10 +4071,51 @@ export const AIFormInput: FC<{
             }
             <div className="ai-form-input-body">
                 {!!props.before && <div className="ai-form-input-body-before"></div>}
-                <div className="ai-form-input-body-input" data-subtext={!!props.subtext?props.subtext:undefined}>{input}</div>
+                <div className="ai-form-input-body-input" data-subtext={!!props.subtext ? props.subtext : undefined}>{input}</div>
                 {!!props.after && <div className="ai-form-input-body-after"></div>}
             </div>
             {!!error && <div className="ai-form-input-error">{error}</div>}
+        </div>
+    )
+}
+
+
+export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange: (v: string[]) => void,label?:string }> = ({ type, value, onChange,label }) => {
+    const change = (v: string, index: number) => {
+        const newValue = []
+        for(let i = 0; i < 4; i++){
+            if(index === i){
+                newValue.push(v)
+            }
+            else {
+                newValue.push(value[i] || '')
+            }
+        }
+        onChange(newValue)
+    }
+    return (
+        <div className="aio-input-plate">
+            {!!label && <div className="aio-input-plate-label">{label}</div>}
+            {
+                type === 'car' &&
+                <>
+                    <div className="aio-input-plate-item">
+                        <AIText maxLength={2} filter={['number']} value={value[0]} onChange={(v) => change(v, 0)} />
+                    </div>
+                    <div className="aio-input-plate-item">
+                        <AISelect
+                            options={['الف', 'ب', 'ت', 'ج', 'ح', 'د', 'ر', 'ز', 'ژ', 'س', 'ص', 'ط', 'ع', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه']}
+                            option={{ text: 'option', value: 'option' }} value={value[1]} onChange={(v) => change(v, 1)}
+                        />
+                    </div>
+                    <div className="aio-input-plate-item">
+                        <AIText maxLength={3} filter={['number']} value={value[2]} onChange={(v) => change(v, 2)} />
+                    </div>
+                    <div className="aio-input-plate-item">
+                        <AIText maxLength={2} filter={['number']} value={value[3]} onChange={(v) => change(v, 3)} />
+                    </div>
+                </>
+            }
         </div>
     )
 }

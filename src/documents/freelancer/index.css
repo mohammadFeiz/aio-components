@@ -1,13 +1,23 @@
 
-.freelancer-grid .aio-input{
+.freelancer-grid .aio-input.ai-form-aio-input{
     font-size:12px;
 }
-.freelancer-grid .aio-input-text{
+.aio-input-plate-label{
+    position: absolute;
+    top:0;
+
+}
+.freelancer-grid .aio-input-text.ai-form-aio-input{
     border-radius:12px;
     border:1px solid #aaa;
     height: 40px;
 }
-.freelancer-grid .aio-input-select{
+.freelancer-grid .aio-input-plate{
+    border-radius:12px;
+    height:36px;
+    border:1px solid #aaa;
+}
+.freelancer-grid .aio-input-select.ai-form-aio-input{
     border-radius:12px;
     border:1px solid #aaa;
     height: 40px;
@@ -20,6 +30,14 @@
 }
 .freelancer-grid .ai-form-input-label{
     color:#666;
+}
+.aio-input-plate-label{
+    color:#666;
+    top:-3px;
+    font-size:12px;
+}
+.freelancer .aio-input-plate .aio-input-text{
+    height:24px !important;
 }
 .freelancer-grid .aio-input-table-paging-button.active{
     background:#ef5644 !important;
@@ -38,6 +56,10 @@
     background:#ef5644;
     color:#fff;
     font-size:14px;
+}
+.fl-button-1:disabled{
+    opacity:0.4;
+    cursor: not-allowed;
 }
 .fl-button-2{
     border:none;

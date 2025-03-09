@@ -1,12 +1,16 @@
 import { FC } from "react"
 import { I_gridFilter } from "./types"
 import { useFreelancer } from "./context"
-import { useForm } from "../../npm/aio-input"
-import usePopup, { I_usePopup } from "../../npm/aio-popup"
+import { useForm } from "./../../npm/aio-input"
+import usePopup, { I_usePopup } from "./../../npm/aio-popup"
 
 const Header: FC = () => {
     const { gridHook, options } = useFreelancer()
     const popup = usePopup()
+    const reset = ()=>{
+        form.changeData({ hubId: 0, advanced: {},pageSize:10,pageNumber:1,rowsLength:0 })
+        gridHook.resetGridFilter()
+    }
     const form = useForm<I_gridFilter>({
         initData: gridHook.gridFilter,
         inlineLabel:true,
@@ -63,7 +67,7 @@ const Header: FC = () => {
                                 <AddButton />
                                 <ExcelButton />
                                 <div className="flex-1-"></div>
-                                <ResetButton />
+                                <ResetButton onClick={reset}/>
                                 <SearchButton />
                             </div>
                         )
@@ -80,10 +84,9 @@ const Header: FC = () => {
 export default Header
 
 
-const ResetButton: FC = () => {
-    const { gridHook } = useFreelancer()
+const ResetButton: FC<{onClick:()=>void}> = ({onClick}) => {
     return (
-        <button type='button' className="brd-none- bg-none- flex-row- align-v-" style={{ color: '#EF5644' }} onClick={() => gridHook.resetGridFilter()}>
+        <button type='button' className="brd-none- bg-none- flex-row- align-v-" style={{ color: '#EF5644' }} onClick={onClick}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M6.40141 18.6538L5.34766 17.6L10.9477 12L5.34766 6.4L6.40141 5.34625L12.0014 10.9463L17.6014 5.34625L18.6552 6.4L13.0552 12L18.6552 17.6L17.6014 18.6538L12.0014 13.0538L6.40141 18.6538Z" fill="#EF5644" />
             </svg>

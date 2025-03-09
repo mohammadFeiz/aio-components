@@ -9,6 +9,7 @@ export type I_ettelaateFardi = {
     fatherName?: string,
     email?: string,
     birthDate?: string,
+    hub?:number,
     gender?: number,
     phone?: string,
     essentialPhone?: string,
@@ -23,14 +24,13 @@ export type I_addEmployeeModel = {
         tab: number,
         ettelaateFardi: I_ettelaateFardi,
         shahrHayeMontasab: {
-            shahr?: number,
-            ostan?: number
+            shahr?: number[],
+            ostan?: number[]
         }
     },
     freelancer: {
         tab: number,
         ettelaateFardi: {
-            hub?: number,
             shomareGavahiname?: string,
             shomareSheba?: string,
             shomareSafte?: string,
@@ -39,7 +39,7 @@ export type I_addEmployeeModel = {
         ettelaateKhodro: {
             noeVasileNaghlie?: number,
             modeleVasileNaghlie?: number,
-            pelak?: string,
+            pelak?: string[],
             vin?: string,
             tarikheEtebareBimeName?: string
         },
@@ -57,9 +57,10 @@ export type I_addEmployeeModel = {
     }
 }
 export type I_AddEmployeeContext = {
-    addEmployeeModel:I_addEmployeeModel,
-    changeAddEmployeeModel:(v:I_addEmployeeModel)=>void,
-    options: any,
+    setAddEmployeeModel:(v:I_addEmployeeModel)=>void,
+    getAddEmployeeModel:()=>I_addEmployeeModel,
+    resetEmployeeModel:()=>void,
+    submit:()=>void
 }
 export type I_gridFilter = {
     hubId:number,

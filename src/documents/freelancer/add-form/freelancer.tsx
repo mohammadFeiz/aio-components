@@ -1,11 +1,15 @@
 import { FC, useContext } from "react";
-import { AITabs, I_formNode, useForm } from "../../../npm/aio-input";
+import { AISelect, AITabs, AIText, I_formNode, Plate, useForm } from "../../../npm/aio-input";
 import { I_AddEmployeeContext, I_addEmployeeModel } from "../types";
 import { AddEmployeeContext, useFreelancer } from "../context";
 
 const Freelancer: FC = () => {
     const { switchConfig } = useFreelancer()
-    const { options, addEmployeeModel, changeAddEmployeeModel }: I_AddEmployeeContext = useContext(AddEmployeeContext)
+    const { getAddEmployeeModel,setAddEmployeeModel,submit,resetEmployeeModel }: I_AddEmployeeContext = useContext(AddEmployeeContext)
+    const { options, popup } = useFreelancer()
+    const submit_freelancer = () => {
+        submit()
+    }
     const getImageLayout = (label: string, field: any): I_formNode<I_addEmployeeModel["freelancer"]> => {
         return {
             className: 'gap-16- flex-1-',
@@ -30,15 +34,23 @@ const Freelancer: FC = () => {
             ]
         }
     }
+    const addEmployeeModel = getAddEmployeeModel()
     const form = useForm<I_addEmployeeModel["freelancer"]>({
-        initData: addEmployeeModel.freelancer, fa: true,inlineLabel:true,
+        initData: addEmployeeModel.freelancer, fa: true, inlineLabel: true,
+        onSubmit: (freelancer) => {
+            const addEmployeeModel = getAddEmployeeModel()
+            const tab = addEmployeeModel.freelancer.tab
+            const newFreelancer = {...addEmployeeModel.freelancer,...freelancer}
+            const newModel:I_addEmployeeModel = { ...addEmployeeModel, freelancer:{...newFreelancer,tab} }
+            setAddEmployeeModel(newModel)
+        },
         getLayout: (context) => {
             const rowCls = 'p-v-12- gap-16-'
             return {
                 className: 'gap-16-',
                 v: [
                     {
-                        show: addEmployeeModel.freelancer.tab === 0,
+                        style: { display: addEmployeeModel.freelancer.tab !== 0 ? 'none' : undefined },
                         v: [
                             {
                                 className: rowCls,
@@ -58,7 +70,7 @@ const Freelancer: FC = () => {
                                         flex: 1,
                                         input: {
                                             label: 'جنسیت', field: 'ettelaateFardi.gender' as any, type: 'select', required: true,
-                                            options: options.gender, option: { text: 'option.text', value: 'option.id' }
+                                            options: options.sexTypes.map((o:any)=>({text:o.value,value:o.key}))
                                         }
                                     },
                                     { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'ettelaateFardi.phone', type: 'text', required: true } },
@@ -68,8 +80,14 @@ const Freelancer: FC = () => {
                                 className: rowCls,
                                 h: [
                                     { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.essentialPhone', type: 'text', required: true } },
-                                    { flex: 1, input: { label: 'شهر', field: 'ettelaateFardi.shahr', type: 'select', options: options.shahr, option: { text: 'option.text', value: 'option.id' } } },
-                                    { flex: 1, input: { label: 'هاب', field: "ettelaateFardi.hub.id" as any, type: 'select', options: options.hub, option: { text: 'option.text', value: 'option.id' } } },
+                                    {
+                                        flex: 1,
+                                        input: {
+                                            label: 'شهر', field: 'ettelaateFardi.shahr', type: 'select', search: 'جستجو',
+                                            options: options.cities.map((o:any)=>({text:o.value,value:o.key}))
+                                        }
+                                    },
+                                    { flex: 1, input: { label: 'هاب', field: "ettelaateFardi.hub" as any, type: 'select', options: options.hubs.map((o:any)=>({text:o.name,value:o.id}))}},
                                     { flex: 1, input: { field: 'ettelaateFardi.isActive', label: '', type: 'checkbox', required: true, switch: switchConfig, text: 'فعال' } },
 
                                 ]
@@ -92,14 +110,44 @@ const Freelancer: FC = () => {
                         ]
                     },
                     {
-                        show: addEmployeeModel.freelancer.tab === 1,
+                        style: { display: addEmployeeModel.freelancer.tab !== 1 ? 'none' : undefined },
                         v: [
                             {
                                 className: rowCls,
                                 h: [
-                                    { flex: 1, input: { label: 'نوع وسیله نقلیه', field: 'ettelaateKhodro.noeVasileNaghlie', type: 'select', required: true, options: options.noeVasileNaghlie } },
-                                    { flex: 1, input: { label: 'مدل وسیله نقلیه', field: 'ettelaateKhodro.modeleVasileNaghlie', type: 'select', required: true, options: options.modeleVasileNaghlie } },
-                                    { flex: 1, input: { label: 'پلاک', field: 'ettelaateKhodro.pelak', type: 'text', required: true } },
+                                    { 
+                                        flex: 1, 
+                                        input: { 
+                                            label: 'نوع وسیله نقلیه', field: 'ettelaateKhodro.noeVasileNaghlie', type: 'select', required: true, 
+                                            options: options.vehicleTypes.map((o:any)=>({text:o.value,value:o.key})),
+                                            popover:{fitHorizontal:true}
+                                        } 
+                                    },
+                                    { 
+                                        flex: 1, 
+                                        input: { 
+                                            label: 'مدل وسیله نقلیه', field: 'ettelaateKhodro.modeleVasileNaghlie', type: 'select', required: true, 
+                                            options: options.vehicleMakes.map((o:any)=>({text:o.value,value:o.key})),search:'جستجو',
+                                            popover:{fitHorizontal:true}
+                                        } 
+                                    },
+                                    {
+                                        flex: 1, html: (
+                                            <div className="msf">
+                                                <Plate
+                                                    type='car'
+                                                    label={'پلاک *'}
+                                                    value={context.getData().ettelaateKhodro.pelak || []}
+                                                    onChange={(pelak) => {
+                                                        const data = context.getData();
+                                                        const ettelaateKhodro = { ...data.ettelaateKhodro, pelak }
+                                                        const newData = { ...data, ettelaateKhodro }
+                                                        context.changeData(newData)
+                                                    }}
+                                                />
+                                            </div>
+                                        )
+                                    },
                                     { flex: 1, input: { label: 'شماره VIN', type: 'text', field: 'ettelaateKhodro.vin', required: true } }
                                 ]
                             },
@@ -115,7 +163,7 @@ const Freelancer: FC = () => {
                         ]
                     },
                     {
-                        show: addEmployeeModel.freelancer.tab === 2,
+                        style: { display: addEmployeeModel.freelancer.tab !== 2 ? 'none' : undefined },
                         v: [
                             {
                                 className: rowCls,
@@ -145,6 +193,21 @@ const Freelancer: FC = () => {
                                 ]
                             }
                         ]
+                    },
+                    {
+                        h: [
+                            { html: '', flex: 1 },
+                            {
+                                html: (
+                                    <button className="fl-button-2" onClick={() => popup.removeModal()}>لغو</button>
+                                )
+                            },
+                            {
+                                html: (
+                                    <button className="fl-button-1" onClick={submit_freelancer} disabled={context.isSubmitDisabled()}>افزودن و تایید</button>
+                                )
+                            }
+                        ]
                     }
                 ]
             }
@@ -154,12 +217,25 @@ const Freelancer: FC = () => {
     return (
         <div className="flex-col- gap-16-">
             <AITabs
-                style={{ height: 36 }} options={options.freelancerTab} value={addEmployeeModel.freelancer.tab}
+                style={{ height: 36 }}
+                options={[
+                    { text: 'اطلاعات فردی', value: 0 },
+                    { text: 'اطلاعات خودرو', value: 1 },
+                    { text: 'تصویر مدارک', value: 2 }
+                ]}
+                value={addEmployeeModel.freelancer.tab}
                 option={{ justify: () => true, style: () => ({ flex: 1 }) }}
-                onChange={(tab) => changeAddEmployeeModel({ ...addEmployeeModel, freelancer: { ...addEmployeeModel.freelancer, tab } })}
+                onChange={(tab) => {
+                    const addEmployeeModel = getAddEmployeeModel();
+                    const newFreelancer = { ...addEmployeeModel.freelancer, tab }
+                    const newModel:I_addEmployeeModel = { ...addEmployeeModel, freelancer: newFreelancer }
+                    setAddEmployeeModel(newModel)
+                }}
             />
             {form.renderLayout}
         </div>
     )
 }
 export default Freelancer
+
+

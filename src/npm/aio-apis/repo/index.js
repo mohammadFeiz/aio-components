@@ -11,11 +11,16 @@ import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from 'aio-popup';
 import { Stall, Storage } from 'aio-utils';
+import AIODate from 'aio-date';
 import { useRef } from 'react';
 export default class AIOApis {
     constructor(props) {
         this.currentError = '';
         this.apisThatAreInLoadingTime = {};
+        this.DATE = new AIODate();
+        this.getNow = (jalali) => {
+            return this.DATE.getToday(jalali);
+        };
         this.setToken = (token) => {
             if (token && token === this.token) {
                 Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -130,7 +135,7 @@ export default class AIOApis {
             if (api.cache) {
                 let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
                 if (cachedValue !== undefined) {
-                    return cachedValue;
+                    return { success: true, response: cachedValue };
                 }
             }
             else {
@@ -138,6 +143,15 @@ export default class AIOApis {
             }
             this.loading(api, true);
             this.apisThatAreInLoadingTime[api.name] = true;
+            if (this.props.onBeforeRequest) {
+                const { api: newApi, result } = yield this.props.onBeforeRequest(api);
+                if (result) {
+                    return result;
+                }
+                if (newApi) {
+                    api = newApi;
+                }
+            }
             let { errorMessage = '', success, response } = yield this.responseToResult(api);
             this.loading(api, false);
             this.apisThatAreInLoadingTime[api.name] = false;
@@ -158,6 +172,12 @@ export default class AIOApis {
             }
             else if (api.cache) {
                 this.cache.setCache(api.name, api.cache.name, { api, value: response });
+            }
+            if (this.props.onAfterRequest) {
+                const res = yield this.props.onAfterRequest(api, { response, success, errorMessage });
+                if (res) {
+                    return res;
+                }
             }
             return { response, success, errorMessage };
         });
@@ -253,7 +273,7 @@ class Cache {
         this.callApi = callApi;
     }
 }
-export const useInstance = (inst) => {
+export const CreateInstance = (inst) => {
     let res = useRef(null);
     if (res.current === null) {
         res.current = inst;

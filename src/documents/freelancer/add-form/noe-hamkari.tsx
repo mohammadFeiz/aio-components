@@ -1,13 +1,17 @@
 import { FC, useContext } from "react";
-import { useForm } from "../../../npm/aio-input";
+import { useForm } from "./../../../npm/aio-input";
 import { I_AddEmployeeContext } from "./../types";
 import { AddEmployeeContext } from "./../context";
 
 const NoeHamkari: FC = () => {
-    const {addEmployeeModel,changeAddEmployeeModel,options}:I_AddEmployeeContext = useContext(AddEmployeeContext)
+    const { getAddEmployeeModel, setAddEmployeeModel }: I_AddEmployeeContext = useContext(AddEmployeeContext)
     const noeHamkari_form = useForm<{ noeHamkari: number }>({
         initData: { noeHamkari: 0 },
-        onSubmit: (data) => { changeAddEmployeeModel({ ...addEmployeeModel, noeHamkari: data.noeHamkari }) },
+        onSubmit: (data) => { 
+            const addEmployeeModel = getAddEmployeeModel()
+            const newModel = { ...addEmployeeModel, noeHamkari: data.noeHamkari }
+            setAddEmployeeModel(newModel) 
+        },
         liveSubmit: true,
         getLayout: (context) => {
             return {
@@ -18,7 +22,10 @@ const NoeHamkari: FC = () => {
                     {
                         input: {
                             type: 'buttons', field: 'noeHamkari', label: '', required: true,
-                            options: options.noeHamkari,
+                            options: [
+                                { text: 'اصلاح کننده آدرس', value: 1 },
+                                { text: 'راننده فریلنسر', value: 0 },
+                            ],
                             option: {
                                 justify: () => true,
                                 className: (option, { active }) => {

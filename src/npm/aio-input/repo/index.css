@@ -2599,3 +2599,48 @@ pre[class*="language-"]>code[class*="language-"] {
 .ai-form-justify-center {
     justify-content: center;
 }
+
+.aio-input-plate{
+    display:flex;
+    direction:ltr;
+    border:1px solid #ddd;
+    gap:4px;
+    padding:4px;
+    box-sizing: border-box;
+    position: relative;
+}
+.aio-input-plate-label{
+    position: absolute;
+    top:-2px;
+    right:12px;
+    background:#fff;
+    height:3px;
+    padding:0 6px;
+    display: flex;
+    align-items: center;
+}
+.aio-input-plate-item{
+    flex-shrink:0;
+}
+.aio-input-plate .aio-input-plate-item:nth-child(2){
+    flex:2 !important;
+}
+.aio-input-plate .aio-input-plate-item:nth-child(3){
+    flex:3 !important;
+}
+.aio-input-plate .aio-input-plate-item:nth-child(4){
+    flex:3 !important;
+}
+.aio-input-plate .aio-input-plate-item:nth-child(5){
+    flex:2 !important;
+}
+.aio-input-plate .aio-input-plate-item .aio-input{
+    height:100%;
+}
+
+.aio-input-plate-item .aio-input{
+    background:none;
+    border:1px solid #ddd !important;
+    width:100%;
+
+}

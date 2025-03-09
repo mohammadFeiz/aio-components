@@ -1,5 +1,5 @@
-import AIOApis from "../../npm/aio-apis";
-import AIODate from "../../npm/aio-date";
+import AIOApis from "./../../npm/aio-apis";
+import AIODate from "./../../npm/aio-date";
 import { I_addEmployeeModel, I_gridFilter, I_gridServerFilter } from "./types";
 
 export default class Apis extends AIOApis {
@@ -55,13 +55,18 @@ export default class Apis extends AIOApis {
         const [year,month,day] = new AIODate().convertToArray(dateString)
         return {year,month,day}
     }
+    toIsoDate = (birthDate:string)=>{
+        const DATE = new AIODate();
+        const dd = DATE.toGregorian(birthDate)
+        const [y,m,d] = DATE.convertToArray(dd)
+        return new Date(y, m - 1, d).toISOString();
+    }
     getServerAddObject = (addEmployeeModel: I_addEmployeeModel) => {
         const {noeHamkari,freelancer,eslahKonandeyeAddress} = addEmployeeModel;
         const {ettelaateFardi} = noeHamkari === 0?freelancer:eslahKonandeyeAddress
         const {
-            nationalCode,name,mobile,email,isActive,fatherName,birthDate,gender,phone,essentialPhone,shahr,address,
+            nationalCode,name,mobile,email,isActive,fatherName,birthDate,gender,phone,essentialPhone,shahr,address,hub
         } = ettelaateFardi
-        const hub = noeHamkari === 0?freelancer.ettelaateFardi.hub:undefined
         const obj:any = {
             //"id": 0,
             //"personelCode": "string",
@@ -70,66 +75,29 @@ export default class Apis extends AIOApis {
             // "isSuperAdmin": true,
             
             nationalCode,name,mobile,email,isActive,fatherName,phone,essentialPhone,
-            birthDate: birthDate,//notice iso date???
+            birthDate: this.toIsoDate(birthDate || '1403/4/5'),//notice iso date???
             gender: {id: gender},
             residentCity: {id: shahr},
             residentAddress:address,
-            "selectRoles": [{"id": 0,"text": "string"}],
-            "hubCodes": ["string"],
-            "hubcode": "string",
-            "createDate": {
-                "day": 0,
-                "month": 0,
-                "year": 0,
-                "hour": "string",
-                "minute": "string"
-            },
-            "creator": "string",
-            "modifierDate": {
-                "day": 0,
-                "month": 0,
-                "year": 0,
-                "hour": "string",
-                "minute": "string"
-            },
-            "modifier": "string",
-            "hubId": 0,
-            "type": {"id": 0,"text": "string"},
-            "vehicleHub": {"id": 0,"text": "string"},
-            "vehicleNumberPart0": "string",
-            "vehicleNumberPart1": "string",
-            "vehicleNumberPart2": "string",
-            "vehicleNumberPart3": "string",
-            "accessProvinces": [
-                {
-                    "id": 0,
-                    "text": "string"
-                }
-            ],
-            "accessCities": [
-                {
-                    "id": 0,
-                    "text": "string"
-                }
-            ],
-            "nationalIdFrontDocId": "string",
-            "nationalIdBackDocId": "string",
-            "drivingLicenceFrondDocId": "string",
-            "drivingLicenceBackDocId": "string",
-            "vehicleIdFrontDocId": "string",
-            "vehicleIdBackDocId": "string",
-            "vehicleInsurancePaperDocId": "string",
-            "bankPaperDocId": "string",
-            "contractPaperDocId": "string"
+            type: {id: noeHamkari},
+            username:mobile,
+            hubId:hub
+            
+            
+            // "nationalIdFrontDocId": "string",
+            // "nationalIdBackDocId": "string",
+            // "drivingLicenceFrondDocId": "string",
+            // "drivingLicenceBackDocId": "string",
+            // "vehicleIdFrontDocId": "string",
+            // "vehicleIdBackDocId": "string",
+            // "vehicleInsurancePaperDocId": "string",
+            // "bankPaperDocId": "string",
+            // "contractPaperDocId": "string"
         }
-        if(hub !== undefined){obj.selectHubs = [{id: hub}]}
         if(noeHamkari === 0){
             obj.drivingLicenceNo = freelancer.ettelaateFardi.shomareGavahiname;
             obj.contractNo = freelancer.ettelaateFardi.shomareGharardad;
-            obj.bankPaperNo = freelancer.ettelaateFardi.shomareSafte
-            
-            //sheba //notice
-            
+            obj.bankPaperNo = freelancer.ettelaateFardi.shomareSafte            
             if(freelancer.ettelaateKhodro.tarikheEtebareBimeName){
                 obj.vehicleInsuranceExpire = this.convertDate(freelancer.ettelaateKhodro.tarikheEtebareBimeName)
             }
@@ -139,11 +107,20 @@ export default class Apis extends AIOApis {
             if(freelancer.ettelaateKhodro.modeleVasileNaghlie){
                 obj.vehicleMake = {id: freelancer.ettelaateKhodro.modeleVasileNaghlie}
             }
-            
-            
-            
-
+            const pelak = freelancer.ettelaateKhodro.pelak || []
+            obj.vehicleNumberPart0 = pelak[0]
+            obj.vehicleNumberPart1 = pelak[1]
+            obj.vehicleNumberPart2 = pelak[2]
+            obj.vehicleNumberPart3 = pelak[3]
         }
+        else {
+            const shahrHayeMontasab = eslahKonandeyeAddress.shahrHayeMontasab || {shahr:[],ostan:[]}
+            const shahr = shahrHayeMontasab.shahr || []
+            const ostan = shahrHayeMontasab.ostan || []
+            obj.accessProvinces = shahr.map((id)=>({id}))
+            obj.accessCities = ostan.map((id)=>({id}))
+        }
+        return obj
     }
     enums = async () => {
         const url = `${this.base_url}/core-api/common/common-objects?includeProvinces=true&includeCities=true&includeHubs=true&includeSexType=true&includeVehicleTypes=true&includeEmployeeTypes=true&includeVehicleVendor=true&includeVehicleMakes=true`
@@ -152,7 +129,7 @@ export default class Apis extends AIOApis {
             method: 'get',
             description: 'دریافت اطلاعات اولیه',
             url,
-            cache: { name: 'enums', expiredIn: new Date().getTime() + 100000000000 }
+            //cache: { name: 'enums', expiredIn: new Date().getTime() + 100000000000 }
         })
         if (success) {
             return response.data.response
@@ -166,6 +143,23 @@ export default class Apis extends AIOApis {
             method: 'post',
             description: 'دریافت اطلاعات جدول پرسنل', loading: true,
             url: `${this.base_url}/resource-api/employee/filter?pageNumber=${gridFilter.pageNumber}&pageSize=${gridFilter.pageSize}`,
+            body
+        })
+        if (success) {
+            return {
+                rows: response.data.payload.content,
+                length: response.data.payload.totalElements
+            }
+        }
+        return false
+    }
+    add = async (addEmployeeModel: I_addEmployeeModel) => {
+        const body = this.getServerAddObject(addEmployeeModel)
+        const { response, success } = await this.request<any>({
+            name: 'grid',
+            method: 'post',
+            description: 'دریافت اطلاعات جدول پرسنل', loading: true,
+            url: `${this.base_url}/resource-api/employee`,
             body
         })
         if (success) {

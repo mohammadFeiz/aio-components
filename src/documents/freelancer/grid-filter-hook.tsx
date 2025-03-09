@@ -16,7 +16,9 @@ export const useGrid = (p:{currenthub:I_hub,apis:Apis}):I_gridHook=>{
     useEffect(()=>{
         fetchGrid(gridFilter)
     },[])
-    const resetGridFilter = () => setGridFilter({ hubId: 0, advanced: {},pageSize:10,pageNumber:1,rowsLength:0 })
+    const resetGridFilter = () => {
+        setGridFilter({ hubId: 0, advanced: {},pageSize:10,pageNumber:1,rowsLength:0 })
+    }
             
     const changeGridFilter = (newGridFilter:I_gridFilter)=>{
         fetchGrid(newGridFilter); setGridFilter(newGridFilter)

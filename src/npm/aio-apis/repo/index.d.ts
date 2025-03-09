@@ -34,6 +34,19 @@ export default class AIOApis {
         handleErrorMessage: (err: any, api: AA_api) => string;
         headers?: any;
         lang?: 'en' | 'fa';
+        onBeforeRequest?: (api: AA_api) => Promise<{
+            api?: AA_api;
+            result?: any;
+        }>;
+        onAfterRequest?: (api: AA_api, result: {
+            success: boolean;
+            response: any;
+            errorMessage: string;
+        }) => {
+            success: boolean;
+            response: any;
+            errorMessage: string;
+        } | undefined;
     };
     token: string;
     currentError: string;
@@ -44,6 +57,7 @@ export default class AIOApis {
     apisThatAreInLoadingTime: {
         [apiName: string]: boolean | undefined;
     };
+    private DATE;
     constructor(props: {
         id: string;
         token: string;
@@ -52,6 +66,7 @@ export default class AIOApis {
         headers?: any;
         lang?: 'en' | 'fa';
     });
+    getNow: (jalali?: boolean) => number[];
     setToken: (token: string) => void;
     addAlert: (p: {
         type: 'success' | 'error' | 'warning' | 'info';
@@ -102,5 +117,5 @@ declare class Cache {
     setCache: (apiName: string, cacheName: string, cachedApi: I_cachedApi<any>) => void;
     removeCache: (apiName: string, cacheName?: string) => void;
 }
-export declare const useInstance: <T extends Record<string, any>>(inst: T) => T;
+export declare const CreateInstance: <T extends Record<string, any>>(inst: T) => T;
 export {};

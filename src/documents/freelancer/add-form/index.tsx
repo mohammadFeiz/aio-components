@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { I_AddEmployeeContext, I_addEmployeeModel,  } from "../types";
 import { AddEmployeeContext } from "../context";
 import NoeHamkari from "./noe-hamkari";
@@ -6,81 +6,53 @@ import EslahKonandeyeAddress from "./eslah-konandeye-address";
 import Freelancer from "./freelancer";
 
 const AddForm: FC<{onSubmit:(v:I_addEmployeeModel)=>void,onClose:()=>void}> = ({onSubmit,onClose}) => {
-    const options: any = {
-        shahr: [
-            { text: 'تهران - تهران', value: 0 },
-            { text: 'تهران - ورامین', value: 1 },
-            { text: 'تهران - اندیشه', value: 2 }
-        ],
-        ostan: [
-            { text: 'تهران', value: '0' },
-            { text: 'اصفهان', value: '1' }
-        ],
-        noeHamkari: [
-            { text: 'اصلاح کننده آدرس', value: 0 },
-            { text: 'راننده فریلنسر', value: 1 },
-        ],
-        eslahKonandeyeAddressTab: [
-            { text: 'اطلاعات فردی', value: 0 },
-            { text: 'شهر های منتسب', value: 1 }
-        ],
-        freelancerTab: [
-            { text: 'اطلاعات فردی', value: 0 },
-            { text: 'اطلاعات خودرو', value: 1 },
-            { text: 'تصویر مدارک', value: 2 }
-        ],
-        gender: [
-            { text: 'مرد', value: 0 },
-            { text: 'زن', value: 1 },
-        ],
-        hub: [
-            { text: 'تهران', value: '0' },
-            { text: 'اصغهان', value: '1' }
-        ],
-
-    }
+    const [addEmployeeModel, setAddEmployeeModel] = useState<I_addEmployeeModel>(getDefaultModel)
+    function getDefaultModel(){
+        return {
+            noeHamkari: 0,
+            eslahKonandeyeAddress: {
+                tab: 0,
+                ettelaateFardi: {
+                    isActive: true,
+                },
+                shahrHayeMontasab: {
     
-    const [addEmployeeModel, setAddEmployeeModel] = useState<I_addEmployeeModel>({
-        noeHamkari: 0,
-        eslahKonandeyeAddress: {
-            tab: 0,
-            ettelaateFardi: {
-                isActive: true,
+                }
             },
-            shahrHayeMontasab: {
-
+            freelancer: {
+                tab: 0,
+                ettelaateFardi: {
+                    isActive: true,
+                },
+                ettelaateKhodro: {
+    
+                },
+                tasvireMadarek: {
+    
+                }
+    
             }
-        },
-        freelancer: {
-            tab: 0,
-            ettelaateFardi: {
-                isActive: true
-            },
-            ettelaateKhodro: {
-
-            },
-            tasvireMadarek: {
-
-            }
-
         }
-    })
+    }
+    const resetEmployeeModel = ()=>{
+        setAddEmployeeModel(getDefaultModel())
+    }
+    const addEmployeeModelRef = useRef<I_addEmployeeModel>(addEmployeeModel)
+    addEmployeeModelRef.current = addEmployeeModel
+    const getAddEmployeeModel = ()=>addEmployeeModelRef.current
     const submit = ()=>{
-        onSubmit(addEmployeeModel);
+        onSubmit(addEmployeeModelRef.current);
         onClose()
     }
-    const changeAddEmployeeModel = (addEmployeeModel:I_addEmployeeModel)=>{
-        setAddEmployeeModel(addEmployeeModel)
-    }
     const getContext = ():I_AddEmployeeContext=>{
-        return {options,addEmployeeModel,changeAddEmployeeModel}
+        return {getAddEmployeeModel,setAddEmployeeModel,submit,resetEmployeeModel}
     }
     return (
         <AddEmployeeContext.Provider value={getContext()}>
             <div className="p-12-">
                 <NoeHamkari/>
-                {addEmployeeModel.noeHamkari === 0 && <EslahKonandeyeAddress/>}
-                {addEmployeeModel.noeHamkari === 1 && <Freelancer/>} 
+                {addEmployeeModel.noeHamkari === 1 && <EslahKonandeyeAddress/>}
+                {addEmployeeModel.noeHamkari === 0 && <Freelancer/>} 
             </div>
         </AddEmployeeContext.Provider>
     )

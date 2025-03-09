@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { AITable } from "../../npm/aio-input";
+import { AITable } from "./../../npm/aio-input";
 import { useFreelancer } from "./context";
 
 export const Table: FC = () => {
