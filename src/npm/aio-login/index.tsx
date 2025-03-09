@@ -1,7 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react"
-import { useForm, I_formNode, I_validateType, I_formField, AITYPE } from "aio-input"
-import { AddToAttrs, FixUrl, Storage } from "aio-utils"
-import { Loading, Alert } from "aio-popup"
+import { useForm, I_formNode, I_validateType, I_formField, AITYPE } from "./../aio-input"
+import { AddToAttrs, FixUrl, Storage } from "./../aio-utils"
+import { Loading, Alert } from "./../aio-popup"
 import axios from "axios"
 import './index.css';
 import { Navigate, Route, Routes } from "react-router-dom"
