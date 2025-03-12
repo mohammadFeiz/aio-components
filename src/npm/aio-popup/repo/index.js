@@ -159,7 +159,7 @@ const usePopup = (props) => {
     const addHighlight = (highlight) => setHighlight(highlight);
     const removeHighlight = () => setHighlight(undefined);
     const addConfirm = (obj) => {
-        let { title, subtitle, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {}; } } = obj;
+        let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {}; } } = obj;
         let config = {
             position: 'center',
             setAttrs: (key) => {
@@ -170,7 +170,7 @@ const usePopup = (props) => {
                 return attrs;
             },
             header: { title, subtitle },
-            body: _jsx(_Fragment, { children: "text" }),
+            body: _jsx(_Fragment, { children: text }),
             footer: (_jsxs(_Fragment, { children: [_jsx("button", { type: 'button', onClick: () => { onCansel(); removeModal(); }, children: canselText }), _jsx("button", { type: 'button', className: 'active', onClick: () => __awaiter(void 0, void 0, void 0, function* () {
                             if (!onSubmit) {
                                 return;
@@ -718,16 +718,16 @@ function getEasing(highlight) {
     const { easing } = highlight;
     var easingNames = [
         'linear',
-        'easeInQuad',
-        'easeInSine',
-        'easeInCirc',
-        'easeInBack',
-        'easeOutQuad',
-        'easeOutSine',
-        'easeOutCirc',
-        'easeInOutQuad',
-        'easeInOutSine',
-        'easeInOutBack',
+        'easeInQuad', //1
+        'easeInSine', //5
+        'easeInCirc', //7
+        'easeInBack', //8
+        'easeOutQuad', //9
+        'easeOutSine', //13
+        'easeOutCirc', //15
+        'easeInOutQuad', //18
+        'easeInOutSine', //22
+        'easeInOutBack', //25
         'easeOutBounce', //27
     ];
     if (typeof easing === 'number') {

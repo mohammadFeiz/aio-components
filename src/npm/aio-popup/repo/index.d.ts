@@ -72,6 +72,7 @@ export type AP_highlight = {
 export type AP_confirm = {
     title?: string;
     subtitle?: string;
+    text: string;
     submitText?: string;
     canselText?: string;
     onSubmit?: () => Promise<boolean>;

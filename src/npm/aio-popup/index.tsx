@@ -63,7 +63,7 @@ export type AP_highlight = {
     easing?: number | AP_easing,
     duration?: number
 }
-export type AP_confirm = { title?: string, subtitle?: string, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
+export type AP_confirm = { title?: string, subtitle?: string, text:string, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
 export type AP_prompt = { title?: string, subtitle?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
 type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string }
 const CTX = createContext({} as any)
@@ -229,7 +229,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
     const addHighlight: AP_addHighlight = (highlight) => setHighlight(highlight)
     const removeHighlight: AP_removeHighlight = () => setHighlight(undefined)
     const addConfirm: AP_addConfirm = (obj) => {
-        let { title, subtitle, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        let { title, subtitle,text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
         let config: AP_modal = {
             position: 'center',
             setAttrs: (key) => {
@@ -240,7 +240,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
                 return attrs
             },
             header: { title, subtitle },
-            body: <>text</>,
+            body: <>{text}</>,
             footer: (
                 <>
                     <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
