@@ -5,8 +5,39 @@ import AIODate from './../../npm/aio-date';
 import { Indent, GetSvg } from './../../npm/aio-component-utils';
 import $ from 'jquery';
 import './repo/index.css';
+import { EventEmitter } from "events";
 const AICTX = createContext({} as any);
+
+class AioInputDefaultsClass {
+    defaults: Partial<AITYPE> = {};
+    eventEmitter = new EventEmitter();
+
+    set(newDefaults: Partial<AITYPE>) {
+        this.defaults = { ...this.defaults, ...newDefaults };
+        this.eventEmitter.emit("update"); 
+    }
+
+    get() {
+        return this.defaults;
+    }
+
+    subscribe(callback: () => void) {
+        this.eventEmitter.on("update", callback);
+        return () => this.eventEmitter.off("update", callback);
+    }
+}
+
+export const AIOInputDefaults = new AioInputDefaultsClass();
 const AIOInput: FC<AITYPE> = (props) => {
+    const [defaults, setDefaults] = useState(AIOInputDefaults.get());
+    useEffect(() => {
+        const unsubscribe = AIOInputDefaults.subscribe(() => {
+            setDefaults(AIOInputDefaults.get());
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
     let type = props.type, round = props.round;
     let value = props.value
     if (type === 'text') { if (typeof value !== 'string') { value = '' } }
@@ -17,7 +48,7 @@ const AIOInput: FC<AITYPE> = (props) => {
     }
     else if (type === 'slider') { type = 'range'; round = 0; }
     else if (type === 'range') { return null; }
-    let rootProps: AITYPE = { ...props, type, round, value }
+    let rootProps: AITYPE = { ...defaults, ...props, type, round, value }
     if (type === 'text' && rootProps.getOptions) {
         return <SuggestionInput {...rootProps} />
     }
@@ -68,18 +99,14 @@ function AIOINPUT(props: AITYPE) {
     let popup = usePopup({ rtl: props.rtl })
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
-    let [DragOptions] = useState<UT.DragClass>(
-        new UT.DragClass({
-            callback: (fromData, toData) => {
-                if (typeof props.onSwap === 'function') {
-                    const { fromIndex } = fromData;
-                    const { options, toIndex } = toData;
-                    const sorted = DragOptions.reOrder(options, fromIndex, toIndex);
-                    props.onSwap(sorted, options[fromIndex], options[toIndex])
-                }
-            }
-        })
-    )
+    const DragOptions = UT.useDrag((fromData, toData,reOrder) => {
+        if (typeof props.onSwap === 'function') {
+            const { fromIndex } = fromData;
+            const { options, toIndex } = toData;
+            const sorted = reOrder(options, fromIndex, toIndex);
+            props.onSwap(sorted, options[fromIndex], options[toIndex])
+        }
+    })
     function getPopover(dom: any) {
         let className = 'aio-input-popover';
         className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
@@ -101,6 +128,7 @@ function AIOINPUT(props: AITYPE) {
             setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
                 let attrs = (popover.setAttrs || (() => { return {} }))(key);
                 if (key === 'modal') { return UT.AddToAttrs(attrs, { className }) }
+                return attrs
             }
         }
         return obj;
@@ -699,36 +727,27 @@ export type AI_Layout = {
     properties?: any
 }
 const CheckIcon: FC<{
-    checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode,
     checked?: boolean,
-    round?: boolean,
     row: any,
-    switch?: {
-        value?: boolean,
-        onChange?: (v: boolean) => void,
-        colors?: string[],
-        borderSize?: number,
-        buttonSize?: number,
-        grooveSize?: number,
-        width?: number,
-        padding?: number
-    }
+    rootProps: AITYPE
 }> = (props) => {
     if (props.checked === undefined) { return null }
-    if (props.checkIcon) {
-        const res = props.checkIcon({ checked: props.checked, row: props.row })
+    const { rootProps } = props;
+    const round = !rootProps.multiple && rootProps.type === 'radio'
+    if (rootProps.checkIcon) {
+        const res = rootProps.checkIcon({ checked: props.checked, row: props.row, rootProps })
         return res === false ? null : <>{res}</>
     }
-    if (props.switch) {
+    if (rootProps.switch) {
         return (
             <AISwitch
-                {...props.switch}
+                {...rootProps.switch}
                 value={props.checked}
             />
         );
     }
     return (
-        <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (props.round ? ' aio-input-check-round' : '')} style={{ background: 'none' }}>
+        <div className={'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (round ? ' aio-input-check-round' : '')} style={{ background: 'none' }}>
             <div className='aio-input-main-bg aio-input-check-in'></div>
         </div>
     );
@@ -908,16 +927,7 @@ const Layout: FC<AI_Layout> = (props) => {
     let properties = getProperties();
     let content = (<>
         {DragIcon()}
-        {
-            typeof properties.checked === 'boolean' &&
-            <CheckIcon
-                round={!rootProps.multiple && type === 'radio'}
-                checked={properties.checked}
-                checkIcon={rootProps.checkIcon}
-                row={option || {}}
-                switch={rootProps.switch}
-            />
-        }
+        {typeof properties.checked === 'boolean' && <CheckIcon rootProps={rootProps} checked={properties.checked} row={option || {}} />}
         {BeforeAfter('before')}
         {Text()}
         {BeforeAfter('after')}
@@ -1351,7 +1361,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
                 isParentLastChild={!!item.indent.parentIndent?.isLastChild} rtl={!!rootProps.rtl}
                 toggleIcon={rootProps.toggleIcon} open={open} onToggle={() => toggle(item.id)}
             />,
-            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={rootProps.checkIcon} row={row} />}</>,
+            <>{checked === undefined ? null : <CheckIcon checked={checked} rootProps={rootProps} row={row} />}</>,
             <>{(item.option.before as any) || null}</>
         ]
     }
@@ -1803,18 +1813,16 @@ function Table() {
     let [searchColumns, setSearchColumns] = useState<AI_table_column[]>([]);
     let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
     let [temp] = useState<type_table_temp>({})
-    let [DragRows] = useState<UT.DragClass | false>(!onSwap ? false : new UT.DragClass({
-        callback: (dragData, dropData) => {
-            if (DragRows === false) { return }
-            const { dragIndex } = dragData;
-            const { dropIndex, rows } = dropData;
-            const newRows = DragRows.reOrder(rows, dragIndex, dropIndex);
-            const from = rows[dragIndex];
-            const to = rows[dropIndex];
-            if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
-            else { onChange(newRows) }
-        }
-    }))
+    const DragRows:UT.I_useDrag = UT.useDrag((dragData, dropData,reOrder) => {
+        const { dragIndex } = dragData;
+        const { dropIndex, rows } = dropData;
+        const newRows = reOrder(rows, dragIndex, dropIndex);
+        const from = rows[dragIndex];
+        const to = rows[dropIndex];
+        if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
+        else { onChange(newRows) }
+    })
+    const DragColumns = UT.useDrag((dragIndex, dropIndex,reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)))
     let [sorts, setSorts] = useState<AI_table_sort[]>([])
     function getColumns() {
         let { columns = [] } = rootProps;
@@ -1973,7 +1981,7 @@ function Table() {
     function getRowAttrs(row: any, rowIndex: number) {
         let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
         let obj = UT.AddToAttrs(attrs, { className: 'aio-input-table-row' })
-        if (DragRows !== false) {
+        if (onSwap) {
             obj = {
                 ...obj,
                 ...DragRows.getDragAttrs({ dragIndex: rowIndex }),
@@ -1989,7 +1997,7 @@ function Table() {
     function getContext(ROWS: AI_table_rows) {
         let context: type_table_context = {
             ROWS, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
-            add, remove, search, exportToExcel, getDynamics
+            add, remove, search, exportToExcel, getDynamics,DragColumns
         }
         return context
     }
@@ -2195,14 +2203,17 @@ function TableHeader() {
     let { rootProps, columns }: type_table_context = useContext(AITableContext);
     let { headerAttrs, onRemove } = rootProps;
     headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-input-table-header' })
-    let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
+    let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} colIndex={i} />);
     let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
     return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
 }
-function TableTitle(p: { column: AI_table_column, isLast: boolean }) {
+function TableTitle(p: { column: AI_table_column, isLast: boolean,colIndex:number }) {
     let { column, isLast } = p;
-    let { getCellAttrs } = useContext(AITableContext);
-    let attrs = getCellAttrs({ column, type: 'title' });
+    let { getCellAttrs,DragColumns } = useContext(AITableContext);
+    const dragAttrs = DragColumns.getDragAttrs(p.colIndex)
+    const dropAttrs = DragColumns.getDropAttrs(p.colIndex)
+    let Attrs = getCellAttrs({ column, type: 'title' });
+    const attrs = {...Attrs,...dragAttrs,...dropAttrs}
     return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
 }
 function TableRow(p: { row: any, isLast: boolean, rowIndex: number }) {
@@ -3431,7 +3442,7 @@ export type AITYPE =
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
-        checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
+        checkIcon?: (p: { checked: boolean, row: any, rootProps: AITYPE }) => ReactNode
         switch?: AI_switch,
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
@@ -3483,7 +3494,7 @@ export type AI_context = {
     popup: AP_usePopup,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
-    DragOptions: UT.DragClass,
+    DragOptions: UT.I_useDrag,
     datauniqid: string,
     touch: boolean,
     click: (e: any, dom: any) => void,
@@ -3511,7 +3522,8 @@ export type type_table_context = {
     excelColumns: AI_table_column[],
     getRowAttrs: (row: any, rowIndex: number) => any,
     getCellAttrs: type_table_getCellAttrs,
-    getDynamics: any
+    getDynamics: any,
+    DragColumns:UT.I_useDrag
 }
 export type AI_Popover_props = { getRootProps: () => AITYPE, id: string, toggle: (popover: any) => void, types: AI_types }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
@@ -3661,17 +3673,19 @@ export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='ta
 
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
 export type I_formInput<T> = AITYPE & {
-    label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
+    label: ReactNode, validateType?: I_validateType, field: I_formField<T>,
     validate?: (p: { data: T, value: any, input: I_formInput<T>, field: I_formField<T> }) => string | undefined
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
     inlineLabel?: boolean;
     onSubmit?: (data: T) => void;
-    liveSubmit?: boolean;
+    onChange?: (data: T) => void;
     fa?: boolean;
-    showLabel?: boolean,
-    getLayout?: (context: I_formContext<T>) => I_formNode<T>
+    labelAttrs?: any,
+    getLayout?: (context: I_formContext<T>) => I_formNode<T>,
+    debug?: boolean,
+    isRequired?: I_isRequired<T>
 };
 export type I_formField<T> = NestedKeys<T> | 'none'
 type NestedKeys<T> = {
@@ -3690,123 +3704,74 @@ export type I_formHook<T> = {
     data: T,
     renderLayout: ReactNode,
     changeData: (data: T) => void,
-    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
-    getErrorsList: () => string[],
     reset: () => void,
-    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
     isSubmitDisabled: () => boolean,
     renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode,
-    changeByField: (field: I_formField<T>, value: any) => void
+    changeByField: (field: I_formField<T>, value: any) => void,
+    errors: I_errorHook<T>,
+    submit: () => void
 }
 export type I_formContext<T> = {
     changeData: (data: T) => void,
     changeByInput: (field: I_formInput<T>, value: any) => void,
-    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
-    getErrorsList: () => string[],
     reset: () => void,
-    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
     isSubmitDisabled: () => boolean,
     getData: () => T,
     isDataChanged: () => boolean,
     rootProps: I_useFormProps<T>,
-    isFieldChanged: (field: I_formField<T>) => boolean,
+    isFieldChanged: (field: any) => boolean,
     getValueByInput: (input: I_formInput<T>) => any,
-    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
-    hasError: () => boolean,
-    getNodeAttrs: (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => any,
-    setInputsRef: (field: I_formField<T>, input: I_formInput<T>) => void
+    nodeHook: I_nodeHook,
+    inputHook: any,
+    errorHook: I_errorHook<T>,
+    isRequired: any
 }
-
+type I_isRequired<T> = (data: T, field: I_formField<T>) => boolean
 export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
     function getInitData() { return JSON.parse(JSON.stringify(p.initData)) }
+    function isRequired(field: any) { return !!(p.isRequired || (() => false))(dataRef.current, field) }
     const [initData] = useState<T>(getInitData);
-    const [timerDisabled, setTimerDisabled] = useState(false)
-    const fieldChangesRef = useRef<{ [key in I_formField<T>]?: boolean }>({})
-    const errorsRef = useRef<{ [key in I_formField<T>]?: string | undefined }>({})
-    const inputsRef = useRef<{ [key in I_formField<T>]?: I_formInput<T> }>({})
-    function setInputsRef(field: I_formField<T>, input: I_formInput<T>) {
-        inputsRef.current = { ...inputsRef.current, [field]: input }
-    }
-    function getInputByField(field: I_formField<T>): I_formInput<T> | undefined { return inputsRef.current[field] }
-    const hasError = () => {
-        const keys = Object.keys(errorsRef.current) as any
-        console.log(errorsRef.current)
-        return !!keys.filter((o: I_formField<T>) => !!errorsRef.current[o]).length
-    }
-    const isFieldChanged = (field: I_formField<T>) => !!fieldChangesRef.current[field]
+    const submitTimeRef = useRef<number | undefined>(undefined)
+    const fieldChangesRef = useRef<any>({})
+    const inputHook = useInput()
+    const errorHook = useError({ getData, rootProps: p, isRequired })
+    const nodeHook = useNode()
+    const isFieldChanged = (field: any) => !!fieldChangesRef.current[field]
     const [data, setData] = useState<T>(getInitData);
+
     function getData() { return dataRef.current }
     const changeData = (data: T) => {
         dataRef.current = data; setData(data);
-        if (p.liveSubmit && p.onSubmit) {
-            p.onSubmit(data)
+        if (p.onChange) { p.onChange(data) }
+    }
+    const submitTimeDisabled = () => {
+        if (!submitTimeRef.current) { return false }
+        const delta = new Date().getTime() - submitTimeRef.current
+        return delta < 2000
+    }
+    const submit = () => {
+        if (!p.onSubmit) {
+            console.error(`you are using useForm submit method but missing set onSubmit in useForm definition`)
+            return
         }
+        if (submitTimeDisabled()) { return }
+        submitTimeRef.current = new Date().getTime()
+        p.onSubmit(getData())
     }
     const changeByInput = (input: I_formInput<T>, value: any) => {
         let newData = { ...dataRef.current };
         fieldChangesRef.current = { ...fieldChangesRef.current, [input.field]: true }
-        getErrorByInput(input, value)
+        errorHook.getErrorByInput(input, value)
         UT.setValueByField(newData, input.field, value);
         changeData(newData)
     }
     function changeByField(field: I_formField<T>, value: any) {
-        const input = getInputByField(field);
+        const input = inputHook.get(field);
         if (!input) { return }
         changeByInput(input, value)
     }
     const dataRef = useRef(data); dataRef.current = data;
-    function setErrorByField(field: I_formField<T>, error: string | undefined) {
-        errorsRef.current = { ...errorsRef.current, [field]: error }
-    }
-    function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
-        const { required = true, label, validateType, field } = input;
-        if (required && (value === undefined || value === '' || value === null)) {
-            const error = p.fa ? `${label} ضروری است` : `${label} is required`
-            setErrorByField(field, error)
-            return error
-        }
-        if (!!value) {
-            if (validateType === 'email') {
-                const res = UT.IsValidEmail(value);
-                if (!res) {
-                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
-                    setErrorByField(field, error)
-                    return error
-                }
-            }
-            if (validateType === 'irMobile') {
-                const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
-                if (res) {
-                    const error = res
-                    setErrorByField(field, error)
-                    return error
-                }
-            }
-            if (validateType === "irNationalCode") {
-                const res = UT.IsValidIrNationalCode(value);
-                if (!res) {
-                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
-                    setErrorByField(field, error)
-                    return error
-                }
-            }
-        }
-        if (input.validate) {
-            const res = input.validate({ data: dataRef.current, value, input, field: input.field })
-            if (res) {
-                const error = res
-                setErrorByField(field, error)
-                return error
-            }
-        }
-        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') {
-            const error = p.fa ? 'این مقدار مجاز نیست' : 'this value is forbidden'
-            setErrorByField(field, error)
-            return error
-        }
-        setErrorByField(field, undefined)
-        return undefined
-    }
+
     function getValueByInput(input: I_formInput<T>) {
         const { field } = input;
         let value: any;
@@ -3814,14 +3779,99 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         else { value = UT.getValueByField(dataRef.current, field) }
         return value
     }
-    const getNodeStyle = (node: I_formNode<T>, parentNode?: I_formNode<T>) => {
+    const reset = () => {
+        const newData = getInitData();
+        dataRef.current = newData
+        errorHook.resetErrors()
+        changeData(newData);
+    }
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    const getContext = (): I_formContext<T> => {
+        return {
+            rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, changeData, changeByInput, reset,
+            nodeHook, errorHook, isSubmitDisabled, inputHook, isRequired
+        }
+    }
+    const getLayout = () => {
+        if (!p.getLayout) { return null }
+        const context = getContext()
+        const node = p.getLayout(context)
+        //@ts-ignore
+        return <AIFormNode node={node} context={context} level={0} index={0} />
+    };
+    const isSubmitDisabled = (): boolean => {
+        if (!isDataChanged()) { if (p.debug) { console.log(`submit disabled due not data changed`) } return true }
+        const errorsList = errorHook.getErrorsList()
+        if (!!errorsList.length) { if (p.debug) { console.log(`submit disabled due there is error :`, errorsList) } return true }
+        if (submitTimeDisabled()) { if (p.debug) { console.log(`submit disabled due timer`) } return true }
+        return false
+    };
+    const renderInput = (input: I_formInput<T>, attrs?: any) => {
+        return (
+            <AIFormInputContainer
+                context={getContext()}
+                input={input as I_formInput<any>}
+                attrs={nodeHook.getAttrs({ node: { input: input as any, attrs }, isRoot: false })}
+            />
+        )
+    }
+    const layout = getLayout();
+    return { data, changeData, renderLayout: <>{layout}</>, reset, submit, errors: errorHook, isSubmitDisabled, renderInput, changeByField }
+}
+type I_errorHook<T> = {
+    setErrorByField: (field: any, error: string | undefined) => void,
+    hasError: () => boolean,
+    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
+    getErrorsList: () => string[],
+    resetErrors: () => void
+}
+const useError = <T extends Record<string, any>>(p: { getData: () => T, rootProps: I_useFormProps<T>, isRequired: any }): I_errorHook<T> => {
+    const { fa, } = p.rootProps;
+    const errorsRef = useRef<any>({})
+    const setErrorByField = (field: any, error: string | undefined) => errorsRef.current = { ...errorsRef.current, [field]: error }
+    function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
+        const { label, validateType, field } = input;
+        const required = p.isRequired(field);
+        const isNull = value === undefined || value === '' || value === null
+        let error = undefined;
+        if (isNull) { error = required ? fa ? `${label} ضروری است` : `${label} is required` : undefined }
+        else {
+            if (validateType === 'email' && !UT.IsValidEmail(value)) { error = fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
+            if (validateType === "irNationalCode" && !UT.IsValidIrNationalCode(value)) { error = fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
+            if (validateType === 'irMobile') { error = UT.ValidateIrMobile({ value, label: typeof label === 'string' ? label : '', fa: fa }); }
+        }
+        if (input.validate) { error = input.validate({ data: p.getData(), value, input, field: input.field }) }
+        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') { error = fa ? 'این مقدار مجاز نیست' : 'this value is forbidden' }
+        setErrorByField(field, error); return error
+    }
+    const getErrorsList = (): string[] => {
+        const errors = errorsRef.current as any;
+        const keys = Object.keys(errors) as any;
+        const strs = keys.filter((o: any) => !!errors[o]) as any
+        return strs.map((o: any) => errors[o])
+    }
+    const hasError = () => !!getErrorsList().length
+    const resetErrors = () => errorsRef.current = {}
+    return { setErrorByField, hasError, getErrorByInput, getErrorsList, resetErrors }
+}
+const useInput = () => {
+    const inputsRef = useRef<any>({})
+    const set = (field: any, input: any) => inputsRef.current = { ...inputsRef.current, [field]: input }
+    function get(field: any) { return inputsRef.current[field] }
+    return { set, get }
+}
+type I_nodeHook = {
+    getAttrs: (p: { node: I_formNode<any>, isRoot: boolean, parentNode?: I_formNode<any> }) => any
+}
+const useNode = () => {
+    const getStyle = (node: I_formNode<any>, parentNode?: I_formNode<any>) => {
         const res: any = { flex: node.flex };
         if (parentNode && (parentNode.h || parentNode.v)) {
             res[parentNode.v ? 'height' : 'width'] = node.size
         }
         return { ...res, ...node.style }
     }
-    function getVisibilityClassNames(node: I_formNode<T>): string[] {
+    function getVisibilityClassNames(node: I_formNode<any>): string[] {
         let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
         if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
         if (node.hide_xs) { hide_xs = true; }
@@ -3837,7 +3887,7 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         if (hide_lg) { classNames.push('ai-form-hide-lg') }
         return classNames;
     }
-    const getNodeClassNames = (node: I_formNode<T>, className?: string, isRoot?: boolean): (string | undefined)[] => {
+    const getClassNames = (node: I_formNode<any>, className?: string, isRoot?: boolean): (string | undefined)[] => {
         let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined, visibilityClassNames = getVisibilityClassNames(node);
         if (node.v) {
             scrollClassName = `ai-form-scroll-v`
@@ -3861,74 +3911,17 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         }
         return [rootClassName, className, node.className, scrollClassName, alignClassName, ...visibilityClassNames]
     }
-    const getNodeAttrs = (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => {
+    const getAttrs = (p: { node: I_formNode<any>, isRoot: boolean, parentNode?: I_formNode<any> }) => {
         const { node, parentNode, isRoot } = p;
         let className = '';
         if (node.v || node.h) { className = `ai-form-${node.v ? 'v' : 'h'}` }
         else if (node.html) { className = 'ai-form-html' }
         return UT.AddToAttrs(
             node.attrs,
-            { className: getNodeClassNames(node, className, isRoot), style: getNodeStyle(node, parentNode) }
+            { className: getClassNames(node, className, isRoot), style: getStyle(node, parentNode) }
         )
     }
-    const reset = () => {
-        const newData = getInitData();
-        dataRef.current = newData
-        errorsRef.current = {}
-        changeData(newData);
-    }
-    const getErrorsDic = () => errorsRef.current
-    const getErrorsList = (): string[] => {
-        const errors = errorsRef.current as any;
-        const keys = Object.keys(errors) as any;
-        const strs = keys.filter((o: any) => !!errors[o]) as any
-        return strs.map((o: any) => errors[o])
-    }
-    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    const getContext = (): I_formContext<T> => {
-        return {
-            rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, getErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
-            getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled, setInputsRef
-        }
-    }
-    const getLayout = () => {
-        if (!p.getLayout) { return null }
-        const context = getContext()
-        const node = p.getLayout(context)
-        //@ts-ignore
-        return <AIFormNode node={node} context={context} level={0} index={0} />
-    };
-    const isSubmitDisabled = (): boolean => {
-        const dataChanged = isDataChanged();
-        const error = hasError();
-        const isTimerdisabled = !!timerDisabled
-        return !dataChanged || error || !!isTimerdisabled
-    };
-    const renderSubmitButton = (text: string, attrs?: any): ReactNode => {
-        if (p.onSubmit === undefined) {
-            console.error('useForm error => for use renderSubmitButton you should set onSubmit props in difinition of useForm hook');
-            return null;
-        }
-        const onClick = () => {
-            const onSubmit = p.onSubmit as any;
-            setTimerDisabled(true); onSubmit(getData());
-            setTimeout(() => setTimerDisabled(false), 3000)
-        }
-        const disabled = isSubmitDisabled()
-        const allAttrs = { type: 'button', ...attrs, disabled, onClick }
-        return <button {...allAttrs}>{text}</button>
-    }
-    const renderInput = (input: I_formInput<T>, attrs?: any) => {
-        return (
-            <AIFormInputContainer
-                context={getContext()}
-                input={input as I_formInput<any>}
-                attrs={getNodeAttrs({ node: { input, attrs }, isRoot: false })}
-            />
-        )
-    }
-    const layout = getLayout();
-    return { data, changeData, getErrorsDic, getErrorsList, renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled, renderInput, changeByField }
+    return { getAttrs }
 }
 const AIFormNode: FC<{
     node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
@@ -3941,13 +3934,13 @@ const AIFormNode: FC<{
         if (Array.isArray(node.h) || Array.isArray(node.v)) {
             return <AIFormGroup node={node} context={context} level={level} index={index} parentNode={parentNode} />
         }
-        const { getNodeAttrs } = context;
+        const { nodeHook } = context;
         if (node.html !== undefined) {
-            const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
+            const attrs = nodeHook.getAttrs({ node, isRoot: level === 0, parentNode })
             return (<div {...attrs}>{node.html}</div>)
         }
         if (node.input) {
-            const attrs = { ...getNodeAttrs({ node, isRoot: false }), 'data-label': node.input.label }
+            const attrs = { ...nodeHook.getAttrs({ node, isRoot: false }), 'data-label': node.input.label }
             return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} size={node.size} />
         }
     }
@@ -3961,7 +3954,7 @@ const AIFormGroup: FC<{
     context: I_formContext<any>
 }> = ({ node, context, level, parentNode }) => {
     let { tag = 'div', legend } = node;
-    const { getNodeAttrs } = context;
+    const { nodeHook } = context;
     const content = (<>
         {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
         {
@@ -3977,7 +3970,7 @@ const AIFormGroup: FC<{
             })
         }
     </>)
-    const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
+    const attrs = nodeHook.getAttrs({ node, isRoot: level === 0, parentNode })
     if (level === 0) { return (<form {...attrs}>{content}</form>) }
     if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
     if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
@@ -3991,11 +3984,11 @@ const AIFormInputContainer: FC<{
     context: I_formContext<any>,
     size?: number,
 }> = ({ context, input, attrs, size }) => {
-    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef, rootProps } = context;
+    const { getValueByInput, errorHook, changeByInput, inputHook, rootProps } = context;
     const { inputAttrs, field } = input;
-    setInputsRef(field, input);
+    inputHook.set(field, input);
     const value = getValueByInput(input);
-    const error = getErrorByInput(input, value)
+    const error = errorHook.getErrorByInput(input, value)
     return (
         <RenderInput
             value={value} error={error} input={input} context={context} size={size} inlineLabel={rootProps.inlineLabel}
@@ -4024,7 +4017,7 @@ type I_renderInput = {
 }
 const RenderInput: FC<I_renderInput> = (props) => {
     const { context, attrs, input, inputProps, error, size, inlineLabel } = props;
-    const { isFieldChanged, rootProps } = context;
+    const { isFieldChanged, rootProps, isRequired } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
         if (input.label === 'width') {
@@ -4032,9 +4025,10 @@ const RenderInput: FC<I_renderInput> = (props) => {
             console.log('inputProps', inputProps)
         }
         const { field, label } = input;
+        const required = isRequired(field)
         setDom(
-            <AIFormInput required={input.required} showLabel={rootProps.showLabel} inlineLabel={inlineLabel}
-                input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input'/>}
+            <AIFormInput required={required} labelAttrs={rootProps.labelAttrs} inlineLabel={inlineLabel}
+                input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input' />}
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
         )
@@ -4042,14 +4036,13 @@ const RenderInput: FC<I_renderInput> = (props) => {
     return <Fragment key={input.field}>{dom}</Fragment>;
 }
 export const AIFormInput: FC<{
-    label?: string,
+    label?: ReactNode,
     inlineLabel?: boolean,
-    showLabel?: boolean,
+    labelAttrs?: any,
     input: ReactNode,
     attrs?: any,
     className?: string,
     style?: any,
-    action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
     before?: ReactNode,
@@ -4057,18 +4050,12 @@ export const AIFormInput: FC<{
     subtext?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style, inlineLabel } = props;
-    const hasHeader = (!!label && !!showLabel) || !!action
+    const { label, input, error, attrs, id, required = true, labelAttrs, className, style, inlineLabel } = props;
     const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className, inlineLabel ? 'ai-form-input-inline-label' : undefined], style })
+    const LabelAttrs = UT.AddToAttrs(labelAttrs, { className: 'ai-form-input-label', attrs: { htmlFor: id } })
     return (
         <div {...Attrs}>
-            {
-                hasHeader === true &&
-                <label className="ai-form-input-header" htmlFor={id}>
-                    {!!label && <div className="ai-form-input-label">{required ? <div className="ai-form-required">*</div> : null}{label}</div>}
-                    {!!action && <div className="ai-form-input-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
-                </label>
-            }
+            {!!label && <label {...LabelAttrs}>{required ? <div className="ai-form-required">*</div> : null}{label}</label>}
             <div className="ai-form-input-body">
                 {!!props.before && <div className="ai-form-input-body-before"></div>}
                 <div className="ai-form-input-body-input" data-subtext={!!props.subtext ? props.subtext : undefined}>{input}</div>
@@ -4080,11 +4067,11 @@ export const AIFormInput: FC<{
 }
 
 
-export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange: (v: string[]) => void,label?:string }> = ({ type, value, onChange,label }) => {
+export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange: (v: string[]) => void, label?: string }> = ({ type, value, onChange, label }) => {
     const change = (v: string, index: number) => {
         const newValue = []
-        for(let i = 0; i < 4; i++){
-            if(index === i){
+        for (let i = 0; i < 4; i++) {
+            if (index === i) {
                 newValue.push(v)
             }
             else {

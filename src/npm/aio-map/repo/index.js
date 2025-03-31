@@ -1,1 +1,188 @@
-import{divIcon as e}from"leaflet";import{createContext as r,isValidElement as t,useContext as o,useEffect as n,useRef as a,useState as l}from"react";import{Circle as i,FeatureGroup as c,LayersControl as p,MapContainer as s,Marker as m,Polyline as _,Rectangle as d,TileLayer as u,useMapEvents as h}from"react-leaflet";import f from"aio-input";import{JSXToHTML as v}from"aio-utils";import"leaflet/dist/leaflet.css";import"./index.css";import{jsx as $}from"react/jsx-runtime";import{jsxs as M}from"react/jsx-runtime";let MAPCTX=r({}),AIMap=e=>{var r;let{value:t=[35.699939,51.338497],getSearchResult:o,onSearch:i,mapRef:c}=e,[p,s]=l(null),[m,_]=l((null===(r=e.zoom)||void 0===r?void 0:r.value)||14),d=a(!1);function u(e){!0!==d.current&&_(e)}c&&(c.current=p),e.actionsRef&&(e.actionsRef.current={flyTo(e){d.current=!0,p.flyTo([e.lat,e.lng],e.zoom);let r=()=>{p.off("moveend",r),d.current=!1,u(e.zoom),e.callback()};p.on("moveend",r)}});let[h,f]=l(t),v=a(void 0);function g(r){f(r),e.onChange&&(clearTimeout(v.current),v.current=setTimeout(()=>{e.onChange&&e.onChange(r)},600))}function C(){return M("div",{className:"marker-icon",children:[$("div",{className:"marker-icon-circle"}),$("div",{className:"marker-icon-arrow"})]})}function y(){return{pos:h,setMap:s,rootProps:e,move:g,getDefaultMarkerIcon:C,changeZoom:u,zoom:m}}return n(()=>{null!==p&&p.setView(t,m,{animate:!1}),f(t)},[t[0]+"-"+t[1]+"-"+m]),$(MAPCTX.Provider,{value:y(),children:M("div",{className:"ai-map",children:[!!o&&$(MapHeader,{}),$(MapBody,{}),$(MapFooter,{})]})})};export default AIMap;let MapBody=()=>{var e,r;let{rootProps:n,pos:a,setMap:l,getDefaultMarkerIcon:i,zoom:c}=o(MAPCTX),{style:p,dragging:m=!0,children:_,shapes:d=[],marker:h,markers:f=[],whenReady:v}=n,g={width:"100%",height:"100%"};return M(s,{center:a,style:{...g,...p},zoom:c,scrollWheelZoom:null!==(e=n.zoom)&&void 0!==e&&e.wheel?"center":void 0,zoomControl:(null===(r=n.zoom)||void 0===r?void 0:r.control)!==!1,attributionControl:!0,dragging:m,ref:l,whenReady:v,children:[$(u,{url:"https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png"}),$(MapEvents,{}),!1!==h&&$(MapMarker,{pos:a,html:t(h)?h:i()},"main-marker"),f.map((e,r)=>$(MapMarker,{pos:e.pos,html:e.html,eventHandlers:e.eventHandlers},`marker-${r}`)),d.map((e,r)=>$(MapShape,{shape:e},r)),$(MapLayers,{}),_]})},MagnifyIcon=()=>$("svg",{viewBox:"0 0 24 24",xmlns:"http://www.w3.org/2000/svg",width:24,height:24,children:$("path",{d:"M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"})}),MapHeader=()=>{let{rootProps:e,move:r}=o(MAPCTX),{getSearchResult:t,onSearch:n}=e,[i,c]=l(""),[p,s]=l([]),m=a();function _(e){c(e),clearTimeout(m.current),m.current=setTimeout(async()=>{if(t){let r=await t(e);Array.isArray(r)&&s(r)}},1200)}return $("div",{className:"ai-map-header",children:$(f,{type:"text",value:i,options:p||[],before:$(MagnifyIcon,{}),onChange:e=>_(e),option:{onClick(e){n&&n(e)}}})})},MapLayers=()=>{let{rootProps:e}=o(MAPCTX),{layers:r}=e;if(!r)return null;let{position:t="topright",items:n=[]}=r;return $(p,{position:t,children:n.map((e,r)=>{let{shapes:t=[],markers:o=[],active:n=!0}=e;return $(p.Overlay,{name:e.name,checked:n,children:M(c,{children:[o.map((e,r)=>$(MapMarker,{pos:e.pos,html:e.html,eventHandlers:e.eventHandlers},r)),t.map((e,r)=>$(MapShape,{shape:e},r))]})},r)})})},MapShape=({shape:e})=>{let{style:r={},type:t}=e,{stroke:o={},fill:n={}}=r,{width:a=4,dash:l,color:c="orange"}=o,{color:p="orange",opacity:s=.3}=n,m={fillColor:p,color:c,fillOpacity:s,weight:a,dashArray:l};if("circle"===t){let{center:u,radius:h=100}=e;return $(i,{center:u,pathOptions:m,radius:h})}return"rect"===t?$(d,{bounds:e.points,pathOptions:m}):"polyline"===t?$(_,{positions:e.points,pathOptions:m}):null},MapFooter=()=>{let{rootProps:e,pos:r}=o(MAPCTX),{submitText:t="Submit",onSubmit:n,footer:a}=e;return n||a?M("div",{className:"ai-map-footer",children:[!!n&&$("button",{type:"button",onClick:()=>n(r),children:t}),$("div",{className:"ai-map-footer-html",children:a||null})]}):null},MapMarker=({pos:r,html:t,eventHandlers:n})=>{let{getDefaultMarkerIcon:a}=o(MAPCTX);function l(r){return e({html:v(r),className:"",iconSize:[32,32],iconAnchor:[16,32]})}t=t||a();let i={position:r};return t&&(i.icon=l(t)),$(m,{...i,animate:!1,eventHandlers:n})};function MapEvents(){let{rootProps:e,move:r,changeZoom:t}=o(MAPCTX);return h({click:()=>e.onClick?e.onClick():void 0,move(t){if(!1===e.dragging)return;let{lat:o,lng:n}=t.target.getCenter();r([o,n])},zoom(e){t(e.target._zoom)},locationfound(e){console.log("location found:",e)},moveend(r){e.onMoveEnd&&e.onMoveEnd(r)},movestart(e){}}),null}
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { divIcon } from "leaflet";
+import { createContext, isValidElement, useContext, useEffect, useRef, useState } from "react";
+import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from "react-leaflet";
+import AIOInput from "aio-input";
+import { AddToAttrs, JSXToHTML } from "aio-utils";
+import 'leaflet/dist/leaflet.css';
+import './index.css';
+const MAPCTX = createContext({});
+const AIMap = (props) => {
+    var _a;
+    const { value = [35.699939, 51.338497], getSearchResult, onSearch, mapRef } = props;
+    const [map, setMap] = useState(null);
+    const [zoom, setZoom] = useState(((_a = props.zoom) === null || _a === void 0 ? void 0 : _a.value) || 14);
+    const lockChangeZoomState = useRef(false);
+    function changeZoom(zoom) {
+        if (lockChangeZoomState.current === true) {
+            return;
+        }
+        setZoom(zoom);
+    }
+    if (mapRef) {
+        mapRef.current = map;
+    }
+    if (props.actionsRef) {
+        props.actionsRef.current = {
+            flyTo: (p) => {
+                lockChangeZoomState.current = true;
+                map.flyTo([p.lat, p.lng], p.zoom);
+                const onMoveEnd = () => {
+                    map.off("moveend", onMoveEnd);
+                    lockChangeZoomState.current = false;
+                    changeZoom(p.zoom);
+                    p.callback();
+                };
+                map.on("moveend", onMoveEnd);
+            }
+        };
+    }
+    const [pos, setPos] = useState(value);
+    const moveTimeout = useRef(undefined);
+    function move(pos) {
+        setPos(pos);
+        if (props.onChange) {
+            clearTimeout(moveTimeout.current);
+            moveTimeout.current = setTimeout(() => { if (props.onChange) {
+                props.onChange(pos);
+            } }, 600);
+        }
+    }
+    function getDefaultMarkerIcon() {
+        return _jsxs("div", { className: 'marker-icon', children: [_jsx("div", { className: 'marker-icon-circle' }), _jsx("div", { className: 'marker-icon-arrow' })] });
+    }
+    function getContext() { return { pos, setMap, rootProps: props, move, getDefaultMarkerIcon, changeZoom, zoom }; }
+    useEffect(() => {
+        if (map !== null) {
+            map.setView(value, zoom, { animate: false });
+        }
+        setPos(value);
+    }, [value[0] + '-' + value[1] + '-' + zoom]);
+    const attrs = AddToAttrs(props.attrs, { className: 'ai-map' });
+    return (_jsx(MAPCTX.Provider, { value: getContext(), children: _jsxs("div", Object.assign({}, attrs, { children: [!!getSearchResult && _jsx(MapHeader, {}), _jsx(MapBody, {}), _jsx(MapFooter, {})] })) }));
+};
+export default AIMap;
+const MapBody = () => {
+    var _a, _b;
+    const { rootProps, pos, setMap, getDefaultMarkerIcon, zoom } = useContext(MAPCTX);
+    const { mapStyle, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps;
+    const defaultStyle = { width: '100%', height: '100%' };
+    return (_jsxs(MapContainer, { center: pos, style: Object.assign(Object.assign({}, defaultStyle), mapStyle), zoom: zoom, scrollWheelZoom: ((_a = rootProps.zoom) === null || _a === void 0 ? void 0 : _a.wheel) ? 'center' : undefined, zoomControl: ((_b = rootProps.zoom) === null || _b === void 0 ? void 0 : _b.control) !== false, attributionControl: true, dragging: dragging, ref: setMap, whenReady: whenReady, children: [_jsx(TileLayer, { url: "https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" }), _jsx(MapEvents, {}), marker !== false && _jsx(MapMarker, { pos: pos, html: isValidElement(marker) ? marker : getDefaultMarkerIcon() }, 'main-marker'), markers.map((marker, i) => _jsx(MapMarker, { pos: marker.pos, html: marker.html, eventHandlers: marker.eventHandlers }, `marker-${i}`)), shapes.map((o, i) => _jsx(MapShape, { shape: o }, i)), _jsx(MapLayers, {}), children] }));
+};
+const MagnifyIcon = () => {
+    return (_jsx("svg", { viewBox: "0 0 24 24", xmlns: "http://www.w3.org/2000/svg", width: 24, height: 24, children: _jsx("path", { d: "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" }) }));
+};
+const MapHeader = () => {
+    const { rootProps, move } = useContext(MAPCTX);
+    const { getSearchResult, onSearch } = rootProps;
+    const [searchValue, setSearchValue] = useState('');
+    const [searchResult, setSerachResult] = useState([]);
+    const timeout = useRef();
+    function changeSearch(searchValue) {
+        setSearchValue(searchValue);
+        clearTimeout(timeout.current);
+        timeout.current = setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+            if (getSearchResult) {
+                const res = yield getSearchResult(searchValue);
+                if (Array.isArray(res)) {
+                    setSerachResult(res);
+                }
+            }
+        }), 1200);
+    }
+    return (_jsx("div", { className: "ai-map-header", children: _jsx(AIOInput, { type: 'text', value: searchValue, options: (searchResult || []), before: _jsx(MagnifyIcon, {}), onChange: (searchValue) => changeSearch(searchValue), option: {
+                onClick: (option) => { if (onSearch) {
+                    onSearch(option);
+                } }
+            } }) }));
+};
+const MapLayers = () => {
+    const { rootProps } = useContext(MAPCTX);
+    const { layers } = rootProps;
+    if (!layers) {
+        return null;
+    }
+    const { position = 'topright', items = [] } = layers;
+    return (_jsx(LayersControl, { position: position, children: items.map((o, i) => {
+            const { shapes = [], markers = [], active = true } = o;
+            return (_jsx(LayersControl.Overlay, { name: o.name, checked: active, children: _jsxs(FeatureGroup, { children: [markers.map((marker, j) => _jsx(MapMarker, { pos: marker.pos, html: marker.html, eventHandlers: marker.eventHandlers }, j)), shapes.map((shape, k) => _jsx(MapShape, { shape: shape }, k))] }) }, i));
+        }) }));
+};
+const MapShape = ({ shape }) => {
+    const { style = {}, type } = shape, { stroke = {}, fill = {} } = style;
+    const { width = 4, dash, color: strokeColor = 'orange' } = stroke;
+    const { color: fillColor = 'orange', opacity = 0.3 } = fill;
+    const pathOptions = { fillColor: fillColor, color: strokeColor, fillOpacity: opacity, weight: width, dashArray: dash };
+    if (type === 'circle') {
+        const { center, radius = 100 } = shape;
+        return (_jsx(Circle, { center: center, pathOptions: pathOptions, radius: radius }));
+    }
+    else if (type === 'rect') {
+        return (_jsx(Rectangle, { bounds: shape.points, pathOptions: pathOptions }));
+    }
+    else if (type === 'polyline') {
+        return (_jsx(Polyline, { positions: shape.points, pathOptions: pathOptions }));
+    }
+    return null;
+};
+const MapFooter = () => {
+    const { rootProps, pos } = useContext(MAPCTX);
+    const { submitText = 'Submit', onSubmit, footer } = rootProps;
+    if (!onSubmit && !footer) {
+        return null;
+    }
+    return (_jsxs("div", { className: "ai-map-footer", children: [!!onSubmit && _jsx("button", { type: 'button', onClick: () => onSubmit(pos), children: submitText }), _jsx("div", { className: "ai-map-footer-html", children: footer || null })] }));
+};
+const MapMarker = ({ pos, html, eventHandlers }) => {
+    const { getDefaultMarkerIcon } = useContext(MAPCTX);
+    function getHtmlIcon(html) {
+        return divIcon({
+            html: JSXToHTML(html),
+            className: '',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+        });
+    }
+    html = html || getDefaultMarkerIcon();
+    let props = { position: pos };
+    if (html) {
+        props.icon = getHtmlIcon(html);
+    }
+    return _jsx(Marker, Object.assign({}, props, { animate: false, eventHandlers: eventHandlers }));
+};
+function MapEvents() {
+    const { rootProps, move, changeZoom } = useContext(MAPCTX);
+    const map = useMapEvents({
+        click: () => rootProps.onClick ? rootProps.onClick() : undefined,
+        move: (e) => {
+            if (rootProps.dragging === false) {
+                return;
+            }
+            let { lat, lng } = e.target.getCenter();
+            move([lat, lng]);
+        },
+        zoom: (e) => {
+            changeZoom(e.target._zoom);
+        },
+        locationfound: (location) => {
+            console.log('location found:', location);
+        },
+        moveend: (e) => {
+            if (rootProps.onMoveEnd) {
+                rootProps.onMoveEnd(e);
+            }
+        },
+        movestart: (e) => {
+        }
+    });
+    return null;
+}

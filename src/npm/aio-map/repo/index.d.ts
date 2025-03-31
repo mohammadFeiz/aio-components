@@ -48,7 +48,8 @@ type I_Map = {
     markers?: I_marker[];
     value?: I_pos;
     marker?: ReactNode | false;
-    style?: any;
+    mapStyle?: any;
+    attrs?: any;
     onClick?: () => void;
     dragging?: boolean;
     submitText?: string;

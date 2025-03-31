@@ -14,14 +14,13 @@ const EslahKonandeyeAddress: FC = () => {
     console.log(1,addEmployeeModel.eslahKonandeyeAddress.tab)
     const form = useForm<I_addEmployeeModel["eslahKonandeyeAddress"]>({
         initData: getAddEmployeeModel().eslahKonandeyeAddress, fa: true, inlineLabel: true,
-        onSubmit: (newData) => {
+        onChange: (newData) => {
             const addEmployeeModel = getAddEmployeeModel()
             const tab = addEmployeeModel.eslahKonandeyeAddress.tab
             const newEslahKonandeyeAddress = {...addEmployeeModel.eslahKonandeyeAddress,...newData}
             const newModel:I_addEmployeeModel = { ...addEmployeeModel, eslahKonandeyeAddress:{...newEslahKonandeyeAddress,tab} }
             setAddEmployeeModel(newModel)
         },
-        liveSubmit: true,
         getLayout: (context) => {
             const rowCls = 'p-v-12- gap-16-'
             return {

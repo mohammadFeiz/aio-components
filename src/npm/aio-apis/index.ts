@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
-import { Stall, Storage } from './../../npm/aio-utils';
+import { Stall, Storage,AddQueryParamsToUrl } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
 
@@ -20,6 +20,7 @@ export type AA_api = {
     showError?: boolean,
     loader?: string, loadingParent?: string,
     retries?: number[],
+    queryParams?:{[key:string]:any}
 }
 type I_cachedApi<T> = {
     api: AA_api,
@@ -93,7 +94,10 @@ export default class AIOApis {
             return { errorMessage, success: false, response: false }
         }
         try {
-            let response = await Axios({ method: api.method, url: api.url, data: api.body, headers })
+            let finalUrl:string;
+            if(api.queryParams){finalUrl = AddQueryParamsToUrl(api.url,api.queryParams)}
+            else {finalUrl = api.url}
+            let response = await Axios({ method: api.method, url: finalUrl, data: api.body, headers })
             try { return { success: true, response, errorMessage: '' } }
             catch (err: any) { return { success: false, response, errorMessage: err.message } }
         }

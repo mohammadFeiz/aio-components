@@ -7,12 +7,11 @@ const NoeHamkari: FC = () => {
     const { getAddEmployeeModel, setAddEmployeeModel }: I_AddEmployeeContext = useContext(AddEmployeeContext)
     const noeHamkari_form = useForm<{ noeHamkari: number }>({
         initData: { noeHamkari: 0 },
-        onSubmit: (data) => { 
+        onChange: (data) => { 
             const addEmployeeModel = getAddEmployeeModel()
             const newModel = { ...addEmployeeModel, noeHamkari: data.noeHamkari }
             setAddEmployeeModel(newModel) 
         },
-        liveSubmit: true,
         getLayout: (context) => {
             return {
                 v: [

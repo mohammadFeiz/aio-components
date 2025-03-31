@@ -1,8 +1,18 @@
+/// <reference types="node" />
 import { FC, ReactNode, MutableRefObject } from 'react';
-import { AP_modal, AP_usePopup } from "../../aio-popup";
+import { AP_modal, AP_usePopup } from "aio-popup";
 import * as UT from 'aio-utils';
 import AIODate from 'aio-date';
 import './index.css';
+import { EventEmitter } from "events";
+declare class AioInputDefaultsClass {
+    defaults: Partial<AITYPE>;
+    eventEmitter: EventEmitter;
+    set(newDefaults: Partial<AITYPE>): void;
+    get(): Partial<AITYPE>;
+    subscribe(callback: () => void): () => EventEmitter;
+}
+export declare const AIOInputDefaults: AioInputDefaultsClass;
 declare const AIOInput: FC<AITYPE>;
 export default AIOInput;
 export type I_openState = boolean | undefined;
@@ -165,6 +175,7 @@ export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboa
     checkIcon?: (p: {
         checked: boolean;
         row: any;
+        rootProps: AITYPE;
     }) => ReactNode;
     switch?: AI_switch;
     listOptions?: {
@@ -619,8 +630,7 @@ export declare const AIList: FC<AI<'list'>>;
 export declare const AITable: FC<AI<'table'>>;
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode';
 export type I_formInput<T> = AITYPE & {
-    label: string;
-    required?: boolean;
+    label: ReactNode;
     validateType?: I_validateType;
     field: I_formField<T>;
     validate?: (p: {
@@ -634,10 +644,12 @@ type I_useFormProps<T> = {
     initData: Partial<T>;
     inlineLabel?: boolean;
     onSubmit?: (data: T) => void;
-    liveSubmit?: boolean;
+    onChange?: (data: T) => void;
     fa?: boolean;
-    showLabel?: boolean;
+    labelAttrs?: any;
     getLayout?: (context: I_formContext<T>) => I_formNode<T>;
+    debug?: boolean;
+    isRequired?: I_isRequired<T>;
 };
 export type I_formField<T> = NestedKeys<T> | 'none';
 type NestedKeys<T> = {
@@ -674,53 +686,52 @@ export type I_formHook<T> = {
     data: T;
     renderLayout: ReactNode;
     changeData: (data: T) => void;
-    getErrorsDic: () => {
-        [key in I_formField<T>]?: string | undefined;
-    };
-    getErrorsList: () => string[];
     reset: () => void;
-    renderSubmitButton: (text: string, attrs?: any) => ReactNode;
     isSubmitDisabled: () => boolean;
     renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode;
     changeByField: (field: I_formField<T>, value: any) => void;
+    errors: I_errorHook<T>;
+    submit: () => void;
 };
 export type I_formContext<T> = {
     changeData: (data: T) => void;
     changeByInput: (field: I_formInput<T>, value: any) => void;
-    getErrorsDic: () => {
-        [key in I_formField<T>]?: string | undefined;
-    };
-    getErrorsList: () => string[];
     reset: () => void;
-    renderSubmitButton: (text: string, attrs?: any) => ReactNode;
     isSubmitDisabled: () => boolean;
     getData: () => T;
     isDataChanged: () => boolean;
     rootProps: I_useFormProps<T>;
-    isFieldChanged: (field: I_formField<T>) => boolean;
+    isFieldChanged: (field: any) => boolean;
     getValueByInput: (input: I_formInput<T>) => any;
-    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined;
-    hasError: () => boolean;
-    getNodeAttrs: (p: {
-        node: I_formNode<T>;
-        isRoot: boolean;
-        parentNode?: I_formNode<T>;
-    }) => any;
-    setInputsRef: (field: I_formField<T>, input: I_formInput<T>) => void;
+    nodeHook: I_nodeHook;
+    inputHook: any;
+    errorHook: I_errorHook<T>;
+    isRequired: any;
 };
+type I_isRequired<T> = (data: T, field: I_formField<T>) => boolean;
 export declare const useForm: <T extends Record<string, any>>(p: I_useFormProps<T>) => I_formHook<T>;
+type I_errorHook<T> = {
+    setErrorByField: (field: any, error: string | undefined) => void;
+    hasError: () => boolean;
+    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined;
+    getErrorsList: () => string[];
+    resetErrors: () => void;
+};
+type I_nodeHook = {
+    getAttrs: (p: {
+        node: I_formNode<any>;
+        isRoot: boolean;
+        parentNode?: I_formNode<any>;
+    }) => any;
+};
 export declare const AIFormInput: FC<{
-    label?: string;
+    label?: ReactNode;
     inlineLabel?: boolean;
-    showLabel?: boolean;
+    labelAttrs?: any;
     input: ReactNode;
     attrs?: any;
     className?: string;
     style?: any;
-    action?: {
-        text: ReactNode;
-        fn?: () => void;
-    };
     error?: string;
     id?: string;
     before?: ReactNode;

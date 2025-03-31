@@ -1,11 +1,11 @@
 import { FC } from "react";
-import { AITable } from "./../../npm/aio-input";
+import AIOTable from "./../../npm/aio-table";
 import { useFreelancer } from "./context";
 
 export const Table: FC = () => {
     const { gridHook } = useFreelancer()
     return (
-        <AITable
+        <AIOTable
             value={gridHook.grid}
             headerAttrs={{style: {background: '#FFEAE9'}}}
             rowAttrs={({ rowIndex }) => ({

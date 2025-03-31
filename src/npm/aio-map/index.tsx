@@ -2,7 +2,7 @@ import { divIcon, LeafletEvent } from "leaflet"
 import { createContext, FC, isValidElement, ReactNode, useContext, useEffect, useRef, useState } from "react"
 import { Circle, FeatureGroup, LayersControl, MapContainer, Marker, Polyline, Rectangle, TileLayer, useMapEvents } from "react-leaflet"
 import AIOInput from "../aio-input"
-import { JSXToHTML } from "../aio-utils"
+import { AddToAttrs, JSXToHTML } from "../aio-utils"
 import 'leaflet/dist/leaflet.css';
 import './repo/index.css';
 
@@ -23,7 +23,8 @@ type I_Map = {
     markers?: I_marker[]
     value?: I_pos,
     marker?: ReactNode | false,
-    style?: any,
+    mapStyle?: any,
+    attrs?:any,
     onClick?: () => void,
     dragging?: boolean,
     submitText?: string,
@@ -84,9 +85,10 @@ const AIMap: FC<I_Map> = (props) => {
         if (map !== null) { map.setView(value, zoom, { animate: false }) }
         setPos(value)
     }, [value[0] + '-' + value[1] + '-' + zoom])
+    const attrs = AddToAttrs(props.attrs,{className:'ai-map'})
     return (
         <MAPCTX.Provider value={getContext()}>
-            <div className="ai-map">
+            <div {...attrs}>
                 {!!getSearchResult && <MapHeader />}
                 <MapBody />
                 <MapFooter />
@@ -97,11 +99,11 @@ const AIMap: FC<I_Map> = (props) => {
 export default AIMap
 const MapBody: FC = () => {
     const { rootProps, pos, setMap, getDefaultMarkerIcon, zoom }: I_mapctx = useContext(MAPCTX)
-    const { style, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
+    const { mapStyle, dragging = true, children, shapes = [], marker, markers = [], whenReady } = rootProps
     const defaultStyle = { width: '100%', height: '100%' }
     return (
         <MapContainer
-            center={pos} style={{ ...defaultStyle, ...style }} zoom={zoom} scrollWheelZoom={rootProps.zoom?.wheel ? 'center' : undefined} zoomControl={rootProps.zoom?.control !== false}
+            center={pos} style={{ ...defaultStyle, ...mapStyle }} zoom={zoom} scrollWheelZoom={rootProps.zoom?.wheel ? 'center' : undefined} zoomControl={rootProps.zoom?.control !== false}
             attributionControl={true} dragging={dragging} ref={setMap} whenReady={whenReady}
         >
             <TileLayer url="https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png" />

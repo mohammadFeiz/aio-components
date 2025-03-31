@@ -1,5 +1,5 @@
 import * as ReactDOMServer from 'react-dom/server';
-import { ReactNode } from 'react';
+import { ReactNode, useRef } from 'react';
 import MockAdapter from 'axios-mock-adapter';
 import Axios from 'axios';
 import $ from 'jquery';
@@ -73,7 +73,8 @@ export function ParseString(str: string): any {
     }
     catch { return str }
 }
-export function ReOrder(data: any[], fromIndex: number, toIndex: number) {
+type I_reOrder = (data: any[], fromIndex: number, toIndex: number)=>any[]
+export const ReOrder:I_reOrder = (data, fromIndex, toIndex) => {
     let from = data[fromIndex];
     let newData = data.filter((o, i) => i !== fromIndex);
     newData.splice(toIndex, 0, from)
@@ -103,6 +104,26 @@ export class DragClass {
             }
         }
     }
+}
+export type I_useDrag = {reOrder:I_reOrder,getDragAttrs:(dragData:any)=>any,getDropAttrs:(dropData:any)=>any}
+export const useDrag = (callback: (dragData: any, dropData: any,reOrder:(data:any, fromIndex:number, toIndex:number)=>any) => void):I_useDrag=>{
+    const dataRef = useRef<any>()
+    const over = (e:any)=>e.preventDefault()
+    const reOrder = (data:any, fromIndex:number, toIndex:number) => ReOrder(data, fromIndex, toIndex)
+    const getDragAttrs = (dragData:any) => {
+        return {
+            onDragStart: () => dataRef.current = dragData,
+            onDragOver: over,
+            draggable: true
+        }
+    }
+    const getDropAttrs = (dropData:any) => {
+        return {
+            onDragOver: (e: any) => e.preventDefault(),
+            onDrop: (e: any) => callback(dataRef.current, dropData,reOrder)
+        }
+    } 
+    return {reOrder,getDragAttrs,getDropAttrs}
 }
 export function GetClient(e: any): { x: number, y: number } { return 'ontouchstart' in document.documentElement && e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY } }
 export function ExportToExcel(rows: any[], config: any = {}) {
@@ -2142,4 +2163,30 @@ export function ValidateIrMobile(p:{value: string,fa?:boolean,label:string}): st
     if (p.value.indexOf('09') !== 0) { return p.fa?`${p.label} باید با 09 شروع شود`:`${p.label} should start with 09` }
     if (p.value.length < 11) { return p.fa?`${p.label} باید 11 رقم باشد`:`${p.label} should be 11 character` } 
     if(!IsJustNumber(p.value)){return p.fa?`${p.label} باید فقط شامل عدد باشد`:`${p.label} should be contain just numbers`}
+}
+
+export function AddQueryParamsToUrl(url:string, params:{[key:string]:any}, prefix = '') {
+    const queryParts:string[] = [];
+
+    function serialize(obj:any, parentKey = '') {
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const fullKey = parentKey ? `${parentKey}.${key}` : key;
+                const value = obj[key];
+
+                if (typeof value === 'object' && value !== null) {
+                    queryParts.push(`${encodeURIComponent(fullKey)}=${encodeURIComponent(JSON.stringify(value))}`);
+                } else {
+                    queryParts.push(`${encodeURIComponent(fullKey)}=${encodeURIComponent(value)}`);
+                }
+            }
+        }
+    }
+
+    serialize(params);
+
+    if (queryParts.length > 0) {
+        url += (url.includes('?') ? '&' : '?') + queryParts.join('&');
+    }
+    return url;
 }

@@ -64,7 +64,7 @@
 .aio-popup-position-top>.aio-popup {
   width: 100%;
   max-height: 90vh;
-  transform: translateY(0px);
+  transform: none;
 }
 
 /**********position (bottom)***********/
@@ -82,7 +82,7 @@
   width: 100%;
   bottom: 0;
   opacity: 1;
-  transform: scaleY(1);
+  transform: none;
 }
 
 /**********position (left)*************/
@@ -97,7 +97,7 @@
 .aio-popup-position-left>.aio-popup {
   height: 100%;
   max-width: 90vh;
-  transform: translateX(0px);
+  transform: none;
 }
 
 /**********position (right)************/
@@ -112,7 +112,7 @@
 .aio-popup-position-right>.aio-popup {
   height: 100%;
   max-width: 90vh;
-  transform: translateX(0px) scaleX(1);
+  transform: none;
   ;
 }
 
@@ -136,7 +136,7 @@
   width: fit-content;
   opacity: 1;
   max-height: 100vh;
-  transform: translateY(0px);
+  transform: none;
   transform-origin: top;
 }
 

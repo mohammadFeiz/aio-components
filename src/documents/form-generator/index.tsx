@@ -104,6 +104,7 @@ const FG: FC = () => {
         const item = items[index]
         popup.addConfirm({
             title: 'remove item',
+            text:'Are You Sure to Remove?',
             subtitle: item.type,
             onSubmit: async () => {
                 setItems(itemsRef.current.filter((o, i) => i !== index))
@@ -198,14 +199,14 @@ const SettingModal: FC<{ item?: I_item, type: I_type, onSubmit: (newItem: I_item
                             onChange={(v) => changeItem('options', v === 'off' ? undefined : [])}
                         />
                     )}
-                    action={{ text: <PlusIcon />, fn: () => openAddOptionModal() }}
+                    //action={{ text: <PlusIcon />, fn: () => openAddOptionModal() }}
                 />
                 {
                     !!item.options &&
                     <AIFormInput
                         label='options'
                         input={<SettingOptions options={item.options} onChange={(newOptions) => changeItem('options', newOptions)} />}
-                        action={{ text: <PlusIcon />, fn: () => openAddOptionModal() }}
+                        //action={{ text: <PlusIcon />, fn: () => openAddOptionModal() }}
                     />
                 }
             </>

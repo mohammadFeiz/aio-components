@@ -18,7 +18,7 @@ const Freelancer: FC = () => {
                 {
                     flex: 1, align: 'vh',
                     input: {
-                        field, label: '', type: 'image', style: { width: '100%', border: '1px dashed #aaa' }, imageAttrs: { style: { width: '100%' } },required:false,
+                        field, label: '', type: 'image', style: { width: '100%', border: '1px dashed #aaa' }, imageAttrs: { style: { width: '100%' } },
                         placeholder: (
                             <div className="flex-col- align-vh- c-8-">
                                 <div className="msf">
