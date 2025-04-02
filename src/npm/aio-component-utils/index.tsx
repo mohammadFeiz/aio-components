@@ -1,12 +1,13 @@
-import React, { createRef, FC, ReactNode, useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray, Storage } from "../aio-utils";
+import React, { createContext, createRef, FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
+import * as UT from "../aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import { AI_optionProp } from "../aio-input/repo";
-import { AITree } from "../aio-input";
+import { AINumber, AISelect, AIText, AITime, AITree } from "../aio-input";
 import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
 import './repo/index.css';
+import usePopup from "../aio-popup";
 type AI_Indent = {
     level: number, width: number, height: number, rtl: boolean, isLastChild: boolean, isParentLastChild: boolean, row: any, isLeaf: boolean,
     open?: boolean, onToggle?: () => void, toggleIcon?: false | ((p: { row: any, open?: boolean, level: number }) => ReactNode)
@@ -132,7 +133,7 @@ export const AIPanel: FC<I_AIPanel> = ({ text, subtext, before, after, body }) =
 }
 type I_AICard = { text: ReactNode, subtext?: ReactNode, onClick?: () => void, before?: ReactNode, after?: ReactNode, attrs?: any, className?: string, style?: any }
 export const AICard: FC<I_AICard> = ({ text, subtext, onClick = () => { }, before, after, attrs, className, style }) => {
-    const Attrs = AddToAttrs(attrs, { className: ["ai-card", className], style })
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-card", className], style })
     return (
         <div {...Attrs}>
             {before !== undefined && <div className="ai-card-before" onClick={(e) => e.stopPropagation()}>{before}</div>}
@@ -178,8 +179,8 @@ type I_AIApp = {
     children?: ReactNode
 }
 export const AIApp: FC<I_AIApp> = (props) => {
-    const [storage] = useState<Storage>(getStorage)
-    function getStorage(): Storage { return new Storage('aiapp' + props.appId) }
+    const [storage] = useState<UT.Storage>(getStorage)
+    function getStorage(): UT.Storage { return new UT.Storage('aiapp' + props.appId) }
     const sidenav = useSidenav({ sidenav: props.sidenav, appId: props.appId, storage })
     function header_layout() {
         if (!props.header) { return null }
@@ -224,7 +225,7 @@ export const AIApp: FC<I_AIApp> = (props) => {
         if (!props.bottomMenu) { return null }
         return (<AIBottomMenu bottomMenu={props.bottomMenu} />)
     }
-    const attrs = AddToAttrs(props.attrs, { className: 'ai-app' })
+    const attrs = UT.AddToAttrs(props.attrs, { className: 'ai-app' })
     return (
         <div {...attrs}>
             {body_layout()}
@@ -233,7 +234,7 @@ export const AIApp: FC<I_AIApp> = (props) => {
         </div>
     )
 }
-const useSidenav = (props: { sidenav?: I_AIApp["sidenav"], appId: string, storage: Storage }) => {
+const useSidenav = (props: { sidenav?: I_AIApp["sidenav"], appId: string, storage: UT.Storage }) => {
     const snRes = useRef<any>()
     const [active, setActive] = useState<AI_sidenavItem | undefined>(getSidenavItem)
     function changeActive(active: AI_sidenavItem) {
@@ -279,7 +280,7 @@ const AIBottomMenu: FC<AI_BottomMenu> = ({ bottomMenu }) => {
     function item_layout(item: any) {
         if (getProps(item,['show']).show === false) { return null }
         const {value,text,uptext,subtext,active,before,after,attrs,className,style} = getProps(item,['value','text','uptext','subtext','active','before','after','show','attrs','className','style'])
-        const Attrs = AddToAttrs(attrs,{
+        const Attrs = UT.AddToAttrs(attrs,{
             className:['ai-app-bottom-menu-option',active?'active':undefined,className],
             style,attrs:{onClick:()=>{if(option.onClick){option.onClick(item)}}}
         })
@@ -378,7 +379,7 @@ export const Sidenav: FC<AI_Sidenav> = (props) => {
         ...defaultOption,
         className: (option, { level }) => `ai-sidenav-${level === 0 ? 'item' : 'sub-item'}${value !== undefined && option.value === value ? ' active' : ''}`
     }
-    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] })
+    const attrs = UT.AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] })
     return (
         <div {...attrs}>
             {
@@ -434,7 +435,7 @@ export const MonthCells: FC<I_MonthCells> = ({ year, month, cellContent, weekDay
         )
     }
     function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o, i) => <div key={i} className=""></div>) }
-    function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
+    function cells_layout() { return UT.GetArray(dateInfo.monthDaysLength).map((day: number) => cell_layout(day + 1)) }
     function cell_layout(day: number) {
         const date = [year, month, day];
         const weekDayIndex: number = DATE.getWeekDay(date).index;
@@ -524,7 +525,7 @@ export const NodeAttrs = (p: { node: I_node, parentNode?: I_node, isRoot?: boole
         }
         return [nodeClassName, rootClassName, p.node.className, scrollClassName, alignClassName, ...visibilityClassNames]
     }
-    return AddToAttrs(p.node.attrs, { className: NodeClassNames(), style: NodeStyle() })
+    return UT.AddToAttrs(p.node.attrs, { className: NodeClassNames(), style: NodeStyle() })
 }
 export const Node: FC<{
     node: I_node, parentNode?: I_node, level: number, index: number, updateNode?: (p: { node: I_node, level: number, parentNode?: I_node }) => I_node
@@ -621,4 +622,207 @@ export class Flip extends React.Component<I_Flip> {
             </div>
         );
     }
+}
+type I_filter_operator = 'less' | 'more' | 'equal' | 'notEqual' | 'contain' | 'notContain'
+type I_filterTrans = (key: I_filter_operator) => string
+export type I_filter = {
+    columnId: string,
+    operator: I_filter_operator,
+    value: any,
+    type:'text' | 'number' | 'month' | 'day' | 'hour' | 'minute'
+}
+type I_filterType = 'text' | 'number' | 'month' | 'day' | 'hour' | 'minute'
+type I_Filterbar<T> = {
+    fa?: boolean,
+    columns: T[],
+    columnOption: {
+        text: (column: T) => string,
+        id: (column: T) => string,
+        type:(column:T)=>I_filterType
+    },
+    filters: I_filter[],
+    changeFilters?: (newFilters: I_filter[]) => void
+}
+type I_filterColumn = { text: string, id: string,type:I_filterType }
+type I_filterContext = {
+    addFilter: () => void,
+    changeFilter: (index: number, newFilter: I_filter) => void,
+    removeFilter: (filter: I_filter) => void,
+    filters: I_filter[],
+    trans: I_filterTrans,
+    getColumnById:(columnId:string)=>I_filterColumn,
+    columns:I_filterColumn[],
+    fa?:boolean,
+    removeIcon:ReactNode,
+    addIcon:ReactNode
+}
+
+export const Filterbar = <T,>(props: I_Filterbar<T>) => {
+    const propsRef = useRef<I_Filterbar<T>>(props)
+    propsRef.current = props;
+    const popup = usePopup()
+    const [columns,setColumns] = useState<I_filterColumn[]>(getColumns)
+    const removeIconRef = useRef<ReactNode>(new UT.GetSvg().getIcon('mdiClose', 0.8)) 
+    const addIconRef = useRef<any>(new UT.GetSvg().getIcon('mdiPlusThick', 0.7))
+    useEffect(()=>{
+        setColumns(getColumns())
+    },[props.columns])
+    function getColumns() {
+        return props.columns.map((col, i) => {
+            const text = props.columnOption.text(col);
+            const id = props.columnOption.id(col);
+            const type = props.columnOption.type(col);
+            return { text, id,type }
+        })
+    }
+    if (!columns.length) {return null}
+    const trans: I_filterTrans = (key) => {
+        const { fa } = propsRef.current;
+        const dic: { [key in I_filter_operator]: string } = {
+            'less': fa ? 'کوچک تر از' : 'less than',
+            'more': fa ? 'بزرگتر از' : 'more than',
+            'equal': fa ? 'برابر' : 'equal',
+            'notEqual': fa ? 'مخالف' : 'not equal',
+            'contain': fa ? 'شامل باشد' : 'contain',
+            'notContain': fa ? 'شامل نباشد' : 'not contain'
+        }
+        return dic[key]
+    }
+    const addFilter = () => {
+        const { filters, changeFilters } = propsRef.current;
+        if(!changeFilters){return}
+        const newFilters: I_filter[] = [{ value: '', operator: 'contain', columnId: columns[0].id,type:columns[0].type }, ...filters]
+        changeFilters(newFilters)
+    }
+    const changeFilter = (index: number, newFilter: I_filter) => {
+        const { filters, changeFilters } = propsRef.current;
+        if(!changeFilters){return}
+        const newFilters = filters.map((o, i) => i === index ? newFilter : o)
+        changeFilters(newFilters)
+    }
+    const removeFilter = (filter: I_filter) => {
+        const { changeFilters, filters } = propsRef.current;
+        if(!changeFilters){return}
+        changeFilters(filters.filter((o) => o.columnId !== filter.columnId))
+    }
+    const getColumnById = (columnId:string)=>columns.find((o)=>o.id === columnId) as I_filterColumn
+    return (
+        <FilterContextProvider value={{ 
+            addFilter, changeFilter, removeFilter, filters: props.filters, trans,getColumnById,columns,fa:props.fa,
+            addIcon:addIconRef.current,
+            removeIcon:removeIconRef.current 
+        }}>
+            <div className="aio-filter">
+                <button
+                    className="aio-filter-button"
+                    onClick={() => popup.addModal({header: { title: 'Filters' }, position: 'center',body:<FilterModal/>})}
+                >{new UT.GetSvg().getIcon('mdiFilter', 0.7)}</button>
+                <div className="aio-filter-tags">
+                    {props.filters.map((filter, i) => <FilterTag key={i} filter={filter} />)}
+                </div>
+            </div>
+            {popup.render()}
+        </FilterContextProvider>
+    )
+}
+const FilterTag: FC<{ filter: I_filter}> = ({ filter }) => {
+    const {removeFilter,getColumnById,trans} = useFilterContext()
+    const column = getColumnById(filter.columnId)
+    return (
+        <div className="aio-filter-tag" onClick={()=>removeFilter(filter)}>
+            <div className="aio-filter-tag-column">{column.text}</div>
+            <div className="aio-filter-tag-operator">{trans(filter.operator)}</div>
+            <div className="aio-filter-tag-value">{filter.value}</div>
+            {new UT.GetSvg().getIcon('mdiClose', 0.6)}
+        </div>
+    )
+}
+
+const FilterContext = createContext<I_filterContext>({} as any)
+const FilterContextProvider = (props: { children: ReactNode, value: I_filterContext }) => <FilterContext.Provider value={props.value}>{props.children}</FilterContext.Provider>
+const useFilterContext = () => useContext(FilterContext)
+const FilterModal: FC = () => <div className="aio-filter-modal"><FilterHeader /><FilterBody /></div>
+const FilterHeader = () => {
+    const { addFilter,addIcon } = useFilterContext()
+    return (
+        <div className="aio-filter-header">
+            <button className="aio-filter-add-button" onClick={addFilter}>{addIcon} Add Filter</button>
+        </div>
+    )
+}
+const FilterBody = () => {
+    const { filters } = useFilterContext()
+    return (
+        <div className="aio-filter-body">
+            {filters.map((filter, i) => <FilterRow key={i} filter={filter} index={i} />)}
+        </div>
+    )
+}
+const FilterRow: FC<{ filter: I_filter, index: number }> = ({ filter, index }) => {
+    const { columns, changeFilter, removeFilter, trans,getColumnById,removeIcon } = useFilterContext()
+    const [operators,setOperators] = useState<I_filter_operator[]>(getOperators)
+    useEffect(()=>{
+        setOperators(getOperators())
+    },[filter.type])
+    function isOperatorActive(operator: I_filter_operator) {
+        if (operator === 'less') { return filter.type !== 'text' }
+        if (operator === 'more') { return filter.type !== 'text' }
+        if (operator === 'contain') { return filter.type === 'text' }
+        if (operator === 'notContain') { return filter.type === 'text' }
+        return true
+    }
+    function getOperators() {
+        const res: I_filter_operator[] = []
+        const operators: I_filter_operator[] = ['less', 'more', 'equal', 'notEqual', 'contain', 'notContain']
+        for (let i = 0; i < operators.length; i++) { if (isOperatorActive(operators[i])) { res.push(operators[i]) } }
+        return res
+    }
+    const isTime = ['month', 'day', 'hour', 'minute'].indexOf(filter.type || '') !== -1;
+    return (
+        <div className="aio-filter-row">
+            <AISelect
+                options={columns}
+                value={filter.columnId}
+                option={{ text: (column:I_filterColumn) => column.text, value: (column:I_filterColumn) => column.id }}
+                onChange={(columnId) => {
+                    const newColumn = getColumnById(columnId);
+                    changeFilter(index, { ...filter, columnId,type:newColumn.type })
+                }}
+            />
+            <AISelect
+                options={operators} value={filter.operator}
+                option={{ text: (operator) => trans(operator), value: (operator) => operator }}
+                onChange={(operator) => changeFilter(index, { ...filter, operator })}
+            />
+            {filter.type === 'text' && <AIText value={filter.value} onChange={(value) => changeFilter(index, { ...filter, value })} />}
+            {filter.type === 'number' && <AINumber value={filter.value} onChange={(value) => changeFilter(index, { ...filter, value })} />}
+            {isTime && <TimeInput filter={filter} index={index} />}
+            <div className="aio-filter-remove-button" onClick={() => removeFilter(filter)}>{removeIcon}</div>
+        </div>
+    )
+}
+
+const TimeInput: FC<{ filter: I_filter, index: number }> = ({ filter, index }) => {
+    const { changeFilter,fa } = useFilterContext()
+    const [unit] = useState<any>(getUnit)
+    function getUnit() {
+        const res: any = {year: true,month: true}
+        if (filter.type !== 'month') {
+            res.day = true
+            if (filter.type !== 'day') {
+                res.hour = true
+                if (filter.type !== 'hour') {
+                    res.minute = true
+                }
+            }
+        }
+        return res
+    }
+    const DATE = new AIODate()
+    return (
+        <AITime
+            jalali={!!fa} unit={unit} value={filter.value}
+            onChange={(value) => changeFilter(index, { ...filter, value: DATE.getTime(value) })}
+        />
+    )
 }

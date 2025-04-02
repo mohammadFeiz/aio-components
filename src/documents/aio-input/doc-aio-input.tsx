@@ -4,7 +4,6 @@ import RangeExamples from "./range-examples"
 import InputExamples from "./input-examples"
 import './index.css';
 import TreeExamples from "./tree-examples";
-import TableExamples from "./table-examples";
 import AcardionExamples from "./acardion-examples";
 import ListExamples from "./list-examples";
 import SelectExamples from "./select-examples";
@@ -24,7 +23,6 @@ export default function DOC_Tree(props:any) {
                 { text: '8 - date', value: 'date', render: () => <InputExamples type='date' key='date'/> },
                 { text: '9 - time', value: 'time', render: () => <InputExamples type='time' key='time'/> },
                 { text: '10 - tree', value: 'tree', render: () => <TreeExamples/> },
-                { text: '11 - table', value: 'table', render: () => <TableExamples/> },
                 { text: '12 - acardion', value: 'acardion', render: () => <AcardionExamples/> },
                 { text: '13 - list', value: 'list', render: () => <ListExamples/> },
                 { text: '15 - select', value: 'select', render: () => <SelectExamples type='select' key='select'/> },

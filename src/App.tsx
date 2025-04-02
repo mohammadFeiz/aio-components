@@ -31,10 +31,12 @@ import Freelancer from './documents/freelancer';
 import Grid from './documents/data-grid'
 import Kits from "./documents/kits/kit1/index.tsx";
 import NovaChart from './documents/novachart';
+import DOC_AIOTable from './documents/aio-table';
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
     'aio-input':DOC_AIOInput,
+    'aio-table':DOC_AIOTable,
     'aio-validation':DOC_AIOValidation,
     'aio-swip':DOC_AIOSwip,
     'aio-floater':DOC_AIOFloater,

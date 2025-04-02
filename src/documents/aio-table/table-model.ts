@@ -1,10 +1,11 @@
-export type I_table_model = {
+export type I_table_row = {
     name: string,
     gender: string,
     age: number,
     date: string,
+    active?:boolean
 }
-let model:I_table_model[] = [
+let model:I_table_row[] = [
     {
         "name": "hot",
         "gender": "female",

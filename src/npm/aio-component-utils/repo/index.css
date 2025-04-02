@@ -427,3 +427,84 @@ code[class*="language-"] *::selection {
 .tick-credits{
     display:none !important
 }
+
+.aio-filter{
+    background: #f8f8f8;
+    display: flex;
+    align-items: center;
+    border-bottom:1px solid #eee;
+    padding:6px 0;
+}
+.aio-filter-button{
+    background:none;
+    border:none;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width:36px;
+    height:100%;
+}
+.aio-filter-tags{
+    left: 0;
+    display: flex;
+    flex:1;
+    align-items: center;
+    z-index: 100;
+    box-sizing: border-box;
+    padding:0 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap:4px;
+}
+.aio-filter-tag{
+    background:#eee;
+    cursor: pointer;
+    padding:0 8px;
+    height:24px;
+    border-radius:24px;
+    display:flex;
+    align-items: center;
+    gap:4px;
+    flex-shrink: 0;
+}
+.aio-filter-tag-column{
+    font-weight: bold;
+}
+.aio-filter-tag-operator{
+    color:#0069ff;
+}
+.aio-filter-tag-value{
+    color:orange;
+}
+.aio-filter-modal{
+    padding:12px;
+    width: 100vw;
+    max-width:480px;
+}
+.aio-filter-add-button{
+    display:flex;
+    align-items: center;
+    gap:6px;
+    border:none;
+    background:none;
+    height:36px;
+}
+.aio-filter-body{
+    display: flex;
+    flex-direction: column;
+    gap:6px;
+}
+.aio-filter-row{
+    display:flex;
+    align-items: center;
+    gap:6px;
+}
+.aio-filter-row .aio-input{
+    flex:1;
+}
+.aio-filter-remove-button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

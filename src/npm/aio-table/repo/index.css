@@ -1,0 +1,257 @@
+:root {
+    --aio-table-color: #0069ff;
+    --aio-table-transition: 0.3s;
+}
+
+.aio-table-rtl {
+    direction: rtl;
+}
+
+.aio-table .aio-table-text {
+    height: 100%;
+}
+
+.aio-table-color input {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.aio-table-color img {
+    display: none;
+}
+
+.aio-table-color input::-webkit-color-swatch {
+    border: none;
+    padding: 0;
+}
+
+.aio-table {
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 12px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #eee;
+    color: #888;
+    padding: 0;
+    border: 1px solid #eee;
+    gap: 0;
+}
+
+.aio-table .aio-table {
+    color: inherit;
+}
+
+.aio-table-unit {
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+}
+
+.aio-table-header {
+    top: 0;
+    display: flex;
+    position: sticky;
+    position: -webkit-sticky;
+    z-index: 10;
+    background: #f8f8f8;
+    min-width: fit-content;
+    border-bottom: 1px solid #eee;
+}
+
+.aio-table-title {
+    padding: 0 12px;
+    font-weight: bold;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.aio-table-title-justify {
+    padding: 0;
+    justify-content: center;
+}
+
+.aio-table-row {
+    display: flex;
+    min-width: fit-content;
+    background: #fff;
+}
+.aio-table-cell {
+    padding: 6px 12px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 24px;
+    gap:6px;
+}
+
+.aio-table-cell-before{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-table-cell-after{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.aio-table-cell-value{
+    flex:1;
+    display:flex;
+    flex-direction: column;
+}
+.aio-table-cell-value.has-subtext:after {
+    content: attr(data-subtext);
+    font-size: 85%;
+    opacity: 0.7;
+}
+.aio-table-cell .aio-table-container {
+    width: 100%;
+}
+
+.aio-table-cell .aio-table {
+    width: 100%;
+    background: none;
+    border: none;
+    border-radius: 0;
+    background: none;
+    height: 100%;
+    min-height: 30px;
+}
+
+.aio-table-cell .aio-table input {
+    padding: 0;
+    background: none;
+}
+
+.aio-table-cell-justify.aio-table-cell{
+    padding: 0 !important;
+}
+.aio-table-cell-justify .aio-table-cell-value{
+    padding: 0;
+    align-items: center;
+}
+
+.aio-table-cell-justify > input {
+    text-align: center;
+}
+
+.aio-table-toolbar {
+    left: 0;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    background: #f8f8f8;
+    z-index: 100;
+    box-sizing: border-box;
+    min-height: 36px;
+}
+
+.aio-table-toolbar-content {
+    font-weight: bold;
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.aio-table-toolbar-button {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    border: none;
+    background: none;
+}
+
+.aio-table-toolbar-popover-header {
+    padding: 6px;
+    min-height: unset;
+}
+
+.aio-table-remove {
+    border: none;
+    width: 36px;
+    background: none;
+    color: inherit;
+    align-items: center;
+    display: flex;
+}
+
+.aio-table-remove-title {
+    border: none;
+    width: 36px;
+    background: none;
+    color: inherit;
+}
+
+.aio-table-border-h {
+    height: 1px;
+    flex-shrink: 0;
+}
+
+.aio-table-border-v {
+    width: 1px;
+    flex-shrink: 0;
+}
+
+.aio-table-search {
+    flex: 1;
+    height: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.aio-table-search .aio-table {
+    background: #fff;
+    border: none;
+    min-height: 30px;
+}
+
+.aio-table-paging {
+    padding: 6px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid #ddd;
+}
+
+.aio-table-paging-button {
+    border: 1px solid #ddd;
+    background: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin: 0 3px;
+}
+
+.aio-table-paging-button-hidden {
+    opacity: 0;
+}
+
+.aio-table-paging-size {
+    min-width: 60px;
+}
+.aio-table-paging-button.active {
+    border: 1px solid #0069ff;
+    color: #fff;
+    background: #0069ff;
+    opacity: 1;
+}

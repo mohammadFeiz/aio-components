@@ -1,8 +1,9 @@
 import * as ReactDOMServer from 'react-dom/server';
-import { ReactNode, useRef } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import MockAdapter from 'axios-mock-adapter';
 import Axios from 'axios';
 import $ from 'jquery';
+import { AISelect } from '../aio-input';
 type I_dateObject = { year?: number, month?: number, day?: number, hour?: number, minute?: number };
 export type I_Date = string | number | Date | I_dateObject | number[];
 export function HasClass(target: any, className: string) {
@@ -1217,6 +1218,7 @@ class GetSvg {
     mdiDelete = (color?: string) => (<><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" style={this.getStyle(color)}></path></>)
     mdiCircleSmall = (color?: string) => (<><path d="M12,10A2,2 0 0,0 10,12C10,13.11 10.9,14 12,14C13.11,14 14,13.11 14,12A2,2 0 0,0 12,10Z" style={this.getStyle(color)}></path></>)
     mdiMicrophoneOutline = (color?: string) => (<><path d="M17.3,11C17.3,14 14.76,16.1 12,16.1C9.24,16.1 6.7,14 6.7,11H5C5,14.41 7.72,17.23 11,17.72V21H13V17.72C16.28,17.23 19,14.41 19,11M10.8,4.9C10.8,4.24 11.34,3.7 12,3.7C12.66,3.7 13.2,4.24 13.2,4.9L13.19,11.1C13.19,11.76 12.66,12.3 12,12.3C11.34,12.3 10.8,11.76 10.8,11.1M12,14A3,3 0 0,0 15,11V5A3,3 0 0,0 12,2A3,3 0 0,0 9,5V11A3,3 0 0,0 12,14Z" style={this.getStyle(color)}></path></>)
+    mdiFilter = (color?:string)=>(<><path d="M14,12V19.88C14.04,20.18 13.94,20.5 13.71,20.71C13.32,21.1 12.69,21.1 12.3,20.71L10.29,18.7C10.06,18.47 9.96,18.16 10,17.87V12H9.97L4.21,4.62C3.87,4.19 3.95,3.56 4.38,3.22C4.57,3.08 4.78,3 5,3V3H19V3C19.22,3 19.43,3.08 19.62,3.22C20.05,3.56 20.13,4.19 19.79,4.62L14.03,12H14Z" style={this.getStyle(color)}></path></>)
 }
 export { GetSvg }
 
@@ -2189,4 +2191,109 @@ export function AddQueryParamsToUrl(url:string, params:{[key:string]:any}, prefi
         url += (url.includes('?') ? '&' : '?') + queryParts.join('&');
     }
     return url;
+}
+export type I_sort<T> = {
+    active?: boolean,
+    dir?: 'dec' | 'inc',
+    title?: ReactNode,
+    sortId: string,
+    getValue?: (row: T) => any
+}
+export type I_sortHook<T> = {
+    sorts: I_sort<T>[],
+    setSorts: (v: I_sort<T>[]) => void,
+    renderSortButton: () => ReactNode,
+    getSortedRows: (rows: T[]) => T[],
+    changeSort: (sortId: string, changeObject: Partial<I_sort<T>>) => void,
+    changeSorts: (sorts: I_sort<T>[]) => Promise<void>,
+}
+
+export const useSort = <T,>(p:{sorts:I_sort<any>[],rows:any[],onChangeRows?:(rows:any)=>void,onChangeSort?:(sorts:I_sort<T>[])=>Promise<boolean | undefined>}): I_sortHook<T> => {
+    let [sorts, setSorts] = useState<I_sort<T>[]>(p.sorts)
+    const getIconRef = useRef<GetSvg["getIcon"]>(new GetSvg().getIcon);
+    const isInitSortExecutedRef = useRef<boolean>(false)
+    const getSortedRows = (rows: T[]): T[] => {
+        if (isInitSortExecutedRef.current) { return rows }
+        if (p.onChangeSort) { return rows }
+        let activeSorts = sorts.filter((sort) => sort.active !== false);
+        if (!activeSorts.length || !rows.length) { return rows }
+        isInitSortExecutedRef.current = true;
+        let sortedRows = sortRows(rows, activeSorts);
+        if (p.onChangeRows) { p.onChangeRows(sortedRows); }
+        return sortedRows;
+    }
+
+    const sortRows = (rows: T[], sorts: I_sort<T>[]): T[] => {
+        if (!rows) { return [] }
+        if (!sorts || !sorts.length) { return rows }
+        return rows.sort((a, b) => {
+            for (let i = 0; i < sorts.length; i++) {
+                let { dir, getValue } = sorts[i];
+                if (!getValue) { return 0 }
+                let aValue = getValue(a), bValue = getValue(b);
+                if (aValue < bValue) { return -1 * (dir === 'dec' ? -1 : 1); }
+                if (aValue > bValue) { return 1 * (dir === 'dec' ? -1 : 1); }
+                if (i === sorts.length - 1) { return 0; }
+            }
+            return 0;
+        });
+    }
+
+    const changeSort = (sortId: string, changeObject: Partial<I_sort<T>>) => {
+        let newSorts = sorts.map((sort) => {
+            if (sort.sortId === sortId) {
+                let newSort = { ...sort, ...changeObject }
+                return newSort;
+            }
+            return sort
+        });
+        changeSorts(newSorts)
+    }
+    const changeSorts = async (sorts: I_sort<T>[]): Promise<void> => {
+        if (p.onChangeSort) {
+            let res = await p.onChangeSort(sorts)
+            if (res !== false) { setSorts(sorts); }
+        }
+        else {
+            setSorts(sorts);
+            let activeSorts = sorts.filter((sort) => sort.active !== false);
+            if (activeSorts.length && !!p.onChangeRows) {
+                p.onChangeRows(sortRows(p.rows, activeSorts))
+            }
+        }
+    }
+    const renderSortArrow = (option: I_sort<T>) => {
+        let { dir = 'dec', sortId } = option;
+        return (
+            <div onClick={(e) => {
+                e.stopPropagation();
+                if (!sortId) { return }
+                changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' })
+            }}>
+                {getIconRef.current(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8)}
+            </div>
+        )
+    }
+    const renderSortButton = () => {
+        if (!sorts.length) { return null }
+        return (
+            <AISelect
+                key='sortbutton' caret={false} options={sorts}
+                option={{
+                    text: (option) => option.title, checked: (option) => !!option.active, close: () => false, value: (option) => option.sortId,
+                    after: (option) => renderSortArrow(option),
+                    onClick: (option: I_sort<T>) => changeSort(option.sortId, { active: !option.active })
+                }}
+                popover={{
+                    header: { title: 'Sort', onClose: false },
+                    setAttrs: (key) => { if (key === 'header') { return { className: 'aio-table-toolbar-popover-header' } } },
+                    limitTo: '.aio-table'
+                }}
+                attrs={{ className: 'aio-table-toolbar-button' }}
+                text={getIconRef.current('mdiSort', 0.7)}
+                onSwap={(newSorts, from, to) => changeSorts(newSorts)}
+            />
+        )
+    }
+    return { sorts, setSorts, renderSortButton, getSortedRows, changeSort, changeSorts }
 }

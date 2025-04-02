@@ -535,6 +535,7 @@ function Confirm() {
     function addConfirm() {
         popup.addConfirm({
             title: 'Confirm text',
+            text:'confirm text',
             onSubmit: async () => {
                 alert('yes')
                 return true

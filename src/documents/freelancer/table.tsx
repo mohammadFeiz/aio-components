@@ -8,9 +8,11 @@ export const Table: FC = () => {
         <AIOTable
             value={gridHook.grid}
             headerAttrs={{style: {background: '#FFEAE9'}}}
-            rowAttrs={({ rowIndex }) => ({
-                style: {height: 48,background: rowIndex % 2 !== 0 ? '#f8f8f8' : '#fff'}
-            })}
+            rowOption={{
+                attrs:({ rowIndex }) => ({
+                    style: {height: 48,background: rowIndex % 2 !== 0 ? '#f8f8f8' : '#fff'}
+                })
+            }}
             getValue={{
                 date: ({ row }) => {
                     const { year, month, day } = row.createDate;
