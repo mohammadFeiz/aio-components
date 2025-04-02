@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import DOC from "../../resuse-components/Doc";
-import AIOTable, { I_column, I_paging, I_table_filter } from "../../npm/aio-table";
+import AIOTable, { I_table_column, I_table_filter, I_table_paging } from "../../npm/aio-table";
 import { Code } from "../../npm/aio-component-utils";
 import model, { I_table_row } from './table-model.ts';
 import Icon from "@mdi/react";
@@ -59,13 +59,13 @@ const Performance: FC = () => {
         }
         return rows
     }
-    let [columns] = useState<I_column<any>[]>([
+    let [columns] = useState<I_table_column<any>[]>([
         { title: '#', template: ({rowIndex}) => rowIndex + 1, width: 68 },
         { title: 'Name', value: 'row.name' },
         { title: 'Gender', value: 'row.gender' },
         { title: 'Age', value: 'row.age' },
     ])
-    let [paging, setPaging] = useState<I_paging>({ size: 100, number: 1, sizes: [100, 200, 300] })
+    let [paging, setPaging] = useState<I_table_paging>({ size: 100, number: 1, sizes: [100, 200, 300] })
     return (
         <div className='example'>
             <AIOTable<any>
@@ -686,7 +686,7 @@ const HeaderAttrs:FC = () => {
 }
 const Paging:FC = () => {
     let [rows,setRows] = useState<I_table_row[]>(model)
-    let [paging,setPaging] = useState<I_paging>({
+    let [paging,setPaging] = useState<I_table_paging>({
         number:1,
         size:15,
         sizes:[15,30,50]
@@ -713,7 +713,7 @@ const Paging:FC = () => {
                 Code(`
 
 const [rows,setRows] = useState<I_table_row[]>(model)
-const [paging,setPaging] = useState<I_paging>({
+const [paging,setPaging] = useState<I_table_paging>({
     number:1,
     size:15,
     sizes:[15,30,50]
@@ -743,7 +743,7 @@ return (
 }
 const Paging_ServerSide:FC = () => {
     let [rows,setRows] = useState<any[]>([])
-    let [paging,setPaging] = useState<I_paging>({
+    let [paging,setPaging] = useState<I_table_paging>({
         serverSide:true,
         number:1,
         size:15,
@@ -781,7 +781,7 @@ const Paging_ServerSide:FC = () => {
             {
                 Code(`
 const [rows,setRows] = useState<any[]>([])
-const [paging,setPaging] = useState<I_paging>({
+const [paging,setPaging] = useState<I_table_paging>({
     serverSide:true,
     number:1,
     size:15,
@@ -853,7 +853,7 @@ return (
 }
 const RowsTemplate:FC = () => {
     let [rows,setRows] = useState<I_table_row[]>(model)
-    let [paging,setPaging] = useState<I_paging>({
+    let [paging,setPaging] = useState<I_table_paging>({
         size:10,
         number:1,
     })

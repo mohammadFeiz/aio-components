@@ -508,3 +508,50 @@ code[class*="language-"] *::selection {
     align-items: center;
     justify-content: center;
 }
+.aio-paging {
+    padding: 6px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid #ddd;
+}
+
+.aio-paging-button {
+    border: 1px solid #ddd;
+    background: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin: 0 3px;
+}
+
+.aio-paging-button-hidden {
+    opacity: 0;
+}
+
+.aio-paging-size {
+    min-width: 60px;
+    padding:0;
+}
+.aio-paging-button.active {
+    border: 1px solid #0069ff;
+    color: #fff;
+    background: #0069ff;
+    opacity: 1;
+}
+.aio-sort-button {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    border: none;
+    background: none;
+}
+.aio-sort-header {
+    padding: 6px;
+    min-height: unset;
+}

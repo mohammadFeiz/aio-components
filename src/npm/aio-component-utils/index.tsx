@@ -826,3 +826,205 @@ const TimeInput: FC<{ filter: I_filter, index: number }> = ({ filter, index }) =
         />
     )
 }
+export type I_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
+export type I_pagingHook<T> = {
+    render: () => ReactNode;
+    getPagedRows: (rows: T[]) => T[];
+    paging: I_paging | undefined
+}
+
+export const usePaging = <T,>(p:{rows:T[],paging?:I_paging,onChange?:(newPaging:I_paging)=>void}): I_pagingHook<T> => {
+    const timeoutRef = useRef<any>()
+    const startRef = useRef<any>()
+    const endRef = useRef<any>()
+    const pagesRef = useRef<any>()
+    const getPaging = () => {
+        const { paging } = p
+        return paging ? fix(paging) : undefined
+    }
+    let [paging, setPaging] = useState<I_paging | undefined>(getPaging);
+    useEffect(() => {
+        if (paging) { setPaging(fix(paging)) }
+    }, [JSON.stringify(p.paging)])
+
+    function fix(paging: I_paging): I_paging {
+        if (typeof p.onChange !== 'function') {
+            alert('aio-table error => in type table you set paging but forget to set onChangePaging function prop to aio input')
+            return { number: 0, size: 0 };
+        }
+        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
+        if (!serverSide) {
+            length = p.rows.length
+        }
+        if (sizes.indexOf(size) === -1) { size = sizes[0] }
+        let pages = Math.ceil(length / size);
+        number = number > pages ? pages : number;
+        number = number < 1 ? 1 : number;
+        let start = number - 3, end = number + 3;
+        startRef.current = start; endRef.current = end; pagesRef.current = pages;
+        return { ...paging, length, number, size, sizes }
+    }
+
+    const changePaging = (obj: Partial<I_paging>) => {
+        if (!paging) { return }
+        let newPaging: I_paging = fix({ ...paging, ...obj });
+        setPaging(newPaging);
+        if (p.onChange) {
+            if (newPaging.serverSide) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = setTimeout(() => {
+                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
+                    if (p.onChange) { p.onChange(newPaging) }
+                }, 800);
+            }
+            else { p.onChange(newPaging) }
+        }
+    }
+    const getPagedRows = (rows: T[]) => {
+        if (!paging || paging.serverSide) { return rows }
+        const { size, number } = paging
+        return rows.slice((number - 1) * size, number * size)
+    }
+    const render = () => {
+        if (!paging) { return null }
+        if (!p.rows.length) { return null }
+        let { number, size, sizes } = paging;
+        let buttons = [];
+        let isFirst = true
+        for (let i = startRef.current; i <= endRef.current; i++) {
+            if (i < 1 || i > pagesRef.current) {
+                buttons.push(<button key={i} className={'aio-paging-button aio-paging-button-hidden'}>{i}</button>)
+            }
+            else {
+                let index: number;
+                if (isFirst) { index = 1; isFirst = false; }
+                else if (i === Math.min(endRef.current, pagesRef.current)) { index = pagesRef.current }
+                else { index = i; }
+                buttons.push(<button key={index} className={'aio-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
+            }
+        }
+        function changeSizeButton() {
+            if (!sizes || !sizes.length) { return null }
+            return (
+                <AISelect
+                    attrs={{ className: 'aio-paging-button aio-paging-size' }} value={size} 
+                    options={sizes} option={{ text: 'option', value: 'option' }} justify={true}
+                    onChange={(value) => changePaging({ size: value })} popover={{ fitHorizontal: true }}
+                />
+            )
+        }
+        return (
+            <div className='aio-paging'>
+                {buttons}
+                {changeSizeButton()}
+            </div>
+        )
+    }
+    return { render, getPagedRows, paging }
+}
+
+export type I_sort<T> = {
+    active?: boolean,
+    dir?: 'dec' | 'inc',
+    title?: ReactNode,
+    sortId: string,
+    getValue?: (row: T) => any
+}
+export type I_sortHook<T> = {
+    sorts: I_sort<T>[],
+    setSorts: (v: I_sort<T>[]) => void,
+    renderSortButton: () => ReactNode,
+    getSortedRows: (rows: T[]) => T[],
+    changeSort: (sortId: string, changeObject: Partial<I_sort<T>>) => void,
+    changeSorts: (sorts: I_sort<T>[]) => Promise<void>,
+}
+
+export const useSort = <T,>(p:{sorts:I_sort<any>[],rows:any[],onChangeRows?:(rows:any)=>void,onChangeSort?:(sorts:I_sort<T>[])=>Promise<boolean | undefined>}): I_sortHook<T> => {
+    let [sorts, setSorts] = useState<I_sort<T>[]>(p.sorts)
+    const getIconRef = useRef<GetSvg["getIcon"]>(new GetSvg().getIcon);
+    const isInitSortExecutedRef = useRef<boolean>(false)
+    const getSortedRows = (rows: T[]): T[] => {
+        if (isInitSortExecutedRef.current) { return rows }
+        if (p.onChangeSort) { return rows }
+        let activeSorts = sorts.filter((sort) => sort.active !== false);
+        if (!activeSorts.length || !rows.length) { return rows }
+        isInitSortExecutedRef.current = true;
+        let sortedRows = sortRows(rows, activeSorts);
+        if (p.onChangeRows) { p.onChangeRows(sortedRows); }
+        return sortedRows;
+    }
+
+    const sortRows = (rows: T[], sorts: I_sort<T>[]): T[] => {
+        if (!rows) { return [] }
+        if (!sorts || !sorts.length) { return rows }
+        return rows.sort((a, b) => {
+            for (let i = 0; i < sorts.length; i++) {
+                let { dir, getValue } = sorts[i];
+                if (!getValue) { return 0 }
+                let aValue = getValue(a), bValue = getValue(b);
+                if (aValue < bValue) { return -1 * (dir === 'dec' ? -1 : 1); }
+                if (aValue > bValue) { return 1 * (dir === 'dec' ? -1 : 1); }
+                if (i === sorts.length - 1) { return 0; }
+            }
+            return 0;
+        });
+    }
+
+    const changeSort = (sortId: string, changeObject: Partial<I_sort<T>>) => {
+        let newSorts = sorts.map((sort) => {
+            if (sort.sortId === sortId) {
+                let newSort = { ...sort, ...changeObject }
+                return newSort;
+            }
+            return sort
+        });
+        changeSorts(newSorts)
+    }
+    const changeSorts = async (sorts: I_sort<T>[]): Promise<void> => {
+        if (p.onChangeSort) {
+            let res = await p.onChangeSort(sorts)
+            if (res !== false) { setSorts(sorts); }
+        }
+        else {
+            setSorts(sorts);
+            let activeSorts = sorts.filter((sort) => sort.active !== false);
+            if (activeSorts.length && !!p.onChangeRows) {
+                p.onChangeRows(sortRows(p.rows, activeSorts))
+            }
+        }
+    }
+    const renderSortArrow = (option: I_sort<T>) => {
+        let { dir = 'dec', sortId } = option;
+        return (
+            <div onClick={(e) => {
+                e.stopPropagation();
+                if (!sortId) { return }
+                changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' })
+            }}>
+                {getIconRef.current(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8)}
+            </div>
+        )
+    }
+    const renderSortButton = (limitTo?:string) => {
+        if (!sorts.length) { return null }
+        return (
+            <AISelect
+                key='sortbutton' caret={false} options={sorts}
+                option={{
+                    text: (option) => option.title, checked: (option) => !!option.active, close: () => false, value: (option) => option.sortId,
+                    after: (option) => renderSortArrow(option),
+                    onClick: (option: I_sort<T>) => changeSort(option.sortId, { active: !option.active })
+                }}
+                popover={{
+                    header: { title: 'Sort', onClose: false },
+                    setAttrs: (key) => { if (key === 'header') { return { className: 'aio-sort-header' } } },
+                    limitTo: limitTo || '.aio-table'
+                }}
+                attrs={{ className: 'aio-sort-button' }}
+                text={getIconRef.current('mdiSort', 0.7)}
+                onSwap={(newSorts, from, to) => changeSorts(newSorts)}
+            />
+        )
+    }
+    return { sorts, setSorts, renderSortButton, getSortedRows, changeSort, changeSorts }
+}

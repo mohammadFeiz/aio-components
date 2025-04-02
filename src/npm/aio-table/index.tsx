@@ -1,20 +1,20 @@
 import { createContext, createRef, FC, Fragment, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import AIOInput, { AISelect, AITYPE } from "../aio-input";
+import AIOInput from "../aio-input";
 import * as UT from './../../npm/aio-utils';
 import usePopup, { I_usePopup } from "../aio-popup";
 import "./repo/index.css"
 import AIODate from "../aio-date";
-import { Filterbar, I_filter } from "../aio-component-utils";
-export type I_table_filter = I_filter
+import { Filterbar, I_filter, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
 type I_rows<T> = { rows: T[], searchedRows: T[], sortedRows: T[], pagedRows: T[] }
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
 type I_rowDetail<T> = { row: T, rowIndex: number, isFirst: boolean, isLast: boolean }
-type I_cellDetail<T> = I_rowDetail<T> & { column: I_column<T>, change: (newRow: T) => void, isDate: boolean }
-export type I_param<T> = { row: T, column: I_column<T>, rowIndex: number }
+type I_cellDetail<T> = I_rowDetail<T> & { column: I_table_column<T>, change: (newRow: T) => void, isDate: boolean }
 type I_rowsIndexDic = { [id: string]: { rowIndex: number, isFirst: boolean, isLast: boolean } }
-export type I_table_sort<T> = UT.I_sort<T>
-export type I_column<T> = {
+export type I_table_paging = I_paging
+export type I_table_sort<T> = I_sort<T>
+export type I_table_filter = I_filter
+export type I_table_column<T> = {
     title?: any,
     sort?: true | I_table_sort<T>,
     filterId?: string,
@@ -34,41 +34,21 @@ export type I_column<T> = {
     titleAttrs?: { [attrs: string]: any },
     type?: 'text' | 'number' | 'month' | 'day' | 'hour' | 'minute'
 }
-type I_context<T> = {
-    popup: I_usePopup,
-    rootProps: I_AIOTable<T>,
-    columns: I_column<T>[],
-    ROWS: I_rows<T>,
-    add: () => void, remove: (row: T, index: number) => void, search: (searchValue: string) => void,
-    exportToExcel: () => void,
-    sortHook: UT.I_sortHook<T>,
-    excelColumns: I_column<T>[],
-    filterColumns: I_column<T>[],
-    tableHook: I_tableHook<T>,
-    getRowsIndexDic: () => I_rowsIndexDic,
-    changeCell: I_changeCell<T>,
-    DragColumns: UT.I_useDrag,
-    getIcon: UT.GetSvg["getIcon"],
-    getTimeText: (column: I_column<T>, value?: any) => string,
-    isDate: (column: I_column<T>) => boolean
-}
-type I_changeCell<T> = (cellDetail: I_cellDetail<T>, cellNewValue: any) => void;
-export type I_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
-export type I_AIOTable<T> = {
+export type I_table<T> = {
     fa?: boolean,
     addText?: ReactNode | ((value: any) => ReactNode),
     columnGap?: number,
-    columns?: I_column<T>[],
+    columns?: I_table_column<T>[],
     excel?: string | ((value: any[]) => any[]),
-    getValue?: { [key: string]: (p: { row: T, column: I_column<T>, rowIndex: number, change: (newRow: T) => void }) => any },
+    getValue?: { [key: string]: (p: { row: T, column: I_table_column<T>, rowIndex: number, change: (newRow: T) => void }) => any },
     headerAttrs?: any,
     onAdd?: () => Promise<T | undefined>,
     onRemove?: (p: { row: T, rowIndex?: number }) => Promise<boolean>,
-    onChangePaging?: (newPaging: I_paging) => void,
+    onChangePaging?: (newPaging: I_table_paging) => void,
     onChangeSort?: (sorts: I_table_sort<T>[]) => Promise<boolean>,
     onSwap?: true | ((newValue: T[], startRow: T, endRow: T) => void),
     onSearch?: true | ((searchValue: string) => void),
-    paging?: I_paging,
+    paging?: I_table_paging,
     removeText?: string,
     rowOption?: {
         before?: I_rowOption<T, ReactNode>,
@@ -76,7 +56,7 @@ export type I_AIOTable<T> = {
         attrs?: I_rowOption<T, { [attrs: string]: any }>,
         template?: I_rowOption<T, ReactNode>
     },
-    cellAttrs?: string | ((p: { row: T, column: I_column<T>, rowIndex: number }) => any)
+    cellAttrs?: string | ((p: { row: T, column: I_table_column<T>, rowIndex: number }) => any)
     rowGap?: number,
     rowsTemplate?: (rows: T[]) => ReactNode,
     toolbar?: ReactNode | (() => ReactNode),
@@ -91,42 +71,56 @@ export type I_AIOTable<T> = {
     filters?:I_table_filter[],
     onChangeFilter?:(newFilters:I_table_filter[])=>undefined | void | I_table_filter[] | true | false
 }
+type I_context<T> = {
+    popup: I_usePopup,
+    rootProps: I_table<T>,
+    columns: I_table_column<T>[],
+    ROWS: I_rows<T>,
+    add: () => void, remove: (row: T, index: number) => void, search: (searchValue: string) => void,
+    exportToExcel: () => void,
+    sortHook: I_sortHook<T>,
+    excelColumns: I_table_column<T>[],
+    filterColumns: I_table_column<T>[],
+    tableHook: I_tableHook<T>,
+    getRowsIndexDic: () => I_rowsIndexDic,
+    changeCell: I_changeCell<T>,
+    DragColumns: UT.I_useDrag,
+    getIcon: UT.GetSvg["getIcon"],
+    getTimeText: (column: I_table_column<T>, value?: any) => string,
+    isDate: (column: I_table_column<T>) => boolean
+}
+type I_changeCell<T> = (cellDetail: I_cellDetail<T>, cellNewValue: any) => void;
 type I_tableHook<T> = {
     getCellValue: (cellDetail: I_cellDetail<T>, cellValue: any, def?: any) => any;
-    getColValue: (column: I_column<T>, field: keyof I_column<T>, def?: any) => any;
+    getColValue: (column: I_table_column<T>, field: keyof I_table_column<T>, def?: any) => any;
     getCellAttrs: (cellDetail: I_cellDetail<T>, cellValue: any) => { [attr: string]: any };
-    getTitleAttrs: (column: I_column<T>) => any;
+    getTitleAttrs: (column: I_table_column<T>) => any;
     getRowAttrs: (rowDetail: I_rowDetail<T>) => { [attr: string]: any };
-}
-type I_pagingHook<T> = {
-    render: () => ReactNode;
-    getPagedRows: (rows: T[]) => T[];
-    paging: I_paging | undefined
 }
 const Context = createContext<I_context<any>>({} as any);
 const Provider = <T,>(p: { value: I_context<T>, children: ReactNode }) => <Context.Provider value={p.value}>{p.children}</Context.Provider>
 const useProvider = () => useContext(Context)
-const AIOTable = <T,>(props: I_AIOTable<T>) => {
+const AIOTable = <T,>(props: I_table<T>) => {
     const popup = usePopup()
     let [dom] = useState(createRef())
     let [searchValue, setSearchValue] = useState<string>('')
-    const [columns, setColumns] = useState<I_column<T>[]>([]);
-    const [searchColumns, setSearchColumns] = useState<I_column<T>[]>([]);
-    const [excelColumns, setExcelColumns] = useState<I_column<T>[]>([]);
-    const [filterColumns, setFilterColumns] = useState<I_column<T>[]>([]);
-    const filterColumnsRef = useRef<I_column<T>[]>(filterColumns)
+    const [columns, setColumns] = useState<I_table_column<T>[]>([]);
+    const [searchColumns, setSearchColumns] = useState<I_table_column<T>[]>([]);
+    const [excelColumns, setExcelColumns] = useState<I_table_column<T>[]>([]);
+    const [filterColumns, setFilterColumns] = useState<I_table_column<T>[]>([]);
+    const filterColumnsRef = useRef<I_table_column<T>[]>(filterColumns)
     filterColumnsRef.current = filterColumns;
     const rowsIndexDicRef = useRef<I_rowsIndexDic>({})
     const setRowsIndexDic = (rowsIndexDic: I_rowsIndexDic) => rowsIndexDicRef.current = rowsIndexDic
     const getRowsIndexDic = () => rowsIndexDicRef.current
-    const propsRef = useRef<I_AIOTable<T>>(props)
+    const propsRef = useRef<I_table<T>>(props)
     propsRef.current = props;
-    const pagingHook = usePaging(() => propsRef.current)
+    const pagingHook = usePaging({rows:props.value,paging:props.paging,onChange:props.onChangePaging})
     const tableHook = useTable(() => propsRef.current, () => pagingHook.paging)
     const getIconRef = useRef<UT.GetSvg>(new UT.GetSvg())
     const getIcon = getIconRef.current.getIcon;
     const DragColumns = UT.useDrag((dragIndex, dropIndex, reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)))
-    const getGetValue = (sort: I_table_sort<T>, column: I_column<T>):((row:T)=>any) => {
+    const getGetValue = (sort: I_table_sort<T>, column: I_table_column<T>):((row:T)=>any) => {
         if (sort.getValue) { return sort.getValue }
         return (row: T) => {
             const isDate = ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1
@@ -139,7 +133,7 @@ const AIOTable = <T,>(props: I_AIOTable<T>) => {
             return cellValue
         }
     }
-    const getSorts = (columns: I_column<T>[]):I_table_sort<T>[] => {
+    const getSorts = (columns: I_table_column<T>[]):I_table_sort<T>[] => {
         let sorts:I_table_sort<T>[] = [];
         for (let i = 0; i < columns.length; i++) {
             const column = columns[i];
@@ -154,17 +148,17 @@ const AIOTable = <T,>(props: I_AIOTable<T>) => {
     }
 
     
-    const sortHook = UT.useSort<T>({
+    const sortHook = useSort<T>({
         sorts:[],
         rows:propsRef.current.value,
         onChangeRows:props.onChange,
         onChangeSort:props.onChangeSort,
     })
-    const isDate = (column: I_column<T>) => ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1
+    const isDate = (column: I_table_column<T>) => ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1
     function getColumns() {
         let { columns = [] } = props;
-        let searchColumns: I_column<T>[] = [], excelColumns: I_column<T>[] = [], filterColumns: I_column<T>[] = [];
-        let updatedColumns = columns.map((o: I_column<T>) => {
+        let searchColumns: I_table_column<T>[] = [], excelColumns: I_table_column<T>[] = [], filterColumns: I_table_column<T>[] = [];
+        let updatedColumns = columns.map((o: I_table_column<T>) => {
             let { id = 'aitc' + Math.round(Math.random() * 1000000), filterId, search, excel } = o;
             let column = { ...o, _id: id };
             if (search) { searchColumns.push(column) }
@@ -182,7 +176,7 @@ const AIOTable = <T,>(props: I_AIOTable<T>) => {
         const columns = getColumns();
         sortHook.setSorts(getSorts(columns));
     }, [])
-    function getTimeText(column: I_column<T>, value?: any) {
+    function getTimeText(column: I_table_column<T>, value?: any) {
         if (!value || value === null) { return '' }
         const t = column.type;
         const DATE = new AIODate()
@@ -278,36 +272,17 @@ const AIOTable = <T,>(props: I_AIOTable<T>) => {
     }
     let ROWS: I_rows<T> = getRows();
     let attrs = UT.AddToAttrs(props.attrs, { className: ['aio-table', props.className], style: props.style, attrs: { ref: dom } })
+    const context:I_context<T> = {
+        rootProps: props, getTimeText, isDate,columns,excelColumns,filterColumns,changeCell,tableHook,sortHook,ROWS,
+        getRowsIndexDic,add,remove,search,exportToExcel,DragColumns,getIcon,popup,
+    }
     return (
-        <Provider value={{
-            rootProps: props, getTimeText, isDate,
-            columns,
-            excelColumns,
-            filterColumns,
-            changeCell,
-            tableHook,
-            sortHook,
-            ROWS,
-            getRowsIndexDic,
-            add,
-            remove,
-            search,
-            exportToExcel,
-            DragColumns,
-            getIcon,
-            popup,
-        }}>
+        <Provider value={context}>
             <div {...attrs}>
                 <TableToolbar<T> />
                 <Filterbar
-                    columns={filterColumns}
-                    columnOption={{
-                        text:(column)=>column.title,
-                        id:(column)=>column.filterId as string,
-                        type:(column)=>column.type || 'text'
-                    }}
-                    filters={props.filters || []} 
-                    changeFilters={props.onChangeFilter} 
+                    columns={filterColumns} filters={props.filters || []} changeFilters={props.onChangeFilter} 
+                    columnOption={{text:(column)=>column.title,id:(column)=>column.filterId as string,type:(column)=>column.type || 'text'}}
                 />
                 <div className='aio-table-unit aio-table-scroll'><TableHeader<T> /><TableRows<T> /></div>
                 {pagingHook.render()}
@@ -388,7 +363,7 @@ const TableHeader = <T,>() => {
     let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-table-remove-title'></div></>;
     return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
 }
-const TableTitle = <T,>(p: { column: I_column<T>, isLast: boolean, colIndex: number }) => {
+const TableTitle = <T,>(p: { column: I_table_column<T>, isLast: boolean, colIndex: number }) => {
     const { column, isLast, colIndex } = p;
     let { tableHook, DragColumns } = useProvider();
     const attrs = {
@@ -459,7 +434,7 @@ const TableCell = <T,>(props: { cellDetail: I_cellDetail<T>, cellValue: any }) =
         </Fragment>
     )
 }
-const useTable = <T,>(getProps: () => I_AIOTable<T>, getPaging: () => I_paging | undefined): I_tableHook<T> => {
+const useTable = <T,>(getProps: () => I_table<T>, getPaging: () => I_table_paging | undefined): I_tableHook<T> => {
     const DragRows: UT.I_useDrag = UT.useDrag((dragData, dropData, reOrder) => {
         const { onSwap, onChange } = getProps()
         const { dragIndex } = dragData;
@@ -531,96 +506,4 @@ const useTable = <T,>(getProps: () => I_AIOTable<T>, getPaging: () => I_paging |
         return obj;
     }
     return { getCellValue, getColValue, getCellAttrs, getTitleAttrs, getRowAttrs }
-}
-const usePaging = <T,>(getProps: () => I_AIOTable<T>): I_pagingHook<T> => {
-    const { onChangePaging, value } = getProps()
-    const timeoutRef = useRef<any>()
-    const startRef = useRef<any>()
-    const endRef = useRef<any>()
-    const pagesRef = useRef<any>()
-    const getPaging = () => {
-        const { paging } = getProps()
-        return paging ? fix(paging) : undefined
-    }
-    let [paging, setPaging] = useState<I_paging | undefined>(getPaging);
-    useEffect(() => {
-        if (paging) { setPaging(fix(paging)) }
-    }, [JSON.stringify(getProps().paging)])
-
-    function fix(paging: I_paging): I_paging {
-        if (typeof onChangePaging !== 'function') {
-            alert('aio-table error => in type table you set paging but forget to set onChangePaging function prop to aio input')
-            return { number: 0, size: 0 };
-        }
-        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
-        if (!serverSide) {
-            const { value } = getProps()
-            length = value.length
-        }
-        if (sizes.indexOf(size) === -1) { size = sizes[0] }
-        let pages = Math.ceil(length / size);
-        number = number > pages ? pages : number;
-        number = number < 1 ? 1 : number;
-        let start = number - 3, end = number + 3;
-        startRef.current = start; endRef.current = end; pagesRef.current = pages;
-        return { ...paging, length, number, size, sizes }
-    }
-
-    const changePaging = (obj: Partial<I_paging>) => {
-        if (!paging) { return }
-        let newPaging: I_paging = fix({ ...paging, ...obj });
-        setPaging(newPaging);
-        if (onChangePaging) {
-            if (newPaging.serverSide) {
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = setTimeout(() => {
-                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
-                    if (onChangePaging) { onChangePaging(newPaging) }
-                }, 800);
-            }
-            else { onChangePaging(newPaging) }
-        }
-    }
-    const getPagedRows = (rows: T[]) => {
-        if (!paging || paging.serverSide) { return rows }
-        const { size, number } = paging
-        return rows.slice((number - 1) * size, number * size)
-    }
-    const render = () => {
-        if (!paging) { return null }
-        const { value: rows } = getProps()
-        if (!rows.length) { return null }
-        let { number, size, sizes } = paging;
-        let buttons = [];
-        let isFirst = true
-        for (let i = startRef.current; i <= endRef.current; i++) {
-            if (i < 1 || i > pagesRef.current) {
-                buttons.push(<button key={i} className={'aio-table-paging-button aio-table-paging-button-hidden'}>{i}</button>)
-            }
-            else {
-                let index: number;
-                if (isFirst) { index = 1; isFirst = false; }
-                else if (i === Math.min(endRef.current, pagesRef.current)) { index = pagesRef.current }
-                else { index = i; }
-                buttons.push(<button key={index} className={'aio-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
-            }
-        }
-        function changeSizeButton() {
-            if (!sizes || !sizes.length) { return null }
-            let p: AITYPE = {
-                attrs: { className: 'aio-table-paging-button aio-table-paging-size' },
-                type: 'select', value: size, options: sizes, option: { text: 'option', value: 'option' },
-                onChange: (value) => changePaging({ size: value }),
-                popover: { fitHorizontal: true },
-            }
-            return (<AIOInput {...p} />)
-        }
-        return (
-            <div className='aio-table-paging'>
-                {buttons}
-                {changeSizeButton()}
-            </div>
-        )
-    }
-    return { render, getPagedRows, paging }
 }
