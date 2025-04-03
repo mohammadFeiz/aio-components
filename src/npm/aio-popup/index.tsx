@@ -64,7 +64,7 @@ export type AP_highlight = {
     duration?: number
 }
 export type AP_confirm = { title?: string, subtitle?: string, text:string, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
-export type AP_prompt = { title?: string, subtitle?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
+export type AP_prompt = { title?: string,text:string,subtitle?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
 type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string }
 const CTX = createContext({} as any)
 
@@ -256,7 +256,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
     }
     const addPrompt: AP_addPrompt = (obj) => {
         const id = 'a' + (Math.round(Math.random() * 100000))
-        let { title, subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        let { title,text = '',subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
         let config: AP_modal = {
             position: 'center',
             setAttrs: (key) => {
@@ -267,7 +267,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
                 return attrs
             },
             header: { title, subtitle },
-            body: <Prompt change={(value: string) => promptTexts.current = { ...promptTexts.current, [id]: value }} />,
+            body: <Prompt change={(value: string) => promptTexts.current = { ...promptTexts.current, [id]: value }} placeholder={text}/>,
             footer: (
                 <>
                     <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
@@ -316,9 +316,9 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
     return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt, portal }
 }
 export default usePopup;
-const Prompt: FC<{ change: (value: string) => void }> = ({ change }) => {
+const Prompt: FC<{ change: (value: string) => void,placeholder:string }> = ({ change,placeholder }) => {
     const [text, setText] = useState<string>('')
-    return (<textarea placeholder={text} value={text} onChange={(e) => { const value = e.target.value; setText(value); change(value) }} />)
+    return (<textarea placeholder={placeholder} value={text} onChange={(e) => { const value = e.target.value; setText(value); change(value) }} />)
 }
 const POPUPCTX = createContext({} as any)
 type AP_POPUPCTX = {

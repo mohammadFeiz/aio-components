@@ -4,7 +4,7 @@ import * as UT from './../../npm/aio-utils';
 import usePopup, { I_usePopup } from "../aio-popup";
 import "./repo/index.css"
 import AIODate from "../aio-date";
-import { Filterbar, I_filter, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
+import { Filterbar, I_filter, I_filter_row, I_filter_saved_item, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
 type I_rows<T> = { rows: T[], searchedRows: T[], sortedRows: T[], pagedRows: T[] }
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
@@ -14,6 +14,8 @@ type I_rowsIndexDic = { [id: string]: { rowIndex: number, isFirst: boolean, isLa
 export type I_table_paging = I_paging
 export type I_table_sort<T> = I_sort<T>
 export type I_table_filter = I_filter
+export type I_table_filter_row = I_filter_row;
+export type I_table_filter_saved_item = I_filter_saved_item;
 export type I_table_column<T> = {
     title?: any,
     sort?: true | I_table_sort<T>,
@@ -37,7 +39,6 @@ export type I_table_column<T> = {
 export type I_table<T> = {
     fa?: boolean,
     addText?: ReactNode | ((value: any) => ReactNode),
-    columnGap?: number,
     columns?: I_table_column<T>[],
     excel?: string | ((value: any[]) => any[]),
     getValue?: { [key: string]: (p: { row: T, column: I_table_column<T>, rowIndex: number, change: (newRow: T) => void }) => any },
@@ -57,7 +58,6 @@ export type I_table<T> = {
         template?: I_rowOption<T, ReactNode>
     },
     cellAttrs?: string | ((p: { row: T, column: I_table_column<T>, rowIndex: number }) => any)
-    rowGap?: number,
     rowsTemplate?: (rows: T[]) => ReactNode,
     toolbar?: ReactNode | (() => ReactNode),
     toolbarAttrs?: any,
@@ -68,8 +68,8 @@ export type I_table<T> = {
     style?: any,
     attrs?: any,
     placeholder?: ReactNode,
-    filters?:I_table_filter[],
-    onChangeFilter?:(newFilters:I_table_filter[])=>undefined | void | I_table_filter[] | true | false
+    filter?: I_table_filter,
+    gap?: [number, number]
 }
 type I_context<T> = {
     popup: I_usePopup,
@@ -115,16 +115,16 @@ const AIOTable = <T,>(props: I_table<T>) => {
     const getRowsIndexDic = () => rowsIndexDicRef.current
     const propsRef = useRef<I_table<T>>(props)
     propsRef.current = props;
-    const pagingHook = usePaging({rows:props.value,paging:props.paging,onChange:props.onChangePaging})
+    const pagingHook = usePaging({ rows: props.value, paging: props.paging, onChange: props.onChangePaging })
     const tableHook = useTable(() => propsRef.current, () => pagingHook.paging)
     const getIconRef = useRef<UT.GetSvg>(new UT.GetSvg())
     const getIcon = getIconRef.current.getIcon;
     const DragColumns = UT.useDrag((dragIndex, dropIndex, reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)))
-    const getGetValue = (sort: I_table_sort<T>, column: I_table_column<T>):((row:T)=>any) => {
+    const getGetValue = (sort: I_table_sort<T>, column: I_table_column<T>): ((row: T) => any) => {
         if (sort.getValue) { return sort.getValue }
         return (row: T) => {
             const isDate = ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1
-            const cellValue = tableHook.getCellValue({ row,rowIndex:0,isFirst:false,isLast:false, column, change: () => { }, isDate }, column.value)
+            const cellValue = tableHook.getCellValue({ row, rowIndex: 0, isFirst: false, isLast: false, column, change: () => { }, isDate }, column.value)
             if (isDate) {
                 const DATE = new AIODate();
                 try { return DATE.getTime(cellValue) }
@@ -133,8 +133,8 @@ const AIOTable = <T,>(props: I_table<T>) => {
             return cellValue
         }
     }
-    const getSorts = (columns: I_table_column<T>[]):I_table_sort<T>[] => {
-        let sorts:I_table_sort<T>[] = [];
+    const getSorts = (columns: I_table_column<T>[]): I_table_sort<T>[] => {
+        let sorts: I_table_sort<T>[] = [];
         for (let i = 0; i < columns.length; i++) {
             const column = columns[i];
             const { _id } = column;
@@ -147,12 +147,12 @@ const AIOTable = <T,>(props: I_table<T>) => {
         return sorts
     }
 
-    
+
     const sortHook = useSort<T>({
-        sorts:[],
-        rows:propsRef.current.value,
-        onChangeRows:props.onChange,
-        onChangeSort:props.onChangeSort,
+        sorts: [],
+        rows: propsRef.current.value,
+        onChangeRows: props.onChange,
+        onChangeSort: props.onChangeSort,
     })
     const isDate = (column: I_table_column<T>) => ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1
     function getColumns() {
@@ -271,20 +271,24 @@ const AIOTable = <T,>(props: I_table<T>) => {
         props.onChange(props.value.map((o: any) => o._id !== rowId ? o : row))
     }
     let ROWS: I_rows<T> = getRows();
-    let attrs = UT.AddToAttrs(props.attrs, { className: ['aio-table', props.className], style: props.style, attrs: { ref: dom } })
-    const context:I_context<T> = {
-        rootProps: props, getTimeText, isDate,columns,excelColumns,filterColumns,changeCell,tableHook,sortHook,ROWS,
-        getRowsIndexDic,add,remove,search,exportToExcel,DragColumns,getIcon,popup,
+    const { gap = [0, 1] } = props;
+    let attrs = UT.AddToAttrs(props.attrs, { className: ['aio-table', props.className], style: { gap: gap[1], ...props.style }, attrs: { ref: dom } })
+    const context: I_context<T> = {
+        rootProps: props, getTimeText, isDate, columns, excelColumns, filterColumns, changeCell, tableHook, sortHook, ROWS,
+        getRowsIndexDic, add, remove, search, exportToExcel, DragColumns, getIcon, popup,
     }
     return (
         <Provider value={context}>
             <div {...attrs}>
                 <TableToolbar<T> />
-                <Filterbar
-                    columns={filterColumns} filters={props.filters || []} changeFilters={props.onChangeFilter} 
-                    columnOption={{text:(column)=>column.title,id:(column)=>column.filterId as string,type:(column)=>column.type || 'text'}}
-                />
-                <div className='aio-table-unit aio-table-scroll'><TableHeader<T> /><TableRows<T> /></div>
+                {
+                    !!props.filter &&
+                    <Filterbar
+                        columns={filterColumns} filter={props.filter}
+                        columnOption={{ text: (column) => column.title, id: (column) => column.filterId as string, type: (column) => column.type || 'text' }}
+                    />
+                }
+                <div className='aio-table-unit aio-table-scroll' style={{ gap: gap[1] }}><TableHeader<T> /><TableRows<T> /></div>
                 {pagingHook.render()}
             </div>
             {popup.render()}
@@ -292,10 +296,6 @@ const AIOTable = <T,>(props: I_table<T>) => {
     )
 }
 export default AIOTable
-const TableGap: FC<{ dir: 'h' | 'v' }> = ({ dir }) => {
-    const { rootProps } = useProvider(), { rowGap, columnGap } = rootProps;
-    return <div className={`aio-table-border-${dir}`} style={dir === 'h' ? { height: rowGap } : { width: columnGap }}></div>
-}
 const TableRows = <T,>() => {
     let { ROWS, rootProps } = useProvider()
     let { rowOption = {}, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
@@ -327,13 +327,14 @@ const TableRows = <T,>() => {
         content = <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
     }
     else { return null }
-    return <div className='aio-table-rows'>{content}</div>
+    const { gap = [0, 1] } = rootProps;
+    return <div className='aio-table-rows' style={{ gap: gap[1] }}>{content}</div>
 }
 const TableToolbar = <T,>() => {
-    let { add, exportToExcel, search, rootProps, excelColumns, filterColumns, getIcon, sortHook } = useProvider();
+    let { add, exportToExcel, search, rootProps, excelColumns, getIcon, sortHook } = useProvider();
     let { toolbarAttrs, toolbar, onAdd, onSearch, value } = rootProps;
     toolbarAttrs = UT.AddToAttrs(toolbarAttrs, { className: 'aio-table-toolbar' })
-    if (!onAdd && !toolbar && !onSearch && !sortHook.sorts.length && !excelColumns.length && !filterColumns.length) { return null }
+    if (!onAdd && !toolbar && !onSearch && !sortHook.sorts.length && !excelColumns.length) { return null }
 
     function getAddText() {
         let { addText } = rootProps;
@@ -341,27 +342,24 @@ const TableToolbar = <T,>() => {
         return typeof addText === 'function' ? addText(value) : addText
     }
     return (
-        <>
-            <div {...toolbarAttrs}>
-                {toolbar && <div className='aio-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
-                <div className='aio-table-search'>
-                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={getIcon('mdiMagnify', 0.7)} />}
-                </div>
-                {sortHook.renderSortButton()}
-                {!!excelColumns.length && <div className='aio-table-toolbar-button' onClick={() => exportToExcel()}>{getIcon('mdiFileExcel', 0.8)}</div>}
-                {!!onAdd && <div className='aio-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
+        <div {...toolbarAttrs}>
+            {toolbar && <div className='aio-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
+            <div className='aio-table-search'>
+                {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={getIcon('mdiMagnify', 0.7)} />}
             </div>
-            <TableGap dir='h' />
-        </>
+            {sortHook.renderSortButton()}
+            {!!excelColumns.length && <div className='aio-table-toolbar-button' onClick={() => exportToExcel()}>{getIcon('mdiFileExcel', 0.8)}</div>}
+            {!!onAdd && <div className='aio-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
+        </div>
     )
 }
 const TableHeader = <T,>() => {
     let { rootProps, columns } = useProvider();
-    let { headerAttrs, onRemove } = rootProps;
-    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-table-header' })
+    let { headerAttrs, onRemove, gap = [0, 1] } = rootProps;
+    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-table-header', style: { gap: gap[0] } })
     let Titles = columns.map((o, i) => <TableTitle<T> key={o._id} column={o} isLast={i === columns.length - 1} colIndex={i} />);
-    let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-table-remove-title'></div></>;
-    return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
+    let RemoveTitle = !onRemove ? null : <div className='aio-table-remove-title'></div>;
+    return <div {...headerAttrs}>{Titles}{RemoveTitle}</div>
 }
 const TableTitle = <T,>(p: { column: I_table_column<T>, isLast: boolean, colIndex: number }) => {
     const { column, isLast, colIndex } = p;
@@ -370,7 +368,7 @@ const TableTitle = <T,>(p: { column: I_table_column<T>, isLast: boolean, colInde
         ...tableHook.getTitleAttrs(column),
         ...DragColumns.getDragAttrs(colIndex), ...DragColumns.getDropAttrs(colIndex)
     }
-    return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
+    return <div {...attrs}>{attrs.title}</div>
 }
 const TableRow = <T,>(props: { rowDetail: I_rowDetail<T> }) => {
     const { rowDetail } = props;
@@ -401,9 +399,8 @@ const TableRow = <T,>(props: { rowDetail: I_rowDetail<T> }) => {
         <>
             <div key={rowId} {...tableHook.getRowAttrs(props.rowDetail)}>
                 {getCells()}
-                {onRemove ? <><TableGap dir='v' /><button className='aio-table-remove' onClick={() => remove(row, rowIndex)}>{getIcon('mdiClose', 0.8)}</button></> : null}
+                {onRemove ? <button className='aio-table-remove' onClick={() => remove(row, rowIndex)}>{getIcon('mdiClose', 0.8)}</button> : null}
             </div>
-            <TableGap dir='h' />
         </>
     )
 }
@@ -430,7 +427,6 @@ const TableCell = <T,>(props: { cellDetail: I_cellDetail<T>, cellValue: any }) =
                 </div>
                 {afterValue !== undefined && <div className="aio-table-cell-after">{afterValue}</div>}
             </div>
-            {!isLast && <TableGap dir='v' />}
         </Fragment>
     )
 }
@@ -492,10 +488,10 @@ const useTable = <T,>(getProps: () => I_table<T>, getPaging: () => I_table_pagin
         return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof column.title === 'string' ? column.title : undefined } });
     }
     const getRowAttrs: I_tableHook<T>["getRowAttrs"] = (rowDetail: I_rowDetail<T>) => {
-        const { rowOption = {}, onSwap, value } = getProps();
+        const { rowOption = {}, onSwap, value, gap = [0, 1] } = getProps();
         const { attrs: rowAttrs } = rowOption;
         const attrs = rowAttrs ? rowAttrs(rowDetail) : {};
-        let obj = UT.AddToAttrs(attrs, { className: 'aio-table-row' })
+        let obj = UT.AddToAttrs(attrs, { className: 'aio-table-row', style: { gap: gap[0] } })
         if (onSwap) {
             obj = {
                 ...obj,

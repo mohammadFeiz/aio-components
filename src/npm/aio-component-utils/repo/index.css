@@ -432,7 +432,6 @@ code[class*="language-"] *::selection {
     background: #f8f8f8;
     display: flex;
     align-items: center;
-    border-bottom:1px solid #eee;
     padding:6px 0;
 }
 .aio-filter-button{
@@ -480,7 +479,8 @@ code[class*="language-"] *::selection {
 .aio-filter-modal{
     padding:12px;
     width: 100vw;
-    max-width:480px;
+    max-width:772px;
+    height:80vh;
 }
 .aio-filter-add-button{
     display:flex;
@@ -503,10 +503,20 @@ code[class*="language-"] *::selection {
 .aio-filter-row .aio-input{
     flex:1;
 }
-.aio-filter-remove-button{
+.aio-filter-toolbar{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    gap:6px;
+}
+.aio-filter-icon-button{
     display: flex;
     align-items: center;
     justify-content: center;
+    width:24px;
+    height:24px;
+    background:#eee;
+    border-radius:4px;
 }
 .aio-paging {
     padding: 6px;
@@ -554,4 +564,40 @@ code[class*="language-"] *::selection {
 .aio-sort-header {
     padding: 6px;
     min-height: unset;
+}
+.aio-filter-saved-row{
+    display:flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:#fff;
+    flex-shrink: 0;
+}
+.aio-filter-saved-modal{
+    width: 100vw;
+    max-width:772px;
+    display:flex;
+    flex-direction: column;
+    gap:6px;
+    background:#eee;
+    height:80vh;
+    overflow-y: auto;
+    padding:6px;
+}
+.aio-filter-saved-row-header{
+    height:36px;
+    display:flex;
+    align-items: center;
+    gap:6px;
+    padding:0 24px;
+}
+.aio-filter-saved-row-body{
+    display:flex;
+    gap:6px;
+    padding:6px;
+}
+.aio-filter-saved-name{
+    flex:1;
+}
+.aio-filter-backdrop{
+    background:rgba(0,0,0,0.7);
 }

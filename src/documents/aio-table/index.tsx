@@ -1,11 +1,12 @@
 import { FC, useEffect, useState } from "react";
 import DOC from "../../resuse-components/Doc";
-import AIOTable, { I_table_column, I_table_filter, I_table_paging } from "../../npm/aio-table";
-import { Code } from "../../npm/aio-component-utils";
+import AIOTable, { I_table_column, I_table_filter, I_table_filter_row, I_table_filter_saved_item, I_table_paging } from "../../npm/aio-table";
+import { Code, I_filter_saved_item } from "../../npm/aio-component-utils";
 import model, { I_table_row } from './table-model.ts';
 import Icon from "@mdi/react";
 import { mdiFile, mdiHumanFemale, mdiHumanMale } from "@mdi/js";
 import { AICheckbox, AIDate, AINumber, AISelect, AIText } from "../../npm/aio-input/index.tsx";
+import { GetRandomNumber } from "../../npm/aio-utils/index.tsx";
 
 export default function DOC_AIOForm(props: any) {
     return (
@@ -310,8 +311,8 @@ const RowGapColumnGap: FC = () => {
                     { title: 'Age', value: 'row.age' },
                 ]}
                 onChange={(newRows) => setRows(newRows)}
-                rowGap={6}
-                columnGap={6}
+                gap={[6,6]}
+                style={{padding:6}}
             />
             {
                 Code(`
@@ -324,8 +325,8 @@ let [rows, setRows] = useState<I_table_row[]>(model)
         { title: 'Age', value: 'row.age' },
     ]}
     onChange={(newRows) => setRows(newRows)}
-    rowGap={6}
-    columnGap={6}
+    gap={[6,6]}
+    style={{padding:6}}
 />
                 `)
             }
@@ -1501,7 +1502,8 @@ const Column_Sort:FC = () => {
 }
 const Column_Filter:FC = () => {
     let [rows,setRows] = useState((model))
-    const [filters,setFilters] = useState<I_table_filter[]>()
+    const [filterRows,setFilterRows] = useState<I_table_filter_row[]>([])
+    const [savedFilterItems,setSavedFilterItems] = useState<I_table_filter_saved_item[]>([])
     return (
         <div className='example'>
             <AIOTable
@@ -1513,9 +1515,28 @@ const Column_Filter:FC = () => {
                     {title:'Age',value:'row.age'},
                 ]}
                 onChange={(newRows)=>setRows(newRows)}
-                filters={filters}
-                onChangeFilter={(newFilters)=>{
-                    setFilters(newFilters)
+                filter={{
+                    rows:filterRows,
+                    onChange:(newFilters)=>{
+                        setFilterRows(newFilters)
+                    },
+                    saveItems:savedFilterItems,
+                    addSaveItem: (saveItem)=>{
+                        const id = 'a' + GetRandomNumber(1000000,9999999)
+                        setSavedFilterItems([{...saveItem,id},...savedFilterItems]);
+                        return id
+                    },
+                    editSaveItem:(saveItem)=>{
+                        setSavedFilterItems(savedFilterItems.map((o)=>o.id === saveItem.id?saveItem:o))
+                        return true
+                    },
+                    removeSaveItem:(saveItem)=>{
+                        setSavedFilterItems(savedFilterItems.filter((o)=>o.id !== saveItem.id))
+                        return true
+                    },
+                    activeSaveItem:(saveItem)=>{
+                        setFilterRows(saveItem.rows)
+                    }
                 }}
             />
             {

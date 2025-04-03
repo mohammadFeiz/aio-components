@@ -54,6 +54,8 @@
     width: 100%;
     flex: 1;
     overflow: auto;
+    display:flex;
+    flex-direction: column;
 }
 
 .aio-table-header {
@@ -64,7 +66,6 @@
     z-index: 10;
     background: #f8f8f8;
     min-width: fit-content;
-    border-bottom: 1px solid #eee;
 }
 
 .aio-table-title {
@@ -82,11 +83,14 @@
     padding: 0;
     justify-content: center;
 }
-
+.aio-table-rows{
+    display:flex;
+    flex-direction: column;
+    gap:1px;
+}
 .aio-table-row {
     display: flex;
     min-width: fit-content;
-    background: #fff;
 }
 .aio-table-cell {
     padding: 6px 12px;
@@ -96,6 +100,7 @@
     flex-shrink: 0;
     min-height: 24px;
     gap:6px;
+    background:#fff;
 }
 
 .aio-table-cell-before{
@@ -213,7 +218,7 @@
     box-sizing: border-box;
 }
 
-.aio-table-search .aio-table {
+.aio-table-search .aio-input {
     background: #fff;
     border: none;
     min-height: 30px;
