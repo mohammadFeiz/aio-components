@@ -30,7 +30,7 @@ export type AP_modal = {
     setAttrs?: AP_setAttrs
 }
 export type AP_alert = {
-    rtl?:boolean,
+    rtl?: boolean,
     icon?: false | ReactNode,
     type: 'success' | 'error' | 'warning' | 'info',
     title?: ReactNode,
@@ -63,8 +63,30 @@ export type AP_highlight = {
     easing?: number | AP_easing,
     duration?: number
 }
-export type AP_confirm = { title?: string, subtitle?: string, text:string, submitText?: string, canselText?: string, onSubmit?: () => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
-export type AP_prompt = { title?: string,text:string,subtitle?: string, submitText?: string, canselText?: string, onSubmit?: (text: string) => Promise<boolean>, onCansel?: () => void, setAttrs?: AP_setAttrs }
+export type AP_confirm = {
+    title?: string,
+    subtitle?: string,
+    text: string,
+    submitText?: string,
+    canselText?: string,
+    onSubmit?: () => Promise<boolean>,
+    onCansel?: () => void,
+    submitAttrs?: any,
+    canselAttrs?: any,
+    setAttrs?: AP_setAttrs
+}
+export type AP_prompt = {
+    title?: string,
+    text: string,
+    subtitle?: string,
+    submitText?: string,
+    canselText?: string,
+    onSubmit?: (text: string) => Promise<boolean>,
+    onCansel?: () => void,
+    submitAttrs?: any,
+    canselAttrs?: any,
+    setAttrs?: AP_setAttrs
+}
 type AP_Popup_temp = { dom: any, backdropDom: any, dui?: string }
 const CTX = createContext({} as any)
 
@@ -225,70 +247,70 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
         setSnackebarItems(newItems)
         if (typeof item.onClose === 'function') { item.onClose() }
     }
-    const addAlert: AP_addAlert = (obj) => Alert({rtl:props?.rtl,...obj})
+    const addAlert: AP_addAlert = (obj) => Alert({ rtl: props?.rtl, ...obj })
     const addHighlight: AP_addHighlight = (highlight) => setHighlight(highlight)
     const removeHighlight: AP_removeHighlight = () => setHighlight(undefined)
     const addConfirm: AP_addConfirm = (obj) => {
-        let { title, subtitle,text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        const submitAttrs = AddToAttrs(obj.submitAttrs, {
+            className: 'active', attrs: {
+                onClick: async () => {
+                    if (!onSubmit) { return }
+                    let res: boolean = await onSubmit();
+                    if (res !== false) { removeModal() }
+                },
+                type: 'button'
+            }
+        })
+        const canselAttrs = AddToAttrs(obj.canselAttrs, {
+            attrs: {
+                onClick: () => { onCansel(); removeModal() },
+                type: 'button'
+            }
+        })
         let config: AP_modal = {
-            position: 'center',
+            position: 'center', header: { title, subtitle }, body: <>{text}</>,
             setAttrs: (key) => {
                 let attrs = setAttrs(key)
-                if (key === 'modal') {
-                    return AddToAttrs(attrs, { className: 'aio-popup-confirm' })
-                }
-                return attrs
+                return key === 'modal' ? AddToAttrs(attrs, { className: 'aio-popup-confirm' }) : attrs
             },
-            header: { title, subtitle },
-            body: <>{text}</>,
-            footer: (
-                <>
-                    <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
-                    <button type='button' className='active' onClick={async () => {
-                        if (!onSubmit) { return }
-                        let res: boolean = await onSubmit();
-                        if (res !== false) { removeModal() }
-                    }}>{submitText}</button>
-                </>
-            )
+            footer: (<><button {...canselAttrs}>{canselText}</button><button {...submitAttrs}>{submitText}</button></>)
         }
         addModal(config)
     }
     const addPrompt: AP_addPrompt = (obj) => {
         const id = 'a' + (Math.round(Math.random() * 100000))
-        let { title,text = '',subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        let { title, text = '', subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {} } } = obj;
+        const submitAttrs = AddToAttrs(obj.submitAttrs, {
+            className: 'active', attrs: {
+                onClick: async () => {
+                    if (!onSubmit) { return }
+                    const value = promptTexts.current[id]
+                    let res = await onSubmit(value);
+                    if (res !== false) { removeModal() }
+                    else {
+                        const newPromptTexts: { [key: string]: string } = {}
+                        for (let prop in promptTexts.current) {
+                            if (prop !== id) { newPromptTexts[prop] = promptTexts.current[prop] }
+                        }
+                        promptTexts.current = newPromptTexts
+                    }
+                },
+                type: 'button'
+            }
+        })
+        const canselAttrs = AddToAttrs(obj.canselAttrs,{attrs:{
+            onClick:() => { onCansel(); removeModal() },
+            type:'button'
+        }})
         let config: AP_modal = {
-            position: 'center',
+            position: 'center',header: { title, subtitle },
             setAttrs: (key) => {
                 let attrs = setAttrs(key)
-                if (key === 'modal') {
-                    return AddToAttrs(attrs, { className: 'aio-popup-prompt' })
-                }
-                return attrs
+                return key === 'modal'?AddToAttrs(attrs, { className: 'aio-popup-prompt' }):attrs
             },
-            header: { title, subtitle },
-            body: <Prompt change={(value: string) => promptTexts.current = { ...promptTexts.current, [id]: value }} placeholder={text}/>,
-            footer: (
-                <>
-                    <button type='button' onClick={() => { onCansel(); removeModal() }}>{canselText}</button>
-                    <button
-                        type='button' className='active'
-                        onClick={async () => {
-                            if (!onSubmit) { return }
-                            const value = promptTexts.current[id]
-                            let res = await onSubmit(value);
-                            if (res !== false) { removeModal() }
-                            else {
-                                const newPromptTexts: { [key: string]: string } = {}
-                                for (let prop in promptTexts.current) {
-                                    if (prop !== id) { newPromptTexts[prop] = promptTexts.current[prop] }
-                                }
-                                promptTexts.current = newPromptTexts
-                            }
-                        }}
-                    >{submitText}</button>
-                </>
-            )
+            body: <Prompt change={(value: string) => promptTexts.current = { ...promptTexts.current, [id]: value }} placeholder={text} />,
+            footer: (<><button {...canselAttrs}>{canselText}</button><button {...submitAttrs}>{submitText}</button></>)
         }
         addModal(config)
     }
@@ -316,7 +338,7 @@ const usePopup = (props?: { rtl?: boolean, id?: string }): I_usePopup => {
     return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt, portal }
 }
 export default usePopup;
-const Prompt: FC<{ change: (value: string) => void,placeholder:string }> = ({ change,placeholder }) => {
+const Prompt: FC<{ change: (value: string) => void, placeholder: string }> = ({ change, placeholder }) => {
     const [text, setText] = useState<string>('')
     return (<textarea placeholder={placeholder} value={text} onChange={(e) => { const value = e.target.value; setText(value); change(value) }} />)
 }
@@ -410,13 +432,13 @@ const Popup: FC<AP_Popup> = ({ modal, isLast, renderCaller }) => {
                 key={modal.id}
                 firstMount={!!firstMount} backdropDom={temp.backdropDom} isModalMouseDown={isModalMouseDown}
             >
-                <div key={modal.id} {...getModalProps()}><ModalHeader /><ModalBody key={modal.id}/><ModalFooter /></div>
+                <div key={modal.id} {...getModalProps()}><ModalHeader /><ModalBody key={modal.id} /><ModalFooter /></div>
             </ModalBackdrop>
         </POPUPCTX.Provider>
     )
 }
 const ModalBackdrop: FC<{ children: ReactNode, firstMount: boolean, backdropDom: any, isModalMouseDown: () => boolean }> = ({ children, firstMount, backdropDom, isModalMouseDown }) => {
-    const {removeModal,rtl}:AP_CTX = useContext(CTX)
+    const { removeModal, rtl }: AP_CTX = useContext(CTX)
     let { modal, onKeyDown }: AP_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, id, position = 'fullscreen' } = modal;
     const [attrs] = useState<any>(setAttrs('backdrop') || {})
@@ -437,7 +459,7 @@ const ModalBackdrop: FC<{ children: ReactNode, firstMount: boolean, backdropDom:
     return <div {...getProps()}>{children}</div>
 }
 const ModalHeader: FC = () => {
-    const {removeModal}:AP_CTX = useContext(CTX)
+    const { removeModal }: AP_CTX = useContext(CTX)
     let { modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX);
     if (!modal.header) { return null }
     let { setAttrs = () => { return {} } } = modal;
@@ -460,7 +482,7 @@ const ModalHeaderElement: FC<{ type: 'before' | 'after' | 'title' }> = ({ type }
     return <div className={`aio-popup-header-${type}`} data-subtitle={type === 'title' ? header.subtitle : undefined}>{header[type]}</div>
 }
 const ModalClose: FC = () => {
-    const {removeModal}:AP_CTX = useContext(CTX)
+    const { removeModal }: AP_CTX = useContext(CTX)
     let { modal, state, setState }: AP_POPUPCTX = useContext(POPUPCTX), { header } = modal;
     if (typeof header === 'function' || !header) { return null }
     if (header.onClose === false) { return null }
@@ -478,7 +500,7 @@ const ModalBody: FC = () => {
     return (<div {...AddToAttrs(attrs, { className: 'aio-popup-body aio-popup-scroll' })}>{body}</div>)
 }
 const ModalFooter: FC = () => {
-    const { modal}: AP_POPUPCTX = useContext(POPUPCTX);
+    const { modal }: AP_POPUPCTX = useContext(POPUPCTX);
     let { setAttrs = () => { return {} }, footer } = modal;
     if (!footer) { return null }
     let Attrs = setAttrs('footer') || {};
@@ -571,7 +593,7 @@ const SnackebarBar: FC = () => {
     return <div className='aio-popup-snackebar-bar' style={{ transition: `${item.time || 8}s linear` }}></div>
 }
 export function Alert(props: AP_alert) {
-    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose,rtl } = props;
+    let { icon, type = '', title = '', text = '', time = 10, className, closeText = 'Close', onClose, rtl } = props;
     let $$ = {
         id: '',
         time: 0,
@@ -591,7 +613,7 @@ export function Alert(props: AP_alert) {
           <div class='aio-popup-alert-header'>${$$.getIcon()}</div>
           <div class='aio-popup-alert-body aio-popup-scroll'>
             <div class='aio-popup-alert-title'>${ReactDOMServer.renderToStaticMarkup(title as any)}</div>
-            <div class='aio-popup-alert-text' style="text-align:${rtl?'right':'left'}">${text}</div>
+            <div class='aio-popup-alert-text' style="text-align:${rtl ? 'right' : 'left'}">${text}</div>
           </div>
           <div class='aio-popup-alert-footer'>
             <button class='aio-popup-alert-close ${$$.id}'>${closeText}</button>

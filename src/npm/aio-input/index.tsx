@@ -55,21 +55,21 @@ const AIOInput: FC<AITYPE> = (props) => {
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
-const SuggestionInput: FC<AITYPE> = (props) => {
+export const SuggestionInput: FC<Omit<AITYPE,'type'>> = (props) => {
     const { getOptions, option = {}, onChange } = props;
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
+    const initSearchResult = async ()=>{
+        setSearchResult(value)
+    }
+    useEffect(()=>{initSearchResult()},[])
     async function setSearchResult(newValue: any) {
         setValue(newValue)
-        if (!newValue) {
-            SetSearchResult([])
-            return
-        }
         const res: any[] = getOptions ? await getOptions(newValue) : [];
         SetSearchResult(res)
     }
     return (
-        <AIOInput
+        <AIText
             {...props}
             value={value}
             options={searchResult}
@@ -117,7 +117,10 @@ function AIOINPUT(props: AITYPE) {
         if (popover.body) { body = popover.body }
         else if (type === 'date') { body = <Calendar onClose={popup.removeModal} /> }
         else if (type === 'time') { body = <TimePopover onClose={popup.removeModal} /> }
-        else { body = <Options /> }
+        else {
+            if(context.options.optionsList.length === 0){return}
+            body = <Options/>
+        }
         let obj: AP_modal = {
             ...(props.popover || {}),
             position: popover.position || 'popover',
@@ -142,7 +145,9 @@ function AIOINPUT(props: AITYPE) {
         else if (types.isDropdown) {
             let open = !!popup.getModals().length
             if (open) { return }
-            popup.addModal(getPopover(dom));
+            const popover = getPopover(dom)
+            if(!popover){return}
+            popup.addModal(popover);
         }
         else if (typeof props.onClick === 'function') { props.onClick(e) }
         else if (attrs.onClick) { attrs.onClick(); }
@@ -222,15 +227,8 @@ function AIOINPUT(props: AITYPE) {
         color: () => <Layout properties={{ text: <Input /> }} />
     }
     if (!type || !render[type]) { return null }
-    return (
-        <AICTX.Provider
-            key={datauniqid}
-            value={getContext()}
-        >
-            {render[type]()}
-            {popup.render()}
-        </AICTX.Provider>
-    )
+    const context = getContext()
+    return (<AICTX.Provider key={datauniqid} value={context}>{render[type]()} {popup.render()}</AICTX.Provider>)
 }
 function TimePopover(props: { onClose: () => void }) {
     const { DATE, rootProps }: AI_context = useContext(AICTX)
@@ -677,9 +675,8 @@ const Options: FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     let [dom] = useState<any>(createRef())
-    let [focused] = useState<any>()
+    const hasSearch = rootProps.type !== 'tabs' && rootProps.type !== 'buttons' && !types.isInput && !!rootProps.search
     function renderSearchBox(options: AI_option[]) {
-        if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
         return (
             <div className='aio-input-search'>
@@ -715,7 +712,7 @@ const Options: FC = () => {
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <div className='aio-input-options-container' ref={dom} tabIndex={0} onKeyDown={(e) => keyDown(e)}>
-            {renderSearchBox(options.optionsList)}
+            {!!hasSearch && renderSearchBox(options.optionsList)}
             <div className={className}>{renderOptions}</div>
         </div>
     )

@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import DOC from "../../resuse-components/Doc";
-import AIOTable, { I_table_column, I_table_filter, I_table_filter_row, I_table_filter_saved_item, I_table_paging } from "../../npm/aio-table";
+import AIOTable, { I_table_column, I_table_filter, I_table_filter_item, I_table_filter_saved_item, I_table_paging } from "../../npm/aio-table";
 import { Code, I_filter_saved_item } from "../../npm/aio-component-utils";
 import model, { I_table_row } from './table-model.ts';
 import Icon from "@mdi/react";
@@ -1502,8 +1502,8 @@ const Column_Sort:FC = () => {
 }
 const Column_Filter:FC = () => {
     let [rows,setRows] = useState((model))
-    const [filterRows,setFilterRows] = useState<I_table_filter_row[]>([])
-    const [savedFilterItems,setSavedFilterItems] = useState<I_table_filter_saved_item[]>([])
+    const [filterRows,setFilterRows] = useState<I_table_filter_item[]>([])
+    const [savedItems,setSavedItems] = useState<I_table_filter_saved_item[]>([])
     return (
         <div className='example'>
             <AIOTable
@@ -1516,27 +1516,13 @@ const Column_Filter:FC = () => {
                 ]}
                 onChange={(newRows)=>setRows(newRows)}
                 filter={{
-                    rows:filterRows,
+                    items:filterRows,
                     onChange:(newFilters)=>{
                         setFilterRows(newFilters)
                     },
-                    saveItems:savedFilterItems,
-                    addSaveItem: (saveItem)=>{
-                        const id = 'a' + GetRandomNumber(1000000,9999999)
-                        setSavedFilterItems([{...saveItem,id},...savedFilterItems]);
-                        return id
-                    },
-                    editSaveItem:(saveItem)=>{
-                        setSavedFilterItems(savedFilterItems.map((o)=>o.id === saveItem.id?saveItem:o))
-                        return true
-                    },
-                    removeSaveItem:(saveItem)=>{
-                        setSavedFilterItems(savedFilterItems.filter((o)=>o.id !== saveItem.id))
-                        return true
-                    },
-                    activeSaveItem:(saveItem)=>{
-                        setFilterRows(saveItem.rows)
-                    }
+                    savedItems:savedItems,
+                    changeSavedItems:(newSavedItems)=>setSavedItems(newSavedItems),
+                    activeSavedItem:(saveItem)=>setFilterRows(saveItem.items)
                 }}
             />
             {

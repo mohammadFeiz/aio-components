@@ -4,7 +4,7 @@ import * as UT from './../../npm/aio-utils';
 import usePopup, { I_usePopup } from "../aio-popup";
 import "./repo/index.css"
 import AIODate from "../aio-date";
-import { Filterbar, I_filter, I_filter_row, I_filter_saved_item, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
+import { Filterbar, I_filter, I_filter_item, I_filter_saved_item, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
 type I_rows<T> = { rows: T[], searchedRows: T[], sortedRows: T[], pagedRows: T[] }
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
@@ -14,7 +14,7 @@ type I_rowsIndexDic = { [id: string]: { rowIndex: number, isFirst: boolean, isLa
 export type I_table_paging = I_paging
 export type I_table_sort<T> = I_sort<T>
 export type I_table_filter = I_filter
-export type I_table_filter_row = I_filter_row;
+export type I_table_filter_item = I_filter_item;
 export type I_table_filter_saved_item = I_filter_saved_item;
 export type I_table_column<T> = {
     title?: any,

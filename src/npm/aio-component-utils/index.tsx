@@ -3,7 +3,7 @@ import * as UT from "../aio-utils";
 import AIODate from "../aio-date";
 import Prism from 'prismjs';
 import { AI_optionProp } from "../aio-input/repo";
-import { AINumber, AISelect, AIText, AITime, AITree } from "../aio-input";
+import { AIFormInput, AINumber, AISelect, AIText, AITime, AITree, SuggestionInput } from "../aio-input";
 import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
 import './repo/index.css';
@@ -626,18 +626,16 @@ export class Flip extends React.Component<I_Flip> {
 }
 type I_filter_operator = 'less' | 'more' | 'equal' | 'notEqual' | 'contain' | 'notContain'
 type I_filterTrans = (key: I_filter_operator) => string
-export type I_filter_saved_item = { name: string, id: string, rows: I_filter_row[] }
+export type I_filter_saved_item = { name: string, items: I_filter_item[] }
 
 export type I_filter = {
-    rows: I_filter_row[],
-    onChange: (newFilters: I_filter_row[]) => undefined | void | I_filter_row[] | true | false,
-    saveItems?: { name: string, id: string, rows: I_filter_row[] }[],
-    addSaveItem?: (v: { name: string, id: string, rows: I_filter_row[] }) => void,
-    removeSaveItem?: (v: { name: string, id: string, rows: I_filter_row[] }) => void,
-    editSaveItem?: (v: { name: string, id: string, rows: I_filter_row[] }) => void,
-    activeSaveItem?: (v: { name: string, id: string, rows: I_filter_row[] }) => void,
+    items: I_filter_item[],
+    onChange: (newFilters: I_filter_item[]) => undefined | void | I_filter_item[] | true | false,
+    savedItems?: { name: string, items: I_filter_item[] }[],
+    changeSavedItems?:(newSavedItems:{ name: string, items: I_filter_item[] }[])=>void,
+    activeSavedItem?: (v: { name: string, items: I_filter_item[] }) => void,
 }
-export type I_filter_row = {
+export type I_filter_item = {
     columnId: string,
     operator: I_filter_operator,
     value: any,
@@ -657,14 +655,19 @@ type I_Filterbar<T> = {
 type I_filterColumn = { text: string, id: string, type: I_filterType }
 type I_filterContext = {
     addFilter: () => void,
-    changeFilter: (index: number, newFilter: I_filter_row) => void,
-    removeFilter: (filter: I_filter_row) => void,
+    changeFilter: (index: number, newFilter: I_filter_item) => void,
+    removeFilter: (filter: I_filter_item) => void,
     filter: I_filter,
     trans: I_filterTrans,
     getColumnById: (columnId: string) => I_filterColumn,
     columns: I_filterColumn[],
     fa?: boolean,
-    popup: I_usePopup
+    popup: I_usePopup,
+    openSavedItemsModal: () => void,
+    openSaveModal: () => void,
+    openRemoveModal: (saveItem: I_filter_saved_item) => void,
+    openActiveModal: (saveItem: I_filter_saved_item) => void,
+    saveItem:(name:string,isExist:boolean)=>void
 }
 
 export const Filterbar = <T,>(props: I_Filterbar<T>) => {
@@ -699,49 +702,104 @@ export const Filterbar = <T,>(props: I_Filterbar<T>) => {
     const addFilter = () => {
         const { filter } = propsRef.current;
         if (!filter.onChange) { return }
-        const newFilters: I_filter_row[] = [{ value: '', operator: 'contain', columnId: columns[0].id, type: columns[0].type }, ...filter.rows]
+        const newFilters: I_filter_item[] = [{ value: '', operator: 'contain', columnId: columns[0].id, type: columns[0].type }, ...filter.items]
         filter.onChange(newFilters)
     }
-    const changeFilter = (index: number, newFilter: I_filter_row) => {
+    const changeFilter = (index: number, newFilter: I_filter_item) => {
         const { filter } = propsRef.current;
         if (!filter.onChange) { return }
-        const newFilters = filter.rows.map((o, i) => i === index ? newFilter : o)
+        const newFilters = filter.items.map((o, i) => i === index ? newFilter : o)
         filter.onChange(newFilters)
     }
-    const removeFilter = (filterRow: I_filter_row) => {
+    const removeFilter = (filterRow: I_filter_item) => {
         const { filter } = propsRef.current;
         if (!filter.onChange) { return }
-        filter.onChange(filter.rows.filter((o) => o.columnId !== filterRow.columnId))
+        filter.onChange(filter.items.filter((o) => o.columnId !== filterRow.columnId))
+    }
+    const openSavedItemsModal = () => {
+        popup.addModal({
+            position: 'center', body: <SavedModal />,id:'savedItems',
+            header: { title: props.fa ? 'فیلتر های ذخیره شده' : 'saved filters' },
+            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal aio-filter-modal-size' } } }
+        })
+    }
+    const openSaveModal = () => {
+        popup.addModal({
+            header:{title:props.fa?'ذخیره فیلتر':'Save Filter'},position:'center',body: <SaveModal />,
+            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } }
+        })
+    }
+    const openRemoveModal = (saveItem: I_filter_saved_item) => {
+        popup.addConfirm({
+            title: props.fa ? 'حذف فیلتر ذخیره شده' : 'remove saved filter',
+            text: props.fa ? 'از حذف این آیتم اطمینان دارید؟' : 'are you sure to remove this item?',
+            submitText: props.fa ? 'حذف' : 'Remove',
+            canselText: props.fa ? 'لغو' : 'Cansel',
+            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } },
+            submitAttrs:{className:'aio-filter-button aio-filter-active-button'},
+            canselAttrs:{className:'aio-filter-button'},
+            onSubmit: async () => {
+                const {savedItems = [],changeSavedItems} = propsRef.current.filter
+                if (changeSavedItems) { changeSavedItems(savedItems.filter((o)=>o.name !== saveItem.name)); }
+                return true
+            }
+        })
+    }
+    const openActiveModal = (saveItem: I_filter_saved_item) => {
+        popup.addConfirm({
+            title: props.fa ? 'اعمال فیلتر ذخیره شده' : 'activate saved filter',
+            text: props.fa ? 'از فعالسازی این آیتم اطمینان دارید؟' : 'are you sure to activate this item?',
+            submitText: props.fa ? 'حذف' : 'activate',
+            canselText: props.fa ? 'لغو' : 'Cansel',
+            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } },
+            submitAttrs:{className:'aio-filter-button aio-filter-active-button'},
+            canselAttrs:{className:'aio-filter-button'},
+            onSubmit: async () => {
+                const {activeSavedItem} = propsRef.current.filter
+                if (activeSavedItem) { activeSavedItem(saveItem); }
+                popup.removeModal('savedItems')
+                return true
+            }
+        })
+    }
+    const saveItem = (name:string,isExist:boolean)=>{
+        popup.removeModal();
+        const {changeSavedItems,savedItems = [],items = []} = propsRef.current.filter;
+        if(!changeSavedItems){return}
+        let newSavedItems:I_filter_saved_item[] = []
+        if(isExist){newSavedItems = savedItems.map((o)=>o.name === name?{name,items}:o)}
+        else {newSavedItems = [...savedItems,{name,items}]}
+        changeSavedItems(newSavedItems)
     }
     const getColumnById = (columnId: string) => columns.find((o) => o.id === columnId) as I_filterColumn
     const openModal = () => {
         popup.addModal({
             header: { title: 'Filters', after: <FilterToolbar /> },
             position: 'center', body: <FilterModal />,
-            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-backdrop' } } }
+            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal aio-filter-modal-size' } } }
         })
     }
     return (
         <FilterContextProvider value={{
             addFilter, changeFilter, removeFilter, filter: props.filter, trans, getColumnById, columns, fa: props.fa,
-            popup,
+            popup, openSavedItemsModal, openSaveModal, openRemoveModal, openActiveModal,saveItem
         }}>
             <div className="aio-filter">
-                <button className="aio-filter-button" onClick={openModal}>{new UT.GetSvg().getIcon('mdiFilter', 0.7)}</button>
-                <FilterTags rows={props.filter.rows} remove={(row) => removeFilter(row)} />
+                <button className="aio-filter-icon-button" onClick={openModal}>{new UT.GetSvg().getIcon('mdiFilter', 0.7)}</button>
+                <FilterTags rows={props.filter.items} remove={(row) => removeFilter(row)} />
             </div>
             {popup.render()}
         </FilterContextProvider>
     )
 }
-const FilterTags: FC<{ rows: I_filter_row[], remove?: (row: I_filter_row) => void }> = ({ rows, remove }) => {
+const FilterTags: FC<{ rows: I_filter_item[], remove?: (row: I_filter_item) => void }> = ({ rows, remove }) => {
     return (
         <div className="aio-filter-tags">
             {rows.map((row, i) => <FilterTag key={i} filterRow={row} remove={remove ? () => remove(row) : undefined} />)}
         </div>
     )
 }
-const FilterTag: FC<{ filterRow: I_filter_row, remove?: () => void }> = ({ filterRow, remove }) => {
+const FilterTag: FC<{ filterRow: I_filter_item, remove?: () => void }> = ({ filterRow, remove }) => {
     const { getColumnById, trans } = useFilterContext()
     const column = getColumnById(filterRow.columnId)
     return (
@@ -754,72 +812,79 @@ const FilterTag: FC<{ filterRow: I_filter_row, remove?: () => void }> = ({ filte
     )
 }
 const FilterToolbar: FC = () => {
-    const { popup, fa, filter } = useFilterContext()
-    const save = () => {
-        popup.addPrompt({
-            title: fa ? 'نام فیلتر را برای ذخیره وارد کنید' : 'please inter filter name',
-            text:fa?'نام فیلتر ...':'filter name...',
-            onSubmit: async (name) => {if (filter.addSaveItem) {filter.addSaveItem({ name, id: '', rows: filter.rows }); return true}; return false}
-        })
-    }
-    const openSavedModal = () => {
-        popup.addModal({
-            position: 'center', body: <SavedModal />,
-            header: { title: fa ? 'فیلتر های ذخیره شده' : 'saved filters' },
-            setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-backdrop' } } }
-        })
-    }
+    const { openSaveModal, fa, filter, openSavedItemsModal } = useFilterContext()
+    const {savedItems = []} = filter
     return (
         <div className="aio-filter-toolbar">
-            {!!filter.addSaveItem && <div className="aio-filter-icon-button" title={fa ? 'ذخیره فیلتر' : 'Save Filter'} onClick={save}><FilterSaveIcon /></div>}
-            {!!filter.saveItems && <div className="aio-filter-icon-button" title={fa ? 'فیلتر های ذخیره شده' : 'Saved Filters'} onClick={openSavedModal}><FilterSavesIcon /></div>}
+            {
+                !!filter.changeSavedItems && !!filter.items.length && 
+                <div 
+                    className="aio-filter-icon-button aio-filter-active-button" 
+                    title={fa ? 'ذخیره فیلتر' : 'Save Filter'} 
+                    onClick={openSaveModal}
+                ><FilterSaveIcon /></div>
+            }
+            {
+                !!filter.savedItems && 
+                <button 
+                    disabled={!savedItems.length}
+                    className="aio-filter-button aio-filter-active-button" 
+                    title={fa ? 'فیلتر های ذخیره شده' : 'Saved Filters'} 
+                    onClick={openSavedItemsModal}
+                ><FilterSavesIcon />{fa?'فیلتر های ذخیره شده':'Saved Filters'}<div className="aio-filter-badge">{savedItems.length}</div></button>}
+        </div>
+    )
+}
+const SaveModal: FC = () => {
+    const [name, setName] = useState<string>('')
+    const { fa, filter, popup,saveItem } = useFilterContext()
+    const {savedItems = []} = filter;
+    const getOptions = async (text:string) => {
+        const items = filter.savedItems || []
+        return items.filter((item) => {
+            if (!text) { return true }
+            return item.name.indexOf(text) !== -1
+        }).map((item) => ({ text: item.name, value: item.name }))
+    }
+    const isExist = (name:string):boolean=>!!savedItems.find((o)=>o.name === name)
+    const getAddName = ()=>{
+        const exist = isExist(name)
+        if(exist){return fa ? 'ویرایش' : 'Edit'}
+        else {return fa ? 'افزودن' : 'Add'}
+    }
+    return (
+        <div className="aio-filter-save-modal">
+            <AIFormInput
+                label={fa ? 'نام فیلتر را برای ذخیره وارد کنید' : 'please inter filter name'}
+                input={(<SuggestionInput value={name} onChange={(newName) => setName(newName)} getOptions={getOptions}/>)}
+            />
+            <div className="aio-filter-save-modal-footer">
+                <button className="aio-filter-button aio-filter-active-button" disabled={!name || name.length < 3} onClick={() => saveItem(name,isExist(name))}>{getAddName()}</button>
+                <button className="aio-filter-button" onClick={() => popup.removeModal()}>{fa ? 'لغو' : 'Cansel'}</button>
+            </div>
         </div>
     )
 }
 const SavedModal: FC = () => {
     const { filter } = useFilterContext()
-    const { saveItems = [] } = filter;
+    const { savedItems = [] } = filter;
     return (
         <div className="aio-filter-saved-modal">
-            {saveItems?.map((o, i) => <SavedRow key={o.id} saveItem={o} />)}
+            {savedItems?.map((o, i) => <SavedRow key={i} saveItem={o} />)}
         </div>
     )
 }
 const SavedRow: FC<{ saveItem: I_filter_saved_item }> = ({ saveItem }) => {
-    const { popup, fa, filter } = useFilterContext();
-    const remove = () => {
-        popup.addConfirm({
-            title: fa ? 'حذف فیلتر ذخیره شده' : 'remove saved filter',
-            text: fa ? 'از حذف این آیتم اطمینان دارید؟' : 'are you sure to remove this item?',
-            submitText: fa ? 'حذف' : 'Remove',
-            canselText: fa ? 'لغو' : 'Cansel',
-            onSubmit: async () => {
-                if (filter.removeSaveItem) { filter.removeSaveItem(saveItem); }
-                return true
-            }
-        })
-    }
-    const active = () => {
-        popup.addConfirm({
-            title: fa ? 'اعمال فیلتر ذخیره شده' : 'activate saved filter',
-            text: fa ? 'از فعالسازی این آیتم اطمینان دارید؟' : 'are you sure to activate this item?',
-            submitText: fa ? 'حذف' : 'activate',
-            canselText: fa ? 'لغو' : 'Cansel',
-            onSubmit: async () => {
-                if (filter.activeSaveItem) { filter.activeSaveItem(saveItem); }
-                return true
-            }
-        })
-    }
+    const { filter, openRemoveModal, openActiveModal } = useFilterContext();
     return (
         <div className="aio-filter-saved-row">
             <div className="aio-filter-saved-row-header">
                 <div className="aio-filter-saved-name">{saveItem.name}</div>
-                {!!filter.removeSaveItem && <div className="aio-filter-icon-button" onClick={remove}><FilterRemoveIcon /></div>}
-                {!!filter.activeSaveItem && <div className="aio-filter-icon-button" onClick={active}><FilterActiveIcon /></div>}
+                {!!filter.changeSavedItems && <div className="aio-filter-icon-button" onClick={() => openRemoveModal(saveItem)}><FilterRemoveIcon /></div>}
+                {!!filter.activeSavedItem && <div className="aio-filter-icon-button" onClick={() => openActiveModal(saveItem)}><FilterActiveIcon /></div>}
             </div>
             <div className="aio-filter-saved-row-body">
-                <FilterTags rows={saveItem.rows} />
+                <FilterTags rows={saveItem.items} />
             </div>
         </div>
     )
@@ -828,7 +893,7 @@ const SavedRow: FC<{ saveItem: I_filter_saved_item }> = ({ saveItem }) => {
 const FilterContext = createContext<I_filterContext>({} as any)
 const FilterContextProvider = (props: { children: ReactNode, value: I_filterContext }) => <FilterContext.Provider value={props.value}>{props.children}</FilterContext.Provider>
 const useFilterContext = () => useContext(FilterContext)
-const FilterModal: FC = () => <div className="aio-filter-modal"><FilterHeader /><FilterBody /></div>
+const FilterModal: FC = () => <div className="aio-filter-items"><FilterHeader /><FilterBody /></div>
 const FilterHeader = () => {
     const { addFilter } = useFilterContext()
     return (
@@ -841,59 +906,62 @@ const FilterBody = () => {
     const { filter } = useFilterContext()
     return (
         <div className="aio-filter-body">
-            {filter.rows.map((filterRow, i) => <FilterRow key={i} filterRow={filterRow} index={i} />)}
+            {filter.items.map((filterItem, i) => <FilterRow key={i} filterItem={filterItem} index={i} />)}
         </div>
     )
 }
-const FilterRow: FC<{ filterRow: I_filter_row, index: number }> = ({ filterRow, index }) => {
+const FilterRow: FC<{ filterItem: I_filter_item, index: number }> = ({ filterItem, index }) => {
+    const {operator,columnId,type,value} = filterItem;
     const { columns, changeFilter, removeFilter, trans, getColumnById } = useFilterContext()
     const [operators, setOperators] = useState<I_filter_operator[]>(getOperators)
     useEffect(() => {
         setOperators(getOperators())
-    }, [filterRow.type])
+    }, [filterItem.type])
     function getOperators() {
         const res: I_filter_operator[] = []
         const operators: I_filter_operator[] = ['less', 'more', 'equal', 'notEqual', 'contain', 'notContain']
         for (let i = 0; i < operators.length; i++) {
             const o = operators[i];
-            if ((o === 'less' || o === 'more') && filterRow.type === 'text'){continue}
-            if ((o === 'contain' || o === 'notContain') && filterRow.type !== 'text'){continue}
+            if ((o === 'less' || o === 'more') && type === 'text') { continue }
+            if ((o === 'contain' || o === 'notContain') && type !== 'text') { continue }
             res.push(operators[i])
         }
         return res
     }
-    const isTime = ['month', 'day', 'hour', 'minute'].indexOf(filterRow.type || '') !== -1;
+    const isTime = ['month', 'day', 'hour', 'minute'].indexOf(type || '') !== -1;
     return (
         <div className="aio-filter-row">
             <AISelect
-                options={columns} value={filterRow.columnId} option={{ text: (column: I_filterColumn) => column.text, value: (column: I_filterColumn) => column.id }}
-                onChange={(columnId) => changeFilter(index, { ...filterRow, columnId, type: getColumnById(columnId).type })}
+                options={columns} value={columnId} option={{ text: (column: I_filterColumn) => column.text, value: (column: I_filterColumn) => column.id }}
+                onChange={(columnId) => changeFilter(index, { ...filterItem, columnId, type: getColumnById(columnId).type })}
+                popover={{ fitHorizontal: true }}
             />
             <AISelect
-                options={operators} value={filterRow.operator} option={{ text: (operator) => trans(operator), value: (operator) => operator }}
-                onChange={(operator) => changeFilter(index, { ...filterRow, operator })}
+                options={operators} value={operator} option={{ text: (operator) => trans(operator), value: (operator) => operator }}
+                onChange={(operator) => changeFilter(index, { ...filterItem, operator })}
+                popover={{ fitHorizontal: true }}
             />
-            {filterRow.type === 'text' && <AIText value={filterRow.value} onChange={(value) => changeFilter(index, { ...filterRow, value })} />}
-            {filterRow.type === 'number' && <AINumber value={filterRow.value} onChange={(value) => changeFilter(index, { ...filterRow, value })} />}
-            {isTime && <TimeInput filterRow={filterRow} index={index} />}
-            <div className="aio-filter-icon-button" onClick={() => removeFilter(filterRow)}><FilterRemoveIcon /></div>
+            {type === 'text' && <AIText value={value} onChange={(value) => changeFilter(index, { ...filterItem, value })} />}
+            {type === 'number' && <AINumber value={value} onChange={(value) => changeFilter(index, { ...filterItem, value })} />}
+            {isTime && <TimeInput filterItem={filterItem} index={index} />}
+            <div className="aio-filter-icon-button" onClick={() => removeFilter(filterItem)}><FilterRemoveIcon /></div>
         </div>
     )
 }
 
-const TimeInput: FC<{ filterRow: I_filter_row, index: number }> = ({ filterRow, index }) => {
+const TimeInput: FC<{ filterItem: I_filter_item, index: number }> = ({ filterItem, index }) => {
     const { changeFilter, fa } = useFilterContext()
     const [unit] = useState<any>(getUnit)
     function getUnit() {
         const res: any = { year: true, month: true }
-        if (filterRow.type !== 'month') { res.day = true; if (filterRow.type !== 'day') { res.hour = true; if (filterRow.type !== 'hour') { res.minute = true } } }
+        if (filterItem.type !== 'month') { res.day = true; if (filterItem.type !== 'day') { res.hour = true; if (filterItem.type !== 'hour') { res.minute = true } } }
         return res
     }
     const DATE = new AIODate()
     return (
         <AITime
-            jalali={!!fa} unit={unit} value={filterRow.value}
-            onChange={(value) => changeFilter(index, { ...filterRow, value: DATE.getTime(value) })}
+            jalali={!!fa} unit={unit} value={filterItem.value}
+            onChange={(value) => changeFilter(index, { ...filterItem, value: DATE.getTime(value) })}
         />
     )
 }
