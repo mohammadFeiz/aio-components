@@ -15,6 +15,7 @@ declare class AioInputDefaultsClass {
 export declare const AIOInputDefaults: AioInputDefaultsClass;
 declare const AIOInput: FC<AITYPE>;
 export default AIOInput;
+export declare const SuggestionInput: FC<Omit<AITYPE, 'type'>>;
 export type I_openState = boolean | undefined;
 export type AI_Layout = {
     option?: AI_option;
@@ -151,7 +152,7 @@ export type AI_switch = {
     width?: number;
     padding?: number;
 };
-export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
+export type AITYPE = AI_hasOption & AI_isDropdown & AI_isMultiple & AI_hasKeyboard & AI_isRange & AI_isTree & AI_isDate & {
     after?: ReactNode | ((p?: any) => ReactNode);
     attrs?: any;
     before?: ReactNode | ((p?: any) => ReactNode);
@@ -234,44 +235,10 @@ export type AI_options = {
     optionsList: AI_option[];
     optionsDic: AI_optionDic;
 };
-export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' | 'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion';
-export type AI_table_column = {
-    title?: any;
-    value?: any;
-    sort?: true | AI_table_sort;
-    search?: boolean;
-    id?: string;
-    _id?: string;
-    width?: any;
-    minWidth?: any;
-    input?: AITYPE;
-    onChange?: (newValue: any) => void;
-    titleAttrs?: {
-        [key: string]: any;
-    } | string;
-    template?: string | ((p: {
-        row: any;
-        column: AI_table_column;
-        rowIndex: number;
-    }) => ReactNode);
-    excel?: string | boolean;
-    justify?: boolean;
-    cellAttrs?: {
-        [key: string]: any;
-    } | ((p: {
-        row: any;
-        rowIndex: number;
-        column: AI_table_column;
-    }) => any) | string;
-};
+export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' | 'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion';
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = {
     [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean;
-};
-export type AI_table_param = {
-    row: any;
-    column: AI_table_column;
-    rowIndex: number;
 };
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year';
 export type AI_labels = AI_label[];
@@ -317,7 +284,7 @@ export type AI_context = {
     popup: AP_usePopup;
     showPassword: boolean;
     setShowPassword: (v?: boolean) => void;
-    DragOptions: UT.DragClass;
+    DragOptions: UT.I_useDrag;
     datauniqid: string;
     touch: boolean;
     click: (e: any, dom: any) => void;
@@ -336,58 +303,6 @@ export type AI_types = {
     hasKeyboard: boolean;
     hasText: boolean;
     hasSearch: boolean;
-};
-export type AI_table_sort = {
-    active?: boolean;
-    dir?: 'dec' | 'inc';
-    title?: ReactNode;
-    type?: 'string' | 'number';
-    sortId?: string;
-    getValue?: (row: any) => any;
-};
-export type type_table_temp = {
-    start?: any;
-    isInitSortExecuted?: boolean;
-};
-export type AI_table_paging = {
-    serverSide?: boolean;
-    number: number;
-    size: number;
-    length?: number;
-    sizes?: number[];
-};
-export type AI_table_rows = {
-    rows: any[];
-    searchedRows: any[];
-    sortedRows: any[];
-    pagedRows: any[];
-};
-export type type_table_getCellAttrs = (p: {
-    row: any;
-    rowIndex: number;
-    column: AI_table_column;
-    type: 'title' | 'cell';
-}) => any;
-export type type_table_context = {
-    rootProps: AITYPE;
-    columns: AI_table_column[];
-    ROWS: {
-        rows: any[];
-        searchedRows: any[];
-        sortedRows: any[];
-        pagedRows: any[];
-    };
-    add: () => void;
-    remove: (row: any, index: number) => void;
-    search: (searchValue: string) => void;
-    exportToExcel: () => void;
-    sorts: AI_table_sort[];
-    setSorts: (newSorts: AI_table_sort[]) => void;
-    sortRows: (rows: any[], sorts: AI_table_sort[]) => any[];
-    excelColumns: AI_table_column[];
-    getRowAttrs: (row: any, rowIndex: number) => any;
-    getCellAttrs: type_table_getCellAttrs;
-    getDynamics: any;
 };
 export type AI_Popover_props = {
     getRootProps: () => AITYPE;
@@ -485,47 +400,6 @@ type AI_hasKeyboard = {
     delay?: number;
     voice?: 'en' | 'fa';
 };
-type AI_isTable = {
-    addText?: ReactNode | ((value: any) => ReactNode);
-    columnGap?: number;
-    columns?: AI_table_column[] | ((p?: any) => AI_table_column[]);
-    excel?: string | ((value: any[]) => any[]);
-    getValue?: {
-        [key: string]: (p: AI_table_param) => any;
-    };
-    headerAttrs?: any;
-    onAdd?: {
-        [key: string]: any;
-    } | ((p?: any) => Promise<boolean | void | undefined>);
-    onChangePaging?: (newPaging: AI_table_paging) => void;
-    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>;
-    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void);
-    onSearch?: true | ((searchValue: string) => void);
-    paging?: AI_table_paging;
-    removeText?: string;
-    rowAfter?: (p: {
-        row: any;
-        rowIndex: number;
-    }) => ReactNode;
-    rowAttrs?: (p: {
-        row: any;
-        rowIndex: number;
-    }) => any;
-    rowBefore?: (p: {
-        row: any;
-        rowIndex: number;
-    }) => ReactNode;
-    rowGap?: number;
-    rowsTemplate?: (rows: any[]) => ReactNode;
-    rowTemplate?: (p: {
-        row: any;
-        rowIndex: number;
-        isLast: boolean;
-    }) => ReactNode;
-    toolbar?: ReactNode | (() => ReactNode);
-    toolbarAttrs?: any;
-    tabIndex?: number;
-};
 type AI_isRange = {
     end?: number;
     fill?: false | {
@@ -606,7 +480,7 @@ type AI_isTree = {
 export type AI<AI_type> = Omit<AITYPE, 'onChange' | 'type'> & {
     onChange?: AI_onChange<AI_type>;
 };
-type AI_onChange<AI_type> = AI_type extends 'text' ? (v: string) => void : AI_type extends 'number' ? (v: number | undefined) => void : AI_type extends 'textarea' ? (v: string) => void : AI_type extends 'password' ? (v: string) => void : AI_type extends 'color' ? (v: string) => void : AI_type extends 'select' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'radio' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'tabs' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'buttons' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'tags' ? (v: any[]) => void : AI_type extends 'tree' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'image' ? (v: any) => void : AI_type extends 'file' ? (v: any) => void : AI_type extends 'checkbox' ? (v: any) => void : AI_type extends 'date' ? (v: any, dateDetails: AI_dateDetails) => void : AI_type extends 'time' ? (v: any) => void : AI_type extends 'slider' ? (v: any) => void : AI_type extends 'spinner' ? (v: any) => void : AI_type extends 'acardion' ? (v: any) => void : AI_type extends 'list' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'table' ? (v: any) => void : never;
+type AI_onChange<AI_type> = AI_type extends 'text' ? (v: string) => void : AI_type extends 'number' ? (v: number | undefined) => void : AI_type extends 'textarea' ? (v: string) => void : AI_type extends 'password' ? (v: string) => void : AI_type extends 'color' ? (v: string) => void : AI_type extends 'select' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'radio' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'tabs' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'buttons' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'tags' ? (v: any[]) => void : AI_type extends 'tree' ? (v: any, optionDetails: AI_optionDetails) => void : AI_type extends 'image' ? (v: any) => void : AI_type extends 'file' ? (v: any) => void : AI_type extends 'checkbox' ? (v: any) => void : AI_type extends 'date' ? (v: any, dateDetails: AI_dateDetails) => void : AI_type extends 'time' ? (v: any) => void : AI_type extends 'slider' ? (v: any) => void : AI_type extends 'spinner' ? (v: any) => void : AI_type extends 'acardion' ? (v: any) => void : AI_type extends 'list' ? (v: any, optionDetails: AI_optionDetails) => void : never;
 export declare const AIText: FC<AI<'text'>>;
 export declare const AINumber: FC<AI<'number'>>;
 export declare const AITextarea: FC<AI<'textarea'>>;
@@ -627,7 +501,6 @@ export declare const AISlider: FC<AI<'slider'>>;
 export declare const AISpinner: FC<AI<'spinner'>>;
 export declare const AIAcardion: FC<AI<'acardion'>>;
 export declare const AIList: FC<AI<'list'>>;
-export declare const AITable: FC<AI<'table'>>;
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode';
 export type I_formInput<T> = AITYPE & {
     label: ReactNode;

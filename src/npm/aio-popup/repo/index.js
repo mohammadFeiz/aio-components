@@ -160,62 +160,75 @@ const usePopup = (props) => {
     const removeHighlight = () => setHighlight(undefined);
     const addConfirm = (obj) => {
         let { title, subtitle, text, submitText = 'Yes', canselText = 'No', onSubmit, onCansel = () => { }, setAttrs = () => { return {}; } } = obj;
+        const submitAttrs = AddToAttrs(obj.submitAttrs, {
+            className: 'active', attrs: {
+                onClick: () => __awaiter(void 0, void 0, void 0, function* () {
+                    if (!onSubmit) {
+                        return;
+                    }
+                    let res = yield onSubmit();
+                    if (res !== false) {
+                        removeModal();
+                    }
+                }),
+                type: 'button'
+            }
+        });
+        const canselAttrs = AddToAttrs(obj.canselAttrs, {
+            attrs: {
+                onClick: () => { onCansel(); removeModal(); },
+                type: 'button'
+            }
+        });
         let config = {
-            position: 'center',
+            position: 'center', header: { title, subtitle }, body: _jsx(_Fragment, { children: text }),
             setAttrs: (key) => {
                 let attrs = setAttrs(key);
-                if (key === 'modal') {
-                    return AddToAttrs(attrs, { className: 'aio-popup-confirm' });
-                }
-                return attrs;
+                return key === 'modal' ? AddToAttrs(attrs, { className: 'aio-popup-confirm' }) : attrs;
             },
-            header: { title, subtitle },
-            body: _jsx(_Fragment, { children: text }),
-            footer: (_jsxs(_Fragment, { children: [_jsx("button", { type: 'button', onClick: () => { onCansel(); removeModal(); }, children: canselText }), _jsx("button", { type: 'button', className: 'active', onClick: () => __awaiter(void 0, void 0, void 0, function* () {
-                            if (!onSubmit) {
-                                return;
-                            }
-                            let res = yield onSubmit();
-                            if (res !== false) {
-                                removeModal();
-                            }
-                        }), children: submitText })] }))
+            footer: (_jsxs(_Fragment, { children: [_jsx("button", Object.assign({}, canselAttrs, { children: canselText })), _jsx("button", Object.assign({}, submitAttrs, { children: submitText }))] }))
         };
         addModal(config);
     };
     const addPrompt = (obj) => {
         const id = 'a' + (Math.round(Math.random() * 100000));
-        let { title, subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {}; } } = obj;
+        let { title, text = '', subtitle, submitText = 'Submit', canselText = 'close', onSubmit, onCansel = () => { }, setAttrs = () => { return {}; } } = obj;
+        const submitAttrs = AddToAttrs(obj.submitAttrs, {
+            className: 'active', attrs: {
+                onClick: () => __awaiter(void 0, void 0, void 0, function* () {
+                    if (!onSubmit) {
+                        return;
+                    }
+                    const value = promptTexts.current[id];
+                    let res = yield onSubmit(value);
+                    if (res !== false) {
+                        removeModal();
+                    }
+                    else {
+                        const newPromptTexts = {};
+                        for (let prop in promptTexts.current) {
+                            if (prop !== id) {
+                                newPromptTexts[prop] = promptTexts.current[prop];
+                            }
+                        }
+                        promptTexts.current = newPromptTexts;
+                    }
+                }),
+                type: 'button'
+            }
+        });
+        const canselAttrs = AddToAttrs(obj.canselAttrs, { attrs: {
+                onClick: () => { onCansel(); removeModal(); },
+                type: 'button'
+            } });
         let config = {
-            position: 'center',
+            position: 'center', header: { title, subtitle },
             setAttrs: (key) => {
                 let attrs = setAttrs(key);
-                if (key === 'modal') {
-                    return AddToAttrs(attrs, { className: 'aio-popup-prompt' });
-                }
-                return attrs;
+                return key === 'modal' ? AddToAttrs(attrs, { className: 'aio-popup-prompt' }) : attrs;
             },
-            header: { title, subtitle },
-            body: _jsx(Prompt, { change: (value) => promptTexts.current = Object.assign(Object.assign({}, promptTexts.current), { [id]: value }) }),
-            footer: (_jsxs(_Fragment, { children: [_jsx("button", { type: 'button', onClick: () => { onCansel(); removeModal(); }, children: canselText }), _jsx("button", { type: 'button', className: 'active', onClick: () => __awaiter(void 0, void 0, void 0, function* () {
-                            if (!onSubmit) {
-                                return;
-                            }
-                            const value = promptTexts.current[id];
-                            let res = yield onSubmit(value);
-                            if (res !== false) {
-                                removeModal();
-                            }
-                            else {
-                                const newPromptTexts = {};
-                                for (let prop in promptTexts.current) {
-                                    if (prop !== id) {
-                                        newPromptTexts[prop] = promptTexts.current[prop];
-                                    }
-                                }
-                                promptTexts.current = newPromptTexts;
-                            }
-                        }), children: submitText })] }))
+            body: _jsx(Prompt, { change: (value) => promptTexts.current = Object.assign(Object.assign({}, promptTexts.current), { [id]: value }), placeholder: text }),
+            footer: (_jsxs(_Fragment, { children: [_jsx("button", Object.assign({}, canselAttrs, { children: canselText })), _jsx("button", Object.assign({}, submitAttrs, { children: submitText }))] }))
         };
         addModal(config);
     };
@@ -235,9 +248,9 @@ const usePopup = (props) => {
     return { addAlert, addSnackebar, removeModal, addModal, getModals, addHighlight, removeHighlight, render, addConfirm, addPrompt, portal };
 };
 export default usePopup;
-const Prompt = ({ change }) => {
+const Prompt = ({ change, placeholder }) => {
     const [text, setText] = useState('');
-    return (_jsx("textarea", { placeholder: text, value: text, onChange: (e) => { const value = e.target.value; setText(value); change(value); } }));
+    return (_jsx("textarea", { placeholder: placeholder, value: text, onChange: (e) => { const value = e.target.value; setText(value); change(value); } }));
 };
 const POPUPCTX = createContext({});
 const Popup = ({ modal, isLast, renderCaller }) => {
@@ -718,16 +731,16 @@ function getEasing(highlight) {
     const { easing } = highlight;
     var easingNames = [
         'linear',
-        'easeInQuad', //1
-        'easeInSine', //5
-        'easeInCirc', //7
-        'easeInBack', //8
-        'easeOutQuad', //9
-        'easeOutSine', //13
-        'easeOutCirc', //15
-        'easeInOutQuad', //18
-        'easeInOutSine', //22
-        'easeInOutBack', //25
+        'easeInQuad',
+        'easeInSine',
+        'easeInCirc',
+        'easeInBack',
+        'easeOutQuad',
+        'easeOutSine',
+        'easeOutCirc',
+        'easeInOutQuad',
+        'easeInOutSine',
+        'easeInOutBack',
         'easeOutBounce', //27
     ];
     if (typeof easing === 'number') {

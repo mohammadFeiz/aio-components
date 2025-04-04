@@ -77,15 +77,20 @@ export type AP_confirm = {
     canselText?: string;
     onSubmit?: () => Promise<boolean>;
     onCansel?: () => void;
+    submitAttrs?: any;
+    canselAttrs?: any;
     setAttrs?: AP_setAttrs;
 };
 export type AP_prompt = {
     title?: string;
+    text: string;
     subtitle?: string;
     submitText?: string;
     canselText?: string;
     onSubmit?: (text: string) => Promise<boolean>;
     onCansel?: () => void;
+    submitAttrs?: any;
+    canselAttrs?: any;
     setAttrs?: AP_setAttrs;
 };
 type AP_removeModal = (arg?: string) => void;

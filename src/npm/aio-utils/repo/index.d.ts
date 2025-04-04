@@ -19,7 +19,8 @@ export declare function SortArray(arr: any[], sorts: {
     inc?: boolean;
 }[]): any[];
 export declare function ParseString(str: string): any;
-export declare function ReOrder(data: any[], fromIndex: number, toIndex: number): any[];
+type I_reOrder = (data: any[], fromIndex: number, toIndex: number) => any[];
+export declare const ReOrder: I_reOrder;
 export declare class DragClass {
     over: (e: any) => void;
     dragData: any;
@@ -30,6 +31,12 @@ export declare class DragClass {
         callback: (dragData: any, dropData: any) => void;
     });
 }
+export type I_useDrag = {
+    reOrder: I_reOrder;
+    getDragAttrs: (dragData: any) => any;
+    getDropAttrs: (dropData: any) => any;
+};
+export declare const useDrag: (callback: (dragData: any, dropData: any, reOrder: (data: any, fromIndex: number, toIndex: number) => any) => void) => I_useDrag;
 export declare function GetClient(e: any): {
     x: number;
     y: number;
@@ -284,6 +291,10 @@ declare class GetSvg {
     mdiDelete: (color?: string) => JSX.Element;
     mdiCircleSmall: (color?: string) => JSX.Element;
     mdiMicrophoneOutline: (color?: string) => JSX.Element;
+    mdiFilter: (color?: string) => JSX.Element;
+    mdiSaveContent: (color?: string) => JSX.Element;
+    mdiListBox: (color?: string) => JSX.Element;
+    mdiCheckBold: (color?: string) => JSX.Element;
 }
 export { GetSvg };
 export declare class getRandomByPriority {
@@ -519,3 +530,6 @@ export declare function ValidateIrMobile(p: {
     fa?: boolean;
     label: string;
 }): string | undefined;
+export declare function AddQueryParamsToUrl(url: string, params: {
+    [key: string]: any;
+}, prefix?: string): string;

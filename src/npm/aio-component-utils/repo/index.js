@@ -1,11 +1,21 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import React, { useEffect, useRef, useState } from "react";
-import { AddToAttrs, GetArray, Storage } from "aio-utils";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import * as UT from "aio-utils";
 import AIODate from "aio-date";
 import Prism from 'prismjs';
-import { AITree } from "aio-input";
+import { AIFormInput, AINumber, AISelect, AIText, AITime, AITree, SuggestionInput } from "aio-input";
 import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
+import usePopup from "aio-popup";
 import './index.css';
 export const Indent = (props) => {
     const { width, height, level, open, row, rtl, isLastChild, isParentLastChild, isLeaf } = props;
@@ -112,12 +122,12 @@ export const AIPanel = ({ text, subtext, before, after, body }) => {
     return (_jsxs("div", { className: "ai-panel", children: [header_layout(), " ", body_layout()] }));
 };
 export const AICard = ({ text, subtext, onClick = () => { }, before, after, attrs, className, style }) => {
-    const Attrs = AddToAttrs(attrs, { className: ["ai-card", className], style });
+    const Attrs = UT.AddToAttrs(attrs, { className: ["ai-card", className], style });
     return (_jsxs("div", Object.assign({}, Attrs, { children: [before !== undefined && _jsx("div", { className: "ai-card-before", onClick: (e) => e.stopPropagation(), children: before }), _jsxs("div", { className: "ai-card-body", onClick: onClick, children: [_jsx("div", { className: "ai-card-text", children: text }), subtext !== undefined && _jsx("div", { className: "ai-card-subtext", children: subtext })] }), after !== undefined && _jsx("div", { className: "ai-card-after", onClick: (e) => e.stopPropagation(), children: after })] })));
 };
 export const AIApp = (props) => {
     const [storage] = useState(getStorage);
-    function getStorage() { return new Storage('aiapp' + props.appId); }
+    function getStorage() { return new UT.Storage('aiapp' + props.appId); }
     const sidenav = useSidenav({ sidenav: props.sidenav, appId: props.appId, storage });
     function header_layout() {
         if (!props.header) {
@@ -129,9 +139,17 @@ export const AIApp = (props) => {
         }
         return header;
     }
+    function getcontent() {
+        if (sidenav.active) {
+            if (sidenav.active.render) {
+                return sidenav.active.render();
+            }
+        }
+        return props.body || null;
+    }
     function body_layout() {
         var _a;
-        const content = props.body;
+        const content = getcontent();
         return (_jsxs("div", { className: 'ai-app-content', children: [!!props.sidenav &&
                     _jsx("div", { className: "ai-app-side", children: _jsx(Sidenav, { rtl: props.rtl, attrs: props.sidenav.attrs, items: props.sidenav.items, header: props.sidenav.header, value: (_a = sidenav.active) === null || _a === void 0 ? void 0 : _a.value, onChange: (v) => sidenav.changeActive(v) }) }), _jsxs("div", { className: "ai-app-center", children: [header_layout(), _jsx("div", { className: "ai-app-body", children: content })] })] }));
     }
@@ -141,7 +159,7 @@ export const AIApp = (props) => {
         }
         return (_jsx(AIBottomMenu, { bottomMenu: props.bottomMenu }));
     }
-    const attrs = AddToAttrs(props.attrs, { className: 'ai-app' });
+    const attrs = UT.AddToAttrs(props.attrs, { className: 'ai-app' });
     return (_jsxs("div", Object.assign({}, attrs, { children: [body_layout(), bottomMenu_layout(), !!props.children && props.children] })));
 };
 const useSidenav = (props) => {
@@ -209,7 +227,7 @@ const AIBottomMenu = ({ bottomMenu }) => {
             return null;
         }
         const { value, text, uptext, subtext, active, before, after, attrs, className, style } = getProps(item, ['value', 'text', 'uptext', 'subtext', 'active', 'before', 'after', 'show', 'attrs', 'className', 'style']);
-        const Attrs = AddToAttrs(attrs, {
+        const Attrs = UT.AddToAttrs(attrs, {
             className: ['ai-app-bottom-menu-option', active ? 'active' : undefined, className],
             style, attrs: { onClick: () => { if (option.onClick) {
                     option.onClick(item);
@@ -260,7 +278,7 @@ export const Sidenav = (props) => {
         }
     };
     let finalOptions = Object.assign(Object.assign({}, defaultOption), { className: (option, { level }) => `ai-sidenav-${level === 0 ? 'item' : 'sub-item'}${value !== undefined && option.value === value ? ' active' : ''}` });
-    const attrs = AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] });
+    const attrs = UT.AddToAttrs(props.attrs, { className: ['ai-sidenav', props.className, !!minimize ? 'ai-sidenav-minimize' : undefined] });
     return (_jsxs("div", Object.assign({}, attrs, { children: [!!header &&
                 _jsx("div", { className: "ai-sidenav-header", children: header(minimize) }), !!props.minimize &&
                 _jsx("div", { className: "ai-sidenav-minimize-button", onClick: () => setMinimize(!minimize), children: _jsx("div", { className: "ai-sidenav-minimize-icon", children: icons.getIcon('mdiMenu', 1) }) }), _jsx("div", { className: "ai-sidenav-body", children: _jsx(AITree, Object.assign({}, attrs, { toggleIcon: () => false, className: 'ai-sidenav-tree', size: 48, toggleRef: toggleRef, value: [...items], getChilds: (p) => p.row.items || [], option: finalOptions, indent: 0 })) })] })));
@@ -285,7 +303,7 @@ export const MonthCells = ({ year, month, cellContent, weekDayContent }) => {
         return (_jsx("div", { className: "ai-month-grid", style: { gridTemplateColumns }, children: DATE.getWeekDays(true).map((o, i) => _jsx("div", { className: `ai-month-weekday`, children: weekDayContent(i) }, o)) }));
     }
     function spaces_layout() { return new Array(dateInfo.firstDayIndex).fill(0).map((o, i) => _jsx("div", { className: "" }, i)); }
-    function cells_layout() { return GetArray(dateInfo.monthDaysLength).map((day) => cell_layout(day + 1)); }
+    function cells_layout() { return UT.GetArray(dateInfo.monthDaysLength).map((day) => cell_layout(day + 1)); }
     function cell_layout(day) {
         const date = [year, month, day];
         const weekDayIndex = DATE.getWeekDay(date).index;
@@ -413,7 +431,7 @@ export const NodeAttrs = (p) => {
         }
         return [nodeClassName, rootClassName, p.node.className, scrollClassName, alignClassName, ...visibilityClassNames];
     };
-    return AddToAttrs(p.node.attrs, { className: NodeClassNames(), style: NodeStyle() });
+    return UT.AddToAttrs(p.node.attrs, { className: NodeClassNames(), style: NodeStyle() });
 };
 export const Node = ({ node, level, index, parentNode, updateNode }) => {
     const [dom, setDom] = useState(null);
@@ -504,3 +522,460 @@ export class Flip extends React.Component {
         return (_jsx("div", { ref: this.ref, className: "tick", style: { fontSize }, children: _jsx("div", { "data-repeat": "true", "aria-hidden": "true", children: _jsx("span", { "data-view": "flip", children: "Tick" }) }) }));
     }
 }
+export const Filterbar = (props) => {
+    const propsRef = useRef(props);
+    propsRef.current = props;
+    const popup = usePopup();
+    const [columns, setColumns] = useState(getColumns);
+    useEffect(() => {
+        setColumns(getColumns());
+    }, [props.columns]);
+    function getColumns() {
+        return props.columns.map((col, i) => {
+            const text = props.columnOption.text(col);
+            const id = props.columnOption.id(col);
+            const type = props.columnOption.type(col);
+            return { text, id, type };
+        });
+    }
+    if (!columns.length) {
+        return null;
+    }
+    const trans = (key) => {
+        const { fa } = propsRef.current;
+        const dic = {
+            'less': fa ? 'کوچک تر از' : 'less than',
+            'more': fa ? 'بزرگتر از' : 'more than',
+            'equal': fa ? 'برابر' : 'equal',
+            'notEqual': fa ? 'مخالف' : 'not equal',
+            'contain': fa ? 'شامل باشد' : 'contain',
+            'notContain': fa ? 'شامل نباشد' : 'not contain'
+        };
+        return dic[key];
+    };
+    const addFilter = () => {
+        const { filter } = propsRef.current;
+        if (!filter.onChange) {
+            return;
+        }
+        const newFilters = [{ value: '', operator: 'contain', columnId: columns[0].id, type: columns[0].type }, ...filter.items];
+        filter.onChange(newFilters);
+    };
+    const changeFilter = (index, newFilter) => {
+        const { filter } = propsRef.current;
+        if (!filter.onChange) {
+            return;
+        }
+        const newFilters = filter.items.map((o, i) => i === index ? newFilter : o);
+        filter.onChange(newFilters);
+    };
+    const removeFilter = (filterRow) => {
+        const { filter } = propsRef.current;
+        if (!filter.onChange) {
+            return;
+        }
+        filter.onChange(filter.items.filter((o) => o.columnId !== filterRow.columnId));
+    };
+    const openSavedItemsModal = () => {
+        popup.addModal({
+            position: 'center', body: _jsx(SavedModal, {}), id: 'savedItems',
+            header: { title: props.fa ? 'فیلتر های ذخیره شده' : 'saved filters' },
+            setAttrs: (key) => { if (key === 'backdrop') {
+                return { className: 'aio-filter-modal aio-filter-modal-size' };
+            } }
+        });
+    };
+    const openSaveModal = () => {
+        popup.addModal({
+            header: { title: props.fa ? 'ذخیره فیلتر' : 'Save Filter' }, position: 'center', body: _jsx(SaveModal, {}),
+            setAttrs: (key) => { if (key === 'backdrop') {
+                return { className: 'aio-filter-modal' };
+            } }
+        });
+    };
+    const openRemoveModal = (saveItem) => {
+        popup.addConfirm({
+            title: props.fa ? 'حذف فیلتر ذخیره شده' : 'remove saved filter',
+            text: props.fa ? 'از حذف این آیتم اطمینان دارید؟' : 'are you sure to remove this item?',
+            submitText: props.fa ? 'حذف' : 'Remove',
+            canselText: props.fa ? 'لغو' : 'Cansel',
+            setAttrs: (key) => { if (key === 'backdrop') {
+                return { className: 'aio-filter-modal' };
+            } },
+            submitAttrs: { className: 'aio-filter-button aio-filter-active-button' },
+            canselAttrs: { className: 'aio-filter-button' },
+            onSubmit: () => __awaiter(void 0, void 0, void 0, function* () {
+                const { savedItems = [], changeSavedItems } = propsRef.current.filter;
+                if (changeSavedItems) {
+                    changeSavedItems(savedItems.filter((o) => o.name !== saveItem.name));
+                }
+                return true;
+            })
+        });
+    };
+    const openActiveModal = (saveItem) => {
+        popup.addConfirm({
+            title: props.fa ? 'اعمال فیلتر ذخیره شده' : 'activate saved filter',
+            text: props.fa ? 'از فعالسازی این آیتم اطمینان دارید؟' : 'are you sure to activate this item?',
+            submitText: props.fa ? 'حذف' : 'activate',
+            canselText: props.fa ? 'لغو' : 'Cansel',
+            setAttrs: (key) => { if (key === 'backdrop') {
+                return { className: 'aio-filter-modal' };
+            } },
+            submitAttrs: { className: 'aio-filter-button aio-filter-active-button' },
+            canselAttrs: { className: 'aio-filter-button' },
+            onSubmit: () => __awaiter(void 0, void 0, void 0, function* () {
+                const { activeSavedItem } = propsRef.current.filter;
+                if (activeSavedItem) {
+                    activeSavedItem(saveItem);
+                }
+                popup.removeModal('savedItems');
+                return true;
+            })
+        });
+    };
+    const saveItem = (name, isExist) => {
+        popup.removeModal();
+        const { changeSavedItems, savedItems = [], items = [] } = propsRef.current.filter;
+        if (!changeSavedItems) {
+            return;
+        }
+        let newSavedItems = [];
+        if (isExist) {
+            newSavedItems = savedItems.map((o) => o.name === name ? { name, items } : o);
+        }
+        else {
+            newSavedItems = [...savedItems, { name, items }];
+        }
+        changeSavedItems(newSavedItems);
+    };
+    const getColumnById = (columnId) => columns.find((o) => o.id === columnId);
+    const openModal = () => {
+        popup.addModal({
+            header: { title: 'Filters', after: _jsx(FilterToolbar, {}) },
+            position: 'center', body: _jsx(FilterModal, {}),
+            setAttrs: (key) => { if (key === 'backdrop') {
+                return { className: 'aio-filter-modal aio-filter-modal-size' };
+            } }
+        });
+    };
+    return (_jsxs(FilterContextProvider, { value: {
+            addFilter, changeFilter, removeFilter, filter: props.filter, trans, getColumnById, columns, fa: props.fa,
+            popup, openSavedItemsModal, openSaveModal, openRemoveModal, openActiveModal, saveItem
+        }, children: [_jsxs("div", { className: "aio-filter", children: [_jsx("button", { className: "aio-filter-icon-button", onClick: openModal, children: new UT.GetSvg().getIcon('mdiFilter', 0.7) }), _jsx(FilterTags, { rows: props.filter.items, remove: (row) => removeFilter(row) })] }), popup.render()] }));
+};
+const FilterTags = ({ rows, remove }) => {
+    return (_jsx("div", { className: "aio-filter-tags", children: rows.map((row, i) => _jsx(FilterTag, { filterRow: row, remove: remove ? () => remove(row) : undefined }, i)) }));
+};
+const FilterTag = ({ filterRow, remove }) => {
+    const { getColumnById, trans } = useFilterContext();
+    const column = getColumnById(filterRow.columnId);
+    return (_jsxs("div", { className: "aio-filter-tag", onClick: remove, children: [_jsx("div", { className: "aio-filter-tag-column", children: column.text }), _jsx("div", { className: "aio-filter-tag-operator", children: trans(filterRow.operator) }), _jsx("div", { className: "aio-filter-tag-value", children: filterRow.value }), !!remove && new UT.GetSvg().getIcon('mdiClose', 0.6)] }));
+};
+const FilterToolbar = () => {
+    const { openSaveModal, fa, filter, openSavedItemsModal } = useFilterContext();
+    const { savedItems = [] } = filter;
+    return (_jsxs("div", { className: "aio-filter-toolbar", children: [!!filter.changeSavedItems && !!filter.items.length &&
+                _jsx("div", { className: "aio-filter-icon-button aio-filter-active-button", title: fa ? 'ذخیره فیلتر' : 'Save Filter', onClick: openSaveModal, children: _jsx(FilterSaveIcon, {}) }), !!filter.savedItems &&
+                _jsxs("button", { disabled: !savedItems.length, className: "aio-filter-button aio-filter-active-button", title: fa ? 'فیلتر های ذخیره شده' : 'Saved Filters', onClick: openSavedItemsModal, children: [_jsx(FilterSavesIcon, {}), fa ? 'فیلتر های ذخیره شده' : 'Saved Filters', _jsx("div", { className: "aio-filter-badge", children: savedItems.length })] })] }));
+};
+const SaveModal = () => {
+    const [name, setName] = useState('');
+    const { fa, filter, popup, saveItem } = useFilterContext();
+    const { savedItems = [] } = filter;
+    const getOptions = (text) => __awaiter(void 0, void 0, void 0, function* () {
+        const items = filter.savedItems || [];
+        return items.filter((item) => {
+            if (!text) {
+                return true;
+            }
+            return item.name.indexOf(text) !== -1;
+        }).map((item) => ({ text: item.name, value: item.name }));
+    });
+    const isExist = (name) => !!savedItems.find((o) => o.name === name);
+    const getAddName = () => {
+        const exist = isExist(name);
+        if (exist) {
+            return fa ? 'ویرایش' : 'Edit';
+        }
+        else {
+            return fa ? 'افزودن' : 'Add';
+        }
+    };
+    return (_jsxs("div", { className: "aio-filter-save-modal", children: [_jsx(AIFormInput, { label: fa ? 'نام فیلتر را برای ذخیره وارد کنید' : 'please inter filter name', input: (_jsx(SuggestionInput, { value: name, onChange: (newName) => setName(newName), getOptions: getOptions })) }), _jsxs("div", { className: "aio-filter-save-modal-footer", children: [_jsx("button", { className: "aio-filter-button aio-filter-active-button", disabled: !name || name.length < 3, onClick: () => saveItem(name, isExist(name)), children: getAddName() }), _jsx("button", { className: "aio-filter-button", onClick: () => popup.removeModal(), children: fa ? 'لغو' : 'Cansel' })] })] }));
+};
+const SavedModal = () => {
+    const { filter } = useFilterContext();
+    const { savedItems = [] } = filter;
+    return (_jsx("div", { className: "aio-filter-saved-modal", children: savedItems === null || savedItems === void 0 ? void 0 : savedItems.map((o, i) => _jsx(SavedRow, { saveItem: o }, i)) }));
+};
+const SavedRow = ({ saveItem }) => {
+    const { filter, openRemoveModal, openActiveModal } = useFilterContext();
+    return (_jsxs("div", { className: "aio-filter-saved-row", children: [_jsxs("div", { className: "aio-filter-saved-row-header", children: [_jsx("div", { className: "aio-filter-saved-name", children: saveItem.name }), !!filter.changeSavedItems && _jsx("div", { className: "aio-filter-icon-button", onClick: () => openRemoveModal(saveItem), children: _jsx(FilterRemoveIcon, {}) }), !!filter.activeSavedItem && _jsx("div", { className: "aio-filter-icon-button", onClick: () => openActiveModal(saveItem), children: _jsx(FilterActiveIcon, {}) })] }), _jsx("div", { className: "aio-filter-saved-row-body", children: _jsx(FilterTags, { rows: saveItem.items }) })] }));
+};
+const FilterContext = createContext({});
+const FilterContextProvider = (props) => _jsx(FilterContext.Provider, { value: props.value, children: props.children });
+const useFilterContext = () => useContext(FilterContext);
+const FilterModal = () => _jsxs("div", { className: "aio-filter-items", children: [_jsx(FilterHeader, {}), _jsx(FilterBody, {})] });
+const FilterHeader = () => {
+    const { addFilter } = useFilterContext();
+    return (_jsx("div", { className: "aio-filter-header", children: _jsxs("button", { className: "aio-filter-add-button", onClick: addFilter, children: [_jsx(FilterAddIcon, {}), " Add Filter"] }) }));
+};
+const FilterBody = () => {
+    const { filter } = useFilterContext();
+    return (_jsx("div", { className: "aio-filter-body", children: filter.items.map((filterItem, i) => _jsx(FilterRow, { filterItem: filterItem, index: i }, i)) }));
+};
+const FilterRow = ({ filterItem, index }) => {
+    const { operator, columnId, type, value } = filterItem;
+    const { columns, changeFilter, removeFilter, trans, getColumnById } = useFilterContext();
+    const [operators, setOperators] = useState(getOperators);
+    useEffect(() => {
+        setOperators(getOperators());
+    }, [filterItem.type]);
+    function getOperators() {
+        const res = [];
+        const operators = ['less', 'more', 'equal', 'notEqual', 'contain', 'notContain'];
+        for (let i = 0; i < operators.length; i++) {
+            const o = operators[i];
+            if ((o === 'less' || o === 'more') && type === 'text') {
+                continue;
+            }
+            if ((o === 'contain' || o === 'notContain') && type !== 'text') {
+                continue;
+            }
+            res.push(operators[i]);
+        }
+        return res;
+    }
+    const isTime = ['month', 'day', 'hour', 'minute'].indexOf(type || '') !== -1;
+    return (_jsxs("div", { className: "aio-filter-row", children: [_jsx(AISelect, { options: columns, value: columnId, option: { text: (column) => column.text, value: (column) => column.id }, onChange: (columnId) => changeFilter(index, Object.assign(Object.assign({}, filterItem), { columnId, type: getColumnById(columnId).type })), popover: { fitHorizontal: true } }), _jsx(AISelect, { options: operators, value: operator, option: { text: (operator) => trans(operator), value: (operator) => operator }, onChange: (operator) => changeFilter(index, Object.assign(Object.assign({}, filterItem), { operator })), popover: { fitHorizontal: true } }), type === 'text' && _jsx(AIText, { value: value, onChange: (value) => changeFilter(index, Object.assign(Object.assign({}, filterItem), { value })) }), type === 'number' && _jsx(AINumber, { value: value, onChange: (value) => changeFilter(index, Object.assign(Object.assign({}, filterItem), { value })) }), isTime && _jsx(TimeInput, { filterItem: filterItem, index: index }), _jsx("div", { className: "aio-filter-icon-button", onClick: () => removeFilter(filterItem), children: _jsx(FilterRemoveIcon, {}) })] }));
+};
+const TimeInput = ({ filterItem, index }) => {
+    const { changeFilter, fa } = useFilterContext();
+    const [unit] = useState(getUnit);
+    function getUnit() {
+        const res = { year: true, month: true };
+        if (filterItem.type !== 'month') {
+            res.day = true;
+            if (filterItem.type !== 'day') {
+                res.hour = true;
+                if (filterItem.type !== 'hour') {
+                    res.minute = true;
+                }
+            }
+        }
+        return res;
+    }
+    const DATE = new AIODate();
+    return (_jsx(AITime, { jalali: !!fa, unit: unit, value: filterItem.value, onChange: (value) => changeFilter(index, Object.assign(Object.assign({}, filterItem), { value: DATE.getTime(value) })) }));
+};
+const FilterSaveIcon = () => new UT.GetSvg().getIcon('mdiSaveContent', 0.8);
+const FilterSavesIcon = () => new UT.GetSvg().getIcon('mdiListBox', 0.8);
+const FilterRemoveIcon = () => new UT.GetSvg().getIcon('mdiClose', 0.8);
+const FilterActiveIcon = () => new UT.GetSvg().getIcon('mdiCheckBold', 0.8);
+const FilterAddIcon = () => new UT.GetSvg().getIcon('mdiPlusThick', 0.7);
+export const usePaging = (p) => {
+    const timeoutRef = useRef();
+    const startRef = useRef();
+    const endRef = useRef();
+    const pagesRef = useRef();
+    const getPaging = () => {
+        const { paging } = p;
+        return paging ? fix(paging) : undefined;
+    };
+    let [paging, setPaging] = useState(getPaging);
+    useEffect(() => {
+        if (paging) {
+            setPaging(fix(paging));
+        }
+    }, [JSON.stringify(p.paging)]);
+    function fix(paging) {
+        if (typeof p.onChange !== 'function') {
+            alert('aio-table error => in type table you set paging but forget to set onChangePaging function prop to aio input');
+            return { number: 0, size: 0 };
+        }
+        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging;
+        if (!serverSide) {
+            length = p.rows.length;
+        }
+        if (sizes.indexOf(size) === -1) {
+            size = sizes[0];
+        }
+        let pages = Math.ceil(length / size);
+        number = number > pages ? pages : number;
+        number = number < 1 ? 1 : number;
+        let start = number - 3, end = number + 3;
+        startRef.current = start;
+        endRef.current = end;
+        pagesRef.current = pages;
+        return Object.assign(Object.assign({}, paging), { length, number, size, sizes });
+    }
+    const changePaging = (obj) => {
+        if (!paging) {
+            return;
+        }
+        let newPaging = fix(Object.assign(Object.assign({}, paging), obj));
+        setPaging(newPaging);
+        if (p.onChange) {
+            if (newPaging.serverSide) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = setTimeout(() => {
+                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
+                    if (p.onChange) {
+                        p.onChange(newPaging);
+                    }
+                }, 800);
+            }
+            else {
+                p.onChange(newPaging);
+            }
+        }
+    };
+    const getPagedRows = (rows) => {
+        if (!paging || paging.serverSide) {
+            return rows;
+        }
+        const { size, number } = paging;
+        return rows.slice((number - 1) * size, number * size);
+    };
+    const render = () => {
+        if (!paging) {
+            return null;
+        }
+        if (!p.rows.length) {
+            return null;
+        }
+        let { number, size, sizes } = paging;
+        let buttons = [];
+        let isFirst = true;
+        for (let i = startRef.current; i <= endRef.current; i++) {
+            if (i < 1 || i > pagesRef.current) {
+                buttons.push(_jsx("button", { className: 'aio-paging-button aio-paging-button-hidden', children: i }, i));
+            }
+            else {
+                let index;
+                if (isFirst) {
+                    index = 1;
+                    isFirst = false;
+                }
+                else if (i === Math.min(endRef.current, pagesRef.current)) {
+                    index = pagesRef.current;
+                }
+                else {
+                    index = i;
+                }
+                buttons.push(_jsx("button", { className: 'aio-paging-button' + (index === number ? ' active' : ''), onClick: () => changePaging({ number: index }), children: index }, index));
+            }
+        }
+        function changeSizeButton() {
+            if (!sizes || !sizes.length) {
+                return null;
+            }
+            return (_jsx(AISelect, { attrs: { className: 'aio-paging-button aio-paging-size' }, value: size, options: sizes, option: { text: 'option', value: 'option' }, justify: true, onChange: (value) => changePaging({ size: value }), popover: { fitHorizontal: true } }));
+        }
+        return (_jsxs("div", { className: 'aio-paging', children: [buttons, changeSizeButton()] }));
+    };
+    return { render, getPagedRows, paging };
+};
+export const useSort = (p) => {
+    let [sorts, setSorts] = useState(p.sorts);
+    const getIconRef = useRef(new GetSvg().getIcon);
+    const isInitSortExecutedRef = useRef(false);
+    const getSortedRows = (rows) => {
+        if (isInitSortExecutedRef.current) {
+            return rows;
+        }
+        if (p.onChangeSort) {
+            return rows;
+        }
+        let activeSorts = sorts.filter((sort) => sort.active !== false);
+        if (!activeSorts.length || !rows.length) {
+            return rows;
+        }
+        isInitSortExecutedRef.current = true;
+        let sortedRows = sortRows(rows, activeSorts);
+        if (p.onChangeRows) {
+            p.onChangeRows(sortedRows);
+        }
+        return sortedRows;
+    };
+    const sortRows = (rows, sorts) => {
+        if (!rows) {
+            return [];
+        }
+        if (!sorts || !sorts.length) {
+            return rows;
+        }
+        return rows.sort((a, b) => {
+            for (let i = 0; i < sorts.length; i++) {
+                let { dir, getValue } = sorts[i];
+                if (!getValue) {
+                    return 0;
+                }
+                let aValue = getValue(a), bValue = getValue(b);
+                if (aValue < bValue) {
+                    return -1 * (dir === 'dec' ? -1 : 1);
+                }
+                if (aValue > bValue) {
+                    return 1 * (dir === 'dec' ? -1 : 1);
+                }
+                if (i === sorts.length - 1) {
+                    return 0;
+                }
+            }
+            return 0;
+        });
+    };
+    const changeSort = (sortId, changeObject) => {
+        let newSorts = sorts.map((sort) => {
+            if (sort.sortId === sortId) {
+                let newSort = Object.assign(Object.assign({}, sort), changeObject);
+                return newSort;
+            }
+            return sort;
+        });
+        changeSorts(newSorts);
+    };
+    const changeSorts = (sorts) => __awaiter(void 0, void 0, void 0, function* () {
+        if (p.onChangeSort) {
+            let res = yield p.onChangeSort(sorts);
+            if (res !== false) {
+                setSorts(sorts);
+            }
+        }
+        else {
+            setSorts(sorts);
+            let activeSorts = sorts.filter((sort) => sort.active !== false);
+            if (activeSorts.length && !!p.onChangeRows) {
+                p.onChangeRows(sortRows(p.rows, activeSorts));
+            }
+        }
+    });
+    const renderSortArrow = (option) => {
+        let { dir = 'dec', sortId } = option;
+        return (_jsx("div", { onClick: (e) => {
+                e.stopPropagation();
+                if (!sortId) {
+                    return;
+                }
+                changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' });
+            }, children: getIconRef.current(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8) }));
+    };
+    const renderSortButton = (limitTo) => {
+        if (!sorts.length) {
+            return null;
+        }
+        return (_jsx(AISelect, { caret: false, options: sorts, option: {
+                text: (option) => option.title, checked: (option) => !!option.active, close: () => false, value: (option) => option.sortId,
+                after: (option) => renderSortArrow(option),
+                onClick: (option) => changeSort(option.sortId, { active: !option.active })
+            }, popover: {
+                header: { title: 'Sort', onClose: false },
+                setAttrs: (key) => { if (key === 'header') {
+                    return { className: 'aio-sort-header' };
+                } },
+                limitTo: limitTo || '.aio-table'
+            }, attrs: { className: 'aio-sort-button' }, text: getIconRef.current('mdiSort', 0.7), onSwap: (newSorts, from, to) => changeSorts(newSorts) }, 'sortbutton'));
+    };
+    return { sorts, setSorts, renderSortButton, getSortedRows, changeSort, changeSorts };
+};

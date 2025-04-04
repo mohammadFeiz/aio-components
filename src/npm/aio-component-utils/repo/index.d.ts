@@ -101,14 +101,12 @@ type I_AIApp = {
     };
     sidenav?: {
         items: AI_sidenavItem[];
-        indent?: number;
         header?: (minimize: boolean) => ReactNode;
         value?: string;
-        render?: () => ReactNode;
         cache?: boolean;
         attrs?: any;
     };
-    body: ReactNode;
+    body?: ReactNode;
     header?: (sidenavitem?: AI_sidenavItem) => ReactNode | false;
     children?: ReactNode;
 };
@@ -203,4 +201,81 @@ export declare class Flip extends React.Component<I_Flip> {
     componentWillUnmount(): void;
     render(): JSX.Element;
 }
+type I_filter_operator = 'less' | 'more' | 'equal' | 'notEqual' | 'contain' | 'notContain';
+export type I_filter_saved_item = {
+    name: string;
+    items: I_filter_item[];
+};
+export type I_filter = {
+    items: I_filter_item[];
+    onChange: (newFilters: I_filter_item[]) => undefined | void | I_filter_item[] | true | false;
+    savedItems?: {
+        name: string;
+        items: I_filter_item[];
+    }[];
+    changeSavedItems?: (newSavedItems: {
+        name: string;
+        items: I_filter_item[];
+    }[]) => void;
+    activeSavedItem?: (v: {
+        name: string;
+        items: I_filter_item[];
+    }) => void;
+};
+export type I_filter_item = {
+    columnId: string;
+    operator: I_filter_operator;
+    value: any;
+    type: 'text' | 'number' | 'month' | 'day' | 'hour' | 'minute';
+};
+type I_filterType = 'text' | 'number' | 'month' | 'day' | 'hour' | 'minute';
+type I_Filterbar<T> = {
+    fa?: boolean;
+    columns: T[];
+    columnOption: {
+        text: (column: T) => string;
+        id: (column: T) => string;
+        type: (column: T) => I_filterType;
+    };
+    filter: I_filter;
+};
+export declare const Filterbar: <T>(props: I_Filterbar<T>) => JSX.Element;
+export type I_paging = {
+    serverSide?: boolean;
+    number: number;
+    size: number;
+    length?: number;
+    sizes?: number[];
+};
+export type I_pagingHook<T> = {
+    render: () => ReactNode;
+    getPagedRows: (rows: T[]) => T[];
+    paging: I_paging | undefined;
+};
+export declare const usePaging: <T>(p: {
+    rows: T[];
+    paging?: I_paging;
+    onChange?: (newPaging: I_paging) => void;
+}) => I_pagingHook<T>;
+export type I_sort<T> = {
+    active?: boolean;
+    dir?: 'dec' | 'inc';
+    title?: ReactNode;
+    sortId: string;
+    getValue?: (row: T) => any;
+};
+export type I_sortHook<T> = {
+    sorts: I_sort<T>[];
+    setSorts: (v: I_sort<T>[]) => void;
+    renderSortButton: () => ReactNode;
+    getSortedRows: (rows: T[]) => T[];
+    changeSort: (sortId: string, changeObject: Partial<I_sort<T>>) => void;
+    changeSorts: (sorts: I_sort<T>[]) => Promise<void>;
+};
+export declare const useSort: <T>(p: {
+    sorts: I_sort<any>[];
+    rows: any[];
+    onChangeRows?: (rows: any) => void;
+    onChangeSort?: (sorts: I_sort<T>[]) => Promise<boolean | undefined>;
+}) => I_sortHook<T>;
 export {};
