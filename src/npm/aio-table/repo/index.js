@@ -7,45 +7,83 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { createElement as _createElement } from "react";
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { createContext, createRef, Fragment, useContext, useEffect, useRef, useState } from "react";
 import AIOInput from "aio-input";
 import * as UT from 'aio-utils';
+import usePopup from "aio-popup";
+import AIODate from "aio-date";
+import { Filterbar, usePaging, useSort } from "aio-component-utils";
 import "./index.css";
 const Context = createContext({});
 const Provider = (p) => _jsx(Context.Provider, { value: p.value, children: p.children });
 const useProvider = () => useContext(Context);
-const AIOTable = (rootProps) => {
-    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs, onChangeSort, className } = rootProps;
+const AIOTable = (props) => {
+    const popup = usePopup();
     let [dom] = useState(createRef());
     let [searchValue, setSearchValue] = useState('');
-    let [columns, setColumns] = useState([]);
-    let [searchColumns, setSearchColumns] = useState([]);
-    let [excelColumns, setExcelColumns] = useState([]);
+    const [columns, setColumns] = useState([]);
+    const [searchColumns, setSearchColumns] = useState([]);
+    const [excelColumns, setExcelColumns] = useState([]);
+    const [filterColumns, setFilterColumns] = useState([]);
+    const filterColumnsRef = useRef(filterColumns);
+    filterColumnsRef.current = filterColumns;
+    const rowsIndexDicRef = useRef({});
+    const setRowsIndexDic = (rowsIndexDic) => rowsIndexDicRef.current = rowsIndexDic;
+    const getRowsIndexDic = () => rowsIndexDicRef.current;
+    const propsRef = useRef(props);
+    propsRef.current = props;
+    const pagingHook = usePaging({ rows: props.value, paging: props.paging, onChange: props.onChangePaging });
+    const tableHook = useTable(() => propsRef.current, () => pagingHook.paging);
     const getIconRef = useRef(new UT.GetSvg());
     const getIcon = getIconRef.current.getIcon;
-    let [temp] = useState({});
-    const DragRows = UT.useDrag((dragData, dropData, reOrder) => {
-        const { dragIndex } = dragData;
-        const { dropIndex, rows } = dropData;
-        const newRows = reOrder(rows, dragIndex, dropIndex);
-        const from = rows[dragIndex];
-        const to = rows[dropIndex];
-        if (typeof onSwap === 'function') {
-            onSwap(newRows, from, to);
-        }
-        else {
-            onChange(newRows);
-        }
-    });
     const DragColumns = UT.useDrag((dragIndex, dropIndex, reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)));
-    let [sorts, setSorts] = useState([]);
+    const getGetValue = (sort, column) => {
+        if (sort.getValue) {
+            return sort.getValue;
+        }
+        return (row) => {
+            const isDate = ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1;
+            const cellValue = tableHook.getCellValue({ row, rowIndex: 0, isFirst: false, isLast: false, column, change: () => { }, isDate }, column.value);
+            if (isDate) {
+                const DATE = new AIODate();
+                try {
+                    return DATE.getTime(cellValue);
+                }
+                catch (_a) {
+                    return 0;
+                }
+            }
+            return cellValue;
+        };
+    };
+    const getSorts = (columns) => {
+        let sorts = [];
+        for (let i = 0; i < columns.length; i++) {
+            const column = columns[i];
+            const { _id } = column;
+            const sort = column.sort === true ? { sortId: _id } : column.sort;
+            if (!sort) {
+                continue;
+            }
+            let { active = false, dir = 'dec', sortId } = sort;
+            let sortItem = { dir, title: sort.title || column.title, sortId, active, getValue: getGetValue(sort, column) };
+            sorts.push(sortItem);
+        }
+        return sorts;
+    };
+    const sortHook = useSort({
+        sorts: [],
+        rows: propsRef.current.value,
+        onChangeRows: props.onChange,
+        onChangeSort: props.onChangeSort,
+    });
+    const isDate = (column) => ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1;
     function getColumns() {
-        let { columns = [] } = rootProps;
-        let searchColumns = [], excelColumns = [];
+        let { columns = [] } = props;
+        let searchColumns = [], excelColumns = [], filterColumns = [];
         let updatedColumns = columns.map((o) => {
-            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
+            let { id = 'aitc' + Math.round(Math.random() * 1000000), filterId, search, excel } = o;
             let column = Object.assign(Object.assign({}, o), { _id: id });
             if (search) {
                 searchColumns.push(column);
@@ -53,95 +91,76 @@ const AIOTable = (rootProps) => {
             if (excel) {
                 excelColumns.push(column);
             }
+            if (filterId) {
+                filterColumns.push(column);
+            }
             return column;
         });
         setColumns(updatedColumns);
         setSearchColumns(searchColumns);
         setExcelColumns(excelColumns);
+        setFilterColumns(filterColumns);
         return updatedColumns;
     }
-    function getSorts(columns) {
-        let sorts = [];
-        for (let i = 0; i < columns.length; i++) {
-            let column = columns[i];
-            let { _id } = column;
-            let sort = column.sort === true ? {} : column.sort;
-            if (!sort) {
-                continue;
-            }
-            let { active = false, dir = 'dec' } = sort;
-            let getValue;
-            if (sort.getValue) {
-                getValue = sort.getValue;
-            }
-            else {
-                getValue = (row) => getDynamics({ value: column.value, row, column });
-            }
-            let type = sort.type || 'string';
-            let sortItem = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue };
-            sorts.push(sortItem);
+    useEffect(() => {
+        const columns = getColumns();
+        sortHook.setSorts(getSorts(columns));
+    }, []);
+    function getTimeText(column, value) {
+        if (!value || value === null) {
+            return '';
         }
-        setSorts(sorts);
-    }
-    function getDynamics(p) {
-        let { value, row, column, def, rowIndex } = p;
-        if (paging) {
-            let { number, size } = paging;
-            if (rowIndex)
-                rowIndex += ((number - 1) * size);
-        }
-        let type = typeof value;
-        if (type === 'string') {
-            let result = value;
-            let param = { row: row, column: column, rowIndex: rowIndex };
-            if (getValue[value]) {
-                result = getValue[value](Object.assign(Object.assign({}, param), { change: () => { } }));
-            }
-            else if (value.indexOf('row.') !== -1) {
-                try {
-                    eval(`result = ${value}`);
+        const t = column.type;
+        const DATE = new AIODate();
+        let pattern = '{year}/{month}';
+        if (t !== 'month') {
+            pattern += '/{day}';
+            if (t !== 'day') {
+                pattern += ' {hour}';
+                if (t === 'minute') {
+                    pattern += ' : {minute}';
                 }
-                catch (_a) {
-                    result = '';
+                else {
+                    pattern += ' : 00';
                 }
             }
-            return result === undefined ? def : result;
         }
-        if (type === 'undefined') {
-            return def;
-        }
-        if (type === 'function') {
-            return value({ row, column, rowIndex });
-        }
-        return value === undefined ? def : value;
+        return DATE.getDateByPattern(value, pattern);
     }
-    useEffect(() => { getSorts(getColumns()); }, []);
     function add() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!onAdd) {
+            if (!props.onAdd) {
                 return;
             }
-            const row = yield onAdd();
-            if (!row) {
-                return;
+            const res = yield props.onAdd();
+            if (res && props.onChange) {
+                props.onChange([res, ...props.value]);
             }
-            onChange([Object.assign({}, row), ...value]);
         });
     }
     function remove(row, index) {
-        let action = () => onChange(value.filter((o) => o._id !== row._id));
-        typeof onRemove === 'function' ? onRemove({ row, action, rowIndex: index }) : action();
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!props.onRemove) {
+                return;
+            }
+            const res = yield props.onRemove({ row, rowIndex: index });
+            if (res === true && props.onChange) {
+                props.onChange(props.value.filter((o) => o._id !== row._id));
+            }
+        });
     }
     function exportToExcel() {
         let list = [];
-        if (typeof rootProps.excel === 'function') {
-            list = rootProps.excel(value);
+        if (typeof props.excel === 'function') {
+            list = props.excel(props.value);
         }
         else {
-            for (let i = 0; i < value.length; i++) {
-                let row = value[i], json = {};
+            for (let rowIndex = 0; rowIndex < props.value.length; rowIndex++) {
+                const isFirst = rowIndex === 0;
+                const isLast = rowIndex === props.value.length - 1;
+                let row = props.value[rowIndex], json = {};
                 for (let j = 0; j < excelColumns.length; j++) {
-                    let column = excelColumns[j], { excel, value } = column;
+                    const column = excelColumns[j], { excel } = column;
                     let key = '';
                     if (excel === true) {
                         if (typeof column.title === 'string') {
@@ -157,213 +176,84 @@ const AIOTable = (rootProps) => {
                     else {
                         continue;
                     }
-                    json[key] = getDynamics({ value, row, column, rowIndex: i });
+                    const cellDetail = { row, rowIndex, isFirst, isLast, column, change: () => { }, isDate: isDate(column) };
+                    json[key] = tableHook.getCellValue(cellDetail, column.value, '');
                 }
                 list.push(json);
             }
         }
-        UT.ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' });
+        UT.ExportToExcel(list, { promptText: typeof props.excel === 'string' ? props.excel : 'Inter Excel File Name' });
     }
     function getSearchedRows(rows) {
-        if (onSearch !== true) {
+        if (props.onSearch !== true) {
             return rows;
         }
         if (!searchColumns.length || !searchValue) {
             return rows;
         }
-        return UT.Search(rows, searchValue, (row, index) => {
+        const rowsIndexDic = getRowsIndexDic();
+        return UT.Search(rows, searchValue, (row) => {
+            const { isFirst, isLast, rowIndex } = rowsIndexDic[(row)._id];
             let str = '';
             for (let i = 0; i < searchColumns.length; i++) {
                 let column = searchColumns[i];
-                let value = getDynamics({ value: column.value, row, def: '', column, rowIndex: index });
-                if (value) {
-                    str += value + ' ';
+                const cellDetail = { row, rowIndex, isFirst, isLast, column, change: () => { }, isDate: isDate(column) };
+                let cellValue = tableHook.getCellValue(cellDetail, column.value, '');
+                if (cellValue) {
+                    str += cellValue + ' ';
                 }
             }
             return str;
         });
     }
-    function sortRows(rows, sorts) {
-        if (!rows) {
-            return [];
-        }
-        if (!sorts || !sorts.length) {
-            return rows;
-        }
-        return rows.sort((a, b) => {
-            for (let i = 0; i < sorts.length; i++) {
-                let { dir, getValue } = sorts[i];
-                if (!getValue) {
-                    return 0;
-                }
-                let aValue = getValue(a), bValue = getValue(b);
-                if (aValue < bValue) {
-                    return -1 * (dir === 'dec' ? -1 : 1);
-                }
-                if (aValue > bValue) {
-                    return 1 * (dir === 'dec' ? -1 : 1);
-                }
-                if (i === sorts.length - 1) {
-                    return 0;
-                }
-            }
-            return 0;
-        });
-    }
-    function getSortedRows(rows) {
-        if (temp.isInitSortExecuted) {
-            return rows;
-        }
-        if (onChangeSort) {
-            return rows;
-        }
-        let activeSorts = sorts.filter((sort) => sort.active !== false);
-        if (!activeSorts.length || !rows.length) {
-            return rows;
-        }
-        temp.isInitSortExecuted = true;
-        let sortedRows = sortRows(rows, activeSorts);
-        onChange(sortedRows);
-        return sortedRows;
-    }
     function getRows() {
-        let searchedRows = getSearchedRows(value);
-        let sortedRows = getSortedRows(searchedRows);
-        let pagedRows = paging && !paging.serverSide ? sortedRows.slice((paging.number - 1) * paging.size, paging.number * paging.size) : sortedRows;
-        return { rows: value, searchedRows, sortedRows, pagedRows };
-    }
-    //calculate style of cells and title cells
-    function getCellStyle(column) {
-        let width = getDynamics({ value: column.width });
-        let minWidth = getDynamics({ value: column.minWidth });
-        return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth };
-    }
-    const getCellAttrs = ({ row, rowIndex, column, type }) => {
-        let { cellAttrs, titleAttrs } = column;
-        let attrs = getDynamics({ value: type === 'title' ? titleAttrs : cellAttrs, column, def: {}, row, rowIndex });
-        let justify = getDynamics({ value: column.justify, def: false });
-        let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '');
-        attrs = UT.AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
-        if (type === 'title') {
-            attrs.title = getDynamics({ value: column.title, def: '' });
+        const rows = props.value;
+        const rowsIndexDic = {};
+        for (let i = 0; i < props.value.length; i++) {
+            rowsIndexDic[props.value[i]._id] = { rowIndex: i, isFirst: i === 0, isLast: i === rows.length - 1 };
         }
-        return Object.assign({}, attrs);
-    };
-    function getRowAttrs(row, rowIndex) {
-        let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
-        let obj = UT.AddToAttrs(attrs, { className: 'aio-input-table-row' });
-        if (onSwap) {
-            obj = Object.assign(Object.assign(Object.assign({}, obj), DragRows.getDragAttrs({ dragIndex: rowIndex })), DragRows.getDropAttrs({ dropIndex: rowIndex, rows: value }));
-        }
-        return obj;
+        setRowsIndexDic(rowsIndexDic);
+        let searchedRows = getSearchedRows(rows);
+        let sortedRows = sortHook.getSortedRows(searchedRows);
+        let pagedRows = pagingHook.getPagedRows(sortedRows);
+        return { rows: props.value, searchedRows, sortedRows, pagedRows };
     }
     function search(searchValue) {
-        if (onSearch === true) {
+        if (props.onSearch === true) {
             setSearchValue(searchValue);
         }
-        else if (typeof onSearch === 'function') {
-            onSearch(searchValue);
+        else if (typeof props.onSearch === 'function') {
+            props.onSearch(searchValue);
         }
     }
+    const changeCell = (cellDetail, cellNewValue) => {
+        if (!props.onChange) {
+            return;
+        }
+        const { column } = cellDetail;
+        if (typeof column.value !== 'string' || column.value.indexOf('row.') !== 0) {
+            return;
+        }
+        let row = JSON.parse(JSON.stringify(cellDetail.row));
+        const rowId = row._id;
+        eval(`${column.value} = cellNewValue`);
+        props.onChange(props.value.map((o) => o._id !== rowId ? o : row));
+    };
     let ROWS = getRows();
-    let attrs = UT.AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } });
-    return (_jsx(Provider, { value: {
-            ROWS, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
-            add, remove, search, exportToExcel, getDynamics, DragColumns, getIcon
-        }, children: _jsxs("div", Object.assign({}, attrs, { children: [_jsx(TableToolbar, {}), _jsxs("div", { className: 'aio-input-table-unit aio-input-scroll', children: [_jsx(TableHeader, {}), _jsx(TableRows, {})] }), !!paging && !!ROWS.rows.length ? _jsx(TablePaging, {}) : ''] })) }));
+    const { gap = [0, 1] } = props;
+    let attrs = UT.AddToAttrs(props.attrs, { className: ['aio-table', props.className], style: Object.assign({ gap: gap[1] }, props.style), attrs: { ref: dom } });
+    const context = {
+        rootProps: props, getTimeText, isDate, columns, excelColumns, filterColumns, changeCell, tableHook, sortHook, ROWS,
+        getRowsIndexDic, add, remove, search, exportToExcel, DragColumns, getIcon, popup,
+    };
+    return (_jsxs(Provider, { value: context, children: [_jsxs("div", Object.assign({}, attrs, { children: [_jsx(TableToolbar, {}), !!props.filter &&
+                        _jsx(Filterbar, { columns: filterColumns, filter: props.filter, columnOption: { text: (column) => column.title, id: (column) => column.filterId, type: (column) => column.type || 'text' } }), _jsxs("div", { className: 'aio-table-unit aio-table-scroll', style: { gap: gap[1] }, children: [_jsx(TableHeader, {}), _jsx(TableRows, {})] }), pagingHook.render()] })), popup.render()] }));
 };
 export default AIOTable;
-const TableGap = ({ dir }) => {
-    const { rootProps } = useProvider(), { rowGap, columnGap } = rootProps;
-    return _jsx("div", { className: `aio-input-table-border-${dir}`, style: dir === 'h' ? { height: rowGap } : { width: columnGap } });
-};
-function TablePaging() {
-    let { ROWS, rootProps } = useProvider();
-    let [temp] = useState({ timeout: undefined, start: undefined, end: undefined, pages: 0 });
-    function fix(paging) {
-        if (typeof rootProps.onChangePaging !== 'function') {
-            alert('aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input');
-            return { number: 0, size: 0 };
-        }
-        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging;
-        if (!serverSide) {
-            length = ROWS.sortedRows.length;
-        }
-        if (sizes.indexOf(size) === -1) {
-            size = sizes[0];
-        }
-        let pages = Math.ceil(length / size);
-        number = number > pages ? pages : number;
-        number = number < 1 ? 1 : number;
-        let start = number - 3, end = number + 3;
-        temp.start = start;
-        temp.end = end;
-        temp.pages = pages;
-        return Object.assign(Object.assign({}, paging), { length, number, size, sizes });
-    }
-    let [paging, setPaging] = useState(fix(rootProps.paging || { size: 0, number: 0 }));
-    useEffect(() => {
-        if (rootProps.paging) {
-            setPaging(fix(rootProps.paging));
-        }
-    }, [(rootProps.paging || { size: 0, number: 0, length: 0 }).size, (rootProps.paging || { size: 0, number: 0, length: 0 }).number, (rootProps.paging || { size: 0, number: 0, length: 0 }).length]);
-    function changePaging(obj) {
-        let newPaging = fix(Object.assign(Object.assign({}, paging), obj));
-        setPaging(newPaging);
-        if (rootProps.onChangePaging) {
-            if (newPaging.serverSide) {
-                clearTimeout(temp.timeout);
-                temp.timeout = setTimeout(() => {
-                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
-                    if (rootProps.onChangePaging) {
-                        rootProps.onChangePaging(newPaging);
-                    }
-                }, 800);
-            }
-            else {
-                rootProps.onChangePaging(newPaging);
-            }
-        }
-    }
-    let { number, size, sizes } = paging;
-    let buttons = [];
-    let isFirst = true;
-    for (let i = temp.start; i <= temp.end; i++) {
-        if (i < 1 || i > temp.pages) {
-            buttons.push(_jsx("button", { className: 'aio-input-table-paging-button aio-input-table-paging-button-hidden', children: i }, i));
-        }
-        else {
-            let index;
-            if (isFirst) {
-                index = 1;
-                isFirst = false;
-            }
-            else if (i === Math.min(temp.end, temp.pages)) {
-                index = temp.pages;
-            }
-            else {
-                index = i;
-            }
-            buttons.push(_jsx("button", { className: 'aio-input-table-paging-button' + (index === number ? ' active' : ''), onClick: () => changePaging({ number: index }), children: index }, index));
-        }
-    }
-    function changeSizeButton() {
-        if (!sizes || !sizes.length) {
-            return null;
-        }
-        let p = {
-            attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
-            type: 'select', value: size, options: sizes, option: { text: 'option', value: 'option' },
-            onChange: (value) => changePaging({ size: value }),
-            popover: { fitHorizontal: true },
-        };
-        return (_jsx(AIOInput, Object.assign({}, p)));
-    }
-    return (_jsxs("div", { className: 'aio-input-table-paging', children: [buttons, changeSizeButton()] }));
-}
 const TableRows = () => {
     let { ROWS, rootProps } = useProvider();
-    let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
+    let { rowOption = {}, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
+    const { before: rowBefore = () => null, after: rowAfter = () => null, template: rowTemplate, } = rowOption;
     let rows = ROWS.pagedRows || [];
     let content;
     if (rowsTemplate) {
@@ -373,14 +263,19 @@ const TableRows = () => {
         content = rows.map((o, i) => {
             let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;
             o._id = o._id === undefined ? id : o._id;
-            let isLast = i === rows.length - 1, Row;
+            const rowDetail = {
+                row: o, rowIndex: i,
+                isFirst: i === 0,
+                isLast: i === rows.length - 1
+            };
+            let Row;
             if (rowTemplate) {
-                Row = rowTemplate({ row: o, rowIndex: i, isLast });
+                Row = rowTemplate(rowDetail);
             }
             else {
-                Row = _jsx(TableRow, { row: o, rowIndex: i, isLast: isLast }, o._id);
+                Row = _jsx(TableRow, { rowDetail: rowDetail }, o._id);
             }
-            return (_jsxs(Fragment, { children: [rowBefore({ row: o, rowIndex: i }), Row, rowAfter({ row: o, rowIndex: i })] }, o._id));
+            return (_jsxs(Fragment, { children: [rowBefore(rowDetail), Row, rowAfter(rowDetail)] }, o._id));
         });
     }
     else if (placeholder) {
@@ -389,74 +284,15 @@ const TableRows = () => {
     else {
         return null;
     }
-    return _jsx("div", { className: 'aio-input-table-rows', children: content });
+    const { gap = [0, 1] } = rootProps;
+    return _jsx("div", { className: 'aio-table-rows', style: { gap: gap[1] }, children: content });
 };
 const TableToolbar = () => {
-    let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns, getIcon } = useProvider();
-    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value, addText } = rootProps;
-    toolbarAttrs = UT.AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' });
-    if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) {
+    let { add, exportToExcel, search, rootProps, excelColumns, getIcon, sortHook } = useProvider();
+    let { toolbarAttrs, toolbar, onAdd, onSearch, value } = rootProps;
+    toolbarAttrs = UT.AddToAttrs(toolbarAttrs, { className: 'aio-table-toolbar' });
+    if (!onAdd && !toolbar && !onSearch && !sortHook.sorts.length && !excelColumns.length) {
         return null;
-    }
-    function changeSort(sortId, changeObject) {
-        let newSorts = sorts.map((sort) => {
-            if (sort.sortId === sortId) {
-                let newSort = Object.assign(Object.assign({}, sort), changeObject);
-                return newSort;
-            }
-            return sort;
-        });
-        changeSorts(newSorts);
-    }
-    function changeSorts(sorts) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (onChangeSort) {
-                let res = yield onChangeSort(sorts);
-                if (res !== false) {
-                    setSorts(sorts);
-                }
-            }
-            else {
-                setSorts(sorts);
-                let activeSorts = sorts.filter((sort) => sort.active !== false);
-                if (activeSorts.length) {
-                    onChange(sortRows(value, activeSorts));
-                }
-            }
-        });
-    }
-    function button() {
-        if (!sorts.length) {
-            return null;
-        }
-        let p = {
-            popover: {
-                header: { title: 'Sort', onClose: false },
-                setAttrs: (key) => { if (key === 'header') {
-                    return { className: 'aio-input-table-toolbar-popover-header' };
-                } },
-                limitTo: '.aio-input-table'
-            },
-            caret: false, type: 'select', options: sorts,
-            option: {
-                text: 'option.title',
-                checked: '!!option.active',
-                close: () => false,
-                value: 'option.sortId',
-                after: (option) => {
-                    let { dir = 'dec', sortId } = option;
-                    return (_jsx("div", { onClick: (e) => {
-                            e.stopPropagation();
-                            changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' });
-                        }, children: getIcon(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8) }));
-                }
-            },
-            attrs: { className: 'aio-input-table-toolbar-button' },
-            text: getIcon('mdiSort', 0.7),
-            onSwap: (newSorts, from, to) => changeSorts(newSorts),
-            onChange: (value, option) => changeSort(value, { active: !option.checked })
-        };
-        return (_createElement(AIOInput, Object.assign({}, p, { key: 'sortbutton' })));
     }
     function getAddText() {
         let { addText } = rootProps;
@@ -465,59 +301,149 @@ const TableToolbar = () => {
         }
         return typeof addText === 'function' ? addText(value) : addText;
     }
-    return (_jsxs(_Fragment, { children: [_jsxs("div", Object.assign({}, toolbarAttrs, { children: [toolbar && _jsx("div", { className: 'aio-input-table-toolbar-content', children: typeof toolbar === 'function' ? toolbar() : toolbar }), _jsx("div", { className: 'aio-input-table-search', children: !!onSearch && _jsx(AIOInput, { type: 'text', onChange: (value) => search(value), after: getIcon('mdiMagnify', 0.7) }) }), button(), !!excelColumns.length && _jsx("div", { className: 'aio-input-table-toolbar-button', onClick: () => exportToExcel(), children: getIcon('mdiFileExcel', 0.8) }), !!onAdd && _jsx("div", { className: 'aio-input-table-toolbar-button', onClick: () => add(), children: getAddText() })] })), _jsx(TableGap, { dir: 'h' })] }));
+    return (_jsxs("div", Object.assign({}, toolbarAttrs, { children: [toolbar && _jsx("div", { className: 'aio-table-toolbar-content', children: typeof toolbar === 'function' ? toolbar() : toolbar }), _jsx("div", { className: 'aio-table-search', children: !!onSearch && _jsx(AIOInput, { type: 'text', onChange: (value) => search(value), after: getIcon('mdiMagnify', 0.7) }) }), sortHook.renderSortButton(), !!excelColumns.length && _jsx("div", { className: 'aio-table-toolbar-button', onClick: () => exportToExcel(), children: getIcon('mdiFileExcel', 0.8) }), !!onAdd && _jsx("div", { className: 'aio-table-toolbar-button', onClick: () => add(), children: getAddText() })] })));
 };
 const TableHeader = () => {
     let { rootProps, columns } = useProvider();
-    let { headerAttrs, onRemove } = rootProps;
-    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-input-table-header' });
+    let { headerAttrs, onRemove, gap = [0, 1] } = rootProps;
+    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-table-header', style: { gap: gap[0] } });
     let Titles = columns.map((o, i) => _jsx(TableTitle, { column: o, isLast: i === columns.length - 1, colIndex: i }, o._id));
-    let RemoveTitle = !onRemove ? null : _jsxs(_Fragment, { children: [_jsx(TableGap, { dir: 'v' }), _jsx("div", { className: 'aio-input-table-remove-title' })] });
-    return _jsxs("div", Object.assign({}, headerAttrs, { children: [Titles, RemoveTitle, _jsx(TableGap, { dir: 'h' })] }));
+    let RemoveTitle = !onRemove ? null : _jsx("div", { className: 'aio-table-remove-title' });
+    return _jsxs("div", Object.assign({}, headerAttrs, { children: [Titles, RemoveTitle] }));
 };
 const TableTitle = (p) => {
     const { column, isLast, colIndex } = p;
-    let { getCellAttrs, DragColumns } = useProvider();
-    const attrs = Object.assign(Object.assign(Object.assign({}, getCellAttrs({ column, type: 'title', row: undefined, rowIndex: 0 })), DragColumns.getDragAttrs(colIndex)), DragColumns.getDropAttrs(colIndex));
-    return (_jsxs(_Fragment, { children: [_jsx("div", Object.assign({}, attrs, { children: attrs.title })), !isLast && _jsx(TableGap, { dir: 'v' })] }));
+    let { tableHook, DragColumns } = useProvider();
+    const attrs = Object.assign(Object.assign(Object.assign({}, tableHook.getTitleAttrs(column)), DragColumns.getDragAttrs(colIndex)), DragColumns.getDropAttrs(colIndex));
+    return _jsx("div", Object.assign({}, attrs, { children: attrs.title }));
 };
-const TableRow = (p) => {
-    const { row, isLast, rowIndex } = p;
-    let { remove, rootProps, columns, getRowAttrs, getIcon } = useProvider();
+const TableRow = (props) => {
+    const { rowDetail } = props;
+    const { row, rowIndex } = rowDetail;
+    const rowId = row._id;
+    let { remove, rootProps, columns, tableHook, getIcon, isDate } = useProvider();
     function getCells() {
         return columns.map((column, i) => {
-            let key = row._id + ' ' + column._id;
-            let isLast = i === columns.length - 1;
-            return (_jsx(TableCell, { isLast: isLast, row: row, rowIndex: rowIndex, column: column }, key));
+            const key = rowId + ' ' + column._id;
+            const cellDetail = Object.assign(Object.assign({}, rowDetail), { column, change: (cellNewValue) => {
+                    if (!rootProps.onChange) {
+                        return;
+                    }
+                    if (typeof column.value !== 'string' || column.value.indexOf('row.') !== 0) {
+                        return;
+                    }
+                    let row = JSON.parse(JSON.stringify(cellDetail.row));
+                    eval(`${column.value} = cellNewValue`);
+                    rootProps.onChange(rootProps.value.map((o) => o._id !== rowId ? o : row));
+                }, isDate: isDate(column) });
+            const cellValue = tableHook.getCellValue(cellDetail, column.value);
+            return (_jsx(TableCell, { cellDetail: cellDetail, cellValue: cellValue }, key));
         });
     }
     let { onRemove } = rootProps;
-    return (_jsxs(_Fragment, { children: [_jsxs("div", Object.assign({}, getRowAttrs(row, rowIndex), { children: [getCells(), onRemove ? _jsxs(_Fragment, { children: [_jsx(TableGap, { dir: 'v' }), _jsx("button", { className: 'aio-input-table-remove', onClick: () => remove(row, rowIndex), children: getIcon('mdiClose', 0.8) })] }) : null] }), row._id), _jsx(TableGap, { dir: 'h' })] }));
+    return (_jsx(_Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getRowAttrs(props.rowDetail), { children: [getCells(), onRemove ? _jsx("button", { className: 'aio-table-remove', onClick: () => remove(row, rowIndex), children: getIcon('mdiClose', 0.8) }) : null] }), rowId) }));
 };
-const TableCell = (p) => {
-    let { row, rowIndex, column, isLast } = p;
-    let { getCellAttrs, rootProps } = useProvider();
-    let { onChange = () => { }, value = [] } = rootProps;
-    //cellNewValue is used to eval please dont remove it
-    function setCell(row, column, cellNewValue) {
-        row = JSON.parse(JSON.stringify(row));
-        eval(`${column.value} = cellNewValue`);
-        onChange(value.map((o) => o._id !== row._id ? o : row));
-    }
-    return (_jsxs(Fragment, { children: [_jsx("div", Object.assign({}, getCellAttrs({ row, rowIndex, column, type: 'cell' }), { children: _jsx(TableCellContent, { row: row, rowIndex: rowIndex, column: column, onChange: (value) => setCell(row, column, value) }, row._id + ' ' + column._id) })), !isLast && _jsx(TableGap, { dir: 'v' })] }, row._id + ' ' + column._id));
+const TableCell = (props) => {
+    const { cellDetail, cellValue } = props;
+    const { row, column, isLast } = cellDetail;
+    const { tableHook, getTimeText } = useProvider();
+    const { template, before, after, subtext } = column;
+    const rowId = row._id;
+    const colId = column._id;
+    const isTime = ['month', 'day', 'hour', 'minute'].indexOf(column.type || 'text') !== -1;
+    const templateValue = isTime ? getTimeText(cellValue) : tableHook.getCellValue(cellDetail, template);
+    const beforeValue = tableHook.getCellValue(cellDetail, before, undefined);
+    const afterValue = tableHook.getCellValue(cellDetail, after, undefined);
+    const subtextValue = tableHook.getCellValue(cellDetail, subtext, undefined);
+    return (_jsx(Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getCellAttrs(props.cellDetail, props.cellValue), { children: [beforeValue !== undefined && _jsx("div", { className: "aio-table-cell-before", children: beforeValue }), _jsxs("div", { className: `aio-table-cell-value${subtext !== undefined ? ' has-subtext' : ''}`, "data-subtext": subtextValue, children: [templateValue !== undefined && templateValue, templateValue === undefined && cellValue] }), afterValue !== undefined && _jsx("div", { className: "aio-table-cell-after", children: afterValue })] })) }, rowId + ' ' + colId));
 };
-const TableCellContent = (props) => {
-    let { row, column, rowIndex, onChange } = props;
-    let { getDynamics, rootProps } = useProvider();
-    const { getValue = {} } = rootProps;
-    if (column.template !== undefined) {
-        const p = { row, column, rowIndex, change: (newRow) => (onChange || (() => { }))(newRow) };
-        if (typeof column.template === 'string' && getValue[column.template]) {
-            return getValue[column.template](p);
+const useTable = (getProps, getPaging) => {
+    const DragRows = UT.useDrag((dragData, dropData, reOrder) => {
+        const { onSwap, onChange } = getProps();
+        const { dragIndex } = dragData;
+        const { dropIndex, rows } = dropData;
+        const newRows = reOrder(rows, dragIndex, dropIndex);
+        const from = rows[dragIndex];
+        const to = rows[dropIndex];
+        if (typeof onSwap === 'function') {
+            onSwap(newRows, from, to);
         }
-        if (typeof column.template === 'function') {
-            return column.template(p);
+        else if (onChange) {
+            onChange(newRows);
         }
-    }
-    return getDynamics({ value: column.value, row, rowIndex, column });
+    });
+    const getCellValue = (cellDetail, cellValue, def) => {
+        const { getValue = {} } = getProps();
+        const paging = getPaging();
+        if (paging) {
+            let { number, size } = paging;
+            cellDetail = Object.assign(Object.assign({}, cellDetail), { rowIndex: cellDetail.rowIndex + ((number - 1) * size) });
+        }
+        let type = typeof cellValue;
+        if (type === 'string') {
+            const { row } = cellDetail;
+            let result = cellValue;
+            if (getValue[cellValue]) {
+                result = getValue[cellValue](cellDetail);
+            }
+            else if (cellValue.indexOf('row.') !== -1) {
+                try {
+                    eval(`result = ${cellValue}`);
+                }
+                catch (_a) {
+                    result = '';
+                }
+            }
+            return result === undefined ? def : result;
+        }
+        if (type === 'undefined') {
+            return def;
+        }
+        if (type === 'function') {
+            return cellValue(cellDetail);
+        }
+        return cellValue === undefined ? def : cellValue;
+    };
+    const getColValue = (column, field, def) => {
+        const colValue = column[field];
+        let type = typeof colValue;
+        let result;
+        if (type === 'function') {
+            result = colValue(column);
+        }
+        else {
+            result = colValue;
+        }
+        return result === undefined ? def : result;
+    };
+    const getCellAttrs = (cellDetail, cellValue) => {
+        const { column } = cellDetail;
+        const attrs = getCellValue(cellDetail, column.attrs, {});
+        const justify = getColValue(column, 'justify', false);
+        const width = getColValue(column, 'width');
+        const minWidth = getColValue(column, 'minWidth');
+        const className = `aio-table-cell` + (justify ? ` aio-table-cell-justify` : '');
+        const style = { width, minWidth, flex: width ? undefined : 1 };
+        return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof cellValue === 'string' ? cellValue : undefined } });
+    };
+    const getTitleAttrs = (column) => {
+        const attrs = getColValue(column, 'titleAttrs', {});
+        const justify = getColValue(column, 'justify', false);
+        const width = getColValue(column, 'width');
+        const minWidth = getColValue(column, 'minWidth');
+        const className = `aio-table-title` + (justify ? ` aio-table-title-justify` : '');
+        const style = { width, minWidth, flex: width ? undefined : 1 };
+        return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof column.title === 'string' ? column.title : undefined } });
+    };
+    const getRowAttrs = (rowDetail) => {
+        const { rowOption = {}, onSwap, value, gap = [0, 1] } = getProps();
+        const { attrs: rowAttrs } = rowOption;
+        const attrs = rowAttrs ? rowAttrs(rowDetail) : {};
+        let obj = UT.AddToAttrs(attrs, { className: 'aio-table-row', style: { gap: gap[0] } });
+        if (onSwap) {
+            obj = Object.assign(Object.assign(Object.assign({}, obj), DragRows.getDragAttrs({ dragIndex: rowDetail.rowIndex })), DragRows.getDropAttrs({ dropIndex: rowDetail.rowIndex, rows: value }));
+        }
+        return obj;
+    };
+    return { getCellValue, getColValue, getCellAttrs, getTitleAttrs, getRowAttrs };
 };

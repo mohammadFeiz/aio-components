@@ -1,6 +1,6 @@
 {
     "name": "aio-table",
-    "version": "9.0.0",
+    "version": "9.1.0",
     "description": "all in one table. tree mode , simple mode , tree mode, gantt mode , groupby mode, freeze mode.",
     "main": "index.js",
     "types":"index.d.ts",
