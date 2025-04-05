@@ -1,6 +1,6 @@
 import AIOApis from "./../../npm/aio-apis";
 import AIODate from "./../../npm/aio-date";
-import { I_addEmployeeModel, I_gridFilter, I_gridServerFilter } from "./types";
+import { I_addEmployeeModel, I_city, I_gridFilter, I_gridServerFilter, I_serverAdd, I_serverEdit } from "./types";
 
 export default class Apis extends AIOApis {
     base_url: string;
@@ -9,8 +9,8 @@ export default class Apis extends AIOApis {
             id: 'freelancer',
             lang: 'fa',
             token: p.token,
-            handleErrorMessage: () => {
-                return 'error'
+            handleErrorMessage: (error) => {
+                return error.response.data.messages[0].message
             },
             headers: {
 
@@ -18,6 +18,7 @@ export default class Apis extends AIOApis {
         })
         this.base_url = p.base_url
     }
+
     getGridServerFilter = (gridFilter: I_gridFilter): I_gridServerFilter => {
         const a = {
             "name": "string",
@@ -42,85 +43,99 @@ export default class Apis extends AIOApis {
             "employeeType": "0"
         }
         const res: I_gridServerFilter = {
-            selectHub: { id: gridFilter.hubId }
+            selectHub: { id: 1 },
+            isActive: true
         }
-        if (gridFilter.noeHamkari) { res.employeeType = gridFilter.noeHamkari }
+        let types: any = []
+        if (gridFilter.noeHamkari === 0) { types = [0] }
+        else if (gridFilter.noeHamkari === 1) { types = [1] }
+        else { types = [0, 1] }
+        res.types = types
         if (gridFilter.name) { res.name = gridFilter.name }
         if (gridFilter.isActive) { res.isActive = gridFilter.isActive }
         if (gridFilter.advanced?.mobile) { res.mobile = gridFilter.advanced.mobile }
         if (gridFilter.advanced?.nationalCode) { res.email = gridFilter.advanced.nationalCode }
         return res
     }
-    convertDate = (dateString:string):{year:number,month:number,day:number}=>{
-        const [year,month,day] = new AIODate().convertToArray(dateString)
-        return {year,month,day}
+    convertDate = (dateString: string): { year: number, month: number, day: number } => {
+        const [year, month, day] = new AIODate().convertToArray(dateString)
+        return { year, month, day }
     }
-    toIsoDate = (birthDate:string)=>{
+    toIsoDate = (birthDate: string) => {
         const DATE = new AIODate();
         const dd = DATE.toGregorian(birthDate)
-        const [y,m,d] = DATE.convertToArray(dd)
+        const [y, m, d] = DATE.convertToArray(dd)
         return new Date(y, m - 1, d).toISOString();
     }
-    getServerAddObject = (addEmployeeModel: I_addEmployeeModel) => {
-        const {noeHamkari,freelancer,eslahKonandeyeAddress} = addEmployeeModel;
-        const {ettelaateFardi} = noeHamkari === 0?freelancer:eslahKonandeyeAddress
-        const {
-            nationalCode,name,mobile,email,isActive,fatherName,birthDate,gender,phone,essentialPhone,shahr,address,hub
-        } = ettelaateFardi
-        const obj:any = {
-            //"id": 0,
-            //"personelCode": "string",
-            // "username": "string",
-            // "password": "string",
-            // "isSuperAdmin": true,
-            
-            nationalCode,name,mobile,email,isActive,fatherName,phone,essentialPhone,
-            birthDate: this.toIsoDate(birthDate || '1403/4/5'),//notice iso date???
-            gender: {id: gender},
-            residentCity: {id: shahr},
-            residentAddress:address,
-            type: {id: noeHamkari},
-            username:mobile,
-            hubId:hub
-            
-            
-            // "nationalIdFrontDocId": "string",
-            // "nationalIdBackDocId": "string",
-            // "drivingLicenceFrondDocId": "string",
-            // "drivingLicenceBackDocId": "string",
-            // "vehicleIdFrontDocId": "string",
-            // "vehicleIdBackDocId": "string",
-            // "vehicleInsurancePaperDocId": "string",
-            // "bankPaperDocId": "string",
-            // "contractPaperDocId": "string"
+    getClientEditObject = (serverModel: I_serverEdit): I_addEmployeeModel => {
+        const res: I_addEmployeeModel = {
+            eslahKonandeyeAddress: {
+                ettelaateFardi: {},
+                shahrHayeMontasab: {},
+                id: serverModel.id
+            },
+            freelancer: {
+                ettelaateFardi: {},
+                numbers: {},
+                ettelaateKhodro: {},
+                tasvireMadarek: {},
+                id: serverModel.id
+            },
+            noeHamkari: 1
         }
-        if(noeHamkari === 0){
-            obj.drivingLicenceNo = freelancer.ettelaateFardi.shomareGavahiname;
-            obj.contractNo = freelancer.ettelaateFardi.shomareGharardad;
-            obj.bankPaperNo = freelancer.ettelaateFardi.shomareSafte            
-            if(freelancer.ettelaateKhodro.tarikheEtebareBimeName){
-                obj.vehicleInsuranceExpire = this.convertDate(freelancer.ettelaateKhodro.tarikheEtebareBimeName)
+        const birthDate = new AIODate().getDateByPattern(serverModel.birthDate, '{year}/{month}/{day}')
+        const ettelaateFardi: any = {}
+        ettelaateFardi.hub = serverModel.hubId;
+        ettelaateFardi.nationalCode = serverModel.nationalCode;
+        ettelaateFardi.name = serverModel.name;
+        ettelaateFardi.mobile = serverModel.mobile;
+        ettelaateFardi.email = serverModel.email;// null miad
+        ettelaateFardi.isActive = serverModel.isActive;
+        ettelaateFardi.fatherName = serverModel.fatherName;
+        ettelaateFardi.birthDate = birthDate;
+        ettelaateFardi.gender = serverModel.gender.id;
+        ettelaateFardi.phone = serverModel.phone;
+        ettelaateFardi.essentialPhone = serverModel.essentialPhone;
+        ettelaateFardi.shahr = serverModel.residentCity.id;
+        ettelaateFardi.address = serverModel.residentAddress;
+        if (serverModel.type.id === 0) {
+            res.noeHamkari = 0;
+            res.freelancer.ettelaateFardi = ettelaateFardi
+            res.freelancer.ettelaateKhodro.pelak = [
+                serverModel.vehicleNumberPart0,
+                serverModel.vehicleNumberPart1,
+                serverModel.vehicleNumberPart2,
+                serverModel.vehicleNumberPart3
+            ]
+            res.freelancer.ettelaateKhodro.noeVasileNaghlie = serverModel.vehicleType?.id;
+            res.freelancer.ettelaateKhodro.modeleVasileNaghlie = serverModel.vehicleMake?.id;
+            res.freelancer.ettelaateKhodro.vin = serverModel.vehicleVin;
+            try {
+                const d = serverModel.vehicleInsuranceExpire as any
+                const bimeNameDateString = `${d.year}/${d.month}/${d.day}`
+                res.freelancer.ettelaateKhodro.tarikheEtebareBimeName = bimeNameDateString;
             }
-            obj.vehicleType = {id:freelancer.ettelaateKhodro.noeVasileNaghlie }
-            obj.vehicleVin = freelancer.ettelaateKhodro.vin;
-            obj.iban = freelancer.ettelaateFardi.shomareSheba;
-            if(freelancer.ettelaateKhodro.modeleVasileNaghlie){
-                obj.vehicleMake = {id: freelancer.ettelaateKhodro.modeleVasileNaghlie}
+            catch {
+                debugger
             }
-            const pelak = freelancer.ettelaateKhodro.pelak || []
-            obj.vehicleNumberPart0 = pelak[0]
-            obj.vehicleNumberPart1 = pelak[1]
-            obj.vehicleNumberPart2 = pelak[2]
-            obj.vehicleNumberPart3 = pelak[3]
+            res.freelancer.numbers = {
+                shomareGavahiname: serverModel.drivingLicenceNo,
+                shomareGharardad: serverModel.contractNo,
+                shomareSafte: serverModel.bankPaperNo,
+                shomareSheba: serverModel.iban
+            }
         }
         else {
-            const shahrHayeMontasab = eslahKonandeyeAddress.shahrHayeMontasab || {shahr:[],ostan:[]}
-            const shahr = shahrHayeMontasab.shahr || []
-            const ostan = shahrHayeMontasab.ostan || []
-            obj.accessProvinces = shahr.map((id)=>({id}))
-            obj.accessCities = ostan.map((id)=>({id}))
+            res.noeHamkari = 1;
+            res.eslahKonandeyeAddress.ettelaateFardi = ettelaateFardi
+            if (serverModel.accessCities) {
+                res.eslahKonandeyeAddress.shahrHayeMontasab.shahr = serverModel.accessCities.map((o) => o.id);
+            }
+            if (serverModel.accessProvinces) {
+                res.eslahKonandeyeAddress.shahrHayeMontasab.ostan = serverModel.accessProvinces.map((o) => o.id);
+            }
         }
-        return obj
+        return res
     }
     enums = async () => {
         const url = `${this.base_url}/core-api/common/common-objects?includeProvinces=true&includeCities=true&includeHubs=true&includeSexType=true&includeVehicleTypes=true&includeEmployeeTypes=true&includeVehicleVendor=true&includeVehicleMakes=true`
@@ -153,20 +168,64 @@ export default class Apis extends AIOApis {
         }
         return false
     }
-    add = async (addEmployeeModel: I_addEmployeeModel) => {
-        const body = this.getServerAddObject(addEmployeeModel)
+    add = async (addModel: I_serverAdd) => {
+        const { response, success } = await this.request<{ data: { payload: I_serverEdit } }>({
+            name: 'grid', method: 'post',
+            description: 'افزودن راننده', loading: true,
+            url: `${this.base_url}/resource-api/employee`,
+            body: addModel
+        })
+        if (success) { return this.getClientEditObject(response.data.payload) }
+        return false
+    }
+    edit = async (editModel: I_serverEdit, id: number) => {
         const { response, success } = await this.request<any>({
             name: 'grid',
-            method: 'post',
-            description: 'دریافت اطلاعات جدول پرسنل', loading: true,
+            method: 'put',
+            description: 'ویرایش راننده', loading: true,
             url: `${this.base_url}/resource-api/employee`,
-            body
+            body: { ...editModel, id }
+        })
+        if (success) { return true }
+        return false
+    }
+    remove = async (id: number) => {
+        const { success } = await this.request<any>({
+            name: 'grid',
+            method: 'delete',
+            description: 'حذف راننده', loading: true,
+            url: `${this.base_url}/resource-api/employee/${id}`,
+        })
+        if (success) { return true }
+        return false
+    }
+    initialEdit = async (id: number) => {
+        const { response, success } = await this.request<any>({
+            name: 'initialEdit',
+            method: 'get',
+            description: 'دریافت اطلاعات اولیه راننده برای ویرایش',
+            loading: true,
+            url: `${this.base_url}/resource-api/employee/${id}`
         })
         if (success) {
-            return {
-                rows: response.data.payload.content,
-                length: response.data.payload.totalElements
+            const res: I_serverEdit = response.data.payload
+            return this.getClientEditObject(res)
+        }
+        return false
+    }
+    cities = async () => {
+        const { response, success } = await this.request<{
+            data: {
+                payload: I_city[]
             }
+        }>({
+            name: 'cities',
+            method: 'get',
+            url: `${this.base_url}/core-api/countryDevision/findbyCity?filter=`,
+            description: 'دریافت لیست شهر ها'
+        })
+        if (success) {
+            return response.data.payload
         }
         return false
     }

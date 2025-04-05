@@ -1,153 +1,119 @@
-import { FC, useContext } from "react";
-import { AITabs, useForm } from "./../../../npm/aio-input";
-import { I_AddEmployeeContext, I_addEmployeeModel } from "../types";
-import { AddEmployeeContext, useFreelancer } from "../context";
-
-const EslahKonandeyeAddress: FC = () => {
-    const { switchConfig } = useFreelancer()
-    const { getAddEmployeeModel,setAddEmployeeModel,submit }: I_AddEmployeeContext = useContext(AddEmployeeContext)
-    const { options,popup } = useFreelancer()
-    const submit_eslahKonande = ()=>{
-        submit()
+import { FC, useEffect, useState } from "react";
+import { AITabs } from "./../../../npm/aio-input";
+import { I_eslahKonandeyeAddress } from "../types";
+import EttelaateFardi from "./ettelaateFardi";
+import AIODate from "./../../../npm/aio-date";
+import Apis from "../apis";
+import ShahrHayeMontasab from "./shahr-haye-montasab";
+import Footer from "./footer";
+import { useFreelancer } from "../context";
+type I_tab = 0 | 1
+const EslahKonandeyeAddress: FC<{ id?: number }> = ({ id }) => {
+    const {apis,gridHook,popup} = useFreelancer()
+    const [tab, setTab] = useState<I_tab>(0)
+    const [type, setType] = useState<'add' | 'edit'>(id === undefined ? 'add' : 'edit')
+    const [ettelaateFardiDisabled, setEttelaateFardiDisabled] = useState<boolean>(true)
+    const [shahrHayeMontasabDisabled, setShahrHayeMontasabDisabled] = useState<boolean>(true)
+    const [data, setData] = useState<I_eslahKonandeyeAddress>()
+    const getData = async () => {
+        if (id === undefined) {
+            setData({
+                ettelaateFardi: {},
+                shahrHayeMontasab: {}
+            })
+        }
+        else {
+            const res = await apis.initialEdit(id);
+            if (res) { setData(res.eslahKonandeyeAddress) }
+        }
     }
-    const addEmployeeModel = getAddEmployeeModel()
-    console.log(1,addEmployeeModel.eslahKonandeyeAddress.tab)
-    const form = useForm<I_addEmployeeModel["eslahKonandeyeAddress"]>({
-        initData: getAddEmployeeModel().eslahKonandeyeAddress, fa: true, inlineLabel: true,
-        onChange: (newData) => {
-            const addEmployeeModel = getAddEmployeeModel()
-            const tab = addEmployeeModel.eslahKonandeyeAddress.tab
-            const newEslahKonandeyeAddress = {...addEmployeeModel.eslahKonandeyeAddress,...newData}
-            const newModel:I_addEmployeeModel = { ...addEmployeeModel, eslahKonandeyeAddress:{...newEslahKonandeyeAddress,tab} }
-            setAddEmployeeModel(newModel)
-        },
-        getLayout: (context) => {
-            const rowCls = 'p-v-12- gap-16-'
-            return {
-                className: 'gap-16-',
-                v: [
-                    {
-                        style:{display:addEmployeeModel.eslahKonandeyeAddress.tab !== 0?'none':undefined},
-                        v: [
-                            {
-                                className: rowCls,
-                                h: [
-                                    { flex: 1, input: { label: 'نام و نام خانوادگی', field: 'ettelaateFardi.name', type: 'text', required: true } },
-                                    { flex: 1, input: { label: 'کد ملی', field: 'ettelaateFardi.nationalCode', type: 'text', required: true, validateType: "irNationalCode", filter: ['number'],maxLength:10 } },
-                                    { flex: 1, input: { label: 'شماره موبایل', field: 'ettelaateFardi.mobile', type: 'text', required: true, validateType: "irMobile", filter: ['number'] },maxLength:11 },
-                                    { flex: 1, input: { label: 'نام پدر', field: 'ettelaateFardi.fatherName', type: 'text', required: true } }
-                                ]
-                            },
-                            {
-                                className: rowCls,
-                                h: [
-                                    { flex: 1, input: { label: 'پست الکترونیکی', field: 'ettelaateFardi.email', type: 'text', validateType: 'email' } },
-                                    { flex: 1, input: { label: 'تاریخ تولد', field: 'ettelaateFardi.birthDate', type: 'text' } },
-                                    {
-                                        flex: 1,
-                                        input: {
-                                            label: 'جنسیت', field: 'ettelaateFardi.gender', type: 'select', required: true,
-                                            popover: { fitHorizontal: true },
-                                            options: options.sexTypes.map((o:any)=>({text:o.value,value:o.key})),
-                                        }
-                                    },
-                                    { flex: 1, input: { label: 'شماره تلفن ثابت', field: 'ettelaateFardi.phone', type: 'text', required: true, filter: ['number'] } },
-                                ]
-                            },
-                            {
-                                className: rowCls,
-                                h: [
-                                    { flex: 1, input: { label: 'شماره ضروری', field: 'ettelaateFardi.essentialPhone', type: 'text', required: true, filter: ['number'] } },
-                                    {
-                                        flex: 1,
-                                        input: {
-                                            label: 'شهر',
-                                            search: 'جستجو',
-                                            field: 'ettelaateFardi.shahr', type: 'select', options: options.cities.map((o:any)=>({text:o.value,value:o.key})), popover: { fitHorizontal: true },
-                                        }
-                                    },
-                                    { flex: 1, input: { label: 'هاب', field: "ettelaateFardi.hub" as any, type: 'select', options: options.hubs.map((o:any)=>({text:o.name,value:o.id}))}},
-                                    {
-                                        flex: 1,
-                                        input: {
-                                            field: 'ettelaateFardi.isActive', label: '', type: 'checkbox', required: false,
-                                            switch: switchConfig,
-                                            text: 'فعال'
-                                        }
-                                    },
-                                    { flx: 1, html: '' }
-                                ]
-                            },
-                            {
-                                className: rowCls,
-                                h: [
-                                    { flex: 1, input: { label: 'آدرس محل سکونت', field: 'ettelaateFardi.address', type: 'text', required: true } }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        style:{display:addEmployeeModel.eslahKonandeyeAddress.tab !== 1?'none':undefined},
-                        v: [
-                            {
-                                className: rowCls,
-                                h: [
-                                    {
-                                        flex: 1,
-                                        input: {
-                                            label: 'استان', field: 'shahrHayeMontasab.ostan', type: 'select', multiple: true, required: true,
-                                            options: options.provinces.map((o:any)=>({text:o.value,value:o.key})), text: 'انتخاب استان',
-                                        }
-                                    },
-                                    {
-                                        flex: 1,
-                                        input: {
-                                            label: 'شهر', field: 'shahrHayeMontasab.shahr', type: 'select', multiple: true, required: true,
-                                            search: 'جستجو',
-                                            options: options.cities.map((o:any)=>({text:o.value,value:o.key})), text: 'انتخاب شهر'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        h:[
-                            {html:'',flex:1},
-                            {
-                                html:(
-                                    <button className="fl-button-2" onClick={()=>popup.removeModal()}>لغو</button>
-                                )
-                            },
-                            {
-                                html:(
-                                    <button className="fl-button-1" onClick={submit_eslahKonande} disabled={context.isSubmitDisabled()}>افزودن و تایید</button>
-                                )
-                            }
-                        ]
-                    }
-                ]
+    useEffect(() => {
+        getData()
+    }, [])
+    const isDisabled = () => {
+        if (tab === 0) { return !!ettelaateFardiDisabled }
+        if (tab === 1) { return !!shahrHayeMontasabDisabled }
+        return false
+    }
+    const submit = async () => {
+        if(!data){return}
+        const {
+            nationalCode, name, mobile, email, isActive, fatherName, birthDate, gender, phone, essentialPhone, shahr, address, hub
+        } = data.ettelaateFardi
+        const obj: any = {
+            nationalCode, name, mobile, email, isActive, fatherName, phone, essentialPhone,//
+            birthDate: toIsoDate(birthDate || '1403/4/5'),//notice iso date???//
+            gender: { id: gender },
+            residentCity: { id: shahr },
+            residentAddress: address,
+            type: { id: 1 },
+            username: mobile,
+            hubId: hub
+        }
+        if (type === 'add') {
+            const res = await apis.add(obj)
+            if (res) {
+                gridHook.updateGrid()
+                setTab(1);
+                setType('edit');
+                setData(res.eslahKonandeyeAddress)
             }
         }
-    })
+        if(type === 'edit') {
+            const id = data.id as number
+            const shahrHayeMontasab = data.shahrHayeMontasab || { shahr: [], ostan: [] }
+            const shahr = shahrHayeMontasab.shahr || []
+            const ostan = shahrHayeMontasab.ostan || []
+            obj.accessProvinces = shahr.map((id) => ({ id }))
+            obj.accessCities = ostan.map((id) => ({ id }))
+            const res = await apis.edit(obj, id)
+            if (res) {
+                gridHook.updateGrid()
+                popup.removeModal()
+            }
+        }
+    }
+    if (!data) { return null }
     return (
         <div className="flex-col- gap-16-">
             <AITabs
                 style={{ height: 36 }}
                 options={[
                     { text: 'اطلاعات فردی', value: 0 },
-                    { text: 'شهر های منتسب', value: 1 }
+                    { text: 'شهر های منتسب', value: 1, disabled: type === 'add' }
                 ]}
-                value={addEmployeeModel.eslahKonandeyeAddress.tab}
+                value={tab}
                 option={{ justify: () => true, style: () => ({ flex: 1 }) }}
-                onChange={(tab) => {
-                    const addEmployeeModel = getAddEmployeeModel()
-                    const newModel:I_addEmployeeModel = { ...addEmployeeModel, eslahKonandeyeAddress: { ...addEmployeeModel.eslahKonandeyeAddress, tab } }
-                    setAddEmployeeModel(newModel)
-                }}
+                onChange={(tab) => setTab(tab)}
             />
-            {form.renderLayout}
+            {
+                tab === 0 &&
+                <EttelaateFardi
+                    data={data.ettelaateFardi}
+                    onChange={(ettelaateFardi) => setData({ ...data, ettelaateFardi })}
+                    setDisabled={(v) => {
+                        if (ettelaateFardiDisabled !== v) { setEttelaateFardiDisabled(v) }
+                    }}
+                />
+            }
+            {
+                tab === 1 &&
+                <ShahrHayeMontasab
+                    data={data.shahrHayeMontasab}
+                    onChange={(shahrHayeMontasab) => setData({ ...data, shahrHayeMontasab })}
+                    setDisabled={(v) => {
+                        if (shahrHayeMontasabDisabled !== v) { setShahrHayeMontasabDisabled(v) }
+                    }}
+                />
+            }
+            <Footer onSubmit={submit} onClose={()=>popup.removeModal()} isDisabled={isDisabled} />
         </div>
     )
 }
 export default EslahKonandeyeAddress
+const toIsoDate = (birthDate: string) => {
+    const DATE = new AIODate();
+    const dd = DATE.toGregorian(birthDate)
+    const [y, m, d] = DATE.convertToArray(dd)
+    return new Date(y, m - 1, d).toISOString();
+}

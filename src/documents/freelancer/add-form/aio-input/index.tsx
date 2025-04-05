@@ -1,43 +1,12 @@
 import { createRef, useContext, createContext, useState, useEffect, useRef, FC, Fragment, ReactNode, MutableRefObject, isValidElement } from 'react';
-import usePopup, { AP_modal, AP_usePopup } from "./../../npm/aio-popup";
-import * as UT from './../../npm/aio-utils';
-import AIODate from './../../npm/aio-date';
-import { Indent, GetSvg } from './../../npm/aio-component-utils';
+import usePopup, { AP_modal, AP_usePopup } from "aio-popup";
+import * as UT from 'aio-utils';
+import AIODate from 'aio-date';
+import { Indent, GetSvg } from 'aio-component-utils';
 import $ from 'jquery';
-import './repo/index.css';
-import { EventEmitter } from "events";
+import './index.css';
 const AICTX = createContext({} as any);
-
-class AioInputDefaultsClass {
-    defaults: Partial<AITYPE> = {};
-    eventEmitter = new EventEmitter();
-
-    set(newDefaults: Partial<AITYPE>) {
-        this.defaults = { ...this.defaults, ...newDefaults };
-        this.eventEmitter.emit("update"); 
-    }
-
-    get() {
-        return this.defaults;
-    }
-
-    subscribe(callback: () => void) {
-        this.eventEmitter.on("update", callback);
-        return () => this.eventEmitter.off("update", callback);
-    }
-}
-
-export const AIOInputDefaults = new AioInputDefaultsClass();
 const AIOInput: FC<AITYPE> = (props) => {
-    const [defaults, setDefaults] = useState(AIOInputDefaults.get());
-    useEffect(() => {
-        const unsubscribe = AIOInputDefaults.subscribe(() => {
-            setDefaults(AIOInputDefaults.get());
-        });
-        return () => {
-            unsubscribe();
-        };
-    }, []);
     let type = props.type, round = props.round;
     let value = props.value
     if (type === 'text') { if (typeof value !== 'string') { value = '' } }
@@ -48,28 +17,28 @@ const AIOInput: FC<AITYPE> = (props) => {
     }
     else if (type === 'slider') { type = 'range'; round = 0; }
     else if (type === 'range') { return null; }
-    let rootProps: AITYPE = { ...defaults, ...props, type, round, value }
+    let rootProps: AITYPE = { ...props, type, round, value }
     if (type === 'text' && rootProps.getOptions) {
         return <SuggestionInput {...rootProps} />
     }
     return <AIOINPUT {...rootProps} />
 }
 export default AIOInput
-export const SuggestionInput: FC<Omit<AITYPE,'type'>> = (props) => {
+const SuggestionInput: FC<AITYPE> = (props) => {
     const { getOptions, option = {}, onChange } = props;
     const [searchResult, SetSearchResult] = useState<any[]>([])
     const [value, setValue] = useState<string>('')
-    const initSearchResult = async ()=>{
-        setSearchResult(value)
-    }
-    useEffect(()=>{initSearchResult()},[])
     async function setSearchResult(newValue: any) {
         setValue(newValue)
+        if (!newValue) {
+            SetSearchResult([])
+            return
+        }
         const res: any[] = getOptions ? await getOptions(newValue) : [];
         SetSearchResult(res)
     }
     return (
-        <AIText
+        <AIOInput
             {...props}
             value={value}
             options={searchResult}
@@ -99,14 +68,18 @@ function AIOINPUT(props: AITYPE) {
     let popup = usePopup({ rtl: props.rtl })
     let [showPassword, SetShowPassword] = useState<boolean>(false);
     function setShowPassword(state?: boolean) { SetShowPassword(state === undefined ? !showPassword : state) }
-    const DragOptions = UT.useDrag((fromData, toData,reOrder) => {
-        if (typeof props.onSwap === 'function') {
-            const { fromIndex } = fromData;
-            const { options, toIndex } = toData;
-            const sorted = reOrder(options, fromIndex, toIndex);
-            props.onSwap(sorted, options[fromIndex], options[toIndex])
-        }
-    })
+    let [DragOptions] = useState<UT.DragClass>(
+        new UT.DragClass({
+            callback: (fromData, toData) => {
+                if (typeof props.onSwap === 'function') {
+                    const { fromIndex } = fromData;
+                    const { options, toIndex } = toData;
+                    const sorted = DragOptions.reOrder(options, fromIndex, toIndex);
+                    props.onSwap(sorted, options[fromIndex], options[toIndex])
+                }
+            }
+        })
+    )
     function getPopover(dom: any) {
         let className = 'aio-input-popover';
         className += ` aio-input-popover-${rtl ? 'rtl' : 'ltr'}`
@@ -117,10 +90,7 @@ function AIOINPUT(props: AITYPE) {
         if (popover.body) { body = popover.body }
         else if (type === 'date') { body = <Calendar onClose={popup.removeModal} /> }
         else if (type === 'time') { body = <TimePopover onClose={popup.removeModal} /> }
-        else {
-            if(context.options.optionsList.length === 0){return}
-            body = <Options/>
-        }
+        else { body = <Options /> }
         let obj: AP_modal = {
             ...(props.popover || {}),
             position: popover.position || 'popover',
@@ -131,7 +101,6 @@ function AIOINPUT(props: AITYPE) {
             setAttrs: (key: 'backdrop' | 'modal' | 'header' | 'body' | 'footer') => {
                 let attrs = (popover.setAttrs || (() => { return {} }))(key);
                 if (key === 'modal') { return UT.AddToAttrs(attrs, { className }) }
-                return attrs
             }
         }
         return obj;
@@ -145,9 +114,7 @@ function AIOINPUT(props: AITYPE) {
         else if (types.isDropdown) {
             let open = !!popup.getModals().length
             if (open) { return }
-            const popover = getPopover(dom)
-            if(!popover){return}
-            popup.addModal(popover);
+            popup.addModal(getPopover(dom));
         }
         else if (typeof props.onClick === 'function') { props.onClick(e) }
         else if (attrs.onClick) { attrs.onClick(); }
@@ -211,6 +178,7 @@ function AIOINPUT(props: AITYPE) {
         list: () => <List />,
         file: () => <File />,
         select: () => <Select />,
+        table: () => <Table />,
         checkbox: () => <Layout />,
         button: () => <Layout />,
         range: () => <Layout properties={{ text: <Range />, className: getRangeClassName() }} />,
@@ -227,8 +195,15 @@ function AIOINPUT(props: AITYPE) {
         color: () => <Layout properties={{ text: <Input /> }} />
     }
     if (!type || !render[type]) { return null }
-    const context = getContext()
-    return (<AICTX.Provider key={datauniqid} value={context}>{render[type]()} {popup.render()}</AICTX.Provider>)
+    return (
+        <AICTX.Provider
+            key={datauniqid}
+            value={getContext()}
+        >
+            {render[type]()}
+            {popup.render()}
+        </AICTX.Provider>
+    )
 }
 function TimePopover(props: { onClose: () => void }) {
     const { DATE, rootProps }: AI_context = useContext(AICTX)
@@ -675,8 +650,9 @@ const Options: FC = () => {
     let { rootProps, types, options }: AI_context = useContext(AICTX);
     let [searchValue, setSearchValue] = useState('');
     let [dom] = useState<any>(createRef())
-    const hasSearch = rootProps.type !== 'tabs' && rootProps.type !== 'buttons' && !types.isInput && !!rootProps.search
+    let [focused] = useState<any>()
     function renderSearchBox(options: AI_option[]) {
+        if (rootProps.type === 'tabs' || rootProps.type === 'buttons' || types.isInput || !rootProps.search) { return null }
         if (searchValue === '' && options.length < 10) { return null }
         return (
             <div className='aio-input-search'>
@@ -712,7 +688,7 @@ const Options: FC = () => {
     if (types.isDropdown) { className += ' aio-input-dropdown-options' }
     return (
         <div className='aio-input-options-container' ref={dom} tabIndex={0} onKeyDown={(e) => keyDown(e)}>
-            {!!hasSearch && renderSearchBox(options.optionsList)}
+            {renderSearchBox(options.optionsList)}
             <div className={className}>{renderOptions}</div>
         </div>
     )
@@ -1817,6 +1793,496 @@ function DPArrow(props: { type: 'minus' | 'plus', onClick?: () => void }) {
     function getIcon() { return I(type === 'minus' ? 'mdiChevronLeft' : 'mdiChevronRight', 1, { color: theme[0] }) }
     return (<div className='aio-input-date-arrow aio-input-date-theme-color' onClick={() => change()}>{getIcon()}</div>)
 }
+const AITableContext = createContext({} as any);
+function Table() {
+    let { rootProps, DATE }: AI_context = useContext(AICTX);
+    let { paging, getValue = {}, value, onChange = () => { }, onAdd, onRemove, excel, onSwap, onSearch, rowAttrs, onChangeSort, className, style } = rootProps;
+    let [dom] = useState(createRef())
+    let [searchValue, setSearchValue] = useState<string>('')
+    let [columns, setColumns] = useState<AI_table_column[]>([]);
+    let [searchColumns, setSearchColumns] = useState<AI_table_column[]>([]);
+    let [excelColumns, setExcelColumns] = useState<AI_table_column[]>([]);
+    let [temp] = useState<type_table_temp>({})
+    let [DragRows] = useState<UT.DragClass | false>(!onSwap ? false : new UT.DragClass({
+        callback: (dragData, dropData) => {
+            if (DragRows === false) { return }
+            const { dragIndex } = dragData;
+            const { dropIndex, rows } = dropData;
+            const newRows = DragRows.reOrder(rows, dragIndex, dropIndex);
+            const from = rows[dragIndex];
+            const to = rows[dropIndex];
+            if (typeof onSwap === 'function') { onSwap(newRows, from, to) }
+            else { onChange(newRows) }
+        }
+    }))
+    let [sorts, setSorts] = useState<AI_table_sort[]>([])
+    function getColumns() {
+        let { columns = [] } = rootProps;
+        columns = typeof columns === 'function' ? columns() : columns;
+        let searchColumns: AI_table_column[] = [], excelColumns: AI_table_column[] = [];
+        let updatedColumns = columns.map((o: AI_table_column) => {
+            let { id = 'aitc' + Math.round(Math.random() * 1000000), sort, search, excel } = o;
+            let column = { ...o, _id: id };
+            if (search) { searchColumns.push(column) }
+            if (excel) { excelColumns.push(column) }
+            return column
+        })
+        setColumns(updatedColumns);
+        setSearchColumns(searchColumns)
+        setExcelColumns(excelColumns);
+        return updatedColumns;
+    }
+    function getSorts(columns: AI_table_column[]) {
+        let sorts = [];
+        for (let i = 0; i < columns.length; i++) {
+            let column = columns[i];
+            let { _id, input } = column;
+            let sort = column.sort === true ? {} : column.sort;
+            if (!sort) { continue }
+            let { active = false, dir = 'dec' } = sort as AI_table_sort;
+            let getValue;
+            if (sort.getValue) { getValue = sort.getValue }
+            else {
+                getValue = (row: any) => {
+                    let value = getDynamics({ value: column.value, row, column })
+                    if (input && input.type === 'date') { value = DATE.getTime(value); }
+                    return value
+                }
+            }
+            let type: 'string' | 'number' | 'date';
+            if (input && ['number', 'date', 'range'].indexOf(input.type) !== -1) { type = 'number' }
+            else { type = sort.type || 'string' }
+            let sortItem: AI_table_sort = { dir, title: sort.title || column.title, sortId: _id, active, type, getValue }
+            sorts.push(sortItem)
+        }
+        setSorts(sorts);
+    }
+    function getDynamics(p: { value: any, row?: any, column?: AI_table_column, def?: any, rowIndex?: number }) {
+        let { value, row, column, def, rowIndex } = p;
+        if (paging) {
+            let { number, size } = paging;
+            if (rowIndex) rowIndex += ((number - 1) * size)
+        }
+        let type = typeof value;
+        if (type === 'string') {
+            let result = value;
+            let param: AI_table_param = { row, column: column as AI_table_column, rowIndex: rowIndex as number }
+            if (getValue[value]) {
+                result = getValue[value](param)
+            }
+            else if (value.indexOf('row.') !== -1) { try { eval(`result = ${value}`); } catch { result = '' } }
+            return result === undefined ? def : result;
+        }
+        if (type === 'undefined') { return def }
+        if (type === 'function') { return value({ row, column, rowIndex }) }
+        return value === undefined ? def : value
+    }
+    useEffect(() => {
+        let columns: AI_table_column[] = getColumns();
+        getSorts(columns);
+    }, [])
+    function add() { typeof onAdd === 'function' ? onAdd() : onChange([{ ...onAdd }, ...value]) }
+    function remove(row: any, index: number) {
+        let action = () => onChange(value.filter((o: any) => o._id !== row._id));
+        typeof onRemove === 'function' ? onRemove({ row, action, rowIndex: index }) : action();
+    }
+    function exportToExcel() {
+        let list = [];
+        if (typeof rootProps.excel === 'function') {
+            list = rootProps.excel(value)
+        }
+        else {
+            for (let i = 0; i < value.length; i++) {
+                let row = value[i], json: any = {};
+                for (let j = 0; j < excelColumns.length; j++) {
+                    let column = excelColumns[j], { excel, value } = column;
+                    let key: string = '';
+                    if (excel === true) {
+                        if (typeof column.title === 'string') { key = column.title }
+                        else { key = 'untitle' }
+                    }
+                    else if (typeof excel === 'string') { key = excel }
+                    else { continue }
+                    json[key] = getDynamics({ value, row, column, rowIndex: i })
+                }
+                list.push(json)
+            }
+        }
+        UT.ExportToExcel(list, { promptText: typeof excel === 'string' ? excel : 'Inter Excel File Name' })
+    }
+    function getSearchedRows(rows: { [key: string]: any }[]) {
+        if (onSearch !== true) { return rows }
+        if (!searchColumns.length || !searchValue) { return rows }
+        return AIOInputSearch(rows, searchValue, (row, index) => {
+            let str = '';
+            for (let i = 0; i < searchColumns.length; i++) {
+                let column = searchColumns[i];
+                let value = getDynamics({ value: column.value, row, def: '', column, rowIndex: index });
+                if (value) { str += value + ' ' }
+            }
+            return str
+        })
+    }
+    function sortRows(rows: { [key: string]: any }[], sorts: AI_table_sort[]) {
+        if (!rows) { return [] }
+        if (!sorts || !sorts.length) { return rows }
+        return rows.sort((a, b) => {
+            for (let i = 0; i < sorts.length; i++) {
+                let { dir, getValue } = sorts[i];
+                if (!getValue) { return 0 }
+                let aValue = getValue(a), bValue = getValue(b);
+                if (aValue < bValue) { return -1 * (dir === 'dec' ? -1 : 1); }
+                if (aValue > bValue) { return 1 * (dir === 'dec' ? -1 : 1); }
+                if (i === sorts.length - 1) { return 0; }
+            }
+            return 0;
+        });
+    }
+    function getSortedRows(rows: { [key: string]: any }[]) {
+        if (temp.isInitSortExecuted) { return rows }
+        if (onChangeSort) { return rows }
+        let activeSorts = sorts.filter((sort) => sort.active !== false);
+        if (!activeSorts.length || !rows.length) { return rows }
+        temp.isInitSortExecuted = true;
+        let sortedRows = sortRows(rows, activeSorts);
+        onChange(sortedRows);
+        return sortedRows;
+    }
+    function getRows(): AI_table_rows {
+        let searchedRows = getSearchedRows(value);
+        let sortedRows = getSortedRows(searchedRows);
+        let pagedRows = paging && !paging.serverSide ? sortedRows.slice((paging.number - 1) * paging.size, paging.number * paging.size) : sortedRows;
+        return { rows: value, searchedRows, sortedRows, pagedRows }
+    }
+    //calculate style of cells and title cells
+    function getCellStyle(column: AI_table_column) {
+        let width = getDynamics({ value: column.width });
+        let minWidth = getDynamics({ value: column.minWidth });
+        return { width: width ? width : undefined, flex: width ? undefined : 1, minWidth }
+    }
+    function getCellAttrs(p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) {
+        let { row, rowIndex, column, type } = p;
+        let { cellAttrs, titleAttrs } = column;
+        let attrs = getDynamics({ value: type === 'title' ? titleAttrs : cellAttrs, column, def: {}, row, rowIndex });
+        let justify = getDynamics({ value: column.justify, def: false });
+        let cls = `aio-input-table-${type}` + (justify ? ` aio-input-table-${type}-justify` : '')
+        attrs = UT.AddToAttrs(attrs, { className: cls, style: getCellStyle(column) });
+        if (type === 'title') { attrs.title = getDynamics({ value: column.title, def: '' }) }
+        return { ...attrs }
+    }
+    function getRowAttrs(row: any, rowIndex: number) {
+        let attrs = rowAttrs ? rowAttrs({ row, rowIndex }) : {};
+        let obj = UT.AddToAttrs(attrs, { className: 'aio-input-table-row' })
+        if (DragRows !== false) {
+            obj = {
+                ...obj,
+                ...DragRows.getDragAttrs({ dragIndex: rowIndex }),
+                ...DragRows.getDropAttrs({ dropIndex: rowIndex, rows: value })
+            }
+        }
+        return obj;
+    }
+    function search(searchValue: string) {
+        if (onSearch === true) { setSearchValue(searchValue) }
+        else if (typeof onSearch === 'function') { onSearch(searchValue) }
+    }
+    function getContext(ROWS: AI_table_rows) {
+        let context: type_table_context = {
+            ROWS, rootProps, columns, sorts, setSorts, sortRows, excelColumns, getCellAttrs, getRowAttrs,
+            add, remove, search, exportToExcel, getDynamics
+        }
+        return context
+    }
+    let ROWS: AI_table_rows = getRows();
+    let attrs = UT.AddToAttrs(rootProps.attrs, { className: ['aio-input aio-input-table', className], style: rootProps.style, attrs: { ref: dom } })
+    return (
+        <AITableContext.Provider value={getContext(ROWS)}>
+            <div {...attrs}>
+                <TableToolbar />
+                <div className='aio-input-table-unit aio-input-scroll'><TableHeader /><TableRows /></div>
+                {!!paging && !!ROWS.rows.length ? <TablePaging /> : ''}
+            </div>
+        </AITableContext.Provider>
+    )
+}
+function TableGap(props: { dir: 'h' | 'v' }) {
+    let { rootProps }: type_table_context = useContext(AITableContext)
+    let { rowGap, columnGap } = rootProps;
+    let { dir } = props;
+    let style;
+    if (dir === 'h') { style = { height: rowGap } }
+    else { style = { width: columnGap } }
+    return <div className={`aio-input-table-border-${dir}`} style={style}></div>
+}
+function TablePaging() {
+    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
+    let [temp] = useState<{ timeout: any, start: any, end: any, pages: any }>({ timeout: undefined, start: undefined, end: undefined, pages: 0 })
+    function fix(paging: AI_table_paging): AI_table_paging {
+        if (typeof rootProps.onChangePaging !== 'function') {
+            alert('aio-input error => in type table you set paging but forget to set onChangePaging function prop to aio input')
+            return { number: 0, size: 0 };
+        }
+        let { number, size = 20, length = 0, sizes = [1, 5, 10, 15, 20, 30, 50, 70, 100], serverSide } = paging
+        if (!serverSide) { length = ROWS.sortedRows.length }
+        if (sizes.indexOf(size) === -1) { size = sizes[0] }
+        let pages = Math.ceil(length / size);
+        number = number > pages ? pages : number;
+        number = number < 1 ? 1 : number;
+        let start = number - 3, end = number + 3;
+        temp.start = start; temp.end = end; temp.pages = pages;
+        return { ...paging, length, number, size, sizes }
+    }
+    let [paging, setPaging] = useState<AI_table_paging>(fix(rootProps.paging || { size: 0, number: 0 }));
+    useEffect(() => {
+        if (rootProps.paging) { setPaging(fix(rootProps.paging)) }
+    }, [(rootProps.paging || { size: 0, number: 0, length: 0 }).size, (rootProps.paging || { size: 0, number: 0, length: 0 }).number, (rootProps.paging || { size: 0, number: 0, length: 0 }).length])
+    function changePaging(obj: { [key in keyof AI_table_paging]?: any }) {
+        let newPaging: AI_table_paging = fix({ ...paging, ...obj });
+        setPaging(newPaging);
+        if (rootProps.onChangePaging) {
+            if (newPaging.serverSide) {
+                clearTimeout(temp.timeout);
+                temp.timeout = setTimeout(() => {
+                    //be khatere fahme payine typescript majbooram dobare in shart ro bezanam
+                    if (rootProps.onChangePaging) { rootProps.onChangePaging(newPaging) }
+                }, 800);
+            }
+            else { rootProps.onChangePaging(newPaging) }
+        }
+    }
+    let { number, size, sizes } = paging;
+    let buttons = [];
+    let isFirst = true
+    for (let i = temp.start; i <= temp.end; i++) {
+        if (i < 1 || i > temp.pages) {
+            buttons.push(<button key={i} className={'aio-input-table-paging-button aio-input-table-paging-button-hidden'}>{i}</button>)
+        }
+        else {
+            let index: number;
+            if (isFirst) { index = 1; isFirst = false; }
+            else if (i === Math.min(temp.end, temp.pages)) { index = temp.pages }
+            else { index = i; }
+            buttons.push(<button key={index} className={'aio-input-table-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
+        }
+    }
+    function changeSizeButton() {
+        if (!sizes || !sizes.length) { return null }
+        let p: AITYPE = {
+            attrs: { className: 'aio-input-table-paging-button aio-input-table-paging-size' },
+            type: 'select', value: size, options: sizes, option: { text: 'option', value: 'option' },
+            onChange: (value) => changePaging({ size: value }),
+            popover: { fitHorizontal: true },
+        }
+        return (<AIOInput {...p} />)
+    }
+    return (
+        <div className='aio-input-table-paging'>
+            {buttons}
+            {changeSizeButton()}
+        </div>
+    )
+}
+function TableRows() {
+    let { ROWS, rootProps }: type_table_context = useContext(AITableContext)
+    let { rowTemplate, rowAfter = () => null, rowBefore = () => null, rowsTemplate, placeholder = 'there is not any items' } = rootProps;
+    let rows = ROWS.pagedRows || [];
+    let content;
+    if (rowsTemplate) { content = rowsTemplate(rows) }
+    else if (rows.length) {
+        content = rows.map((o, i) => {
+            let { id = 'ailr' + Math.round(Math.random() * 10000000) } = o;
+            o._id = o._id === undefined ? id : o._id;
+            let isLast = i === rows.length - 1, Row;
+            if (rowTemplate) { Row = rowTemplate({ row: o, rowIndex: i, isLast }) }
+            else { Row = <TableRow key={o._id} row={o} rowIndex={i} isLast={isLast} /> }
+            return (<Fragment key={o._id}>{rowBefore({ row: o, rowIndex: i })}{Row}{rowAfter({ row: o, rowIndex: i })}</Fragment>)
+        })
+    }
+    else if (placeholder) {
+        content = <div style={{ width: '100%', textAlign: 'center', padding: 12, boxSizing: 'border-box' }}>{placeholder}</div>
+    }
+    else { return null }
+    return <div className='aio-input-table-rows'>{content}</div>
+}
+function TableToolbar() {
+    let { add, exportToExcel, sorts, sortRows, setSorts, search, rootProps, excelColumns }: type_table_context = useContext(AITableContext);
+    let { toolbarAttrs, toolbar, onAdd, onSearch, onChangeSort, onChange = () => { }, value, addText } = rootProps;
+    toolbarAttrs = UT.AddToAttrs(toolbarAttrs, { className: 'aio-input-table-toolbar' })
+    if (!onAdd && !toolbar && !onSearch && !sorts.length && !excelColumns.length) { return null }
+    function changeSort(sortId: string, changeObject: any) {
+        let newSorts = sorts.map((sort) => {
+            if (sort.sortId === sortId) {
+                let newSort = { ...sort, ...changeObject }
+                return newSort;
+            }
+            return sort
+        });
+        changeSorts(newSorts)
+    }
+    async function changeSorts(sorts: AI_table_sort[]) {
+        if (onChangeSort) {
+            let res = await onChangeSort(sorts)
+            if (res !== false) { setSorts(sorts); }
+        }
+        else {
+            setSorts(sorts);
+            let activeSorts = sorts.filter((sort) => sort.active !== false);
+            if (activeSorts.length) {
+                onChange(sortRows(value, activeSorts))
+            }
+        }
+    }
+
+    function button() {
+        if (!sorts.length) { return null }
+        let p: AITYPE = {
+            popover: {
+                header: { title: 'Sort', onClose: false },
+                setAttrs: (key) => { if (key === 'header') { return { className: 'aio-input-table-toolbar-popover-header' } } },
+                limitTo: '.aio-input-table'
+            },
+            caret: false, type: 'select', options: sorts,
+            option: {
+                text: 'option.title',
+                checked: '!!option.active',
+                close: () => false,
+                value: 'option.sortId',
+                after: (option) => {
+                    let { dir = 'dec', sortId } = option;
+                    return (
+                        <div onClick={(e) => {
+                            e.stopPropagation();
+                            changeSort(sortId, { dir: dir === 'dec' ? 'inc' : 'dec' })
+                        }}>
+                            {I(dir === 'dec' ? 'mdiArrowDown' : 'mdiArrowUp', 0.8)}
+                        </div>
+                    )
+                }
+            },
+            attrs: { className: 'aio-input-table-toolbar-button' },
+            text: I('mdiSort', 0.7),
+            onSwap: (newSorts, from, to) => changeSorts(newSorts),
+            onChange: (value, option) => changeSort(value, { active: !option.checked })
+        }
+        return (
+            <AIOInput {...p} key='sortbutton' />
+        )
+    }
+    function getAddText() {
+        let { addText } = rootProps;
+        if (!rootProps.addText) { return I('mdiPlusThick', 0.8) }
+        if (typeof addText === 'function') {
+            return addText(value)
+        }
+        return addText
+    }
+    return (
+        <>
+            <div {...toolbarAttrs}>
+                {toolbar && <div className='aio-input-table-toolbar-content'>{typeof toolbar === 'function' ? toolbar() : toolbar}</div>}
+                <div className='aio-input-table-search'>
+                    {!!onSearch && <AIOInput type='text' onChange={(value) => search(value)} after={I('mdiMagnify', 0.7)} />}
+                </div>
+                {button()}
+                {!!excelColumns.length && <div className='aio-input-table-toolbar-button' onClick={() => exportToExcel()}>{I('mdiFileExcel', 0.8)}</div>}
+                {!!onAdd && <div className='aio-input-table-toolbar-button' onClick={() => add()}>{getAddText()}</div>}
+            </div>
+            <TableGap dir='h' />
+        </>
+    )
+}
+function TableHeader() {
+    let { rootProps, columns }: type_table_context = useContext(AITableContext);
+    let { headerAttrs, onRemove } = rootProps;
+    headerAttrs = UT.AddToAttrs(headerAttrs, { className: 'aio-input-table-header' })
+    let Titles = columns.map((o, i) => <TableTitle key={o._id} column={o} isLast={i === columns.length - 1} />);
+    let RemoveTitle = !onRemove ? null : <><TableGap dir='v' /><div className='aio-input-table-remove-title'></div></>;
+    return <div {...headerAttrs}>{Titles}{RemoveTitle}<TableGap dir='h' /></div>
+}
+function TableTitle(p: { column: AI_table_column, isLast: boolean }) {
+    let { column, isLast } = p;
+    let { getCellAttrs } = useContext(AITableContext);
+    let attrs = getCellAttrs({ column, type: 'title' });
+    return (<><div {...attrs}>{attrs.title}</div>{!isLast && <TableGap dir='v' />}</>)
+}
+function TableRow(p: { row: any, isLast: boolean, rowIndex: number }) {
+    let { row, isLast, rowIndex } = p;
+    let { remove, rootProps, columns, getRowAttrs }: type_table_context = useContext(AITableContext);
+    function getCells() {
+        return columns.map((column, i) => {
+            let key = row._id + ' ' + column._id;
+            let isLast = i === columns.length - 1;
+            return (<TableCell isLast={isLast} key={key} row={row} rowIndex={rowIndex} column={column} />)
+        })
+    }
+    let { onRemove } = rootProps;
+    return (
+        <>
+            <div key={row._id} {...getRowAttrs(row, rowIndex)}>
+                {getCells()}
+                {onRemove ? <><TableGap dir='v' /><button className='aio-input-table-remove' onClick={() => remove(row, rowIndex)}>{I('mdiClose', 0.8)}</button></> : null}
+            </div>
+            <TableGap dir='h' />
+        </>
+    )
+}
+const TableCell = (p: { row: any, rowIndex: number, column: AI_table_column, isLast: boolean }) => {
+    let { row, rowIndex, column, isLast } = p;
+    let { getCellAttrs, rootProps, getDynamics }: type_table_context = useContext(AITableContext);
+    let { onChange = () => { }, value = [] } = rootProps;
+    function setCell(row: any, column: AI_table_column, cellNewValue: any) {
+        if (column.input && column.input.onChange) {
+            column.input.onChange({ value: cellNewValue, row, column })
+        }
+        else {
+            row = JSON.parse(JSON.stringify(row));
+            eval(`${column.value} = cellNewValue`);
+            onChange(value.map((o: any) => o._id !== row._id ? o : row))
+        }
+    }
+    let contentProps: AI_TableCellContent = { row, rowIndex, column, onChange: column.input ? (value) => setCell(row, column, value) : undefined };
+    let key = row._id + ' ' + column._id;
+    return (
+        <Fragment key={key}>
+            <div {...getCellAttrs({ row, rowIndex, column, type: 'cell' })} >
+                <TableCellContent {...contentProps} key={key} />
+            </div>
+            {!isLast && <TableGap dir='v' />}
+        </Fragment>
+    )
+}
+type AI_TableCellContent = { row: any, column: AI_table_column, rowIndex: number, onChange?: (newValue: any) => void }
+function TableCellContent(props: AI_TableCellContent) {
+    let { row, column, rowIndex, onChange } = props;
+    let { getDynamics }: type_table_context = useContext(AITableContext);
+    let template = getDynamics({ value: column.template, row, rowIndex, column });
+    if (template !== undefined) { return template }
+    let input: AITYPE = getDynamics({ value: column.input, row, rowIndex, column });
+    let value = getDynamics({ value: column.value, row, rowIndex, column })
+    if (!input) { return value }
+    //justify baraye input ast amma agar rooye column set shode va input set nashode be input bede
+    input.justify = input.justify || getDynamics({ value: column.justify, row, rowIndex, column });
+    let convertedInput: any = { type: 'text' }
+    for (let property in input) {
+        let prop: (keyof AITYPE) = property as keyof AITYPE;
+        let res: any = input[prop];
+        if (['onChange', 'onClick'].indexOf(prop) !== -1) { convertedInput[prop] = res }
+        else { convertedInput[prop] = getDynamics({ value: res, row, rowIndex, column }) }
+    }
+    let p: AITYPE = { ...convertedInput, value, onChange, type: input.type }
+    return (<AIOInput {...p} key={row._id + ' ' + column._id} />)
+}
+function AIOInputSearch(items: any[], searchValue: string, getValue?: (o: any, index: number) => any) {
+    if (!searchValue) { return items }
+    function isMatch(keys: string[], value: string) {
+        for (let i = 0; i < keys.length; i++) {
+            if (value.indexOf(keys[i]) === -1) { return false }
+        }
+        return true
+    }
+    let keys = searchValue.split(' ');
+    return items.filter((o, i) => isMatch(keys, getValue ? getValue(o, i) : o))
+}
 type AI_sbp = (size: number, conf?: { half?: boolean, min?: number, max?: number, range?: number }) => number;
 type AI_cbs = (rangeCircle: I_rangeConfig, type: 'offset' | 'radius') => { thickness: number, color: string, roundCap: boolean, full: boolean, radius: number, className?: string }
 type AI_rbs = (range: I_rangeConfig) => { thickness: number, color: string, roundCap: boolean, offset: number, className?: string }
@@ -2448,7 +2914,7 @@ function getTypes(props: AITYPE) {
     }
     let { type, multiple } = props;
     let isMultiple;
-    if (type === 'tags') { isMultiple = true }
+    if (type === 'table' || type === 'tags') { isMultiple = true }
     else if (['radio', 'range', 'file', 'buttons', 'select', 'date', 'acardion'].indexOf(type) !== -1) { isMultiple = !!multiple }
     else { isMultiple = false };
     return {
@@ -2456,10 +2922,10 @@ function getTypes(props: AITYPE) {
         isInput: ['text', 'number', 'textarea', 'password'].indexOf(type) !== -1,
         isDropdown: isDropdown(),
         hasOption: ['text', 'number', 'textarea', 'color', 'select', 'radio', 'tabs', 'list', 'buttons', 'tags'].indexOf(type) !== -1,
-        hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'image', 'date'].indexOf(type) !== -1,
+        hasPlaceholder: ['text', 'number', 'textarea', 'color', 'select', 'table', 'image', 'date'].indexOf(type) !== -1,
         hasKeyboard: ['text', 'textarea', 'number', 'password'].indexOf(type) !== -1,
         hasText: ['checkbox', 'button', 'select'].indexOf(type) !== -1,
-        hasSearch: ['select'].indexOf(type) !== -1
+        hasSearch: ['table', 'select'].indexOf(type) !== -1
     }
 }
 
@@ -2580,7 +3046,7 @@ type I_GetOptionProps = {
 }
 function GetOptionProps(p: I_GetOptionProps) {
     let { optionProp, key, def, preventFunction, optionDetails, optionOrg } = p;
-    const prop = optionProp[key];
+    let prop = optionProp[key];
     if (typeof prop === 'string') {
         try {
             const option = optionOrg
@@ -2948,7 +3414,7 @@ export type AI_switch = {
 }
 export type AITYPE =
     AI_hasOption & AI_isDropdown & AI_isMultiple &
-    AI_hasKeyboard & AI_isRange & AI_isTree & AI_isDate & {
+    AI_hasKeyboard & AI_isTable & AI_isRange & AI_isTree & AI_isDate & {
         after?: ReactNode | ((p?: any) => ReactNode),
         attrs?: any,
         before?: ReactNode | ((p?: any) => ReactNode),
@@ -2992,9 +3458,15 @@ export type AI_optionProp = { [key in AI_optionKey]?: string | ((optionOrg: any,
 export type AI_optionDic = { [key: string]: AI_option }
 export type AI_options = { optionsList: AI_option[], optionsDic: AI_optionDic }
 export type AI_type = 'text' | 'number' | 'textarea' | 'password' | 'select' | 'tree' | 'spinner' | 'slider' | 'tags' |
-    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
+    'button' | 'date' | 'color' | 'radio' | 'tabs' | 'list' | 'table' | 'image' | 'file' | 'checkbox' | 'time' | 'buttons' | 'range' | 'acardion'
+export type AI_table_column = {
+    title?: any, value?: any, sort?: true | AI_table_sort, search?: boolean, id?: string, _id?: string, width?: any, minWidth?: any, input?: AITYPE,
+    onChange?: (newValue: any) => void, titleAttrs?: { [key: string]: any } | string, template?: string | ((p: { row: any, column: AI_table_column, rowIndex: number }) => ReactNode),
+    excel?: string | boolean, justify?: boolean, cellAttrs?: { [key: string]: any } | ((p: { row: any, rowIndex: number, column: AI_table_column }) => any) | string
+}
 export type AI_date_unit = 'year' | 'month' | 'day' | 'hour';
 export type AI_time_unit = { [key in ('year' | 'month' | 'day' | 'hour' | 'minute' | 'second')]?: boolean }
+export type AI_table_param = { row: any, column: AI_table_column, rowIndex: number }
 export type AI_date_trans = 'Today' | 'Clear' | 'This Hour' | 'Today' | 'This Month' | 'Select Year'
 export type AI_labels = AI_label[]
 export type AI_label = {
@@ -3012,7 +3484,7 @@ export type AI_context = {
     popup: AP_usePopup,
     showPassword: boolean,
     setShowPassword: (v?: boolean) => void,
-    DragOptions: UT.I_useDrag,
+    DragOptions: UT.DragClass,
     datauniqid: string,
     touch: boolean,
     click: (e: any, dom: any) => void,
@@ -3023,6 +3495,25 @@ export type AI_context = {
     error?: string
 }
 export type AI_types = { isMultiple: boolean, isInput: boolean, isDropdown: boolean, hasOption: boolean, hasPlaceholder: boolean, hasKeyboard: boolean, hasText: boolean, hasSearch: boolean }
+export type AI_table_sort = { active?: boolean, dir?: 'dec' | 'inc', title?: ReactNode, type?: 'string' | 'number', sortId?: string, getValue?: (row: any) => any }
+export type type_table_temp = { start?: any, isInitSortExecuted?: boolean }
+export type AI_table_paging = { serverSide?: boolean, number: number, size: number, length?: number, sizes?: number[] }
+export type AI_table_rows = { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] }
+export type type_table_getCellAttrs = (p: { row: any, rowIndex: number, column: AI_table_column, type: 'title' | 'cell' }) => any;
+export type type_table_context = {
+    rootProps: AITYPE,
+    columns: AI_table_column[],
+    ROWS: { rows: any[], searchedRows: any[], sortedRows: any[], pagedRows: any[] },
+    add: () => void, remove: (row: any, index: number) => void, search: (searchValue: string) => void,
+    exportToExcel: () => void,
+    sorts: AI_table_sort[],
+    setSorts: (newSorts: AI_table_sort[]) => void,
+    sortRows: (rows: any[], sorts: AI_table_sort[]) => any[],
+    excelColumns: AI_table_column[],
+    getRowAttrs: (row: any, rowIndex: number) => any,
+    getCellAttrs: type_table_getCellAttrs,
+    getDynamics: any
+}
 export type AI_Popover_props = { getRootProps: () => AITYPE, id: string, toggle: (popover: any) => void, types: AI_types }
 export type type_time_value = { year?: number, month?: number, day?: number, hour?: number, minute?: number, second?: number }
 export type AI_indent = { size: number, isLastChild: boolean, isFirstChild: boolean, childsLength: number, level: number, index: number, parentIndent?: AI_indent, height: number }
@@ -3056,6 +3547,31 @@ type AI_hasKeyboard = {
     blurChange?: boolean, filter?: string[], inputAttrs?: any,
     maxLength?: number, swip?: number, spin?: boolean, autoHighlight?: boolean, delay?: number, voice?: 'en' | 'fa'
 }
+type AI_isTable = {
+    addText?: ReactNode | ((value: any) => ReactNode),
+    columnGap?: number,
+    columns?: AI_table_column[] | ((p?: any) => AI_table_column[]),
+    excel?: string | ((value: any[]) => any[]),
+    getValue?: { [key: string]: (p: AI_table_param) => any },
+    headerAttrs?: any,
+    onAdd?: { [key: string]: any } | ((p?: any) => Promise<boolean | void | undefined>),
+    onChangePaging?: (newPaging: AI_table_paging) => void,
+    onChangeSort?: (sorts: AI_table_sort[]) => Promise<boolean>,
+    onSwap?: true | ((newValue: any[], startRow: any, endRow: any) => void),
+    onSearch?: true | ((searchValue: string) => void),
+    paging?: AI_table_paging,
+    removeText?: string,
+    rowAfter?: (p: { row: any, rowIndex: number }) => ReactNode,
+    rowAttrs?: (p: { row: any, rowIndex: number }) => any,
+    rowBefore?: (p: { row: any, rowIndex: number }) => ReactNode,
+    rowGap?: number,
+    rowsTemplate?: (rows: any[]) => ReactNode,
+    rowTemplate?: (p: { row: any, rowIndex: number, isLast: boolean }) => ReactNode,//table
+    toolbar?: ReactNode | (() => ReactNode),
+    toolbarAttrs?: any,
+    tabIndex?: number
+}
+
 type AI_isRange = {
     end?: number,
     fill?: false | { thickness?: number, color?: string, className?: string, style?: any } | ((index: number) => { thickness?: number, color?: string, className?: string, style?: any }),
@@ -3089,6 +3605,11 @@ type AI_isTree = {
     toggleIcon?: (p: { row: any, level: number, open?: boolean }) => ReactNode
 }
 
+
+//onSearch on tree
+//rowOption on table
+//now on date namayesh ya adame namayeshe panele emrooz va dokmeye emrooz
+
 export type AI<AI_type> = Omit<AITYPE, 'onChange' | 'type'> & {
     onChange?: AI_onChange<AI_type>,
 }
@@ -3113,6 +3634,7 @@ type AI_onChange<AI_type> =
     AI_type extends 'spinner' ? (v: any) => void :
     AI_type extends 'acardion' ? (v: any) => void :
     AI_type extends 'list' ? (v: any, optionDetails: AI_optionDetails) => void :
+    AI_type extends 'table' ? (v: any) => void :
     never;
 export const AIText: FC<AI<'text'>> = (props) => <AIOInput {...props} type='text' />
 export const AINumber: FC<AI<'number'>> = (props) => <AIOInput {...props} type='number' />
@@ -3134,24 +3656,23 @@ export const AISlider: FC<AI<'slider'>> = (props) => <AIOInput {...props} type='
 export const AISpinner: FC<AI<'spinner'>> = (props) => <AIOInput {...props} type='spinner' />
 export const AIAcardion: FC<AI<'acardion'>> = (props) => <AIOInput {...props} type='acardion' />
 export const AIList: FC<AI<'list'>> = (props) => <AIOInput {...props} type='list' />
+export const AITable: FC<AI<'table'>> = (props) => <AIOInput {...props} type='table' />
 
 
 
 export type I_validateType = 'email' | 'irMobile' | 'irNationalCode'
 export type I_formInput<T> = AITYPE & {
-    label: ReactNode, validateType?: I_validateType, field: I_formField<T>,
+    label: string, required?: boolean, validateType?: I_validateType, field: I_formField<T>,
     validate?: (p: { data: T, value: any, input: I_formInput<T>, field: I_formField<T> }) => string | undefined
 }
 type I_useFormProps<T> = {
     initData: Partial<T>;
     inlineLabel?: boolean;
     onSubmit?: (data: T) => void;
-    onChange?: (data: T) => void;
+    liveSubmit?: boolean;
     fa?: boolean;
-    labelAttrs?: any,
-    getLayout?: (context: I_formContext<T>) => I_formNode<T>,
-    debug?: boolean,
-    isRequired?: I_isRequired<T>
+    showLabel?: boolean,
+    getLayout?: (context: I_formContext<T>) => I_formNode<T>
 };
 export type I_formField<T> = NestedKeys<T> | 'none'
 type NestedKeys<T> = {
@@ -3170,74 +3691,123 @@ export type I_formHook<T> = {
     data: T,
     renderLayout: ReactNode,
     changeData: (data: T) => void,
+    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
+    getErrorsList: () => string[],
     reset: () => void,
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
     isSubmitDisabled: () => boolean,
     renderInput: (input: I_formInput<T>, attrs?: any) => ReactNode,
-    changeByField: (field: I_formField<T>, value: any) => void,
-    errors: I_errorHook<T>,
-    submit: () => void
+    changeByField: (field: I_formField<T>, value: any) => void
 }
 export type I_formContext<T> = {
     changeData: (data: T) => void,
     changeByInput: (field: I_formInput<T>, value: any) => void,
+    getErrorsDic: () => { [key in I_formField<T>]?: string | undefined },
+    getErrorsList: () => string[],
     reset: () => void,
+    renderSubmitButton: (text: string, attrs?: any) => ReactNode,
     isSubmitDisabled: () => boolean,
     getData: () => T,
     isDataChanged: () => boolean,
     rootProps: I_useFormProps<T>,
-    isFieldChanged: (field: any) => boolean,
+    isFieldChanged: (field: I_formField<T>) => boolean,
     getValueByInput: (input: I_formInput<T>) => any,
-    nodeHook: I_nodeHook,
-    inputHook: any,
-    errorHook: I_errorHook<T>,
-    isRequired: any
+    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
+    hasError: () => boolean,
+    getNodeAttrs: (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => any,
+    setInputsRef: (field: I_formField<T>, input: I_formInput<T>) => void
 }
-type I_isRequired<T> = (data: T, field: I_formField<T>) => boolean
+
 export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_formHook<T> => {
     function getInitData() { return JSON.parse(JSON.stringify(p.initData)) }
-    function isRequired(field: any) { return !!(p.isRequired || (() => false))(dataRef.current, field) }
     const [initData] = useState<T>(getInitData);
-    const submitTimeRef = useRef<number | undefined>(undefined)
-    const fieldChangesRef = useRef<any>({})
-    const inputHook = useInput()
-    const errorHook = useError({ getData, rootProps: p, isRequired })
-    const nodeHook = useNode()
-    const isFieldChanged = (field: any) => !!fieldChangesRef.current[field]
+    const [timerDisabled, setTimerDisabled] = useState(false)
+    const fieldChangesRef = useRef<{ [key in I_formField<T>]?: boolean }>({})
+    const errorsRef = useRef<{ [key in I_formField<T>]?: string | undefined }>({})
+    const inputsRef = useRef<{ [key in I_formField<T>]?: I_formInput<T> }>({})
+    function setInputsRef(field: I_formField<T>, input: I_formInput<T>) {
+        inputsRef.current = { ...inputsRef.current, [field]: input }
+    }
+    function getInputByField(field: I_formField<T>): I_formInput<T> | undefined { return inputsRef.current[field] }
+    const hasError = () => {
+        const keys = Object.keys(errorsRef.current) as any
+        console.log(errorsRef.current)
+        return !!keys.filter((o: I_formField<T>) => !!errorsRef.current[o]).length
+    }
+    const isFieldChanged = (field: I_formField<T>) => !!fieldChangesRef.current[field]
     const [data, setData] = useState<T>(getInitData);
-
     function getData() { return dataRef.current }
     const changeData = (data: T) => {
         dataRef.current = data; setData(data);
-        if (p.onChange) { p.onChange(data) }
-    }
-    const submitTimeDisabled = () => {
-        if (!submitTimeRef.current) { return false }
-        const delta = new Date().getTime() - submitTimeRef.current
-        return delta < 2000
-    }
-    const submit = () => {
-        if (!p.onSubmit) {
-            console.error(`you are using useForm submit method but missing set onSubmit in useForm definition`)
-            return
+        if (p.liveSubmit && p.onSubmit) {
+            p.onSubmit(data)
         }
-        if (submitTimeDisabled()) { return }
-        submitTimeRef.current = new Date().getTime()
-        p.onSubmit(getData())
     }
     const changeByInput = (input: I_formInput<T>, value: any) => {
         let newData = { ...dataRef.current };
         fieldChangesRef.current = { ...fieldChangesRef.current, [input.field]: true }
-        errorHook.getErrorByInput(input, value)
+        getErrorByInput(input, value)
         UT.setValueByField(newData, input.field, value);
         changeData(newData)
     }
     function changeByField(field: I_formField<T>, value: any) {
-        const input = inputHook.get(field);
+        const input = getInputByField(field);
         if (!input) { return }
         changeByInput(input, value)
     }
     const dataRef = useRef(data); dataRef.current = data;
-
+    function setErrorByField(field: I_formField<T>, error: string | undefined) {
+        errorsRef.current = { ...errorsRef.current, [field]: error }
+    }
+    function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
+        const { required = true, label, validateType, field } = input;
+        if (required && (value === undefined || value === '' || value === null)) {
+            const error = p.fa ? `${label} ضروری است` : `${label} is required`
+            setErrorByField(field, error)
+            return error
+        }
+        if (!!value) {
+            if (validateType === 'email') {
+                const res = UT.IsValidEmail(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
+                    setErrorByField(field, error)
+                    return error
+                }
+            }
+            if (validateType === 'irMobile') {
+                const res = UT.ValidateIrMobile({ value, label, fa: p.fa });
+                if (res) {
+                    const error = res
+                    setErrorByField(field, error)
+                    return error
+                }
+            }
+            if (validateType === "irNationalCode") {
+                const res = UT.IsValidIrNationalCode(value);
+                if (!res) {
+                    const error = p.fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect`
+                    setErrorByField(field, error)
+                    return error
+                }
+            }
+        }
+        if (input.validate) {
+            const res = input.validate({ data: dataRef.current, value, input, field: input.field })
+            if (res) {
+                const error = res
+                setErrorByField(field, error)
+                return error
+            }
+        }
+        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') {
+            const error = p.fa ? 'این مقدار مجاز نیست' : 'this value is forbidden'
+            setErrorByField(field, error)
+            return error
+        }
+        setErrorByField(field, undefined)
+        return undefined
+    }
     function getValueByInput(input: I_formInput<T>) {
         const { field } = input;
         let value: any;
@@ -3245,99 +3815,14 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
         else { value = UT.getValueByField(dataRef.current, field) }
         return value
     }
-    const reset = () => {
-        const newData = getInitData();
-        dataRef.current = newData
-        errorHook.resetErrors()
-        changeData(newData);
-    }
-    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
-    const getContext = (): I_formContext<T> => {
-        return {
-            rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, changeData, changeByInput, reset,
-            nodeHook, errorHook, isSubmitDisabled, inputHook, isRequired
-        }
-    }
-    const getLayout = () => {
-        if (!p.getLayout) { return null }
-        const context = getContext()
-        const node = p.getLayout(context)
-        //@ts-ignore
-        return <AIFormNode node={node} context={context} level={0} index={0} />
-    };
-    const isSubmitDisabled = (): boolean => {
-        if (!isDataChanged()) { if (p.debug) { console.log(`submit disabled due not data changed`) } return true }
-        const errorsList = errorHook.getErrorsList()
-        if (!!errorsList.length) { if (p.debug) { console.log(`submit disabled due there is error :`, errorsList) } return true }
-        if (submitTimeDisabled()) { if (p.debug) { console.log(`submit disabled due timer`) } return true }
-        return false
-    };
-    const renderInput = (input: I_formInput<T>, attrs?: any) => {
-        return (
-            <AIFormInputContainer
-                context={getContext()}
-                input={input as I_formInput<any>}
-                attrs={nodeHook.getAttrs({ node: { input: input as any, attrs }, isRoot: false })}
-            />
-        )
-    }
-    const layout = getLayout();
-    return { data, changeData, renderLayout: <>{layout}</>, reset, submit, errors: errorHook, isSubmitDisabled, renderInput, changeByField }
-}
-type I_errorHook<T> = {
-    setErrorByField: (field: any, error: string | undefined) => void,
-    hasError: () => boolean,
-    getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
-    getErrorsList: () => string[],
-    resetErrors: () => void
-}
-const useError = <T extends Record<string, any>>(p: { getData: () => T, rootProps: I_useFormProps<T>, isRequired: any }): I_errorHook<T> => {
-    const { fa, } = p.rootProps;
-    const errorsRef = useRef<any>({})
-    const setErrorByField = (field: any, error: string | undefined) => errorsRef.current = { ...errorsRef.current, [field]: error }
-    function getErrorByInput(input: I_formInput<T>, value: any): string | undefined {
-        const { label, validateType, field } = input;
-        const required = p.isRequired(field);
-        const isNull = value === undefined || value === '' || value === null
-        let error = undefined;
-        if (isNull) { error = required ? fa ? `${label} ضروری است` : `${label} is required` : undefined }
-        else {
-            if (validateType === 'email' && !UT.IsValidEmail(value)) { error = fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
-            if (validateType === "irNationalCode" && !UT.IsValidIrNationalCode(value)) { error = fa ? `فرمت ${label} صحیح نیست` : `${label} format is incorrect` }
-            if (validateType === 'irMobile') { error = UT.ValidateIrMobile({ value, label: typeof label === 'string' ? label : '', fa: fa }); }
-        }
-        if (input.validate) { error = input.validate({ data: p.getData(), value, input, field: input.field }) }
-        if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') { error = fa ? 'این مقدار مجاز نیست' : 'this value is forbidden' }
-        setErrorByField(field, error); return error
-    }
-    const getErrorsList = (): string[] => {
-        const errors = errorsRef.current as any;
-        const keys = Object.keys(errors) as any;
-        const strs = keys.filter((o: any) => !!errors[o]) as any
-        return strs.map((o: any) => errors[o])
-    }
-    const hasError = () => !!getErrorsList().length
-    const resetErrors = () => errorsRef.current = {}
-    return { setErrorByField, hasError, getErrorByInput, getErrorsList, resetErrors }
-}
-const useInput = () => {
-    const inputsRef = useRef<any>({})
-    const set = (field: any, input: any) => inputsRef.current = { ...inputsRef.current, [field]: input }
-    function get(field: any) { return inputsRef.current[field] }
-    return { set, get }
-}
-type I_nodeHook = {
-    getAttrs: (p: { node: I_formNode<any>, isRoot: boolean, parentNode?: I_formNode<any> }) => any
-}
-const useNode = () => {
-    const getStyle = (node: I_formNode<any>, parentNode?: I_formNode<any>) => {
+    const getNodeStyle = (node: I_formNode<T>, parentNode?: I_formNode<T>) => {
         const res: any = { flex: node.flex };
         if (parentNode && (parentNode.h || parentNode.v)) {
             res[parentNode.v ? 'height' : 'width'] = node.size
         }
         return { ...res, ...node.style }
     }
-    function getVisibilityClassNames(node: I_formNode<any>): string[] {
+    function getVisibilityClassNames(node: I_formNode<T>): string[] {
         let hide_xs, hide_sm, hide_md, hide_lg, classNames = [];
         if (node.show_xs) { hide_xs = false; hide_sm = true; hide_md = true; hide_lg = true; }
         if (node.hide_xs) { hide_xs = true; }
@@ -3353,7 +3838,7 @@ const useNode = () => {
         if (hide_lg) { classNames.push('ai-form-hide-lg') }
         return classNames;
     }
-    const getClassNames = (node: I_formNode<any>, className?: string, isRoot?: boolean): (string | undefined)[] => {
+    const getNodeClassNames = (node: I_formNode<T>, className?: string, isRoot?: boolean): (string | undefined)[] => {
         let scrollClassName, alignClassName, rootClassName = isRoot ? 'ai-form' : undefined, visibilityClassNames = getVisibilityClassNames(node);
         if (node.v) {
             scrollClassName = `ai-form-scroll-v`
@@ -3377,17 +3862,74 @@ const useNode = () => {
         }
         return [rootClassName, className, node.className, scrollClassName, alignClassName, ...visibilityClassNames]
     }
-    const getAttrs = (p: { node: I_formNode<any>, isRoot: boolean, parentNode?: I_formNode<any> }) => {
+    const getNodeAttrs = (p: { node: I_formNode<T>, isRoot: boolean, parentNode?: I_formNode<T> }) => {
         const { node, parentNode, isRoot } = p;
         let className = '';
         if (node.v || node.h) { className = `ai-form-${node.v ? 'v' : 'h'}` }
         else if (node.html) { className = 'ai-form-html' }
         return UT.AddToAttrs(
             node.attrs,
-            { className: getClassNames(node, className, isRoot), style: getStyle(node, parentNode) }
+            { className: getNodeClassNames(node, className, isRoot), style: getNodeStyle(node, parentNode) }
         )
     }
-    return { getAttrs }
+    const reset = () => {
+        const newData = getInitData();
+        dataRef.current = newData
+        errorsRef.current = {}
+        changeData(newData);
+    }
+    const getErrorsDic = () => errorsRef.current
+    const getErrorsList = (): string[] => {
+        const errors = errorsRef.current as any;
+        const keys = Object.keys(errors) as any;
+        const strs = keys.filter((o: any) => !!errors[o]) as any
+        return strs.map((o: any) => errors[o])
+    }
+    const isDataChanged = () => JSON.stringify(initData) !== JSON.stringify(dataRef.current);
+    const getContext = (): I_formContext<T> => {
+        return {
+            rootProps: p, getData, isDataChanged, isFieldChanged, getValueByInput, getErrorByInput, changeData, changeByInput, hasError, getErrorsList, reset,
+            getNodeAttrs, getErrorsDic, renderSubmitButton, isSubmitDisabled, setInputsRef
+        }
+    }
+    const getLayout = () => {
+        if (!p.getLayout) { return null }
+        const context = getContext()
+        const node = p.getLayout(context)
+        //@ts-ignore
+        return <AIFormNode node={node} context={context} level={0} index={0} />
+    };
+    const isSubmitDisabled = (): boolean => {
+        const dataChanged = isDataChanged();
+        const error = hasError();
+        const isTimerdisabled = !!timerDisabled
+        return !dataChanged || error || !!isTimerdisabled
+    };
+    const renderSubmitButton = (text: string, attrs?: any): ReactNode => {
+        if (p.onSubmit === undefined) {
+            console.error('useForm error => for use renderSubmitButton you should set onSubmit props in difinition of useForm hook');
+            return null;
+        }
+        const onClick = () => {
+            const onSubmit = p.onSubmit as any;
+            setTimerDisabled(true); onSubmit(getData());
+            setTimeout(() => setTimerDisabled(false), 3000)
+        }
+        const disabled = isSubmitDisabled()
+        const allAttrs = { type: 'button', ...attrs, disabled, onClick }
+        return <button {...allAttrs}>{text}</button>
+    }
+    const renderInput = (input: I_formInput<T>, attrs?: any) => {
+        return (
+            <AIFormInputContainer
+                context={getContext()}
+                input={input as I_formInput<any>}
+                attrs={getNodeAttrs({ node: { input, attrs }, isRoot: false })}
+            />
+        )
+    }
+    const layout = getLayout();
+    return { data, changeData, getErrorsDic, getErrorsList, renderLayout: <>{layout}</>, reset, renderSubmitButton, isSubmitDisabled, renderInput, changeByField }
 }
 const AIFormNode: FC<{
     node: I_formNode<any>, parentNode?: I_formNode<any>, level: number, index: number
@@ -3400,13 +3942,13 @@ const AIFormNode: FC<{
         if (Array.isArray(node.h) || Array.isArray(node.v)) {
             return <AIFormGroup node={node} context={context} level={level} index={index} parentNode={parentNode} />
         }
-        const { nodeHook } = context;
+        const { getNodeAttrs } = context;
         if (node.html !== undefined) {
-            const attrs = nodeHook.getAttrs({ node, isRoot: level === 0, parentNode })
+            const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
             return (<div {...attrs}>{node.html}</div>)
         }
         if (node.input) {
-            const attrs = { ...nodeHook.getAttrs({ node, isRoot: false }), 'data-label': node.input.label }
+            const attrs = { ...getNodeAttrs({ node, isRoot: false }), 'data-label': node.input.label }
             return <AIFormInputContainer key={node.input.field} attrs={attrs} input={node.input} context={context} size={node.size} />
         }
     }
@@ -3420,7 +3962,7 @@ const AIFormGroup: FC<{
     context: I_formContext<any>
 }> = ({ node, context, level, parentNode }) => {
     let { tag = 'div', legend } = node;
-    const { nodeHook } = context;
+    const { getNodeAttrs } = context;
     const content = (<>
         {!!legend && tag === 'fieldset' && <legend>{legend}</legend>}
         {
@@ -3436,7 +3978,7 @@ const AIFormGroup: FC<{
             })
         }
     </>)
-    const attrs = nodeHook.getAttrs({ node, isRoot: level === 0, parentNode })
+    const attrs = getNodeAttrs({ node, isRoot: level === 0, parentNode })
     if (level === 0) { return (<form {...attrs}>{content}</form>) }
     if (tag === 'section') { return (<section {...attrs}>{content}</section>) }
     if (tag === 'fieldset') { return (<fieldset {...attrs}>{content}</fieldset>) }
@@ -3450,11 +3992,11 @@ const AIFormInputContainer: FC<{
     context: I_formContext<any>,
     size?: number,
 }> = ({ context, input, attrs, size }) => {
-    const { getValueByInput, errorHook, changeByInput, inputHook, rootProps } = context;
+    const { getValueByInput, getErrorByInput, changeByInput, setInputsRef, rootProps } = context;
     const { inputAttrs, field } = input;
-    inputHook.set(field, input);
+    setInputsRef(field, input);
     const value = getValueByInput(input);
-    const error = errorHook.getErrorByInput(input, value)
+    const error = getErrorByInput(input, value)
     return (
         <RenderInput
             value={value} error={error} input={input} context={context} size={size} inlineLabel={rootProps.inlineLabel}
@@ -3483,7 +4025,7 @@ type I_renderInput = {
 }
 const RenderInput: FC<I_renderInput> = (props) => {
     const { context, attrs, input, inputProps, error, size, inlineLabel } = props;
-    const { isFieldChanged, rootProps, isRequired } = context;
+    const { isFieldChanged, rootProps } = context;
     const [dom, setDom] = useState<ReactNode>(null)
     useEffect(() => {
         if (input.label === 'width') {
@@ -3491,10 +4033,9 @@ const RenderInput: FC<I_renderInput> = (props) => {
             console.log('inputProps', inputProps)
         }
         const { field, label } = input;
-        const required = isRequired(field)
         setDom(
-            <AIFormInput required={required} labelAttrs={rootProps.labelAttrs} inlineLabel={inlineLabel}
-                input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input' />}
+            <AIFormInput required={input.required} showLabel={rootProps.showLabel} inlineLabel={inlineLabel}
+                input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input'/>}
                 label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
         )
@@ -3502,13 +4043,14 @@ const RenderInput: FC<I_renderInput> = (props) => {
     return <Fragment key={input.field}>{dom}</Fragment>;
 }
 export const AIFormInput: FC<{
-    label?: ReactNode,
+    label?: string,
     inlineLabel?: boolean,
-    labelAttrs?: any,
+    showLabel?: boolean,
     input: ReactNode,
     attrs?: any,
     className?: string,
     style?: any,
+    action?: { text: ReactNode, fn?: () => void },
     error?: string,
     id?: string,
     before?: ReactNode,
@@ -3516,12 +4058,18 @@ export const AIFormInput: FC<{
     subtext?: string,
     required?: boolean
 }> = (props) => {
-    const { label, input, error, attrs, id, required = true, labelAttrs, className, style, inlineLabel } = props;
+    const { label, input, action, error, attrs, id, required = true, showLabel = true, className, style, inlineLabel } = props;
+    const hasHeader = (!!label && !!showLabel) || !!action
     const Attrs = UT.AddToAttrs(attrs, { className: ["ai-form-input", className, inlineLabel ? 'ai-form-input-inline-label' : undefined], style })
-    const LabelAttrs = UT.AddToAttrs(labelAttrs, { className: 'ai-form-input-label', attrs: { htmlFor: id } })
     return (
         <div {...Attrs}>
-            {!!label && <label {...LabelAttrs}>{required ? <div className="ai-form-required">*</div> : null}{label}</label>}
+            {
+                hasHeader === true &&
+                <label className="ai-form-input-header" htmlFor={id}>
+                    {!!label && <div className="ai-form-input-label">{required ? <div className="ai-form-required">*</div> : null}{label}</div>}
+                    {!!action && <div className="ai-form-input-action" onClick={action.fn ? () => (action.fn as any)() : (() => { })}>{action.text}</div>}
+                </label>
+            }
             <div className="ai-form-input-body">
                 {!!props.before && <div className="ai-form-input-body-before"></div>}
                 <div className="ai-form-input-body-input" data-subtext={!!props.subtext ? props.subtext : undefined}>{input}</div>
@@ -3533,11 +4081,11 @@ export const AIFormInput: FC<{
 }
 
 
-export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange: (v: string[]) => void, label?: string }> = ({ type, value, onChange, label }) => {
+export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange: (v: string[]) => void,label?:string }> = ({ type, value, onChange,label }) => {
     const change = (v: string, index: number) => {
         const newValue = []
-        for (let i = 0; i < 4; i++) {
-            if (index === i) {
+        for(let i = 0; i < 4; i++){
+            if(index === i){
                 newValue.push(v)
             }
             else {

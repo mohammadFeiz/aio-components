@@ -1,18 +1,22 @@
 import { FC } from "react";
-import AIOTable from "./../../npm/aio-table";
+import AIOTable from './../../npm/aio-table';
 import { useFreelancer } from "./context";
+import { I_row } from "./types";
 
 export const Table: FC = () => {
-    const { gridHook } = useFreelancer()
+    const { gridHook,openEditModal,openRemoveModal } = useFreelancer()
     return (
-        <AIOTable
+        <AIOTable<I_row>
             value={gridHook.grid}
             headerAttrs={{style: {background: '#FFEAE9'}}}
             rowOption={{
-                attrs:({ rowIndex }) => ({
-                    style: {height: 48,background: rowIndex % 2 !== 0 ? '#f8f8f8' : '#fff'}
-                })
+                attrs:({row,rowIndex})=>{
+                    return {
+                        style: {height: 48,background: rowIndex % 2 !== 0 ? '#f8f8f8' : '#fff'}
+                    }
+                }
             }}
+            placeholder='موردی وجود ندارد'
             getValue={{
                 date: ({ row }) => {
                     const { year, month, day } = row.createDate;
@@ -20,10 +24,9 @@ export const Table: FC = () => {
                 },
                 actions: ({ row }) => {
                     return (
-                        <div className="flex-row- align-v- gap-6-">
-                            <div className="msf"><SVG3 /></div>
-                            <div className="msf"><SVG2 /></div>
-                            <div className="msf"><SVG1 /></div>
+                        <div className="flex-row- align-v- gap-6-" style={{display:'flex'}}>
+                            <div className="msf" title='ویرایش' onClick={()=>openEditModal(row.id)}><SVG2 /></div>
+                            <div className="msf" title='حذف' onClick={()=>openRemoveModal(row.id)}><SVG1 /></div>
                         </div>
                     )
                 }
@@ -31,15 +34,15 @@ export const Table: FC = () => {
             paging={{size:gridHook.gridFilter.pageSize,number:gridHook.gridFilter.pageNumber,length:gridHook.gridFilter.rowsLength,serverSide:true}}
             onChangePaging={async (paging)=>await gridHook.changeGridFilter({...gridHook.gridFilter,pageSize:paging.size,pageNumber:paging.number})}
             columns={[
-                { title: 'نوع همکاری', value: 'row.selectRoles[0].text', width: 100, justify: true },
+                { title: 'نوع همکاری', value: 'row.type.text', width: 144, justify: true },
                 { title: 'نام و نام خانوادگی', value: 'row.name', minWidth: 160, justify: true },
-                { title: 'کد ملی', value: 'row.nationalCode', width: 100, justify: true },
-                { title: 'موبایل', value: 'row.mobile', width: 100, justify: true },
-                { title: 'پست الکترونیک', value: 'row.email', width: 160 },
-                { title: 'تاریخ ایجاد', value: 'date', width: 100, justify: true },
-                { title: 'نام کاربری', value: 'row.username', width: 100 },
-                { title: 'وضعیت', value: `row.isActive ? 'فعال' : 'غیر فعال'`, width: 100, justify: true },
-                { title: 'عملیات', value: 'actions', width: 100, justify: true },
+                { title: 'کد ملی', value: 'row.nationalCode', width: 144, justify: true },
+                { title: 'موبایل', value: 'row.mobile', width: 144, justify: true },
+                { title: 'پست الکترونیک', value: 'row.email', width: 180, justify: true },
+                { title: 'تاریخ ایجاد', value: 'date', width: 144, justify: true },
+                { title: 'نام کاربری', value: 'row.username', width: 144 },
+                { title: 'وضعیت', value: `row.isActive ? 'فعال' : 'غیر فعال'`, width: 144, justify: true },
+                { title: 'عملیات', value: 'actions', width: 144, justify: true },
             ]}
         />
     )

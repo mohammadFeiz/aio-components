@@ -12,6 +12,11 @@
     border:1px solid #aaa;
     height: 40px;
 }
+.freelancer-grid .aio-input-date.ai-form-aio-input{
+    border-radius:12px;
+    border:1px solid #aaa;
+    height: 40px;
+}
 .freelancer-grid .aio-input-plate{
     border-radius:12px;
     height:36px;

@@ -14,8 +14,7 @@ const Header: FC = () => {
     const form = useForm<I_gridFilter>({
         initData: gridHook.gridFilter,
         inlineLabel:true,
-        onSubmit: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, ...data }),
-        liveSubmit: true,
+        onChange: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, ...data }),
         getLayout: () => {
             return {
                 v: [
@@ -157,8 +156,7 @@ const AdvancedSearchModal: FC = () => {
     const { gridHook } = useFreelancer()
     const form = useForm<I_gridFilter["advanced"]>({
         initData: gridHook.gridFilter.advanced,fa:true,inlineLabel:true,
-        onSubmit: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, advanced: data }),
-        liveSubmit: true,
+        onChange: (data) => gridHook.changeGridFilter({ ...gridHook.gridFilter, advanced: data }),
         getLayout: () => {
             return {
                 className:'p-12- gap-16-',
