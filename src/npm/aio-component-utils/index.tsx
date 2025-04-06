@@ -632,7 +632,7 @@ export type I_filter = {
     items: I_filter_item[],
     onChange: (newFilters: I_filter_item[]) => undefined | void | I_filter_item[] | true | false,
     savedItems?: { name: string, items: I_filter_item[] }[],
-    changeSavedItems?:(newSavedItems:{ name: string, items: I_filter_item[] }[])=>void,
+    changeSavedItems?: (newSavedItems: { name: string, items: I_filter_item[] }[]) => void,
     activeSavedItem?: (v: { name: string, items: I_filter_item[] }) => void,
 }
 export type I_filter_item = {
@@ -667,7 +667,7 @@ type I_filterContext = {
     openSaveModal: () => void,
     openRemoveModal: (saveItem: I_filter_saved_item) => void,
     openActiveModal: (saveItem: I_filter_saved_item) => void,
-    saveItem:(name:string,isExist:boolean)=>void
+    saveItem: (name: string, isExist: boolean) => void
 }
 
 export const Filterbar = <T,>(props: I_Filterbar<T>) => {
@@ -718,14 +718,14 @@ export const Filterbar = <T,>(props: I_Filterbar<T>) => {
     }
     const openSavedItemsModal = () => {
         popup.addModal({
-            position: 'center', body: <SavedModal />,id:'savedItems',
+            position: 'center', body: <SavedModal />, id: 'savedItems',
             header: { title: props.fa ? 'فیلتر های ذخیره شده' : 'saved filters' },
             setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal aio-filter-modal-size' } } }
         })
     }
     const openSaveModal = () => {
         popup.addModal({
-            header:{title:props.fa?'ذخیره فیلتر':'Save Filter'},position:'center',body: <SaveModal />,
+            header: { title: props.fa ? 'ذخیره فیلتر' : 'Save Filter' }, position: 'center', body: <SaveModal />,
             setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } }
         })
     }
@@ -736,11 +736,11 @@ export const Filterbar = <T,>(props: I_Filterbar<T>) => {
             submitText: props.fa ? 'حذف' : 'Remove',
             canselText: props.fa ? 'لغو' : 'Cansel',
             setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } },
-            submitAttrs:{className:'aio-filter-button aio-filter-active-button'},
-            canselAttrs:{className:'aio-filter-button'},
+            submitAttrs: { className: 'aio-filter-button aio-filter-active-button' },
+            canselAttrs: { className: 'aio-filter-button' },
             onSubmit: async () => {
-                const {savedItems = [],changeSavedItems} = propsRef.current.filter
-                if (changeSavedItems) { changeSavedItems(savedItems.filter((o)=>o.name !== saveItem.name)); }
+                const { savedItems = [], changeSavedItems } = propsRef.current.filter
+                if (changeSavedItems) { changeSavedItems(savedItems.filter((o) => o.name !== saveItem.name)); }
                 return true
             }
         })
@@ -752,23 +752,23 @@ export const Filterbar = <T,>(props: I_Filterbar<T>) => {
             submitText: props.fa ? 'حذف' : 'activate',
             canselText: props.fa ? 'لغو' : 'Cansel',
             setAttrs: (key) => { if (key === 'backdrop') { return { className: 'aio-filter-modal' } } },
-            submitAttrs:{className:'aio-filter-button aio-filter-active-button'},
-            canselAttrs:{className:'aio-filter-button'},
+            submitAttrs: { className: 'aio-filter-button aio-filter-active-button' },
+            canselAttrs: { className: 'aio-filter-button' },
             onSubmit: async () => {
-                const {activeSavedItem} = propsRef.current.filter
+                const { activeSavedItem } = propsRef.current.filter
                 if (activeSavedItem) { activeSavedItem(saveItem); }
                 popup.removeModal('savedItems')
                 return true
             }
         })
     }
-    const saveItem = (name:string,isExist:boolean)=>{
+    const saveItem = (name: string, isExist: boolean) => {
         popup.removeModal();
-        const {changeSavedItems,savedItems = [],items = []} = propsRef.current.filter;
-        if(!changeSavedItems){return}
-        let newSavedItems:I_filter_saved_item[] = []
-        if(isExist){newSavedItems = savedItems.map((o)=>o.name === name?{name,items}:o)}
-        else {newSavedItems = [...savedItems,{name,items}]}
+        const { changeSavedItems, savedItems = [], items = [] } = propsRef.current.filter;
+        if (!changeSavedItems) { return }
+        let newSavedItems: I_filter_saved_item[] = []
+        if (isExist) { newSavedItems = savedItems.map((o) => o.name === name ? { name, items } : o) }
+        else { newSavedItems = [...savedItems, { name, items }] }
         changeSavedItems(newSavedItems)
     }
     const getColumnById = (columnId: string) => columns.find((o) => o.id === columnId) as I_filterColumn
@@ -782,7 +782,7 @@ export const Filterbar = <T,>(props: I_Filterbar<T>) => {
     return (
         <FilterContextProvider value={{
             addFilter, changeFilter, removeFilter, filter: props.filter, trans, getColumnById, columns, fa: props.fa,
-            popup, openSavedItemsModal, openSaveModal, openRemoveModal, openActiveModal,saveItem
+            popup, openSavedItemsModal, openSaveModal, openRemoveModal, openActiveModal, saveItem
         }}>
             <div className="aio-filter">
                 <button className="aio-filter-icon-button" onClick={openModal}>{new UT.GetSvg().getIcon('mdiFilter', 0.7)}</button>
@@ -813,53 +813,53 @@ const FilterTag: FC<{ filterRow: I_filter_item, remove?: () => void }> = ({ filt
 }
 const FilterToolbar: FC = () => {
     const { openSaveModal, fa, filter, openSavedItemsModal } = useFilterContext()
-    const {savedItems = []} = filter
+    const { savedItems = [] } = filter
     return (
         <div className="aio-filter-toolbar">
             {
-                !!filter.changeSavedItems && !!filter.items.length && 
-                <div 
-                    className="aio-filter-icon-button aio-filter-active-button" 
-                    title={fa ? 'ذخیره فیلتر' : 'Save Filter'} 
+                !!filter.changeSavedItems && !!filter.items.length &&
+                <div
+                    className="aio-filter-icon-button aio-filter-active-button"
+                    title={fa ? 'ذخیره فیلتر' : 'Save Filter'}
                     onClick={openSaveModal}
                 ><FilterSaveIcon /></div>
             }
             {
-                !!filter.savedItems && 
-                <button 
+                !!filter.savedItems &&
+                <button
                     disabled={!savedItems.length}
-                    className="aio-filter-button aio-filter-active-button" 
-                    title={fa ? 'فیلتر های ذخیره شده' : 'Saved Filters'} 
+                    className="aio-filter-button aio-filter-active-button"
+                    title={fa ? 'فیلتر های ذخیره شده' : 'Saved Filters'}
                     onClick={openSavedItemsModal}
-                ><FilterSavesIcon />{fa?'فیلتر های ذخیره شده':'Saved Filters'}<div className="aio-filter-badge">{savedItems.length}</div></button>}
+                ><FilterSavesIcon />{fa ? 'فیلتر های ذخیره شده' : 'Saved Filters'}<div className="aio-filter-badge">{savedItems.length}</div></button>}
         </div>
     )
 }
 const SaveModal: FC = () => {
     const [name, setName] = useState<string>('')
-    const { fa, filter, popup,saveItem } = useFilterContext()
-    const {savedItems = []} = filter;
-    const getOptions = async (text:string) => {
+    const { fa, filter, popup, saveItem } = useFilterContext()
+    const { savedItems = [] } = filter;
+    const getOptions = async (text: string) => {
         const items = filter.savedItems || []
         return items.filter((item) => {
             if (!text) { return true }
             return item.name.indexOf(text) !== -1
         }).map((item) => ({ text: item.name, value: item.name }))
     }
-    const isExist = (name:string):boolean=>!!savedItems.find((o)=>o.name === name)
-    const getAddName = ()=>{
+    const isExist = (name: string): boolean => !!savedItems.find((o) => o.name === name)
+    const getAddName = () => {
         const exist = isExist(name)
-        if(exist){return fa ? 'ویرایش' : 'Edit'}
-        else {return fa ? 'افزودن' : 'Add'}
+        if (exist) { return fa ? 'ویرایش' : 'Edit' }
+        else { return fa ? 'افزودن' : 'Add' }
     }
     return (
         <div className="aio-filter-save-modal">
             <AIFormInput
                 label={fa ? 'نام فیلتر را برای ذخیره وارد کنید' : 'please inter filter name'}
-                input={(<SuggestionInput value={name} onChange={(newName) => setName(newName)} getOptions={getOptions}/>)}
+                input={(<SuggestionInput value={name} onChange={(newName) => setName(newName)} getOptions={getOptions} />)}
             />
             <div className="aio-filter-save-modal-footer">
-                <button className="aio-filter-button aio-filter-active-button" disabled={!name || name.length < 3} onClick={() => saveItem(name,isExist(name))}>{getAddName()}</button>
+                <button className="aio-filter-button aio-filter-active-button" disabled={!name || name.length < 3} onClick={() => saveItem(name, isExist(name))}>{getAddName()}</button>
                 <button className="aio-filter-button" onClick={() => popup.removeModal()}>{fa ? 'لغو' : 'Cansel'}</button>
             </div>
         </div>
@@ -911,7 +911,7 @@ const FilterBody = () => {
     )
 }
 const FilterRow: FC<{ filterItem: I_filter_item, index: number }> = ({ filterItem, index }) => {
-    const {operator,columnId,type,value} = filterItem;
+    const { operator, columnId, type, value } = filterItem;
     const { columns, changeFilter, removeFilter, trans, getColumnById } = useFilterContext()
     const [operators, setOperators] = useState<I_filter_operator[]>(getOperators)
     useEffect(() => {
@@ -974,7 +974,7 @@ export type I_paging = { serverSide?: boolean, number: number, size: number, len
 export type I_pagingHook<T> = {
     render: () => ReactNode;
     getPagedRows: (rows: T[]) => T[];
-    paging: I_paging | undefined
+    changePaging: (obj: Partial<I_paging>) => void
 }
 
 export const usePaging = <T,>(p: { rows: T[], paging?: I_paging, onChange?: (newPaging: I_paging) => void }): I_pagingHook<T> => {
@@ -982,14 +982,9 @@ export const usePaging = <T,>(p: { rows: T[], paging?: I_paging, onChange?: (new
     const startRef = useRef<any>()
     const endRef = useRef<any>()
     const pagesRef = useRef<any>()
-    const getPaging = () => {
-        const { paging } = p
+    const getPaging = (paging?:I_paging) => {
         return paging ? fix(paging) : undefined
     }
-    let [paging, setPaging] = useState<I_paging | undefined>(getPaging);
-    useEffect(() => {
-        if (paging) { setPaging(fix(paging)) }
-    }, [JSON.stringify(p.paging)])
 
     function fix(paging: I_paging): I_paging {
         if (typeof p.onChange !== 'function') {
@@ -1010,9 +1005,9 @@ export const usePaging = <T,>(p: { rows: T[], paging?: I_paging, onChange?: (new
     }
 
     const changePaging = (obj: Partial<I_paging>) => {
+        const paging = getPaging(p.paging)
         if (!paging) { return }
         let newPaging: I_paging = fix({ ...paging, ...obj });
-        setPaging(newPaging);
         if (p.onChange) {
             if (newPaging.serverSide) {
                 clearTimeout(timeoutRef.current);
@@ -1025,11 +1020,23 @@ export const usePaging = <T,>(p: { rows: T[], paging?: I_paging, onChange?: (new
         }
     }
     const getPagedRows = (rows: T[]) => {
+        const paging = getPaging(p.paging)
         if (!paging || paging.serverSide) { return rows }
         const { size, number } = paging
         return rows.slice((number - 1) * size, number * size)
     }
+    function changeSizeButton(sizes:number[],size:number) {
+        if (!sizes.length) { return null }
+        return (
+            <AISelect
+                attrs={{ className: 'aio-paging-button aio-paging-size' }} value={size}
+                options={sizes} option={{ text: 'option', value: 'option' }} justify={true}
+                onChange={(value) => changePaging({ size: value })} popover={{ fitHorizontal: true }}
+            />
+        )
+    }
     const render = () => {
+        const paging = getPaging(p.paging)
         if (!paging) { return null }
         if (!p.rows.length) { return null }
         let { number, size, sizes } = paging;
@@ -1047,24 +1054,14 @@ export const usePaging = <T,>(p: { rows: T[], paging?: I_paging, onChange?: (new
                 buttons.push(<button key={index} className={'aio-paging-button' + (index === number ? ' active' : '')} onClick={() => changePaging({ number: index })}>{index}</button>)
             }
         }
-        function changeSizeButton() {
-            if (!sizes || !sizes.length) { return null }
-            return (
-                <AISelect
-                    attrs={{ className: 'aio-paging-button aio-paging-size' }} value={size}
-                    options={sizes} option={{ text: 'option', value: 'option' }} justify={true}
-                    onChange={(value) => changePaging({ size: value })} popover={{ fitHorizontal: true }}
-                />
-            )
-        }
         return (
             <div className='aio-paging'>
                 {buttons}
-                {changeSizeButton()}
+                {changeSizeButton(sizes || [],size)}
             </div>
         )
     }
-    return { render, getPagedRows, paging }
+    return { render, getPagedRows, changePaging }
 }
 
 export type I_sort<T> = {

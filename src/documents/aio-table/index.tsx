@@ -749,14 +749,16 @@ const Paging_ServerSide:FC = () => {
         number:1,
         size:15,
         sizes:[15,30,50],
-        length:model.length,
+        length:0,
     })
     function getRowsByPaging(paging:any):any[]{
         let {size,number} = paging;
         return model.slice((number - 1) * size,number * size)
     }
     useEffect(()=>{
-        setRows(getRowsByPaging(paging))
+        const rows = getRowsByPaging(paging);
+        setRows(rows);
+        setPaging({...paging,length:model.length})
     },[])
     return (
         <div className='example'>

@@ -116,7 +116,7 @@ const AIOTable = <T,>(props: I_table<T>) => {
     const propsRef = useRef<I_table<T>>(props)
     propsRef.current = props;
     const pagingHook = usePaging({ rows: props.value, paging: props.paging, onChange: props.onChangePaging })
-    const tableHook = useTable(() => propsRef.current, () => pagingHook.paging)
+    const tableHook = useTable(() => propsRef.current, () => props.paging)
     const getIconRef = useRef<UT.GetSvg>(new UT.GetSvg())
     const getIcon = getIconRef.current.getIcon;
     const DragColumns = UT.useDrag((dragIndex, dropIndex, reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)))
@@ -176,6 +176,12 @@ const AIOTable = <T,>(props: I_table<T>) => {
         const columns = getColumns();
         sortHook.setSorts(getSorts(columns));
     }, [])
+    useEffect(()=>{
+        if(props.paging){
+            debugger
+            pagingHook.changePaging(props.paging)
+        }
+    },[JSON.stringify(props.paging)])
     function getTimeText(column: I_table_column<T>, value?: any) {
         if (!value || value === null) { return '' }
         const t = column.type;

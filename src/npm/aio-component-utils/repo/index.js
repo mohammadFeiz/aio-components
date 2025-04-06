@@ -779,16 +779,9 @@ export const usePaging = (p) => {
     const startRef = useRef();
     const endRef = useRef();
     const pagesRef = useRef();
-    const getPaging = () => {
-        const { paging } = p;
+    const getPaging = (paging) => {
         return paging ? fix(paging) : undefined;
     };
-    let [paging, setPaging] = useState(getPaging);
-    useEffect(() => {
-        if (paging) {
-            setPaging(fix(paging));
-        }
-    }, [JSON.stringify(p.paging)]);
     function fix(paging) {
         if (typeof p.onChange !== 'function') {
             alert('aio-table error => in type table you set paging but forget to set onChangePaging function prop to aio input');
@@ -811,11 +804,11 @@ export const usePaging = (p) => {
         return Object.assign(Object.assign({}, paging), { length, number, size, sizes });
     }
     const changePaging = (obj) => {
+        const paging = getPaging(p.paging);
         if (!paging) {
             return;
         }
         let newPaging = fix(Object.assign(Object.assign({}, paging), obj));
-        setPaging(newPaging);
         if (p.onChange) {
             if (newPaging.serverSide) {
                 clearTimeout(timeoutRef.current);
@@ -832,13 +825,21 @@ export const usePaging = (p) => {
         }
     };
     const getPagedRows = (rows) => {
+        const paging = getPaging(p.paging);
         if (!paging || paging.serverSide) {
             return rows;
         }
         const { size, number } = paging;
         return rows.slice((number - 1) * size, number * size);
     };
+    function changeSizeButton(sizes, size) {
+        if (!sizes.length) {
+            return null;
+        }
+        return (_jsx(AISelect, { attrs: { className: 'aio-paging-button aio-paging-size' }, value: size, options: sizes, option: { text: 'option', value: 'option' }, justify: true, onChange: (value) => changePaging({ size: value }), popover: { fitHorizontal: true } }));
+    }
     const render = () => {
+        const paging = getPaging(p.paging);
         if (!paging) {
             return null;
         }
@@ -867,15 +868,9 @@ export const usePaging = (p) => {
                 buttons.push(_jsx("button", { className: 'aio-paging-button' + (index === number ? ' active' : ''), onClick: () => changePaging({ number: index }), children: index }, index));
             }
         }
-        function changeSizeButton() {
-            if (!sizes || !sizes.length) {
-                return null;
-            }
-            return (_jsx(AISelect, { attrs: { className: 'aio-paging-button aio-paging-size' }, value: size, options: sizes, option: { text: 'option', value: 'option' }, justify: true, onChange: (value) => changePaging({ size: value }), popover: { fitHorizontal: true } }));
-        }
-        return (_jsxs("div", { className: 'aio-paging', children: [buttons, changeSizeButton()] }));
+        return (_jsxs("div", { className: 'aio-paging', children: [buttons, changeSizeButton(sizes || [], size)] }));
     };
-    return { render, getPagedRows, paging };
+    return { render, getPagedRows, changePaging };
 };
 export const useSort = (p) => {
     let [sorts, setSorts] = useState(p.sorts);

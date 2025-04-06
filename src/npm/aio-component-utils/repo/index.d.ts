@@ -250,7 +250,7 @@ export type I_paging = {
 export type I_pagingHook<T> = {
     render: () => ReactNode;
     getPagedRows: (rows: T[]) => T[];
-    paging: I_paging | undefined;
+    changePaging: (obj: Partial<I_paging>) => void;
 };
 export declare const usePaging: <T>(p: {
     rows: T[];

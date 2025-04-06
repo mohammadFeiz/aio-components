@@ -625,10 +625,13 @@ code[class*="language-"] *::selection {
 .aio-paging-button-hidden {
     opacity: 0;
 }
-
+.aio-paging-button:not(.active){
+    cursor:pointer;
+}
 .aio-paging-size {
     min-width: 60px;
     padding:0;
+    width:fit-content;
 }
 .aio-paging-button.active {
     border: 1px solid #0069ff;
