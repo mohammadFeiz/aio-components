@@ -2,14 +2,14 @@ import React, { FC, createRef, useEffect, useRef, useState } from "react";
 import { EventHandler, GetClient } from '../aio-utils/index'
 import Geo from './../../npm/aio-geo';
 import $ from "jquery";
-import { I_Canvas_temp, I_canvas_canvasSizeToClientSize, I_canvas_canvasToClient, I_canvas_clientSizeToCanvasSize, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_items, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
+import { I_Canvas_temp, I_canvas_canvasSizeToClientSize, I_canvas_canvasToClient, I_canvas_clientSizeToCanvasSize, I_canvas_clientToCanvas, I_canvas_getActions, I_canvas_item, I_canvas_mousePosition, I_canvas_props, I_canvas_screenPosition } from "./types";
 export default class Canvas {
   mousePosition: I_canvas_mousePosition
   listenToMousePosition: (mp: I_canvas_mousePosition) => void
   canvasToClient: I_canvas_canvasToClient
   clientToCanvas: I_canvas_clientToCanvas
-  canvasSizeToClientSize:I_canvas_canvasSizeToClientSize
-  clientSizeToCanvasSize:I_canvas_clientSizeToCanvasSize
+  canvasSizeToClientSize: I_canvas_canvasSizeToClientSize
+  clientSizeToCanvasSize: I_canvas_clientSizeToCanvasSize
   getActions: I_canvas_getActions
   render: (props: I_canvas_props) => React.ReactNode;
   width: number;
@@ -17,14 +17,14 @@ export default class Canvas {
   constructor() {
     this.height = 0;
     this.width = 0;
-    this.mousePosition = {x:0,y:0,px:0,py:0,cx:0,cy:0}
+    this.mousePosition = { x: 0, y: 0, px: 0, py: 0, cx: 0, cy: 0 }
     this.listenToMousePosition = (mp) => this.mousePosition = mp
     this.canvasToClient = () => { return [0, 0, 0, 0] }
     this.clientToCanvas = () => { return [0, 0] }
     this.clientSizeToCanvasSize = () => 0
     this.canvasSizeToClientSize = () => 0
     this.getActions = (p) => {
-      let { clientToCanvas, canvasToClient,clientSizeToCanvasSize,canvasSizeToClientSize } = p;
+      let { clientToCanvas, canvasToClient, clientSizeToCanvasSize, canvasSizeToClientSize } = p;
       this.clientToCanvas = clientToCanvas;
       this.canvasToClient = canvasToClient;
       this.clientSizeToCanvasSize = clientSizeToCanvasSize
@@ -42,7 +42,7 @@ export default class Canvas {
     }
   }
 }
-const CANVAS:FC<I_canvas_props> = (props) => {
+const CANVAS: FC<I_canvas_props> = (props) => {
   let { listenToMousePosition, attrs = {}, getSize, grid, zoom = 1, onMount = () => { }, getActions, rotateDirection = 'clockwise' } = props;
   let [temp] = useState<I_Canvas_temp>({
     PI: Math.PI / 180,
@@ -83,7 +83,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     draw([line1, line2]);
   }
   function update() {
-    if(!temp.ctx){return}
+    if (!temp.ctx) { return }
     var dom = $(temp.dom.current);
     temp.width = dom.width() || 0;
     temp.height = dom.height() || 0;
@@ -96,22 +96,16 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     clear();
     setScreen();
     if (grid) { drawAxes() }
-    draw();
+    draw(props.items);
   }
-  function getValueByRange(value:number | string | (()=>number | string), start:number, end:number) {
-    var Value = typeof value === 'function' ? value() : value;
-    var type = typeof Value;
-    if (type === undefined) { return start; }
-    if (type === "number") { return Value; }
-    return start + (parseFloat(Value as string) * (end - start)) / 100;
-  }
+  
 
   function setScreen() {
-    let screenPosition:[number,number] = temp.getScreenPosition?temp.getScreenPosition():[0,0];
+    let screenPosition: [number, number] = temp.getScreenPosition ? temp.getScreenPosition() : [0, 0];
     let canvas = temp.dom.current;
-    let x:number = -getValueByRange(screenPosition[0], 0, temp.width / zoom) * zoom;
-    let y:number = +getValueByRange(screenPosition[1], 0, temp.height / zoom) * zoom;
-    temp.screen = [x,y]
+    let x: number = -getValueByRange(screenPosition[0], 0, temp.width / zoom) * zoom;
+    let y: number = +getValueByRange(screenPosition[1], 0, temp.height / zoom) * zoom;
+    temp.screen = [x, y]
     temp.translate = [
       (temp.screen[0] + temp.axisPosition[0]),
       (temp.screen[1] + temp.axisPosition[1])
@@ -120,14 +114,11 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.ctx.translate(temp.translate[0], temp.translate[1]);
     $(canvas).css({ backgroundPosition: temp.translate[0] + "px " + temp.translate[1] + "px" });
   }
-  function draw(items?: I_canvas_items, parent?: I_canvas_item, index?: number[]) {
-    items = items || props.items || [];
+  function draw(items: I_canvas_item[], parent?: I_canvas_item) {
     parent = parent || {} as I_canvas_item
-    index = index || []
-    let Items = typeof items === "function" ? items() : items;
     var ctx = temp.ctx;
-    for (let i = 0; i < Items.length; i++) {
-      let item: I_canvas_item = getItem(Items[i], parent,i);
+    for (let i = 0; i < items.length; i++) {
+      let item: I_canvas_item = getFinalItem({rotateDirection,item:items[i], parent,lineWidth:props.lineWidth || 1,width:temp.width,height:temp.height});
       if (item.show === false) { continue; }
       ctx.save();
       ctx.beginPath();
@@ -146,17 +137,12 @@ const CANVAS:FC<I_canvas_props> = (props) => {
         item.fill === "random"
           ? getRandomColor().color
           : getColor(item.fill || '#000', item.pivotedCoords);
-      var Index = index.concat(i);
       if (item.type === 'Line') { drawLine(item); }
       else if (item.type === 'Arc') { drawArc(item); }
-      else if (item.type === 'Group') { drawGroup(item, Index); }
+      else if (item.type === 'Group') { drawGroup(item); }
       else if (item.type === 'Image') { drawImage(item); }
       else if (item.type === 'Text') { drawText(item); }
-      else {
-        var str = "items[" + Index.join("].items[") + "]";
-        console.error("r-canvas => receive invalid item in " + str + ' :' + JSON.stringify(item));
-      }
-      if (item.showPivot) {showPivot(item.x || 0, item.y || 0);}
+      if (item.showPivot) { showPivot(item.x || 0, item.y || 0); }
       if (temp.eventMode && (item.events || {})[temp.eventMode]) {
         let X = temp.mousePosition.x * zoom + temp.axisPosition[0] + temp.screen[0];
         let Y = -temp.mousePosition.y * zoom + temp.axisPosition[1] + temp.screen[1];// in isPointInPath and isPointInStroke value of under axis is positive 
@@ -175,7 +161,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.ctx.restore();
   }
   function getBackground() {
-    var [x, y, color = "rgba(70,70,70,0.3)"] = grid || [10,10,'#000'];
+    var [x, y, color = "rgba(70,70,70,0.3)"] = grid || [10, 10, '#000'];
     var a = 100 * zoom;
     var b = x ? +getValueByRange(x, 0, temp.width) * zoom + "px" : "100%";
     var c = y ? +getValueByRange(y, 0, temp.height) * zoom + "px" : "100%";
@@ -203,41 +189,41 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     ];
     return res
   }
-  function clientToCanvas(pos:[number,number], calcParentOffset = true) {
-    let offset:{left:number,top:number} = calcParentOffset ? $(temp.dom.current).offset() ||{ left: 0, top: 0 }  : { left: 0, top: 0 };
-    let client:[number,number] = [pos[0] - offset.left + window.pageXOffset, pos[1] - offset.top + window.pageYOffset];
+  function clientToCanvas(pos: [number, number], calcParentOffset = true) {
+    let offset: { left: number, top: number } = calcParentOffset ? $(temp.dom.current).offset() || { left: 0, top: 0 } : { left: 0, top: 0 };
+    let client: [number, number] = [pos[0] - offset.left + window.pageXOffset, pos[1] - offset.top + window.pageYOffset];
     let res: [number, number] = [
       Math.floor((client[0] - temp.axisPosition[0] - temp.screen[0]) / zoom),
       -Math.floor((client[1] - temp.axisPosition[1] - temp.screen[1]) / zoom)
     ];
     return res
   }
-  function clientSizeToCanvasSize(clientSize:number){
+  function clientSizeToCanvasSize(clientSize: number) {
     return Math.floor((clientSize) / zoom)
   }
-  function canvasSizeToClientSize(canvasSize:number){
+  function canvasSizeToClientSize(canvasSize: number) {
     return Math.round(canvasSize * zoom)
   }
   useEffect(() => { update() })
   useEffect(() => {
     if (typeof props.onPan === 'function') {
-      temp.getScreenPosition = () => props.screenPosition?[+getValueByRange(props.screenPosition[0],0,temp.width),+getValueByRange(props.screenPosition[1],0,temp.height)]:[0, 0]
+      temp.getScreenPosition = () => props.screenPosition ? [+getValueByRange(props.screenPosition[0], 0, temp.width), +getValueByRange(props.screenPosition[1], 0, temp.height)] : [0, 0]
       temp.setScreenPosition = (screenPosition) => {
         if (typeof props.onPan === 'function') { props.onPan(screenPosition) }
       }
     }
-    else if(props.onPan === true){
-      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0],0,temp.width),+getValueByRange(spRef.current[1],0,temp.height)]
+    else if (props.onPan === true) {
+      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0], 0, temp.width), +getValueByRange(spRef.current[1], 0, temp.height)]
       temp.setScreenPosition = (sp) => SetScreenPosition(sp)
-    } 
+    }
     else {
-      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0],0,temp.width),+getValueByRange(spRef.current[1],0,temp.height)]
+      temp.getScreenPosition = () => [+getValueByRange(spRef.current[0], 0, temp.width), +getValueByRange(spRef.current[1], 0, temp.height)]
     }
     $(window).on("resize", resize);
     temp.ctx = temp.ctx || temp.dom.current.getContext("2d");
     update();
     onMount();
-    if(getActions){getActions({ canvasToClient, clientToCanvas,canvasSizeToClientSize,clientSizeToCanvasSize })}
+    if (getActions) { getActions({ canvasToClient, clientToCanvas, canvasSizeToClientSize, clientSizeToCanvasSize }) }
   }, [])
   function getRandomColor(range?: number) {
     range = (range || 60) as number;
@@ -258,120 +244,26 @@ const CANVAS:FC<I_canvas_props> = (props) => {
       b: color[2]
     };
   }
-  function getCoordsByPivot(item:I_canvas_item):[number,number] {
-    let { pivot, x = 0, y = 0 } = item;
-    if (!pivot) {return [x, y];}
-    let [px = 0, py = 0] = pivot;
-    return [x - +getValueByRange(px, 0, temp.width),y - (-getValueByRange(py, 0, temp.height))];
-  }
   //notice index and length use in eval and seems not used but used
-  function getCorner(corner:number | number[], index:number) {
-    if (!Array.isArray(corner)) { return corner }
-    return corner[index] || 0
-  }
-  function getItem(ITEM: I_canvas_item | (() => I_canvas_item), parent: I_canvas_item,index:number) {
-    let item: I_canvas_item = typeof ITEM === "function" ? ITEM() : ITEM
-    let { x: parentx = 0, y: parenty = 0, opacity: parentOpacity = 1, fill: parentFill, stroke: parentStroke, sequence = [] } = parent || { x: 0, y: 0, sequence: [], opacity: 1 };
-    let sequenceProps: I_canvas_item = { type: item.type, fill: parentFill, stroke: parentStroke, rotate: 0, x: 0, y: 0, slice: undefined, opacity: 1, lineWidth: props.lineWidth || 1, r: undefined };
-    try {
-      for (let i = 0; i < sequence.length; i++) {
-        let seq:string = sequence[i];
-        let seqArray:string[] = seq.split(':')
-        let [prop, statement] = seqArray;
-        eval(`sequenceProps.${prop} = ${statement}`)
+  function getItemsByRepeat(item: I_canvas_item): I_canvas_item[] | false {
+    if (!item.repeat || !Array.isArray(item.items)) { return false }
+    const res = []
+    for (let i = 0; i < item.items.length; i++) {
+      let subItem = item.items[i];
+      let { showPivot } = subItem;
+      for (let j = 0; j < item.repeat; j++) {
+        let newItem: I_canvas_item = { ...subItem, isRepeat: j > 0, showPivot: j === 0 ? showPivot : false }
+        res.push(newItem)
       }
     }
-    catch { }
-    let originalItem: I_canvas_item = { ...item };
-    let { type } = originalItem;
-    let {
-      fill = sequenceProps.fill,
-      stroke = sequenceProps.stroke,
-      rotate = sequenceProps.rotate,
-      x = sequenceProps.x,
-      y = sequenceProps.y,
-      slice = sequenceProps.slice,
-      opacity = sequenceProps.opacity,
-      lineWidth = sequenceProps.lineWidth,
-      r = sequenceProps.r,
-      lineJoin = 'miter',
-      lineCap = 'butt',
-      showPivot = false,
-    } = item;
-    let updatedItem: I_canvas_item = { ...item, fill, stroke, rotate, slice, opacity, lineWidth, r, x, y, showPivot, lineJoin: lineJoin as any, lineCap, rect: false };
-    if (type !== 'Group' && !updatedItem.stroke && !updatedItem.fill) { updatedItem.stroke = "#000"; }
-    //set related props
-    updatedItem.rotate = +getValueByRange(updatedItem.rotate || 0, 0, 360);
-    updatedItem.x = +getValueByRange(updatedItem.x || 0, 0, temp.width) + parentx;
-    updatedItem.y = -getValueByRange(updatedItem.y || 0, 0, temp.height) + parenty;
-    updatedItem.opacity = updatedItem.opacity || 1 * parentOpacity;
-    updatedItem.pivotedCoords = getCoordsByPivot(updatedItem);
-    //converts
-    if (type === 'Arc' && updatedItem.arcPoints) {
-      let arc = temp.geo.getArcByPoints(updatedItem.arcPoints, updatedItem.arcHeight);
-      updatedItem.r = arc.r;
-      updatedItem.slice = arc.slice;
-      updatedItem.x = arc.x;
-      updatedItem.y = -arc.y;
-      updatedItem.pivotedCoords = getCoordsByPivot(updatedItem);
-    }
-    else if (type === 'Rectangle') {
-      updatedItem.type = 'Line';
-      let { width = 20, height = 20, corner = 0 } = updatedItem;
-      width = +getValueByRange(width, 0, temp.width);
-      height = +getValueByRange(height, 0, temp.height);
-      updatedItem.rect = true;
-      let [x, y] = updatedItem.pivotedCoords;
-      updatedItem.points = [
-        [x + width / 2, -y],
-        [x + width, -y, getCorner(corner, 0)],
-        [x + width, -y + height, getCorner(corner, 1)],
-        [x, -y + height, getCorner(corner, 2)],
-        [x, -y, getCorner(corner, 3)], [x + width / 2, -y, getCorner(corner, 0)]
-      ];
-    }
-    else if (type === 'NGon') {
-      updatedItem.type = 'Line';
-      let { r = 20, count = 6, corner = 0, x, y } = updatedItem;//notice x,y in ngon should use
-      updatedItem.points = temp.geo.getPointsByNGon(r, count, corner as number);
-    }
-    else if (type === 'Triangle') {
-      updatedItem.type = 'Line';
-      let { corner = 0, width = 50, height = 100, x, y } = updatedItem;//notice x,y in ngon should use
-      if (!Array.isArray(corner)) {
-        corner = [corner];
-      }
-      updatedItem.points = [
-        [0, 0, 0],
-        [width / 2, 0, getCorner(corner, 0)],
-        [0, height, getCorner(corner, 1)],
-        [-width / 2, 0, getCorner(corner, 2)],
-        [0, 0, 0]
-      ];
-      console.log(updatedItem.points)
-    }
-    let result = { ...originalItem, ...updatedItem };
-    result.events = parent.events || result.events
-    return result;
+    return res
   }
-
-  function drawGroup(item: I_canvas_item, index: number[]) {
+  function drawGroup(item: I_canvas_item) {
     let [X, Y] = item.pivotedCoords || [];
-    let items: any = [];
-    let { repeat = 0 } = item;
-    if (repeat && Array.isArray(item.items)) {
-      for (let i = 0; i < item.items.length; i++) {
-        let tmp = item.items[i];
-        let itm:I_canvas_item = typeof tmp === 'function'?tmp():tmp;
-        let { showPivot } = itm;
-        for (let j = 0; j < repeat; j++) {
-          let newItem:I_canvas_item = { ...itm, isRepeat: j > 0, showPivot: j === 0 ? showPivot : false }
-          items.push(newItem)
-        }
-      }
-    }
-    else { items = typeof item.items === 'function'?item.items():item.items; }
-    draw(items, { ...item, x: X, y: Y}, index);
+    const repeatRes = getItemsByRepeat(item);
+    const parent: I_canvas_item = { ...item, x: X, y: Y };
+    const fixedItems: I_canvas_item[] = repeatRes === false ? item.items || [] : repeatRes;
+    draw(fixedItems, parent);
   }
   function drawText(p: I_canvas_item) {
     let { align = [0, 0], fontSize = 12, fontFamily = 'arial', text = "Text", fill, stroke, pivotedCoords = [] } = p;
@@ -388,7 +280,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     let { pivotedCoords = [], width = 0, height = 0, image } = p;
     var [X, Y] = pivotedCoords;
     var fr = new FileReader();
-    var img:any;
+    var img: any;
     fr.onload = () => {
       img = new Image();
       img.onload = () => temp.ctx.drawImage(img, X * zoom, Y * zoom, width * zoom, height * zoom);
@@ -397,9 +289,9 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     fr.readAsDataURL(image as any);
   }
   function drawLine(p: I_canvas_item) {
-    let { points = [], close, stroke, fill, pivotedCoords, rect } = p;
+    let { points = [], close, stroke, fill, pivotedCoords } = p;
     if (points.length < 1) { return false; }
-    let Coords = rect ? [0, 0] : pivotedCoords || [0,0];
+    let Coords = pivotedCoords || [0, 0];
     let [X, Y] = Coords;
     let start = [
       +getValueByRange(points[0][0], 0, temp.width) + X,
@@ -433,21 +325,11 @@ const CANVAS:FC<I_canvas_props> = (props) => {
   function drawArc(p: I_canvas_item) {
     let { pivotedCoords = [], r = 0, slice = [0, 360], fill, stroke } = p;
     let [X, Y] = pivotedCoords;
-    r = +getValueByRange(r, temp.width, temp.height);
-    r = r < 0 ? 0 : r;
-    slice = [
-      +getValueByRange(slice[0], 0, 360),
-      +getValueByRange(slice[1], 0, 360)
-    ];
-    if (rotateDirection === "clockwise") {
-      let a = slice[0], b = slice[1];
-      slice = [-b, -a];
-    }
     temp.ctx.arc(X * zoom, Y * zoom, r * zoom, slice[0] * temp.PI, slice[1] * temp.PI);
     stroke && temp.ctx.stroke();
     fill && temp.ctx.fill();
   }
-  function showPivot(x:number, y:number) {
+  function showPivot(x: number, y: number) {
     temp.ctx.beginPath();
     temp.ctx.arc(x, y, 10, 0, (360 * Math.PI) / 180);
     temp.ctx.moveTo(x - 15, y);
@@ -491,10 +373,10 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     var ctx = temp.ctx;
     ctx.shadowOffsetX = shadow[0]; ctx.shadowOffsetY = shadow[1]; ctx.shadowBlur = shadow[2]; ctx.shadowColor = shadow[3];
   }
-  function panmousedown(e:Event) {
+  function panmousedown(e: Event) {
     EventHandler("window", "mousemove", panmousemove);
     EventHandler("window", "mouseup", panmouseup);
-    let screenPosition:number[] = temp.getScreenPosition?temp.getScreenPosition():[0,0];
+    let screenPosition: number[] = temp.getScreenPosition ? temp.getScreenPosition() : [0, 0];
     let client = GetClient(e);
     temp.startOffset = { x: client.x, y: client.y, endX: screenPosition[0], endY: screenPosition[1] };
   }
@@ -502,10 +384,10 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     EventHandler("window", "mousemove", panmousemove, "unbind");
     EventHandler("window", "mouseup", panmouseup, "unbind");
   }
-  function panmousemove(e:Event) {
+  function panmousemove(e: Event) {
     let so = temp.startOffset, coords = GetClient(e);
     let x = (so.x - coords.x) / zoom + so.endX, y = (coords.y - so.y) / zoom + so.endY;
-    if(temp.setScreenPosition)temp.setScreenPosition([x, y]);
+    if (temp.setScreenPosition) temp.setScreenPosition([x, y]);
   }
   function onMouseDown(e: any) {
     temp.mousePosition = getMousePosition(e);
@@ -513,7 +395,7 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     update();
     if (temp.item && temp.item.events && temp.item.events.onMouseDown) { temp.item.events.onMouseDown({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
     else if (temp.setScreenPosition) { panmousedown(e) }
-    else if (attrs.onMouseDown) { attrs.onMouseDown({event:e, mousePosition:temp.mousePosition}) }
+    else if (attrs.onMouseDown) { attrs.onMouseDown({ event: e, mousePosition: temp.mousePosition }) }
     temp.item = undefined; temp.eventMode = false;
   }
   function onMouseUp(e: any) {
@@ -521,15 +403,15 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     temp.eventMode = "onMouseUp";
     update();
     if (temp.item && temp.item.events && temp.item.events.onMouseUp) { temp.item.events.onMouseUp({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
-    else if (attrs.onMouseUp) { attrs.onMouseUp({event:e, mousePosition:temp.mousePosition}) }
+    else if (attrs.onMouseUp) { attrs.onMouseUp({ event: e, mousePosition: temp.mousePosition }) }
     temp.item = undefined; temp.eventMode = false;
   }
-  function onClick(e:Event) {
+  function onClick(e: Event) {
     temp.mousePosition = getMousePosition(e);//in onClick calc with no touch
     temp.eventMode = "onClick";
     update();
     if (temp.item && temp.item.events && temp.item.events.onClick) { temp.item.events.onClick({ event: e, mousePosition: temp.mousePosition, item: temp.item }) }
-    else if (attrs.onClick) { attrs.onClick({event:e, mousePosition:temp.mousePosition}) }
+    else if (attrs.onClick) { attrs.onClick({ event: e, mousePosition: temp.mousePosition }) }
     temp.item = undefined; temp.eventMode = false;
   }
   function onMouseMove(e: any) {
@@ -538,13 +420,13 @@ const CANVAS:FC<I_canvas_props> = (props) => {
     listenToMousePosition?.(temp.mousePosition)
   }
 
-  function getMousePosition(e:Event) {
+  function getMousePosition(e: Event) {
     let client = GetClient(e);
     let [x, y] = clientToCanvas([client.x, client.y]);
     let [cx, cy] = canvasToClient([x, y])
     return { x, y, px: (x * 100) / temp.width, py: (y * 100) / temp.height, cx, cy };
   }
-  let p:any = {
+  let p: any = {
     ...attrs, ref: temp.dom,
     onMouseDown: undefined, onMouseMove: undefined, onMouseUp: undefined,
     onTouchStart: undefined, onTouchMove: undefined, onTouchEnd: undefined
@@ -561,4 +443,116 @@ const CANVAS:FC<I_canvas_props> = (props) => {
   }
   p.onClick = onClick
   return <canvas {...p} />;
+}
+
+
+function getValueByRange(value: number | string | (() => number | string), start: number, end: number) {
+  var Value = typeof value === 'function' ? value() : value;
+  var type = typeof Value;
+  if (type === undefined) { return start; }
+  if (type === "number") { return Value; }
+  return start + (parseFloat(Value as string) * (end - start)) / 100;
+}
+function getCoordsByPivot(item: I_canvas_item,width:number,height:number): [number, number] {
+  let { pivot, x = 0, y = 0 } = item;
+  if (!pivot) { return [x, y]; }
+  let [px = 0, py = 0] = pivot;
+  return [x - +getValueByRange(px, 0, width), y - (-getValueByRange(py, 0, height))];
+}
+
+function getFinalItem(p:{rotateDirection:'clock' | 'clockwise',lineWidth:number,width:number,height:number,item: I_canvas_item, parent?: I_canvas_item}) {
+  const geo = new Geo()
+  function getCorner(corner: number | number[], index: number) {
+    if (!Array.isArray(corner)) { return corner }
+    return corner[index] || 0
+  }
+  function getDefaultItem(item: I_canvas_item, parent?: I_canvas_item): I_canvas_item {
+    const sequence = parent?.sequence || []
+    let sequenceProps: I_canvas_item = {
+      type: item.type, fill: parent?.fill, stroke: parent?.stroke, rotate: 0, x: 0, y: 0, slice: undefined, opacity: 1, lineWidth:p.lineWidth, r: undefined
+    };
+    try {
+      for (let i = 0; i < sequence.length; i++) {
+        let seqArray: string[] = sequence[i].split(':')
+        eval(`sequenceProps.${seqArray[0]} = ${seqArray[1]}`)
+      }
+    }
+    catch { }
+    let {
+      fill = sequenceProps.fill, stroke = sequenceProps.stroke,
+      rotate = sequenceProps.rotate, x = sequenceProps.x, y = sequenceProps.y, r = sequenceProps.r,
+      slice = sequenceProps.slice, opacity = sequenceProps.opacity, lineWidth = sequenceProps.lineWidth,
+      lineJoin = 'miter', lineCap = 'butt', showPivot = false,
+    } = item;
+    if (item.type !== 'Group' && !stroke && !fill) { stroke = "#000"; }
+    return { ...item, fill, stroke, rotate, slice, opacity, lineWidth, r, x, y, showPivot, lineJoin: lineJoin as any, lineCap };
+  }
+  function getItemByRelatedProps(item: I_canvas_item, parent?: I_canvas_item): I_canvas_item {
+    item.rotate = +getValueByRange(item.rotate || 0, 0, 360);
+    item.x = +getValueByRange(item.x || 0, 0, p.width) + (parent?.x || 0);
+    item.y = -getValueByRange(item.y || 0, 0, p.height) + (parent?.y || 0);
+    item.opacity = (item.opacity || 1) * (parent?.opacity || 1);
+    item.pivotedCoords = getCoordsByPivot(item,p.width,p.height);
+    return item
+  }
+  const { type } = p.item;
+  let updatedItem = getDefaultItem(p.item, p.parent);
+  updatedItem = getItemByRelatedProps(updatedItem)
+  //converts
+  if (type === 'Arc') {
+    if (updatedItem.arcPoints) {
+      let arc = geo.getArcByPoints(updatedItem.arcPoints, updatedItem.arcHeight);
+      updatedItem.r = arc.r;
+      updatedItem.slice = arc.slice;
+      updatedItem.x = arc.x;
+      updatedItem.y = -arc.y;
+      updatedItem.pivotedCoords = getCoordsByPivot(updatedItem,p.width,p.height);
+    }
+    updatedItem.r = +getValueByRange(updatedItem.r || 0, p.width, p.height);
+    updatedItem.r = updatedItem.r < 0 ? 0 : updatedItem.r;
+    let {slice = [0,360]} = updatedItem;
+    slice = [+getValueByRange(slice[0], 0, 360),+getValueByRange(slice[1], 0, 360)];
+    if (p.rotateDirection === "clockwise") {
+      let a = slice[0], b = slice[1];
+      slice = [-b, -a];
+    }
+    updatedItem.slice = slice
+  }
+  else if (type === 'Rectangle') {
+    updatedItem.type = 'Line';
+    let { width = 20, height = 20, corner = 0 } = updatedItem;
+    width = +getValueByRange(width, 0, width);
+    height = +getValueByRange(height, 0, height);
+    let [x, y] = updatedItem.pivotedCoords || [0, 0];
+    updatedItem.points = [
+      [x + width / 2, -y],
+      [x + width, -y, getCorner(corner, 0)],
+      [x + width, -y + height, getCorner(corner, 1)],
+      [x, -y + height, getCorner(corner, 2)],
+      [x, -y, getCorner(corner, 3)], [x + width / 2, -y, getCorner(corner, 0)]
+    ];
+    updatedItem.pivotedCoords = [0, 0]
+  }
+  else if (type === 'NGon') {
+    updatedItem.type = 'Line';
+    let { r = 20, count = 6, corner = 0, x, y } = updatedItem;//notice x,y in ngon should use
+    updatedItem.points = geo.getPointsByNGon(r, count, corner as number);
+  }
+  else if (type === 'Triangle') {
+    updatedItem.type = 'Line';
+    let { corner = 0, width = 50, height = 100, x, y } = updatedItem;//notice x,y in ngon should use
+    if (!Array.isArray(corner)) {
+      corner = [corner];
+    }
+    updatedItem.points = [
+      [0, 0, 0],
+      [width / 2, 0, getCorner(corner, 0)],
+      [0, height, getCorner(corner, 1)],
+      [-width / 2, 0, getCorner(corner, 2)],
+      [0, 0, 0]
+    ];
+    console.log(updatedItem.points)
+  }
+  updatedItem.events = p.parent?.events || updatedItem.events
+  return updatedItem;
 }

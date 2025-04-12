@@ -8,7 +8,7 @@ export type I_canvas_item = {
   opacity?:number,
   lineWidth?:number,
   lineJoin?:'mitter'|'round'|'bevel',lineCap?:'butt'|'round'|'square',dash?:number[],
-  sequence?:string[],slice?:[number,number],r?:number,type:I_canvas_type,items?:I_canvas_items
+  sequence?:string[],slice?:[number,number],r?:number,type:I_canvas_type,items?:I_canvas_item[],
   align?:[0 |1 | -1,0 |1 | -1],
   fontSize?:number,
   fontFamily?:string,
@@ -20,7 +20,6 @@ export type I_canvas_item = {
   repeat?:number,
   pivot?:[number,number],
   showPivot?:boolean,
-  rect?:boolean,
   pivotedCoords?:number[],
   isRepeat?:boolean,
   arcPoints?:number[][],
@@ -37,7 +36,6 @@ export type I_canvas_item = {
   data?:any,
   events?:any
 }
-export type I_canvas_items = (I_canvas_item | (()=>I_canvas_item))[] | (()=>(I_canvas_item | (()=>I_canvas_item))[])
 export type I_canvas_canvasToClient = (pos:[number,number])=>[number,number,number,number]
 export type I_canvas_clientToCanvas = (pos:[number,number],calcParentOffset?:boolean)=>[number,number]
 export type I_canvas_clientSizeToCanvasSize = (v:number)=>number
@@ -58,7 +56,7 @@ export type I_canvas_props = {
   zoom?:number,
   onMount?:()=>void,
   getActions?:I_canvas_getActions,
-  items:I_canvas_items,
+  items:I_canvas_item[],
   lineWidth?:number,
   rotateDirection?:'clock'|'clockwise',
   attrs?:{
