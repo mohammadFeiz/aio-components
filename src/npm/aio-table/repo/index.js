@@ -34,7 +34,7 @@ const AIOTable = (props) => {
     const propsRef = useRef(props);
     propsRef.current = props;
     const pagingHook = usePaging({ rows: props.value, paging: props.paging, onChange: props.onChangePaging });
-    const tableHook = useTable(() => propsRef.current, () => pagingHook.paging);
+    const tableHook = useTable(() => propsRef.current, () => props.paging);
     const getIconRef = useRef(new UT.GetSvg());
     const getIcon = getIconRef.current.getIcon;
     const DragColumns = UT.useDrag((dragIndex, dropIndex, reOrder) => setColumns(reOrder(columns, dragIndex, dropIndex)));
@@ -106,6 +106,12 @@ const AIOTable = (props) => {
         const columns = getColumns();
         sortHook.setSorts(getSorts(columns));
     }, []);
+    useEffect(() => {
+        if (props.paging) {
+            debugger;
+            pagingHook.changePaging(props.paging);
+        }
+    }, [JSON.stringify(props.paging)]);
     function getTimeText(column, value) {
         if (!value || value === null) {
             return '';
@@ -322,6 +328,7 @@ const TableRow = (props) => {
     const { row, rowIndex } = rowDetail;
     const rowId = row._id;
     let { remove, rootProps, columns, tableHook, getIcon, isDate } = useProvider();
+    const isOdd = rowIndex % 2 === 0;
     function getCells() {
         return columns.map((column, i) => {
             const key = rowId + ' ' + column._id;
@@ -337,16 +344,16 @@ const TableRow = (props) => {
                     rootProps.onChange(rootProps.value.map((o) => o._id !== rowId ? o : row));
                 }, isDate: isDate(column) });
             const cellValue = tableHook.getCellValue(cellDetail, column.value);
-            return (_jsx(TableCell, { cellDetail: cellDetail, cellValue: cellValue }, key));
+            return (_jsx(TableCell, { cellDetail: cellDetail, cellValue: cellValue, isOdd: isOdd }, key));
         });
     }
     let { onRemove } = rootProps;
-    return (_jsx(_Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getRowAttrs(props.rowDetail), { children: [getCells(), onRemove ? _jsx("button", { className: 'aio-table-remove', onClick: () => remove(row, rowIndex), children: getIcon('mdiClose', 0.8) }) : null] }), rowId) }));
+    return (_jsx(_Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getRowAttrs(props.rowDetail, isOdd), { children: [getCells(), onRemove ? _jsx("button", { className: 'aio-table-remove', onClick: () => remove(row, rowIndex), children: getIcon('mdiClose', 0.8) }) : null] }), rowId) }));
 };
 const TableCell = (props) => {
-    const { cellDetail, cellValue } = props;
+    const { cellDetail, cellValue, isOdd } = props;
     const { row, column, isLast } = cellDetail;
-    const { tableHook, getTimeText } = useProvider();
+    const { tableHook, getTimeText, rootProps } = useProvider();
     const { template, before, after, subtext } = column;
     const rowId = row._id;
     const colId = column._id;
@@ -355,7 +362,7 @@ const TableCell = (props) => {
     const beforeValue = tableHook.getCellValue(cellDetail, before, undefined);
     const afterValue = tableHook.getCellValue(cellDetail, after, undefined);
     const subtextValue = tableHook.getCellValue(cellDetail, subtext, undefined);
-    return (_jsx(Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getCellAttrs(props.cellDetail, props.cellValue), { children: [beforeValue !== undefined && _jsx("div", { className: "aio-table-cell-before", children: beforeValue }), _jsxs("div", { className: `aio-table-cell-value${subtext !== undefined ? ' has-subtext' : ''}`, "data-subtext": subtextValue, children: [templateValue !== undefined && templateValue, templateValue === undefined && cellValue] }), afterValue !== undefined && _jsx("div", { className: "aio-table-cell-after", children: afterValue })] })) }, rowId + ' ' + colId));
+    return (_jsx(Fragment, { children: _jsxs("div", Object.assign({}, tableHook.getCellAttrs(props.cellDetail, props.cellValue, isOdd, rootProps.striped), { children: [beforeValue !== undefined && _jsx("div", { className: "aio-table-cell-before", children: beforeValue }), _jsxs("div", { className: `aio-table-cell-value${subtext !== undefined ? ' has-subtext' : ''}`, "data-subtext": subtextValue, children: [templateValue !== undefined && templateValue, templateValue === undefined && cellValue] }), afterValue !== undefined && _jsx("div", { className: "aio-table-cell-after", children: afterValue })] })) }, rowId + ' ' + colId));
 };
 const useTable = (getProps, getPaging) => {
     const DragRows = UT.useDrag((dragData, dropData, reOrder) => {
@@ -416,7 +423,7 @@ const useTable = (getProps, getPaging) => {
         }
         return result === undefined ? def : result;
     };
-    const getCellAttrs = (cellDetail, cellValue) => {
+    const getCellAttrs = (cellDetail, cellValue, isOdd, striped) => {
         const { column } = cellDetail;
         const attrs = getCellValue(cellDetail, column.attrs, {});
         const justify = getColValue(column, 'justify', false);
@@ -424,7 +431,10 @@ const useTable = (getProps, getPaging) => {
         const minWidth = getColValue(column, 'minWidth');
         const className = `aio-table-cell` + (justify ? ` aio-table-cell-justify` : '');
         const style = { width, minWidth, flex: width ? undefined : 1 };
-        return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof cellValue === 'string' ? cellValue : undefined } });
+        if (striped) {
+            style.background = isOdd ? striped[0] : striped[1];
+        }
+        return UT.AddToAttrs(attrs, { className: [className, isOdd ? 'aio-table-cell-odd' : 'aio-table-cell-even'], style, attrs: { title: typeof cellValue === 'string' ? cellValue : undefined } });
     };
     const getTitleAttrs = (column) => {
         const attrs = getColValue(column, 'titleAttrs', {});
@@ -435,11 +445,11 @@ const useTable = (getProps, getPaging) => {
         const style = { width, minWidth, flex: width ? undefined : 1 };
         return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof column.title === 'string' ? column.title : undefined } });
     };
-    const getRowAttrs = (rowDetail) => {
+    const getRowAttrs = (rowDetail, isOdd) => {
         const { rowOption = {}, onSwap, value, gap = [0, 1] } = getProps();
         const { attrs: rowAttrs } = rowOption;
         const attrs = rowAttrs ? rowAttrs(rowDetail) : {};
-        let obj = UT.AddToAttrs(attrs, { className: 'aio-table-row', style: { gap: gap[0] } });
+        let obj = UT.AddToAttrs(attrs, { className: ['aio-table-row', isOdd ? 'aio-table-row-odd' : 'aio-table-row-even'], style: { gap: gap[0] } });
         if (onSwap) {
             obj = Object.assign(Object.assign(Object.assign({}, obj), DragRows.getDragAttrs({ dragIndex: rowDetail.rowIndex })), DragRows.getDropAttrs({ dropIndex: rowDetail.rowIndex, rows: value }));
         }

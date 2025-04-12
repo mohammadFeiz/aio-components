@@ -555,10 +555,10 @@ const Tag: FC<AI_Tag> = (props) => {
     let Attrs = UT.AddToAttrs(attrs, { className: [cls + ' aio-input-main-bg', disabled ? 'disabled' : undefined] })
     return (
         <div {...Attrs}>
-            <div className={`${cls}-icon`}>{before}</div>
+            <div className={`${cls}-icon ${cls}-before`}>{before}</div>
             <div className={`${cls}-text`}>{text}</div>
-            {after !== undefined && <div className={`${cls}-icon`}>{after}</div>}
-            <div className={`${cls}-icon`} onClick={close}>{I('mdiClose', 0.7)}</div>
+            {after !== undefined && <div className={`${cls}-icon ${cls}-after`}>{after}</div>}
+            <div className={`${cls}-icon ${cls}-remove`} onClick={close}>{I('mdiClose', 0.7)}</div>
         </div>
     )
 }
@@ -723,10 +723,11 @@ export type AI_Layout = {
     properties?: any
 }
 const CheckIcon: FC<{
-    checkIcon?: (p: { checked: boolean, row: any }) => false | ReactNode,
+    checkIcon?: (p: { checked: boolean, row: any,rootProps:AITYPE }) => false | ReactNode,
     checked?: boolean,
     round?: boolean,
     row: any,
+    rootProps:AITYPE,
     switch?: {
         value?: boolean,
         onChange?: (v: boolean) => void,
@@ -740,7 +741,7 @@ const CheckIcon: FC<{
 }> = (props) => {
     if (props.checked === undefined) { return null }
     if (props.checkIcon) {
-        const res = props.checkIcon({ checked: props.checked, row: props.row })
+        const res = props.checkIcon({ checked: props.checked, row: props.row,rootProps:props.rootProps })
         return res === false ? null : <>{res}</>
     }
     if (props.switch) {
@@ -940,6 +941,7 @@ const Layout: FC<AI_Layout> = (props) => {
                 checkIcon={rootProps.checkIcon}
                 row={option || {}}
                 switch={rootProps.switch}
+                rootProps={rootProps}
             />
         }
         {BeforeAfter('before')}
@@ -1375,7 +1377,7 @@ const TreeRow: FC<{ item: I_treeItem }> = (props) => {
                 isParentLastChild={!!item.indent.parentIndent?.isLastChild} rtl={!!rootProps.rtl}
                 toggleIcon={rootProps.toggleIcon} open={open} onToggle={() => toggle(item.id)}
             />,
-            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={rootProps.checkIcon} row={row} />}</>,
+            <>{checked === undefined ? null : <CheckIcon checked={checked} checkIcon={rootProps.checkIcon} row={row} rootProps={rootProps} />}</>,
             <>{(item.option.before as any) || null}</>
         ]
     }
@@ -2966,7 +2968,7 @@ export type AITYPE =
         validations?: (any[]) | ((v: any) => string | undefined),
         value?: any,
         body?: (option: any, details: AI_optionDetails) => { attrs?: any, html?: ReactNode },//acardion
-        checkIcon?: (p: { checked: boolean, row: any }) => ReactNode
+        checkIcon?: (p: { checked: boolean, row: any,rootProps:AITYPE }) => ReactNode
         switch?: AI_switch,
         listOptions?: { decay?: number, stop?: number, count?: number, move?: any, editable?: boolean },//list
         getOptions?: (text: string) => Promise<any[]>,//text,textarea
@@ -3151,7 +3153,8 @@ type I_useFormProps<T> = {
     labelAttrs?: any,
     getLayout?: (context: I_formContext<T>) => I_formNode<T>,
     debug?: boolean,
-    isRequired?: I_isRequired<T>
+    isRequired?: I_isRequired<T>,
+    showErrors?: boolean,
 };
 export type I_formField<T> = NestedKeys<T> | 'none'
 type NestedKeys<T> = {
@@ -3199,10 +3202,10 @@ export const useForm = <T extends Record<string, any>>(p: I_useFormProps<T>): I_
     const [initData] = useState<T>(getInitData);
     const submitTimeRef = useRef<number | undefined>(undefined)
     const fieldChangesRef = useRef<any>({})
-    const inputHook = useInput()
-    const errorHook = useError({ getData, rootProps: p, isRequired })
-    const nodeHook = useNode()
     const isFieldChanged = (field: any) => !!fieldChangesRef.current[field]
+    const inputHook = useInput()
+    const errorHook = useError({ getData, rootProps: p, isRequired,isFieldChanged })
+    const nodeHook = useNode()
     const [data, setData] = useState<T>(getInitData);
 
     function getData() { return dataRef.current }
@@ -3288,10 +3291,10 @@ type I_errorHook<T> = {
     setErrorByField: (field: any, error: string | undefined) => void,
     hasError: () => boolean,
     getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined,
-    getErrorsList: () => string[],
+    getErrorsList: (changed?:boolean) => string[],
     resetErrors: () => void
 }
-const useError = <T extends Record<string, any>>(p: { getData: () => T, rootProps: I_useFormProps<T>, isRequired: any }): I_errorHook<T> => {
+const useError = <T extends Record<string, any>>(p: { getData: () => T, rootProps: I_useFormProps<T>, isRequired: any,isFieldChanged:any }): I_errorHook<T> => {
     const { fa, } = p.rootProps;
     const errorsRef = useRef<any>({})
     const setErrorByField = (field: any, error: string | undefined) => errorsRef.current = { ...errorsRef.current, [field]: error }
@@ -3310,10 +3313,14 @@ const useError = <T extends Record<string, any>>(p: { getData: () => T, rootProp
         if (value === 'undefined' || value === '[Object-Object]' || value === 'null' || value === 'NaN') { error = fa ? 'این مقدار مجاز نیست' : 'this value is forbidden' }
         setErrorByField(field, error); return error
     }
-    const getErrorsList = (): string[] => {
+    const getErrorsList = (changed?:boolean): string[] => {
         const errors = errorsRef.current as any;
         const keys = Object.keys(errors) as any;
-        const strs = keys.filter((o: any) => !!errors[o]) as any
+        const strs = keys.filter((o: any) => {
+            if(typeof changed === 'boolean'){return p.isFieldChanged(o) === changed}
+            else {return !!errors[o]}
+            
+        }) as any
         return strs.map((o: any) => errors[o])
     }
     const hasError = () => !!getErrorsList().length
@@ -3462,9 +3469,12 @@ const AIFormInputContainer: FC<{
                 ...input,
                 inputAttrs: { ...inputAttrs, 'aria-label': field },
                 value,
-                onChange: (v: any, details: any) => {
-                    if (input.onChange) { input.onChange(v, details) }
-                    else { changeByInput(input, v) }
+                onChange: async (v: any, details: any) => {
+                    if (input.onChange) { 
+                        const res = await input.onChange(v, details)
+                        if(res === false){return}
+                    }
+                    changeByInput(input, v)
                 }
             }}
             attrs={attrs}
@@ -3495,7 +3505,7 @@ const RenderInput: FC<I_renderInput> = (props) => {
         setDom(
             <AIFormInput required={required} labelAttrs={rootProps.labelAttrs} inlineLabel={inlineLabel}
                 input={<AIOInput {...inputProps} type={inputProps.type} className='ai-form-aio-input' />}
-                label={label} error={isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
+                label={label} error={rootProps.showErrors !== false && isFieldChanged(field) ? error : undefined} attrs={{ ...attrs, style: { width: size ? size : undefined, ...attrs.style } }}
             />
         )
     }, [JSON.stringify(inputProps, (key: string, value: any) => isValidElement(value) ? undefined : value), error])
@@ -3547,7 +3557,7 @@ export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange:
         onChange(newValue)
     }
     return (
-        <div className="aio-input-plate">
+        <div className="aio-input-plate" key={type}>
             {!!label && <div className="aio-input-plate-label">{label}</div>}
             {
                 type === 'car' &&
@@ -3566,6 +3576,17 @@ export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange:
                     </div>
                     <div className="aio-input-plate-item">
                         <AIText maxLength={2} filter={['number']} value={value[3]} onChange={(v) => change(v, 3)} />
+                    </div>
+                </>
+            }
+            {
+                type === 'motor_cycle' &&
+                <>
+                    <div className="aio-input-plate-item">
+                        <AIText maxLength={2} filter={['number']} value={value[0]} onChange={(v) => change(v, 0)} />
+                    </div>
+                    <div className="aio-input-plate-item">
+                        <AIText maxLength={2} filter={['number']} value={value[1]} onChange={(v) => change(v, 3)} />
                     </div>
                 </>
             }

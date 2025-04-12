@@ -633,7 +633,7 @@ const Tag = (props) => {
     let close = disabled ? undefined : onClose;
     let cls = 'aio-input-tag';
     let Attrs = UT.AddToAttrs(attrs, { className: [cls + ' aio-input-main-bg', disabled ? 'disabled' : undefined] });
-    return (_jsxs("div", Object.assign({}, Attrs, { children: [_jsx("div", { className: `${cls}-icon`, children: before }), _jsx("div", { className: `${cls}-text`, children: text }), after !== undefined && _jsx("div", { className: `${cls}-icon`, children: after }), _jsx("div", { className: `${cls}-icon`, onClick: close, children: I('mdiClose', 0.7) })] })));
+    return (_jsxs("div", Object.assign({}, Attrs, { children: [_jsx("div", { className: `${cls}-icon ${cls}-before`, children: before }), _jsx("div", { className: `${cls}-text`, children: text }), after !== undefined && _jsx("div", { className: `${cls}-icon ${cls}-after`, children: after }), _jsx("div", { className: `${cls}-icon ${cls}-remove`, onClick: close, children: I('mdiClose', 0.7) })] })));
 };
 const Input = () => {
     const { rootProps, types, showPassword, options } = useContext(AICTX);
@@ -814,16 +814,14 @@ const CheckIcon = (props) => {
     if (props.checked === undefined) {
         return null;
     }
-    const { rootProps } = props;
-    const round = !rootProps.multiple && rootProps.type === 'radio';
-    if (rootProps.checkIcon) {
-        const res = rootProps.checkIcon({ checked: props.checked, row: props.row, rootProps });
+    if (props.checkIcon) {
+        const res = props.checkIcon({ checked: props.checked, row: props.row, rootProps: props.rootProps });
         return res === false ? null : _jsx(_Fragment, { children: res });
     }
-    if (rootProps.switch) {
-        return (_jsx(AISwitch, Object.assign({}, rootProps.switch, { value: props.checked })));
+    if (props.switch) {
+        return (_jsx(AISwitch, Object.assign({}, props.switch, { value: props.checked })));
     }
-    return (_jsx("div", { className: 'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (round ? ' aio-input-check-round' : ''), style: { background: 'none' }, children: _jsx("div", { className: 'aio-input-main-bg aio-input-check-in' }) }));
+    return (_jsx("div", { className: 'aio-input-check-out aio-input-main-color' + (props.checked ? ' checked' : '') + (props.round ? ' aio-input-check-round' : ''), style: { background: 'none' }, children: _jsx("div", { className: 'aio-input-main-bg aio-input-check-in' }) }));
 };
 const Layout = (props) => {
     let { rootProps, datauniqid, types, touch, DragOptions, click, optionClick, showPassword, setShowPassword, popup } = useContext(AICTX);
@@ -1056,7 +1054,8 @@ const Layout = (props) => {
         return _jsx("div", { className: 'aio-input-voice', onClick: () => startVoice(), children: I('mdiMicrophoneOutline', 0.8) });
     }
     let properties = getProperties();
-    let content = (_jsxs(_Fragment, { children: [DragIcon(), typeof properties.checked === 'boolean' && _jsx(CheckIcon, { rootProps: rootProps, checked: properties.checked, row: option || {} }), BeforeAfter('before'), Text(), BeforeAfter('after'), Loading(), voice(), Caret()] }));
+    let content = (_jsxs(_Fragment, { children: [DragIcon(), typeof properties.checked === 'boolean' &&
+                _jsx(CheckIcon, { round: !rootProps.multiple && type === 'radio', checked: properties.checked, checkIcon: rootProps.checkIcon, row: option || {}, switch: rootProps.switch, rootProps: rootProps }), BeforeAfter('before'), Text(), BeforeAfter('after'), Loading(), voice(), Caret()] }));
     let p = getProps();
     if (type === 'file') {
         return (_jsxs("label", Object.assign({}, p, { children: [content, _jsx(InputFile, {})] })));
@@ -1514,7 +1513,7 @@ const TreeRow = (props) => {
         var _a;
         return [
             _jsx(Indent, { row: row, width: size, height: height, level: level, isLastChild: item.indent.isLastChild, isLeaf: !childs || !childs.length, isParentLastChild: !!((_a = item.indent.parentIndent) === null || _a === void 0 ? void 0 : _a.isLastChild), rtl: !!rootProps.rtl, toggleIcon: rootProps.toggleIcon, open: open, onToggle: () => toggle(item.id) }),
-            _jsx(_Fragment, { children: checked === undefined ? null : _jsx(CheckIcon, { checked: checked, rootProps: rootProps, row: row }) }),
+            _jsx(_Fragment, { children: checked === undefined ? null : _jsx(CheckIcon, { checked: checked, checkIcon: rootProps.checkIcon, row: row, rootProps: rootProps }) }),
             _jsx(_Fragment, { children: item.option.before || null })
         ];
     };
@@ -3199,10 +3198,10 @@ export const useForm = (p) => {
     const [initData] = useState(getInitData);
     const submitTimeRef = useRef(undefined);
     const fieldChangesRef = useRef({});
-    const inputHook = useInput();
-    const errorHook = useError({ getData, rootProps: p, isRequired });
-    const nodeHook = useNode();
     const isFieldChanged = (field) => !!fieldChangesRef.current[field];
+    const inputHook = useInput();
+    const errorHook = useError({ getData, rootProps: p, isRequired, isFieldChanged });
+    const nodeHook = useNode();
     const [data, setData] = useState(getInitData);
     function getData() { return dataRef.current; }
     const changeData = (data) => {
@@ -3339,10 +3338,17 @@ const useError = (p) => {
         setErrorByField(field, error);
         return error;
     }
-    const getErrorsList = () => {
+    const getErrorsList = (changed) => {
         const errors = errorsRef.current;
         const keys = Object.keys(errors);
-        const strs = keys.filter((o) => !!errors[o]);
+        const strs = keys.filter((o) => {
+            if (typeof changed === 'boolean') {
+                return p.isFieldChanged(o) === changed;
+            }
+            else {
+                return !!errors[o];
+            }
+        });
         return strs.map((o) => errors[o]);
     };
     const hasError = () => !!getErrorsList().length;
@@ -3533,14 +3539,15 @@ const AIFormInputContainer = ({ context, input, attrs, size }) => {
     inputHook.set(field, input);
     const value = getValueByInput(input);
     const error = errorHook.getErrorByInput(input, value);
-    return (_jsx(RenderInput, { value: value, error: error, input: input, context: context, size: size, inlineLabel: rootProps.inlineLabel, inputProps: Object.assign(Object.assign({}, input), { inputAttrs: Object.assign(Object.assign({}, inputAttrs), { 'aria-label': field }), value, onChange: (v, details) => {
+    return (_jsx(RenderInput, { value: value, error: error, input: input, context: context, size: size, inlineLabel: rootProps.inlineLabel, inputProps: Object.assign(Object.assign({}, input), { inputAttrs: Object.assign(Object.assign({}, inputAttrs), { 'aria-label': field }), value, onChange: (v, details) => __awaiter(void 0, void 0, void 0, function* () {
                 if (input.onChange) {
-                    input.onChange(v, details);
+                    const res = yield input.onChange(v, details);
+                    if (res === false) {
+                        return;
+                    }
                 }
-                else {
-                    changeByInput(input, v);
-                }
-            } }), attrs: attrs }));
+                changeByInput(input, v);
+            }) }), attrs: attrs }));
 };
 const RenderInput = (props) => {
     const { context, attrs, input, inputProps, error, size, inlineLabel } = props;
@@ -3553,7 +3560,7 @@ const RenderInput = (props) => {
         }
         const { field, label } = input;
         const required = isRequired(field);
-        setDom(_jsx(AIFormInput, { required: required, labelAttrs: rootProps.labelAttrs, inlineLabel: inlineLabel, input: _jsx(AIOInput, Object.assign({}, inputProps, { type: inputProps.type, className: 'ai-form-aio-input' })), label: label, error: isFieldChanged(field) ? error : undefined, attrs: Object.assign(Object.assign({}, attrs), { style: Object.assign({ width: size ? size : undefined }, attrs.style) }) }));
+        setDom(_jsx(AIFormInput, { required: required, labelAttrs: rootProps.labelAttrs, inlineLabel: inlineLabel, input: _jsx(AIOInput, Object.assign({}, inputProps, { type: inputProps.type, className: 'ai-form-aio-input' })), label: label, error: rootProps.showErrors !== false && isFieldChanged(field) ? error : undefined, attrs: Object.assign(Object.assign({}, attrs), { style: Object.assign({ width: size ? size : undefined }, attrs.style) }) }));
     }, [JSON.stringify(inputProps, (key, value) => isValidElement(value) ? undefined : value), error]);
     return _jsx(Fragment, { children: dom }, input.field);
 };
@@ -3577,5 +3584,6 @@ export const Plate = ({ type, value, onChange, label }) => {
         onChange(newValue);
     };
     return (_jsxs("div", { className: "aio-input-plate", children: [!!label && _jsx("div", { className: "aio-input-plate-label", children: label }), type === 'car' &&
-                _jsxs(_Fragment, { children: [_jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[0], onChange: (v) => change(v, 0) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AISelect, { options: ['الف', 'ب', 'ت', 'ج', 'ح', 'د', 'ر', 'ز', 'ژ', 'س', 'ص', 'ط', 'ع', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه'], option: { text: 'option', value: 'option' }, value: value[1], onChange: (v) => change(v, 1) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 3, filter: ['number'], value: value[2], onChange: (v) => change(v, 2) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[3], onChange: (v) => change(v, 3) }) })] })] }));
+                _jsxs(_Fragment, { children: [_jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[0], onChange: (v) => change(v, 0) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AISelect, { options: ['الف', 'ب', 'ت', 'ج', 'ح', 'د', 'ر', 'ز', 'ژ', 'س', 'ص', 'ط', 'ع', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه'], option: { text: 'option', value: 'option' }, value: value[1], onChange: (v) => change(v, 1) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 3, filter: ['number'], value: value[2], onChange: (v) => change(v, 2) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[3], onChange: (v) => change(v, 3) }) })] }), type === 'motor_cycle' &&
+                _jsxs(_Fragment, { children: [_jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[0], onChange: (v) => change(v, 0) }) }), _jsx("div", { className: "aio-input-plate-item", children: _jsx(AIText, { maxLength: 2, filter: ['number'], value: value[1], onChange: (v) => change(v, 3) }) })] })] }, type));
 };

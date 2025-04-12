@@ -2,9 +2,9 @@ import { createContext, createRef, FC, Fragment, ReactNode, useContext, useEffec
 import AIOInput from "../aio-input";
 import * as UT from './../../npm/aio-utils';
 import usePopup, { I_usePopup } from "../aio-popup";
-import "./repo/index.css"
 import AIODate from "../aio-date";
 import { Filterbar, I_filter, I_filter_item, I_filter_saved_item, I_paging, I_sort, I_sortHook, usePaging, useSort } from "../aio-component-utils";
+import "./repo/index.css"
 type I_rows<T> = { rows: T[], searchedRows: T[], sortedRows: T[], pagedRows: T[] }
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
@@ -69,7 +69,8 @@ export type I_table<T> = {
     attrs?: any,
     placeholder?: ReactNode,
     filter?: I_table_filter,
-    gap?: [number, number]
+    gap?: [number, number],
+    striped?:[string,string]
 }
 type I_context<T> = {
     popup: I_usePopup,
@@ -93,9 +94,9 @@ type I_changeCell<T> = (cellDetail: I_cellDetail<T>, cellNewValue: any) => void;
 type I_tableHook<T> = {
     getCellValue: (cellDetail: I_cellDetail<T>, cellValue: any, def?: any) => any;
     getColValue: (column: I_table_column<T>, field: keyof I_table_column<T>, def?: any) => any;
-    getCellAttrs: (cellDetail: I_cellDetail<T>, cellValue: any) => { [attr: string]: any };
+    getCellAttrs: (cellDetail: I_cellDetail<T>, cellValue: any,isOdd:boolean,striped?:I_table<any>["striped"]) => { [attr: string]: any };
     getTitleAttrs: (column: I_table_column<T>) => any;
-    getRowAttrs: (rowDetail: I_rowDetail<T>) => { [attr: string]: any };
+    getRowAttrs: (rowDetail: I_rowDetail<T>,isOdd:boolean) => { [attr: string]: any };
 }
 const Context = createContext<I_context<any>>({} as any);
 const Provider = <T,>(p: { value: I_context<T>, children: ReactNode }) => <Context.Provider value={p.value}>{p.children}</Context.Provider>
@@ -381,6 +382,7 @@ const TableRow = <T,>(props: { rowDetail: I_rowDetail<T> }) => {
     const { row, rowIndex } = rowDetail;
     const rowId = (row as any)._id
     let { remove, rootProps, columns, tableHook, getIcon, isDate } = useProvider();
+    const isOdd = rowIndex % 2 === 0
     function getCells() {
         return columns.map((column, i) => {
             const key = rowId + ' ' + column._id;
@@ -397,23 +399,23 @@ const TableRow = <T,>(props: { rowDetail: I_rowDetail<T> }) => {
                 isDate: isDate(column)
             }
             const cellValue = tableHook.getCellValue(cellDetail, column.value)
-            return (<TableCell<T> key={key} cellDetail={cellDetail} cellValue={cellValue} />)
+            return (<TableCell<T> key={key} cellDetail={cellDetail} cellValue={cellValue} isOdd={isOdd}/>)
         })
     }
     let { onRemove } = rootProps;
     return (
         <>
-            <div key={rowId} {...tableHook.getRowAttrs(props.rowDetail)}>
+            <div key={rowId} {...tableHook.getRowAttrs(props.rowDetail,isOdd)}>
                 {getCells()}
                 {onRemove ? <button className='aio-table-remove' onClick={() => remove(row, rowIndex)}>{getIcon('mdiClose', 0.8)}</button> : null}
             </div>
         </>
     )
 }
-const TableCell = <T,>(props: { cellDetail: I_cellDetail<T>, cellValue: any }) => {
-    const { cellDetail, cellValue } = props;
+const TableCell = <T,>(props: { cellDetail: I_cellDetail<T>, cellValue: any,isOdd:boolean }) => {
+    const { cellDetail, cellValue,isOdd } = props;
     const { row, column, isLast } = cellDetail;
-    const { tableHook, getTimeText } = useProvider();
+    const { tableHook, getTimeText,rootProps } = useProvider();
     const { template, before, after, subtext } = column;
     const rowId = (row as any)._id;
     const colId = column._id;
@@ -422,10 +424,9 @@ const TableCell = <T,>(props: { cellDetail: I_cellDetail<T>, cellValue: any }) =
     const beforeValue = tableHook.getCellValue(cellDetail, before, undefined);
     const afterValue = tableHook.getCellValue(cellDetail, after, undefined);
     const subtextValue = tableHook.getCellValue(cellDetail, subtext, undefined);
-
     return (
         <Fragment key={rowId + ' ' + colId}>
-            <div {...tableHook.getCellAttrs(props.cellDetail, props.cellValue)} >
+            <div {...tableHook.getCellAttrs(props.cellDetail, props.cellValue,isOdd,rootProps.striped)}>
                 {beforeValue !== undefined && <div className="aio-table-cell-before">{beforeValue}</div>}
                 <div className={`aio-table-cell-value${subtext !== undefined ? ' has-subtext' : ''}`} data-subtext={subtextValue}>
                     {templateValue !== undefined && templateValue}
@@ -474,15 +475,16 @@ const useTable = <T,>(getProps: () => I_table<T>, getPaging: () => I_table_pagin
         else { result = colValue }
         return result === undefined ? def : result
     }
-    const getCellAttrs: I_tableHook<T>["getCellAttrs"] = (cellDetail, cellValue) => {
+    const getCellAttrs: I_tableHook<T>["getCellAttrs"] = (cellDetail, cellValue,isOdd,striped) => {
         const { column } = cellDetail;
         const attrs = getCellValue(cellDetail, column.attrs, {});
         const justify = getColValue(column, 'justify', false);
         const width = getColValue(column, 'width');
         const minWidth = getColValue(column, 'minWidth');
         const className = `aio-table-cell` + (justify ? ` aio-table-cell-justify` : '')
-        const style = { width, minWidth, flex: width ? undefined : 1 }
-        return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof cellValue === 'string' ? cellValue : undefined } });
+        const style:any = { width, minWidth, flex: width ? undefined : 1 }
+        if(striped){style.background = isOdd?striped[0]:striped[1]}
+        return UT.AddToAttrs(attrs, { className:[className,isOdd?'aio-table-cell-odd':'aio-table-cell-even'], style, attrs: { title: typeof cellValue === 'string' ? cellValue : undefined } });
     }
     const getTitleAttrs: I_tableHook<T>["getTitleAttrs"] = (column) => {
         const attrs = getColValue(column, 'titleAttrs', {});
@@ -493,11 +495,11 @@ const useTable = <T,>(getProps: () => I_table<T>, getPaging: () => I_table_pagin
         const style = { width, minWidth, flex: width ? undefined : 1 }
         return UT.AddToAttrs(attrs, { className, style, attrs: { title: typeof column.title === 'string' ? column.title : undefined } });
     }
-    const getRowAttrs: I_tableHook<T>["getRowAttrs"] = (rowDetail: I_rowDetail<T>) => {
+    const getRowAttrs: I_tableHook<T>["getRowAttrs"] = (rowDetail: I_rowDetail<T>,isOdd:boolean) => {
         const { rowOption = {}, onSwap, value, gap = [0, 1] } = getProps();
         const { attrs: rowAttrs } = rowOption;
         const attrs = rowAttrs ? rowAttrs(rowDetail) : {};
-        let obj = UT.AddToAttrs(attrs, { className: 'aio-table-row', style: { gap: gap[0] } })
+        let obj = UT.AddToAttrs(attrs, { className: ['aio-table-row',isOdd?'aio-table-row-odd':'aio-table-row-even'], style: { gap: gap[0] } })
         if (onSwap) {
             obj = {
                 ...obj,

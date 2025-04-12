@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import "./index.css";
-import { I_filter, I_filter_item, I_filter_saved_item, I_paging, I_sort } from "../../aio-component-utils";
+import { I_filter, I_filter_item, I_filter_saved_item, I_paging, I_sort } from "aio-component-utils";
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R;
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
 type I_rowDetail<T> = {
@@ -93,6 +93,7 @@ export type I_table<T> = {
     placeholder?: ReactNode;
     filter?: I_table_filter;
     gap?: [number, number];
+    striped?: [string, string];
 };
 declare const AIOTable: <T>(props: I_table<T>) => JSX.Element;
 export default AIOTable;

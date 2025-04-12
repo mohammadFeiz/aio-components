@@ -523,6 +523,7 @@ type I_useFormProps<T> = {
     getLayout?: (context: I_formContext<T>) => I_formNode<T>;
     debug?: boolean;
     isRequired?: I_isRequired<T>;
+    showErrors?: boolean;
 };
 export type I_formField<T> = NestedKeys<T> | 'none';
 type NestedKeys<T> = {
@@ -587,7 +588,7 @@ type I_errorHook<T> = {
     setErrorByField: (field: any, error: string | undefined) => void;
     hasError: () => boolean;
     getErrorByInput: (input: I_formInput<T>, value: any) => string | undefined;
-    getErrorsList: () => string[];
+    getErrorsList: (changed?: boolean) => string[];
     resetErrors: () => void;
 };
 type I_nodeHook = {
