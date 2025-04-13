@@ -3583,10 +3583,10 @@ export const Plate: FC<{ type: 'motor_cycle' | 'car', value: string[], onChange:
                 type === 'motor_cycle' &&
                 <>
                     <div className="aio-input-plate-item">
-                        <AIText maxLength={2} filter={['number']} value={value[0]} onChange={(v) => change(v, 0)} />
+                        <AIText maxLength={3} filter={['number']} value={value[0]} onChange={(v) => change(v, 0)} />
                     </div>
                     <div className="aio-input-plate-item">
-                        <AIText maxLength={2} filter={['number']} value={value[1]} onChange={(v) => change(v, 3)} />
+                        <AIText maxLength={5} filter={['number']} value={value[1]} onChange={(v) => change(v, 3)} />
                     </div>
                 </>
             }
