@@ -1169,3 +1169,33 @@ export const useSort = <T,>(p: { sorts: I_sort<any>[], rows: any[], onChangeRows
     }
     return { sorts, setSorts, renderSortButton, getSortedRows, changeSort, changeSorts }
 }
+
+
+export function DragList<T>({data,onChange,renderItem,listAttrs}:{
+    data: T[];listAttrs?:any,onChange: (newList: T[]) => void;
+    renderItem: (item: T, index: number) => { inner: React.ReactNode; attrs: any };
+}) {
+    const [internalData, setInternalData] = useState(data);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { getDragAttrs, getDropAttrs } = UT.useDrag(
+        (drag, drop, reOrder) => {
+            const fromIndex = drag.index;
+            const toIndex = drop.index;
+            const updated = reOrder(internalData, fromIndex, toIndex);
+            setInternalData(updated);
+            onChange(updated);
+        }
+    );
+    return (
+        <div {...listAttrs} ref={containerRef}>
+            {internalData.map((item, index) => {
+                const dragAttrs = getDragAttrs({ index });
+                const dropAttrs = getDropAttrs({ index });
+                const { inner, attrs } = renderItem(item, index);
+                const Attrs = { ...attrs, ...dragAttrs, ...dropAttrs };
+                return (<div key={index} {...Attrs}>{inner}</div>);
+            })}
+        </div>
+    );
+}
+

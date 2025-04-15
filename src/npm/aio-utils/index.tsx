@@ -1,5 +1,5 @@
 import * as ReactDOMServer from 'react-dom/server';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useRef } from 'react';
 import MockAdapter from 'axios-mock-adapter';
 import Axios from 'axios';
 import $ from 'jquery';
@@ -74,8 +74,8 @@ export function ParseString(str: string): any {
     }
     catch { return str }
 }
-type I_reOrder = (data: any[], fromIndex: number, toIndex: number)=>any[]
-export const ReOrder:I_reOrder = (data, fromIndex, toIndex) => {
+type I_reOrder = (data: any[], fromIndex: number, toIndex: number) => any[]
+export const ReOrder: I_reOrder = (data, fromIndex, toIndex) => {
     let from = data[fromIndex];
     let newData = data.filter((o, i) => i !== fromIndex);
     newData.splice(toIndex, 0, from)
@@ -106,34 +106,53 @@ export class DragClass {
         }
     }
 }
-export type I_useDrag = {reOrder:I_reOrder,getDragAttrs:(dragData:any)=>any,getDropAttrs:(dropData:any)=>any}
-export const useDrag = (callback: (dragData: any, dropData: any,reOrder:(data:any, fromIndex:number, toIndex:number)=>any) => void):I_useDrag=>{
-    const dataRef = useRef<any>()
-    const over = (e:any)=>e.preventDefault()
-    const reOrder = (data:any, fromIndex:number, toIndex:number) => ReOrder(data, fromIndex, toIndex)
-    const getDragAttrs = (dragData:any) => {
-        return {
-            onDragStart: () => dataRef.current = dragData,
-            onDragOver: over,
-            draggable: true
+export type I_useDrag = ReturnType<typeof useDrag>
+export const useDrag = (
+    callback: (dragData: any, dropData: any, reOrder: (data: any[], fromIndex: number, toIndex: number) => any[]) => void
+): {
+    reOrder: (data: any[], fromIndex: number, toIndex: number) => any[];
+    getDragAttrs: (dragData: any) => any;
+    getDropAttrs: (dropData: any) => any;
+} => {
+    const dataRef = useRef<any>();
+    const over = (e: any) => e.preventDefault();
+    const isTouch = IsTouch()
+    const reOrder = (data: any[], fromIndex: number, toIndex: number) => {
+        const updated = [...data];
+        const [moved] = updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, moved);
+        return updated;
+    };
+    const getDragAttrsTouch = (dragData: any) => ({
+        draggble:false,
+        onTouchStart:(e:any)=>{
+            dataRef.current = dragData
         }
-    }
-    const getDropAttrs = (dropData:any) => {
-        return {
-            onDragOver: (e: any) => e.preventDefault(),
-            onDrop: (e: any) => callback(dataRef.current, dropData,reOrder)
+    });
+    const getDragAttrs = (dragData: any) => (isTouch?getDragAttrsTouch(dragData):{
+        onDragStart: () => (dataRef.current = dragData),
+        onDragOver: over, draggable: true,
+    });
+    const getDropAttrsTouch = (dropData: any) => ({
+        onTouchEnd:(e:any)=>{
+            callback(dataRef.current, dropData.index, reOrder)
         }
-    } 
-    return {reOrder,getDragAttrs,getDropAttrs}
-}
+    });
 
+    const getDropAttrs = (dropData: any) => (isTouch?getDropAttrsTouch(dropData):{
+        onDragOver: over,
+        onDrop: () => callback(dataRef.current, dropData, reOrder),
+        'data-drop': 'true' // برای تشخیص منطقه دراپ
+    });
+    return { reOrder, getDragAttrs, getDropAttrs };
+};
 
 // export type I_useDrag = {
 //     reOrder: (data: any[], fromIndex: number, toIndex: number) => any[],
 //     getDragAttrs: (dragData: any) => any,
 //     getDropAttrs: (dropData: any) => any
 //   }
-  
+
 //   export const useDrag = (
 //     callback: (
 //       dragData: any,
@@ -141,47 +160,47 @@ export const useDrag = (callback: (dragData: any, dropData: any,reOrder:(data:an
 //       reOrder: (data: any[], fromIndex: number, toIndex: number) => any[]
 //     ) => void
 //   ): I_useDrag => {
-  
+
 //     const dragDataRef = useRef<any>(null)
-  
+
 //     const reOrder = (data: any[], fromIndex: number, toIndex: number): any[] => {
 //       const result = [...data]
 //       const [moved] = result.splice(fromIndex, 1)
 //       result.splice(toIndex, 0, moved)
 //       return result
 //     }
-  
+
 //     const handleTouchStart = (data: any) => () => {
 //       dragDataRef.current = data
 //     }
-  
+
 //     const handleTouchEnd = (dropData: any) => (e: TouchEvent) => {
 //       if (!dragDataRef.current) return
-  
+
 //       // دریافت موقعیت انگشت
 //       const touch = e.changedTouches[0]
 //       const target = document.elementFromPoint(touch.clientX, touch.clientY)
 //       if (target?.closest(`[data-drop="true"]`)) {
 //         callback(dragDataRef.current, dropData, reOrder)
 //       }
-  
+
 //       dragDataRef.current = null
 //     }
-  
+
 //     const getDragAttrs = (dragData: any) => ({
 //       draggable: true,
 //       onDragStart: () => (dragDataRef.current = dragData),
 //       onDragOver: (e: DragEvent) => e.preventDefault(),
 //       onTouchStart: handleTouchStart(dragData),
 //     })
-  
+
 //     const getDropAttrs = (dropData: any) => ({
 //       onDragOver: (e: DragEvent) => e.preventDefault(),
 //       onDrop: () => callback(dragDataRef.current, dropData, reOrder),
 //       onTouchEnd: handleTouchEnd(dropData),
 //       'data-drop': 'true' // برای تشخیص منطقه دراپ
 //     })
-  
+
 //     return { reOrder, getDragAttrs, getDropAttrs }
 //   }
 
@@ -438,25 +457,25 @@ export function getEventAttrs(eventType: 'onMouseDown' | 'onMouseMove' | 'onMous
 function toRadians(degree: number) {
     return degree * (Math.PI / 180);
 }
-export function classListToString(classes:any[]){
-    let list:string[] = [];
-    const getClasses = (cls:any):string[]=>{
-        if(Array.isArray(cls)){
-            return cls.filter((o)=>!!o && typeof o === 'string')
+export function classListToString(classes: any[]) {
+    let list: string[] = [];
+    const getClasses = (cls: any): string[] => {
+        if (Array.isArray(cls)) {
+            return cls.filter((o) => !!o && typeof o === 'string')
         }
-        if(typeof cls === 'string'){return cls.split(' ')}
+        if (typeof cls === 'string') { return cls.split(' ') }
         return []
     }
-    for(let i = 0; i < classes.length; i++){
-        const cls = classes[i];        
-        list = [...list,...getClasses(cls)]
+    for (let i = 0; i < classes.length; i++) {
+        const cls = classes[i];
+        list = [...list, ...getClasses(cls)]
     }
-    return list.length?list.join(' '):''
+    return list.length ? list.join(' ') : ''
 }
 export function AddToAttrs(attrs: any, p: any) {
     attrs = attrs || {};
     let { style } = p;
-    const className = classListToString([attrs.className,p.className])
+    const className = classListToString([attrs.className, p.className])
     let newStyle = { ...attrs.style, ...style };
     return { ...attrs, className, style: newStyle, ...p.attrs }
 }
@@ -1322,10 +1341,10 @@ class GetSvg {
     mdiDelete = (color?: string) => (<><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" style={this.getStyle(color)}></path></>)
     mdiCircleSmall = (color?: string) => (<><path d="M12,10A2,2 0 0,0 10,12C10,13.11 10.9,14 12,14C13.11,14 14,13.11 14,12A2,2 0 0,0 12,10Z" style={this.getStyle(color)}></path></>)
     mdiMicrophoneOutline = (color?: string) => (<><path d="M17.3,11C17.3,14 14.76,16.1 12,16.1C9.24,16.1 6.7,14 6.7,11H5C5,14.41 7.72,17.23 11,17.72V21H13V17.72C16.28,17.23 19,14.41 19,11M10.8,4.9C10.8,4.24 11.34,3.7 12,3.7C12.66,3.7 13.2,4.24 13.2,4.9L13.19,11.1C13.19,11.76 12.66,12.3 12,12.3C11.34,12.3 10.8,11.76 10.8,11.1M12,14A3,3 0 0,0 15,11V5A3,3 0 0,0 12,2A3,3 0 0,0 9,5V11A3,3 0 0,0 12,14Z" style={this.getStyle(color)}></path></>)
-    mdiFilter = (color?:string)=>(<><path d="M14,12V19.88C14.04,20.18 13.94,20.5 13.71,20.71C13.32,21.1 12.69,21.1 12.3,20.71L10.29,18.7C10.06,18.47 9.96,18.16 10,17.87V12H9.97L4.21,4.62C3.87,4.19 3.95,3.56 4.38,3.22C4.57,3.08 4.78,3 5,3V3H19V3C19.22,3 19.43,3.08 19.62,3.22C20.05,3.56 20.13,4.19 19.79,4.62L14.03,12H14Z" style={this.getStyle(color)}></path></>)
-    mdiSaveContent = (color?:string)=>(<><path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" style={this.getStyle(color)}></path></>)
-    mdiListBox = (color?:string)=>(<><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3M7 7H9V9H7V7M7 11H9V13H7V11M7 15H9V17H7V15M17 17H11V15H17V17M17 13H11V11H17V13M17 9H11V7H17V9Z" style={this.getStyle(color)}></path></>)
-    mdiCheckBold = (color?:string)=>(<><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" style={this.getStyle(color)}></path></>)
+    mdiFilter = (color?: string) => (<><path d="M14,12V19.88C14.04,20.18 13.94,20.5 13.71,20.71C13.32,21.1 12.69,21.1 12.3,20.71L10.29,18.7C10.06,18.47 9.96,18.16 10,17.87V12H9.97L4.21,4.62C3.87,4.19 3.95,3.56 4.38,3.22C4.57,3.08 4.78,3 5,3V3H19V3C19.22,3 19.43,3.08 19.62,3.22C20.05,3.56 20.13,4.19 19.79,4.62L14.03,12H14Z" style={this.getStyle(color)}></path></>)
+    mdiSaveContent = (color?: string) => (<><path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" style={this.getStyle(color)}></path></>)
+    mdiListBox = (color?: string) => (<><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3M7 7H9V9H7V7M7 11H9V13H7V11M7 15H9V17H7V15M17 17H11V15H17V17M17 13H11V11H17V13M17 9H11V7H17V9Z" style={this.getStyle(color)}></path></>)
+    mdiCheckBold = (color?: string) => (<><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" style={this.getStyle(color)}></path></>)
 }
 export { GetSvg }
 
@@ -1397,8 +1416,8 @@ export function FakeName(p: { type: 'firstname' | 'lastname' | 'fullname', gende
         const index = GetRandomNumber(0, firstnames.length - 1);
         return firstnames[index];
     }
-    const getlastname = () => { 
-        const lastnames = names[`lastname_${p.lang}`] 
+    const getlastname = () => {
+        const lastnames = names[`lastname_${p.lang}`]
         const index = GetRandomNumber(0, lastnames.length - 1);
         return lastnames[index]
     }
@@ -2250,8 +2269,8 @@ export function FixUrl(base_url: string, path: string) {
     if (path[0] === '/') { path = path.slice(1, path.length) }
     return `${base_url}/${path}`
 }
-export function IsJustNumber(str:string){return /^\d+$/.test(str)}
-export function IsValidIrNationalCode(code: string):boolean {
+export function IsJustNumber(str: string) { return /^\d+$/.test(str) }
+export function IsValidIrNationalCode(code: string): boolean {
     if (!/^\d{10}$/.test(code)) return false;
 
     const check = parseInt(code[9], 10);
@@ -2268,16 +2287,16 @@ export function IsValidEmail(value: string): boolean {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return !!emailRegex.test(value)
 }
-export function ValidateIrMobile(p:{value: string,fa?:boolean,label:string}): string | undefined {
-    if (p.value.indexOf('09') !== 0) { return p.fa?`${p.label} باید با 09 شروع شود`:`${p.label} should start with 09` }
-    if (p.value.length < 11) { return p.fa?`${p.label} باید 11 رقم باشد`:`${p.label} should be 11 character` } 
-    if(!IsJustNumber(p.value)){return p.fa?`${p.label} باید فقط شامل عدد باشد`:`${p.label} should be contain just numbers`}
+export function ValidateIrMobile(p: { value: string, fa?: boolean, label: string }): string | undefined {
+    if (p.value.indexOf('09') !== 0) { return p.fa ? `${p.label} باید با 09 شروع شود` : `${p.label} should start with 09` }
+    if (p.value.length < 11) { return p.fa ? `${p.label} باید 11 رقم باشد` : `${p.label} should be 11 character` }
+    if (!IsJustNumber(p.value)) { return p.fa ? `${p.label} باید فقط شامل عدد باشد` : `${p.label} should be contain just numbers` }
 }
 
-export function AddQueryParamsToUrl(url:string, params:{[key:string]:any}, prefix = '') {
-    const queryParts:string[] = [];
+export function AddQueryParamsToUrl(url: string, params: { [key: string]: any }, prefix = '') {
+    const queryParts: string[] = [];
 
-    function serialize(obj:any, parentKey = '') {
+    function serialize(obj: any, parentKey = '') {
         for (const key in obj) {
             if (obj.hasOwnProperty(key)) {
                 const fullKey = parentKey ? `${parentKey}.${key}` : key;
@@ -2304,36 +2323,36 @@ export function AddQueryParamsToUrl(url:string, params:{[key:string]:any}, prefi
 type Coordinates = { lat: number; lng: number };
 
 export async function getUserLocation(): Promise<Coordinates | null> {
-  try {
-    // مرحله ۱: چک کن API ها موجود هستن
-    if (!navigator.permissions || !navigator.geolocation) {
-      console.warn("Geolocation or Permissions API not supported.");
-      return null;
+    try {
+        // مرحله ۱: چک کن API ها موجود هستن
+        if (!navigator.permissions || !navigator.geolocation) {
+            console.warn("Geolocation or Permissions API not supported.");
+            return null;
+        }
+
+        // مرحله ۲: درخواست اجازه برای دسترسی به موقعیت
+        const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+
+        if (permissionStatus.state === "denied") {
+            console.warn("Location permission denied by user.");
+            return null;
+        }
+
+        // مرحله ۳: گرفتن لوکیشن
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        });
+
+        return {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+        };
+    } catch (err) {
+        console.error("Failed to get location:", err);
+        return null;
     }
-
-    // مرحله ۲: درخواست اجازه برای دسترسی به موقعیت
-    const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
-
-    if (permissionStatus.state === "denied") {
-      console.warn("Location permission denied by user.");
-      return null;
-    }
-
-    // مرحله ۳: گرفتن لوکیشن
-    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      });
-    });
-
-    return {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude
-    };
-  } catch (err) {
-    console.error("Failed to get location:", err);
-    return null;
-  }
 }

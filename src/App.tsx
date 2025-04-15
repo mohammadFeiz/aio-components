@@ -32,6 +32,7 @@ import Grid from './documents/data-grid'
 import Kits from "./documents/kits/kit1/index.tsx";
 import NovaChart from './documents/novachart';
 import DOC_AIOTable from './documents/aio-table';
+import DragAndDrop from "./documents/drag-drop/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -62,6 +63,7 @@ export default function AIOComponents(){
     'Grid':Grid,
     'NovaChart':NovaChart,
     'Freelancer':Freelancer,
+    'Drag And Deop':DragAndDrop,
     'Kits':Kits,
     'tree-search':DOC_TreeSearch
   })
