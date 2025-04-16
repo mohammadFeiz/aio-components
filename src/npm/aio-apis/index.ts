@@ -1,9 +1,10 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
-import { Stall, Storage,AddQueryParamsToUrl } from './../../npm/aio-utils';
+import { Stall, Storage, AddQueryParamsToUrl } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
+import { enable } from 'agenda/dist/job/enable';
 
 export type AA_api = {
     description: string,
@@ -20,7 +21,13 @@ export type AA_api = {
     showError?: boolean,
     loader?: string, loadingParent?: string,
     retries?: number[],
-    queryParams?:{[key:string]:any}
+    queryParams?: { [key: string]: any },
+    lastSuccess?: {
+        enable:boolean,
+        expiredIn?: number,
+        saveCondition?: (p:{response: any}) => boolean,
+        loadIn?: 'unsuccess' | 'always',
+    }
 }
 type I_cachedApi<T> = {
     api: AA_api,
@@ -34,17 +41,18 @@ export default class AIOApis {
         handleErrorMessage: (err: any, api: AA_api) => string,
         headers?: any,
         lang?: 'en' | 'fa',
-        onBeforeRequest?:(api:AA_api)=>Promise<{api?:AA_api,result?:any}>,
-        onAfterRequest?:(api:AA_api,result:{success:boolean,response:any,errorMessage:string})=>{success:boolean,response:any,errorMessage:string} | undefined,
+        onBeforeRequest?: (api: AA_api) => Promise<{ api?: AA_api, result?: any }>,
+        onAfterRequest?: (api: AA_api, result: { success: boolean, response: any, errorMessage: string }) => { success: boolean, response: any, errorMessage: string } | undefined,
     };
     token: string;
+    lsc: LastSuccess;
     currentError: string = '';
     private cache: Cache;
     getCachedValue: Cache["getCachedValue"]
     fetchCachedValue: Cache["fetchCachedValue"]
     removeCache: Cache["removeCache"]
     apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
-    private DATE:AIODate = new AIODate()
+    private DATE: AIODate = new AIODate()
     constructor(props: {
         id: string,
         token: string,
@@ -62,8 +70,9 @@ export default class AIOApis {
         this.getCachedValue = this.cache.getCachedValue;
         this.fetchCachedValue = this.cache.fetchCachedValue;
         this.removeCache = this.cache.removeCache;
+        this.lsc = new LastSuccess(props.id);
     }
-    getNow = (jalali?:boolean):number[]=>{
+    getNow = (jalali?: boolean): number[] => {
         return this.DATE.getToday(jalali)
     }
     setToken = (token: string) => {
@@ -94,9 +103,9 @@ export default class AIOApis {
             return { errorMessage, success: false, response: false }
         }
         try {
-            let finalUrl:string;
-            if(api.queryParams){finalUrl = AddQueryParamsToUrl(api.url,api.queryParams)}
-            else {finalUrl = api.url}
+            let finalUrl: string;
+            if (api.queryParams) { finalUrl = AddQueryParamsToUrl(api.url, api.queryParams) }
+            else { finalUrl = api.url }
             let response = await Axios({ method: api.method, url: finalUrl, data: api.body, headers })
             try { return { success: true, response, errorMessage: '' } }
             catch (err: any) { return { success: false, response, errorMessage: err.message } }
@@ -154,22 +163,29 @@ export default class AIOApis {
     };
     requestFn = async <T>(api: AA_api, isRetry?: boolean): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         if (this.apisThatAreInLoadingTime[api.name]) { return { success: false, response: {} as any, errorMessage: 'request is in loading' } }
+        const lasSuccessRes = this.lsc.get(api, 'always')
+        if (lasSuccessRes !== null) { return { success: true, response: lasSuccessRes } }
         this.setToken(api.token || this.props.token)
         this.handleMock(api)
         if (api.cache) {
             let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
-            if (cachedValue !== undefined) { return {success:true,response:cachedValue} }
+            if (cachedValue !== undefined) { return { success: true, response: cachedValue } }
         }
         else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
-        if(this.props.onBeforeRequest){
-            const {api:newApi,result} = await this.props.onBeforeRequest(api);
-            if(result){return result}
-            if(newApi){api = newApi}
+        if (this.props.onBeforeRequest) {
+            const { api: newApi, result } = await this.props.onBeforeRequest(api);
+            if (result) { return result }
+            if (newApi) { api = newApi }
         }
         let { errorMessage = '', success, response } = await this.responseToResult(api);
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if (!success) {
+            const lasSuccessRes = this.lsc.get(api, 'unsuccess')
+            if (lasSuccessRes !== null) { 
+                console.log(`api ${api.name} provide last success response`)
+                return { success: true, response: lasSuccessRes } 
+            }
             let message: string | false = errorMessage;
             if (api.showError === false) { message = false }
             if (typeof message === 'string') {
@@ -182,12 +198,15 @@ export default class AIOApis {
                 }
             }
         }
-        else if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
-        if(this.props.onAfterRequest){
-            const res = await this.props.onAfterRequest(api,{ response, success, errorMessage });
-            if(res){return res}
+        else {
+            this.lsc.set(api, response)
+            if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
         }
-        
+        if (this.props.onAfterRequest) {
+            const res = await this.props.onAfterRequest(api, { response, success, errorMessage });
+            if (res) { return res }
+        }
+
         return { response, success, errorMessage };
     };
     retries = async <T>(api: AA_api, times: number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
@@ -213,6 +232,34 @@ export default class AIOApis {
     request = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
         if (api.retries) { return await this.retries(api, api.retries) }
         else { return await this.requestFn<T>(api) }
+    }
+}
+class LastSuccess {
+    private storage: Storage;
+    constructor(id: string) {
+        this.storage = new Storage(id + '-last-success')
+    }
+    private isEnable = (api:AA_api)=>!!api.lastSuccess && !!api.lastSuccess.enable
+    private getFromStroage = (api: AA_api) => {
+        const {expiredIn} = api.lastSuccess || {}
+        const value = this.storage.load(api.name, null,expiredIn)
+        return value === undefined?null:value
+    }
+    get = (api:AA_api,type:'always' | 'unsuccess') => {
+        const {enable, expiredIn,loadIn = 'unsuccess'} = api.lastSuccess || {}
+        if(!this.isEnable(api)) {return null}
+        if(type === 'always' && loadIn === 'always'){return this.getFromStroage(api)}
+        if(type === 'unsuccess' && loadIn === 'unsuccess'){return this.getFromStroage(api)}
+        return null
+    }
+    set = (api: AA_api, response:any) => {
+        if(!this.isEnable(api)) {return}
+        if(api.lastSuccess?.saveCondition){
+            const {saveCondition} = api.lastSuccess
+            const cond = saveCondition({response})
+            if(!cond) {return}
+        }
+        this.storage.save(api.name, response,api.lastSuccess?.expiredIn)
     }
 }
 export type I_mock = {
@@ -261,7 +308,7 @@ class Cache {
     }
 }
 export const CreateInstance = <T extends Record<string, any>>(inst: T): T => {
-    
+
     let res = useRef<any>(null)
     if (res.current === null) { res.current = inst }
     return res.current
