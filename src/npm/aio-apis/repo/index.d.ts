@@ -21,6 +21,17 @@ export type AA_api = {
     loader?: string;
     loadingParent?: string;
     retries?: number[];
+    queryParams?: {
+        [key: string]: any;
+    };
+    lastSuccess?: {
+        enable: boolean;
+        expiredIn?: number;
+        saveCondition?: (p: {
+            response: any;
+        }) => boolean;
+        loadIn?: 'unsuccess' | 'always';
+    };
 };
 type I_cachedApi<T> = {
     api: AA_api;
@@ -31,7 +42,7 @@ export default class AIOApis {
         id: string;
         token: string;
         loader?: string;
-        handleErrorMessage: (err: any, api: AA_api) => string;
+        handleErrorMessage: (err: any, api: AA_api) => string | false;
         headers?: any;
         lang?: 'en' | 'fa';
         onBeforeRequest?: (api: AA_api) => Promise<{
@@ -49,6 +60,7 @@ export default class AIOApis {
         } | undefined;
     };
     token: string;
+    lsc: LastSuccess;
     currentError: string;
     private cache;
     getCachedValue: Cache["getCachedValue"];
@@ -74,9 +86,9 @@ export default class AIOApis {
         text: string;
         time?: number;
     }) => void;
-    getUrlQueryParam: (params?: {
+    getUrlQueryParam: (params?: string | {
         [key: string]: string;
-    } | string) => string;
+    }) => string;
     private responseToResult;
     private loading;
     private handleMock;
@@ -96,6 +108,14 @@ export default class AIOApis {
         success: boolean;
         response: T;
     }>;
+}
+declare class LastSuccess {
+    private storage;
+    constructor(id: string);
+    private isEnable;
+    private getFromStroage;
+    get: (api: AA_api, type: 'always' | 'unsuccess') => any;
+    set: (api: AA_api, response: any) => void;
 }
 export type I_mock = {
     url: string;

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from 'aio-popup';
-import { Stall, Storage } from 'aio-utils';
+import { Stall, Storage, AddQueryParamsToUrl } from 'aio-utils';
 import AIODate from 'aio-date';
 import { useRef } from 'react';
 export default class AIOApis {
@@ -36,6 +36,7 @@ export default class AIOApis {
             }
             else if (typeof params === 'object' && params !== null) {
                 const queryString = Object.keys(params)
+                    .filter(key => params[key] !== undefined)
                     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
                     .join('&');
                 return `?${queryString}`;
@@ -47,13 +48,20 @@ export default class AIOApis {
             const { handleErrorMessage } = this.props;
             if (!handleErrorMessage) {
                 const errorMessage = `
-                missing onCatch in api: ${api.description},
+                missing onCatch in api: ${api.name},
                 you should set onCatch in api or in props of AIOApis    
             `;
                 return { errorMessage, success: false, response: false };
             }
             try {
-                let response = yield Axios({ method: api.method, url: api.url, data: api.body, headers });
+                let finalUrl;
+                if (api.queryParams) {
+                    finalUrl = AddQueryParamsToUrl(api.url, api.queryParams);
+                }
+                else {
+                    finalUrl = api.url;
+                }
+                let response = yield Axios({ method: api.method, url: finalUrl, data: api.body, headers });
                 try {
                     return { success: true, response, errorMessage: '' };
                 }
@@ -63,10 +71,12 @@ export default class AIOApis {
             }
             catch (response) {
                 try {
-                    return { errorMessage: handleErrorMessage(response, api), success: false, response: false };
+                    let errorMessage = handleErrorMessage(response, api);
+                    errorMessage = errorMessage === false ? '' : errorMessage;
+                    return { errorMessage, success: false, response };
                 }
                 catch (err) {
-                    return { errorMessage: err.message, success: false, response: false };
+                    return { errorMessage: err.message, success: false, response };
                 }
             }
         });
@@ -130,6 +140,10 @@ export default class AIOApis {
             if (this.apisThatAreInLoadingTime[api.name]) {
                 return { success: false, response: {}, errorMessage: 'request is in loading' };
             }
+            const lasSuccessRes = this.lsc.get(api, 'always');
+            if (lasSuccessRes !== null) {
+                return { success: true, response: lasSuccessRes };
+            }
             this.setToken(api.token || this.props.token);
             this.handleMock(api);
             if (api.cache) {
@@ -156,6 +170,11 @@ export default class AIOApis {
             this.loading(api, false);
             this.apisThatAreInLoadingTime[api.name] = false;
             if (!success) {
+                const lasSuccessRes = this.lsc.get(api, 'unsuccess');
+                if (lasSuccessRes !== null) {
+                    console.log(`api ${api.name} provide last success response`);
+                    return { success: true, response: lasSuccessRes };
+                }
                 let message = errorMessage;
                 if (api.showError === false) {
                     message = false;
@@ -170,8 +189,11 @@ export default class AIOApis {
                     }
                 }
             }
-            else if (api.cache) {
-                this.cache.setCache(api.name, api.cache.name, { api, value: response });
+            else {
+                this.lsc.set(api, response);
+                if (api.cache) {
+                    this.cache.setCache(api.name, api.cache.name, { api, value: response });
+                }
             }
             if (this.props.onAfterRequest) {
                 const res = yield this.props.onAfterRequest(api, { response, success, errorMessage });
@@ -221,6 +243,45 @@ export default class AIOApis {
         this.getCachedValue = this.cache.getCachedValue;
         this.fetchCachedValue = this.cache.fetchCachedValue;
         this.removeCache = this.cache.removeCache;
+        this.lsc = new LastSuccess(props.id);
+    }
+}
+class LastSuccess {
+    constructor(id) {
+        this.isEnable = (api) => !!api.lastSuccess && !!api.lastSuccess.enable;
+        this.getFromStroage = (api) => {
+            const { expiredIn } = api.lastSuccess || {};
+            const value = this.storage.load(api.name, null, expiredIn);
+            return value === undefined ? null : value;
+        };
+        this.get = (api, type) => {
+            const { enable, expiredIn, loadIn = 'unsuccess' } = api.lastSuccess || {};
+            if (!this.isEnable(api)) {
+                return null;
+            }
+            if (type === 'always' && loadIn === 'always') {
+                return this.getFromStroage(api);
+            }
+            if (type === 'unsuccess' && loadIn === 'unsuccess') {
+                return this.getFromStroage(api);
+            }
+            return null;
+        };
+        this.set = (api, response) => {
+            var _a, _b;
+            if (!this.isEnable(api)) {
+                return;
+            }
+            if ((_a = api.lastSuccess) === null || _a === void 0 ? void 0 : _a.saveCondition) {
+                const { saveCondition } = api.lastSuccess;
+                const cond = saveCondition({ response });
+                if (!cond) {
+                    return;
+                }
+            }
+            this.storage.save(api.name, response, (_b = api.lastSuccess) === null || _b === void 0 ? void 0 : _b.expiredIn);
+        };
+        this.storage = new Storage(id + '-last-success');
     }
 }
 class Cache {

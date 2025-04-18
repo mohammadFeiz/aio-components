@@ -4,7 +4,6 @@ import { Alert, Loading } from './../../npm/aio-popup';
 import { Stall, Storage, AddQueryParamsToUrl } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
-import { enable } from 'agenda/dist/job/enable';
 
 export type AA_api = {
     description: string,
@@ -38,7 +37,7 @@ export default class AIOApis {
         id: string,
         token: string,
         loader?: string,
-        handleErrorMessage: (err: any, api: AA_api) => string,
+        handleErrorMessage: (err: any, api: AA_api) => string | false,
         headers?: any,
         lang?: 'en' | 'fa',
         onBeforeRequest?: (api: AA_api) => Promise<{ api?: AA_api, result?: any }>,
@@ -82,11 +81,12 @@ export default class AIOApis {
         let { type, title, text, time } = p;
         Alert({ type, title, text, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
-    getUrlQueryParam = (params?: { [key: string]: string } | string) => {
+    getUrlQueryParam = (params?: { [key: string]: string | undefined } | string) => {
         if (typeof params === 'string') { return `/${params}`; }
         else if (typeof params === 'object' && params !== null) {
             const queryString = Object.keys(params)
-                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .filter(key => params[key] !== undefined)
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key] as any)}`)
                 .join('&');
             return `?${queryString}`;
         }
@@ -97,7 +97,7 @@ export default class AIOApis {
         const { handleErrorMessage } = this.props;
         if (!handleErrorMessage) {
             const errorMessage = `
-                missing onCatch in api: ${api.description},
+                missing onCatch in api: ${api.name},
                 you should set onCatch in api or in props of AIOApis    
             `
             return { errorMessage, success: false, response: false }
@@ -111,8 +111,12 @@ export default class AIOApis {
             catch (err: any) { return { success: false, response, errorMessage: err.message } }
         }
         catch (response: any) {
-            try { return { errorMessage: handleErrorMessage(response, api), success: false, response: false } }
-            catch (err: any) { return { errorMessage: err.message, success: false, response: false } }
+            try { 
+                let errorMessage = handleErrorMessage(response, api)
+                errorMessage = errorMessage === false?'':errorMessage
+                return { errorMessage, success: false, response } 
+            }
+            catch (err: any) { return { errorMessage: err.message, success: false, response } }
         }
     }
     private loading = (api: AA_api, state: boolean) => {

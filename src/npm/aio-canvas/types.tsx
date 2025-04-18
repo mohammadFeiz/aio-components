@@ -49,8 +49,14 @@ export type I_canvas_getActions = (p:{
   clientSizeToCanvasSize:I_canvas_clientSizeToCanvasSize
 })=>void
 export type I_canvas_props = {
-  onPan?:((sp:I_canvas_screenPosition)=>void) | boolean,
+  className?:string,
+  onDown?:(event:any,mp:I_mp)=>void
+  onMove?:(event:any,mp:I_mp)=>void
+  onUp?:(event:any,mp:I_mp)=>void
+  onClick?:(event:any,mp:I_mp)=>void
+  onLeave?:(event:any,mp:I_mp)=>void
   screenPosition?:I_canvas_screenPosition,
+  onChangeScreenPosition?:(v:[number,number])=>void,
   getSize?:(width:number,height:number)=>void,
   grid?:[number,number,string],
   zoom?:number,
@@ -59,41 +65,16 @@ export type I_canvas_props = {
   items:I_canvas_item[],
   lineWidth?:number,
   rotateDirection?:'clock'|'clockwise',
-  attrs?:{
-    onMouseMove?:(
-      p:{ 
-        event: any, 
-        mousePosition: I_Canvas_temp['mousePosition'], 
-        item?: I_canvas_item 
-      }
-    )=>void,
-    onClick?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onMouseUp?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onMouseDown?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onTouchStart?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onTouchMove?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onTouchEnd?:(p:{event:any,mousePosition:I_Canvas_temp["mousePosition"]})=>void,
-    onMouseLeave?:(e:any)=>void,
-  },
+  attrs?:any,
   listenToMousePosition?:(mp:I_canvas_mousePosition)=>void
 }
-
+export type I_mp = {x:number, y:number, px:number, py:number,cx:number,cy:number}
 export type I_Canvas_temp = {
-  PI:number,
-  geo:Geo,
   dom:any,
-  width:number,
-  height:number,
-  touch:boolean,
-  getScreenPosition?:()=>[number,number],
-  setScreenPosition?:(sp:I_canvas_screenPosition)=>void,
   timer:number,
-  interval:any,
+  timeout:any,
   axisPosition:[number,number],
-  mousePosition:{x:number, y:number, px:number, py:number,cx:number,cy:number},
-  translate:[number,number],
-  screen:[number,number],
-  ctx:any,
+  mousePosition:I_mp,
   eventMode:any,
   item?:I_canvas_item,
   startOffset:{x: number,y: number,endX: number,endY: number}

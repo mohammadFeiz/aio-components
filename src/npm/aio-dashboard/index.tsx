@@ -333,20 +333,17 @@ const Chart: FC<I_Chart> = (props) => {
             items: canvasItems,
             //grid: [10, 10, '#eee'], 
             screenPosition: ['50%', '50%'],
-
-            attrs: {
-                onMouseMove: ({ mousePosition }) => {
-                    if (chartSizeRef.current === undefined) { return }
-                    const container = $(aio_chart_ref.current)
-                    const { x, y } = mousePosition
-                    const { x: xLabel, y: yLabel } = getLabelByCanvasPosition([x, y])
-                    chartClass.updateTooltip(xLabel, yLabel, container)
-                    chartClass.updateCursor(container, xLabel, yLabel, [x, y])
-                },
-                onMouseLeave: () => {
-                    const container = $(aio_chart_ref.current)
-                    chartClass.removeElements(container)
-                },
+            onMove: (e,mousePosition) => {
+                if (chartSizeRef.current === undefined) { return }
+                const container = $(aio_chart_ref.current)
+                const { x, y } = mousePosition
+                const { x: xLabel, y: yLabel } = getLabelByCanvasPosition([x, y])
+                chartClass.updateTooltip(xLabel, yLabel, container)
+                chartClass.updateCursor(container, xLabel, yLabel, [x, y])
+            },
+            onLeave: () => {
+                const container = $(aio_chart_ref.current)
+                chartClass.removeElements(container)
             }
         })
     }
