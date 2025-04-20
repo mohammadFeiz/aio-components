@@ -1,9 +1,9 @@
 {
     "name": "aio-table",
-    "version": "9.1.3",
+    "version": "9.1.7",
     "description": "all in one table. tree mode , simple mode , tree mode, gantt mode , groupby mode, freeze mode.",
     "main": "index.js",
-    "types":"index.d.ts",
+    "types": "index.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -19,7 +19,7 @@
     "homepage": "https://github.com/mohammadFeiz/aio-table#readme",
     "dependencies": {
         "aio-input": "latest",
-        "aio-utils":"latest"
+        "aio-utils": "latest"
     },
     "devDependencies": {
         "react-scripts": "latest"

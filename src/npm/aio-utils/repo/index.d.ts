@@ -31,12 +31,12 @@ export declare class DragClass {
         callback: (dragData: any, dropData: any) => void;
     });
 }
-export type I_useDrag = {
-    reOrder: I_reOrder;
+export type I_useDrag = ReturnType<typeof useDrag>;
+export declare const useDrag: (callback: (dragData: any, dropData: any, reOrder: (data: any[], fromIndex: number, toIndex: number) => any[]) => void) => {
+    reOrder: (data: any[], fromIndex: number, toIndex: number) => any[];
     getDragAttrs: (dragData: any) => any;
     getDropAttrs: (dropData: any) => any;
 };
-export declare const useDrag: (callback: (dragData: any, dropData: any, reOrder: (data: any, fromIndex: number, toIndex: number) => any) => void) => I_useDrag;
 export declare function GetClient(e: any): {
     x: number;
     y: number;
@@ -533,3 +533,8 @@ export declare function ValidateIrMobile(p: {
 export declare function AddQueryParamsToUrl(url: string, params: {
     [key: string]: any;
 }, prefix?: string): string;
+type Coordinates = {
+    lat: number;
+    lng: number;
+};
+export declare function getUserLocation(): Promise<Coordinates | null>;

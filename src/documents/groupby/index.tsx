@@ -10,7 +10,7 @@ import { mdiAccount, mdiClose, mdiOfficeBuilding } from "@mdi/js";
 import Apis from "./apis";
 import AIOTable from './../../npm/aio-table'; 
 const GroupBy: FC = () => {
-    const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZDc0YTgwYi1jNDlhLTQ3MDEtOWM5ZS00NjM4M2QwYzgwZGEiLCJpYXQiOjE3NDUxMjYwMTIsImV4cCI6MTc0NTE1NDgxMn0.zkJhgXVhTEubjDNqfy5NEa6xrbKqTHjsQf6UmbXzy2zIKFL8sTRvHsO_9gGOfdMBnH03Pu7QXX1GU5KxoIeLmw';
+    const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJmMDc0YTQ1Mi1iNDQ5LTQ5NzctOTE3OC01ZDI4OWJlNmIyOGQiLCJpYXQiOjE3NDUxNjA5NDcsImV4cCI6MTc0NTE4OTc0N30.26b4AphwWyELKxTOL3SJ2kI_GX9vfsq62q5PpB7hINi9-yZYrArDb8ZtkhLcy2QxTOu92vniY0OX3uc0oSS-zA';
     const base_url = 'https://dev.altc.ir/api'
     const apisRef = useRef<Apis>(new Apis({ token, base_url }))
     const apis = apisRef.current;
@@ -103,7 +103,7 @@ const TagRowsTable: FC<{ tagRows: I_tagRow[] }> = (props) => {
         openRemoveUserModal(tagId,userId,()=>{
             setTagRows(tagRows.filter((o)=>{
                 if(o.tag.id !== tagId){return true}
-                if(o.user.id !== userId){return true}
+                if(o.userId !== userId){return true}
                 return false
             }))
         })
@@ -117,7 +117,7 @@ const TagRowsTable: FC<{ tagRows: I_tagRow[] }> = (props) => {
                         title: '', width: 48,
                         template: ({ row }) => {
                             return (
-                                <div className='w-24- h-24- br-6- flex-row- align-vh-' style={{background:'red',color:'#fff'}} onClick={() => openRemoveUserModal_current(row.tag.id, row.user.id)}>
+                                <div className='w-24- h-24- br-6- flex-row- align-vh-' style={{background:'red',color:'#fff'}} onClick={() => openRemoveUserModal_current(row.tag.id, row.userId)}>
                                     <Icon path={mdiClose} size={0.8} />
                                 </div>
                             )
@@ -144,15 +144,10 @@ const AddUserModal: FC = () => {
     }
     const fetchUsers = async () => {
         const res = await apis.getUsers()
-        //if (res) { setUsers(res) }
-    }
-    const fetchBrokers = async () => {
-        const res = await apis.getAllBrokers()
-        if (res) { setBrokers(res) }
+        if (res) { setUsers(res) }
     }
     useEffect(() => {
         fetchUsers()
-        fetchBrokers()
     }, [])
     const getBrokerLayout = (type: 'broker1' | 'broker2') => {
         const id = selectedBroker[type]?.id
@@ -207,15 +202,13 @@ const AddUserModal: FC = () => {
                         before: (user: I_user) => <Icon path={mdiAccount} size={0.8} />
                     }}
                     value={selectedUser?.id}
-                    onChange={(id, o) => setSelectedUser(users[o.index])}
+                    onChange={(id, o) => {
+                        const selectedUser:I_user = users[o.index]
+                        setSelectedUser(selectedUser)
+                        setBrokers(selectedUser.brokers)
+                    }}
                 />
             </div>
-            {
-                !!selectedUser &&
-                <div className="msf">
-                    <UserTags user={selectedUser} />
-                </div>
-            }
             {
                 !!selectedUser &&
                 <div className="flex-row- align-v- w-100-">
@@ -228,17 +221,6 @@ const AddUserModal: FC = () => {
                 <button className="gb-button-1" onClick={submit} disabled={isDisabled()}>افزودن</button>
             </div>
         </div>
-    )
-}
-const UserTags: FC<{ user: I_user }> = ({ user }) => {
-    const { tagRows } = user
-    if (!tagRows.length) {
-        return (
-            <div className="p-12- w-100- flex-row- align-vh- bg-d-10-">این کاربر در هیچ گروهی عضو نیست</div>
-        )
-    }
-    return (
-        <TagRowsTable tagRows={tagRows}/>
     )
 }
 const useTags = (apis: Apis): I_tagsHook => {

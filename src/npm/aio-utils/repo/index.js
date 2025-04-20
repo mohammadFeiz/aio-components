@@ -127,22 +127,119 @@ export class DragClass {
 export const useDrag = (callback) => {
     const dataRef = useRef();
     const over = (e) => e.preventDefault();
-    const reOrder = (data, fromIndex, toIndex) => ReOrder(data, fromIndex, toIndex);
-    const getDragAttrs = (dragData) => {
-        return {
-            onDragStart: () => dataRef.current = dragData,
-            onDragOver: over,
-            draggable: true
-        };
+    const isTouch = IsTouch();
+    const reOrder = (data, fromIndex, toIndex) => {
+        const updated = [...data];
+        const [moved] = updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, moved);
+        return updated;
     };
-    const getDropAttrs = (dropData) => {
-        return {
-            onDragOver: (e) => e.preventDefault(),
-            onDrop: (e) => callback(dataRef.current, dropData, reOrder)
-        };
-    };
+    const getDragAttrsTouch = (dragData) => ({
+        draggble: false,
+        onTouchStart: (e) => {
+            dataRef.current = dragData;
+        }
+    });
+    const getDragAttrs = (dragData) => (isTouch ? getDragAttrsTouch(dragData) : {
+        onDragStart: () => (dataRef.current = dragData),
+        onDragOver: over, draggable: true,
+    });
+    const getDropAttrsTouch = (dropData) => ({
+        onTouchEnd: (e) => {
+            callback(dataRef.current, dropData.index, reOrder);
+        }
+    });
+    const getDropAttrs = (dropData) => (isTouch ? getDropAttrsTouch(dropData) : {
+        onDragOver: over,
+        onDrop: () => callback(dataRef.current, dropData, reOrder),
+        'data-drop': 'true' // برای تشخیص منطقه دراپ
+    });
     return { reOrder, getDragAttrs, getDropAttrs };
 };
+// export type I_useDrag = {
+//     reOrder: (data: any[], fromIndex: number, toIndex: number) => any[],
+//     getDragAttrs: (dragData: any) => any,
+//     getDropAttrs: (dropData: any) => any
+//   }
+//   export const useDrag = (
+//     callback: (
+//       dragData: any,
+//       dropData: any,
+//       reOrder: (data: any[], fromIndex: number, toIndex: number) => any[]
+//     ) => void
+//   ): I_useDrag => {
+//     const dragDataRef = useRef<any>(null)
+//     const reOrder = (data: any[], fromIndex: number, toIndex: number): any[] => {
+//       const result = [...data]
+//       const [moved] = result.splice(fromIndex, 1)
+//       result.splice(toIndex, 0, moved)
+//       return result
+//     }
+//     const handleTouchStart = (data: any) => () => {
+//       dragDataRef.current = data
+//     }
+//     const handleTouchEnd = (dropData: any) => (e: TouchEvent) => {
+//       if (!dragDataRef.current) return
+//       // دریافت موقعیت انگشت
+//       const touch = e.changedTouches[0]
+//       const target = document.elementFromPoint(touch.clientX, touch.clientY)
+//       if (target?.closest(`[data-drop="true"]`)) {
+//         callback(dragDataRef.current, dropData, reOrder)
+//       }
+//       dragDataRef.current = null
+//     }
+//     const getDragAttrs = (dragData: any) => ({
+//       draggable: true,
+//       onDragStart: () => (dragDataRef.current = dragData),
+//       onDragOver: (e: DragEvent) => e.preventDefault(),
+//       onTouchStart: handleTouchStart(dragData),
+//     })
+//     const getDropAttrs = (dropData: any) => ({
+//       onDragOver: (e: DragEvent) => e.preventDefault(),
+//       onDrop: () => callback(dragDataRef.current, dropData, reOrder),
+//       onTouchEnd: handleTouchEnd(dropData),
+//       'data-drop': 'true' // برای تشخیص منطقه دراپ
+//     })
+//     return { reOrder, getDragAttrs, getDropAttrs }
+//   }
+// import React, { useState } from 'react'
+// import { useDrag } from './useDrag'
+// export default function CardList() {
+//   const [items, setItems] = useState(['🍎 Apple', '🍌 Banana', '🍇 Grape'])
+//   const { getDragAttrs, getDropAttrs, reOrder } = useDrag((from, to, reOrderFn) => {
+//     const fromIndex = items.indexOf(from)
+//     const toIndex = items.indexOf(to)
+//     if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+//       const reordered = reOrderFn(items, fromIndex, toIndex)
+//       setItems(reordered)
+//     }
+//   })
+//   return (
+//     <div>
+//       {items.map((item) => (
+//         <div
+//           key={item}
+//           {...getDragAttrs(item)}
+//           {...getDropAttrs(item)}
+//           style={{
+//             padding: '12px',
+//             margin: '6px 0',
+//             border: '1px solid #ccc',
+//             borderRadius: '8px',
+//             background: '#f0f0f0',
+//             cursor: 'grab',
+//             touchAction: 'none'
+//           }}
+//         >
+//           {item}
+//         </div>
+//       ))}
+//     </div>
+//   )
+// // }
+// data-drop="true" رو از دست نده. اون برای تشخیص دراپ روی موبایل حیاتیه.
+// touchAction: 'none' توی استایل باعث می‌شه که gesture conflict (مثل اسکرول) با touch نداشته باشیم.
+// هندل تاچ رو دستی گذاشتیم چون مرورگر drag native رو ساپورت نمی‌کنه روی موبایل.
 export function GetClient(e) { return 'ontouchstart' in document.documentElement && e.changedTouches ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } : { x: e.clientX, y: e.clientY }; }
 export function ExportToExcel(rows, config = {}) {
     let { promptText = 'Inter Excel File Name' } = config;
@@ -2567,4 +2664,37 @@ export function AddQueryParamsToUrl(url, params, prefix = '') {
         url += (url.includes('?') ? '&' : '?') + queryParts.join('&');
     }
     return url;
+}
+export function getUserLocation() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // مرحله ۱: چک کن API ها موجود هستن
+            if (!navigator.permissions || !navigator.geolocation) {
+                console.warn("Geolocation or Permissions API not supported.");
+                return null;
+            }
+            // مرحله ۲: درخواست اجازه برای دسترسی به موقعیت
+            const permissionStatus = yield navigator.permissions.query({ name: "geolocation" });
+            if (permissionStatus.state === "denied") {
+                console.warn("Location permission denied by user.");
+                return null;
+            }
+            // مرحله ۳: گرفتن لوکیشن
+            const position = yield new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            });
+            return {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+        }
+        catch (err) {
+            console.error("Failed to get location:", err);
+            return null;
+        }
+    });
 }

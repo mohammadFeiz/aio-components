@@ -15,8 +15,8 @@ import Prism from 'prismjs';
 import { AIFormInput, AINumber, AISelect, AIText, AITime, AITree, SuggestionInput } from "aio-input";
 import Tick from "@pqina/flip";
 import "@pqina/flip/dist/flip.min.css";
-import usePopup from "aio-popup";
 import './index.css';
+import usePopup from "aio-popup";
 export const Indent = (props) => {
     const { width, height, level, open, row, rtl, isLastChild, isParentLastChild, isLeaf } = props;
     const [indentPathes, setIndentPathes] = useState(null);
@@ -973,4 +973,85 @@ export const useSort = (p) => {
             }, attrs: { className: 'aio-sort-button' }, text: getIconRef.current('mdiSort', 0.7), onSwap: (newSorts, from, to) => changeSorts(newSorts) }, 'sortbutton'));
     };
     return { sorts, setSorts, renderSortButton, getSortedRows, changeSort, changeSorts };
+};
+export function DragList({ data, onChange, renderItem, listAttrs }) {
+    const [internalData, setInternalData] = useState(data);
+    const containerRef = useRef(null);
+    const { getDragAttrs, getDropAttrs } = UT.useDrag((drag, drop, reOrder) => {
+        const fromIndex = drag.index;
+        const toIndex = drop.index;
+        const updated = reOrder(internalData, fromIndex, toIndex);
+        setInternalData(updated);
+        onChange(updated);
+    });
+    return (_jsx("div", Object.assign({}, listAttrs, { ref: containerRef, children: internalData.map((item, index) => {
+            const dragAttrs = getDragAttrs({ index });
+            const dropAttrs = getDropAttrs({ index });
+            const { inner, attrs } = renderItem(item, index);
+            const Attrs = Object.assign(Object.assign(Object.assign({}, attrs), dragAttrs), dropAttrs);
+            return (_jsx("div", Object.assign({}, Attrs, { children: inner }), index));
+        }) })));
+}
+export const Signature = ({ attrs = {}, onSave }) => {
+    const canvasRef = useRef(null);
+    const ctxRef = useRef(null);
+    const [drawing, setDrawing] = useState(false);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000';
+            ctxRef.current = ctx;
+        }
+    }, []);
+    const getPos = (e) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        if ('touches' in e) {
+            const t = e.touches[0];
+            return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+        }
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    const startDraw = (e) => {
+        var _a, _b;
+        e.preventDefault();
+        const pos = getPos(e.nativeEvent);
+        (_a = ctxRef.current) === null || _a === void 0 ? void 0 : _a.beginPath();
+        (_b = ctxRef.current) === null || _b === void 0 ? void 0 : _b.moveTo(pos.x, pos.y);
+        setDrawing(true);
+    };
+    const draw = (e) => {
+        var _a, _b;
+        if (!drawing)
+            return;
+        const pos = getPos(e.nativeEvent);
+        (_a = ctxRef.current) === null || _a === void 0 ? void 0 : _a.lineTo(pos.x, pos.y);
+        (_b = ctxRef.current) === null || _b === void 0 ? void 0 : _b.stroke();
+    };
+    const endDraw = () => {
+        var _a;
+        setDrawing(false);
+        (_a = ctxRef.current) === null || _a === void 0 ? void 0 : _a.closePath();
+    };
+    const clear = () => {
+        var _a;
+        const canvas = canvasRef.current;
+        (_a = ctxRef.current) === null || _a === void 0 ? void 0 : _a.clearRect(0, 0, canvas.width, canvas.height);
+    };
+    const save = () => {
+        const canvas = canvasRef.current;
+        canvas.toBlob((blob) => {
+            if (blob && onSave) {
+                const file = new File([blob], 'signature.png', { type: 'image/png' });
+                onSave(file);
+            }
+        }, 'image/png');
+    };
+    const Attrs = UT.AddToAttrs(attrs, { className: 'ai-signature' });
+    return (_jsxs("div", Object.assign({}, Attrs, { children: [_jsx("canvas", { ref: canvasRef, onMouseDown: startDraw, onMouseMove: draw, onMouseUp: endDraw, onMouseLeave: endDraw, onTouchStart: startDraw, onTouchMove: draw, onTouchEnd: endDraw }), _jsxs("div", { className: 'ai-signature-footer', children: [_jsx("button", { className: 'ai-signature-save', onClick: save, children: "\u0630\u062E\u06CC\u0631\u0647" }), _jsx("button", { className: 'ai-signature-clear', onClick: clear, children: "\u067E\u0627\u06A9 \u06A9\u0631\u062F\u0646" })] })] })));
 };

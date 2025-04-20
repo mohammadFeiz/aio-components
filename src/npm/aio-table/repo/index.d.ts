@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import "./index.css";
 import { I_filter, I_filter_item, I_filter_saved_item, I_paging, I_sort } from "aio-component-utils";
+import "./index.css";
 type I_rowOption<T, R> = (p: I_rowDetail<T>) => R;
 type I_cellOption<T, R> = ((p: I_cellDetail<T>) => R) | string;
 type I_rowDetail<T> = {

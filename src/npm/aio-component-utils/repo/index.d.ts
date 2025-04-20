@@ -1,6 +1,6 @@
 import React, { FC, ReactNode } from "react";
 import "@pqina/flip/dist/flip.min.css";
-import './index.css';
+import './repo/index.css';
 type AI_Indent = {
     level: number;
     width: number;
@@ -278,4 +278,17 @@ export declare const useSort: <T>(p: {
     onChangeRows?: (rows: any) => void;
     onChangeSort?: (sorts: I_sort<T>[]) => Promise<boolean | undefined>;
 }) => I_sortHook<T>;
+export declare function DragList<T>({ data, onChange, renderItem, listAttrs }: {
+    data: T[];
+    listAttrs?: any;
+    onChange: (newList: T[]) => void;
+    renderItem: (item: T, index: number) => {
+        inner: React.ReactNode;
+        attrs: any;
+    };
+}): JSX.Element;
+export declare const Signature: React.FC<{
+    attrs?: React.HTMLAttributes<HTMLCanvasElement>;
+    onSave?: (file: any) => void;
+}>;
 export {};
