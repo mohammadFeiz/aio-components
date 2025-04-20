@@ -7,7 +7,7 @@ type I_GroupByContext = {
     tagsHook:I_tagsHook,
     openAddTagModal:()=>void,
     openRemoveTagModal:()=>void,
-    openRemoveUserModal:(tagId: number, userId: number,callback:()=>void)=>void,
+    openRemoveUserModal:(tagId: string, userId: number,callback:()=>void)=>void,
     openAddUserModal:()=>void,
     apis:Apis,popup:I_usePopup
 }

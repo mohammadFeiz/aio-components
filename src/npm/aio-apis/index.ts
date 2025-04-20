@@ -1,9 +1,10 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
-import { Stall, Storage, AddQueryParamsToUrl } from './../../npm/aio-utils';
+import { Stall, Storage, AddQueryParamsToUrl,GetRandomNumber } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
+
 
 export type AA_api = {
     description: string,
@@ -22,16 +23,18 @@ export type AA_api = {
     retries?: number[],
     queryParams?: { [key: string]: any },
     lastSuccess?: {
-        enable:boolean,
+        enable: boolean,
         expiredIn?: number,
-        saveCondition?: (p:{response: any}) => boolean,
+        saveCondition?: (p: { response: any }) => boolean,
         loadIn?: 'unsuccess' | 'always',
-    }
+    },
+    offlineResponse?:any
 }
 type I_cachedApi<T> = {
     api: AA_api,
     value: any,
 }
+
 export default class AIOApis {
     props: {
         id: string,
@@ -43,6 +46,7 @@ export default class AIOApis {
         onBeforeRequest?: (api: AA_api) => Promise<{ api?: AA_api, result?: any }>,
         onAfterRequest?: (api: AA_api, result: { success: boolean, response: any, errorMessage: string }) => { success: boolean, response: any, errorMessage: string } | undefined,
     };
+    offlineList:OfflineList;
     token: string;
     lsc: LastSuccess;
     currentError: string = '';
@@ -63,6 +67,7 @@ export default class AIOApis {
         console.log('aio-apis constructor')
         this.props = props
         const storage = new Storage(props.id);
+        this.offlineList = new OfflineList(props.id)
         this.token = props.token;
         this.setToken(props.token);
         this.cache = new Cache(storage, async (cachedApi: I_cachedApi<any>) => await this.callCache(cachedApi.api));
@@ -111,10 +116,10 @@ export default class AIOApis {
             catch (err: any) { return { success: false, response, errorMessage: err.message } }
         }
         catch (response: any) {
-            try { 
+            try {
                 let errorMessage = handleErrorMessage(response, api)
-                errorMessage = errorMessage === false?'':errorMessage
-                return { errorMessage, success: false, response } 
+                errorMessage = errorMessage === false ? '' : errorMessage
+                return { errorMessage, success: false, response }
             }
             catch (err: any) { return { errorMessage: err.message, success: false, response } }
         }
@@ -185,10 +190,16 @@ export default class AIOApis {
         let { errorMessage = '', success, response } = await this.responseToResult(api);
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if (!success) {
+            if (api.offlineResponse) {
+                if (isNetworkDisconnected(response)) {
+                    this.offlineList.addOffline(api)
+                    return {response:api.offlineResponse,success:true,errorMessage:''}
+                }
+            }
             const lasSuccessRes = this.lsc.get(api, 'unsuccess')
-            if (lasSuccessRes !== null) { 
+            if (lasSuccessRes !== null) {
                 console.log(`api ${api.name} provide last success response`)
-                return { success: true, response: lasSuccessRes } 
+                return { success: true, response: lasSuccessRes }
             }
             let message: string | false = errorMessage;
             if (api.showError === false) { message = false }
@@ -238,32 +249,60 @@ export default class AIOApis {
         else { return await this.requestFn<T>(api) }
     }
 }
+class OfflineList{
+    list:any = []
+    storage:Storage;
+    constructor(id:string){
+       const storage = new Storage(id + 'offlinestorage');
+       this.storage = storage
+       this.list = storage.load('list',[]);
+    }
+    private save = (newList:any)=>{
+        this.list = newList
+        this.storage.save('list',newList)
+    }
+    addOffline = (requestConfig:any)=>{
+        const item = {requestConfig,id:'offline' + GetRandomNumber(1111111111,9999999999)}
+        const newList = [...this.list,item];
+        this.save(newList)
+    }
+    removeOffline = (id:string)=>{
+        const newList = this.list.filter((o:any)=>o.id === id)
+        this.save(newList)
+    }
+    getOffline = (id:string)=>{
+        return this.list.find((o:any)=>o.id === id)
+    }
+
+
+
+}
 class LastSuccess {
     private storage: Storage;
     constructor(id: string) {
         this.storage = new Storage(id + '-last-success')
     }
-    private isEnable = (api:AA_api)=>!!api.lastSuccess && !!api.lastSuccess.enable
+    private isEnable = (api: AA_api) => !!api.lastSuccess && !!api.lastSuccess.enable
     private getFromStroage = (api: AA_api) => {
-        const {expiredIn} = api.lastSuccess || {}
-        const value = this.storage.load(api.name, null,expiredIn)
-        return value === undefined?null:value
+        const { expiredIn } = api.lastSuccess || {}
+        const value = this.storage.load(api.name, null, expiredIn)
+        return value === undefined ? null : value
     }
-    get = (api:AA_api,type:'always' | 'unsuccess') => {
-        const {enable, expiredIn,loadIn = 'unsuccess'} = api.lastSuccess || {}
-        if(!this.isEnable(api)) {return null}
-        if(type === 'always' && loadIn === 'always'){return this.getFromStroage(api)}
-        if(type === 'unsuccess' && loadIn === 'unsuccess'){return this.getFromStroage(api)}
+    get = (api: AA_api, type: 'always' | 'unsuccess') => {
+        const { enable, expiredIn, loadIn = 'unsuccess' } = api.lastSuccess || {}
+        if (!this.isEnable(api)) { return null }
+        if (type === 'always' && loadIn === 'always') { return this.getFromStroage(api) }
+        if (type === 'unsuccess' && loadIn === 'unsuccess') { return this.getFromStroage(api) }
         return null
     }
-    set = (api: AA_api, response:any) => {
-        if(!this.isEnable(api)) {return}
-        if(api.lastSuccess?.saveCondition){
-            const {saveCondition} = api.lastSuccess
-            const cond = saveCondition({response})
-            if(!cond) {return}
+    set = (api: AA_api, response: any) => {
+        if (!this.isEnable(api)) { return }
+        if (api.lastSuccess?.saveCondition) {
+            const { saveCondition } = api.lastSuccess
+            const cond = saveCondition({ response })
+            if (!cond) { return }
         }
-        this.storage.save(api.name, response,api.lastSuccess?.expiredIn)
+        this.storage.save(api.name, response, api.lastSuccess?.expiredIn)
     }
 }
 export type I_mock = {
@@ -316,4 +355,39 @@ export const CreateInstance = <T extends Record<string, any>>(inst: T): T => {
     let res = useRef<any>(null)
     if (res.current === null) { res.current = inst }
     return res.current
+}
+
+
+async function isOnline(): Promise<boolean> {
+    try {
+        const res = await fetch("https://www.google.com/generate_204", {
+            method: "GET",
+            cache: "no-store",
+        })
+        return res.status === 204
+    } catch (err) {
+        return false
+    }
+}
+
+
+function isNetworkDisconnected(error: any): boolean {
+    if (!error) return false;
+
+    // اگر fetch بوده
+    if (typeof error.message === 'string' && error.message.includes('Failed to fetch')) {
+        return true;
+    }
+
+    // اگر axios بوده
+    if (error.isAxiosError && error.message === 'Network Error') {
+        return true;
+    }
+
+    // اگر response اصلاً وجود نداشته باشه، یعنی request به سرور نرفته
+    if (error.request && !error.response) {
+        return true;
+    }
+
+    return false;
 }

@@ -11,7 +11,7 @@ export default class Apis extends AIOApis {
         const res: I_user[] = []
         for (let i = 0; i < length; i++) {
             const name = FakeName({ type: "fullname", lang: 'fa' })
-            res.push({ name , id: GetRandomNumber(1111111,9999999), tagRows: [] })
+            res.push({ name , id: GetRandomNumber(1111111,9999999), tagRows: [],brokers:[] })
         }
         debugger
         return res
@@ -45,15 +45,15 @@ export default class Apis extends AIOApis {
         const newUsers = users.map((o) => o.id === userId ? newUser : o)
         this.setUsers(newUsers)
     }
-    private hasUserTagId = (userId: number, tagId: number): boolean => {
+    private hasUserTagId = (userId: number, tagId: string): boolean => {
         const user = this.getUserById(userId);
         return !!user?.tagRows.find((o) => o.tag.id === tagId)
     }
-    private getTagById = (tagId: number) => {
+    private getTagById = (tagId: string) => {
         const tags = this.getTags();
         return tags.find((o) => o.id === tagId)
     }
-    private removeTag_temp = (tagId: number): boolean => {
+    private removeTag_temp = (tagId: string): boolean => {
         const newTags = this.getTags().filter((o) => o.id !== tagId)
         this.setTags(newTags)
         const users = this.getUsers_temp();
@@ -69,12 +69,12 @@ export default class Apis extends AIOApis {
     private addTag_temp = (tagName: string): false | I_tag => {
         const tags = this.getTags();
         if (tags.find((o) => o.name === tagName)) { return false }
-        const tagId = GetRandomNumber(444444, 999999)
+        const tagId = GetRandomNumber(444444, 999999).toString()
         const newTags = [...tags, { name: tagName, id: tagId }]
         this.setTags(newTags);
         return { name: tagName, id: tagId }
     }
-    private getTagRows_temp = (tagId: number): I_tagRow[] | false => {
+    private getTagRows_temp = (tagId: string): I_tagRow[] | false => {
         const users = this.getUsers_temp();
         if(!users){return false}
         const fixUsers = users.filter((o) => this.hasUserTagId(o.id, tagId))
@@ -83,7 +83,7 @@ export default class Apis extends AIOApis {
             return { tag, broker1, broker2, user }
         })
     }
-    private addTagIdToUserId_temp = (tagId: number, userId: number, broker1: I_broker, broker2: I_broker): boolean => {
+    private addTagIdToUserId_temp = (tagId: string, userId: number, broker1: I_broker, broker2: I_broker): boolean => {
         debugger
         const tag = this.getTagById(tagId)
         if (!tag || this.hasUserTagId(userId,tagId)) { return false }
@@ -93,7 +93,7 @@ export default class Apis extends AIOApis {
         this.updateUser(userId, { tagRows: newTagRows })
         return true
     }
-    private removeTagFromUserIds_temp = (tagId: number, userIds: number[]): boolean => {
+    private removeTagFromUserIds_temp = (tagId: string, userIds: number[]): boolean => {
         for (let i = 0; i < userIds.length; i++) {
             const userId = userIds[i]
             const hasTag = this.hasUserTagId(userId,tagId)
@@ -106,8 +106,36 @@ export default class Apis extends AIOApis {
         }
         return true
     }
-    getAllTags = async (): Promise<I_tag[] | false> => {
-        return this.getTags()
+    getAllTags = async () => {
+        //return this.getTags()
+        const {success,response} = await this.request<{
+            data:{
+                content:{
+                    active:boolean,
+                    createByName:string,
+                    groupCode:string,
+                    groupName:string,
+                    id:number
+                }[]
+            }
+        }>({
+            name:'getAllTags',
+            description:'دریافت لیست گروه ها',
+            method:'get',
+            url:`${this.base_url}/v1/subscriber-group`
+        })
+        if(success){
+            const res:I_tag[] = response.data.content.map((o)=>{
+                return {
+                    name:o.groupName,
+                    id:o.groupCode
+                }
+            })
+            return res
+        }
+        else {
+            return false
+        }
     }
     getAllBrokers = async () => {
         const res: I_broker[] = this.storage.load('brokers', [
@@ -129,23 +157,65 @@ export default class Apis extends AIOApis {
         ])
         return res
     }
-    getTagRows = async (tagId: number) => {
+    getTagRows = async (tagId: string) => {
         return this.getTagRows_temp(tagId)
     }
     addTag = async (tagName: string) => {
         return this.addTag_temp(tagName)
     }
-    removeTag = async (tagId: number) => {
+    removeTag = async (tagId: string) => {
         return this.removeTag_temp(tagId)
     }
-    addTagIdToUserId = async (tagId: number, userId: number, broker1: I_broker, broker2: I_broker) => {
+    addTagIdToUserId = async (tagId: string, userId: number, broker1: I_broker, broker2: I_broker) => {
         return this.addTagIdToUserId_temp(tagId, userId, broker1, broker2)
+        
     }
-    removeTagFromUserIds = async (tagId: number, userIds: number[]) => {
+    removeTagFromUserIds = async (tagId: string, userIds: number[]) => {
         return this.removeTagFromUserIds_temp(tagId, userIds)
     }
     getUsers = async ()=>{
-        return this.getUsers_temp()
+        //return this.getUsers_temp()
+        debugger
+        const {response,success} = await this.request<{
+            data:{
+                content:{
+                    active:boolean,
+                    firstName:string,
+                    lastName:string,
+                    id:number,
+                    userId:number,
+                    mobileNumber:string,
+                    nationalCode:"0942254687",
+                    brokerAccount:{
+                        brokerName:string,
+                        brokerNameFa:string,//name vaghei
+                        id:number,
+                        tokenExpireTime:string,
+                        tokenValid:boolean,
+                        username:string //mobile
+                    }[]
+                }[]
+            }
+        }>({
+            name:'',
+            description:'',
+            method:'get',
+            url:`${this.base_url}/v1/subscriber?page=0&size=400`
+        })
+        if(success){
+            const res:I_user[] = response.data.content.map((o)=>{
+                return {
+                    brokers:o.brokerAccount.map((b)=>({name:b.brokerNameFa,id:b.id})),
+                    name:o.firstName + ' ' + o.lastName,
+                    id:o.id,
+                    tagRows:[]
+                }
+            })
+            return res
+        }
+        else {
+            debugger
+        }
     }
 
 }

@@ -10,8 +10,8 @@ import { mdiAccount, mdiClose, mdiOfficeBuilding } from "@mdi/js";
 import Apis from "./apis";
 import AIOTable from './../../npm/aio-table'; 
 const GroupBy: FC = () => {
-    const token = '';
-    const base_url = ''
+    const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZDc0YTgwYi1jNDlhLTQ3MDEtOWM5ZS00NjM4M2QwYzgwZGEiLCJpYXQiOjE3NDUxMjYwMTIsImV4cCI6MTc0NTE1NDgxMn0.zkJhgXVhTEubjDNqfy5NEa6xrbKqTHjsQf6UmbXzy2zIKFL8sTRvHsO_9gGOfdMBnH03Pu7QXX1GU5KxoIeLmw';
+    const base_url = 'https://dev.altc.ir/api'
     const apisRef = useRef<Apis>(new Apis({ token, base_url }))
     const apis = apisRef.current;
     const tagsHook = useTags(apis)
@@ -22,7 +22,7 @@ const GroupBy: FC = () => {
     const openRemoveTagModal = () => {
         popup.addConfirm({ title: 'حذف گروه', text: 'از حذف این گروه اطمینان دارید', onSubmit: () => tagsHook.removeTag() })
     }
-    const openRemoveUserModal = (tagId: number, userId: number,callback:()=>void) => {
+    const openRemoveUserModal = (tagId: string, userId: number,callback:()=>void) => {
         popup.addConfirm({ title: 'حذف گروه', text: 'از حذف این کاربر از گروه اطمینان دارید', onSubmit: async () => {
             const res = await tagsHook.removeTagFromUser(tagId, userId)
             if(res){callback(); return true}
@@ -99,7 +99,7 @@ const GroupByBody: FC = () => {
 const TagRowsTable: FC<{ tagRows: I_tagRow[] }> = (props) => {
     const [tagRows,setTagRows] = useState<I_tagRow[]>(props.tagRows)
     const { openRemoveUserModal } = useGroupByContext()
-    const openRemoveUserModal_current = (tagId:number,userId:number)=>{
+    const openRemoveUserModal_current = (tagId:string,userId:number)=>{
         openRemoveUserModal(tagId,userId,()=>{
             setTagRows(tagRows.filter((o)=>{
                 if(o.tag.id !== tagId){return true}
@@ -144,7 +144,7 @@ const AddUserModal: FC = () => {
     }
     const fetchUsers = async () => {
         const res = await apis.getUsers()
-        if (res) { setUsers(res) }
+        //if (res) { setUsers(res) }
     }
     const fetchBrokers = async () => {
         const res = await apis.getAllBrokers()
@@ -244,7 +244,7 @@ const UserTags: FC<{ user: I_user }> = ({ user }) => {
 const useTags = (apis: Apis): I_tagsHook => {
     const [tags, setTags] = useState<I_tag[]>([])
     const [selectedTag, setSelectedTag] = useState<I_selectedTag | undefined>()
-    const changeSelectedTag = async (tagId: number | undefined) => {
+    const changeSelectedTag = async (tagId: string | undefined) => {
         if (tagId === undefined) { setSelectedTag(undefined) }
         else {
             const tag = tags.find((o) => o.id === tagId);
@@ -278,7 +278,7 @@ const useTags = (apis: Apis): I_tagsHook => {
         }
         return false
     }
-    const removeTagFromUser = async (tagId: number, userId: number): Promise<boolean> => {
+    const removeTagFromUser = async (tagId: string, userId: number): Promise<boolean> => {
         const res = await apis.removeTagFromUserIds(tagId, [userId])
         if (res) { return true }
         else { return false }
