@@ -33,7 +33,6 @@ import NovaChart from './documents/novachart';
 import DOC_AIOTable from './documents/aio-table';
 import DragAndDrop from "./documents/drag-drop/index.tsx";
 import SignaturePad from "./documents/signature/index.tsx";
-import GroupBy from "./documents/groupby/index.tsx";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -65,7 +64,6 @@ export default function AIOComponents(){
     'NovaChart':NovaChart,
     'Drag And Deop':DragAndDrop,
     'signature':SignaturePad,
-    'altcore groupby':GroupBy,
     'Kits':Kits,
     'tree-search':DOC_TreeSearch
   })

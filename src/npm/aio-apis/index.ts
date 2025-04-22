@@ -1,92 +1,100 @@
 import Axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Alert, Loading } from './../../npm/aio-popup';
-import { Stall, Storage, AddQueryParamsToUrl,GetRandomNumber } from './../../npm/aio-utils';
+import { Stall, Storage, AddQueryParamsToUrl, GetRandomNumber } from './../../npm/aio-utils';
 import AIODate from './../../npm/aio-date';
 import { useRef } from 'react';
 
 
 export type AA_api = {
+    //globallies
+    token?: string,loader?: string, retries?: number[],loading?: boolean,mockDelay?: number,headers?: any,showError?: boolean,
+    //privates
     description: string,
     name: string,
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     url: string,
     body?: any,
-    loading?: boolean,
-    cache?: { name: string, expiredIn?: number },//AA_cache
+    cache?: { name: string, expiredIn?: number },
     mock?: (obj: any) => { status: number, data: any },
-    mockDelay?: number,
-    headers?: any,
-    token?: string,
-    showError?: boolean,
-    loader?: string, loadingParent?: string,
-    retries?: number[],
-    queryParams?: { [key: string]: any },
+    loadingParent?: string,
+    queryObject?: { [key: string]: any },
     lastSuccess?: {
         enable: boolean,
         expiredIn?: number,
         saveCondition?: (p: { response: any }) => boolean,
         loadIn?: 'unsuccess' | 'always',
     },
-    offlineResponse?:any
 }
-type I_cachedApi<T> = {
-    api: AA_api,
-    value: any,
-}
-
+type AIOApisReturnType<T> = { success: boolean, response: T | undefined, errorMessage: string,isNetworkError:boolean }
+type I_cachedApi = {api: AA_api,response: any}
+type I_defaultKeys = 'token' | 'loader' | 'retries' | 'loading' | 'mockDelay' | 'headers' | 'showError'
 export default class AIOApis {
-    props: {
+    private props: {
+        defaults:{[key in I_defaultKeys]?:any},
         id: string,
-        token: string,
-        loader?: string,
-        handleErrorMessage: (err: any, api: AA_api) => string | false,
-        headers?: any,
+        handleErrorMessage: (err: any, api: AA_api) => string,
         lang?: 'en' | 'fa',
-        onBeforeRequest?: (api: AA_api) => Promise<{ api?: AA_api, result?: any }>,
-        onAfterRequest?: (api: AA_api, result: { success: boolean, response: any, errorMessage: string }) => { success: boolean, response: any, errorMessage: string } | undefined,
+        base_url?: string,
+        onBeforeRequest?: <T>(api: AA_api) => Promise<{ api?: AA_api, result?: AIOApisReturnType<T> }>,
+        onAfterRequest?: <T>(result: AIOApisReturnType<T>,api: AA_api) => Promise<AIOApisReturnType<T>>,
     };
-    offlineList:OfflineList;
-    token: string;
-    lsc: LastSuccess;
-    currentError: string = '';
+    private token: string = '';
+    private lsc: LastSuccess;
+    private currentError: string = '';
     private cache: Cache;
-    getCachedValue: Cache["getCachedValue"]
-    fetchCachedValue: Cache["fetchCachedValue"]
-    removeCache: Cache["removeCache"]
-    apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
+    private status:{[apiName:string]:AIOApisReturnType<any>} = {}
+    actions: {
+        getNow: () => number[],
+        setToken: (token: string) => void,
+        getToken: () => string | undefined,
+        getStatus:()=>AIOApisReturnType<any> | undefined,
+        addAlert: (p: { type: 'success' | 'error' | 'warning' | 'info', title?: string, text: string, time?: number }) => void,
+        queryObjectToQueryString: (params?: { [key: string]: string | undefined } | string) => string,
+        getCachedResponse: (cacheName:string)=>any
+        fetchCacheByName: (cacheName:string)=>Promise<boolean>
+        removeCache: (cacheName: string)=>void
+    }
+    private apisThatAreInLoadingTime: { [apiName: string]: boolean | undefined } = {}
     private DATE: AIODate = new AIODate()
     constructor(props: {
+        defaults:{[key in I_defaultKeys]?:any},
         id: string,
-        token: string,
-        loader?: string,
         handleErrorMessage: (err: any, api: AA_api) => string,
-        headers?: any,
-        lang?: 'en' | 'fa'
+        lang?: 'en' | 'fa',
+        base_url?: string,
+        onBeforeRequest?: (api: AA_api) => Promise<{ api?: AA_api, result?: any }>,
+        onAfterRequest?: <T>(result: AIOApisReturnType<T>,api: AA_api) => Promise<AIOApisReturnType<T>>,
     }) {
         console.log('aio-apis constructor')
         this.props = props
         const storage = new Storage(props.id);
-        this.offlineList = new OfflineList(props.id)
-        this.token = props.token;
-        this.setToken(props.token);
-        this.cache = new Cache(storage, async (cachedApi: I_cachedApi<any>) => await this.callCache(cachedApi.api));
-        this.getCachedValue = this.cache.getCachedValue;
-        this.fetchCachedValue = this.cache.fetchCachedValue;
-        this.removeCache = this.cache.removeCache;
+        this.cache = new Cache(storage, this.callCachedApi.bind(this));
         this.lsc = new LastSuccess(props.id);
+        this.actions = {
+            getNow: this.getNow.bind(this),
+            setToken: this.setToken.bind(this),
+            getToken: this.getToken.bind(this),
+            getStatus: this.getStatus.bind(this),
+            addAlert: this.addAlert.bind(this),
+            queryObjectToQueryString: this.queryObjectToQueryString.bind(this),
+            getCachedResponse: this.cache.getCachedResponse,
+            fetchCacheByName: this.cache.fetchCacheByName,
+            removeCache: this.cache.removeCache,
+
+        }
     }
-    getNow = (jalali?: boolean): number[] => {
+    private getStatus = ()=>JSON.parse(JSON.stringify(this.status))
+    private getNow = (jalali?: boolean): number[] => {
         return this.DATE.getToday(jalali)
     }
-    setToken = (token: string) => {
-        if (token && token === this.token) { Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; }
-    }
-    addAlert = (p: { type: 'success' | 'error' | 'warning' | 'info', title?: string, text: string, time?: number }) => {
+    private setToken = (token: string) => Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    private getToken = () => this.token
+    private addAlert = (p: { type: 'success' | 'error' | 'warning' | 'info', title?: string, text: string, time?: number }) => {
         let { type, title, text, time } = p;
         Alert({ type, title, text, time, className: 'aio-apis-popup', closeText: this.props.lang === 'fa' ? 'بستن' : 'Close' })
     }
-    getUrlQueryParam = (params?: { [key: string]: string | undefined } | string) => {
+    private queryObjectToQueryString = (params?: { [key: string]: string | undefined } | string) => {
         if (typeof params === 'string') { return `/${params}`; }
         else if (typeof params === 'object' && params !== null) {
             const queryString = Object.keys(params)
@@ -97,35 +105,44 @@ export default class AIOApis {
         }
         return '';
     }
-    private responseToResult = async (api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: any }> => {
-        const { headers = this.props.headers } = api;
+    private getUrl = (api: AA_api) => {
+        let finalUrl: string = api.url;
+        if (this.props.base_url) {
+            if (finalUrl.indexOf(this.props.base_url) !== 0) {
+                finalUrl = this.props.base_url + finalUrl;
+            }
+        }
+        if (api.queryObject) { finalUrl = AddQueryParamsToUrl(finalUrl, api.queryObject) }
+        return finalUrl
+    }
+    private responseToResult = async <T>(api: AA_api): Promise<AIOApisReturnType<T>> => {
+        const headers = this.getByDefault(api,'headers')
         const { handleErrorMessage } = this.props;
         if (!handleErrorMessage) {
             const errorMessage = `
                 missing onCatch in api: ${api.name},
                 you should set onCatch in api or in props of AIOApis    
             `
-            return { errorMessage, success: false, response: false }
+            return { errorMessage, success: false, response: undefined,isNetworkError:false }
         }
         try {
-            let finalUrl: string;
-            if (api.queryParams) { finalUrl = AddQueryParamsToUrl(api.url, api.queryParams) }
-            else { finalUrl = api.url }
-            let response = await Axios({ method: api.method, url: finalUrl, data: api.body, headers })
-            try { return { success: true, response, errorMessage: '' } }
-            catch (err: any) { return { success: false, response, errorMessage: err.message } }
+            const url = this.getUrl(api);
+            let response:T = await Axios({ method: api.method, url, data: api.body, headers: headers === false ? undefined : headers })
+            return { success: true, response, errorMessage: '',isNetworkError:false }
         }
         catch (response: any) {
             try {
-                let errorMessage = handleErrorMessage(response, api)
-                errorMessage = errorMessage === false ? '' : errorMessage
-                return { errorMessage, success: false, response }
+                let errorMessage = await handleErrorMessage(response, api)
+                let isNetworkError:boolean = isNetworkDisconnected(response);
+                return { errorMessage, success: false, response,isNetworkError }
             }
-            catch (err: any) { return { errorMessage: err.message, success: false, response } }
+            catch (err: any) { return { errorMessage: err.message, success: false, response,isNetworkError:false } }
         }
     }
     private loading = (api: AA_api, state: boolean) => {
-        const { loading = true, loader = this.props.loader, name, loadingParent } = api;
+        const { name, loadingParent } = api;
+        const loading = this.getByDefault(api,'loading')
+        const loader = this.getByDefault(api,'loader')
         if (loading) {
             const aioLoading = new Loading(loader)
             aioLoading[state ? 'show' : 'hide'](name, loadingParent)
@@ -133,6 +150,7 @@ export default class AIOApis {
     }
     private handleMock = (api: AA_api) => {
         if (!api.mock) { return }
+        const mockDelay = this.getByDefault(api,'mockDelay')
         const mock = new MockAdapter(Axios);
         mock.resetHandlers();
         if (api.method === 'get') {
@@ -143,7 +161,7 @@ export default class AIOApis {
                         const { status, data } = api.mock(config)
                         resolve([status, data]);
                         mock.restore();
-                    }, api.mockDelay || 3000);
+                    }, mockDelay);
                 });
             });
         }
@@ -156,75 +174,74 @@ export default class AIOApis {
                         const { status, data } = api.mock(config)
                         resolve([status, data]);
                         mock.restore();
-                    }, api.mockDelay || 3000);
+                    }, mockDelay);
                 });
             });
         }
     }
-    callCache = async (api: AA_api): Promise<any> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return false }
-        this.setToken(api.token || this.props.token)
+    private getByDefault = (api:AA_api,key:I_defaultKeys)=>{
+        if(api[key] !== undefined){return api[key]}
+        if(this.props.defaults[key] !== undefined){return this.props.defaults[key]}
+        if(key === "loading"){return true}
+        if(key === "mockDelay"){return 2400}
+        if(key === "showError"){return true}
+    }
+    private callCachedApi:I_callCachedApi = async (api) => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return {success:false,response:undefined} }
+        this.setToken(this.getByDefault(api,'token'))
         this.handleMock(api)
         this.apisThatAreInLoadingTime[api.name] = true;
         let { success, response } = await this.responseToResult(api);
         this.apisThatAreInLoadingTime[api.name] = false
-        if (success) { return response }
+        return {response,success}
     };
-    requestFn = async <T>(api: AA_api, isRetry?: boolean): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
-        if (this.apisThatAreInLoadingTime[api.name]) { return { success: false, response: {} as any, errorMessage: 'request is in loading' } }
-        const lasSuccessRes = this.lsc.get(api, 'always')
-        if (lasSuccessRes !== null) { return { success: true, response: lasSuccessRes } }
-        this.setToken(api.token || this.props.token)
+    private requestFn = async <T>(api: AA_api, isRetry?: boolean): Promise<AIOApisReturnType<T>> => {
+        if (this.apisThatAreInLoadingTime[api.name]) { return { success: false, response: {} as any, errorMessage: 'request is in loading',isNetworkError:false } }
+        const {onAfterRequest = (result:AIOApisReturnType<T>)=>result} = this.props
+        const lasSuccessRes:T = this.lsc.get(api, 'always')
+        if (lasSuccessRes !== null) { return { success: true, response: lasSuccessRes,errorMessage:'',isNetworkError:false } }
+        this.setToken(api.token || this.props.defaults.token || '')
         this.handleMock(api)
         if (api.cache) {
-            let cachedValue = this.cache.getCachedValue(api.name, api.cache.name);
-            if (cachedValue !== undefined) { return { success: true, response: cachedValue } }
+            let cachedResponse = this.cache.getCachedResponse(api.cache.name);
+            if (cachedResponse !== undefined) { return { success: true, response: cachedResponse,errorMessage:'',isNetworkError:false } }
         }
         else { this.cache.removeCache(api.name) }
         this.loading(api, true); this.apisThatAreInLoadingTime[api.name] = true;
         if (this.props.onBeforeRequest) {
-            const { api: newApi, result } = await this.props.onBeforeRequest(api);
+            const { api: newApi, result } = await this.props.onBeforeRequest<T>(api);
             if (result) { return result }
             if (newApi) { api = newApi }
         }
-        let { errorMessage = '', success, response } = await this.responseToResult(api);
+        const status = await this.responseToResult<T>(api);
+        this.status[api.name] = status
+        const { errorMessage, success, response,isNetworkError } = status
         this.loading(api, false); this.apisThatAreInLoadingTime[api.name] = false;
         if (!success) {
-            if (api.offlineResponse) {
-                if (isNetworkDisconnected(response)) {
-                    this.offlineList.addOffline(api)
-                    return {response:api.offlineResponse,success:true,errorMessage:''}
-                }
-            }
             const lasSuccessRes = this.lsc.get(api, 'unsuccess')
             if (lasSuccessRes !== null) {
                 console.log(`api ${api.name} provide last success response`)
-                return { success: true, response: lasSuccessRes }
+                return { success: true, response: lasSuccessRes,errorMessage:'',isNetworkError }
             }
             let message: string | false = errorMessage;
-            if (api.showError === false) { message = false }
+            const showError = this.getByDefault(api,'showError')
+            if (!showError) { message = false }
             if (typeof message === 'string') {
                 this.currentError = message
                 if (!isRetry) {
                     let title: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-                    if (api.showError !== false) {
-                        this.addAlert({ type: 'error', title, text: message });
-                    }
+                    if (showError) {this.addAlert({ type: 'error', title, text: message });}
                 }
             }
         }
         else {
             this.lsc.set(api, response)
-            if (api.cache) { this.cache.setCache(api.name, api.cache.name, { api, value: response }) }
+            if (api.cache) { this.cache.setCache(api.cache.name, { api, response }) }
         }
-        if (this.props.onAfterRequest) {
-            const res = await this.props.onAfterRequest(api, { response, success, errorMessage });
-            if (res) { return res }
-        }
-
-        return { response, success, errorMessage };
+        const result = await onAfterRequest<T>({ response, success, errorMessage,isNetworkError },api)
+        return result;
     };
-    retries = async <T>(api: AA_api, times: number[]): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
+    private retries = async <T>(api: AA_api, times: number[]): Promise<AIOApisReturnType<T>> => {
         const retries = [0, ...times] as number[]
         return await new Promise(async (resolve) => {
             for (let i = 0; i < retries.length; i++) {
@@ -244,36 +261,11 @@ export default class AIOApis {
             }
         })
     }
-    request = async <T>(api: AA_api): Promise<{ errorMessage?: string, success: boolean, response: T }> => {
-        if (api.retries) { return await this.retries(api, api.retries) }
+    request = async <T>(api: AA_api): Promise<AIOApisReturnType<T>> => {
+        const retries = this.getByDefault(api,'retries')
+        if (retries) { return await this.retries(api, retries) }
         else { return await this.requestFn<T>(api) }
     }
-}
-class OfflineList{
-    list:any = []
-    storage:Storage;
-    constructor(id:string){
-       const storage = new Storage(id + 'offlinestorage');
-       this.storage = storage
-       this.list = storage.load('list',[]);
-    }
-    private save = (newList:any)=>{
-        this.list = newList
-        this.storage.save('list',newList)
-    }
-    addOffline = (requestConfig:any)=>{
-        const item = {requestConfig,id:'offline' + GetRandomNumber(1111111111,9999999999)}
-        const newList = [...this.list,item];
-        this.save(newList)
-    }
-    removeOffline = (id:string)=>{
-        const newList = this.list.filter((o:any)=>o.id === id)
-        this.save(newList)
-    }
-    getOffline = (id:string)=>{
-        return this.list.find((o:any)=>o.id === id)
-    }
-
 
 
 }
@@ -310,45 +302,38 @@ export type I_mock = {
     method: 'post' | 'get' | 'delete' | 'put' | 'patch',
     result: ((body: any) => { status: number, data: any })
 }
-
-type I_callApi = (cachedApi: I_cachedApi<any>) => Promise<any>
+type I_callCachedApi = (api:AA_api)=>Promise<{success:boolean,response:any}>
 class Cache {
     private storage: Storage;
-    private callApi: I_callApi;
-    constructor(storage: Storage, callApi: I_callApi) {
+    private callApi:I_callCachedApi;
+    constructor(storage: Storage, callApi:I_callCachedApi) {
         this.storage = storage;
         this.callApi = callApi;
     }
-    private updateCacheByKey = async (key: string) => {
-        if (this.storage.isExpired(key)) { this.storage.remove(key); return; }
-        const cachedApi = this.storage.load(key); if (!cachedApi) { return }
-        const { api } = cachedApi; if (!api.cache) { return }
-        const value = await this.callApi(cachedApi);
-        const newCachedApi: I_cachedApi<any> = { api: cachedApi.api, value }
-        this.setCache(api.name, api.cache.name as string, newCachedApi)
+    private updateCacheByKey = async (cacheName: string):Promise<boolean> => {
+        if (this.storage.isExpired(cacheName)) { this.storage.remove(cacheName); return false; }
+        const cachedApi = this.storage.load(cacheName); 
+        if (!cachedApi) { return false}
+        const { api } = cachedApi; 
+        if (!api.cache) { return false}
+        const {success,response} = await this.callApi(cachedApi);
+        if(success){
+            const newCachedApi: I_cachedApi = { api: cachedApi.api, response }
+            this.setCache(api.cache.name as string, newCachedApi)
+            return true
+        }
+        return false
     }
-    getCachedValue = (apiName: string, cacheName: string): any => {
-        const key = `${apiName}-${cacheName}`;
-        let cachedApi = this.storage.load(key);
+    setCache = (cacheName: string, cachedApi: I_cachedApi) => {
+        const expiredIn = cachedApi.api.cache?.expiredIn;
+        this.storage.save(cacheName, cachedApi, expiredIn);
+    }
+    getCachedResponse = (cacheName: string): any => {
+        let cachedApi = this.storage.load(cacheName);
         if (cachedApi !== undefined) { return cachedApi.value }
     }
-    fetchCachedValue = (apiName: string, cacheName: string) => this.updateCacheByKey(`${apiName}-${cacheName}`)
-    setCache = (apiName: string, cacheName: string, cachedApi: I_cachedApi<any>) => {
-        const key = `${apiName}-${cacheName}`;
-        const expiredIn = cachedApi.api.cache?.expiredIn;
-        this.storage.save(key, cachedApi, expiredIn);
-    }
-    removeCache = (apiName: string, cacheName?: string) => {
-        if (cacheName) { this.storage.remove(`${apiName}-${cacheName}`) }
-        else {
-            const keys = this.storage.getKeys()
-            for (let key of keys) {
-                if (key.indexOf(`${apiName}-`) === 0) {
-                    this.storage.remove(key)
-                }
-            }
-        }
-    }
+    fetchCacheByName = async (cacheName: string):Promise<boolean> => await this.updateCacheByKey(cacheName)
+    removeCache = (cacheName: string) => this.storage.remove(cacheName)
 }
 export const CreateInstance = <T extends Record<string, any>>(inst: T): T => {
 
