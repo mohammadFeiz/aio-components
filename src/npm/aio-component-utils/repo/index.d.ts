@@ -1,6 +1,5 @@
 import React, { FC, ReactNode } from "react";
-import "@pqina/flip/dist/flip.min.css";
-import './repo/index.css';
+import './index.css';
 type AI_Indent = {
     level: number;
     width: number;
@@ -186,21 +185,6 @@ export declare const Node: FC<{
         parentNode?: I_node;
     }) => I_node;
 }>;
-type I_Flip = {
-    value: string | number;
-    double?: boolean;
-    fontSize?: number;
-};
-export declare class Flip extends React.Component<I_Flip> {
-    ref: React.RefObject<any>;
-    inst: any;
-    constructor(props: I_Flip);
-    getValue(): any;
-    componentDidMount(): void;
-    componentDidUpdate(): void;
-    componentWillUnmount(): void;
-    render(): JSX.Element;
-}
 type I_filter_operator = 'less' | 'more' | 'equal' | 'notEqual' | 'contain' | 'notContain';
 export type I_filter_saved_item = {
     name: string;

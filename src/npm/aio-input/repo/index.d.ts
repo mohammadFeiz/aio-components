@@ -429,13 +429,27 @@ type AI_isRange = {
         html?: ReactNode;
         attrs?: any;
     });
-    ranges?: [number, I_rangeConfig][];
+    ranges?: [number, {
+        thickness: number;
+        offset: number;
+        color: string;
+        roundCap?: boolean;
+        full?: boolean;
+        className?: string;
+    }][];
     reverse?: boolean;
     size?: number;
     start?: number;
     step?: number;
     vertical?: boolean;
-    circles?: I_rangeConfig[];
+    circles?: {
+        thickness: number;
+        offset: number;
+        color: string;
+        roundCap?: boolean;
+        full?: boolean;
+        className?: string;
+    }[];
     handle?: AI_range_handle;
     rotate?: number;
     round?: number;
@@ -566,6 +580,7 @@ export type I_formHook<T> = {
     changeByField: (field: I_formField<T>, value: any) => void;
     errors: I_errorHook<T>;
     submit: () => void;
+    getChanges: () => any[];
 };
 export type I_formContext<T> = {
     changeData: (data: T) => void;
@@ -619,3 +634,42 @@ export declare const Plate: FC<{
     onChange: (v: string[]) => void;
     label?: string;
 }>;
+export declare class GetSvg {
+    getStyle: (color?: string) => {
+        fill: string;
+        stroke: string;
+    };
+    getSvgStyle: (size?: number) => {
+        width: string;
+        height: string;
+    };
+    fixSvgContent: (content: ReactNode, size?: number, p?: {
+        spin?: number;
+        color?: string;
+    }) => JSX.Element;
+    getIcon: (path: string, size?: number, p?: {
+        spin?: number;
+        color?: string;
+    }) => JSX.Element;
+    mdiMenu: (color?: string) => JSX.Element;
+    mdiClose: (color?: string) => JSX.Element;
+    mdiLoading: (color?: string) => JSX.Element;
+    mdiAttachment: (color?: string) => JSX.Element;
+    mdiCircleMedium: (color?: string) => JSX.Element;
+    mdiMagnify: (color?: string) => JSX.Element;
+    mdiPlusThick: (color?: string) => JSX.Element;
+    mdiImage: (color?: string) => JSX.Element;
+    mdiEye: (color?: string) => JSX.Element;
+    mdiEyeOff: (color?: string) => JSX.Element;
+    mdiDotsHorizontal: (color?: string) => JSX.Element;
+    mdiChevronDown: (color?: string) => JSX.Element;
+    mdiChevronRight: (color?: string) => JSX.Element;
+    mdiCircleSmall: (color?: string) => JSX.Element;
+    mdiChevronLeft: (color?: string) => JSX.Element;
+    mdiArrowDown: (color?: string) => JSX.Element;
+    mdiArrowUp: (color?: string) => JSX.Element;
+    mdiFileExcel: (color?: string) => JSX.Element;
+    mdiSort: (color?: string) => JSX.Element;
+    mdiDelete: (color?: string) => JSX.Element;
+    mdiMicrophoneOutline: (color?: string) => JSX.Element;
+}

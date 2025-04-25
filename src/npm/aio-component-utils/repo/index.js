@@ -8,15 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import * as UT from "aio-utils";
 import AIODate from "aio-date";
 import Prism from 'prismjs';
 import { AIFormInput, AINumber, AISelect, AIText, AITime, AITree, SuggestionInput } from "aio-input";
-import Tick from "@pqina/flip";
-import "@pqina/flip/dist/flip.min.css";
-import './index.css';
 import usePopup from "aio-popup";
+import './index.css';
 export const Indent = (props) => {
     const { width, height, level, open, row, rtl, isLastChild, isParentLastChild, isLeaf } = props;
     const [indentPathes, setIndentPathes] = useState(null);
@@ -479,49 +477,6 @@ const NodeGroup = ({ node, level, parentNode }) => {
     }
     return (_jsx("div", Object.assign({}, attrs, { children: content })));
 };
-export class Flip extends React.Component {
-    constructor(props) {
-        super(props);
-        this.ref = React.createRef();
-    }
-    getValue() {
-        let value = this.props.value;
-        if (this.props.double) {
-            let str = '';
-            try {
-                str = value.toString();
-            }
-            catch (_a) { }
-            if (str.length === 0) {
-                str = '00';
-            }
-            else if (str.length === 1) {
-                str = '0' + str;
-            }
-            value = str;
-        }
-        return value;
-    }
-    componentDidMount() {
-        this.inst = Tick.DOM.create(this.ref.current, {
-            value: this.getValue()
-        });
-    }
-    componentDidUpdate() {
-        if (this.inst) {
-            this.inst.value = this.getValue();
-        }
-    }
-    componentWillUnmount() {
-        if (!this.inst)
-            return;
-        Tick.DOM.destroy(this.ref.current);
-    }
-    render() {
-        let { fontSize = 24 } = this.props;
-        return (_jsx("div", { ref: this.ref, className: "tick", style: { fontSize }, children: _jsx("div", { "data-repeat": "true", "aria-hidden": "true", children: _jsx("span", { "data-view": "flip", children: "Tick" }) }) }));
-    }
-}
 export const Filterbar = (props) => {
     const propsRef = useRef(props);
     propsRef.current = props;

@@ -2431,3 +2431,92 @@ pre[class*="language-"]>code[class*="language-"] {
     width:100%;
 
 }
+.ai-toggle {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.ai-toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.ai-indent-line {
+    stroke: #c0cbd3;
+    stroke-dasharray: 1, 3;
+}
+
+.ai-toggle-line {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: calc(50% - 12px);
+}
+.ai-indents {
+    height: 100%;
+    display: flex;
+    position: relative;
+    align-items: center;
+}
+
+.ai-indent {
+    height: 100%;
+    position: relative;
+}
+
+.ai-indent svg {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+}
+
+
+
+.ai-indent-6 {
+    height: 6px;
+}
+
+.ai-indent-12 {
+    height: 12px;
+}
+
+.ai-indent-18 {
+    height: 18px;
+}
+
+.ai-indent-24 {
+    height: 24px;
+}
+
+.ai-indent-30 {
+    height: 30px;
+}
+
+.ai-indent-36 {
+    height: 36px;
+}
+
+.ai-indent-42 {
+    height: 42px;
+}
+
+.ai-indent-48 {
+    height: 48px;
+}
+
+.ai-indent-54 {
+    height: 54px;
+}
+
+.ai-indent-60 {
+    height: 60px;
+}
