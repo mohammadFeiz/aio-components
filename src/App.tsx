@@ -10,7 +10,6 @@ import Test from './test.tsx';
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {useNavigate} from 'react-router-dom';
 import './npm/aio-css/aio-css.css';
-import DOC_Flip from "./documents/flip/doc-flip.tsx";
 import DOC_Map from './documents/map/doc-map.tsx';
 import AIFilter from './documents/ai-filter';
 import BeenetDoc from "./documents/beenet";
@@ -33,6 +32,7 @@ import NovaChart from './documents/novachart';
 import DOC_AIOTable from './documents/aio-table';
 import DragAndDrop from "./documents/drag-drop/index.tsx";
 import SignaturePad from "./documents/signature/index.tsx";
+import BarcodeScannerInput from "./documents/scanner";
 export default function AIOComponents(){
   const navigate = useNavigate()
   let [parts] = useState<any>({
@@ -43,7 +43,6 @@ export default function AIOComponents(){
     'aio-floater':DOC_AIOFloater,
     'puzzle':Puzzle,
     'aio-popup':DOC_AIOPopup,
-    'flip':DOC_Flip,
     'map':DOC_Map,
     'ai filter':AIFilter,
     'beenet':BeenetDoc,
@@ -64,6 +63,7 @@ export default function AIOComponents(){
     'NovaChart':NovaChart,
     'Drag And Deop':DragAndDrop,
     'signature':SignaturePad,
+    'barcode scanner':BarcodeScannerInput,
     'Kits':Kits,
     'tree-search':DOC_TreeSearch
   })
