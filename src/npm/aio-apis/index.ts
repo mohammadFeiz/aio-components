@@ -8,7 +8,7 @@ import { useRef } from 'react';
 
 export type AA_api = {
     //globallies
-    token?: string,loader?: string, retries?: number[],loading?: boolean,mockDelay?: number,headers?: any,showError?: boolean,
+    token?: string,loader?: string, retries?: number[],loading?: boolean,mockDelay?: number,headers?: any,showError?: boolean,messageTime?:number
     //privates
     description: string,
     name: string,
@@ -26,9 +26,9 @@ export type AA_api = {
         loadIn?: 'unsuccess' | 'always',
     },
 }
-type AIOApisReturnType<T> = { success: boolean, response: T | undefined, errorMessage: string,isNetworkError:boolean }
+type AIOApisReturnType<T> = { success: boolean, response: T, errorMessage: string,isNetworkError:boolean }
 type I_cachedApi = {api: AA_api,response: any}
-type I_defaultKeys = 'token' | 'loader' | 'retries' | 'loading' | 'mockDelay' | 'headers' | 'showError'
+type I_defaultKeys = 'token' | 'loader' | 'retries' | 'loading' | 'mockDelay' | 'headers' | 'showError' | 'messageTime'
 export default class AIOApis {
     private props: {
         defaults:{[key in I_defaultKeys]?:any},
@@ -123,7 +123,7 @@ export default class AIOApis {
                 missing onCatch in api: ${api.name},
                 you should set onCatch in api or in props of AIOApis    
             `
-            return { errorMessage, success: false, response: undefined,isNetworkError:false }
+            return { errorMessage, success: false, response: undefined as any,isNetworkError:false }
         }
         try {
             const url = this.getUrl(api);
@@ -230,7 +230,8 @@ export default class AIOApis {
                 this.currentError = message
                 if (!isRetry) {
                     let title: string = this.props.lang === 'fa' ? `${api.description} با خطا روبرو شد` : `An error was occured in ${api.description}`;
-                    if (showError) {this.addAlert({ type: 'error', title, text: message });}
+                    const messageTime = this.getByDefault(api,'messageTime')
+                    if (showError) {this.addAlert({ type: 'error', title, text: message,time:messageTime });}
                 }
             }
         }
@@ -335,14 +336,11 @@ class Cache {
     fetchCacheByName = async (cacheName: string):Promise<boolean> => await this.updateCacheByKey(cacheName)
     removeCache = (cacheName: string) => this.storage.remove(cacheName)
 }
-export const CreateInstance = <T extends Record<string, any>>(inst: T): T => {
-
-    let res = useRef<any>(null)
-    if (res.current === null) { res.current = inst }
+export const CreateInstance = <T,>(inst: T): T => {
+    let res = useRef<T | null>(null)
+    if (res.current === null) {res.current = inst}
     return res.current
 }
-
-
 async function isOnline(): Promise<boolean> {
     try {
         const res = await fetch("https://www.google.com/generate_204", {
